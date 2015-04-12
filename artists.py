@@ -8,7 +8,7 @@ from scipy.interpolate import griddata, interp1d
 import matplotlib.gridspec as grd
 matplotlib.rcParams['contour.negative_linestyle'] = 'solid'
 
-class mpl_artist:
+class mpl_2D:
     """
         class for initializing plotting functions
         depends on dimensionality, presets, etc.
@@ -56,12 +56,14 @@ class mpl_artist:
             val = kwargs.get(key)
             if val is not None:
                 setattr(self, key, kwargs.get(key))
+        '''
         if isinstance(self.xaxis, Axis):
             self.xlabel = self.xaxis.name
         if isinstance(self.yaxis, Axis):
             self.ylabel = self.yaxis.name
             if self.xaxis.pulse_var == self.yaxis.pulse_var:
                 self.aspect = 'equal'
+        '''
     
     def colorbar(self):
         """
@@ -114,7 +116,7 @@ class mpl_artist:
         else: #could not determine colorbar type
             print 'color scale used not recognized:  cannot produce colorbar'
 
-    def plot(self, xyz, alt_z='raw', 
+    def plot(self, data, xaxis, yaxis = None, channel = 0, alt_z='raw', 
                scantype=None, contour=False, aspect=None, pixelated=False, 
                dynamic_range=False, floor=None, ceiling=None):
         """
@@ -125,11 +127,22 @@ class mpl_artist:
             plot lays out the contour figure, but also stores some info about xyz
             to make it easy to calculate colorbars and such
         """
-        matplotlib.rcParams.update({
-            'font.size':self.font_size
-        })
+        
+        #unpack chop------------------------------------------------------------
+
+        axes, zi = data.chop(xaxis, yaxis, channel)
+        
+        #FOR NOW WE FORCE THINGS TO WORK BY CREATING AN XYZ OBJECT DIRECTLY
+        xyz = XYZ(axes[0].points, axes[1].points, zi,
+                  znull=data.znull, zmin=data.zmin, zmax=data.zmax)
+
+        #prepare matplotlib-----------------------------------------------------        
+        
+        matplotlib.rcParams.update({'font.size':self.font_size})
+        
         # delete old plot data stored in the plt class
         plt.close()
+
         # update parameters
         p1 = plt.figure()
         gs = grd.GridSpec(1,2, width_ratios=[20,1], wspace=0.1)
@@ -143,10 +156,13 @@ class mpl_artist:
                 diag_min = max(min(xyz.x),min(xyz.y))
                 diag_max = min(max(xyz.x),max(xyz.y))
                 plt.plot([diag_min, diag_max],[diag_min, diag_max],'k:')
+                
         # attach to the plot objects so further manipulations can be done
         self.p1=p1
         self.gs=gs
         self.s1=s1
+
+        #z scaling--------------------------------------------------------------
 
         if alt_z in ['int', None, 'raw', '+', '-']:
             znull = None
@@ -266,7 +282,9 @@ class mpl_artist:
         xyz.z_norm = z_norm
         # artist needs to know alt_z as well!
         self.alt_z = alt_z
-        # plot the data
+                
+        #plot the data----------------------------------------------------------
+        
         if pixelated:
             # need to input step size to get centering to work
             x_step = np.abs(xyz.x[1] - xyz.x[0])
@@ -294,6 +312,9 @@ class mpl_artist:
         if contour:
             plt.contour(xyz.x, xyz.y, z_norm, self.contour_n, 
                         **self.contour_kwargs)
+                        
+        #enforce plot consistency-----------------------------------------------                        
+        
         #matplotlib.axes.rcParams.viewitems
         plt.xticks(rotation=45)
         plt.grid(b=True)
@@ -440,3 +461,211 @@ class mpl_artist:
         fname = fname + '.' + file_suffix
         self.p1.savefig(fname, **kwargs)
         print 'image saved as {0}'.format(fname)
+        
+        
+        
+        
+        
+        
+        
+        
+class XYZ:
+    """
+        a class for manipulating 2d data objects and their axes
+            -plotting
+            -decompositions and fitting
+            -"slicing" data
+            -normal array operations (adding and subtracting, etc.)
+    """
+    def __init__(self, x, y, z, 
+                 znull=None, zmin=None, zmax=None):
+        self.x = x
+        self.y = y 
+        self.z = z
+        if znull is None:
+            self.znull = 0.
+        else: self.znull = znull
+        if zmin is None:
+            self.zmin = z.min()
+        else: self.zmin = zmin
+        if zmax is None:
+            self.zmax = z.max()
+        else: self.zmax = zmax
+
+    def zoom(self, factor, order=1):
+        import scipy.ndimage
+        self.x = scipy.ndimage.interpolation.zoom(self.x, factor, order=order)
+        self.y = scipy.ndimage.interpolation.zoom(self.y, factor, order=order)
+        self.z = scipy.ndimage.interpolation.zoom(self.z, factor, order=order)
+        
+    def svd(self, verbose=False):
+        """
+            singular value decomposition of gridded data z
+        """
+        #give feedback on top (normalized) singular values
+        U, s, V = np.linalg.svd(self.z)
+        if verbose:
+            # report significant stats on svd
+            plt.figure()
+            s_max = s.max()
+            plt.scatter(s / s_max)
+        return U, s, V
+
+    def center(self, axis=None, center=None):
+        if center == 'max':
+            print 'listing center as the point of maximum value'
+            if axis == 0 or axis in ['x', self.xvar]:
+                index = self.zi.argmax(axis=0)
+                set_var = self.xi
+                max_var = self.yi
+                out = np.zeros(self.xi.shape)
+            elif axis == 1 or axis in ['y', self.yvar]:
+                index = self.zi.argmax(axis=1)
+                set_var = self.yi
+                max_var = self.xi
+                out = np.zeros(self.yi.shape)
+            else:
+                print 'Input error:  axis not identified'
+                return
+            for i in range(len(set_var)):
+                out[i] = max_var[index[i]]
+        else:
+            # find center by average value
+            out = self.exp_value(axis=axis, moment=1)
+        return out
+                
+    def exp_value(self, axis=None, moment=1, norm=True, noise_filter=None):
+        """
+            returns the weighted average for fixed points along axis
+            specify the axis you want to have exp values for (x or y)
+            good for poor-man's 3peps, among other things
+            moment argument can be any integer; meaningful ones are:
+                0 (area, set norm False)
+                1 (average, mu) or 
+                2 (variance, or std**2)
+            noise filter, a number between 0 and 1, specifies a cutoff for 
+                values to consider in calculation.  zi values less than the 
+                cutoff (on a normalized scale) will be ignored
+            
+        """
+        if axis == 0:
+            # an output for every x var
+            z = self.z.copy()
+            int_var = self.y
+            out = np.zeros(self.x.shape)
+        elif axis == 1:
+            # an output for every y var
+            z = self.z.T.copy()
+            int_var = self.x
+            out = np.zeros(self.y.shape)
+        else:
+            print 'Input error:  axis not identified'
+            return
+        if not isinstance(moment, int):
+            print 'moment must be an integer.  recieved {0}'.format(moment)
+            return
+        for i in range(out.shape[0]):
+            # ignoring znull for this calculation, and offseting my slice by min
+            z_min = z[:,i].min()
+            #zi_max = zi[:,i].max()
+            temp_z = z[:,i] - z_min
+            if noise_filter is not None:
+                cutoff = noise_filter * (temp_z.max() - z_min)
+                temp_z[temp_z < cutoff] = 0
+            #calculate the normalized moment
+            if norm == True:
+                out[i] = np.dot(temp_z,int_var**moment) / temp_z.sum()#*np.abs(int_var[1]-int_var[0]) 
+            else:
+                out[i] = np.dot(temp_z,int_var**moment)
+        return out
+
+    def fit_gauss(self, axis=None):
+        """
+            least squares optimization of traces
+            intial params p0 guessed by moments expansion
+        """
+        if axis == 0:
+            # an output for every x var
+            z = self.z.copy()
+            var = self.y
+            #out = np.zeros((len(self.xi), 3))
+        elif axis == 1:
+            # an output for every y var
+            z = self.z.T.copy()
+            var = self.x
+            #out = np.zeros((len(self.yi), 3))
+
+        # organize the list of initial params by calculating moments
+        m0 = self.exp_value(axis=axis, moment=0, norm=False)
+        m1 = self.exp_value(axis=axis, moment=1, noise_filter=0.1)
+        m2 = self.exp_value(axis=axis, moment=2, noise_filter=0.1)        
+
+        mu_0 = m1
+        s0 = np.sqrt(np.abs(m2 - mu_0**2))
+        A0 = m0 / (s0 * np.sqrt(2*np.pi))
+        offset = np.zeros(m0.shape)
+        
+        p0 = np.array([A0, mu_0, s0, offset])
+        out = p0.copy()
+        from scipy.optimize import leastsq
+        for i in range(out.shape[1]):
+            #print leastsq(gauss_residuals, p0[:,i], args=(zi[:,i], var))
+            try:
+                out[:,i] = leastsq(gauss_residuals, p0[:,i], args=(z[:,i]-self.znull, var))[0]
+            except:
+                print 'least squares failed on {0}:  initial guesses will be used instead'.format(i)
+                out[:,i] = p0[:,i]
+        out[2] = np.abs(out[2])
+        return out
+        
+    def smooth(self, 
+               x=0,y=0, 
+               window='kaiser',
+               debug = False): #smoothes via adjacent averaging            
+        """
+            convolves the signal with a 2D window function
+            currently only equipped for kaiser window
+            'x' and 'y', both integers, are the nth nearest neighbor that get 
+                included in the window
+            Decide whether to perform xaxis smoothing or yaxis by setting the 
+                boolean true
+        """
+        # n is the seed of the odd numbers:  n is how many nearest neighbors 
+        # in each direction
+        # make sure n is integer and n < grid dimension
+        # account for interpolation using grid factor
+        nx = x
+        ny = y
+        # create the window function
+        if window == 'kaiser':
+            # beta, a real number, is a form parameter of the kaiser window
+            # beta = 5 makes this look approximately gaussian in weighting 
+            # beta = 5 similar to Hamming window, according to numpy
+            # over window (about 0 at end of window)
+            beta=5.0
+            wx = np.kaiser(2*nx+1, beta)
+            wy = np.kaiser(2*ny+1, beta)
+        # for a 2D array, y is the first index listed
+        w = np.zeros((len(wy),len(wx)))
+        for i in range(len(wy)):
+            for j in range(len(wx)):
+                w[i,j] = wy[i]*wx[j]
+        # create a padded array of zi
+        # numpy 1.7.x required for this to work
+        temp_z = np.pad(self.zi, ((ny,ny), 
+                                   (nx,nx)), 
+                                    mode='edge')
+        from scipy.signal import convolve
+        out = convolve(temp_z, w/w.sum(), mode='valid')
+        if debug:
+            plt.figure()
+            sp1 = plt.subplot(131)
+            plt.contourf(self.zi, 100)
+            plt.subplot(132, sharex=sp1, sharey=sp1)
+            plt.contourf(w,100)
+            plt.subplot(133)
+            plt.contourf(out,100)
+        self.z=out
+        # reset zmax
+        self.zmax = self.z.max()
+        self.zmin = self.z.min()

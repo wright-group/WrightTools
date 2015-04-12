@@ -37,7 +37,32 @@ class Data:
             self.zmax = zis.max()
         else:
             self.zmax = zmax
+            
+    def chop(self, xaxis, yaxis = None, channel = 0):
+        '''
+        take the data and return it in a 1D or 2D format               \n
+        returns an xyz object, appropriate for passing to plot methods \n
+        '''
         
+        #do i have an x and y axis, or just x?----------------------------------
+        
+        xaxis = int(xaxis)
+        if yaxis is not None:
+            yaxis = int(yaxis)
+            plot_dim = 2
+            var_list = [xaxis, yaxis]
+        else:
+            plot_dim = 1
+            var_list = [xaxis]
+            
+        #chop-------------------------------------------------------------------
+        
+        axes = [self.axes[xaxis], self.axes[yaxis]]
+        zi = self.zis[channel]
+        
+        #return-----------------------------------------------------------------
+        
+        return axes, zi
 
     def zoom(self, factor, order=1):
         import scipy.ndimage
@@ -420,7 +445,7 @@ def from_dat(filepath, xvar, yvar,
     #v2_time = time.mktime(v2_date)
     v2_time = 1395723600.0
     cols_v2 = {
-        'num':  (0, 0.0, None, 'acquisition number'),
+        'num':  (0, 0.5, None, 'acquisition number'),
         'w1':   (1, 5.0, 'nm', r'$\mathrm{\bar\nu_1=\bar\nu_m (cm^{-1})}$'),
         'l1':   (1, 1.0, 'wn', r'$\lambda_1 / nm$'),
         'w2':   (3, 5.0, 'nm', r'$\mathrm{\bar\nu_2=\bar\nu_{2^{\prime}} (cm^{-1})}$'),
@@ -446,7 +471,7 @@ def from_dat(filepath, xvar, yvar,
     #v1_time = time.mktime(v1_date)
     v1_time = 1349067600.0
     cols_v1 = {
-        'num':  (0, 0.0, None, 'acquisition number'),
+        'num':  (0, 0.5, None, 'acquisition number'),
         'w1':   (1, 5.0, 'nm', r'$\mathrm{\bar\nu_1=\bar\nu_m (cm^{-1})}$'),
         'l1':   (1, 1.0, 'wn', r'$\lambda_1 / nm$'),
         'w2':   (3, 5.0, 'nm', r'$\mathrm{\bar\nu_2=\bar\nu_{2^{\prime}} (cm^{-1})}$'),
@@ -464,7 +489,7 @@ def from_dat(filepath, xvar, yvar,
     }
     #the old column rules before Winter 2012 (when Skye changed the column assignments)
     cols_v0 = {
-        'num':  (0, 0.0, None, 'acquisition number'),
+        'num':  (0, 0.5, None, 'acquisition number'),
         'w1':   (1, 2.0, 'nm', r'$\mathrm{\bar\nu_1=\bar\nu_m (cm^{-1})}$'),
         'l1':   (1, 1.0, 'wn',r'$\lambda_1 / nm$'),
         'w2':   (3, 2.0, 'nm',r'$\mathrm{\bar\nu_2=\bar\nu_{2^{\prime}} (cm^{-1})}$'),
