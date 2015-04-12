@@ -1,28 +1,43 @@
 import os
+import collections
+
 import numpy as np
 
-class data:
-    """
-        a class for manipulating 2d data objects and their axes
-            -plotting
-            -decompositions and fitting
-            -"slicing" data
-            -normal array operations (adding and subtracting, etc.)
-    """
-    def __init__(self, x, y, z, 
+from scipy.interpolate import griddata, interp1d
+
+class Data:
+    '''
+    central object for all data types                         \n
+    create data objects by calling the methods of this script
+    
+    contains axes - a list of axes objects and zis - an array of data gridded to 
+    those axes
+    
+    contains constants - a dictionary of conjugate variables
+    '''
+    def __init__(self, axes, zis, zvars, constants = None, 
                  znull=None, zmin=None, zmax=None):
-        self.x = x
-        self.y = y 
-        self.z = z
-        if znull is None:
-            self.znull = 0.
-        else: self.znull = znull
-        if zmin is None:
-            self.zmin = z.min()
-        else: self.zmin = zmin
-        if zmax is None:
-            self.zmax = z.max()
-        else: self.zmax = zmax
+                     
+        self.axes = axes
+        self.zis = zis
+        
+        #znull, zmin, zmax------------------------------------------------------        
+        
+        if not znull:            
+            self.znull = zis.min()
+        else:
+            self.znull = znull
+            
+        if not zmin:            
+            self.zmin = zis.min()
+        else:
+            self.zmin = zmin
+            
+        if not zmax:            
+            self.zmax = zis.max()
+        else:
+            self.zmax = zmax
+        
 
     def zoom(self, factor, order=1):
         import scipy.ndimage
@@ -219,8 +234,31 @@ class data:
              print 'specified axis is not recognized'
          return out
 
+class Axis:
+    def __init__(self, points, units, name = None, label = None):
         
-def makefit(**kwargs):
+        #name and label---------------------------------------------------------
+        self.name = name
+        if not label:
+            self.label = self.name
+        else:
+            self.label = label
+        
+        #points-----------------------------------------------------------------
+        
+        self.points = points
+
+        #units------------------------------------------------------------------
+        #should have unit types in future
+        #  energy
+        #  delay
+        #  position
+
+        self.units = units
+        
+### data manipulation and usage methods ########################################
+
+def make_fit(**kwargs):
     """
     make a fit file filling in only the arguments specified
     kwargs must be lists or arrays of uniform size and 1D shape
@@ -242,35 +280,6 @@ def makefit(**kwargs):
                 kwargs.keys()[0], n, name, len(value))
             return
     return out
-
-def find_name(fname, suffix):
-    """
-    save the file using fname, and tacking on a number if fname already exists
-    iterates until a unique name is found
-    returns False if the loop malfunctions
-    """
-    good_name=False
-    # find a name that isn't used by enumerating
-    i = 1
-    while not good_name:
-        try:
-            with open(fname+'.'+suffix):
-               # file does exist
-               # see if a number has already been guessed
-               if fname.endswith(' ({0})'.format(i-1)):
-                   # cut the old off before putting the new in
-                   fname = fname[:-len(' ({0})'.format(i-1))]
-               fname += ' ({0})'.format(i)
-               i = i + 1
-               # prevent infinite loop if the code isn't perfect
-               if i > 100:
-                   print 'didn\'t find a good name; index used up to 100!'
-                   fname = False
-                   good_name=True
-        except IOError:
-            # file doesn't exist and is safe to write to this path
-            good_name = True
-    return fname
 
 def make_tune(obj, set_var, fname=None, amp='int', center='exp_val', fit=True,
               offset=None, write=True):
@@ -385,37 +394,190 @@ def make_tune(obj, set_var, fname=None, amp='int', center='exp_val', fit=True,
         np.savetxt(exp_file, out, delimiter='\t', fmt='%.3f')
     print 'saved as {0}'.format(fstr+'.fit')
 
-def filename_parse(fstr):
-    """
-    parses a filepath string into it's path, name, and suffix
-    """
-    split = fstr.split('\\')
-    if len(split) == 1:
-        file_path = None
-    else:
-        file_path = '\\'.join(split[0:-1])
-    split2 = split[-1].split('.')
-    # try and guess whether a suffix is there or not
-    # my current guess is based on the length of the final split string
-    # suffix is either 3 or 4 characters
-    if len(split2[-1]) == 3 or len(split2[-1]) == 4:
-        file_name = '.'.join(split2[0:-1])
-        file_suffix = split2[-1]
-    else:
-        file_name = split[-1]
-        file_suffix = None
-    return file_path, file_name, file_suffix    
+### data creation methods ######################################################
+
+def from_dat(filepath, xvar, yvar,
+             grid_factor = 2, znull = None,
+             cols = None, verbose = True):
     
-def gauss_residuals(p, y, x):
-    """
-    calculates the residual between y and a gaussian with:
-        amplitude p[0]
-        mean p[1]
-        stdev p[2]
-    """
-    A, mu, sigma, offset = p
-    # force sigma to be positive
-    err = y-A*np.exp(-(x-mu)**2 / (2*np.abs(sigma)**2)) - offset
-    return err
+    #load raw data from filepath------------------------------------------------
+    
+    if os.path.isfile(filepath):
+        dat = np.genfromtxt(filepath).T
+        if verbose: print 'data loaded:', dat.shape
+    else:
+        print 'filepath', filepath, 'does not yield a file'
+        return
+    
+    #dictionaries---------------------------------------------------------------
+    
+    #dictionary connects column names to locations for COLORS scan
+    #first is column from color file--columns according to new column ordering
+    #second is movement tolerance (x +/- tolerance)
+    #third is the unit assigned to this variable
+    # dictionary for dat convention implemented on 2014.03.25
+    #v2_date = time.strptime('14 Mar 25', '%y %b %d')
+    #v2_time = time.mktime(v2_date)
+    v2_time = 1395723600.0
+    cols_v2 = {
+        'num':  (0, 0.0, None, 'acquisition number'),
+        'w1':   (1, 5.0, 'nm', r'$\mathrm{\bar\nu_1=\bar\nu_m (cm^{-1})}$'),
+        'l1':   (1, 1.0, 'wn', r'$\lambda_1 / nm$'),
+        'w2':   (3, 5.0, 'nm', r'$\mathrm{\bar\nu_2=\bar\nu_{2^{\prime}} (cm^{-1})}$'),
+        'l2':   (3, 1.0, 'wn', r'$\lambda_2 / nm$'),
+        'w3':   (5, 5.0, 'wn', r'$\mathrm{\bar\nu_3 (cm^{-1})}$'),
+        'l3':   (5, 1.0, 'nm', r'$\mathrm{\lambda_3 (cm^{-1})}$'),
+        'wm':   (7, 1.0, 'nm', r'$\bar\nu_m / cm^{-1}$'),
+        'lm':   (7, 1.0, 'wn', r'$\lambda_m / nm$'),
+        'wa':  (8, 1.0, 'nm', r'$\bar\nu_a / cm^{-1}$'),
+        'dref': (10, 25.0, 'fs', r'$d_ref$'),
+        'd1':   (12, 3.0, 'fs', r'$\mathrm{\tau_{2^{\prime} 1} (fs)}$'),
+        #'t2p1': (12, 3.0, 'fs', r'$\mathrm{\tau_{2^{\prime} 1}(fs)}$'),
+        'd2':   (14, 3.0, 'fs', r'$\mathrm{\tau_{21} (fs)}$'),
+        #'t21':  (14, 3.0, 'fs', r'$\mathrm{\tau_{21} (fs)}$'),
+        'ai0':  (16, 0.0, 'V', 'Signal 0'),
+        'ai1':  (17, 0.0, 'V', 'Signal 1'),
+        'ai2':  (18, 0.0, 'V', 'Signal 2'),
+        'ai3':  (19, 0.0, 'V', 'Signal 3'),
+        'ai4':  (20, 0.0, 'V', 'Signal 4'),
+        'mc':   (21, 0.0, 'au', 'Array Signal')
+    }
+    #v1_date = time.strptime('12 Oct 01', '%y %b %d')
+    #v1_time = time.mktime(v1_date)
+    v1_time = 1349067600.0
+    cols_v1 = {
+        'num':  (0, 0.0, None, 'acquisition number'),
+        'w1':   (1, 5.0, 'nm', r'$\mathrm{\bar\nu_1=\bar\nu_m (cm^{-1})}$'),
+        'l1':   (1, 1.0, 'wn', r'$\lambda_1 / nm$'),
+        'w2':   (3, 5.0, 'nm', r'$\mathrm{\bar\nu_2=\bar\nu_{2^{\prime}} (cm^{-1})}$'),
+        'l2':   (3, 1.0, 'wn', r'$\lambda_2 / nm$'),
+        'wm':   (5, 1.0, 'nm', r'$\bar\nu_m / cm^{-1}$'),
+        'lm':   (5, 1.0, 'wn', r'$\lambda_m / nm$'),
+        'd1':   (6, 3.0, 'fs', r'$\mathrm{\tau_{2^{\prime} 1} (fs)}$'),
+        't2p1': (6, 3.0, 'fs', r'$\mathrm{\tau_{2^{\prime} 1}(fs)}$'),
+        'd2':   (7, 3.0, 'fs', r'$\mathrm{\tau_{21} (fs)}$'),
+        't21':  (7, 3.0, 'fs', r'$\mathrm{\tau_{21} (fs)}$'),
+        'ai0':  (8, 0.0, 'V', 'Signal 0'),
+        'ai1':  (9, 0.0, 'V', 'Signal 1'),
+        'ai2':  (10, 0.0, 'V', 'Signal 2'),
+        'ai3':  (11, 0.0, 'V', 'Signal 3')
+    }
+    #the old column rules before Winter 2012 (when Skye changed the column assignments)
+    cols_v0 = {
+        'num':  (0, 0.0, None, 'acquisition number'),
+        'w1':   (1, 2.0, 'nm', r'$\mathrm{\bar\nu_1=\bar\nu_m (cm^{-1})}$'),
+        'l1':   (1, 1.0, 'wn',r'$\lambda_1 / nm$'),
+        'w2':   (3, 2.0, 'nm',r'$\mathrm{\bar\nu_2=\bar\nu_{2^{\prime}} (cm^{-1})}$'),
+        'l2':   (3, 1.0, 'wn',r'$\lambda_2 / nm$'),
+        'wm':   (5, 0.25, 'nm',r'$\bar\nu_m / cm^{-1}$'),
+        'lm':   (5, 0.25, 'wn',r'$\lambda_m / nm$'),
+        'd1':   (6, 3.0, 'fs',r'$\mathrm{\tau_{2^{\prime} 1} (fs)}$'),
+        't2p1': (6, 3.0, 'fs',r'$\mathrm{\tau_{2^{\prime} 1}(fs)}$'),
+        'd2':   (8, 3.0, 'fs',r'$\mathrm{\tau_{21} (fs)}$'),
+        't21':  (8, 3.0, 'fs',r'$\mathrm{\tau_{21} (fs)}$'),
+        'ai0':  (10, 0.0, 'V','Signal 0'),
+        'ai1':  (11, 0.0, 'V','Signal 1'),
+        'ai2':  (12, 0.0, 'V','Signal 2'),
+        'ai3':  (13, 0.0, 'V','Signal 3')
+    }
+    
+    zvars = collections.OrderedDict()
+    zvars['ai0'] = None
+    zvars['ai1'] = None
+    zvars['ai2'] = None
+    zvars['ai3'] = None
+    
+    if cols == 'v2':
+        datCols = cols_v2
+    elif cols == 'v1':
+        datCols = cols_v1
+    elif cols == 'v0':
+        datCols = cols_v0
+    else:
+        #guess based on when the file was made
+        file_date = os.path.getctime(filepath)
+        if file_date > v2_time:
+            cols = 'v2'
+            datCols = cols_v2
+        elif file_date > v1_time:
+            cols = 'v1'
+            datCols = cols_v1
+        else:
+            # file is older than all other dat versions
+            cols = 'v0'
+            datCols = cols_v0
+        if verbose: print cols
+    cols=cols
+    
+    #add array to zvars if version 2 dat file
+    if cols == 'v2': zvars['mc'] = None
+    
+    xcol = datCols[xvar][0]
+    ycol = datCols[yvar][0]  
+
+    #grid data------------------------------------------------------------------
+        
+    #generate regularly spaced y and x bins to use for gridding 2d data
+    #grid_factor:  multiplier factor for blowing up grid
+    #grid all input channels (ai0-ai3) to the set xi and yi attributes
 
 
+    #generate lists from data
+    xlis = sorted(dat[xcol])
+    xtol = datCols[xvar][1]
+    # values are binned according to their averages now, so min and max 
+    #  are better represented
+    xs = []
+    # check to see if unique values are sufficiently unique
+    # deplete to list of values by finding points that are within 
+    #  tolerance
+    while len(xlis) > 0:
+        # find all the xi's that are like this one and group them
+        # after grouping, remove from the list
+        set_val = xlis[0]
+        xi_lis = [xi for xi in xlis if np.abs(set_val - xi) < xtol]
+        # the complement of xi_lis is what remains of xlis, then
+        xlis = [xi for xi in xlis if not np.abs(xi_lis[0] - xi) < xtol]
+        xi_lis_average = sum(xi_lis) / len(xi_lis)
+        xs.append(xi_lis_average)
+    # create uniformly spaced x and y lists for gridding
+    # infinitesimal offset used to properly interpolate on bounds; can
+    #  be a problem, especially for stepping axis
+    xi = np.linspace(min(xs)+1E-06,max(xs)-1E-06,
+                     (len(xs) + (len(xs)-1)*(grid_factor-1)))
+                          
+    ylis = sorted(dat[ycol])
+    ytol = datCols[yvar][1]
+    ys = []
+    while len(ylis) > 0:
+        set_val = ylis[0]
+        yi_lis = [yi for yi in ylis if np.abs(set_val - yi) < ytol]
+        ylis = [yi for yi in ylis if not np.abs(yi_lis[0] - yi) < ytol]
+        yi_lis_average = sum(yi_lis) / len(yi_lis)
+        ys.append(yi_lis_average)
+    yi = np.linspace(min(ys)+1E-06,max(ys)-1E-06,
+                     (len(ys) + (len(ys)-1)*(grid_factor-1)))
+
+    x_col = dat[xcol] 
+    y_col = dat[ycol]
+    # grid each of our signal channels
+    zis = []
+    for key in zvars:
+        zcol = datCols[key][0]
+        #make fill value znull right now (instead of average value)
+        fill_value = 0. #ugly hack for now #self.znull #self.data[zcol].sum()  / len(self.data[zcol])
+        grid_i = griddata((x_col,y_col), dat[zcol], 
+                           (xi[None,:],yi[:,None]),
+                            method='cubic',fill_value=fill_value)
+        zis.append(grid_i)
+    zis = np.array(zis)
+                        
+    #create data object---------------------------------------------------------
+
+    x_axis = Axis(xi, datCols[xvar][2], xvar, datCols[xvar][3])
+    y_axis = Axis(yi, datCols[yvar][2], yvar, datCols[yvar][3])
+    data = Data([x_axis, y_axis], zis, zvars)
+    
+    #return---------------------------------------------------------------------
+    
+    return data
