@@ -8,6 +8,62 @@ from scipy.interpolate import griddata, interp1d
 import matplotlib.gridspec as grd
 matplotlib.rcParams['contour.negative_linestyle'] = 'solid'
 
+class absorbance:
+        
+    def plot(self, data, channel = 0, font_size = 12):
+        
+        #import data------------------------------------------------------------
+        
+        xi = data.axes[0].points
+        zi = data.zis[0]
+        name = data.name
+        
+        #prepare plot environment-----------------------------------------------
+    
+        self.ax1 = plt.subplot(211)
+        self.ax2 = plt.subplot(212, sharex=self.ax1)
+        matplotlib.rcParams.update({'font.size': font_size})
+
+        #plot absorbance--------------------------------------------------------        
+        
+        self.ax1.plot(xi, zi, label=name)
+        
+        plt.ylabel('abs (a.u.)')
+        self.ax1.legend(loc=4)
+        self.ax1.grid(b=True)
+        
+        #now plot 2nd derivative------------------------------------------------
+        
+        #compute second derivative
+        xi2, zi2= self._smooth(np.array([xi,zi]))
+        plotData = np.array([np.delete(xi2, [0, len(xi2)-1]), np.diff(zi2, n=2)])
+        
+        #plot the data!
+        self.ax2.plot(plotData[0], plotData[1], label=name)
+        
+        self.ax2.grid(b=True)
+        plt.xlabel(r'$\bar\nu / cm^{-1}$')
+        
+    def _smooth(self, dat1, n=20, window_type='default'):
+        #data is an array of type [xlis,ylis]        
+        #smooth to prevent 2nd derivative from being noisy
+        for i in range(n, len(dat1[1])-n):
+            #change the x value to the average
+            window = dat1[1][i-n:i+n].copy()
+            dat1[1][i] = window.mean()
+        return dat1[:][:,n:-n]
+
+class mpl_1D:
+    
+    def plot(self, data, axis, channel = 0, alt_z='raw', 
+                   aspect=None, floor=None, ceiling=None):
+                       
+        xi = data.axes[axis].points
+        zi = data.zis[channel]
+        plt.plot(xi, zi)
+        plt.grid()
+
+
 class mpl_2D:
     """
         class for initializing plotting functions
@@ -462,21 +518,8 @@ class mpl_2D:
         self.p1.savefig(fname, **kwargs)
         print 'image saved as {0}'.format(fname)
         
-        
-        
-        
-        
-        
-        
-        
 class XYZ:
-    """
-        a class for manipulating 2d data objects and their axes
-            -plotting
-            -decompositions and fitting
-            -"slicing" data
-            -normal array operations (adding and subtracting, etc.)
-    """
+
     def __init__(self, x, y, z, 
                  znull=None, zmin=None, zmax=None):
         self.x = x
@@ -492,12 +535,8 @@ class XYZ:
             self.zmax = z.max()
         else: self.zmax = zmax
 
-    def zoom(self, factor, order=1):
-        import scipy.ndimage
-        self.x = scipy.ndimage.interpolation.zoom(self.x, factor, order=order)
-        self.y = scipy.ndimage.interpolation.zoom(self.y, factor, order=order)
-        self.z = scipy.ndimage.interpolation.zoom(self.z, factor, order=order)
         
+<<<<<<< HEAD
     def svd(self, verbose=False):
         """
             singular value decomposition of gridded data z

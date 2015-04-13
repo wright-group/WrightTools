@@ -75,6 +75,7 @@ class Timer:
             print 'elapsed time: {0} sec'.format(self.interval)
             
 def unit_converter(val, current_unit, destination_unit):
+<<<<<<< HEAD
     '''
     unit type | supported units                   \n
     energy    | nm, wn, eV                        \n
@@ -83,6 +84,8 @@ def unit_converter(val, current_unit, destination_unit):
     position  | nm, um, mm, cm, in                \n
     undefined |
     '''
+=======
+>>>>>>> origin/blaise-active
     #dictionary format
     #unit : to native, from native
     
