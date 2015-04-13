@@ -541,17 +541,13 @@ def from_dat(filepath, xvar, yvar = None,
     #treatment for 1D data------------------------------------------------------
     
     if not yvar:
-<<<<<<< HEAD
         
         #define columns
         xcol = datCols[xvar][0]
         
-=======
-        
         #define columns
         xcol = datCols[xvar][0]
-        
->>>>>>> origin/blaise-active
+
         #get data
         xi = dat[xcol]
         zis = []
@@ -559,7 +555,6 @@ def from_dat(filepath, xvar, yvar = None,
             zcol = datCols[key][0]
             zis.append(dat[zcol])
         zis = np.array(zis)
-<<<<<<< HEAD
 
         #create data object
         x_axis = Axis(xi, datCols[xvar][2], xvar, datCols[xvar][4])
@@ -636,86 +631,15 @@ def from_dat(filepath, xvar, yvar = None,
         y_axis = Axis(yi, datCols[yvar][2], yvar, datCols[yvar][4])
         y_axis.convert(datCols[yvar][3])
         data = Data([x_axis, y_axis], zis, zvars)
-=======
+
 
         #create data object
         x_axis = Axis(xi, datCols[xvar][2], xvar, datCols[xvar][4])
         x_axis.convert(datCols[xvar][3])
         data = Data([x_axis], zis, zvars)
 
-    #treatment for 2D data------------------------------------------------------
-
-    else:
-        
-        #define columns
-        xcol = datCols[xvar][0]
-        ycol = datCols[yvar][0]
-        
-        #grid data
-        
-        #generate regularly spaced y and x bins to use for gridding 2d data
-        #grid_factor:  multiplier factor for blowing up grid
-        #grid all input channels (ai0-ai3) to the set xi and yi attributes
-    
-        #generate lists from data
-        xlis = sorted(dat[xcol])
-        xtol = datCols[xvar][1]
-        # values are binned according to their averages now, so min and max 
-        #  are better represented
-        xs = []
-        # check to see if unique values are sufficiently unique
-        # deplete to list of values by finding points that are within 
-        #  tolerance
-        while len(xlis) > 0:
-            # find all the xi's that are like this one and group them
-            # after grouping, remove from the list
-            set_val = xlis[0]
-            xi_lis = [xi for xi in xlis if np.abs(set_val - xi) < xtol]
-            # the complement of xi_lis is what remains of xlis, then
-            xlis = [xi for xi in xlis if not np.abs(xi_lis[0] - xi) < xtol]
-            xi_lis_average = sum(xi_lis) / len(xi_lis)
-            xs.append(xi_lis_average)
-        # create uniformly spaced x and y lists for gridding
-        # infinitesimal offset used to properly interpolate on bounds; can
-        #  be a problem, especially for stepping axis
-        xi = np.linspace(min(xs)+1E-06,max(xs)-1E-06,
-                         (len(xs) + (len(xs)-1)*(grid_factor-1)))
-                              
-        ylis = sorted(dat[ycol])
-        ytol = datCols[yvar][1]
-        ys = []
-        while len(ylis) > 0:
-            set_val = ylis[0]
-            yi_lis = [yi for yi in ylis if np.abs(set_val - yi) < ytol]
-            ylis = [yi for yi in ylis if not np.abs(yi_lis[0] - yi) < ytol]
-            yi_lis_average = sum(yi_lis) / len(yi_lis)
-            ys.append(yi_lis_average)
-        yi = np.linspace(min(ys)+1E-06,max(ys)-1E-06,
-                         (len(ys) + (len(ys)-1)*(grid_factor-1)))
-    
-        x_col = dat[xcol] 
-        y_col = dat[ycol]
-        # grid each of our signal channels
-        zis = []
-        for key in zvars:
-            zcol = datCols[key][0]
-            #make fill value znull right now (instead of average value)
-            fill_value = 0. #ugly hack for now #self.znull #self.data[zcol].sum()  / len(self.data[zcol])
-            grid_i = griddata((x_col,y_col), dat[zcol], 
-                               (xi[None,:],yi[:,None]),
-                                method='cubic',fill_value=fill_value)
-            zis.append(grid_i)
-        zis = np.array(zis)
-                            
-        #create data object
-        x_axis = Axis(xi, datCols[xvar][2], xvar, datCols[xvar][4])
-        x_axis.convert(datCols[xvar][3])
-        y_axis = Axis(yi, datCols[yvar][2], yvar, datCols[yvar][4])
-        y_axis.convert(datCols[yvar][3])
-        data = Data([x_axis, y_axis], zis, zvars)
-    
     #return---------------------------------------------------------------------
-    
+
     return data
     
 def from_jasco(filepath, name = None, verbose = True):
@@ -747,7 +671,6 @@ def from_jasco(filepath, name = None, verbose = True):
     x_axis = Axis(data[0], 'nm', name = 'color')
     zis = np.array([data[1]])
     data = Data([x_axis], zis, 'JASCO')
->>>>>>> origin/blaise-active
     
     #return---------------------------------------------------------------------
     

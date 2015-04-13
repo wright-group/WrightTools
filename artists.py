@@ -535,8 +535,6 @@ class XYZ:
             self.zmax = z.max()
         else: self.zmax = zmax
 
-        
-<<<<<<< HEAD
     def svd(self, verbose=False):
         """
             singular value decomposition of gridded data z
