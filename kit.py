@@ -74,6 +74,54 @@ class Timer:
         if self.verbose:
             print 'elapsed time: {0} sec'.format(self.interval)
             
+def unit_converter(val, current_unit, destination_unit):
+    '''
+    unit type | supported units                   \n
+    energy    | nm, wn, eV                        \n
+    delay     | fs, ps, ns                        \n
+    time      | fs, ps, ns, us, ms, s, m, h, d    \n
+    position  | nm, um, mm, cm, in                \n
+    undefined |
+    '''
+    #dictionary format
+    #unit : to native, from native
+    
+    #energy units (native: nm)
+    energy = {'nm': ['x', 'x'],
+              'wn': ['1e7/x', '1e7/x'],
+              'eV': ['1240./x', 'x/1240.']} 
+         
+    #time units (native: s)
+    time = {'fs': ['x/1e15', 'x*1e15'],
+            'ps': ['x/1e12', 'x*1e12'],
+            'ns': ['x/1e9', 'x*1e9'],
+            'us': ['x/1e6', 'x*1e6'],
+            'ms': ['x/1000.', 'x*1000.'],
+            's':  ['x', 'x'],
+            'm':  ['x*60.', 'x/60.'],
+            'h':  ['x*3600.', 'x/3600.'],
+            'd':  ['x*86400.', 'x/86400.']}
+            
+    #position unints (native: mm)
+    position = {'nm': ['x/1e6', '1e6/x'],
+                'um': ['x/1000.', '1000/x.'],
+                'mm': ['x', 'x'],
+                'cm': ['10.*x', 'x/10.'],
+                'in': ['x*0.039370', '0.039370*x']}
+    
+    x = val
+    
+    for dic in [energy, time, position]:
+        if current_unit in dic.keys() and destination_unit in dic.keys():
+            native = eval(dic[current_unit][0])
+            x = native
+            out = eval(dic[destination_unit][1])
+            return out
+
+    #if all dictionaries fail
+    print 'conversion not valid: returning input'
+    return val
+
 def update_progress(progress, carriage_return = True, length = 50):
     '''
     prints a pretty progress bar to the console \n

@@ -116,7 +116,7 @@ class mpl_2D:
         else: #could not determine colorbar type
             print 'color scale used not recognized:  cannot produce colorbar'
 
-    def plot(self, data, xaxis, yaxis = None, channel = 0, alt_z='raw', 
+    def plot(self, data, xaxis, yaxis, channel = 0, alt_z='raw', 
                scantype=None, contour=False, aspect=None, pixelated=False, 
                dynamic_range=False, floor=None, ceiling=None):
         """
@@ -618,54 +618,13 @@ class XYZ:
         out[2] = np.abs(out[2])
         return out
         
-    def smooth(self, 
-               x=0,y=0, 
-               window='kaiser',
-               debug = False): #smoothes via adjacent averaging            
-        """
-            convolves the signal with a 2D window function
-            currently only equipped for kaiser window
-            'x' and 'y', both integers, are the nth nearest neighbor that get 
-                included in the window
-            Decide whether to perform xaxis smoothing or yaxis by setting the 
-                boolean true
-        """
-        # n is the seed of the odd numbers:  n is how many nearest neighbors 
-        # in each direction
-        # make sure n is integer and n < grid dimension
-        # account for interpolation using grid factor
-        nx = x
-        ny = y
-        # create the window function
-        if window == 'kaiser':
-            # beta, a real number, is a form parameter of the kaiser window
-            # beta = 5 makes this look approximately gaussian in weighting 
-            # beta = 5 similar to Hamming window, according to numpy
-            # over window (about 0 at end of window)
-            beta=5.0
-            wx = np.kaiser(2*nx+1, beta)
-            wy = np.kaiser(2*ny+1, beta)
-        # for a 2D array, y is the first index listed
-        w = np.zeros((len(wy),len(wx)))
-        for i in range(len(wy)):
-            for j in range(len(wx)):
-                w[i,j] = wy[i]*wx[j]
-        # create a padded array of zi
-        # numpy 1.7.x required for this to work
-        temp_z = np.pad(self.zi, ((ny,ny), 
-                                   (nx,nx)), 
-                                    mode='edge')
-        from scipy.signal import convolve
-        out = convolve(temp_z, w/w.sum(), mode='valid')
-        if debug:
-            plt.figure()
-            sp1 = plt.subplot(131)
-            plt.contourf(self.zi, 100)
-            plt.subplot(132, sharex=sp1, sharey=sp1)
-            plt.contourf(w,100)
-            plt.subplot(133)
-            plt.contourf(out,100)
-        self.z=out
-        # reset zmax
-        self.zmax = self.z.max()
-        self.zmin = self.z.min()
+class mpl_1D:
+    
+    def plot(self, data, axis, channel = 0, alt_z='raw', 
+                   scantype=None, contour=False, aspect=None, pixelated=False, 
+                   dynamic_range=False, floor=None, ceiling=None):
+                       
+        xi = data.axes[axis].points
+        zi = data.zis[channel]
+        plt.plot(xi, zi)
+        plt.grid()

@@ -5,6 +5,8 @@ import numpy as np
 
 from scipy.interpolate import griddata, interp1d
 
+import kit
+
 class Data:
     '''
     central object for all data types                         \n
@@ -174,10 +176,10 @@ class Data:
 
         mu_0 = m1
         s0 = np.sqrt(np.abs(m2 - mu_0**2))
+        p0 = np.array([A0, mu_0, s0, offset])
         A0 = m0 / (s0 * np.sqrt(2*np.pi))
         offset = np.zeros(m0.shape)
         
-        p0 = np.array([A0, mu_0, s0, offset])
         out = p0.copy()
         from scipy.optimize import leastsq
         for i in range(out.shape[1]):
@@ -260,26 +262,23 @@ class Data:
          return out
 
 class Axis:
-    def __init__(self, points, units, name = None, label = None):
+    
+    def __init__(self, points, input_units, name = None, label = None):
         
-        #name and label---------------------------------------------------------
         self.name = name
         if not label:
             self.label = self.name
         else:
             self.label = label
         
-        #points-----------------------------------------------------------------
-        
         self.points = points
 
-        #units------------------------------------------------------------------
-        #should have unit types in future
-        #  energy
-        #  delay
-        #  position
-
-        self.units = units
+        self.units = input_units
+        
+    def convert(self, destination_units):
+        
+        self.points = kit.unit_converter(self.points, self.units, destination_units)
+        self.units = destination_units
         
 ### data manipulation and usage methods ########################################
 
@@ -421,7 +420,7 @@ def make_tune(obj, set_var, fname=None, amp='int', center='exp_val', fit=True,
 
 ### data creation methods ######################################################
 
-def from_dat(filepath, xvar, yvar,
+def from_dat(filepath, xvar, yvar = None,
              grid_factor = 2, znull = None,
              cols = None, verbose = True):
     
@@ -434,77 +433,71 @@ def from_dat(filepath, xvar, yvar,
         print 'filepath', filepath, 'does not yield a file'
         return
     
-    #dictionaries---------------------------------------------------------------
+    #define format of dat file--------------------------------------------------
     
-    #dictionary connects column names to locations for COLORS scan
-    #first is column from color file--columns according to new column ordering
-    #second is movement tolerance (x +/- tolerance)
-    #third is the unit assigned to this variable
-    # dictionary for dat convention implemented on 2014.03.25
-    #v2_date = time.strptime('14 Mar 25', '%y %b %d')
-    #v2_time = time.mktime(v2_date)
-    v2_time = 1395723600.0
+    #dictionary format:
+    #0: is column from color file--columns according to new column ordering
+    #1: movement tolerance (x +/- tolerance)
+    #3: native unit (from colors)
+    #4: destination unit (based on choice of user)
+    
     cols_v2 = {
-        'num':  (0, 0.5, None, 'acquisition number'),
-        'w1':   (1, 5.0, 'nm', r'$\mathrm{\bar\nu_1=\bar\nu_m (cm^{-1})}$'),
-        'l1':   (1, 1.0, 'wn', r'$\lambda_1 / nm$'),
-        'w2':   (3, 5.0, 'nm', r'$\mathrm{\bar\nu_2=\bar\nu_{2^{\prime}} (cm^{-1})}$'),
-        'l2':   (3, 1.0, 'wn', r'$\lambda_2 / nm$'),
-        'w3':   (5, 5.0, 'wn', r'$\mathrm{\bar\nu_3 (cm^{-1})}$'),
-        'l3':   (5, 1.0, 'nm', r'$\mathrm{\lambda_3 (cm^{-1})}$'),
-        'wm':   (7, 1.0, 'nm', r'$\bar\nu_m / cm^{-1}$'),
-        'lm':   (7, 1.0, 'wn', r'$\lambda_m / nm$'),
-        'wa':  (8, 1.0, 'nm', r'$\bar\nu_a / cm^{-1}$'),
-        'dref': (10, 25.0, 'fs', r'$d_ref$'),
-        'd1':   (12, 3.0, 'fs', r'$\mathrm{\tau_{2^{\prime} 1} (fs)}$'),
-        #'t2p1': (12, 3.0, 'fs', r'$\mathrm{\tau_{2^{\prime} 1}(fs)}$'),
-        'd2':   (14, 3.0, 'fs', r'$\mathrm{\tau_{21} (fs)}$'),
-        #'t21':  (14, 3.0, 'fs', r'$\mathrm{\tau_{21} (fs)}$'),
-        'ai0':  (16, 0.0, 'V', 'Signal 0'),
-        'ai1':  (17, 0.0, 'V', 'Signal 1'),
-        'ai2':  (18, 0.0, 'V', 'Signal 2'),
-        'ai3':  (19, 0.0, 'V', 'Signal 3'),
-        'ai4':  (20, 0.0, 'V', 'Signal 4'),
-        'mc':   (21, 0.0, 'au', 'Array Signal')
-    }
-    #v1_date = time.strptime('12 Oct 01', '%y %b %d')
-    #v1_time = time.mktime(v1_date)
-    v1_time = 1349067600.0
+        'num':  (0, 0.5, None, None, 'acquisition number'),
+        'w1':   (1, 5.0, 'nm', 'wn', r'$\mathrm{\bar\nu_1=\bar\nu_m (cm^{-1})}$'),
+        'l1':   (1, 1.0, 'nm', 'nm', r'$\lambda_1 / nm$'),
+        'w2':   (3, 5.0, 'nm', 'wn', r'$\mathrm{\bar\nu_2=\bar\nu_{2^{\prime}} (cm^{-1})}$'),
+        'l2':   (3, 1.0, 'nm', 'nm', r'$\lambda_2 / nm$'),
+        'w3':   (5, 5.0, 'nm', 'wn', r'$\mathrm{\bar\nu_3 (cm^{-1})}$'),
+        'l3':   (5, 1.0, 'nm', 'nm', r'$\mathrm{\lambda_3 (cm^{-1})}$'),
+        'wm':   (7, 1.0, 'nm', 'wm', r'$\bar\nu_m / cm^{-1}$'),
+        'lm':   (7, 1.0, 'nm', 'nm', r'$\lambda_m / nm$'),
+        'na':   (8, 1.0, 'nm', 'nm', r'$\lambda_a / nm$'),
+        'wa':   (8, 1.0, 'nm', 'wa', r'$\bar\nu_a / cm^{-1}$'),
+        'dref': (10, 25.0, 'fs', 'fs', r'$d_ref$'),
+        'd1':   (12, 3.0, 'fs', 'fs', r'$\mathrm{\tau_{2^{\prime} 1} (fs)}$'),
+        #'t2p1': (12, 3.0, 'fs', 'fs', r'$\mathrm{\tau_{2^{\prime} 1}(fs)}$'),
+        'd2':   (14, 3.0, 'fs', 'fs', r'$\mathrm{\tau_{21} (fs)}$'),
+        #'t21':  (14, 3.0, 'fs', 'fs', r'$\mathrm{\tau_{21} (fs)}$'),
+        'ai0':  (16, 0.0, 'V', 'V', 'Signal 0'),
+        'ai1':  (17, 0.0, 'V', 'V', 'Signal 1'),
+        'ai2':  (18, 0.0, 'V', 'V', 'Signal 2'),
+        'ai3':  (19, 0.0, 'V', 'V', 'Signal 3'),
+        'ai4':  (20, 0.0, 'V', 'V', 'Signal 4'),
+        'mc':   (21, 0.0, 'au', 'au', 'Array Signal')}
+
     cols_v1 = {
-        'num':  (0, 0.5, None, 'acquisition number'),
-        'w1':   (1, 5.0, 'nm', r'$\mathrm{\bar\nu_1=\bar\nu_m (cm^{-1})}$'),
-        'l1':   (1, 1.0, 'wn', r'$\lambda_1 / nm$'),
-        'w2':   (3, 5.0, 'nm', r'$\mathrm{\bar\nu_2=\bar\nu_{2^{\prime}} (cm^{-1})}$'),
-        'l2':   (3, 1.0, 'wn', r'$\lambda_2 / nm$'),
-        'wm':   (5, 1.0, 'nm', r'$\bar\nu_m / cm^{-1}$'),
-        'lm':   (5, 1.0, 'wn', r'$\lambda_m / nm$'),
-        'd1':   (6, 3.0, 'fs', r'$\mathrm{\tau_{2^{\prime} 1} (fs)}$'),
-        't2p1': (6, 3.0, 'fs', r'$\mathrm{\tau_{2^{\prime} 1}(fs)}$'),
-        'd2':   (7, 3.0, 'fs', r'$\mathrm{\tau_{21} (fs)}$'),
-        't21':  (7, 3.0, 'fs', r'$\mathrm{\tau_{21} (fs)}$'),
-        'ai0':  (8, 0.0, 'V', 'Signal 0'),
-        'ai1':  (9, 0.0, 'V', 'Signal 1'),
-        'ai2':  (10, 0.0, 'V', 'Signal 2'),
-        'ai3':  (11, 0.0, 'V', 'Signal 3')
-    }
-    #the old column rules before Winter 2012 (when Skye changed the column assignments)
+        'num':  (0, 0.5, None, None, 'acquisition number'),
+        'w1':   (1, 5.0, 'nm', 'nm', r'$\mathrm{\bar\nu_1=\bar\nu_m (cm^{-1})}$'),
+        'l1':   (1, 1.0, 'nm', 'wn', r'$\lambda_1 / nm$'),
+        'w2':   (3, 5.0, 'nm', 'nm', r'$\mathrm{\bar\nu_2=\bar\nu_{2^{\prime}} (cm^{-1})}$'),
+        'l2':   (3, 1.0, 'nm', 'wn', r'$\lambda_2 / nm$'),
+        'wm':   (5, 1.0, 'nm', 'nm', r'$\bar\nu_m / cm^{-1}$'),
+        'lm':   (5, 1.0, 'nm', 'wn', r'$\lambda_m / nm$'),
+        'd1':   (6, 3.0, 'fs', 'fs', r'$\mathrm{\tau_{2^{\prime} 1} (fs)}$'),
+        't2p1': (6, 3.0, 'fs', 'fs', r'$\mathrm{\tau_{2^{\prime} 1}(fs)}$'),
+        'd2':   (7, 3.0, 'fs', 'fs', r'$\mathrm{\tau_{21} (fs)}$'),
+        't21':  (7, 3.0, 'fs', 'fs', r'$\mathrm{\tau_{21} (fs)}$'),
+        'ai0':  (8, 0.0, 'V', 'V', 'Signal 0'),
+        'ai1':  (9, 0.0, 'V', 'V', 'Signal 1'),
+        'ai2':  (10, 0.0, 'V', 'V', 'Signal 2'),
+        'ai3':  (11, 0.0, 'V', 'V', 'Signal 3')}
+        
     cols_v0 = {
-        'num':  (0, 0.5, None, 'acquisition number'),
-        'w1':   (1, 2.0, 'nm', r'$\mathrm{\bar\nu_1=\bar\nu_m (cm^{-1})}$'),
-        'l1':   (1, 1.0, 'wn',r'$\lambda_1 / nm$'),
-        'w2':   (3, 2.0, 'nm',r'$\mathrm{\bar\nu_2=\bar\nu_{2^{\prime}} (cm^{-1})}$'),
-        'l2':   (3, 1.0, 'wn',r'$\lambda_2 / nm$'),
-        'wm':   (5, 0.25, 'nm',r'$\bar\nu_m / cm^{-1}$'),
-        'lm':   (5, 0.25, 'wn',r'$\lambda_m / nm$'),
-        'd1':   (6, 3.0, 'fs',r'$\mathrm{\tau_{2^{\prime} 1} (fs)}$'),
-        't2p1': (6, 3.0, 'fs',r'$\mathrm{\tau_{2^{\prime} 1}(fs)}$'),
-        'd2':   (8, 3.0, 'fs',r'$\mathrm{\tau_{21} (fs)}$'),
-        't21':  (8, 3.0, 'fs',r'$\mathrm{\tau_{21} (fs)}$'),
-        'ai0':  (10, 0.0, 'V','Signal 0'),
-        'ai1':  (11, 0.0, 'V','Signal 1'),
-        'ai2':  (12, 0.0, 'V','Signal 2'),
-        'ai3':  (13, 0.0, 'V','Signal 3')
-    }
+        'num':  (0, 0.5, None, None, 'acquisition number'),
+        'w1':   (1, 2.0, 'nm', 'nm', r'$\mathrm{\bar\nu_1=\bar\nu_m (cm^{-1})}$'),
+        'l1':   (1, 1.0, 'nm', 'wn',r'$\lambda_1 / nm$'),
+        'w2':   (3, 2.0, 'nm', 'nm',r'$\mathrm{\bar\nu_2=\bar\nu_{2^{\prime}} (cm^{-1})}$'),
+        'l2':   (3, 1.0, 'nm', 'wn',r'$\lambda_2 / nm$'),
+        'wm':   (5, 0.25, 'nm', 'nm',r'$\bar\nu_m / cm^{-1}$'),
+        'lm':   (5, 0.25, 'nm', 'wn',r'$\lambda_m / nm$'),
+        'd1':   (6, 3.0, 'fs', 'fs',r'$\mathrm{\tau_{2^{\prime} 1} (fs)}$'),
+        't2p1': (6, 3.0, 'fs', 'fs',r'$\mathrm{\tau_{2^{\prime} 1}(fs)}$'),
+        'd2':   (8, 3.0, 'fs', 'fs',r'$\mathrm{\tau_{21} (fs)}$'),
+        't21':  (8, 3.0, 'fs', 'fs',r'$\mathrm{\tau_{21} (fs)}$'),
+        'ai0':  (10, 0.0, 'V', 'V','Signal 0'),
+        'ai1':  (11, 0.0, 'V', 'V','Signal 1'),
+        'ai2':  (12, 0.0, 'V', 'V','Signal 2'),
+        'ai3':  (13, 0.0, 'V', 'V','Signal 3')}
     
     zvars = collections.OrderedDict()
     zvars['ai0'] = None
@@ -520,6 +513,8 @@ def from_dat(filepath, xvar, yvar,
         datCols = cols_v0
     else:
         #guess based on when the file was made
+        v1_time = 1349067600.0
+        v2_time = 1395723600.0    
         file_date = os.path.getctime(filepath)
         if file_date > v2_time:
             cols = 'v2'
@@ -537,71 +532,100 @@ def from_dat(filepath, xvar, yvar,
     #add array to zvars if version 2 dat file
     if cols == 'v2': zvars['mc'] = None
     
-    xcol = datCols[xvar][0]
-    ycol = datCols[yvar][0]  
-
-    #grid data------------------------------------------------------------------
+    #recognize dimensionality of data-------------------------------------------
+    
+    #COMING SOON - IMPORT CODE FROM DATPLOT - Blaise
+    
+    #treatment for 1D data------------------------------------------------------
+    
+    if not yvar:
         
-    #generate regularly spaced y and x bins to use for gridding 2d data
-    #grid_factor:  multiplier factor for blowing up grid
-    #grid all input channels (ai0-ai3) to the set xi and yi attributes
+        #define columns
+        xcol = datCols[xvar][0]
+        
+        #get data
+        xi = dat[xcol]
+        zis = []
+        for key in zvars:
+            zcol = datCols[key][0]
+            zis.append(dat[zcol])
+        zis = np.array(zis)
 
+        #create data object
+        x_axis = Axis(xi, datCols[xvar][2], xvar, datCols[xvar][4])
+        x_axis.convert(datCols[xvar][3])
+        data = Data([x_axis], zis, zvars)
 
-    #generate lists from data
-    xlis = sorted(dat[xcol])
-    xtol = datCols[xvar][1]
-    # values are binned according to their averages now, so min and max 
-    #  are better represented
-    xs = []
-    # check to see if unique values are sufficiently unique
-    # deplete to list of values by finding points that are within 
-    #  tolerance
-    while len(xlis) > 0:
-        # find all the xi's that are like this one and group them
-        # after grouping, remove from the list
-        set_val = xlis[0]
-        xi_lis = [xi for xi in xlis if np.abs(set_val - xi) < xtol]
-        # the complement of xi_lis is what remains of xlis, then
-        xlis = [xi for xi in xlis if not np.abs(xi_lis[0] - xi) < xtol]
-        xi_lis_average = sum(xi_lis) / len(xi_lis)
-        xs.append(xi_lis_average)
-    # create uniformly spaced x and y lists for gridding
-    # infinitesimal offset used to properly interpolate on bounds; can
-    #  be a problem, especially for stepping axis
-    xi = np.linspace(min(xs)+1E-06,max(xs)-1E-06,
-                     (len(xs) + (len(xs)-1)*(grid_factor-1)))
-                          
-    ylis = sorted(dat[ycol])
-    ytol = datCols[yvar][1]
-    ys = []
-    while len(ylis) > 0:
-        set_val = ylis[0]
-        yi_lis = [yi for yi in ylis if np.abs(set_val - yi) < ytol]
-        ylis = [yi for yi in ylis if not np.abs(yi_lis[0] - yi) < ytol]
-        yi_lis_average = sum(yi_lis) / len(yi_lis)
-        ys.append(yi_lis_average)
-    yi = np.linspace(min(ys)+1E-06,max(ys)-1E-06,
-                     (len(ys) + (len(ys)-1)*(grid_factor-1)))
+    #treatment for 2D data------------------------------------------------------
 
-    x_col = dat[xcol] 
-    y_col = dat[ycol]
-    # grid each of our signal channels
-    zis = []
-    for key in zvars:
-        zcol = datCols[key][0]
-        #make fill value znull right now (instead of average value)
-        fill_value = 0. #ugly hack for now #self.znull #self.data[zcol].sum()  / len(self.data[zcol])
-        grid_i = griddata((x_col,y_col), dat[zcol], 
-                           (xi[None,:],yi[:,None]),
-                            method='cubic',fill_value=fill_value)
-        zis.append(grid_i)
-    zis = np.array(zis)
-                        
-    #create data object---------------------------------------------------------
-
-    x_axis = Axis(xi, datCols[xvar][2], xvar, datCols[xvar][3])
-    y_axis = Axis(yi, datCols[yvar][2], yvar, datCols[yvar][3])
-    data = Data([x_axis, y_axis], zis, zvars)
+    else:
+        
+        #define columns
+        xcol = datCols[xvar][0]
+        ycol = datCols[yvar][0]
+        
+        #grid data
+        
+        #generate regularly spaced y and x bins to use for gridding 2d data
+        #grid_factor:  multiplier factor for blowing up grid
+        #grid all input channels (ai0-ai3) to the set xi and yi attributes
+    
+        #generate lists from data
+        xlis = sorted(dat[xcol])
+        xtol = datCols[xvar][1]
+        # values are binned according to their averages now, so min and max 
+        #  are better represented
+        xs = []
+        # check to see if unique values are sufficiently unique
+        # deplete to list of values by finding points that are within 
+        #  tolerance
+        while len(xlis) > 0:
+            # find all the xi's that are like this one and group them
+            # after grouping, remove from the list
+            set_val = xlis[0]
+            xi_lis = [xi for xi in xlis if np.abs(set_val - xi) < xtol]
+            # the complement of xi_lis is what remains of xlis, then
+            xlis = [xi for xi in xlis if not np.abs(xi_lis[0] - xi) < xtol]
+            xi_lis_average = sum(xi_lis) / len(xi_lis)
+            xs.append(xi_lis_average)
+        # create uniformly spaced x and y lists for gridding
+        # infinitesimal offset used to properly interpolate on bounds; can
+        #  be a problem, especially for stepping axis
+        xi = np.linspace(min(xs)+1E-06,max(xs)-1E-06,
+                         (len(xs) + (len(xs)-1)*(grid_factor-1)))
+                              
+        ylis = sorted(dat[ycol])
+        ytol = datCols[yvar][1]
+        ys = []
+        while len(ylis) > 0:
+            set_val = ylis[0]
+            yi_lis = [yi for yi in ylis if np.abs(set_val - yi) < ytol]
+            ylis = [yi for yi in ylis if not np.abs(yi_lis[0] - yi) < ytol]
+            yi_lis_average = sum(yi_lis) / len(yi_lis)
+            ys.append(yi_lis_average)
+        yi = np.linspace(min(ys)+1E-06,max(ys)-1E-06,
+                         (len(ys) + (len(ys)-1)*(grid_factor-1)))
+    
+        x_col = dat[xcol] 
+        y_col = dat[ycol]
+        # grid each of our signal channels
+        zis = []
+        for key in zvars:
+            zcol = datCols[key][0]
+            #make fill value znull right now (instead of average value)
+            fill_value = 0. #ugly hack for now #self.znull #self.data[zcol].sum()  / len(self.data[zcol])
+            grid_i = griddata((x_col,y_col), dat[zcol], 
+                               (xi[None,:],yi[:,None]),
+                                method='cubic',fill_value=fill_value)
+            zis.append(grid_i)
+        zis = np.array(zis)
+                            
+        #create data object
+        x_axis = Axis(xi, datCols[xvar][2], xvar, datCols[xvar][4])
+        x_axis.convert(datCols[xvar][3])
+        y_axis = Axis(yi, datCols[yvar][2], yvar, datCols[yvar][4])
+        y_axis.convert(datCols[yvar][3])
+        data = Data([x_axis, y_axis], zis, zvars)
     
     #return---------------------------------------------------------------------
     
