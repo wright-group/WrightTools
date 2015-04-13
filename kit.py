@@ -75,14 +75,6 @@ class Timer:
             print 'elapsed time: {0} sec'.format(self.interval)
             
 def unit_converter(val, current_unit, destination_unit):
-    '''
-    unit type | supported units                   \n
-    energy    | nm, wn, eV                        \n
-    delay     | fs, ps, ns                        \n
-    time      | fs, ps, ns, us, ms, s, m, h, d    \n
-    position  | nm, um, mm, cm, in                \n
-    undefined |
-    '''
     #dictionary format
     #unit : to native, from native
     

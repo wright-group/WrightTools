@@ -18,10 +18,12 @@ class Data:
     contains constants - a dictionary of conjugate variables
     '''
     def __init__(self, axes, zis, zvars, constants = None, 
-                 znull=None, zmin=None, zmax=None):
+                 znull = None, zmin = None, zmax = None, 
+                 name = None):
                      
         self.axes = axes
         self.zis = zis
+        self.name = name
         
         #znull, zmin, zmax------------------------------------------------------        
         
@@ -630,3 +632,38 @@ def from_dat(filepath, xvar, yvar = None,
     #return---------------------------------------------------------------------
     
     return data
+    
+def from_jasco(filepath, name = None, verbose = True):
+    
+    #check filepath-------------------------------------------------------------
+    
+    if os.path.isfile(filepath):
+        if verbose: print 'found the file!'
+    else:
+        print 'Error: filepath does not yield a file'
+        return
+
+    #is the file suffix one that we expect?  warn if it is not!
+    filesuffix = os.path.basename(filepath).split('.')[-1]
+    if filesuffix != 'txt':
+        should_continue = raw_input('Filetype is not recognized and may not be supported.  Continue (y/n)?')
+        if should_continue == 'y':
+            pass
+        else:
+            print 'Aborting'
+            return
+            
+    #import data----------------------------------------------------------------
+    
+    #now import file as a local var--18 lines are just txt and thus discarded
+    data = np.genfromtxt(filepath, skip_header=18).T
+    
+    #construct data
+    x_axis = Axis(data[0], 'nm', name = 'color')
+    zis = np.array([data[1]])
+    data = Data([x_axis], zis, 'JASCO')
+    
+    #return---------------------------------------------------------------------
+    
+    return data
+    

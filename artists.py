@@ -8,6 +8,62 @@ from scipy.interpolate import griddata, interp1d
 import matplotlib.gridspec as grd
 matplotlib.rcParams['contour.negative_linestyle'] = 'solid'
 
+class absorbance:
+        
+    def plot(self, data, channel = 0, font_size = 12):
+        
+        #import data------------------------------------------------------------
+        
+        xi = data.axes[0].points
+        zi = data.zis[0]
+        name = data.name
+        
+        #prepare plot environment-----------------------------------------------
+    
+        self.ax1 = plt.subplot(211)
+        self.ax2 = plt.subplot(212, sharex=self.ax1)
+        matplotlib.rcParams.update({'font.size': font_size})
+
+        #plot absorbance--------------------------------------------------------        
+        
+        self.ax1.plot(xi, zi, label=name)
+        
+        plt.ylabel('abs (a.u.)')
+        self.ax1.legend(loc=4)
+        self.ax1.grid(b=True)
+        
+        #now plot 2nd derivative------------------------------------------------
+        
+        #compute second derivative
+        xi2, zi2= self._smooth(np.array([xi,zi]))
+        plotData = np.array([np.delete(xi2, [0, len(xi2)-1]), np.diff(zi2, n=2)])
+        
+        #plot the data!
+        self.ax2.plot(plotData[0], plotData[1], label=name)
+        
+        self.ax2.grid(b=True)
+        plt.xlabel(r'$\bar\nu / cm^{-1}$')
+        
+    def _smooth(self, dat1, n=20, window_type='default'):
+        #data is an array of type [xlis,ylis]        
+        #smooth to prevent 2nd derivative from being noisy
+        for i in range(n, len(dat1[1])-n):
+            #change the x value to the average
+            window = dat1[1][i-n:i+n].copy()
+            dat1[1][i] = window.mean()
+        return dat1[:][:,n:-n]
+
+class mpl_1D:
+    
+    def plot(self, data, axis, channel = 0, alt_z='raw', 
+                   aspect=None, floor=None, ceiling=None):
+                       
+        xi = data.axes[axis].points
+        zi = data.zis[channel]
+        plt.plot(xi, zi)
+        plt.grid()
+
+
 class mpl_2D:
     """
         class for initializing plotting functions
@@ -462,21 +518,8 @@ class mpl_2D:
         self.p1.savefig(fname, **kwargs)
         print 'image saved as {0}'.format(fname)
         
-        
-        
-        
-        
-        
-        
-        
 class XYZ:
-    """
-        a class for manipulating 2d data objects and their axes
-            -plotting
-            -decompositions and fitting
-            -"slicing" data
-            -normal array operations (adding and subtracting, etc.)
-    """
+
     def __init__(self, x, y, z, 
                  znull=None, zmin=None, zmax=None):
         self.x = x
@@ -492,139 +535,4 @@ class XYZ:
             self.zmax = z.max()
         else: self.zmax = zmax
 
-    def zoom(self, factor, order=1):
-        import scipy.ndimage
-        self.x = scipy.ndimage.interpolation.zoom(self.x, factor, order=order)
-        self.y = scipy.ndimage.interpolation.zoom(self.y, factor, order=order)
-        self.z = scipy.ndimage.interpolation.zoom(self.z, factor, order=order)
         
-    def svd(self, verbose=False):
-        """
-            singular value decomposition of gridded data z
-        """
-        #give feedback on top (normalized) singular values
-        U, s, V = np.linalg.svd(self.z)
-        if verbose:
-            # report significant stats on svd
-            plt.figure()
-            s_max = s.max()
-            plt.scatter(s / s_max)
-        return U, s, V
-
-    def center(self, axis=None, center=None):
-        if center == 'max':
-            print 'listing center as the point of maximum value'
-            if axis == 0 or axis in ['x', self.xvar]:
-                index = self.zi.argmax(axis=0)
-                set_var = self.xi
-                max_var = self.yi
-                out = np.zeros(self.xi.shape)
-            elif axis == 1 or axis in ['y', self.yvar]:
-                index = self.zi.argmax(axis=1)
-                set_var = self.yi
-                max_var = self.xi
-                out = np.zeros(self.yi.shape)
-            else:
-                print 'Input error:  axis not identified'
-                return
-            for i in range(len(set_var)):
-                out[i] = max_var[index[i]]
-        else:
-            # find center by average value
-            out = self.exp_value(axis=axis, moment=1)
-        return out
-                
-    def exp_value(self, axis=None, moment=1, norm=True, noise_filter=None):
-        """
-            returns the weighted average for fixed points along axis
-            specify the axis you want to have exp values for (x or y)
-            good for poor-man's 3peps, among other things
-            moment argument can be any integer; meaningful ones are:
-                0 (area, set norm False)
-                1 (average, mu) or 
-                2 (variance, or std**2)
-            noise filter, a number between 0 and 1, specifies a cutoff for 
-                values to consider in calculation.  zi values less than the 
-                cutoff (on a normalized scale) will be ignored
-            
-        """
-        if axis == 0:
-            # an output for every x var
-            z = self.z.copy()
-            int_var = self.y
-            out = np.zeros(self.x.shape)
-        elif axis == 1:
-            # an output for every y var
-            z = self.z.T.copy()
-            int_var = self.x
-            out = np.zeros(self.y.shape)
-        else:
-            print 'Input error:  axis not identified'
-            return
-        if not isinstance(moment, int):
-            print 'moment must be an integer.  recieved {0}'.format(moment)
-            return
-        for i in range(out.shape[0]):
-            # ignoring znull for this calculation, and offseting my slice by min
-            z_min = z[:,i].min()
-            #zi_max = zi[:,i].max()
-            temp_z = z[:,i] - z_min
-            if noise_filter is not None:
-                cutoff = noise_filter * (temp_z.max() - z_min)
-                temp_z[temp_z < cutoff] = 0
-            #calculate the normalized moment
-            if norm == True:
-                out[i] = np.dot(temp_z,int_var**moment) / temp_z.sum()#*np.abs(int_var[1]-int_var[0]) 
-            else:
-                out[i] = np.dot(temp_z,int_var**moment)
-        return out
-
-    def fit_gauss(self, axis=None):
-        """
-            least squares optimization of traces
-            intial params p0 guessed by moments expansion
-        """
-        if axis == 0:
-            # an output for every x var
-            z = self.z.copy()
-            var = self.y
-            #out = np.zeros((len(self.xi), 3))
-        elif axis == 1:
-            # an output for every y var
-            z = self.z.T.copy()
-            var = self.x
-            #out = np.zeros((len(self.yi), 3))
-
-        # organize the list of initial params by calculating moments
-        m0 = self.exp_value(axis=axis, moment=0, norm=False)
-        m1 = self.exp_value(axis=axis, moment=1, noise_filter=0.1)
-        m2 = self.exp_value(axis=axis, moment=2, noise_filter=0.1)        
-
-        mu_0 = m1
-        s0 = np.sqrt(np.abs(m2 - mu_0**2))
-        A0 = m0 / (s0 * np.sqrt(2*np.pi))
-        offset = np.zeros(m0.shape)
-        
-        p0 = np.array([A0, mu_0, s0, offset])
-        out = p0.copy()
-        from scipy.optimize import leastsq
-        for i in range(out.shape[1]):
-            #print leastsq(gauss_residuals, p0[:,i], args=(zi[:,i], var))
-            try:
-                out[:,i] = leastsq(gauss_residuals, p0[:,i], args=(z[:,i]-self.znull, var))[0]
-            except:
-                print 'least squares failed on {0}:  initial guesses will be used instead'.format(i)
-                out[:,i] = p0[:,i]
-        out[2] = np.abs(out[2])
-        return out
-        
-class mpl_1D:
-    
-    def plot(self, data, axis, channel = 0, alt_z='raw', 
-                   scantype=None, contour=False, aspect=None, pixelated=False, 
-                   dynamic_range=False, floor=None, ceiling=None):
-                       
-        xi = data.axes[axis].points
-        zi = data.zis[channel]
-        plt.plot(xi, zi)
-        plt.grid()
