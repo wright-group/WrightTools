@@ -1,4 +1,5 @@
 import os
+import copy
 import collections
 
 import numpy as np
@@ -15,7 +16,8 @@ class Data:
     contains axes - a list of axes objects and zis - an array of data gridded to 
     those axes
     
-    contains constants - a dictionary of conjugate variables
+    contains constants - a dictionary of conjugate variables. example: \n
+    w1: [1300., 'nm', 'energy', 'name']
     '''
     def __init__(self, axes, zis, zvars, constants = None, 
                  znull = None, zmin = None, zmax = None, 
@@ -24,6 +26,7 @@ class Data:
         self.axes = axes
         self.zis = zis
         self.name = name
+        self.constants = constants
         
         #znull, zmin, zmax------------------------------------------------------        
         
@@ -44,8 +47,7 @@ class Data:
             
     def chop(self, xaxis, yaxis = None, channel = 0):
         '''
-        take the data and return it in a 1D or 2D format               \n
-        returns an xyz object, appropriate for passing to plot methods \n
+        #data.chop('w1', 'w2', {'d2': [0, 'fs']})
         '''
         
         #do i have an x and y axis, or just x?----------------------------------
@@ -67,6 +69,10 @@ class Data:
         #return-----------------------------------------------------------------
         
         return axes, zi
+        
+    def copy(self):
+        
+        return copy.deepcopy(self)
 
     def zoom(self, factor, order=1):
         import scipy.ndimage
