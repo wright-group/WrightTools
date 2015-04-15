@@ -19,7 +19,7 @@ class Data:
     contains constants - a dictionary of conjugate variables. example: \n
     w1: [1300., 'nm', 'energy', 'name']
     '''
-    def __init__(self, axes, zis, zvars, constants = None, 
+    def __init__(self, axes, zis, zvars, constants = {}, 
                  znull = None, zmin = None, zmax = None, 
                  name = None):
                      
@@ -45,30 +45,71 @@ class Data:
         else:
             self.zmax = zmax
             
-    def chop(self, xaxis, yaxis = None, channel = 0):
+    def chop(self, *args):
         '''
         #data.chop('w1', 'w2', {'d2': [0, 'fs']})
         '''
         
-        #do i have an x and y axis, or just x?----------------------------------
+        #organize arguments recieved--------------------------------------------
+
+        axes_args = []
+        chopped_constants = {}
         
-        xaxis = int(xaxis)
-        if yaxis is not None:
-            yaxis = int(yaxis)
-            plot_dim = 2
-            var_list = [xaxis, yaxis]
-        else:
-            plot_dim = 1
-            var_list = [xaxis]
+        for arg in args:
+            if type(arg) == str:
+                axes_args.append(arg)
+            elif type(arg) == dict:
+                chopped_constants = arg
+        
+        #prepare for chop-------------------------------------------------------
+        
+        #re-order array: [all_chopped_constants, channels, all_chopped_axes]
+        
+        transpose_order = []
+        constant_indicies = []
+        
+        #handle constants first
+        constants = self.constants.copy()
+        for dim in chopped_constants.keys():
+            idx = [idx for idx in range(len(self.axes)) if self.axes[idx].name == dim][0]
+            transpose_order.append(idx + 1)
+            #get index of nearest value
+            val = chopped_constants[dim][0]
+            val = kit.unit_converter(val, chopped_constants[dim][1], self.axes[idx].units)
+            c_idx = np.argmin(abs(self.axes[idx].points - val))
+            constant_indicies.append(c_idx)
+            constants[dim] = self.axes[idx].points[c_idx] #add to constants dictionary
+
+        #now one for the channels
+        transpose_order.append(0)
+    
+        #now handle axes
+        axes_chopped = []
+        for dim in axes_args:
+            idx = [idx for idx in range(len(self.axes)) if self.axes[idx].name == dim][0]
+            transpose_order.append(idx + 1)
+            axes_chopped.append(self.axes[idx])
             
+        #ensure that everything is kosher
+        if len(transpose_order) == len(self.zis.shape):
+            pass
+        else:
+            print 'chop failed: not enough dimensions specified'
+            return
+        if len(transpose_order) == len(set(transpose_order)):
+            pass
+        else:
+            print 'chop failed: same dimension used twice'
+            return
+
         #chop-------------------------------------------------------------------
         
-        axes = [self.axes[xaxis], self.axes[yaxis]]
-        zi = self.zis[channel]
+        zis_chopped = self.zis.transpose(*transpose_order)
+        for idx in constant_indicies: zis_chopped[idx]
         
         #return-----------------------------------------------------------------
-        
-        return axes, zi
+
+        return axes_chopped, zis_chopped, constants
         
     def copy(self):
         
@@ -674,7 +715,7 @@ def from_jasco(filepath, name = None, verbose = True):
     data = np.genfromtxt(filepath, skip_header=18).T
     
     #construct data
-    x_axis = Axis(data[0], 'nm', name = 'color')
+    x_axis = Axis(data[0], 'nm', name = 'wm')
     zis = np.array([data[1]])
     data = Data([x_axis], zis, 'JASCO')
     
