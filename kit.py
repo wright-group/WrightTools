@@ -1,6 +1,8 @@
 '''
 a collection of small, general purpose objects and methods
 '''
+
+### files ######################################################################
  
 def filename_parse(fstr):
     """
@@ -50,7 +52,33 @@ def find_name(fname, suffix):
         except IOError:
             # file doesn't exist and is safe to write to this path
             good_name = True
-    return fname
+    return
+
+def glob_handler(extension, folder = None, identifier = None):
+    '''
+    returns a list of all files matching specified inputs \n
+    if no folder is specified, looks in chdir
+    '''
+    
+    import glob
+
+    filepaths = []
+    
+    if folder:
+        glob_str = folder + '\\' + '*' + extension + '*'
+    else:
+        glob_str = '*' + extension + '*'
+
+    for filepath in glob.glob(glob_str):
+        if identifier:
+            if identifier in filepath:
+                filepaths.append(filepath)
+        else:
+            filepaths.append(filepath)
+
+    return filepaths
+    
+### fitting ####################################################################
     
 def gauss_residuals(p, y, x):
     """
@@ -64,47 +92,44 @@ def gauss_residuals(p, y, x):
     err = y-A*np.exp(-(x-mu)**2 / (2*np.abs(sigma)**2)) - offset
     return err    
     
-class Timer:
-    def __enter__(self, progress=None, verbose=True):
-        self.verbose = verbose        
-        self.start = clock()
-    def __exit__(self, type, value, traceback):
-        self.end = clock()
-        self.interval = self.end - self.start
-        if self.verbose:
-            print 'elapsed time: {0} sec'.format(self.interval)
+### units ######################################################################
+         
+#units are stored in dictionaries of like kind. format:
+#    unit : to native, from native
+         
+#energy units (native: nm)
+energy = {'kind': 'energy',
+          'nm': ['x', 'x'],
+          'wn': ['1e7/x', '1e7/x'],
+          'eV': ['1240./x', 'x/1240.']} 
+     
+#time units (native: s)
+time = {'kind': 'time',
+        'fs': ['x/1e15', 'x*1e15'],
+        'ps': ['x/1e12', 'x*1e12'],
+        'ns': ['x/1e9', 'x*1e9'],
+        'us': ['x/1e6', 'x*1e6'],
+        'ms': ['x/1000.', 'x*1000.'],
+        's':  ['x', 'x'],
+        'm':  ['x*60.', 'x/60.'],
+        'h':  ['x*3600.', 'x/3600.'],
+        'd':  ['x*86400.', 'x/86400.']}
+        
+#position units (native: mm)
+position = {'kind': 'position',
+            'nm': ['x/1e6', '1e6/x'],
+            'um': ['x/1000.', '1000/x.'],
+            'mm': ['x', 'x'],
+            'cm': ['10.*x', 'x/10.'],
+            'in': ['x*0.039370', '0.039370*x']}      
+       
+unit_dicts = [energy, time, position] 
             
 def unit_converter(val, current_unit, destination_unit):
 
-    #dictionary format
-    #unit : to native, from native
-    
-    #energy units (native: nm)
-    energy = {'nm': ['x', 'x'],
-              'wn': ['1e7/x', '1e7/x'],
-              'eV': ['1240./x', 'x/1240.']} 
-         
-    #time units (native: s)
-    time = {'fs': ['x/1e15', 'x*1e15'],
-            'ps': ['x/1e12', 'x*1e12'],
-            'ns': ['x/1e9', 'x*1e9'],
-            'us': ['x/1e6', 'x*1e6'],
-            'ms': ['x/1000.', 'x*1000.'],
-            's':  ['x', 'x'],
-            'm':  ['x*60.', 'x/60.'],
-            'h':  ['x*3600.', 'x/3600.'],
-            'd':  ['x*86400.', 'x/86400.']}
-            
-    #position unints (native: mm)
-    position = {'nm': ['x/1e6', '1e6/x'],
-                'um': ['x/1000.', '1000/x.'],
-                'mm': ['x', 'x'],
-                'cm': ['10.*x', 'x/10.'],
-                'in': ['x*0.039370', '0.039370*x']}
-    
     x = val
     
-    for dic in [energy, time, position]:
+    for dic in unit_dicts:
         if current_unit in dic.keys() and destination_unit in dic.keys():
             native = eval(dic[current_unit][0])
             x = native
@@ -114,6 +139,8 @@ def unit_converter(val, current_unit, destination_unit):
     #if all dictionaries fail
     print 'conversion not valid: returning input'
     return val
+    
+### uncategorized ##############################################################
 
 def update_progress(progress, carriage_return = True, length = 50):
     '''
@@ -133,3 +160,13 @@ def update_progress(progress, carriage_return = True, length = 50):
     if progress == 100:
         progress_bar[-2:] = '\n'
     print progress_bar
+    
+class Timer:
+    def __enter__(self, progress=None, verbose=True):
+        self.verbose = verbose        
+        self.start = clock()
+    def __exit__(self, type, value, traceback):
+        self.end = clock()
+        self.interval = self.end - self.start
+        if self.verbose:
+            print 'elapsed time: {0} sec'.format(self.interval)

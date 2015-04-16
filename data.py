@@ -1,34 +1,76 @@
 import os
 import copy
+import time
 import collections
+
+import pickle
 
 import numpy as np
 
 from scipy.interpolate import griddata, interp1d
 
+import matplotlib
+import matplotlib.pyplot as plt
+
 import kit
 
+### data class #################################################################
+
+class Axis:
+    
+    def __init__(self, points, input_units, name = None, label = None):
+        
+        self.name = name
+        if not label:
+            self.label = self.name
+        else:
+            self.label = label
+        
+        self.points = points
+
+        self.units = input_units
+        
+        self.units_kind = None
+        for dic in kit.unit_dicts:
+            if self.units in dic.keys():
+                self.units_kind = dic['kind']
+        
+    def convert(self, destination_units):
+        
+        self.points = kit.unit_converter(self.points, self.units, destination_units)
+        self.units = destination_units
+
 class Data:
-    '''
-    central object for all data types                         \n
-    create data objects by calling the methods of this script
-    
-    contains axes - a list of axes objects and zis - an array of data gridded to 
-    those axes
-    
-    contains constants - a dictionary of conjugate variables. example: \n
-    w1: [1300., 'nm', 'energy', 'name']
-    '''
+
     def __init__(self, axes, zis, zvars, constants = {}, 
                  znull = None, zmin = None, zmax = None, 
                  name = None):
+        '''
+        central object for all data types                              \n
+        create data objects by calling the methods of this script
+        
+        contains axes - a list of axes objects and zis - an array 
+        of data gridded to those axes (in order)
+        
+        contains constants - a dictionary of conjugate variables. example: \n
+        w1: [1300., 'nm', 'energy', 'label']
+        '''
+        
+        #axes-------------------------------------------------------------------
+        
+        #check that no two names are the same
+        self.axis_names = []
+        for axis in axes:
+            self.axis_names.append(axis.name)
+        if not len(self.axis_names) == len(set(self.axis_names)):
+            print 'init failed: each axis must have a unique name'
+            return
                      
         self.axes = axes
-        self.zis = zis
-        self.name = name
-        self.constants = constants
+        for axis in self.axes:
+            setattr(self, axis.name, axis)
         
-        #znull, zmin, zmax------------------------------------------------------        
+        #data-------------------------------------------------------------------        
         
         if not znull:            
             self.znull = zis.min()
@@ -45,9 +87,17 @@ class Data:
         else:
             self.zmax = zmax
             
+        #other------------------------------------------------------------------
+        
+        self.zis = zis
+        self.name = name
+        self.constants = constants        
+        
+            
     def chop(self, *args):
         '''
-        #data.chop('w1', 'w2', {'d2': [0, 'fs']})
+        obtain a subset of the contained data   \n
+        all axes must be accounted for          \n
         '''
         
         #organize arguments recieved--------------------------------------------
@@ -78,7 +128,9 @@ class Data:
             val = kit.unit_converter(val, chopped_constants[dim][1], self.axes[idx].units)
             c_idx = np.argmin(abs(self.axes[idx].points - val))
             constant_indicies.append(c_idx)
-            constants[dim] = self.axes[idx].points[c_idx] #add to constants dictionary
+            constants[dim] = [self.axes[idx].points[c_idx], #add to constants dictionary
+                              self.axes[idx].units, self.axes[idx].units_kind,
+                              self.axes[idx].label] 
 
         #now one for the channels
         transpose_order.append(0)
@@ -104,8 +156,9 @@ class Data:
 
         #chop-------------------------------------------------------------------
         
-        zis_chopped = self.zis.transpose(*transpose_order)
-        for idx in constant_indicies: zis_chopped[idx]
+        zis_chopped = self.zis.transpose(transpose_order)
+        for idx in constant_indicies: 
+            zis_chopped = zis_chopped[idx]
         
         #return-----------------------------------------------------------------
 
@@ -116,15 +169,18 @@ class Data:
         return copy.deepcopy(self)
 
     def zoom(self, factor, order=1):
+        '''
+        placeholder for future functionality
+        '''
         import scipy.ndimage
         self.x = scipy.ndimage.interpolation.zoom(self.x, factor, order=order)
         self.y = scipy.ndimage.interpolation.zoom(self.y, factor, order=order)
         self.z = scipy.ndimage.interpolation.zoom(self.z, factor, order=order)
         
     def svd(self, verbose=False):
-        """
-            singular value decomposition of gridded data z
-        """
+        '''
+        placeholder for future functionality
+        '''
         #give feedback on top (normalized) singular values
         U, s, V = np.linalg.svd(self.z)
         if verbose:
@@ -135,6 +191,9 @@ class Data:
         return U, s, V
 
     def center(self, axis=None, center=None):
+        '''
+        placeholder for future functionality
+        '''
         if center == 'max':
             print 'listing center as the point of maximum value'
             if axis == 0 or axis in ['x', self.xvar]:
@@ -158,19 +217,9 @@ class Data:
         return out
                 
     def exp_value(self, axis=None, moment=1, norm=True, noise_filter=None):
-        """
-            returns the weighted average for fixed points along axis
-            specify the axis you want to have exp values for (x or y)
-            good for poor-man's 3peps, among other things
-            moment argument can be any integer; meaningful ones are:
-                0 (area, set norm False)
-                1 (average, mu) or 
-                2 (variance, or std**2)
-            noise filter, a number between 0 and 1, specifies a cutoff for 
-                values to consider in calculation.  zi values less than the 
-                cutoff (on a normalized scale) will be ignored
-            
-        """
+        '''
+        placeholder for future functionality
+        '''
         if axis == 0:
             # an output for every x var
             z = self.z.copy()
@@ -203,10 +252,10 @@ class Data:
         return out
 
     def fit_gauss(self, axis=None):
-        """
-            least squares optimization of traces
-            intial params p0 guessed by moments expansion
-        """
+        '''
+        placeholder for future functionality
+        '''
+        
         if axis == 0:
             # an output for every x var
             z = self.z.copy()
@@ -245,14 +294,9 @@ class Data:
                x=0,y=0, 
                window='kaiser',
                debug = False): #smoothes via adjacent averaging            
-        """
-            convolves the signal with a 2D window function
-            currently only equipped for kaiser window
-            'x' and 'y', both integers, are the nth nearest neighbor that get 
-                included in the window
-            Decide whether to perform xaxis smoothing or yaxis by setting the 
-                boolean true
-        """
+        '''
+        placeholder for future functionality
+        '''
         # n is the seed of the odd numbers:  n is how many nearest neighbors 
         # in each direction
         # make sure n is integer and n < grid dimension
@@ -294,40 +338,43 @@ class Data:
         self.zmin = self.z.min()
 
     def intaxis(self, int_axis, filename=None):
-         if int_axis == 0: #sum over all x values at fixed y
+        '''
+        placeholder for future functionality
+        '''
+        if int_axis == 0: #sum over all x values at fixed y
              out = np.zeros((len(self.y),2))
              for y in range(len(self.y)):
                  out[y][0] = self.y[y]
                  out[y][1] = self.z[y].sum() -  self.znull * len(self.x)
-
-         elif int_axis == 1: #sum over all y values at fixed x
+        
+        elif int_axis == 1: #sum over all y values at fixed x
              out = np.zeros((len(self.x),2))
              for x in range(len(self.x)):
                  out[x][0] = self.x[x]
                  for y in range(len(self.y)):
                      out[x][1] += self.z[y][x] - self.znull
-         else:
-             print 'specified axis is not recognized'
-         return out
-
-class Axis:
-    
-    def __init__(self, points, input_units, name = None, label = None):
-        
-        self.name = name
-        if not label:
-            self.label = self.name
         else:
-            self.label = label
+             print 'specified axis is not recognized'
+        return out
         
-        self.points = points
-
-        self.units = input_units
+    def save(self, filepath = None, verbose = True):
+        '''
+        pickle the data object
+        '''
         
-    def convert(self, destination_units):
+        if not filepath:
+            chdir = os.getcwd()
+            timestamp = time.strftime('%Y.%m.%d %H_%M_%S')
+            filepath = os.path.join(chdir, timestamp + ' data.p')
+            
+        pickle.dump(self, open(filepath, 'wb'))
         
-        self.points = kit.unit_converter(self.points, self.units, destination_units)
-        self.units = destination_units
+        if verbose:
+            print 'data saved at', filepath
+        
+        return filepath
+        
+        
         
 ### data manipulation and usage methods ########################################
 
@@ -469,18 +516,22 @@ def make_tune(obj, set_var, fname=None, amp='int', center='exp_val', fit=True,
 
 ### data creation methods ######################################################
 
-def from_dat(filepath, xvar, yvar = None,
-             grid_factor = 2, znull = None,
-             cols = None, verbose = True):
+def from_COLORS(filepaths, xvar, yvar = None, zvar = None,
+                grid_factor = 2, znull = None,
+                cols = None, verbose = True):
+    '''
+    here zvar corresponds to the variable scanned over many .dat files...
+    '''
     
-    #load raw data from filepath------------------------------------------------
+    #do we have a list of files or just one file?-------------------------------
     
-    if os.path.isfile(filepath):
-        dat = np.genfromtxt(filepath).T
-        if verbose: print 'data loaded:', dat.shape
+    if type(filepaths) == list:
+        movie = True
+        file_example = filepaths[0]
     else:
-        print 'filepath', filepath, 'does not yield a file'
-        return
+        movie = False
+        file_example = filepaths
+        filepaths = [filepaths]
     
     #define format of dat file--------------------------------------------------
     
@@ -564,7 +615,7 @@ def from_dat(filepath, xvar, yvar = None,
         #guess based on when the file was made
         v1_time = 1349067600.0
         v2_time = 1395723600.0    
-        file_date = os.path.getctime(filepath)
+        file_date = os.path.getctime(file_example)
         if file_date > v2_time:
             cols = 'v2'
             datCols = cols_v2
@@ -580,113 +631,160 @@ def from_dat(filepath, xvar, yvar = None,
     
     #add array to zvars if version 2 dat file
     if cols == 'v2': zvars['mc'] = None
-    
+        
     #recognize dimensionality of data-------------------------------------------
     
     #COMING SOON - IMPORT CODE FROM DATPLOT - Blaise
     
-    #treatment for 1D data------------------------------------------------------
+    #load data from all files---------------------------------------------------
     
-    if not yvar:
+    data_objs = []
+    zi = []
+    for filepath in filepaths:
+
+        #load raw data from filepath--------------------------------------------
         
-        #define columns
-        xcol = datCols[xvar][0]
+        if os.path.isfile(filepath):
+            dat = np.genfromtxt(filepath).T
+            if verbose: print 'data loaded:', dat.shape
+        else:
+            print 'filepath', filepath, 'does not yield a file'
+            return
+            
+        #get zvar value if appropriate------------------------------------------
         
-        #define columns
-        xcol = datCols[xvar][0]
+        if zvar:
+            zcol = datCols[zvar][0]
+            zi.append(dat[zcol][0])
+        
+        #treatment for 1D data--------------------------------------------------
+        
+        if not yvar:
+            
+            #define columns
+            xcol = datCols[xvar][0]
+            
+            #define columns
+            xcol = datCols[xvar][0]
+    
+            #get data
+            xi = dat[xcol]
+            zis = []
+            for key in zvars:
+                zcol = datCols[key][0]
+                zis.append(dat[zcol])
+            zis = np.array(zis)
+    
+            #create data object
+            x_axis = Axis(xi, datCols[xvar][2], xvar, datCols[xvar][4])
+            x_axis.convert(datCols[xvar][3])
+            data_objs.append(Data([x_axis], zis, zvars))
+    
+        #treatment for 2D data--------------------------------------------------
+    
+        else:
+            
+            #define columns
+            xcol = datCols[xvar][0]
+            ycol = datCols[yvar][0]
+            
+            #grid data
+            
+            #generate regularly spaced y and x bins to use for gridding 2d data
+            #grid_factor:  multiplier factor for blowing up grid
+            #grid all input channels (ai0-ai3) to the set xi and yi attributes
+        
+            #generate lists from data
+            xlis = sorted(dat[xcol])
+            xtol = datCols[xvar][1]
+            # values are binned according to their averages now, so min and max 
+            #  are better represented
+            xs = []
+            # check to see if unique values are sufficiently unique
+            # deplete to list of values by finding points that are within 
+            #  tolerance
+            while len(xlis) > 0:
+                # find all the xi's that are like this one and group them
+                # after grouping, remove from the list
+                set_val = xlis[0]
+                xi_lis = [xi for xi in xlis if np.abs(set_val - xi) < xtol]
+                # the complement of xi_lis is what remains of xlis, then
+                xlis = [xi for xi in xlis if not np.abs(xi_lis[0] - xi) < xtol]
+                xi_lis_average = sum(xi_lis) / len(xi_lis)
+                xs.append(xi_lis_average)
+            # create uniformly spaced x and y lists for gridding
+            # infinitesimal offset used to properly interpolate on bounds; can
+            #  be a problem, especially for stepping axis
+            xi = np.linspace(min(xs)+1E-06,max(xs)-1E-06,
+                             (len(xs) + (len(xs)-1)*(grid_factor-1)))
+                                  
+            ylis = sorted(dat[ycol])
+            ytol = datCols[yvar][1]
+            ys = []
+            while len(ylis) > 0:
+                set_val = ylis[0]
+                yi_lis = [yi for yi in ylis if np.abs(set_val - yi) < ytol]
+                ylis = [yi for yi in ylis if not np.abs(yi_lis[0] - yi) < ytol]
+                yi_lis_average = sum(yi_lis) / len(yi_lis)
+                ys.append(yi_lis_average)
+            yi = np.linspace(min(ys)+1E-06,max(ys)-1E-06,
+                             (len(ys) + (len(ys)-1)*(grid_factor-1)))
+        
+            x_col = dat[xcol] 
+            y_col = dat[ycol]
+            # grid each of our signal channels
+            zis = []
+            for key in zvars:
+                zcol = datCols[key][0]
+                #make fill value znull right now (instead of average value)
+                fill_value = 0. #ugly hack for now #self.znull #self.data[zcol].sum()  / len(self.data[zcol])
+                grid_i = griddata((x_col,y_col), dat[zcol], 
+                                   (xi[None,:],yi[:,None]),
+                                    method='cubic',fill_value=fill_value)
+                zis.append(grid_i)
+            zis = np.array(zis)
+                                
+            #create data object
+            x_axis = Axis(xi, datCols[xvar][2], xvar, datCols[xvar][4])
+            x_axis.convert(datCols[xvar][3])
+            y_axis = Axis(yi, datCols[yvar][2], yvar, datCols[yvar][4])
+            y_axis.convert(datCols[yvar][3])
+            data = Data([x_axis, y_axis], zis, zvars)
+    
+            #create data object
+            x_axis = Axis(xi, datCols[xvar][2], xvar, datCols[xvar][4])
+            x_axis.convert(datCols[xvar][3])
+            y_axis = Axis(yi, datCols[yvar][2], yvar, datCols[yvar][4])
+            y_axis.convert(datCols[yvar][3])
+            data_objs.append(Data([y_axis, x_axis], zis, zvars))
 
-        #get data
-        xi = dat[xcol]
-        zis = []
-        for key in zvars:
-            zcol = datCols[key][0]
-            zis.append(dat[zcol])
-        zis = np.array(zis)
+    #collapse data objects into one object--------------------------------------
 
-        #create data object
-        x_axis = Axis(xi, datCols[xvar][2], xvar, datCols[xvar][4])
-        x_axis.convert(datCols[xvar][3])
-        data = Data([x_axis], zis, zvars)
-
-    #treatment for 2D data------------------------------------------------------
-
+    if not movie:
+        data = data_objs[0]
     else:
-        
-        #define columns
-        xcol = datCols[xvar][0]
-        ycol = datCols[yvar][0]
-        
-        #grid data
-        
-        #generate regularly spaced y and x bins to use for gridding 2d data
-        #grid_factor:  multiplier factor for blowing up grid
-        #grid all input channels (ai0-ai3) to the set xi and yi attributes
-    
-        #generate lists from data
-        xlis = sorted(dat[xcol])
-        xtol = datCols[xvar][1]
-        # values are binned according to their averages now, so min and max 
-        #  are better represented
-        xs = []
-        # check to see if unique values are sufficiently unique
-        # deplete to list of values by finding points that are within 
-        #  tolerance
-        while len(xlis) > 0:
-            # find all the xi's that are like this one and group them
-            # after grouping, remove from the list
-            set_val = xlis[0]
-            xi_lis = [xi for xi in xlis if np.abs(set_val - xi) < xtol]
-            # the complement of xi_lis is what remains of xlis, then
-            xlis = [xi for xi in xlis if not np.abs(xi_lis[0] - xi) < xtol]
-            xi_lis_average = sum(xi_lis) / len(xi_lis)
-            xs.append(xi_lis_average)
-        # create uniformly spaced x and y lists for gridding
-        # infinitesimal offset used to properly interpolate on bounds; can
-        #  be a problem, especially for stepping axis
-        xi = np.linspace(min(xs)+1E-06,max(xs)-1E-06,
-                         (len(xs) + (len(xs)-1)*(grid_factor-1)))
-                              
-        ylis = sorted(dat[ycol])
-        ytol = datCols[yvar][1]
-        ys = []
-        while len(ylis) > 0:
-            set_val = ylis[0]
-            yi_lis = [yi for yi in ylis if np.abs(set_val - yi) < ytol]
-            ylis = [yi for yi in ylis if not np.abs(yi_lis[0] - yi) < ytol]
-            yi_lis_average = sum(yi_lis) / len(yi_lis)
-            ys.append(yi_lis_average)
-        yi = np.linspace(min(ys)+1E-06,max(ys)-1E-06,
-                         (len(ys) + (len(ys)-1)*(grid_factor-1)))
-    
-        x_col = dat[xcol] 
-        y_col = dat[ycol]
-        # grid each of our signal channels
+        x_axis = data_objs[0].axes[1]
+        y_axis = data_objs[0].axes[0]
+        z_axis = Axis(np.array(zi), datCols[zvar][2], zvar, datCols[zvar][4])
+        z_axis.convert(datCols[zvar][3])
         zis = []
-        for key in zvars:
-            zcol = datCols[key][0]
-            #make fill value znull right now (instead of average value)
-            fill_value = 0. #ugly hack for now #self.znull #self.data[zcol].sum()  / len(self.data[zcol])
-            grid_i = griddata((x_col,y_col), dat[zcol], 
-                               (xi[None,:],yi[:,None]),
-                                method='cubic',fill_value=fill_value)
-            zis.append(grid_i)
+        for data_obj in data_objs:
+            zis.append(data_obj.zis)
         zis = np.array(zis)
-                            
-        #create data object
-        x_axis = Axis(xi, datCols[xvar][2], xvar, datCols[xvar][4])
-        x_axis.convert(datCols[xvar][3])
-        y_axis = Axis(yi, datCols[yvar][2], yvar, datCols[yvar][4])
-        y_axis.convert(datCols[yvar][3])
-        data = Data([x_axis, y_axis], zis, zvars)
-
-
-        #create data object
-        x_axis = Axis(xi, datCols[xvar][2], xvar, datCols[xvar][4])
-        x_axis.convert(datCols[xvar][3])
-        data = Data([x_axis], zis, zvars)
-
+        zis = zis.transpose(1, 0, 2, 3) #channel, zi, yi, xi
+        data = Data([z_axis, y_axis, x_axis], zis, zvars)
+            
+    #add extra stuff to data object---------------------------------------------
+            
+    #constants
+    #'from' string
+    
     #return---------------------------------------------------------------------
-
+    
+    if verbose:
+        print 'axis_names:', data.axis_names
+        print'zis_shape:', data.zis.shape
+        
     return data
     
 def from_jasco(filepath, name = None, verbose = True):
@@ -723,3 +821,6 @@ def from_jasco(filepath, name = None, verbose = True):
     
     return data
     
+def from_pickle(filepath):
+    
+    return pickle.load(open(filepath, 'rb'))
