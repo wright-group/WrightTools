@@ -54,6 +54,12 @@ def find_name(fname, suffix):
             good_name = True
     return
 
+def get_timestamp():
+    
+    import time
+    
+    return time.strftime('%Y.%m.%d %H_%M_%S')
+
 def glob_handler(extension, folder = None, identifier = None):
     '''
     returns a list of all files matching specified inputs \n

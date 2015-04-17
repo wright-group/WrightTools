@@ -94,7 +94,7 @@ class Data:
         self.constants = constants        
         
             
-    def chop(self, *args):
+    def chop(self, *args, **kwargs):
         '''
         obtain a subset of the contained data   \n
         all axes must be accounted for          \n
@@ -110,59 +110,92 @@ class Data:
                 axes_args.append(arg)
             elif type(arg) == dict:
                 chopped_constants = arg
-        
-        #prepare for chop-------------------------------------------------------
-        
-        #re-order array: [all_chopped_constants, channels, all_chopped_axes]
-        
-        transpose_order = []
-        constant_indicies = []
-        
-        #handle constants first
-        constants = self.constants.copy()
-        for dim in chopped_constants.keys():
-            idx = [idx for idx in range(len(self.axes)) if self.axes[idx].name == dim][0]
-            transpose_order.append(idx + 1)
-            #get index of nearest value
-            val = chopped_constants[dim][0]
-            val = kit.unit_converter(val, chopped_constants[dim][1], self.axes[idx].units)
-            c_idx = np.argmin(abs(self.axes[idx].points - val))
-            constant_indicies.append(c_idx)
-            constants[dim] = [self.axes[idx].points[c_idx], #add to constants dictionary
-                              self.axes[idx].units, self.axes[idx].units_kind,
-                              self.axes[idx].label] 
-
-        #now one for the channels
-        transpose_order.append(0)
-    
-        #now handle axes
-        axes_chopped = []
-        for dim in axes_args:
-            idx = [idx for idx in range(len(self.axes)) if self.axes[idx].name == dim][0]
-            transpose_order.append(idx + 1)
-            axes_chopped.append(self.axes[idx])
+                
+        verbose = True
+        for name, value in kwargs.items():
+            if name == 'verbose':
+                verbose = value 
             
-        #ensure that everything is kosher
-        if len(transpose_order) == len(self.zis.shape):
-            pass
-        else:
-            print 'chop failed: not enough dimensions specified'
-            return
-        if len(transpose_order) == len(set(transpose_order)):
-            pass
-        else:
-            print 'chop failed: same dimension used twice'
-            return
+                
+        #iterate!---------------------------------------------------------------
+                
+        #find iterated dimensions
+        iterated_dimensions = []
+        iterated_shape = [1]
+        for name in self.axis_names:
+            if not name in axes_args and not name in chopped_constants.keys():
+                iterated_dimensions.append(name)
+                length = len(getattr(self, name).points)
+                iterated_shape.append(length)
+    
+        chopped_constants_everywhere = chopped_constants
+        out = []
+        for index in np.ndindex(tuple(iterated_shape)):
+            
+            #get chopped_constants correct for this iteration
+            chopped_constants = chopped_constants_everywhere.copy()
+            for i in range(len(index[1:])):
+                idx = index[1:][i]
+                name = iterated_dimensions[i]
+                units = getattr(self, name).units
+                position = getattr(self, name).points[idx]
+                chopped_constants[name] = [position, units]
 
-        #chop-------------------------------------------------------------------
+            #re-order array: [all_chopped_constants, channels, all_chopped_axes]
+            
+            transpose_order = []
+            constant_indicies = []
+            
+            #handle constants first
+            constants = self.constants.copy()
+            for dim in chopped_constants.keys():
+                idx = [idx for idx in range(len(self.axes)) if self.axes[idx].name == dim][0]
+                transpose_order.append(idx + 1)
+                #get index of nearest value
+                val = chopped_constants[dim][0]
+                val = kit.unit_converter(val, chopped_constants[dim][1], self.axes[idx].units)
+                c_idx = np.argmin(abs(self.axes[idx].points - val))
+                constant_indicies.append(c_idx)
+                constants[dim] = [self.axes[idx].points[c_idx], #add to constants dictionary
+                                  self.axes[idx].units, self.axes[idx].units_kind,
+                                  self.axes[idx].label] 
+    
+            #now one for the channels
+            transpose_order.append(0)
         
-        zis_chopped = self.zis.transpose(transpose_order)
-        for idx in constant_indicies: 
-            zis_chopped = zis_chopped[idx]
+            #now handle axes
+            axes_chopped = []
+            for dim in axes_args:
+                idx = [idx for idx in range(len(self.axes)) if self.axes[idx].name == dim][0]
+                transpose_order.append(idx + 1)
+                axes_chopped.append(self.axes[idx])
+                
+            #ensure that everything is kosher
+            if len(transpose_order) == len(self.zis.shape):
+                pass
+            else:
+                print 'chop failed: not enough dimensions specified'
+                return
+            if len(transpose_order) == len(set(transpose_order)):
+                pass
+            else:
+                print 'chop failed: same dimension used twice'
+                return
+    
+            #chop
+            zis_chopped = self.zis.transpose(transpose_order)
+            for idx in constant_indicies: 
+                zis_chopped = zis_chopped[idx]
+                
+            #finish iteration 
+            out.append([axes_chopped, zis_chopped, constants])
         
         #return-----------------------------------------------------------------
+        
+        if verbose:
+            print 'chopped data into %d piece(s)'%len(out), 'in', axes_args
 
-        return axes_chopped, zis_chopped, constants
+        return out
         
     def copy(self):
         
@@ -787,7 +820,7 @@ def from_COLORS(filepaths, xvar, yvar = None, zvar = None,
         
     return data
     
-def from_jasco(filepath, name = None, verbose = True):
+def from_JASCO(filepath, name = None, verbose = True):
     
     #check filepath-------------------------------------------------------------
     
