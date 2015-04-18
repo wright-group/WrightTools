@@ -44,7 +44,7 @@ class Data:
 
     def __init__(self, axes, zis, zvars, constants = {}, 
                  znull = None, zmin = None, zmax = None, 
-                 name = None):
+                 name = None, source = None):
         '''
         central object for all data types                              \n
         create data objects by calling the methods of this script
@@ -89,9 +89,12 @@ class Data:
             
         #other------------------------------------------------------------------
         
-        self.zis = zis
+        self.zis = zis        
+        self.constants = constants 
+        
+        
         self.name = name
-        self.constants = constants        
+        self.source = source
         
             
     def chop(self, *args, **kwargs):
@@ -200,195 +203,6 @@ class Data:
     def copy(self):
         
         return copy.deepcopy(self)
-
-    def zoom(self, factor, order=1):
-        '''
-        placeholder for future functionality
-        '''
-        import scipy.ndimage
-        self.x = scipy.ndimage.interpolation.zoom(self.x, factor, order=order)
-        self.y = scipy.ndimage.interpolation.zoom(self.y, factor, order=order)
-        self.z = scipy.ndimage.interpolation.zoom(self.z, factor, order=order)
-        
-    def svd(self, verbose=False):
-        '''
-        placeholder for future functionality
-        '''
-        #give feedback on top (normalized) singular values
-        U, s, V = np.linalg.svd(self.z)
-        if verbose:
-            # report significant stats on svd
-            plt.figure()
-            s_max = s.max()
-            plt.scatter(s / s_max)
-        return U, s, V
-
-    def center(self, axis=None, center=None):
-        '''
-        placeholder for future functionality
-        '''
-        if center == 'max':
-            print 'listing center as the point of maximum value'
-            if axis == 0 or axis in ['x', self.xvar]:
-                index = self.zi.argmax(axis=0)
-                set_var = self.xi
-                max_var = self.yi
-                out = np.zeros(self.xi.shape)
-            elif axis == 1 or axis in ['y', self.yvar]:
-                index = self.zi.argmax(axis=1)
-                set_var = self.yi
-                max_var = self.xi
-                out = np.zeros(self.yi.shape)
-            else:
-                print 'Input error:  axis not identified'
-                return
-            for i in range(len(set_var)):
-                out[i] = max_var[index[i]]
-        else:
-            # find center by average value
-            out = self.exp_value(axis=axis, moment=1)
-        return out
-                
-    def exp_value(self, axis=None, moment=1, norm=True, noise_filter=None):
-        '''
-        placeholder for future functionality
-        '''
-        if axis == 0:
-            # an output for every x var
-            z = self.z.copy()
-            int_var = self.y
-            out = np.zeros(self.x.shape)
-        elif axis == 1:
-            # an output for every y var
-            z = self.z.T.copy()
-            int_var = self.x
-            out = np.zeros(self.y.shape)
-        else:
-            print 'Input error:  axis not identified'
-            return
-        if not isinstance(moment, int):
-            print 'moment must be an integer.  recieved {0}'.format(moment)
-            return
-        for i in range(out.shape[0]):
-            # ignoring znull for this calculation, and offseting my slice by min
-            z_min = z[:,i].min()
-            #zi_max = zi[:,i].max()
-            temp_z = z[:,i] - z_min
-            if noise_filter is not None:
-                cutoff = noise_filter * (temp_z.max() - z_min)
-                temp_z[temp_z < cutoff] = 0
-            #calculate the normalized moment
-            if norm == True:
-                out[i] = np.dot(temp_z,int_var**moment) / temp_z.sum()#*np.abs(int_var[1]-int_var[0]) 
-            else:
-                out[i] = np.dot(temp_z,int_var**moment)
-        return out
-
-    def fit_gauss(self, axis=None):
-        '''
-        placeholder for future functionality
-        '''
-        
-        if axis == 0:
-            # an output for every x var
-            z = self.z.copy()
-            var = self.y
-            #out = np.zeros((len(self.xi), 3))
-        elif axis == 1:
-            # an output for every y var
-            z = self.z.T.copy()
-            var = self.x
-            #out = np.zeros((len(self.yi), 3))
-
-        # organize the list of initial params by calculating moments
-        m0 = self.exp_value(axis=axis, moment=0, norm=False)
-        m1 = self.exp_value(axis=axis, moment=1, noise_filter=0.1)
-        m2 = self.exp_value(axis=axis, moment=2, noise_filter=0.1)        
-
-        mu_0 = m1
-        s0 = np.sqrt(np.abs(m2 - mu_0**2))
-        p0 = np.array([A0, mu_0, s0, offset])
-        A0 = m0 / (s0 * np.sqrt(2*np.pi))
-        offset = np.zeros(m0.shape)
-        
-        out = p0.copy()
-        from scipy.optimize import leastsq
-        for i in range(out.shape[1]):
-            #print leastsq(gauss_residuals, p0[:,i], args=(zi[:,i], var))
-            try:
-                out[:,i] = leastsq(gauss_residuals, p0[:,i], args=(z[:,i]-self.znull, var))[0]
-            except:
-                print 'least squares failed on {0}:  initial guesses will be used instead'.format(i)
-                out[:,i] = p0[:,i]
-        out[2] = np.abs(out[2])
-        return out
-        
-    def smooth(self, 
-               x=0,y=0, 
-               window='kaiser',
-               debug = False): #smoothes via adjacent averaging            
-        '''
-        placeholder for future functionality
-        '''
-        # n is the seed of the odd numbers:  n is how many nearest neighbors 
-        # in each direction
-        # make sure n is integer and n < grid dimension
-        # account for interpolation using grid factor
-        nx = x
-        ny = y
-        # create the window function
-        if window == 'kaiser':
-            # beta, a real number, is a form parameter of the kaiser window
-            # beta = 5 makes this look approximately gaussian in weighting 
-            # beta = 5 similar to Hamming window, according to numpy
-            # over window (about 0 at end of window)
-            beta=5.0
-            wx = np.kaiser(2*nx+1, beta)
-            wy = np.kaiser(2*ny+1, beta)
-        # for a 2D array, y is the first index listed
-        w = np.zeros((len(wy),len(wx)))
-        for i in range(len(wy)):
-            for j in range(len(wx)):
-                w[i,j] = wy[i]*wx[j]
-        # create a padded array of zi
-        # numpy 1.7.x required for this to work
-        temp_z = np.pad(self.zi, ((ny,ny), 
-                                   (nx,nx)), 
-                                    mode='edge')
-        from scipy.signal import convolve
-        out = convolve(temp_z, w/w.sum(), mode='valid')
-        if debug:
-            plt.figure()
-            sp1 = plt.subplot(131)
-            plt.contourf(self.zi, 100)
-            plt.subplot(132, sharex=sp1, sharey=sp1)
-            plt.contourf(w,100)
-            plt.subplot(133)
-            plt.contourf(out,100)
-        self.z=out
-        # reset zmax
-        self.zmax = self.z.max()
-        self.zmin = self.z.min()
-
-    def intaxis(self, int_axis, filename=None):
-        '''
-        placeholder for future functionality
-        '''
-        if int_axis == 0: #sum over all x values at fixed y
-             out = np.zeros((len(self.y),2))
-             for y in range(len(self.y)):
-                 out[y][0] = self.y[y]
-                 out[y][1] = self.z[y].sum() -  self.znull * len(self.x)
-        
-        elif int_axis == 1: #sum over all y values at fixed x
-             out = np.zeros((len(self.x),2))
-             for x in range(len(self.x)):
-                 out[x][0] = self.x[x]
-                 for y in range(len(self.y)):
-                     out[x][1] += self.z[y][x] - self.znull
-        else:
-             print 'specified axis is not recognized'
-        return out
         
     def save(self, filepath = None, verbose = True):
         '''
@@ -551,7 +365,8 @@ def make_tune(obj, set_var, fname=None, amp='int', center='exp_val', fit=True,
 
 def from_COLORS(filepaths, xvar, yvar = None, zvar = None,
                 grid_factor = 2, znull = None,
-                cols = None, verbose = True):
+                cols = None, verbose = True,
+                name = None):
     '''
     here zvar corresponds to the variable scanned over many .dat files...
     '''
@@ -796,9 +611,14 @@ def from_COLORS(filepaths, xvar, yvar = None, zvar = None,
     if not movie:
         data = data_objs[0]
     else:
+        #sort data objects in ascending zi (native units)
+        zi = np.array(zi)
+        data_objs = [data_objs[i] for i in np.argsort(zi)]
+        zi.sort()
+        #now construct data objct
         x_axis = data_objs[0].axes[1]
         y_axis = data_objs[0].axes[0]
-        z_axis = Axis(np.array(zi), datCols[zvar][2], zvar, datCols[zvar][4])
+        z_axis = Axis(zi, datCols[zvar][2], zvar, datCols[zvar][4])
         z_axis.convert(datCols[zvar][3])
         zis = []
         for data_obj in data_objs:
@@ -808,9 +628,12 @@ def from_COLORS(filepaths, xvar, yvar = None, zvar = None,
         data = Data([z_axis, y_axis, x_axis], zis, zvars)
             
     #add extra stuff to data object---------------------------------------------
-            
-    #constants
-    #'from' string
+       
+    data.source = filepaths
+    
+    if not name:
+        name = kit.filename_parse(file_example)[1]
+    data.name = name
     
     #return---------------------------------------------------------------------
     
