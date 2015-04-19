@@ -363,7 +363,7 @@ def make_tune(obj, set_var, fname=None, amp='int', center='exp_val', fit=True,
 
 ### data creation methods ######################################################
 
-def from_COLORS(filepaths, xvar, yvar = None, zvar = None,
+def from_COLORS(filepaths, xvar = None, yvar = None, zvar = None,
                 grid_factor = 2, znull = None,
                 cols = None, verbose = True,
                 name = None):
@@ -383,69 +383,50 @@ def from_COLORS(filepaths, xvar, yvar = None, zvar = None,
     
     #define format of dat file--------------------------------------------------
     
-    #dictionary format:
-    #0: is column from color file--columns according to new column ordering
-    #1: movement tolerance (x +/- tolerance)
-    #3: native unit (from colors)
-    #4: destination unit (based on choice of user)
-    
-    cols_v2 = {
-        'num':  (0, 0.5, None, None, 'acquisition number'),
-        'w1':   (1, 5.0, 'nm', 'wn', r'$\mathrm{\bar\nu_1=\bar\nu_m (cm^{-1})}$'),
-        'l1':   (1, 1.0, 'nm', 'nm', r'$\lambda_1 / nm$'),
-        'w2':   (3, 5.0, 'nm', 'wn', r'$\mathrm{\bar\nu_2=\bar\nu_{2^{\prime}} (cm^{-1})}$'),
-        'l2':   (3, 1.0, 'nm', 'nm', r'$\lambda_2 / nm$'),
-        'w3':   (5, 5.0, 'nm', 'wn', r'$\mathrm{\bar\nu_3 (cm^{-1})}$'),
-        'l3':   (5, 1.0, 'nm', 'nm', r'$\mathrm{\lambda_3 (cm^{-1})}$'),
-        'wm':   (7, 1.0, 'nm', 'wm', r'$\bar\nu_m / cm^{-1}$'),
-        'lm':   (7, 1.0, 'nm', 'nm', r'$\lambda_m / nm$'),
-        'na':   (8, 1.0, 'nm', 'nm', r'$\lambda_a / nm$'),
-        'wa':   (8, 1.0, 'nm', 'wa', r'$\bar\nu_a / cm^{-1}$'),
-        'dref': (10, 25.0, 'fs', 'fs', r'$d_ref$'),
-        'd1':   (12, 3.0, 'fs', 'fs', r'$\mathrm{\tau_{2^{\prime} 1} (fs)}$'),
-        #'t2p1': (12, 3.0, 'fs', 'fs', r'$\mathrm{\tau_{2^{\prime} 1}(fs)}$'),
-        'd2':   (14, 3.0, 'fs', 'fs', r'$\mathrm{\tau_{21} (fs)}$'),
-        #'t21':  (14, 3.0, 'fs', 'fs', r'$\mathrm{\tau_{21} (fs)}$'),
-        'ai0':  (16, 0.0, 'V', 'V', 'Signal 0'),
-        'ai1':  (17, 0.0, 'V', 'V', 'Signal 1'),
-        'ai2':  (18, 0.0, 'V', 'V', 'Signal 2'),
-        'ai3':  (19, 0.0, 'V', 'V', 'Signal 3'),
-        'ai4':  (20, 0.0, 'V', 'V', 'Signal 4'),
-        'mc':   (21, 0.0, 'au', 'au', 'Array Signal')}
+    cols_v2 = {  #index #tolerance #units #name
+        'num':  (0,     0.5,       None, 'acquisition number'),
+        'w1':   (1,     5.0,       'nm', '1'),
+        'w2':   (3,     5.0,       'nm', '2'),
+        'w3':   (5,     5.0,       'nm', '3'),
+        'wm':   (7,     1.0,       'nm', 'm'),
+        'wa':   (8,     1.0,       'nm', 'array'),
+        'dref': (10,    25.0,      'fs', 'ref'),
+        'd1':   (12,    3.0,       'fs', '2^{\prime} 1'),
+        'd2':   (14,    3.0,       'fs', '2 1'),
+        'ai0':  (16,    0.0,       'V',  'Signal 0'),
+        'ai1':  (17,    0.0,       'V',  'Signal 1'),
+        'ai2':  (18,    0.0,       'V',  'Signal 2'),
+        'ai3':  (19,    0.0,       'V',  'Signal 3'),
+        'ai4':  (20,    0.0,       'V',  'Signal 4'),
+        'mc':   (21,    0.0,       'au', 'Array Signal')}
 
     cols_v1 = {
-        'num':  (0, 0.5, None, None, 'acquisition number'),
-        'w1':   (1, 5.0, 'nm', 'nm', r'$\mathrm{\bar\nu_1=\bar\nu_m (cm^{-1})}$'),
-        'l1':   (1, 1.0, 'nm', 'wn', r'$\lambda_1 / nm$'),
-        'w2':   (3, 5.0, 'nm', 'nm', r'$\mathrm{\bar\nu_2=\bar\nu_{2^{\prime}} (cm^{-1})}$'),
-        'l2':   (3, 1.0, 'nm', 'wn', r'$\lambda_2 / nm$'),
-        'wm':   (5, 1.0, 'nm', 'nm', r'$\bar\nu_m / cm^{-1}$'),
-        'lm':   (5, 1.0, 'nm', 'wn', r'$\lambda_m / nm$'),
-        'd1':   (6, 3.0, 'fs', 'fs', r'$\mathrm{\tau_{2^{\prime} 1} (fs)}$'),
-        't2p1': (6, 3.0, 'fs', 'fs', r'$\mathrm{\tau_{2^{\prime} 1}(fs)}$'),
-        'd2':   (7, 3.0, 'fs', 'fs', r'$\mathrm{\tau_{21} (fs)}$'),
-        't21':  (7, 3.0, 'fs', 'fs', r'$\mathrm{\tau_{21} (fs)}$'),
-        'ai0':  (8, 0.0, 'V', 'V', 'Signal 0'),
-        'ai1':  (9, 0.0, 'V', 'V', 'Signal 1'),
-        'ai2':  (10, 0.0, 'V', 'V', 'Signal 2'),
-        'ai3':  (11, 0.0, 'V', 'V', 'Signal 3')}
+        'num':  (0,    0.5, None, None, 'acquisition number'),
+        'w1':   (1,    5.0, 'nm', 'nm', r'$\mathrm{\bar\nu_1=\bar\nu_m (cm^{-1})}$'),
+        'w2':   (3,    5.0, 'nm', 'nm', r'$\mathrm{\bar\nu_2=\bar\nu_{2^{\prime}} (cm^{-1})}$'),
+        'wm':   (5,    1.0, 'nm', 'nm', r'$\bar\nu_m / cm^{-1}$'),
+        'd1':   (6,    3.0, 'fs', 'fs', r'$\mathrm{\tau_{2^{\prime} 1} (fs)}$'),
+        't2p1': (6,    3.0, 'fs', 'fs', r'$\mathrm{\tau_{2^{\prime} 1}(fs)}$'),
+        'd2':   (7,    3.0, 'fs', 'fs', r'$\mathrm{\tau_{21} (fs)}$'),
+        't21':  (7,    3.0, 'fs', 'fs', r'$\mathrm{\tau_{21} (fs)}$'),
+        'ai0':  (8,    0.0, 'V',  'V',  'Signal 0'),
+        'ai1':  (9,    0.0, 'V',  'V',  'Signal 1'),
+        'ai2':  (10,   0.0, 'V',  'V',  'Signal 2'),
+        'ai3':  (11,   0.0, 'V',  'V',  'Signal 3')}
         
     cols_v0 = {
-        'num':  (0, 0.5, None, None, 'acquisition number'),
-        'w1':   (1, 2.0, 'nm', 'nm', r'$\mathrm{\bar\nu_1=\bar\nu_m (cm^{-1})}$'),
-        'l1':   (1, 1.0, 'nm', 'wn',r'$\lambda_1 / nm$'),
-        'w2':   (3, 2.0, 'nm', 'nm',r'$\mathrm{\bar\nu_2=\bar\nu_{2^{\prime}} (cm^{-1})}$'),
-        'l2':   (3, 1.0, 'nm', 'wn',r'$\lambda_2 / nm$'),
-        'wm':   (5, 0.25, 'nm', 'nm',r'$\bar\nu_m / cm^{-1}$'),
-        'lm':   (5, 0.25, 'nm', 'wn',r'$\lambda_m / nm$'),
-        'd1':   (6, 3.0, 'fs', 'fs',r'$\mathrm{\tau_{2^{\prime} 1} (fs)}$'),
-        't2p1': (6, 3.0, 'fs', 'fs',r'$\mathrm{\tau_{2^{\prime} 1}(fs)}$'),
-        'd2':   (8, 3.0, 'fs', 'fs',r'$\mathrm{\tau_{21} (fs)}$'),
-        't21':  (8, 3.0, 'fs', 'fs',r'$\mathrm{\tau_{21} (fs)}$'),
-        'ai0':  (10, 0.0, 'V', 'V','Signal 0'),
-        'ai1':  (11, 0.0, 'V', 'V','Signal 1'),
-        'ai2':  (12, 0.0, 'V', 'V','Signal 2'),
-        'ai3':  (13, 0.0, 'V', 'V','Signal 3')}
+        'num':  (0,    0.5,  None, None,  'acquisition number'),
+        'w1':   (1,    2.0,  'nm', 'nm',  r'$\mathrm{\bar\nu_1=\bar\nu_m (cm^{-1})}$'),
+        'w2':   (3,    2.0,  'nm', 'nm',  r'$\mathrm{\bar\nu_2=\bar\nu_{2^{\prime}} (cm^{-1})}$'),
+        'wm':   (5,    0.25, 'nm', 'nm',  r'$\bar\nu_m / cm^{-1}$'),
+        'lm':   (5,    0.25, 'nm', 'wn',  r'$\lambda_m / nm$'),
+        't2p1': (6,    3.0,  'fs', 'fs',  r'$\mathrm{\tau_{2^{\prime} 1}(fs)}$'),
+        'd2':   (8,    3.0,  'fs', 'fs',  r'$\mathrm{\tau_{21} (fs)}$'),
+        't21':  (8,    3.0,  'fs', 'fs',  r'$\mathrm{\tau_{21} (fs)}$'),
+        'ai0':  (10,   0.0,  'V',  'V',  'Signal 0'),
+        'ai1':  (11,   0.0,  'V',  'V',  'Signal 1'),
+        'ai2':  (12,   0.0,  'V',  'V',  'Signal 2'),
+        'ai3':  (13,   0.0,  'V',  'V',  'Signal 3')}
     
     zvars = collections.OrderedDict()
     zvars['ai0'] = None
@@ -474,15 +455,39 @@ def from_COLORS(filepaths, xvar, yvar = None, zvar = None,
             # file is older than all other dat versions
             cols = 'v0'
             datCols = cols_v0
-        if verbose: print cols
+        if verbose: print 'cols', cols
     cols=cols
     
     #add array to zvars if version 2 dat file
     if cols == 'v2': zvars['mc'] = None
         
     #recognize dimensionality of data-------------------------------------------
+        
+    if xvar == None:
+        if yvar == None and zvar == None:
+            #import data for sake of discover_dimensions
+            
+            for i in range(len(filepaths)):
+                dat = np.genfromtxt(filepaths[i]).T
+                if i == 0:
+                    arr = dat
+                else:      
+                    arr = np.append(arr, dat, axis = 1)
+                #arr.append(np.genfromtxt(filepath).T)
+            #arr = np.array(arr)
+            #construct dimension_cols dictionary
+            dimension_cols = {
+                            'w1':   (1,     5.0,       'nm', '1'),
+                            'w2':   (3,     5.0,       'nm', '2'),
+                            'w3':   (5,     5.0,       'nm', '3'),
+                            'wm':   (7,     1.0,       'nm', 'm'),
+                            'wa':   (8,     1.0,       'nm', 'array'),
+                            'd1':   (12,    3.0,       'fs', '2^{\prime} 1'),
+                            'd2':   (14,    3.0,       'fs', '2 1')}
+            var_list, names = discover_dimensions(arr, dimension_cols)
+        else:
+            print 'define all dimensions or no dimensions'
     
-    #COMING SOON - IMPORT CODE FROM DATPLOT - Blaise
     
     #load data from all files---------------------------------------------------
     
@@ -680,3 +685,109 @@ def from_JASCO(filepath, name = None, verbose = True):
 def from_pickle(filepath):
     
     return pickle.load(open(filepath, 'rb'))
+    
+### other ######################################################################
+
+def discover_dimensions(arr, dimension_cols):
+    
+    print arr.shape
+    
+    #import values--------------------------------------------------------------
+    
+    dc = dimension_cols 
+    di = [dc[key][0] for key in dc.keys()]
+    dt = [dc[key][1] for key in dc.keys()]
+    du = [dc[key][2] for key in dc.keys()]
+    dk = [key for key in dc.keys()]
+    print dk
+    dims = zip(di, dt, du, dk)
+
+    #remove nan dimensions and bad dimensions------------------------------------------------------
+    
+    to_pop = []
+    for i in range(len(dims)):
+        if np.all(np.isnan(arr[dims[i][0]])):
+            to_pop.append(i)
+
+    to_pop.reverse()
+    for i in to_pop:
+        dims.pop(i)
+    
+    #which dimensions are equal-------------------------------------------------
+
+    #find
+    d_equal = np.zeros((len(dims), len(dims)), dtype=bool)
+    d_equal[:, :] = True
+    print dims
+    for i in range(len(dims)): #test
+        for j in range(len(dims)): #against
+            for k in range(len(arr[0])):
+                upper_bound = arr[dims[i][0], k] + dims[i][1]
+                lower_bound = arr[dims[i][0], k] - dims[i][1]
+                test_point =  arr[dims[j][0], k]
+                if upper_bound > test_point > lower_bound:
+                    pass
+                else:
+                    d_equal[i, j] = False
+                    break
+
+    #condense
+    dims_unaccounted = range(len(dims))
+    dims_condensed = []
+    while dims_unaccounted:
+        dim_current = dims_unaccounted[0]
+        index = dims[dim_current][0]
+        tolerance = [dims[dim_current][1]]
+        units = dims[dim_current][2]
+        key = [dims[dim_current][3]]
+        dims_unaccounted.pop(0)
+        indicies = range(len(dims_unaccounted))
+        indicies.reverse()
+        for i in indicies:
+            dim_check = dims_unaccounted[i]
+            if d_equal[dim_check, dim_current]:
+                tolerance.append(dims[dim_check][1])
+                key.append(dims[dim_check][3])
+                dims_unaccounted.pop(i)
+        tolerance = max(tolerance)
+        dims_condensed.append([index, tolerance, units, key])
+    dims = dims_condensed
+    
+    #find which are scanned-----------------------------------------------------
+    
+    scanned = []
+    constant = []
+    for dim in dims:
+        name = dim[3]
+        index = dim[0]
+        vals = arr[index]
+        if vals.max() - vals.min() > dim[1]:
+            scanned.append([name, index, None])
+        else:
+            constant.append([name, index, arr[index, 0]])
+            
+    print scanned
+    print constant
+    
+    #order scanned dimensions---------------------------------------------------
+    
+    #to do....
+        
+    #return---------------------------------------------------------------------
+
+    return scanned, constant
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
