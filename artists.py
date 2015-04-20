@@ -111,8 +111,8 @@ class mpl_2D:
         
         self.font_size = 15
         
-        self._x_sideplot = False
-        self._y_sideplot = False
+        self._xsideplot = False
+        self._ysideplot = False
     
     def sideplot(self, data, xaxis = True, yaxis = True):
         
@@ -120,7 +120,7 @@ class mpl_2D:
         
         pass
     
-    def plot(self, channel,
+    def plot(self, channel_index,
              contours = 9,
              cmap = 'default',
              xbin = False, ybin = False,
@@ -128,7 +128,7 @@ class mpl_2D:
                  
         #ensure plot environment clear------------------------------------------
                  
-        plt.close()                 
+        plt.close()   
         
         #prepare output folder--------------------------------------------------
         
@@ -140,6 +140,10 @@ class mpl_2D:
                 os.mkdir(timestamp)
                 output_folder = timestamp  
              
+        #import-----------------------------------------------------------------
+
+        self.channel = self.data.channels[channel_index]             
+             
         #chew through image generation
         for i in range(len(self.chopped)):
             
@@ -147,9 +151,9 @@ class mpl_2D:
             
             axes, zis, constants = self.chopped[i]
             
-            xaxis = axes[1]
-            yaxis = axes[0]
-            zi = zis[channel]
+            xaxis = axes[0]
+            yaxis = axes[1]
+            zi = zis[channel_index]
             
             #create figure------------------------------------------------------            
             
@@ -161,8 +165,12 @@ class mpl_2D:
             
             #main plot----------------------------------------------------------
             
+            if self.channel.signed:
+                levels = np.linspace(zi.min(), zi.max(), 200)
+            else:
+                levels = np.linspace(self.channel.zmin, self.channel.zmax, 200)
+            
             mycm = colormaps[cmap]
-            levels = np.linspace(zi.min(), zi.max(), 200)
             contourf = subplot_main.contourf(xaxis.points, yaxis.points, zi,
                                              levels, cmap = mycm)
             
@@ -246,8 +254,8 @@ class mpl_2D:
             title_text = self.data.name
             
             constants_text = ''
-            for key in constants.keys():
-                constants_text += '\n' + key + '=' + str(np.round(constants[key][0]))        
+            #for key in constants.keys():
+            #    constants_text += '\n' + key + '=' + str(np.round(constants[key][0]))        
                 
             plt.suptitle(title_text + constants_text, fontsize = self.font_size)
             

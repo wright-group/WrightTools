@@ -123,7 +123,7 @@ time = {'kind': 'time',
         
 #position units (native: mm)
 position = {'kind': 'position',
-            'nm': ['x/1e6', '1e6/x'],
+            'nm_p': ['x/1e6', '1e6/x'], #can't have same name as nm for energy
             'um': ['x/1000.', '1000/x.'],
             'mm': ['x', 'x'],
             'cm': ['10.*x', 'x/10.'],

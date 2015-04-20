@@ -18,31 +18,61 @@ import kit
 
 class Axis:
     
-    def __init__(self, points, input_units, name = None, label = None):
+    def __init__(self, points, units,
+                 tolerance = None, file_idx = None,
+                 name = None, label = None, label_seed = None):
         
         self.name = name
-        if not label:
-            self.label = self.name
-        else:
-            self.label = label
-        
+        self.tolerance = tolerance
         self.points = points
-
-        self.units = input_units
+        self.units = units
+        self.file_idx = file_idx        
+        self.label_seed = label_seed        
+        self.label = label
         
+        #get units kind
         self.units_kind = None
         for dic in kit.unit_dicts:
             if self.units in dic.keys():
                 self.units_kind = dic['kind']
+        
+        self.make_label()        
         
     def convert(self, destination_units):
         
         self.points = kit.unit_converter(self.points, self.units, destination_units)
         self.units = destination_units
 
+    def make_label(self):
+        
+        self.label = self.name
+        
+    def min_max_step(self):
+        
+        _min = self.points.min()
+        _max = self.points.max()
+        _step = (_max-_min)/(len(self.points)-1)
+        
+        return _min, _max, _step
+        
+class Channel:
+    
+    def __init__(self, units,
+                 file_idx,
+                 znull = None, zmin = None, zmax = None, signed = False,
+                 name = None, label = None, label_seed = None):
+                     
+        self.name = name
+        self.units = units
+        self.file_idx = file_idx
+        self.signed = signed
+        self.znull = znull
+        self.zmin = zmin
+        self.zmax = zmax
+
 class Data:
 
-    def __init__(self, axes, zis, zvars, constants = {}, 
+    def __init__(self, axes, zis, channels, constants = {}, 
                  znull = None, zmin = None, zmax = None, 
                  name = None, source = None):
         '''
@@ -70,22 +100,13 @@ class Data:
         for axis in self.axes:
             setattr(self, axis.name, axis)
         
-        #data-------------------------------------------------------------------        
+        #channels---------------------------------------------------------------
         
-        if not znull:            
-            self.znull = zis.min()
-        else:
-            self.znull = znull
-            
-        if not zmin:            
-            self.zmin = zis.min()
-        else:
-            self.zmin = zmin
-            
-        if not zmax:            
-            self.zmax = zis.max()
-        else:
-            self.zmax = zmax
+        self.channels = channels
+        for arg in [znull, zmin, zmax]:
+            for i in range(len(self.channels)):
+                channel = self.channels[i]
+                
             
         #other------------------------------------------------------------------
         
@@ -95,6 +116,8 @@ class Data:
         
         self.name = name
         self.source = source
+        
+        
         
             
     def chop(self, *args, **kwargs):
@@ -118,8 +141,7 @@ class Data:
         for name, value in kwargs.items():
             if name == 'verbose':
                 verbose = value 
-            
-                
+        
         #iterate!---------------------------------------------------------------
                 
         #find iterated dimensions
@@ -150,7 +172,7 @@ class Data:
             constant_indicies = []
             
             #handle constants first
-            constants = self.constants.copy()
+            constants = list(self.constants) #copy
             for dim in chopped_constants.keys():
                 idx = [idx for idx in range(len(self.axes)) if self.axes[idx].name == dim][0]
                 transpose_order.append(idx + 1)
@@ -159,9 +181,8 @@ class Data:
                 val = kit.unit_converter(val, chopped_constants[dim][1], self.axes[idx].units)
                 c_idx = np.argmin(abs(self.axes[idx].points - val))
                 constant_indicies.append(c_idx)
-                constants[dim] = [self.axes[idx].points[c_idx], #add to constants dictionary
-                                  self.axes[idx].units, self.axes[idx].units_kind,
-                                  self.axes[idx].label] 
+                obj = Axis(self.axes[idx].points[c_idx], self.axes[idx].units )
+                constants.append(obj)
     
             #now one for the channels
             transpose_order.append(0)
@@ -200,9 +221,53 @@ class Data:
 
         return out
         
+    def convert(self, units, verbose = True):
+        '''
+        convinience method                                                    \n
+        converts all compatable constants and axes to units 
+        '''
+        
+        #get kind of units
+        for dic in kit.unit_dicts:
+            if units in dic.keys():
+                units_kind = dic['kind']
+        
+        for axis in self.axes + self.constants:
+            if axis.units_kind == units_kind:
+                axis.convert('wn')
+                if verbose:
+                    print 'axis', axis.name, 'converted'
+        
     def copy(self):
         
         return copy.deepcopy(self)
+        
+    def dOD(self, signal_channel_index, reference_channel_index, 
+            method = 'boxcar',
+            verbose = True):
+        '''
+        for differential scans:  convert zi signal from dT to dOD
+        '''    
+    
+        T =  self.zis[reference_channel_index]
+        dT = self.zis[signal_channel_index]
+        signal_channel = self.channels[signal_channel_index]
+        
+        if method == 'boxcar':
+            #assume data collected with boxcar i.e.
+            #sig = 1/2 dT
+            #ref = T + 1/2 dT
+            dT = 2 * dT
+            out = -np.log10((T + dT) / T)
+            
+        self.zis[signal_channel_index] = out
+            
+        #reset znull, zmin, zmax------------------------------------------------
+        
+        signal_channel.znull = 0.
+        signal_channel.zmin = out.min()
+        signal_channel.zmax = out.max()
+        signal_channel.signed = True
         
     def save(self, filepath = None, verbose = True):
         '''
@@ -221,6 +286,26 @@ class Data:
         
         return filepath
         
+    def zoom(self, factor, order=1, verbose = True):
+        '''
+        'zoom' the data array using spline interpolation of the requested order. \n
+        the number of points along each axis is increased by factor of factor.   \n
+        essentially a wrapper for scipy.ndimage.interpolation.zoom
+        '''
+        import scipy.ndimage
+        
+        #axes
+        for axis in self.axes:
+            axis.points = scipy.ndimage.interpolation.zoom(axis.points, factor, order=order)
+        
+        #data (don't zoom along channel dimension)
+        zoomed_zis = []
+        for i in range(len(self.zis)):
+            zoomed_zis.append(scipy.ndimage.interpolation.zoom(self.zis[i], factor, order=order))
+        self.zis = np.array(zoomed_zis)
+        
+        if verbose:
+            print 'data zoomed - new shape:', self.zis.shape
         
         
 ### data manipulation and usage methods ########################################
@@ -363,277 +448,150 @@ def make_tune(obj, set_var, fname=None, amp='int', center='exp_val', fit=True,
 
 ### data creation methods ######################################################
 
-def from_COLORS(filepaths, xvar = None, yvar = None, zvar = None,
-                grid_factor = 2, znull = None,
+def from_COLORS(filepaths, znull = None,
                 cols = None, verbose = True,
                 name = None):
-    '''
-    here zvar corresponds to the variable scanned over many .dat files...
-    '''
-    
+
     #do we have a list of files or just one file?-------------------------------
     
     if type(filepaths) == list:
-        movie = True
         file_example = filepaths[0]
     else:
-        movie = False
         file_example = filepaths
         filepaths = [filepaths]
     
     #define format of dat file--------------------------------------------------
     
-    cols_v2 = {  #index #tolerance #units #name
-        'num':  (0,     0.5,       None, 'acquisition number'),
-        'w1':   (1,     5.0,       'nm', '1'),
-        'w2':   (3,     5.0,       'nm', '2'),
-        'w3':   (5,     5.0,       'nm', '3'),
-        'wm':   (7,     1.0,       'nm', 'm'),
-        'wa':   (8,     1.0,       'nm', 'array'),
-        'dref': (10,    25.0,      'fs', 'ref'),
-        'd1':   (12,    3.0,       'fs', '2^{\prime} 1'),
-        'd2':   (14,    3.0,       'fs', '2 1'),
-        'ai0':  (16,    0.0,       'V',  'Signal 0'),
-        'ai1':  (17,    0.0,       'V',  'Signal 1'),
-        'ai2':  (18,    0.0,       'V',  'Signal 2'),
-        'ai3':  (19,    0.0,       'V',  'Signal 3'),
-        'ai4':  (20,    0.0,       'V',  'Signal 4'),
-        'mc':   (21,    0.0,       'au', 'Array Signal')}
-
-    cols_v1 = {
-        'num':  (0,    0.5, None, None, 'acquisition number'),
-        'w1':   (1,    5.0, 'nm', 'nm', r'$\mathrm{\bar\nu_1=\bar\nu_m (cm^{-1})}$'),
-        'w2':   (3,    5.0, 'nm', 'nm', r'$\mathrm{\bar\nu_2=\bar\nu_{2^{\prime}} (cm^{-1})}$'),
-        'wm':   (5,    1.0, 'nm', 'nm', r'$\bar\nu_m / cm^{-1}$'),
-        'd1':   (6,    3.0, 'fs', 'fs', r'$\mathrm{\tau_{2^{\prime} 1} (fs)}$'),
-        't2p1': (6,    3.0, 'fs', 'fs', r'$\mathrm{\tau_{2^{\prime} 1}(fs)}$'),
-        'd2':   (7,    3.0, 'fs', 'fs', r'$\mathrm{\tau_{21} (fs)}$'),
-        't21':  (7,    3.0, 'fs', 'fs', r'$\mathrm{\tau_{21} (fs)}$'),
-        'ai0':  (8,    0.0, 'V',  'V',  'Signal 0'),
-        'ai1':  (9,    0.0, 'V',  'V',  'Signal 1'),
-        'ai2':  (10,   0.0, 'V',  'V',  'Signal 2'),
-        'ai3':  (11,   0.0, 'V',  'V',  'Signal 3')}
-        
-    cols_v0 = {
-        'num':  (0,    0.5,  None, None,  'acquisition number'),
-        'w1':   (1,    2.0,  'nm', 'nm',  r'$\mathrm{\bar\nu_1=\bar\nu_m (cm^{-1})}$'),
-        'w2':   (3,    2.0,  'nm', 'nm',  r'$\mathrm{\bar\nu_2=\bar\nu_{2^{\prime}} (cm^{-1})}$'),
-        'wm':   (5,    0.25, 'nm', 'nm',  r'$\bar\nu_m / cm^{-1}$'),
-        'lm':   (5,    0.25, 'nm', 'wn',  r'$\lambda_m / nm$'),
-        't2p1': (6,    3.0,  'fs', 'fs',  r'$\mathrm{\tau_{2^{\prime} 1}(fs)}$'),
-        'd2':   (8,    3.0,  'fs', 'fs',  r'$\mathrm{\tau_{21} (fs)}$'),
-        't21':  (8,    3.0,  'fs', 'fs',  r'$\mathrm{\tau_{21} (fs)}$'),
-        'ai0':  (10,   0.0,  'V',  'V',  'Signal 0'),
-        'ai1':  (11,   0.0,  'V',  'V',  'Signal 1'),
-        'ai2':  (12,   0.0,  'V',  'V',  'Signal 2'),
-        'ai3':  (13,   0.0,  'V',  'V',  'Signal 3')}
-    
-    zvars = collections.OrderedDict()
-    zvars['ai0'] = None
-    zvars['ai1'] = None
-    zvars['ai2'] = None
-    zvars['ai3'] = None
-    
-    if cols == 'v2':
-        datCols = cols_v2
-    elif cols == 'v1':
-        datCols = cols_v1
-    elif cols == 'v0':
-        datCols = cols_v0
+    if cols:
+        pass
     else:
-        #guess based on when the file was made
-        v1_time = 1349067600.0
-        v2_time = 1395723600.0    
-        file_date = os.path.getctime(file_example)
-        if file_date > v2_time:
+        num_cols = len(np.genfromtxt(file_example).T)
+        if num_cols == 35:
             cols = 'v2'
-            datCols = cols_v2
-        elif file_date > v1_time:
+        elif num_cols == 18:
             cols = 'v1'
-            datCols = cols_v1
-        else:
-            # file is older than all other dat versions
+        elif num_cols == 16:
             cols = 'v0'
-            datCols = cols_v0
-        if verbose: print 'cols', cols
-    cols=cols
-    
-    #add array to zvars if version 2 dat file
-    if cols == 'v2': zvars['mc'] = None
+        if verbose:
+            print 'cols recognized as', cols, '(%d)'%num_cols
+            
+    if cols == 'v2':
+        axes = collections.OrderedDict()
+        axes['num']  = Axis(None, None, tolerance = 0.5,  file_idx = 0,  name = 'num',  label_seed = ['num'])
+        axes['w1']   = Axis(None, 'nm', tolerance = 5.0,  file_idx = 1,  name = 'w1',   label_seed = ['1'])
+        axes['w2']   = Axis(None, 'nm', tolerance = 5.0,  file_idx = 3,  name = 'w2',   label_seed = ['2'])
+        axes['w3']   = Axis(None, 'nm', tolerance = 5.0,  file_idx = 5,  name = 'w3',   label_seed = ['3'])
+        axes['wm']   = Axis(None, 'nm', tolerance = 5.0,  file_idx = 7,  name = 'wm',   label_seed = ['m'])
+        axes['wa']   = Axis(None, 'nm', tolerance = 1.0,  file_idx = 8,  name = 'wm',   label_seed = ['a'])
+        axes['dref'] = Axis(None, 'fs', tolerance = 25.0, file_idx = 10, name = 'dref', label_seed = ['ref'])
+        axes['d1']   = Axis(None, 'fs', tolerance = 3.0,  file_idx = 12, name = 'd1',   label_seed = ['1'])
+        axes['d2']   = Axis(None, 'fs', tolerance = 3.0,  file_idx = 14, name = 'd2',   label_seed = ['2'])
+        channels = collections.OrderedDict()
+        channels['ai0'] = Channel('V',  file_idx = 16, name = 'Signal 0',  label_seed = ['0'])
+        channels['ai1'] = Channel('V',  file_idx = 17, name = 'Signal 1',  label_seed = ['1'])
+        channels['ai2'] = Channel('V',  file_idx = 18, name = 'Signal 2',  label_seed = ['2'])
+        channels['ai3'] = Channel('V',  file_idx = 19, name = 'Signal 3',  label_seed = ['3'])
+        channels['ai4'] = Channel('V',  file_idx = 20, name = 'Signal 4',  label_seed = ['4'])
+        channels['mc']  = Channel(None, file_idx = 21, name = 'Array Sig', label_seed = ['a'])
+    elif cols == 'v1':
+        #fix this later
+        cols_v1 = {
+            'num':  (0,    0.5, None, None, 'acquisition number'),
+            'w1':   (1,    5.0, 'nm', 'nm', r'$\mathrm{\bar\nu_1=\bar\nu_m (cm^{-1})}$'),
+            'w2':   (3,    5.0, 'nm', 'nm', r'$\mathrm{\bar\nu_2=\bar\nu_{2^{\prime}} (cm^{-1})}$'),
+            'wm':   (5,    1.0, 'nm', 'nm', r'$\bar\nu_m / cm^{-1}$'),
+            'd1':   (6,    3.0, 'fs', 'fs', r'$\mathrm{\tau_{2^{\prime} 1} (fs)}$'),
+            't2p1': (6,    3.0, 'fs', 'fs', r'$\mathrm{\tau_{2^{\prime} 1}(fs)}$'),
+            'd2':   (7,    3.0, 'fs', 'fs', r'$\mathrm{\tau_{21} (fs)}$'),
+            't21':  (7,    3.0, 'fs', 'fs', r'$\mathrm{\tau_{21} (fs)}$'),
+            'ai0':  (8,    0.0, 'V',  'V',  'Signal 0'),
+            'ai1':  (9,    0.0, 'V',  'V',  'Signal 1'),
+            'ai2':  (10,   0.0, 'V',  'V',  'Signal 2'),
+            'ai3':  (11,   0.0, 'V',  'V',  'Signal 3')}
+    elif cols == 'v0':
+        #fix this later
+        cols_v0 = {
+            'num':  (0,    0.5,  None, None,  'acquisition number'),
+            'w1':   (1,    2.0,  'nm', 'nm',  r'$\mathrm{\bar\nu_1=\bar\nu_m (cm^{-1})}$'),
+            'w2':   (3,    2.0,  'nm', 'nm',  r'$\mathrm{\bar\nu_2=\bar\nu_{2^{\prime}} (cm^{-1})}$'),
+            'wm':   (5,    0.25, 'nm', 'nm',  r'$\bar\nu_m / cm^{-1}$'),
+            'lm':   (5,    0.25, 'nm', 'wn',  r'$\lambda_m / nm$'),
+            't2p1': (6,    3.0,  'fs', 'fs',  r'$\mathrm{\tau_{2^{\prime} 1}(fs)}$'),
+            'd2':   (8,    3.0,  'fs', 'fs',  r'$\mathrm{\tau_{21} (fs)}$'),
+            't21':  (8,    3.0,  'fs', 'fs',  r'$\mathrm{\tau_{21} (fs)}$'),
+            'ai0':  (10,   0.0,  'V',  'V',  'Signal 0'),
+            'ai1':  (11,   0.0,  'V',  'V',  'Signal 1'),
+            'ai2':  (12,   0.0,  'V',  'V',  'Signal 2'),
+            'ai3':  (13,   0.0,  'V',  'V',  'Signal 3')}
+            
+    #import full array----------------------------------------------------------
+            
+    for i in range(len(filepaths)):
+        dat = np.genfromtxt(filepaths[i]).T
+        if verbose: print 'dat imported:', dat.shape
+        if i == 0:
+            arr = dat
+        else:      
+            arr = np.append(arr, dat, axis = 1)
         
     #recognize dimensionality of data-------------------------------------------
         
-    if xvar == None:
-        if yvar == None and zvar == None:
-            #import data for sake of discover_dimensions
-            
-            for i in range(len(filepaths)):
-                dat = np.genfromtxt(filepaths[i]).T
-                if i == 0:
-                    arr = dat
-                else:      
-                    arr = np.append(arr, dat, axis = 1)
-                #arr.append(np.genfromtxt(filepath).T)
-            #arr = np.array(arr)
-            #construct dimension_cols dictionary
-            dimension_cols = {
-                            'w1':   (1,     5.0,       'nm', '1'),
-                            'w2':   (3,     5.0,       'nm', '2'),
-                            'w3':   (5,     5.0,       'nm', '3'),
-                            'wm':   (7,     1.0,       'nm', 'm'),
-                            'wa':   (8,     1.0,       'nm', 'array'),
-                            'd1':   (12,    3.0,       'fs', '2^{\prime} 1'),
-                            'd2':   (14,    3.0,       'fs', '2 1')}
-            var_list, names = discover_dimensions(arr, dimension_cols)
-        else:
-            print 'define all dimensions or no dimensions'
+    axes_discover = axes.copy()
+    for key in ['num', 'dref']: 
+        axes_discover.pop(key) #remove dimensions that mess up discovery
+    scanned, constant = discover_dimensions(arr, axes_discover)
     
+    #get axes points------------------------------------------------------------
     
-    #load data from all files---------------------------------------------------
+    #clean this up for readability later - blaise    
     
-    data_objs = []
-    zi = []
-    for filepath in filepaths:
+    for axis in scanned:
+        #generate lists from data
+        lis = sorted(arr[axis.file_idx])
+        tol = axis.tolerance
+        # values are binned according to their averages now, so min and max 
+        #  are better represented
+        xs = []
+        # check to see if unique values are sufficiently unique
+        # deplete to list of values by finding points that are within 
+        #  tolerance
+        while len(lis) > 0:
+            # find all the xi's that are like this one and group them
+            # after grouping, remove from the list
+            set_val = lis[0]
+            xi_lis = [xi for xi in lis if np.abs(set_val - xi) < tol]
+            # the complement of xi_lis is what remains of xlis, then
+            lis = [xi for xi in lis if not np.abs(xi_lis[0] - xi) < tol]
+            xi_lis_average = sum(xi_lis) / len(xi_lis)
+            xs.append(xi_lis_average)
+        # create uniformly spaced x and y lists for gridding
+        # infinitesimal offset used to properly interpolate on bounds; can
+        #  be a problem, especially for stepping axis
+        axis.points = np.linspace(min(xs)+1E-06,
+                                  max(xs)-1E-06,
+                                  len(xs))
 
-        #load raw data from filepath--------------------------------------------
-        
-        if os.path.isfile(filepath):
-            dat = np.genfromtxt(filepath).T
-            if verbose: print 'data loaded:', dat.shape
-        else:
-            print 'filepath', filepath, 'does not yield a file'
-            return
-            
-        #get zvar value if appropriate------------------------------------------
-        
-        if zvar:
-            zcol = datCols[zvar][0]
-            zi.append(dat[zcol][0])
-        
-        #treatment for 1D data--------------------------------------------------
-        
-        if not yvar:
-            
-            #define columns
-            xcol = datCols[xvar][0]
-            
-            #define columns
-            xcol = datCols[xvar][0]
+    #grid data------------------------------------------------------------------
     
-            #get data
-            xi = dat[xcol]
-            zis = []
-            for key in zvars:
-                zcol = datCols[key][0]
-                zis.append(dat[zcol])
-            zis = np.array(zis)
-    
-            #create data object
-            x_axis = Axis(xi, datCols[xvar][2], xvar, datCols[xvar][4])
-            x_axis.convert(datCols[xvar][3])
-            data_objs.append(Data([x_axis], zis, zvars))
-    
-        #treatment for 2D data--------------------------------------------------
-    
-        else:
-            
-            #define columns
-            xcol = datCols[xvar][0]
-            ycol = datCols[yvar][0]
-            
-            #grid data
-            
-            #generate regularly spaced y and x bins to use for gridding 2d data
-            #grid_factor:  multiplier factor for blowing up grid
-            #grid all input channels (ai0-ai3) to the set xi and yi attributes
-        
-            #generate lists from data
-            xlis = sorted(dat[xcol])
-            xtol = datCols[xvar][1]
-            # values are binned according to their averages now, so min and max 
-            #  are better represented
-            xs = []
-            # check to see if unique values are sufficiently unique
-            # deplete to list of values by finding points that are within 
-            #  tolerance
-            while len(xlis) > 0:
-                # find all the xi's that are like this one and group them
-                # after grouping, remove from the list
-                set_val = xlis[0]
-                xi_lis = [xi for xi in xlis if np.abs(set_val - xi) < xtol]
-                # the complement of xi_lis is what remains of xlis, then
-                xlis = [xi for xi in xlis if not np.abs(xi_lis[0] - xi) < xtol]
-                xi_lis_average = sum(xi_lis) / len(xi_lis)
-                xs.append(xi_lis_average)
-            # create uniformly spaced x and y lists for gridding
-            # infinitesimal offset used to properly interpolate on bounds; can
-            #  be a problem, especially for stepping axis
-            xi = np.linspace(min(xs)+1E-06,max(xs)-1E-06,
-                             (len(xs) + (len(xs)-1)*(grid_factor-1)))
-                                  
-            ylis = sorted(dat[ycol])
-            ytol = datCols[yvar][1]
-            ys = []
-            while len(ylis) > 0:
-                set_val = ylis[0]
-                yi_lis = [yi for yi in ylis if np.abs(set_val - yi) < ytol]
-                ylis = [yi for yi in ylis if not np.abs(yi_lis[0] - yi) < ytol]
-                yi_lis_average = sum(yi_lis) / len(yi_lis)
-                ys.append(yi_lis_average)
-            yi = np.linspace(min(ys)+1E-06,max(ys)-1E-06,
-                             (len(ys) + (len(ys)-1)*(grid_factor-1)))
-        
-            x_col = dat[xcol] 
-            y_col = dat[ycol]
-            # grid each of our signal channels
-            zis = []
-            for key in zvars:
-                zcol = datCols[key][0]
-                #make fill value znull right now (instead of average value)
-                fill_value = 0. #ugly hack for now #self.znull #self.data[zcol].sum()  / len(self.data[zcol])
-                grid_i = griddata((x_col,y_col), dat[zcol], 
-                                   (xi[None,:],yi[:,None]),
-                                    method='cubic',fill_value=fill_value)
-                zis.append(grid_i)
-            zis = np.array(zis)
-                                
-            #create data object
-            x_axis = Axis(xi, datCols[xvar][2], xvar, datCols[xvar][4])
-            x_axis.convert(datCols[xvar][3])
-            y_axis = Axis(yi, datCols[yvar][2], yvar, datCols[yvar][4])
-            y_axis.convert(datCols[yvar][3])
-            data = Data([x_axis, y_axis], zis, zvars)
-    
-            #create data object
-            x_axis = Axis(xi, datCols[xvar][2], xvar, datCols[xvar][4])
-            x_axis.convert(datCols[xvar][3])
-            y_axis = Axis(yi, datCols[yvar][2], yvar, datCols[yvar][4])
-            y_axis.convert(datCols[yvar][3])
-            data_objs.append(Data([y_axis, x_axis], zis, zvars))
+    points = tuple(arr[axis.file_idx] for axis in scanned)
+    xi = tuple(np.meshgrid(*[axis.points for axis in scanned]))
 
-    #collapse data objects into one object--------------------------------------
+    zis = []
+    for key in channels.keys():
+        channel = channels[key]
+        zcol = channel.file_idx
+        fill_value = 0.
+        grid_i = griddata(points, arr[zcol], xi,
+                          method='linear',fill_value=fill_value)
+        zis.append(grid_i)
+    zis = np.array(zis)
+        
+    #create data object---------------------------------------------------------
 
-    if not movie:
-        data = data_objs[0]
-    else:
-        #sort data objects in ascending zi (native units)
-        zi = np.array(zi)
-        data_objs = [data_objs[i] for i in np.argsort(zi)]
-        zi.sort()
-        #now construct data objct
-        x_axis = data_objs[0].axes[1]
-        y_axis = data_objs[0].axes[0]
-        z_axis = Axis(zi, datCols[zvar][2], zvar, datCols[zvar][4])
-        z_axis.convert(datCols[zvar][3])
-        zis = []
-        for data_obj in data_objs:
-            zis.append(data_obj.zis)
-        zis = np.array(zis)
-        zis = zis.transpose(1, 0, 2, 3) #channel, zi, yi, xi
-        data = Data([z_axis, y_axis, x_axis], zis, zvars)
-            
+    data = Data(scanned, zis, channels.values(), constant, znull)
+    
     #add extra stuff to data object---------------------------------------------
-       
+
     data.source = filepaths
     
     if not name:
@@ -688,18 +646,27 @@ def from_pickle(filepath):
     
 ### other ######################################################################
 
-def discover_dimensions(arr, dimension_cols):
+def discover_dimensions(arr, dimension_cols, verbose = True):
+    '''
+    Discover the dimensions of array arr. \n
+    Watches the indicies contained in dimension_cols. Returns dictionaries of 
+    axis objects [scanned, constant]. \n
+    Constant objects have their points object initialized. Scanned dictionary is
+    in order of scanning (..., zi, yi, xi). Both dictionaries are condensed
+    into coscanning / setting.
+    '''
     
-    print arr.shape
+    #sorry that this method is so convoluted and unreadable - blaise    
+    
+    input_cols = dimension_cols
     
     #import values--------------------------------------------------------------
     
     dc = dimension_cols 
-    di = [dc[key][0] for key in dc.keys()]
-    dt = [dc[key][1] for key in dc.keys()]
-    du = [dc[key][2] for key in dc.keys()]
+    di = [dc[key].file_idx for key in dc.keys()]
+    dt = [dc[key].tolerance for key in dc.keys()]
+    du = [dc[key].units for key in dc.keys()]
     dk = [key for key in dc.keys()]
-    print dk
     dims = zip(di, dt, du, dk)
 
     #remove nan dimensions and bad dimensions------------------------------------------------------
@@ -718,7 +685,6 @@ def discover_dimensions(arr, dimension_cols):
     #find
     d_equal = np.zeros((len(dims), len(dims)), dtype=bool)
     d_equal[:, :] = True
-    print dims
     for i in range(len(dims)): #test
         for j in range(len(dims)): #against
             for k in range(len(arr[0])):
@@ -753,41 +719,59 @@ def discover_dimensions(arr, dimension_cols):
         dims_condensed.append([index, tolerance, units, key])
     dims = dims_condensed
     
-    #find which are scanned-----------------------------------------------------
+    #which dimensions are scanned-----------------------------------------------
     
+    #find
     scanned = []
-    constant = []
+    constant_list = []
     for dim in dims:
         name = dim[3]
         index = dim[0]
         vals = arr[index]
-        if vals.max() - vals.min() > dim[1]:
-            scanned.append([name, index, None])
+        tolerance = dim[1]
+        if vals.max() - vals.min() > tolerance:
+            scanned.append([name, index, tolerance, None])
         else:
-            constant.append([name, index, arr[index, 0]])
+            constant_list.append([name, index, tolerance, arr[index, 0]])
             
-    print scanned
-    print constant
+    #order scanned dimensions (..., zi, yi, xi)
+    first_change_indicies = []
+    for axis in scanned:
+        first_point = arr[axis[1], 0]
+        for i in range(len(arr[0])):
+            upper_bound = arr[axis[1], i] + axis[2]
+            lower_bound = arr[axis[1], i] - axis[2]
+            if upper_bound > first_point > lower_bound:
+                pass
+            else:
+                first_change_indicies.append(i)
+                break
+    scanned_ordered = [scanned[i] for i in np.argsort(first_change_indicies)]
+    scanned_ordered.reverse()
     
-    #order scanned dimensions---------------------------------------------------
-    
-    #to do....
-        
     #return---------------------------------------------------------------------
 
-    return scanned, constant
+    #package back into ordered dictionary of objects
+
+    scanned = collections.OrderedDict()
+    for axis in scanned_ordered:
+        key = axis[0][0]
+        obj = input_cols[key]
+        obj.name_seed = axis[0]
+        scanned[key] = obj
+        
+    constant = collections.OrderedDict()
+    for axis in constant_list:
+        key = axis[0][0]
+        obj = input_cols[key]
+        obj.name_seed = axis[0]
+        obj.points = axis[3]
+        constant[key] = obj
+        
+    return scanned.values(), constant.values()
     
     
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
     
     
