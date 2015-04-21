@@ -102,7 +102,7 @@ class mpl_2D:
         #import data------------------------------------------------------------
 
         self.data = data
-        self.chopped = self.data.chop(xaxis, yaxis, at, verbose = False)
+        self.chopped = self.data.chop(yaxis, xaxis, at, verbose = False)
         
         if self.verbose:
             print 'mpl_2D recieved data to make %d plots'%len(self.chopped)
@@ -122,9 +122,15 @@ class mpl_2D:
     
     def plot(self, channel_index,
              contours = 9,
-             cmap = 'default',
+             cmap = 'default', dynamic_range = False,
              xbin = False, ybin = False,
              autosave = False, output_folder = None, verbose = True):
+        '''
+        set contours to zero to turn off        
+        
+        dynamic_range forces the colorbar to use all of its colors (only matters
+        for signed data)
+        '''
                  
         #ensure plot environment clear------------------------------------------
                  
@@ -140,20 +146,17 @@ class mpl_2D:
                 os.mkdir(timestamp)
                 output_folder = timestamp  
              
-        #import-----------------------------------------------------------------
-
-        self.channel = self.data.channels[channel_index]             
-             
         #chew through image generation
         for i in range(len(self.chopped)):
             
             #get data to plot---------------------------------------------------
             
-            axes, zis, constants = self.chopped[i]
+            axes, channels, constants = self.chopped[i]
             
-            xaxis = axes[0]
-            yaxis = axes[1]
-            zi = zis[channel_index]
+            xaxis = axes[1]
+            yaxis = axes[0]
+            channel = channels[channel_index]
+            zi = channel.values
             
             #create figure------------------------------------------------------            
             
@@ -165,10 +168,14 @@ class mpl_2D:
             
             #main plot----------------------------------------------------------
             
-            if self.channel.signed:
-                levels = np.linspace(zi.min(), zi.max(), 200)
+            if channel.signed:
+                if dynamic_range:
+                    limit = min(abs(channel.znull - channel.zmin), abs(channel.znull - channel.zmax))
+                else:
+                    limit = max(abs(channel.znull - channel.zmin), abs(channel.znull - channel.zmax))
+                levels = np.linspace(-limit + channel.znull, limit + channel.znull, 200)
             else:
-                levels = np.linspace(self.channel.zmin, self.channel.zmax, 200)
+                levels = np.linspace(channel.zmin, channel.zmax, 200)
             
             mycm = colormaps[cmap]
             contourf = subplot_main.contourf(xaxis.points, yaxis.points, zi,
@@ -253,9 +260,9 @@ class mpl_2D:
             
             title_text = self.data.name
             
-            constants_text = ''
-            #for key in constants.keys():
-            #    constants_text += '\n' + key + '=' + str(np.round(constants[key][0]))        
+            constants_text = '\n'
+            for constant in constants:
+                constants_text += constant.name + '=' + str(np.round(constant.points)) + ' '         
                 
             plt.suptitle(title_text + constants_text, fontsize = self.font_size)
             

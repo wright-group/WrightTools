@@ -57,33 +57,77 @@ class Axis:
         
 class Channel:
     
-    def __init__(self, units,
+    def __init__(self, values, units,
                  file_idx,
-                 znull = None, zmin = None, zmax = None, signed = False,
+                 znull = None, zmin = None, zmax = None, signed = None,
                  name = None, label = None, label_seed = None):
                      
+        #general import---------------------------------------------------------
+        
         self.name = name
+        self.label = label
+        self.label_seed = label_seed
+        
         self.units = units
         self.file_idx = file_idx
-        self.signed = signed
-        self.znull = znull
-        self.zmin = zmin
-        self.zmax = zmax
+
+        #values-----------------------------------------------------------------
+
+        if values:
+            self.give_values(values, znull, zmin, zmax, signed)
+        else:
+            self.znull = znull
+            self.zmin = zmin
+            self.zmax = zmax
+            self.signed = signed
+        
+    def give_values(self, values, znull = None, zmin = None, zmax = None, signed = None):
+        
+        self.values = values
+        
+        if znull:
+            self.znull = znull
+        elif self.znull:
+            pass
+        else: 
+            self.znull = self.values.min()
+            
+        if zmin:
+            self.zmin = zmin
+        elif self.zmin:
+            pass
+        else:
+            self.zmin = self.values.min()
+            
+        if zmax:
+            self.zmax = zmax
+        elif self.zmax:
+            pass
+        else:
+            self.zmax = self.values.max()
+            
+        if signed:
+            self.signed = signed
+        elif self.signed:
+            pass
+        else:
+            if self.zmin < self.znull:
+                self.signed = True
+            else:
+                self.signed = False
+                
+    def invert(self):
+        
+        self.values = - self.values
 
 class Data:
 
-    def __init__(self, axes, zis, channels, constants = {}, 
+    def __init__(self, axes, channels, constants = {}, 
                  znull = None, zmin = None, zmax = None, 
                  name = None, source = None):
         '''
         central object for all data types                              \n
         create data objects by calling the methods of this script
-        
-        contains axes - a list of axes objects and zis - an array 
-        of data gridded to those axes (in order)
-        
-        contains constants - a dictionary of conjugate variables. example: \n
-        w1: [1300., 'nm', 'energy', 'label']
         '''
         
         #axes-------------------------------------------------------------------
@@ -109,8 +153,7 @@ class Data:
                 
             
         #other------------------------------------------------------------------
-        
-        self.zis = zis        
+  
         self.constants = constants 
         
         
@@ -152,11 +195,14 @@ class Data:
                 iterated_dimensions.append(name)
                 length = len(getattr(self, name).points)
                 iterated_shape.append(length)
+                
+        #make copies of channel objects for handing out
+        channels_chopped = copy.deepcopy(self.channels)
     
         chopped_constants_everywhere = chopped_constants
         out = []
         for index in np.ndindex(tuple(iterated_shape)):
-            
+
             #get chopped_constants correct for this iteration
             chopped_constants = chopped_constants_everywhere.copy()
             for i in range(len(index[1:])):
@@ -175,30 +221,29 @@ class Data:
             constants = list(self.constants) #copy
             for dim in chopped_constants.keys():
                 idx = [idx for idx in range(len(self.axes)) if self.axes[idx].name == dim][0]
-                transpose_order.append(idx + 1)
+                transpose_order.append(idx)
                 #get index of nearest value
                 val = chopped_constants[dim][0]
                 val = kit.unit_converter(val, chopped_constants[dim][1], self.axes[idx].units)
                 c_idx = np.argmin(abs(self.axes[idx].points - val))
                 constant_indicies.append(c_idx)
-                obj = Axis(self.axes[idx].points[c_idx], self.axes[idx].units )
+                obj = Axis(self.axes[idx].points[c_idx], self.axes[idx].units, name = dim)
                 constants.append(obj)
-    
-            #now one for the channels
-            transpose_order.append(0)
-        
+
             #now handle axes
             axes_chopped = []
             for dim in axes_args:
                 idx = [idx for idx in range(len(self.axes)) if self.axes[idx].name == dim][0]
-                transpose_order.append(idx + 1)
+                transpose_order.append(idx)
                 axes_chopped.append(self.axes[idx])
                 
             #ensure that everything is kosher
-            if len(transpose_order) == len(self.zis.shape):
+            if len(transpose_order) == len(self.channels[0].values.shape):
                 pass
             else:
                 print 'chop failed: not enough dimensions specified'
+                print len(transpose_order)
+                print len(self.channels[0].values.shape)
                 return
             if len(transpose_order) == len(set(transpose_order)):
                 pass
@@ -207,12 +252,15 @@ class Data:
                 return
     
             #chop
-            zis_chopped = self.zis.transpose(transpose_order)
-            for idx in constant_indicies: 
-                zis_chopped = zis_chopped[idx]
-                
+            for i in range(len(self.channels)):
+                values = self.channels[i].values
+                values = values.transpose(transpose_order)
+                for idx in constant_indicies: 
+                    values = values[idx]
+                channels_chopped[i].values = values
+                    
             #finish iteration 
-            out.append([axes_chopped, zis_chopped, constants])
+            out.append([axes_chopped, copy.deepcopy(channels_chopped), constants])
         
         #return-----------------------------------------------------------------
         
@@ -249,25 +297,129 @@ class Data:
         for differential scans:  convert zi signal from dT to dOD
         '''    
     
-        T =  self.zis[reference_channel_index]
-        dT = self.zis[signal_channel_index]
-        signal_channel = self.channels[signal_channel_index]
+        T =  self.channels[reference_channel_index].values
+        dT = self.channels[signal_channel_index].values
         
         if method == 'boxcar':
+            print 'boxcar'
             #assume data collected with boxcar i.e.
             #sig = 1/2 dT
             #ref = T + 1/2 dT
             dT = 2 * dT
             out = -np.log10((T + dT) / T)
-            
-        self.zis[signal_channel_index] = out
-            
+        else:
+            print 'method not recognized in dOD, returning'
+            return
+  
         #reset znull, zmin, zmax------------------------------------------------
+  
+        self.channels[signal_channel_index].give_values(out)
+        self.channels[signal_channel_index].znull = 0.
+        self.channels[signal_channel_index].zmin = out.min()
+        self.channels[signal_channel_index].zmax = out.max()
+        self.channels[signal_channel_index].signed = True
         
-        signal_channel.znull = 0.
-        signal_channel.zmin = out.min()
-        signal_channel.zmax = out.max()
-        signal_channel.signed = True
+    def flip(self, axis):
+        '''
+        invert arrays along axis \n
+        axis may be an integer (index) or a string (name)
+        '''
+        
+        #axis-------------------------------------------------------------------
+        
+        if type(axis) == int:
+            axis_index = axis
+        elif type(axis) == str:
+            axis_index =  self.axis_names.index(axis)
+        else:
+            print 'axis type', type(axis), 'not valid'
+            
+        axis = self.axes[axis_index]            
+            
+        #flip-------------------------------------------------------------------
+            
+        #axis
+        axis.points = -axis.points
+            
+            
+        #data
+        for channel in self.channels:
+            values = channel.values            
+            #transpose so the axis of interest is last
+            transpose_order = range(len(values.shape))
+            transpose_order = [len(values.shape)-1 if i==axis_index else i for i in transpose_order] #replace axis_index with zero
+            transpose_order[len(values.shape)-1] = axis_index
+            values = values.transpose(transpose_order)
+            values = values[:,::-1]
+            #transpose out
+            values = values.transpose(transpose_order)
+        
+        
+        
+    def level(self, channel_index, axis, npts, verbose = True):
+        '''
+        subtract offsets along the edge of axis \n
+        axis may be an integer (index) or a string (name)
+        '''
+        
+        #axis-------------------------------------------------------------------
+        
+        if type(axis) == int:
+            axis_index = axis
+        elif type(axis) == str:
+            axis_index =  self.axis_names.index(axis)
+        else:
+            print 'axis type', type(axis), 'not valid'
+        
+        # verify npts not zero--------------------------------------------------
+        
+        npts = int(npts)
+        if npts == 0:
+            print 'cannot level if no sampling range is specified'
+            return
+
+        #level------------------------------------------------------------------
+
+        channel = self.channels[channel_index]
+        values = channel.values
+        
+        #transpose so the axis of interest is last
+        transpose_order = range(len(values.shape))
+        transpose_order = [len(values.shape)-1 if i==axis_index else i for i in transpose_order] #replace axis_index with zero
+        transpose_order[len(values.shape)-1] = axis_index
+        values = values.transpose(transpose_order)
+        print values.shape        
+        
+        offsets = np.zeros(values.shape)
+        for index in np.ndindex(values.shape[:-1]):
+            #print index
+            if npts > 0:
+                offset = np.average(values[index, :npts])
+            elif npts < 0:
+                offset = np.average(values[index, npts:])
+            offsets[index, :] = offset
+        
+        values = values - offsets
+        
+        #transpose out
+        values = values.transpose(transpose_order)
+        
+        #return
+        channel.values = values
+        channel.znull = 0.
+        channel.zmax = values.max()
+        channel.zmin = values.min()
+        
+        #print
+        if verbose:
+            axis = self.axes[axis_index]
+            if npts > 0:
+                points = axis.points[:npts]
+            if npts < 0:
+                points = axis.points[npts:]
+            
+            print 'channel', channel.name, 'offset by', axis.name, 'between', int(points.min()), 'and', int(points.max()), axis.units
+        
         
     def save(self, filepath = None, verbose = True):
         '''
@@ -299,13 +451,12 @@ class Data:
             axis.points = scipy.ndimage.interpolation.zoom(axis.points, factor, order=order)
         
         #data (don't zoom along channel dimension)
-        zoomed_zis = []
-        for i in range(len(self.zis)):
-            zoomed_zis.append(scipy.ndimage.interpolation.zoom(self.zis[i], factor, order=order))
-        self.zis = np.array(zoomed_zis)
-        
+        for channel in self.channels:
+            channel.values = scipy.ndimage.interpolation.zoom(channel.values, factor, order=order)
+            
+            
         if verbose:
-            print 'data zoomed - new shape:', self.zis.shape
+            print 'data zoomed to new shape:', self.channels[0].values.shape
         
         
 ### data manipulation and usage methods ########################################
@@ -480,19 +631,19 @@ def from_COLORS(filepaths, znull = None,
         axes['num']  = Axis(None, None, tolerance = 0.5,  file_idx = 0,  name = 'num',  label_seed = ['num'])
         axes['w1']   = Axis(None, 'nm', tolerance = 5.0,  file_idx = 1,  name = 'w1',   label_seed = ['1'])
         axes['w2']   = Axis(None, 'nm', tolerance = 5.0,  file_idx = 3,  name = 'w2',   label_seed = ['2'])
-        axes['w3']   = Axis(None, 'nm', tolerance = 5.0,  file_idx = 5,  name = 'w3',   label_seed = ['3'])
+        #axes['w3']   = Axis(None, 'nm', tolerance = 5.0,  file_idx = 5,  name = 'w3',   label_seed = ['3'])
         axes['wm']   = Axis(None, 'nm', tolerance = 5.0,  file_idx = 7,  name = 'wm',   label_seed = ['m'])
         axes['wa']   = Axis(None, 'nm', tolerance = 1.0,  file_idx = 8,  name = 'wm',   label_seed = ['a'])
         axes['dref'] = Axis(None, 'fs', tolerance = 25.0, file_idx = 10, name = 'dref', label_seed = ['ref'])
         axes['d1']   = Axis(None, 'fs', tolerance = 3.0,  file_idx = 12, name = 'd1',   label_seed = ['1'])
         axes['d2']   = Axis(None, 'fs', tolerance = 3.0,  file_idx = 14, name = 'd2',   label_seed = ['2'])
         channels = collections.OrderedDict()
-        channels['ai0'] = Channel('V',  file_idx = 16, name = 'Signal 0',  label_seed = ['0'])
-        channels['ai1'] = Channel('V',  file_idx = 17, name = 'Signal 1',  label_seed = ['1'])
-        channels['ai2'] = Channel('V',  file_idx = 18, name = 'Signal 2',  label_seed = ['2'])
-        channels['ai3'] = Channel('V',  file_idx = 19, name = 'Signal 3',  label_seed = ['3'])
-        channels['ai4'] = Channel('V',  file_idx = 20, name = 'Signal 4',  label_seed = ['4'])
-        channels['mc']  = Channel(None, file_idx = 21, name = 'Array Sig', label_seed = ['a'])
+        channels['ai0'] = Channel(None, 'V',  file_idx = 16, name = 'ai0',  label_seed = ['0'])
+        channels['ai1'] = Channel(None, 'V',  file_idx = 17, name = 'ai1',  label_seed = ['1'])
+        channels['ai2'] = Channel(None, 'V',  file_idx = 18, name = 'ai2',  label_seed = ['2'])
+        channels['ai3'] = Channel(None, 'V',  file_idx = 19, name = 'ai3',  label_seed = ['3'])
+        channels['ai4'] = Channel(None, 'V',  file_idx = 20, name = 'ai4',  label_seed = ['4'])
+        channels['mc']  = Channel(None, None, file_idx = 21, name = 'array', label_seed = ['a'])
     elif cols == 'v1':
         #fix this later
         cols_v1 = {
@@ -542,9 +693,7 @@ def from_COLORS(filepaths, znull = None,
     scanned, constant = discover_dimensions(arr, axes_discover)
     
     #get axes points------------------------------------------------------------
-    
-    #clean this up for readability later - blaise    
-    
+
     for axis in scanned:
         #generate lists from data
         lis = sorted(arr[axis.file_idx])
@@ -574,21 +723,21 @@ def from_COLORS(filepaths, znull = None,
     #grid data------------------------------------------------------------------
     
     points = tuple(arr[axis.file_idx] for axis in scanned)
-    xi = tuple(np.meshgrid(*[axis.points for axis in scanned]))
+    #beware, meshgrid gives wrong answer with default indexing
+    #this took me many hours to figure out... - blaise
+    xi = tuple(np.meshgrid(*[axis.points for axis in scanned], indexing = 'ij'))
 
-    zis = []
     for key in channels.keys():
         channel = channels[key]
-        zcol = channel.file_idx
-        fill_value = 0.
-        grid_i = griddata(points, arr[zcol], xi,
+        zi = arr[channel.file_idx]
+        fill_value = min(zi)
+        grid_i = griddata(points, zi, xi,
                           method='linear',fill_value=fill_value)
-        zis.append(grid_i)
-    zis = np.array(zis)
+        channel.give_values(grid_i)
         
     #create data object---------------------------------------------------------
 
-    data = Data(scanned, zis, channels.values(), constant, znull)
+    data = Data(scanned, channels.values(), constant, znull)
     
     #add extra stuff to data object---------------------------------------------
 
@@ -601,8 +750,9 @@ def from_COLORS(filepaths, znull = None,
     #return---------------------------------------------------------------------
     
     if verbose:
-        print 'axis_names:', data.axis_names
-        print'zis_shape:', data.zis.shape
+        print 'data object succesfully created'
+        print 'axis names:', data.axis_names
+        print 'values shape:', channels.values()[0].values.shape
         
     return data
     
@@ -640,9 +790,14 @@ def from_JASCO(filepath, name = None, verbose = True):
     
     return data
     
-def from_pickle(filepath):
+def from_pickle(filepath, verbose = True):
     
-    return pickle.load(open(filepath, 'rb'))
+    data = pickle.load(open(filepath, 'rb'))
+    
+    if verbose:
+        print 'data opened from', filepath
+    
+    return data
     
 ### other ######################################################################
 
@@ -769,9 +924,3 @@ def discover_dimensions(arr, dimension_cols, verbose = True):
         constant[key] = obj
         
     return scanned.values(), constant.values()
-    
-    
-
-
-    
-    
