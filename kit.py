@@ -96,7 +96,7 @@ def gauss_residuals(p, y, x):
     A, mu, sigma, offset = p
     # force sigma to be positive
     err = y-A*np.exp(-(x-mu)**2 / (2*np.abs(sigma)**2)) - offset
-    return err    
+    return err   
     
 ### units ######################################################################
          

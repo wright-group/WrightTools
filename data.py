@@ -42,7 +42,7 @@ class Axis:
         
         self.points = kit.unit_converter(self.points, self.units, destination_units)
         self.units = destination_units
-
+        
     def make_label(self):
         
         self.label = self.name
@@ -282,7 +282,7 @@ class Data:
         
         for axis in self.axes + self.constants:
             if axis.units_kind == units_kind:
-                axis.convert('wn')
+                axis.convert(units)
                 if verbose:
                     print 'axis', axis.name, 'converted'
         
@@ -388,22 +388,34 @@ class Data:
         transpose_order = [len(values.shape)-1 if i==axis_index else i for i in transpose_order] #replace axis_index with zero
         transpose_order[len(values.shape)-1] = axis_index
         values = values.transpose(transpose_order)
-        print values.shape        
+        print transpose_order, values.shape        
         
-        offsets = np.zeros(values.shape)
-        for index in np.ndindex(values.shape[:-1]):
+        #offsets = np.zeros(values.shape)
+        for index in np.ndindex(values[..., 0].shape):
+            #print index
+            plt.plot(values[index])
             #print index
             if npts > 0:
-                offset = np.average(values[index, :npts])
+                offset = np.average(values[index][:npts])
             elif npts < 0:
-                offset = np.average(values[index, npts:])
-            offsets[index, :] = offset
+                offset = np.average(values[index][npts:])
+                #print index, values[index]npts:].shape, offset
+            plt.axhline(offset)
+            values[index] = values[index] - offset
+            
+        print values.min(), values.max()
+        #1/0
         
-        values = values - offsets
+        #values = values - offsets
+        #plt.contourf(values[0], 200)
+        #plt.colorbar()
+        #plt.figure()
+        #plt.contourf(offsets[0], 200)
+        #1/0
         
         #transpose out
         values = values.transpose(transpose_order)
-        
+
         #return
         channel.values = values
         channel.znull = 0.
@@ -437,7 +449,52 @@ class Data:
             print 'data saved at', filepath
         
         return filepath
+    
+    def smooth(self, factors):
+        '''
+        smooth by multidimensional kaiser window   \n
+        factors can be an integer or a list
+        '''
         
+        #get factors------------------------------------------------------------        
+        
+        if type(factors) == list:
+            pass
+        else:
+            pass #fix this later
+            
+        #smooth-----------------------------------------------------------------
+            
+        for channel in self.channels:
+            
+            values = channel.values            
+            
+            for axis_index in range(len(factors)):
+                
+                factor = factors[axis_index]
+                
+                #transpose so the axis of interest is last
+                transpose_order = range(len(values.shape))
+                transpose_order = [len(values.shape)-1 if i==axis_index else i for i in transpose_order] #replace axis_index with zero
+                transpose_order[len(values.shape)-1] = axis_index
+                values = values.transpose(transpose_order)
+
+                #get kaiser window                
+                beta = 5.0
+                w = np.kaiser(2*factor+1, beta)
+                
+                #for all slices...
+                for index in np.ndindex(values[..., 0].shape):
+                    current_slice = values[index]
+                    temp_slice = np.pad(current_slice, (factor,factor), mode = 'edge')
+                    values[index] = np.convolve(temp_slice, w/w.sum(), mode='valid')
+
+                #transpose out
+                values = values.transpose(transpose_order)
+            
+            #return array to channel object
+            channel.values = values
+
     def zoom(self, factor, order=1, verbose = True):
         '''
         'zoom' the data array using spline interpolation of the requested order. \n
@@ -629,10 +686,10 @@ def from_COLORS(filepaths, znull = None,
     if cols == 'v2':
         axes = collections.OrderedDict()
         axes['num']  = Axis(None, None, tolerance = 0.5,  file_idx = 0,  name = 'num',  label_seed = ['num'])
-        axes['w1']   = Axis(None, 'nm', tolerance = 5.0,  file_idx = 1,  name = 'w1',   label_seed = ['1'])
-        axes['w2']   = Axis(None, 'nm', tolerance = 5.0,  file_idx = 3,  name = 'w2',   label_seed = ['2'])
+        axes['w1']   = Axis(None, 'nm', tolerance = 0.5,  file_idx = 1,  name = 'w1',   label_seed = ['1'])
+        axes['w2']   = Axis(None, 'nm', tolerance = 0.5,  file_idx = 3,  name = 'w2',   label_seed = ['2'])
         #axes['w3']   = Axis(None, 'nm', tolerance = 5.0,  file_idx = 5,  name = 'w3',   label_seed = ['3'])
-        axes['wm']   = Axis(None, 'nm', tolerance = 5.0,  file_idx = 7,  name = 'wm',   label_seed = ['m'])
+        axes['wm']   = Axis(None, 'nm', tolerance = 0.5,  file_idx = 7,  name = 'wm',   label_seed = ['m'])
         axes['wa']   = Axis(None, 'nm', tolerance = 1.0,  file_idx = 8,  name = 'wm',   label_seed = ['a'])
         axes['dref'] = Axis(None, 'fs', tolerance = 25.0, file_idx = 10, name = 'dref', label_seed = ['ref'])
         axes['d1']   = Axis(None, 'fs', tolerance = 3.0,  file_idx = 12, name = 'd1',   label_seed = ['1'])
@@ -700,6 +757,7 @@ def from_COLORS(filepaths, znull = None,
         tol = axis.tolerance
         # values are binned according to their averages now, so min and max 
         #  are better represented
+        xstd = []
         xs = []
         # check to see if unique values are sufficiently unique
         # deplete to list of values by finding points that are within 
@@ -713,12 +771,15 @@ def from_COLORS(filepaths, znull = None,
             lis = [xi for xi in lis if not np.abs(xi_lis[0] - xi) < tol]
             xi_lis_average = sum(xi_lis) / len(xi_lis)
             xs.append(xi_lis_average)
+            xstdi = sum(np.abs(xi_lis - xi_lis_average)) / len(xi_lis)
+            xstd.append(xstdi)
+        tol = sum(xstd) / len(xstd)
         # create uniformly spaced x and y lists for gridding
         # infinitesimal offset used to properly interpolate on bounds; can
-        #  be a problem, especially for stepping axis
-        axis.points = np.linspace(min(xs)+1E-06,
-                                  max(xs)-1E-06,
-                                  len(xs))
+        #   be a problem, especially for stepping axis
+        tol = max(tol, 1e-1)
+        axis.points = np.linspace(min(xs)+tol,max(xs)-tol,
+                              num=(len(xs)))
 
     #grid data------------------------------------------------------------------
     
@@ -783,8 +844,8 @@ def from_JASCO(filepath, name = None, verbose = True):
     
     #construct data
     x_axis = Axis(data[0], 'nm', name = 'wm')
-    zis = np.array([data[1]])
-    data = Data([x_axis], zis, 'JASCO')
+    signal = Channel(data[1], 'absorbance', file_idx = 1, signed = False)
+    data = Data([x_axis], [signal], 'JASCO')
     
     #return---------------------------------------------------------------------
     
