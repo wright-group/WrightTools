@@ -23,7 +23,7 @@ def nm_to_rgb(nm):
     
     w = int(wavelength)
 
-    #colour---------------------------------------------------------------------
+    #color----------------------------------------------------------------------
 
     if w >= 380 and w < 440:
         R = -(w - 440.) / (440. - 350.)
@@ -131,9 +131,9 @@ colormaps = {'default': mplcolors.LinearSegmentedColormap.from_list('wright', de
              'paired': plt.get_cmap('Paired'),
              'prism': plt.get_cmap('prism'),
              'signed':  mplcolors.LinearSegmentedColormap.from_list('signed', signed),
-             'nipy': plt.get_cmap('nipy_spectral'),
              'signed_old':  mplcolors.LinearSegmentedColormap.from_list('signed', signed_old),
-             'skyebar':  mplcolors.LinearSegmentedColormap.from_list('skyebar', skyebar)} 
+             'skyebar':  mplcolors.LinearSegmentedColormap.from_list('skyebar', skyebar),
+             'spectral': plt.get_cmap('nipy_spectral')} 
 
 ### general purpose artists ####################################################
 
@@ -172,16 +172,22 @@ class mpl_2D:
         
         self._xsideplot = False
         self._ysideplot = False
+        self._xsideplotdata = []
+        self._ysideplotdata = []
     
-    def sideplot(self, data, xaxis = True, yaxis = True):
+    def sideplot(self, data, x = True, y = True):
+
+        if x:
+            self._xsideplot = True
+            self._xsideplotdata.append([data.axes[0].points, data.channels[0].values])
         
-        #placeholder for future
-        
-        pass
-    
+        if y:
+            self._ysideplot = True
+            self._ysideplotdata.append([data.axes[0].points, data.channels[0].values])
+
     def plot(self, channel_index,
              contours = 9, pixelated = False, lines = False,
-             cmap = 'default', dynamic_range = False, local = True,
+             cmap = 'default', dynamic_range = False, local = False, contours_local = True,
              xbin = False, ybin = False,
              aspect = None,
              autosave = False, output_folder = None, verbose = True):
@@ -191,8 +197,8 @@ class mpl_2D:
         dynamic_range forces the colorbar to use all of its colors (only matters
         for signed data)
         '''
-                 
-        plt.close()
+        
+        fig = None        
         
         #prepare output folder--------------------------------------------------
         
@@ -218,26 +224,32 @@ class mpl_2D:
             
             #create figure------------------------------------------------------            
             
+            if fig: plt.close(fig)            
+            
             fig = plt.figure(figsize=(8, 6))
             
             gs = grd.GridSpec(1, 2, width_ratios=[20, 1], wspace=0.1)            
             
             subplot_main = plt.subplot(gs[0])
+                        
+            #levels-------------------------------------------------------------
             
-            #main plot----------------------------------------------------------
-            
-            #decide on levels
             if channel.signed:
+                
                 if dynamic_range:
                     limit = min(abs(channel.znull - channel.zmin), abs(channel.znull - channel.zmax))
                 else:
                     limit = max(abs(channel.znull - channel.zmin), abs(channel.znull - channel.zmax))
                 levels = np.linspace(-limit + channel.znull, limit + channel.znull, 200)
+                
             else:
+                
                 if local: 
                     levels = np.linspace(zi.min(), zi.max(), 200)
                 else:
                     levels = np.linspace(channel.zmin, channel.zmax, 200)
+                    
+            #main plot----------------------------------------------------------
             
             #get colormap
             mycm = colormaps[cmap]
@@ -247,13 +259,13 @@ class mpl_2D:
                 x_points = np.zeros(len(xaxis.points) + 1)
                 y_points = np.zeros(len(yaxis.points) + 1)
                 for points, axis in [[x_points, xaxis], [y_points, yaxis]]:
-                    for i in range(len(points)):
-                        if i == 0:               #first point
-                            points[i] = axis.points[0] - (axis.points[1] - axis.points[0])
-                        elif i == len(x_points)-1: #last point
-                            points[i] = axis.points[-1] +  (axis.points[-1] - axis.points[-2])
+                    for j in range(len(points)):
+                        if j == 0:               #first point
+                            points[j] = axis.points[0] - (axis.points[1] - axis.points[0])
+                        elif j == len(points)-1: #last point
+                            points[j] = axis.points[-1] +  (axis.points[-1] - axis.points[-2])
                         else:
-                            points[i] = np.average([axis.points[i], axis.points[i-1]])
+                            points[j] = np.average([axis.points[j], axis.points[j-1]])
                 #plot
                 xi, yi = np.meshgrid(x_points, y_points)
                 cax = plt.pcolor(xi, yi, zi, cmap = mycm,
@@ -293,8 +305,12 @@ class mpl_2D:
             #contour lines------------------------------------------------------
 
             if contours:
+                if contours_local:
+                    contours_levels = np.linspace(zi.min(), zi.max(), contours)
+                else:
+                    contours_levels = contours
                 subplot_main.contour(xaxis.points, yaxis.points, zi, 
-                                     contours, colors = 'k')
+                                     contours_levels, colors = 'k')
 
             #sideplots----------------------------------------------------------
 
@@ -307,7 +323,11 @@ class mpl_2D:
                 axCorrx.set_adjustable('box-forced')
                 plt.setp(axCorrx.get_xticklabels(), visible=False)
                 plt.setp(axCorrx.get_yticklabels(), visible=False)
-                plt.grid(b = True)                
+                plt.grid(b = True)
+                if channel.signed:
+                    axCorrx.set_ylim([-1.1,1.1])
+                else:
+                    axCorrx.set_ylim([0,1.1])
                 
                 #bin
                 if xbin:
@@ -315,12 +335,20 @@ class mpl_2D:
                     #normalize (min is a pixel)
                     xmax = max(np.abs(x_ax_int))
                     x_ax_int = x_ax_int / xmax
-                    axCorrx.plot(xaxis.points,x_ax_int)
-                    if min(x_ax_int) < 0:
-                        axCorrx.set_ylim([-1.1,1.1])
-                    else:
-                        axCorrx.set_ylim([0,1.1])
+                    axCorrx.plot(xaxis.points,x_ax_int, lw = 2)
                     axCorrx.set_xlim([xaxis.points.min(), xaxis.points.max()])
+                    
+                #data
+                if self._xsideplot:
+                    for s_xi, s_zi in self._xsideplotdata:
+                        xlim =  axCorrx.get_xlim()
+                        min_index = np.argmin(abs(s_xi - min(xlim)))
+                        max_index = np.argmin(abs(s_xi - max(xlim)))
+                        s_zi_in_range = s_zi[min(min_index, max_index):max(min_index, max_index)]
+                        s_zi = s_zi - min(s_zi_in_range)
+                        s_zi_in_range = s_zi[min(min_index, max_index):max(min_index, max_index)]
+                        s_zi = s_zi / max(s_zi_in_range) 
+                        axCorrx.plot(s_xi, s_zi, lw = 2)
                                 
             if ybin or self._ysideplot:
             
@@ -330,6 +358,10 @@ class mpl_2D:
                 plt.setp(axCorry.get_xticklabels(), visible=False)
                 plt.setp(axCorry.get_yticklabels(), visible=False)   
                 plt.grid(b = True)  
+                if channel.signed:
+                    axCorry.set_xlim([-1.1,1.1])
+                else:
+                    axCorry.set_xlim([0,1.1])
                 
                 #bin
                 if ybin:
@@ -337,12 +369,20 @@ class mpl_2D:
                     #normalize (min is a pixel)
                     ymax = max(np.abs(y_ax_int))
                     y_ax_int = y_ax_int / ymax
-                    axCorry.plot(y_ax_int, yaxis.points)
-                    if min(y_ax_int) < 0:
-                        axCorry.set_xlim([-1.1,1.1])
-                    else:
-                        axCorry.set_xlim([0,1.1])
+                    axCorry.plot(y_ax_int, yaxis.points, lw = 2)
                     axCorry.set_ylim([yaxis.points.min(), yaxis.points.max()])
+                
+                #data
+                if self._ysideplot:
+                    for s_xi, s_zi in self._ysideplotdata:
+                        xlim =  axCorry.get_ylim()
+                        min_index = np.argmin(abs(s_xi - min(xlim)))
+                        max_index = np.argmin(abs(s_xi - max(xlim)))
+                        s_zi_in_range = s_zi[min(min_index, max_index):max(min_index, max_index)]
+                        s_zi = s_zi - min(s_zi_in_range)
+                        s_zi_in_range = s_zi[min(min_index, max_index):max(min_index, max_index)]
+                        s_zi = s_zi / max(s_zi_in_range) 
+                        axCorry.plot(s_zi, s_xi, lw = 2)
                                 
             #colorbar-----------------------------------------------------------
 
@@ -378,14 +418,18 @@ class mpl_2D:
 ### specific artists ###########################################################
         
 class absorbance:
+    
+    def __init__(self, data):
         
-    def plot(self, data, channel = 0, font_size = 12):
+        self.data = data
+        
+    def plot(self, channel_index = 0, font_size = 12, xlim = None, ylim = None):
         
         #import data------------------------------------------------------------
         
-        xi = data.axes[0].points
-        zi = data.zis[0]
-        name = data.name
+        xi = self.data.axes[0].points
+        zi = self.data.channels[channel_index].values
+        name = self.data.name
         
         #prepare plot environment-----------------------------------------------
     
@@ -412,6 +456,21 @@ class absorbance:
         
         self.ax2.grid(b=True)
         plt.xlabel(r'$\bar\nu / cm^{-1}$')
+        
+        #finish-----------------------------------------------------------------
+        
+        if xlim:
+            plt.xlim(xlim[0], xlim[1])
+            for axis, xi, zi in [[self.ax1, xi, zi], [self.ax2, plotData[0], plotData[1]]]:
+                min_index = np.argmin(abs(xi - min(xlim)))
+                max_index = np.argmin(abs(xi - max(xlim)))
+                zi_truncated = zi[min_index:max_index]
+                extra = (zi_truncated.max() - zi_truncated.min())*0.1
+                axis.set_ylim(zi_truncated.min() - extra, zi_truncated.max() + extra)
+                
+            
+            
+            
         
     def _smooth(self, dat1, n=20, window_type='default'):
         #data is an array of type [xlis,ylis]        
