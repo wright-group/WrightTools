@@ -2,6 +2,8 @@
 a collection of small, general purpose objects and methods
 '''
 
+import os
+
 ### files ######################################################################
  
 def filename_parse(fstr):
@@ -53,6 +55,10 @@ def find_name(fname, suffix):
             # file doesn't exist and is safe to write to this path
             good_name = True
     return
+    
+def get_box_path():
+    box_path = os.path.join(os.path.expanduser('~'), 'Box Sync', 'Wright Shared')
+    return box_path
 
 def get_timestamp():
     
@@ -107,7 +113,7 @@ def gauss_residuals(p, y, x):
 energy = {'kind': 'energy',
           'nm': ['x', 'x'],
           'wn': ['1e7/x', '1e7/x'],
-          'eV': ['1240./x', 'x/1240.']} 
+          'eV': ['x/1240.', '1240./x']} 
      
 #time units (native: s)
 time = {'kind': 'time',

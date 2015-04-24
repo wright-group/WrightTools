@@ -73,7 +73,7 @@ class Channel:
 
         #values-----------------------------------------------------------------
 
-        if values:
+        if not values == None:
             self.give_values(values, znull, zmin, zmax, signed)
         else:
             self.znull = znull
@@ -87,29 +87,44 @@ class Channel:
         
         if znull:
             self.znull = znull
-        elif self.znull:
-            pass
+        elif hasattr(self, 'znull'):
+            if self.znull:
+                pass
+            else:
+                self.znull = self.values.min()
         else: 
             self.znull = self.values.min()
             
         if zmin:
             self.zmin = zmin
-        elif self.zmin:
-            pass
+        elif hasattr(self, 'zmin'):
+            if self.zmin:
+                pass
+            else:
+                self.zmin = self.values.min()
         else:
             self.zmin = self.values.min()
             
         if zmax:
             self.zmax = zmax
-        elif self.zmax:
-            pass
+        elif hasattr(self, 'zmax'):
+            if self.zmax:
+                pass
+            else:
+                self.zmax = self.values.max()
         else:
             self.zmax = self.values.max()
             
         if signed:
             self.signed = signed
-        elif self.signed:
-            pass
+        elif hasattr(self, 'signed'):
+            if self.signed:
+                pass
+            else:
+                if self.zmin < self.znull:
+                    self.signed = True
+                else:
+                    self.signed = False
         else:
             if self.zmin < self.znull:
                 self.signed = True
@@ -122,7 +137,7 @@ class Channel:
 
 class Data:
 
-    def __init__(self, axes, channels, constants = {}, 
+    def __init__(self, axes, channels, constants = [], 
                  znull = None, zmin = None, zmax = None, 
                  name = None, source = None):
         '''
@@ -388,32 +403,16 @@ class Data:
         transpose_order = [len(values.shape)-1 if i==axis_index else i for i in transpose_order] #replace axis_index with zero
         transpose_order[len(values.shape)-1] = axis_index
         values = values.transpose(transpose_order)
-        print transpose_order, values.shape        
-        
-        #offsets = np.zeros(values.shape)
+
+        #subtract
         for index in np.ndindex(values[..., 0].shape):
-            #print index
-            plt.plot(values[index])
-            #print index
             if npts > 0:
                 offset = np.average(values[index][:npts])
             elif npts < 0:
                 offset = np.average(values[index][npts:])
-                #print index, values[index]npts:].shape, offset
-            plt.axhline(offset)
             values[index] = values[index] - offset
-            
-        print values.min(), values.max()
-        #1/0
         
-        #values = values - offsets
-        #plt.contourf(values[0], 200)
-        #plt.colorbar()
-        #plt.figure()
-        #plt.contourf(offsets[0], 200)
-        #1/0
-        
-        #transpose out
+        #transpose back
         values = values.transpose(transpose_order)
 
         #return
@@ -461,7 +460,9 @@ class Data:
         if type(factors) == list:
             pass
         else:
-            pass #fix this later
+            dummy = np.zeros(len(self.axes))
+            dummy[::] = factors
+            factors = list(dummy)
             
         #smooth-----------------------------------------------------------------
             
@@ -777,7 +778,7 @@ def from_COLORS(filepaths, znull = None,
         # create uniformly spaced x and y lists for gridding
         # infinitesimal offset used to properly interpolate on bounds; can
         #   be a problem, especially for stepping axis
-        tol = max(tol, 1e-1)
+        tol = max(tol, 0.3)
         axis.points = np.linspace(min(xs)+tol,max(xs)-tol,
                               num=(len(xs)))
 
@@ -844,13 +845,48 @@ def from_JASCO(filepath, name = None, verbose = True):
     
     #construct data
     x_axis = Axis(data[0], 'nm', name = 'wm')
-    signal = Channel(data[1], 'absorbance', file_idx = 1, signed = False)
-    data = Data([x_axis], [signal], 'JASCO')
+    signal = Channel(data[1], 'sig', file_idx = 1, signed = False)
+    data = Data([x_axis], [signal], source = 'JASCO')
     
     #return---------------------------------------------------------------------
     
     return data
     
+def from_shimadzu(filepath, name = None, verbose = True):
+
+    #check filepath-------------------------------------------------------------
+    
+    if os.path.isfile(filepath):
+        if verbose: print 'found the file!'
+    else:
+        print 'Error: filepath does not yield a file'
+        return
+
+    #is the file suffix one that we expect?  warn if it is not!
+    filesuffix = os.path.basename(filepath).split('.')[-1]
+    if filesuffix != 'txt':
+        should_continue = raw_input('Filetype is not recognized and may not be supported.  Continue (y/n)?')
+        if should_continue == 'y':
+            pass
+        else:
+            print 'Aborting'
+            return
+            
+    #import data----------------------------------------------------------------
+    
+    #now import file as a local var--18 lines are just txt and thus discarded
+    data = np.genfromtxt(filepath, skip_header=2, delimiter = ',').T
+    print data.shape
+    
+    #construct data
+    x_axis = Axis(data[0], 'nm', name = 'wm')
+    signal = Channel(data[1], 'sig', file_idx = 1, signed = False)
+    data = Data([x_axis], [signal], source = 'Shimadzu')
+    
+    #return---------------------------------------------------------------------
+    
+    return data
+
 def from_pickle(filepath, verbose = True):
     
     data = pickle.load(open(filepath, 'rb'))
