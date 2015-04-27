@@ -657,9 +657,13 @@ def make_tune(obj, set_var, fname=None, amp='int', center='exp_val', fit=True,
 
 ### data creation methods ######################################################
 
-def from_COLORS(filepaths, znull = None,
-                cols = None, verbose = True,
-                name = None):
+def from_COLORS(filepaths, znull = None, name = None, cols = None,
+                color_steps_as = 'energy',
+                verbose = True):
+    '''
+    filepaths may be string or list \n
+    color_steps_as one in 'energy', 'wavelength'
+    '''
 
     #do we have a list of files or just one file?-------------------------------
     
@@ -703,35 +707,31 @@ def from_COLORS(filepaths, znull = None,
         channels['ai4'] = Channel(None, 'V',  file_idx = 20, name = 'ai4',  label_seed = ['4'])
         channels['mc']  = Channel(None, None, file_idx = 21, name = 'array', label_seed = ['a'])
     elif cols == 'v1':
-        #fix this later
-        cols_v1 = {
-            'num':  (0,    0.5, None, None, 'acquisition number'),
-            'w1':   (1,    5.0, 'nm', 'nm', r'$\mathrm{\bar\nu_1=\bar\nu_m (cm^{-1})}$'),
-            'w2':   (3,    5.0, 'nm', 'nm', r'$\mathrm{\bar\nu_2=\bar\nu_{2^{\prime}} (cm^{-1})}$'),
-            'wm':   (5,    1.0, 'nm', 'nm', r'$\bar\nu_m / cm^{-1}$'),
-            'd1':   (6,    3.0, 'fs', 'fs', r'$\mathrm{\tau_{2^{\prime} 1} (fs)}$'),
-            't2p1': (6,    3.0, 'fs', 'fs', r'$\mathrm{\tau_{2^{\prime} 1}(fs)}$'),
-            'd2':   (7,    3.0, 'fs', 'fs', r'$\mathrm{\tau_{21} (fs)}$'),
-            't21':  (7,    3.0, 'fs', 'fs', r'$\mathrm{\tau_{21} (fs)}$'),
-            'ai0':  (8,    0.0, 'V',  'V',  'Signal 0'),
-            'ai1':  (9,    0.0, 'V',  'V',  'Signal 1'),
-            'ai2':  (10,   0.0, 'V',  'V',  'Signal 2'),
-            'ai3':  (11,   0.0, 'V',  'V',  'Signal 3')}
+        axes = collections.OrderedDict()
+        axes['num']  = Axis(None, None, tolerance = 0.5,  file_idx = 0,  name = 'num',  label_seed = ['num'])
+        axes['w1']   = Axis(None, 'nm', tolerance = 0.5,  file_idx = 1,  name = 'w1',   label_seed = ['1'])
+        axes['w2']   = Axis(None, 'nm', tolerance = 0.5,  file_idx = 3,  name = 'w2',   label_seed = ['2'])
+        axes['wm']   = Axis(None, 'nm', tolerance = 0.5,  file_idx = 5,  name = 'wm',   label_seed = ['m'])
+        axes['d1']   = Axis(None, 'fs', tolerance = 3.0,  file_idx = 6,  name = 'd1',   label_seed = ['1'])
+        axes['d2']   = Axis(None, 'fs', tolerance = 3.0,  file_idx = 7,  name = 'd2',   label_seed = ['2'])
+        channels = collections.OrderedDict()
+        channels['ai0'] = Channel(None, 'V',  file_idx = 8,  name = 'ai0',  label_seed = ['0'])
+        channels['ai1'] = Channel(None, 'V',  file_idx = 9,  name = 'ai1',  label_seed = ['1'])
+        channels['ai2'] = Channel(None, 'V',  file_idx = 10, name = 'ai2',  label_seed = ['2'])
+        channels['ai3'] = Channel(None, 'V',  file_idx = 11, name = 'ai3',  label_seed = ['3'])
     elif cols == 'v0':
-        #fix this later
-        cols_v0 = {
-            'num':  (0,    0.5,  None, None,  'acquisition number'),
-            'w1':   (1,    2.0,  'nm', 'nm',  r'$\mathrm{\bar\nu_1=\bar\nu_m (cm^{-1})}$'),
-            'w2':   (3,    2.0,  'nm', 'nm',  r'$\mathrm{\bar\nu_2=\bar\nu_{2^{\prime}} (cm^{-1})}$'),
-            'wm':   (5,    0.25, 'nm', 'nm',  r'$\bar\nu_m / cm^{-1}$'),
-            'lm':   (5,    0.25, 'nm', 'wn',  r'$\lambda_m / nm$'),
-            't2p1': (6,    3.0,  'fs', 'fs',  r'$\mathrm{\tau_{2^{\prime} 1}(fs)}$'),
-            'd2':   (8,    3.0,  'fs', 'fs',  r'$\mathrm{\tau_{21} (fs)}$'),
-            't21':  (8,    3.0,  'fs', 'fs',  r'$\mathrm{\tau_{21} (fs)}$'),
-            'ai0':  (10,   0.0,  'V',  'V',  'Signal 0'),
-            'ai1':  (11,   0.0,  'V',  'V',  'Signal 1'),
-            'ai2':  (12,   0.0,  'V',  'V',  'Signal 2'),
-            'ai3':  (13,   0.0,  'V',  'V',  'Signal 3')}
+        axes = collections.OrderedDict()
+        axes['num']  = Axis(None, None, tolerance = 0.5,  file_idx = 0,  name = 'num',  label_seed = ['num'])
+        axes['w1']   = Axis(None, 'nm', tolerance = 0.5,  file_idx = 1,  name = 'w1',   label_seed = ['1'])
+        axes['w2']   = Axis(None, 'nm', tolerance = 0.5,  file_idx = 3,  name = 'w2',   label_seed = ['2'])
+        axes['wm']   = Axis(None, 'nm', tolerance = 0.5,  file_idx = 5,  name = 'wm',   label_seed = ['m'])
+        axes['d1']   = Axis(None, 'fs', tolerance = 3.0,  file_idx = 6,  name = 'd1',   label_seed = ['1'])
+        axes['d2']   = Axis(None, 'fs', tolerance = 3.0,  file_idx = 8,  name = 'd2',   label_seed = ['2'])
+        channels = collections.OrderedDict()
+        channels['ai0'] = Channel(None, 'V',  file_idx = 10, name = 'ai0',  label_seed = ['0'])
+        channels['ai1'] = Channel(None, 'V',  file_idx = 11, name = 'ai1',  label_seed = ['1'])
+        channels['ai2'] = Channel(None, 'V',  file_idx = 12, name = 'ai2',  label_seed = ['2'])
+        channels['ai3'] = Channel(None, 'V',  file_idx = 13, name = 'ai3',  label_seed = ['3'])
             
     #import full array----------------------------------------------------------
             
@@ -753,13 +753,16 @@ def from_COLORS(filepaths, znull = None,
     #get axes points------------------------------------------------------------
 
     for axis in scanned:
+        
         #generate lists from data
         lis = sorted(arr[axis.file_idx])
         tol = axis.tolerance
+        
         # values are binned according to their averages now, so min and max 
         #  are better represented
         xstd = []
         xs = []
+        
         # check to see if unique values are sufficiently unique
         # deplete to list of values by finding points that are within 
         #  tolerance
@@ -774,13 +777,22 @@ def from_COLORS(filepaths, znull = None,
             xs.append(xi_lis_average)
             xstdi = sum(np.abs(xi_lis - xi_lis_average)) / len(xi_lis)
             xstd.append(xstdi)
-        tol = sum(xstd) / len(xstd)
+        
         # create uniformly spaced x and y lists for gridding
         # infinitesimal offset used to properly interpolate on bounds; can
         #   be a problem, especially for stepping axis
+        tol = sum(xstd) / len(xstd)
         tol = max(tol, 0.3)
-        axis.points = np.linspace(min(xs)+tol,max(xs)-tol,
-                              num=(len(xs)))
+        if axis.units_kind == 'energy' and color_steps_as == 'energy':
+            min_wn = 1e7/min(xs)+tol
+            max_wn = 1e7/max(xs)-tol
+            axis.units = 'wn'
+            axis.points = np.linspace(min_wn, max_wn, num = len(xs))
+            axis.convert('nm')
+        else:
+            axis.points = np.linspace(min(xs)+tol, max(xs)-tol, num = len(xs))
+            
+        print axis.points.shape
 
     #grid data------------------------------------------------------------------
     
@@ -875,7 +887,8 @@ def from_shimadzu(filepath, name = None, verbose = True):
     #import data----------------------------------------------------------------
     
     #now import file as a local var--18 lines are just txt and thus discarded
-    data = np.genfromtxt(filepath, skip_header=2, delimiter = ',').T
+    data = np.genfromtxt(filepath, skip_header=2, delimiter = '\t').T
+
     print data.shape
     
     #construct data

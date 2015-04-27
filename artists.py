@@ -311,6 +311,11 @@ class mpl_2D:
                     contours_levels = contours
                 subplot_main.contour(xaxis.points, yaxis.points, zi, 
                                      contours_levels, colors = 'k')
+                      
+            #finish main subplot------------------------------------------------
+                                     
+            subplot_main.set_xlim(xaxis.points[0], xaxis.points[-1])                     
+            subplot_main.set_ylim(yaxis.points[0], yaxis.points[-1])
 
             #sideplots----------------------------------------------------------
 
@@ -420,42 +425,88 @@ class mpl_2D:
 class absorbance:
     
     def __init__(self, data):
-        
+
         self.data = data
         
     def plot(self, channel_index = 0, font_size = 12, xlim = None, ylim = None):
+
+        '''
+        data can be a single object or a list of objects
+        '''
         
-        #import data------------------------------------------------------------
+        if not type(data) == list:
+            data = [data]
+
+        self.data = data
         
+
         xi = self.data.axes[0].points
         zi = self.data.channels[channel_index].values
         name = self.data.name
+
+    def plot(self, channel_index = 0, font_size = 12, xlim = None, ylim = None):
         
         #prepare plot environment-----------------------------------------------
     
         self.ax1 = plt.subplot(211)
-        self.ax2 = plt.subplot(212, sharex=self.ax1)
-        matplotlib.rcParams.update({'font.size': font_size})
-
-        #plot absorbance--------------------------------------------------------        
-        
-        self.ax1.plot(xi, zi, label=name)
-        
-        plt.ylabel('abs (a.u.)')
         self.ax1.legend(loc=4)
         self.ax1.grid(b=True)
+        self.ax1.set_ylim(0, 1.1)
+        plt.ylabel('absorbance')
         
-        #now plot 2nd derivative------------------------------------------------
+        self.ax2 = plt.subplot(212, sharex=self.ax1)
+        self.ax2.set_ylim(-0.001, 0.001)
         
-        #compute second derivative
-        xi2, zi2= self._smooth(np.array([xi,zi]))
-        plotData = np.array([np.delete(xi2, [0, len(xi2)-1]), np.diff(zi2, n=2)])
+        plt.ylabel('2nd derivative')
+        matplotlib.rcParams.update({'font.size': font_size})
+
+        for data in self.data:        
         
-        #plot the data!
-        self.ax2.plot(plotData[0], plotData[1], label=name)
+            #import data--------------------------------------------------------
+            
+            xi = data.axes[0].points
+            zi = data.channels[channel_index].values
+
+            #scale--------------------------------------------------------------
+            
+            if xlim:
+                plt.xlim(xlim[0], xlim[1])
+
+                min_index = np.argmin(abs(xi - min(xlim)))
+                max_index = np.argmin(abs(xi - max(xlim)))
+                
+                zi_truncated = zi[min(min_index,max_index):max(min_index, max_index)]
+                zi -= zi_truncated.min()
+                
+                zi_truncated = zi[min(min_index,max_index):max(min_index, max_index)]
+                zi /= zi_truncated.max()
+
+            #plot absorbance----------------------------------------------------        
+            
+            self.ax1.plot(xi, zi, lw = 2)
+            
+            #now plot 2nd derivative--------------------------------------------
+            
+            #compute second derivative
+            xi2, zi2= self._smooth(np.array([xi,zi]))
+            plotData = np.array([np.delete(xi2, [0, len(xi2)-1]), np.diff(zi2, n=2)])
+            
+            #plot the data!
+            self.ax2.plot(plotData[0], plotData[1], lw = 2)
+            
+            self.ax2.grid(b=True)
+            plt.xlabel(r'$\bar\nu / cm^{-1}$')
+            
+        self.ax1.legend([data.name for data in self.data])
+            
+            
+        self.ax1.get_yaxis().set_ticks([])
         
-        self.ax2.grid(b=True)
-        plt.xlabel(r'$\bar\nu / cm^{-1}$')
+        self.ax2.get_yaxis().set_ticks([])
+        self.ax2.axhline(0, color = 'k', ls = ':')
+        
+        
+        
         
         #finish-----------------------------------------------------------------
         
