@@ -77,6 +77,16 @@ default = ['#FFFFFF',
            '#FFFF00',
            '#FF0000',
            '#881111']
+           
+experimental = ['#FFFFFF',
+                '#0000FF',
+                '#0080FF',
+                '#00FFFF',
+                '#00FF00',
+                '#FFFF00',
+                '#FF8000',
+                '#FF0000',
+                '#881111']
 
 greenscale = ['#000000', #black
               '#00FF00'] #green
@@ -121,7 +131,9 @@ skyebar = ['#FFFFFF', #white
            '#FF0000', #red
            '#800000'] #dark red          
 
-colormaps = {'default': mplcolors.LinearSegmentedColormap.from_list('wright', default),
+colormaps = {'cubehelix': plt.get_cmap('cubehelix'),
+             'default': mplcolors.LinearSegmentedColormap.from_list('wright', default),
+             'experimental': mplcolors.LinearSegmentedColormap.from_list('experimental', experimental),
              'flag': plt.get_cmap('flag'),
              'earth': plt.get_cmap('gist_earth'),
              'greenscale': mplcolors.LinearSegmentedColormap.from_list('greenscale', greenscale), 
@@ -130,6 +142,7 @@ colormaps = {'default': mplcolors.LinearSegmentedColormap.from_list('wright', de
              'ncar': plt.get_cmap('gist_ncar'),
              'paired': plt.get_cmap('Paired'),
              'prism': plt.get_cmap('prism'),
+             'rainbow': plt.get_cmap('rainbow'),
              'signed':  mplcolors.LinearSegmentedColormap.from_list('signed', signed),
              'signed_old':  mplcolors.LinearSegmentedColormap.from_list('signed', signed_old),
              'skyebar':  mplcolors.LinearSegmentedColormap.from_list('skyebar', skyebar),
@@ -139,31 +152,97 @@ colormaps = {'default': mplcolors.LinearSegmentedColormap.from_list('wright', de
 
 class mpl_1D:
     
-    def plot(self, data, axis, channel = 0, alt_z='raw', 
-                   aspect=None, floor=None, ceiling=None):
-                       
-        xi = data.axes[axis].points
-        zi = data.zis[channel]
-        plt.plot(xi, zi)
-        plt.grid()
+    def __init__(self, data, xaxis, at = {}, verbose = True):
 
+        #import data------------------------------------------------------------
+
+        self.data = data
+        self.chopped = self.data.chop(xaxis, at, verbose = False)
+        
+        if verbose:
+            print 'mpl_1D recieved data to make %d plots'%len(self.chopped)
+            
+        #defaults---------------------------------------------------------------
+        
+        self.font_size = 15
+        
+    def plot(self, channel = 0, local = False,
+             autosave = False, output_folder = None, verbose = True):
+        
+        fig = None
+        
+        if len(self.chopped) > 10:
+            if not autosave:
+                print 'too many images will be generated ({}): forcing autosave'.format(len(self.chopped))
+                autosave = True
+                
+        #prepare output folder--------------------------------------------------
+        
+        if autosave:
+            if output_folder:
+                pass
+            else:
+                timestamp = kit.get_timestamp()
+                os.mkdir(timestamp)
+                output_folder = timestamp
+                       
+        #chew through image generation
+        for i in range(len(self.chopped)):
+        
+            if fig: plt.close(fig)
+            
+            fig = plt.figure(figsize=(8, 6))
+        
+            axes, channels, constants = self.chopped[i]
+            
+            xi = axes[0].points
+            zi = channels[channel].values
+            
+            plt.plot(xi, zi)
+            plt.grid()
+            
+            #limits-------------------------------------------------------------
+            
+            if local:
+                pass
+            else:
+                plt.ylim(channels[channel].zmin, channels[channel].zmax)
+
+            #label axes---------------------------------------------------------
+
+            plt.xlabel(axes[0].name)
+            plt.ylabel(channels[channel].name)
+            
+            #title--------------------------------------------------------------
+            
+            title_text = self.data.name
+            
+            constants_text = '\n'
+            for constant in constants:
+                constants_text += constant.name + '=' + str(np.round(constant.points)) + ' '         
+                
+            plt.suptitle(title_text + constants_text, fontsize = self.font_size)
+            
+            #save figure--------------------------------------------------------
+            
+            if autosave:
+                fpath = os.path.join(output_folder, str(i).zfill(3) + '.png')
+                plt.savefig(fpath, transparent = True)
+                plt.close()
+                
+                if verbose:
+                    print 'image saved at', fpath
 
 class mpl_2D:
     
-    def __init__(self, data, xaxis, yaxis, at = {}, channel = 0, verbose = True):
-        
-        #import variables-------------------------------------------------------
-        
-        self.channel = channel
-        
-        self.verbose = verbose
+    def __init__(self, data, xaxis, yaxis, at = {}, verbose = True):
         
         #import data------------------------------------------------------------
 
         self.data = data
         self.chopped = self.data.chop(yaxis, xaxis, at, verbose = False)
         
-        if self.verbose:
+        if verbose:
             print 'mpl_2D recieved data to make %d plots'%len(self.chopped)
             
         #defaults---------------------------------------------------------------
@@ -186,10 +265,9 @@ class mpl_2D:
             self._ysideplotdata.append([data.axes[0].points, data.channels[0].values])
 
     def plot(self, channel_index,
-             contours = 9, pixelated = False, lines = False,
-             cmap = 'default', dynamic_range = False, local = False, contours_local = True,
+             contours = 9, pixelated = False, lines = False, cmap = 'default', 
+             dynamic_range = False, local = False, contours_local = True, normalize_slices = 'both',
              xbin = False, ybin = False,
-             aspect = None,
              autosave = False, output_folder = None, verbose = True):
         '''
         set contours to zero to turn off        
@@ -198,7 +276,12 @@ class mpl_2D:
         for signed data)
         '''
         
-        fig = None        
+        fig = None
+        
+        if len(self.chopped) > 10:
+            if not autosave:
+                print 'too many images will be generated: forcing autosave'
+                autosave = True
         
         #prepare output folder--------------------------------------------------
         
@@ -221,6 +304,32 @@ class mpl_2D:
             yaxis = axes[0]
             channel = channels[channel_index]
             zi = channel.values
+            
+            #normalize slices---------------------------------------------------
+            
+            if normalize_slices == 'both':
+                pass
+            elif normalize_slices == 'horizontal': 
+                nmin = channel.znull
+                #normalize all x traces to a common value 
+                maxes = zi.max(axis=1)
+                numerator = (zi - nmin)
+                denominator = (maxes - nmin)
+                for j in range(zi.shape[0]):
+                    zi[j] = numerator[j]/denominator[j]
+                channel.zmax = zi.max()
+                channel.zmin = zi.min()
+                channel.znull = 0
+            elif normalize_slices == 'vertical': 
+                nmin = channel.znull
+                maxes = zi.max(axis=0)
+                numerator = (zi - nmin)
+                denominator = (maxes - nmin)
+                for j in range(zi.shape[1]):
+                    zi[:,j] = numerator[:,j] / denominator[j]
+                channel.zmax = zi.max()
+                channel.zmin = zi.min()
+                channel.znull = 0
             
             #create figure------------------------------------------------------            
             
@@ -417,7 +526,7 @@ class mpl_2D:
                 plt.savefig(fpath, transparent = True)
                 plt.close()
                 
-                if self.verbose:
+                if verbose:
                     print 'image saved at', fpath
         
 ### specific artists ###########################################################
