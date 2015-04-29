@@ -658,7 +658,7 @@ def make_tune(obj, set_var, fname=None, amp='int', center='exp_val', fit=True,
 ### data creation methods ######################################################
 
 def from_COLORS(filepaths, znull = None, name = None, cols = None,
-                color_steps_as = 'energy',
+                color_steps_as = 'energy', ignore = ['num', 'w3', 'dref'],
                 verbose = True):
     '''
     filepaths may be string or list \n
@@ -681,7 +681,7 @@ def from_COLORS(filepaths, znull = None, name = None, cols = None,
         num_cols = len(np.genfromtxt(file_example).T)
         if num_cols == 35:
             cols = 'v2'
-        elif num_cols == 18:
+        elif num_cols == 20:
             cols = 'v1'
         elif num_cols == 16:
             cols = 'v0'
@@ -693,12 +693,12 @@ def from_COLORS(filepaths, znull = None, name = None, cols = None,
         axes['num']  = Axis(None, None, tolerance = 0.5,  file_idx = 0,  name = 'num',  label_seed = ['num'])
         axes['w1']   = Axis(None, 'nm', tolerance = 0.5,  file_idx = 1,  name = 'w1',   label_seed = ['1'])
         axes['w2']   = Axis(None, 'nm', tolerance = 0.5,  file_idx = 3,  name = 'w2',   label_seed = ['2'])
-        #axes['w3']   = Axis(None, 'nm', tolerance = 5.0,  file_idx = 5,  name = 'w3',   label_seed = ['3'])
+        axes['w3']   = Axis(None, 'nm', tolerance = 5.0,  file_idx = 5,  name = 'w3',   label_seed = ['3'])
         axes['wm']   = Axis(None, 'nm', tolerance = 0.5,  file_idx = 7,  name = 'wm',   label_seed = ['m'])
         axes['wa']   = Axis(None, 'nm', tolerance = 1.0,  file_idx = 8,  name = 'wm',   label_seed = ['a'])
         axes['dref'] = Axis(None, 'fs', tolerance = 25.0, file_idx = 10, name = 'dref', label_seed = ['ref'])
-        axes['d1']   = Axis(None, 'fs', tolerance = 3.0,  file_idx = 12, name = 'd1',   label_seed = ['1'])
-        axes['d2']   = Axis(None, 'fs', tolerance = 3.0,  file_idx = 14, name = 'd2',   label_seed = ['2'])
+        axes['d1']   = Axis(None, 'fs', tolerance = 1.0,  file_idx = 12, name = 'd1',   label_seed = ['1'])
+        axes['d2']   = Axis(None, 'fs', tolerance = 2.0,  file_idx = 14, name = 'd2',   label_seed = ['2'])
         channels = collections.OrderedDict()
         channels['ai0'] = Channel(None, 'V',  file_idx = 16, name = 'ai0',  label_seed = ['0'])
         channels['ai1'] = Channel(None, 'V',  file_idx = 17, name = 'ai1',  label_seed = ['1'])
@@ -746,8 +746,10 @@ def from_COLORS(filepaths, znull = None, name = None, cols = None,
     #recognize dimensionality of data-------------------------------------------
         
     axes_discover = axes.copy()
-    for key in ['num', 'dref']: 
-        axes_discover.pop(key) #remove dimensions that mess up discovery
+    for key in ignore:
+        if key in axes_discover:
+            axes_discover.pop(key) #remove dimensions that mess up discovery
+            
     scanned, constant = discover_dimensions(arr, axes_discover)
     
     #get axes points------------------------------------------------------------
@@ -784,15 +786,13 @@ def from_COLORS(filepaths, znull = None, name = None, cols = None,
         tol = sum(xstd) / len(xstd)
         tol = max(tol, 0.3)
         if axis.units_kind == 'energy' and color_steps_as == 'energy':
-            min_wn = 1e7/min(xs)+tol
-            max_wn = 1e7/max(xs)-tol
+            min_wn = 1e7/max(xs)+tol
+            max_wn = 1e7/min(xs)-tol
             axis.units = 'wn'
             axis.points = np.linspace(min_wn, max_wn, num = len(xs))
             axis.convert('nm')
         else:
             axis.points = np.linspace(min(xs)+tol, max(xs)-tol, num = len(xs))
-            
-        print axis.points.shape
 
     #grid data------------------------------------------------------------------
     
