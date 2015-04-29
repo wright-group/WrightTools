@@ -90,6 +90,57 @@ def glob_handler(extension, folder = None, identifier = None):
 
     return filepaths
     
+def plot_dats(folder = None):
+    '''
+    convinience function to plot raw data
+    '''
+    
+    import data
+    import artists
+    
+    if folder:
+        pass
+    else:
+        folder = os.getcwd()
+
+    files = glob_handler('.dat', folder = folder)
+    
+    for _file in files:
+
+        print ' '
+
+        try: 
+            
+            dat_data = data.from_COLORS(_file)
+            
+            fname = filename_parse(_file)[1]   
+            
+            dat_data.convert('wn')
+            
+            #1D
+            if len(dat_data.axes) == 1:
+                artist = artists.mpl_1D(dat_data, data.axes[0].name)
+                artist.plot(0, autosave = True, output_folder = folder, fname = fname)
+            
+            #2D
+            elif len(dat_data.axes) == 2:
+                artist = artists.mpl_2D(dat_data, dat_data.axes[0].name, dat_data.axes[1].name)
+                artist.plot(0, pixelated = True, contours = 0, xbin = True, ybin = True, 
+                            autosave = True, output_folder = folder, fname = fname)
+            
+            else:
+                print 'error!'
+            
+        except ValueError:
+            print 'dat not recognized as plottible in plot_dats'
+            pass
+        
+
+        
+    
+    
+    
+    
 ### fitting ####################################################################
     
 def gauss_residuals(p, y, x):
