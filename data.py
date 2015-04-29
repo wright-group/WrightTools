@@ -887,7 +887,7 @@ def from_shimadzu(filepath, name = None, verbose = True):
     #import data----------------------------------------------------------------
     
     #now import file as a local var--18 lines are just txt and thus discarded
-    data = np.genfromtxt(filepath, skip_header=2, delimiter = ',').T
+    data = np.genfromtxt(filepath, skip_header=2, delimiter = '\t').T
 
     print data.shape
     
