@@ -167,7 +167,8 @@ class mpl_1D:
         self.font_size = 15
         
     def plot(self, channel = 0, local = False,
-             autosave = False, output_folder = None, verbose = True):
+             autosave = False, output_folder = None, fname = None,
+             verbose = True):
         
         fig = None
         
@@ -226,7 +227,11 @@ class mpl_1D:
             #save figure--------------------------------------------------------
             
             if autosave:
-                fpath = os.path.join(output_folder, str(i).zfill(3) + '.png')
+                if fname:
+                    pass
+                else:
+                    fname = str(i).zfill(3)
+                fpath = os.path.join(output_folder, fname + '.png')
                 plt.savefig(fpath, transparent = True)
                 plt.close()
                 
@@ -268,7 +273,8 @@ class mpl_2D:
              contours = 9, pixelated = False, lines = False, cmap = 'default', 
              dynamic_range = False, local = False, contours_local = True, normalize_slices = 'both',
              xbin = False, ybin = False,
-             autosave = False, output_folder = None, verbose = True):
+             autosave = False, output_folder = None, fname = None,
+             verbose = True):
         '''
         set contours to zero to turn off        
         
@@ -522,7 +528,11 @@ class mpl_2D:
             #save figure--------------------------------------------------------
             
             if autosave:
-                fpath = os.path.join(output_folder, str(i).zfill(3) + '.png')
+                if fname:
+                    pass
+                else:
+                    fname = str(i).zfill(3)
+                fpath = os.path.join(output_folder, fname + '.png')
                 plt.savefig(fpath, transparent = True)
                 plt.close()
                 
