@@ -119,7 +119,7 @@ def plot_dats(folder = None):
             
             #1D
             if len(dat_data.axes) == 1:
-                artist = artists.mpl_1D(dat_data, data.axes[0].name)
+                artist = artists.mpl_1D(dat_data, dat_data.axes[0].name)
                 artist.plot(0, autosave = True, output_folder = folder, fname = fname)
             
             #2D
@@ -129,10 +129,12 @@ def plot_dats(folder = None):
                             autosave = True, output_folder = folder, fname = fname)
             
             else:
-                print 'error!'
+                print 'error! - dimensionality of data ({}) not recognized'.format(len(dat_data.axes))
             
-        except ValueError:
-            print 'dat not recognized as plottible in plot_dats'
+        except:
+            import sys            
+            print 'dat {} not recognized as plottible in plot_dats'.format(filename_parse(_file)[1])
+            print sys.exc_info()[0]
             pass
 
 ### fitting ####################################################################

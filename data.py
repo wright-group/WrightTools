@@ -795,19 +795,34 @@ def from_COLORS(filepaths, znull = None, name = None, cols = None,
             axis.points = np.linspace(min(xs)+tol, max(xs)-tol, num = len(xs))
 
     #grid data------------------------------------------------------------------
-    
-    points = tuple(arr[axis.file_idx] for axis in scanned)
-    #beware, meshgrid gives wrong answer with default indexing
-    #this took me many hours to figure out... - blaise
-    xi = tuple(np.meshgrid(*[axis.points for axis in scanned], indexing = 'ij'))
 
-    for key in channels.keys():
-        channel = channels[key]
-        zi = arr[channel.file_idx]
-        fill_value = min(zi)
-        grid_i = griddata(points, zi, xi,
-                          method='linear',fill_value=fill_value)
-        channel.give_values(grid_i)
+    if len(scanned) == 1:
+        #1D data
+    
+        axis = scanned[0]
+        axis.points = arr[axis.file_idx]
+        scanned[0] = axis
+    
+        for key in channels.keys():
+            channel = channels[key]
+            zi = arr[channel.file_idx]
+            channel.give_values(zi)
+        
+    else:
+        #all other dimensionalities
+
+        points = tuple(arr[axis.file_idx] for axis in scanned)
+        #beware, meshgrid gives wrong answer with default indexing
+        #this took me many hours to figure out... - blaise
+        xi = tuple(np.meshgrid(*[axis.points for axis in scanned], indexing = 'ij'))
+    
+        for key in channels.keys():
+            channel = channels[key]
+            zi = arr[channel.file_idx]
+            fill_value = min(zi)
+            grid_i = griddata(points, zi, xi,
+                              method='linear',fill_value=fill_value)
+            channel.give_values(grid_i)
         
     #create data object---------------------------------------------------------
 

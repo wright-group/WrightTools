@@ -228,7 +228,7 @@ class mpl_1D:
             
             if autosave:
                 if fname:
-                    file_name = fname + str(i).zfill(3)
+                    file_name = fname + ' ' + str(i).zfill(3)
                 else:
                     file_name = str(i).zfill(3)
                 fpath = os.path.join(output_folder, file_name + '.png')
@@ -529,7 +529,7 @@ class mpl_2D:
 
             if autosave:
                 if fname:
-                    file_name = fname + str(i).zfill(3)
+                    file_name = fname + ' ' + str(i).zfill(3)
                 else:
                     file_name = str(i).zfill(3)
                 fpath = os.path.join(output_folder, file_name + '.png')
