@@ -134,13 +134,7 @@ def plot_dats(folder = None):
         except ValueError:
             print 'dat not recognized as plottible in plot_dats'
             pass
-        
 
-        
-    
-    
-    
-    
 ### fitting ####################################################################
     
 def gauss_residuals(p, y, x):
@@ -184,9 +178,13 @@ position = {'kind': 'position',
             'um': ['x/1000.', '1000/x.'],
             'mm': ['x', 'x'],
             'cm': ['10.*x', 'x/10.'],
-            'in': ['x*0.039370', '0.039370*x']}      
+            'in': ['x*0.039370', '0.039370*x']}
+            
+#fluence units (native: uJ per sq. cm)
+fluence = {'kind': 'fluence',
+           'uJ per sq. cm': ['x', 'x']}
        
-unit_dicts = [energy, time, position] 
+unit_dicts = [energy, time, position, fluence] 
             
 def unit_converter(val, current_unit, destination_unit):
 

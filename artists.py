@@ -228,10 +228,10 @@ class mpl_1D:
             
             if autosave:
                 if fname:
-                    pass
+                    file_name = fname + str(i).zfill(3)
                 else:
-                    fname = str(i).zfill(3)
-                fpath = os.path.join(output_folder, fname + '.png')
+                    file_name = str(i).zfill(3)
+                fpath = os.path.join(output_folder, file_name + '.png')
                 plt.savefig(fpath, transparent = True)
                 plt.close()
                 
@@ -526,13 +526,13 @@ class mpl_2D:
             fig.subplots_adjust(top = 0.9, bottom = 0.15)
             
             #save figure--------------------------------------------------------
-            
+
             if autosave:
                 if fname:
-                    pass
+                    file_name = fname + str(i).zfill(3)
                 else:
-                    fname = str(i).zfill(3)
-                fpath = os.path.join(output_folder, fname + '.png')
+                    file_name = str(i).zfill(3)
+                fpath = os.path.join(output_folder, file_name + '.png')
                 plt.savefig(fpath, transparent = True)
                 plt.close()
                 

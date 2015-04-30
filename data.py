@@ -58,7 +58,7 @@ class Axis:
 class Channel:
     
     def __init__(self, values, units,
-                 file_idx,
+                 file_idx = None,
                  znull = None, zmin = None, zmax = None, signed = None,
                  name = None, label = None, label_seed = None):
                      
@@ -697,8 +697,8 @@ def from_COLORS(filepaths, znull = None, name = None, cols = None,
         axes['wm']   = Axis(None, 'nm', tolerance = 0.5,  file_idx = 7,  name = 'wm',   label_seed = ['m'])
         axes['wa']   = Axis(None, 'nm', tolerance = 1.0,  file_idx = 8,  name = 'wm',   label_seed = ['a'])
         axes['dref'] = Axis(None, 'fs', tolerance = 25.0, file_idx = 10, name = 'dref', label_seed = ['ref'])
-        axes['d1']   = Axis(None, 'fs', tolerance = 1.0,  file_idx = 12, name = 'd1',   label_seed = ['1'])
-        axes['d2']   = Axis(None, 'fs', tolerance = 2.0,  file_idx = 14, name = 'd2',   label_seed = ['2'])
+        axes['d1']   = Axis(None, 'fs', tolerance = 4.0,  file_idx = 12, name = 'd1',   label_seed = ['1'])
+        axes['d2']   = Axis(None, 'fs', tolerance = 4.0,  file_idx = 14, name = 'd2',   label_seed = ['2'])
         channels = collections.OrderedDict()
         channels['ai0'] = Channel(None, 'V',  file_idx = 16, name = 'ai0',  label_seed = ['0'])
         channels['ai1'] = Channel(None, 'V',  file_idx = 17, name = 'ai1',  label_seed = ['1'])
