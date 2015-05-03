@@ -152,7 +152,7 @@ colormaps = {'cubehelix': plt.get_cmap('cubehelix'),
 
 class mpl_1D:
     
-    def __init__(self, data, xaxis, at = {}, verbose = True):
+    def __init__(self, data, xaxis = 0, at = {}, verbose = True):
 
         #import data------------------------------------------------------------
 
@@ -211,7 +211,7 @@ class mpl_1D:
 
             #label axes---------------------------------------------------------
 
-            plt.xlabel(axes[0].name)
+            plt.xlabel(axes[0].get_label())
             plt.ylabel(channels[channel].name)
             
             #title--------------------------------------------------------------
@@ -220,7 +220,7 @@ class mpl_1D:
             
             constants_text = '\n'
             for constant in constants:
-                constants_text += constant.name + '=' + str(np.round(constant.points)) + ' '         
+                constants_text += constant.get_label(units = True, points = True) + '    '       
                 
             plt.suptitle(title_text + constants_text, fontsize = self.font_size)
             
@@ -240,7 +240,7 @@ class mpl_1D:
 
 class mpl_2D:
     
-    def __init__(self, data, xaxis, yaxis, at = {}, verbose = True):
+    def __init__(self, data, xaxis = 1, yaxis = 0, at = {}, verbose = True):
         
         #import data------------------------------------------------------------
 
@@ -270,7 +270,7 @@ class mpl_2D:
             self._ysideplotdata.append([data.axes[0].points, data.channels[0].values])
 
     def plot(self, channel_index,
-             contours = 9, pixelated = False, lines = False, cmap = 'default', 
+             contours = 9, pixelated = False, lines = True, cmap = 'default', 
              dynamic_range = False, local = False, contours_local = True, normalize_slices = 'both',
              xbin = False, ybin = False,
              autosave = False, output_folder = None, fname = None,
@@ -341,7 +341,7 @@ class mpl_2D:
             
             if fig: plt.close(fig)            
             
-            fig = plt.figure(figsize=(8, 6))
+            fig = plt.figure(figsize=(8, 7))
             
             gs = grd.GridSpec(1, 2, width_ratios=[20, 1], wspace=0.1)            
             
@@ -392,8 +392,8 @@ class mpl_2D:
                                             levels, cmap = mycm)
             
             plt.xticks(rotation = 45)
-            plt.xlabel(xaxis.label, fontsize = self.font_size)
-            plt.ylabel(yaxis.label, fontsize = self.font_size)
+            plt.xlabel(xaxis.get_label(), fontsize = self.font_size)
+            plt.ylabel(yaxis.get_label(), fontsize = self.font_size)
             
             #variable marker lines----------------------------------------------
             
@@ -516,14 +516,15 @@ class mpl_2D:
             
             constants_text = '\n'
             for constant in constants:
-                constants_text += constant.name + '=' + str(np.round(constant.points)) + ' '         
+                constants_text += constant.get_label(units = True, points = True) + '    '         
                 
             plt.suptitle(title_text + constants_text, fontsize = self.font_size)
             
             #cleanup------------------------------------------------------------
             
             #plt.tight_layout()
-            fig.subplots_adjust(top = 0.9, bottom = 0.15)
+            factor = 0.12
+            fig.subplots_adjust(left = factor, right = 1-factor, top = 1-factor, bottom = 0.15)
             
             #save figure--------------------------------------------------------
 

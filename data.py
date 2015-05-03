@@ -35,17 +35,49 @@ class Axis:
         for dic in kit.unit_dicts:
             if self.units in dic.keys():
                 self.units_kind = dic['kind']
-        
-        self.make_label()        
+
+        self.get_label()        
         
     def convert(self, destination_units):
         
         self.points = kit.unit_converter(self.points, self.units, destination_units)
         self.units = destination_units
         
-    def make_label(self):
+    def get_label(self, units = True, points = False, decimals = 0):
         
-        self.label = self.name
+        self.label = r'$\mathsf{'
+        
+        #label
+        for part in self.label_seed:
+            if self.units_kind:       
+                units_dictionary = getattr(kit, self.units_kind)
+                self.label += units_dictionary[self.units][2]
+                self.label += r'_{' + str(part) + r'}'
+            else:
+                self.label += self.name
+            self.label += r'='
+            
+        #remove the last equals sign
+        self.label = self.label[:-1]
+        
+        if points:
+            if self.points:
+                self.label += r'=\,' + str(np.round(self.points, decimals = decimals))
+
+        #units
+        if units:
+            if self.units_kind:       
+                units_dictionary = getattr(kit, self.units_kind)
+                self.label += r'\,'
+                if not points: self.label += r'\left('
+                self.label += units_dictionary[self.units][3]
+                if not points: self.label += r'\right)'
+            else:
+                pass
+        
+        self.label += r'}$'
+        
+        return self.label
         
     def min_max_step(self):
         
@@ -190,7 +222,7 @@ class Data:
         chopped_constants = {}
         
         for arg in args:
-            if type(arg) == str:
+            if type(arg) in (str, int):
                 axes_args.append(arg)
             elif type(arg) == dict:
                 chopped_constants = arg
@@ -198,7 +230,19 @@ class Data:
         verbose = True
         for name, value in kwargs.items():
             if name == 'verbose':
-                verbose = value 
+                verbose = value
+        
+        #interpret arguments recieved-------------------------------------------
+        
+        for i in range(len(axes_args)):
+            arg = axes_args[i]
+            if type(arg) == str:
+                pass
+            elif type(arg) == int:
+                arg = self.axis_names[arg]
+            else:
+                print 'argument {arg} not recognized in Data.chop!'.format(arg)
+            axes_args[i] = arg
         
         #iterate!---------------------------------------------------------------
                 
@@ -242,7 +286,8 @@ class Data:
                 val = kit.unit_converter(val, chopped_constants[dim][1], self.axes[idx].units)
                 c_idx = np.argmin(abs(self.axes[idx].points - val))
                 constant_indicies.append(c_idx)
-                obj = Axis(self.axes[idx].points[c_idx], self.axes[idx].units, name = dim)
+                obj = copy.copy(self.axes[idx])
+                obj.points = self.axes[idx].points[c_idx]
                 constants.append(obj)
 
             #now handle axes
@@ -657,7 +702,7 @@ def make_tune(obj, set_var, fname=None, amp='int', center='exp_val', fit=True,
 
 ### data creation methods ######################################################
 
-def from_COLORS(filepaths, znull = None, name = None, cols = None,
+def from_COLORS(filepaths, znull = None, name = None, cols = None, invert_d1 = True,
                 color_steps_as = 'energy', ignore = ['num', 'w3', 'dref'],
                 verbose = True):
     '''
@@ -690,10 +735,10 @@ def from_COLORS(filepaths, znull = None, name = None, cols = None,
             
     if cols == 'v2':
         axes = collections.OrderedDict()
-        axes['num']  = Axis(None, None, tolerance = 0.5,  file_idx = 0,  name = 'num',  label_seed = ['num'])
+        axes['num']  = Axis(None, None, tolerance = 0.5,  file_idx = 0,  name = 'num',  label_seed = ['num'])              
         axes['w1']   = Axis(None, 'nm', tolerance = 0.5,  file_idx = 1,  name = 'w1',   label_seed = ['1'])
-        axes['w2']   = Axis(None, 'nm', tolerance = 0.5,  file_idx = 3,  name = 'w2',   label_seed = ['2'])
-        axes['w3']   = Axis(None, 'nm', tolerance = 5.0,  file_idx = 5,  name = 'w3',   label_seed = ['3'])
+        axes['w2']   = Axis(None, 'nm', tolerance = 0.5,  file_idx = 3,  name = 'w2',   label_seed = ['2'])  
+        axes['w3']   = Axis(None, 'nm', tolerance = 5.0,  file_idx = 5,  name = 'w3',   label_seed = ['3'])    
         axes['wm']   = Axis(None, 'nm', tolerance = 0.5,  file_idx = 7,  name = 'wm',   label_seed = ['m'])
         axes['wa']   = Axis(None, 'nm', tolerance = 1.0,  file_idx = 8,  name = 'wm',   label_seed = ['a'])
         axes['dref'] = Axis(None, 'fs', tolerance = 25.0, file_idx = 10, name = 'dref', label_seed = ['ref'])
@@ -742,6 +787,10 @@ def from_COLORS(filepaths, znull = None, name = None, cols = None,
             arr = dat
         else:      
             arr = np.append(arr, dat, axis = 1)
+            
+    if invert_d1:
+        idx = axes['d1'].file_idx
+        arr[idx] = -arr[idx]
         
     #recognize dimensionality of data-------------------------------------------
         
@@ -828,6 +877,17 @@ def from_COLORS(filepaths, znull = None, name = None, cols = None,
 
     data = Data(scanned, channels.values(), constant, znull)
     
+    if color_steps_as == 'energy':
+        try: 
+            data.convert('wn', verbose = False)
+        except:
+            pass
+        
+    for axis in data.axes:
+        axis.get_label()
+    for axis in data.constants:
+        axis.get_label()
+    
     #add extra stuff to data object---------------------------------------------
 
     data.source = filepaths
@@ -879,6 +939,36 @@ def from_JASCO(filepath, name = None, verbose = True):
     
     return data
     
+def from_NISE(measure_object, name = None, verbose = True):
+    
+    #axes
+    axes = []
+    for NISE_axis in measure_object.scan_obj.axis_objs:
+        axis_name = NISE_axis.name
+        points = NISE_axis.points
+        units = NISE_axis.default_units
+        label_seed = NISE_axis.also
+        axis = Axis(points, units, name = axis_name, label_seed = label_seed)
+        axes.append(axis)
+
+    #channels
+    zi = measure_object.pol
+    channel = Channel(zi, 'au', label = 'simulation')
+    channels = [channel]        
+    
+    data = Data(axes, channels, name = name, source = 'NISE')
+    
+    return data
+
+def from_pickle(filepath, verbose = True):
+    
+    data = pickle.load(open(filepath, 'rb'))
+    
+    if verbose:
+        print 'data opened from', filepath
+    
+    return data
+
 def from_shimadzu(filepath, name = None, verbose = True):
 
     #check filepath-------------------------------------------------------------
@@ -912,15 +1002,6 @@ def from_shimadzu(filepath, name = None, verbose = True):
     data = Data([x_axis], [signal], source = 'Shimadzu')
     
     #return---------------------------------------------------------------------
-    
-    return data
-
-def from_pickle(filepath, verbose = True):
-    
-    data = pickle.load(open(filepath, 'rb'))
-    
-    if verbose:
-        print 'data opened from', filepath
     
     return data
     
@@ -1037,14 +1118,14 @@ def discover_dimensions(arr, dimension_cols, verbose = True):
     for axis in scanned_ordered:
         key = axis[0][0]
         obj = input_cols[key]
-        obj.name_seed = axis[0]
+        obj.label_seed = [input_cols[_key].label_seed[0] for _key in axis[0]]
         scanned[key] = obj
         
     constant = collections.OrderedDict()
     for axis in constant_list:
         key = axis[0][0]
         obj = input_cols[key]
-        obj.name_seed = axis[0]
+        obj.label_seed = [input_cols[_key].label_seed[0] for _key in axis[0]]
         obj.points = axis[3]
         constant[key] = obj
         

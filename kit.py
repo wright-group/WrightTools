@@ -154,17 +154,17 @@ def gauss_residuals(p, y, x):
 ### units ######################################################################
          
 #units are stored in dictionaries of like kind. format:
-#    unit : to native, from native
+#    unit : to native, from native, units_symbol, units_label
          
 #energy units (native: nm)
 energy = {'kind': 'energy',
-          'nm': ['x', 'x'],
-          'wn': ['1e7/x', '1e7/x'],
-          'eV': ['x/1240.', '1240./x']} 
+          'nm': ['x', 'x', r'\lambda', r'nm'],
+          'wn': ['1e7/x', '1e7/x', r'\bar\nu', r'cm^{-1}'],
+          'eV': ['x/1240.', '1240./x', r'E', r'eV']} 
      
 #time units (native: s)
 time = {'kind': 'time',
-        'fs': ['x/1e15', 'x*1e15'],
+        'fs': ['x/1e15', 'x*1e15', r'\tau', r'fs'],
         'ps': ['x/1e12', 'x*1e12'],
         'ns': ['x/1e9', 'x*1e9'],
         'us': ['x/1e6', 'x*1e6'],
