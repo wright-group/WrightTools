@@ -272,7 +272,7 @@ class mpl_2D:
     def plot(self, channel_index,
              contours = 9, pixelated = False, lines = True, cmap = 'default', 
              dynamic_range = False, local = False, contours_local = True, normalize_slices = 'both',
-             xbin = False, ybin = False,
+             xbin = False, ybin = False, xlim = None, ylim = None,
              autosave = False, output_folder = None, fname = None,
              verbose = True):
         '''
@@ -428,9 +428,15 @@ class mpl_2D:
                                      contours_levels, colors = 'k')
                       
             #finish main subplot------------------------------------------------
-                                     
-            subplot_main.set_xlim(xaxis.points[0], xaxis.points[-1])                     
-            subplot_main.set_ylim(yaxis.points[0], yaxis.points[-1])
+            
+            if xlim:
+                subplot_main.set_xlim(xlim[0], xlim[1])
+            else:   
+                subplot_main.set_xlim(xaxis.points[0], xaxis.points[-1])      
+            if ylim:
+                subplot_main.set_ylim(ylim[0], ylim[1])
+            else:
+                subplot_main.set_ylim(yaxis.points[0], yaxis.points[-1])
 
             #sideplots----------------------------------------------------------
 
