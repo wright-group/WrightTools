@@ -67,6 +67,29 @@ def nm_to_rgb(nm):
     SSS *= 255
 
     return [float(int(SSS*R)/256.), float(int(SSS*G)/256.), float(int(SSS*B)/256.)]
+    
+def pcolor_helper(xi, yi, zi):
+    '''
+    accepts xi, yi, zi as the normal rectangular arrays that would be given to contorf etc \n
+    returns list [X, Y, Z] appropriate for feeding directly into matplotlib.pyplot.pcolor
+    so that the pixels are centered correctly. \n
+    '''    
+    
+    x_points = np.zeros(len(xi)+1)
+    y_points = np.zeros(len(yi)+1)
+
+    for points, axis in [[x_points, xi], [y_points, yi]]:
+        for j in range(len(points)):
+            if j == 0: #first point
+                points[j] = axis[0] - (axis[1] - axis[0])
+            elif j == len(points)-1: #last point
+                points[j] = axis[-1] +  (axis[-1] - axis[-2])
+            else:
+                points[j] = np.average([axis[j], axis[j-1]])
+    
+    X, Y = np.meshgrid(x_points, y_points)
+    
+    return X, Y, zi
 
 ### color maps #################################################################
 
@@ -194,7 +217,10 @@ class mpl_1D:
             
             fig = plt.figure(figsize=(8, 6))
         
-            axes, channels, constants = self.chopped[i]
+            current_chop = self.chopped[i]
+            axes = current_chop.axes
+            channels = current_chop.channels
+            constants = current_chop.constants
             
             xi = axes[0].points
             zi = channels[channel].values
@@ -304,7 +330,10 @@ class mpl_2D:
             
             #get data to plot---------------------------------------------------
             
-            axes, channels, constants = self.chopped[i]
+            current_chop = self.chopped[i]
+            axes = current_chop.axes
+            channels = current_chop.channels
+            constants = current_chop.constants
             
             xaxis = axes[1]
             yaxis = axes[0]
@@ -371,22 +400,11 @@ class mpl_2D:
 
             #fill in main data environment
             if pixelated:
-                x_points = np.zeros(len(xaxis.points) + 1)
-                y_points = np.zeros(len(yaxis.points) + 1)
-                for points, axis in [[x_points, xaxis], [y_points, yaxis]]:
-                    for j in range(len(points)):
-                        if j == 0:               #first point
-                            points[j] = axis.points[0] - (axis.points[1] - axis.points[0])
-                        elif j == len(points)-1: #last point
-                            points[j] = axis.points[-1] +  (axis.points[-1] - axis.points[-2])
-                        else:
-                            points[j] = np.average([axis.points[j], axis.points[j-1]])
-                #plot
-                xi, yi = np.meshgrid(x_points, y_points)
+                xi, yi, zi = pcolor_helper(xaxis.points, yaxis.points, zi)
                 cax = plt.pcolor(xi, yi, zi, cmap = mycm,
                                  vmin = levels.min(), vmax = levels.max())
-                plt.xlim(x_points.min(), x_points.max())
-                plt.ylim(y_points.min(), y_points.max())
+                plt.xlim(xaxis.points.min(), xaxis.points.max())
+                plt.ylim(yaxis.points.min(), yaxis.points.max())
             else:
                 cax = subplot_main.contourf(xaxis.points, yaxis.points, zi,
                                             levels, cmap = mycm)
@@ -630,10 +648,7 @@ class absorbance:
         
         self.ax2.get_yaxis().set_ticks([])
         self.ax2.axhline(0, color = 'k', ls = ':')
-        
-        
-        
-        
+
         #finish-----------------------------------------------------------------
         
         if xlim:
@@ -645,10 +660,6 @@ class absorbance:
                 extra = (zi_truncated.max() - zi_truncated.min())*0.1
                 axis.set_ylim(zi_truncated.min() - extra, zi_truncated.max() + extra)
                 
-            
-            
-            
-        
     def _smooth(self, dat1, n=20, window_type='default'):
         #data is an array of type [xlis,ylis]        
         #smooth to prevent 2nd derivative from being noisy
@@ -657,3 +668,56 @@ class absorbance:
             window = dat1[1][i-n:i+n].copy()
             dat1[1][i] = window.mean()
         return dat1[:][:,n:-n]
+
+class compare_and_share():
+    '''
+    compare an arbitrary number of 2D datasets, plotting them with a shared axis
+    '''
+    def __init__():
+        
+        pass
+
+    def plot():
+        
+        pass
+        '''
+        data = wt.data.from_pickle(os.path.join(box_path, 'MX2', '2015.02.08', 'Post-optimization data', 'Fluence Study', 'data.p'))
+        
+        f, (ax1, ax2, ax3, ax4, ax5) = plt.subplots(5, sharex=True, sharey=True, figsize=(10,20))
+        
+        fluencies = [653, 359, 285, 227, 90]
+        axs = [ax1, ax2, ax3, ax4, ax5]
+        
+        for i in range(len(fluencies)):
+            fluence = fluencies[i]
+            ax = axs[i]
+            
+            chop = data.chop('w2', 'd2', {'w1': [14500, 'wn'], 'fluence': [fluence, 'uJ per sq. cm']})
+            data_chopped = chop[0]
+            axes = data_chopped.axes
+            channels = data_chopped.channels
+            constants = data_chopped.constants
+            ax.contourf(axes[0].points, axes[1].points, channels[0].values.T, 200, cmap = mycm)
+            ax.contour(axes[0].points, axes[1].points, channels[0].values.T, 5, colors = 'k')
+            ax.grid()
+            text_helper(ax, str(fluence), bt = 0.1)
+            
+            
+        
+        f.subplots_adjust(hspace=0)
+        plt.setp([a.get_xticklabels() for a in f.axes[:-1]], visible=False)
+        plt.savefig('against fluence.png', transparent = True)
+        plt.close()
+        '''
+
+class difference_2D():
+    '''
+    take the difference between exactly two 2D datasets \n
+    '''
+    def __init__():
+        
+        pass
+    
+    def plot():
+        
+        pass

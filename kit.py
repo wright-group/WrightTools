@@ -137,20 +137,6 @@ def plot_dats(folder = None):
             print sys.exc_info()[0]
             pass
 
-### fitting ####################################################################
-    
-def gauss_residuals(p, y, x):
-    """
-    calculates the residual between y and a gaussian with:
-        amplitude p[0]
-        mean p[1]
-        stdev p[2]
-    """
-    A, mu, sigma, offset = p
-    # force sigma to be positive
-    err = y-A*np.exp(-(x-mu)**2 / (2*np.abs(sigma)**2)) - offset
-    return err   
-    
 ### units ######################################################################
          
 #units are stored in dictionaries of like kind. format:
@@ -165,14 +151,14 @@ energy = {'kind': 'energy',
 #time units (native: s)
 time = {'kind': 'time',
         'fs': ['x/1e15', 'x*1e15', r'\tau', r'fs'],
-        'ps': ['x/1e12', 'x*1e12'],
-        'ns': ['x/1e9', 'x*1e9'],
-        'us': ['x/1e6', 'x*1e6'],
-        'ms': ['x/1000.', 'x*1000.'],
-        's':  ['x', 'x'],
-        'm':  ['x*60.', 'x/60.'],
-        'h':  ['x*3600.', 'x/3600.'],
-        'd':  ['x*86400.', 'x/86400.']}
+        'ps': ['x/1e12', 'x*1e12', r'\tau', r'ps'],
+        'ns': ['x/1e9', 'x*1e9', r'\tau', r'ns'],
+        'us': ['x/1e6', 'x*1e6', r'\tau', r'us'],
+        'ms': ['x/1000.', 'x*1000.', r'\tau', r'ms'],
+        's':  ['x', 'x', r'\tau', r's'],
+        'm':  ['x*60.', 'x/60.', r'\tau', r'm'],
+        'h':  ['x*3600.', 'x/3600.', r'\tau', r'h'],
+        'd':  ['x*86400.', 'x/86400.', r'\tau', r'd']}
         
 #position units (native: mm)
 position = {'kind': 'position',
@@ -183,8 +169,8 @@ position = {'kind': 'position',
             'in': ['x*0.039370', '0.039370*x']}
             
 #fluence units (native: uJ per sq. cm)
-fluence = {'kind': 'fluence',
-           'uJ per sq. cm': ['x', 'x']}
+fluence = {'kind': 'fluence', 
+           'uJ per sq. cm': ['x', 'x', r'\mathcal{F}', r'\frac{\mu J}{cm^{2}}']}
        
 unit_dicts = [energy, time, position, fluence] 
             

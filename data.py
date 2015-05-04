@@ -20,7 +20,7 @@ class Axis:
     
     def __init__(self, points, units,
                  tolerance = None, file_idx = None,
-                 name = None, label = None, label_seed = None):
+                 name = '', label = None, label_seed = ['']):
         
         self.name = name
         self.tolerance = tolerance
@@ -171,7 +171,7 @@ class Data:
 
     def __init__(self, axes, channels, constants = [], 
                  znull = None, zmin = None, zmax = None, 
-                 name = None, source = None):
+                 name = '', source = None):
         '''
         central object for all data types                              \n
         create data objects by calling the methods of this script
@@ -319,8 +319,10 @@ class Data:
                     values = values[idx]
                 channels_chopped[i].values = values
                     
-            #finish iteration 
-            out.append([axes_chopped, copy.deepcopy(channels_chopped), constants])
+            #finish iteration
+            data_out = Data(axes_chopped, copy.deepcopy(channels_chopped), constants = constants,
+                            name = self.name, source = self.source)
+            out.append(data_out)
         
         #return-----------------------------------------------------------------
         
@@ -540,6 +542,28 @@ class Data:
             
             #return array to channel object
             channel.values = values
+            
+    def transpose(self, axes = None, verbose = True):
+        '''
+        transpose the dataset \n
+        by default, reverse the dimensions, otherwise permute the axes according to the values given \n
+        manipulates calling data object (returns nothing)
+        '''
+        
+        if axes:
+            pass
+        else:
+            axes = range(len(self.channels[0].values.shape))[::-1]
+
+        self.axes = [self.axes[i] for i in axes]
+        self.axis_names = [self.axis_names[i] for i in axes]
+
+        for channel in self.channels:
+            channel.values = np.transpose(channel.values, axes = axes)
+            
+        if verbose:
+            print 'data transposed to', self.axis_names
+
 
     def zoom(self, factor, order=1, verbose = True):
         '''
