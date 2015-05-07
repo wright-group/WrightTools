@@ -124,6 +124,7 @@ def plot_dats(folder = None):
             
             #2D
             elif len(dat_data.axes) == 2:
+                dat_data.transpose() #more consistent with defaults this way
                 artist = artists.mpl_2D(dat_data, dat_data.axes[0].name, dat_data.axes[1].name)
                 artist.plot(0, pixelated = True, contours = 0, xbin = True, ybin = True, 
                             autosave = True, output_folder = folder, fname = fname)
@@ -142,6 +143,10 @@ def plot_dats(folder = None):
 #units are stored in dictionaries of like kind. format:
 #    unit : to native, from native, units_symbol, units_label
          
+#angle units (native: rad)
+angle = {'kind': 'angle',
+         'rad': ['x', 'x', r'\phi', r'rad']}
+         
 #energy units (native: nm)
 energy = {'kind': 'energy',
           'nm': ['x', 'x', r'\lambda', r'nm'],
@@ -159,7 +164,7 @@ time = {'kind': 'time',
         'm':  ['x*60.', 'x/60.', r'\tau', r'm'],
         'h':  ['x*3600.', 'x/3600.', r'\tau', r'h'],
         'd':  ['x*86400.', 'x/86400.', r'\tau', r'd']}
-        
+            
 #position units (native: mm)
 position = {'kind': 'position',
             'nm_p': ['x/1e6', '1e6/x'], #can't have same name as nm for energy
@@ -167,12 +172,16 @@ position = {'kind': 'position',
             'mm': ['x', 'x'],
             'cm': ['10.*x', 'x/10.'],
             'in': ['x*0.039370', '0.039370*x']}
+
+#pulse width units (native: FWHM)
+pulse_width = {'kind': 'pulse_width',
+               'FWHM': ['x', 'x', r'\sigma', r'FWHM']}        
             
 #fluence units (native: uJ per sq. cm)
 fluence = {'kind': 'fluence', 
            'uJ per sq. cm': ['x', 'x', r'\mathcal{F}', r'\frac{\mu J}{cm^{2}}']}
        
-unit_dicts = [energy, time, position, fluence] 
+unit_dicts = [angle, energy, time, position, pulse_width, fluence] 
             
 def unit_converter(val, current_unit, destination_unit):
 

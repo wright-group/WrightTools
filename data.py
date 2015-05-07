@@ -44,7 +44,7 @@ class Axis:
         self.units = destination_units
         
     def get_label(self, units = True, points = False, decimals = 0):
-        
+
         self.label = r'$\mathsf{'
         
         #label
@@ -61,7 +61,7 @@ class Axis:
         self.label = self.label[:-1]
         
         if points:
-            if self.points:
+            if not self.points == None:
                 self.label += r'=\,' + str(np.round(self.points, decimals = decimals))
 
         #units
@@ -727,7 +727,7 @@ def make_tune(obj, set_var, fname=None, amp='int', center='exp_val', fit=True,
 ### data creation methods ######################################################
 
 def from_COLORS(filepaths, znull = None, name = None, cols = None, invert_d1 = True,
-                color_steps_as = 'energy', ignore = ['num', 'w3', 'dref'],
+                color_steps_as = 'energy', ignore = ['num', 'w3', 'wa', 'dref'],
                 verbose = True):
     '''
     filepaths may be string or list \n
@@ -748,9 +748,9 @@ def from_COLORS(filepaths, znull = None, name = None, cols = None, invert_d1 = T
         pass
     else:
         num_cols = len(np.genfromtxt(file_example).T)
-        if num_cols == 35:
+        if num_cols in [28, 35]:
             cols = 'v2'
-        elif num_cols == 20:
+        elif num_cols in [20]:
             cols = 'v1'
         elif num_cols == 16:
             cols = 'v0'
@@ -963,24 +963,85 @@ def from_JASCO(filepath, name = None, verbose = True):
     
     return data
     
-def from_NISE(measure_object, name = None, verbose = True):
+def from_NISE(measure_object, name = 'simulation', ignore_constants = ['A', 'p'],
+              flip_delays = True, verbose = True):
     
-    #axes
+    try:
+        import NISE
+    except:
+        print 'NISE is required to import scans, returning'
+        return
+    
+    #axes-----------------------------------------------------------------------
+        
+    NISE_axes = measure_object.scan_obj.axis_objs
     axes = []
-    for NISE_axis in measure_object.scan_obj.axis_objs:
-        axis_name = NISE_axis.name
+    for NISE_axis in NISE_axes:
+        axis_name = NISE_axis.pulse_var + str(NISE_axis.pulse_ind)
         points = NISE_axis.points
         units = NISE_axis.default_units
         label_seed = NISE_axis.also
         axis = Axis(points, units, name = axis_name, label_seed = label_seed)
         axes.append(axis)
+        
+    #constants------------------------------------------------------------------
+        
+    NISE_units = {'A': 'uJ per sq. cm',
+                  's': 'FWHM',
+                  'd': 'fs',
+                  'w': 'wn',
+                  'p': 'rad'}
+        
+    scan_object = measure_object.scan_obj
+    positions_array = scan_object.positions.T
+    pulse_class = getattr(NISE.lib.pulse, scan_object.pulse_class_name)
+    constants = []
+    for idx in range(len(positions_array)):
+        key = pulse_class.cols.keys()[pulse_class.cols.values().index(idx)]
+        axes_sametype = [NISE_axis for NISE_axis in NISE_axes if NISE_axis.pulse_var == key]
+        #get values that were not scanned
+        indicies_scanned = []
+        for axis in axes_sametype:
+            indicies_scanned.append(axis.also)
+        vals = np.delete(positions_array[idx], [item for sublist in indicies_scanned for item in sublist])
+        #find values that are co-set
+        equal = np.zeros((len(vals), len(vals)), dtype=bool)
+        for i in range(len(vals)): #test
+            for j in range(len(vals)): #against
+                if vals[i] == vals[j]:
+                    equal[i, j] = True
+        #create constant Axis objects
+        vals_accounted_for = np.zeros(len(vals), dtype=bool)
+        while not all(vals_accounted_for) == True:
+            for i in range(len(vals)):
+                if vals_accounted_for[i]:
+                    pass
+                else:
+                    cname = key + str(i)
+                    value = np.array(vals[i])
+                    units = NISE_units[key]
+                    label_seed = list(np.where(equal[i])[0])
+                    for j in label_seed:
+                        vals_accounted_for[j] = True
+                    axis = Axis(value, units, name = cname, label_seed = label_seed)
+                    if key not in ignore_constants:
+                        constants.append(axis)
 
-    #channels
+    #channels-------------------------------------------------------------------
+
     zi = measure_object.pol
-    channel = Channel(zi, 'au', label = 'simulation')
-    channels = [channel]        
+    channel = Channel(zi, 'au', label = 'amplitude')
+    channels = [channel]
     
-    data = Data(axes, channels, name = name, source = 'NISE')
+    #data object----------------------------------------------------------------
+    
+    if flip_delays:
+        for lis in [axes, constants]:
+            for axis in lis:
+                if axis.units_kind == 'time':
+                    axis.points *= -1.
+    
+    data = Data(axes, channels, constants = constants, name = name, source = 'NISE')
     
     return data
 

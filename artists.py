@@ -295,7 +295,7 @@ class mpl_2D:
             self._ysideplot = True
             self._ysideplotdata.append([data.axes[0].points, data.channels[0].values])
 
-    def plot(self, channel_index,
+    def plot(self, channel_index = 0,
              contours = 9, pixelated = False, lines = True, cmap = 'default', 
              dynamic_range = False, local = False, contours_local = True, normalize_slices = 'both',
              xbin = False, ybin = False, xlim = None, ylim = None,
@@ -321,9 +321,16 @@ class mpl_2D:
             if output_folder:
                 pass
             else:
-                timestamp = kit.get_timestamp()
-                os.mkdir(timestamp)
-                output_folder = timestamp  
+                if len(self.chopped) == 1:
+                    output_folder = os.getcwd()
+                    if fname:
+                        pass
+                    else:
+                        fname = self.data.name
+                else:
+                    folder_name = 'mpl_2D ' + kit.get_timestamp()
+                    os.mkdir(folder_name)
+                    output_folder = folder_name
              
         #chew through image generation
         for i in range(len(self.chopped)):
@@ -375,6 +382,7 @@ class mpl_2D:
             gs = grd.GridSpec(1, 2, width_ratios=[20, 1], wspace=0.1)            
             
             subplot_main = plt.subplot(gs[0])
+            subplot_main.patch.set_facecolor('grey')
                         
             #levels-------------------------------------------------------------
             
@@ -431,8 +439,18 @@ class mpl_2D:
             
             if xaxis.units == yaxis.units:
                 #add diagonal line
-                diag_min = max(min(xaxis.points),min(yaxis.points))
-                diag_max = min(max(xaxis.points),max(yaxis.points))
+                if xlim:
+                    x = xlim
+                else:
+                    x = xaxis.points
+                if ylim:
+                    y = ylim
+                else:
+                    y = yaxis.points
+            
+                diag_min = max(min(x), min(y))
+                diag_max = min(max(x), max(y))
+                print diag_min, diag_max
                 plt.plot([diag_min, diag_max],[diag_min, diag_max],'k:')
             
             #contour lines------------------------------------------------------
@@ -558,7 +576,7 @@ class mpl_2D:
                 else:
                     file_name = str(i).zfill(3)
                 fpath = os.path.join(output_folder, file_name + '.png')
-                plt.savefig(fpath, transparent = True)
+                plt.savefig(fpath, facecolor = 'none')
                 plt.close()
                 
                 if verbose:
