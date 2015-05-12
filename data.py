@@ -727,7 +727,7 @@ def make_tune(obj, set_var, fname=None, amp='int', center='exp_val', fit=True,
 ### data creation methods ######################################################
 
 def from_COLORS(filepaths, znull = None, name = None, cols = None, invert_d1 = True,
-                color_steps_as = 'energy', ignore = ['num', 'w3', 'wa', 'dref'],
+                color_steps_as = 'energy', ignore = ['num', 'w3', 'wa', 'dref', 'm0', 'm1', 'm2', 'm3', 'm4', 'm5', 'm6'],
                 verbose = True):
     '''
     filepaths may be string or list \n
@@ -763,11 +763,18 @@ def from_COLORS(filepaths, znull = None, name = None, cols = None, invert_d1 = T
         axes['w1']   = Axis(None, 'nm', tolerance = 0.5,  file_idx = 1,  name = 'w1',   label_seed = ['1'])
         axes['w2']   = Axis(None, 'nm', tolerance = 0.5,  file_idx = 3,  name = 'w2',   label_seed = ['2'])  
         axes['w3']   = Axis(None, 'nm', tolerance = 5.0,  file_idx = 5,  name = 'w3',   label_seed = ['3'])    
-        axes['wm']   = Axis(None, 'nm', tolerance = 0.5,  file_idx = 7,  name = 'wm',   label_seed = ['m'])
+        axes['wm']   = Axis(None, 'nm', tolerance = 1.0,  file_idx = 7,  name = 'wm',   label_seed = ['m'])
         axes['wa']   = Axis(None, 'nm', tolerance = 1.0,  file_idx = 8,  name = 'wm',   label_seed = ['a'])
         axes['dref'] = Axis(None, 'fs', tolerance = 25.0, file_idx = 10, name = 'dref', label_seed = ['ref'])
         axes['d1']   = Axis(None, 'fs', tolerance = 4.0,  file_idx = 12, name = 'd1',   label_seed = ['22\''])
         axes['d2']   = Axis(None, 'fs', tolerance = 4.0,  file_idx = 14, name = 'd2',   label_seed = ['21'])
+        axes['m0']   = Axis(None, None, tolerance = 10.0, file_idx = 22, name = 'm0',   label_seed = ['0'])
+        axes['m1']   = Axis(None, None, tolerance = 10.0, file_idx = 23, name = 'm1',   label_seed = ['1'])
+        axes['m2']   = Axis(None, None, tolerance = 10.0, file_idx = 24, name = 'm2',   label_seed = ['2'])
+        axes['m3']   = Axis(None, None, tolerance = 10.0, file_idx = 25, name = 'm3',   label_seed = ['3'])
+        axes['m4']   = Axis(None, None, tolerance = 15.0, file_idx = 26, name = 'm4',   label_seed = ['4'])
+        axes['m5']   = Axis(None, None, tolerance = 15.0, file_idx = 27, name = 'm5',   label_seed = ['5'])
+        axes['m6']   = Axis(None, None, tolerance = 15.0, file_idx = 28, name = 'm6',   label_seed = ['6'])
         channels = collections.OrderedDict()
         channels['ai0'] = Channel(None, 'V',  file_idx = 16, name = 'ai0',  label_seed = ['0'])
         channels['ai1'] = Channel(None, 'V',  file_idx = 17, name = 'ai1',  label_seed = ['1'])

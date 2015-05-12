@@ -450,7 +450,6 @@ class mpl_2D:
             
                 diag_min = max(min(x), min(y))
                 diag_max = min(max(x), max(y))
-                print diag_min, diag_max
                 plt.plot([diag_min, diag_max],[diag_min, diag_max],'k:')
             
             #contour lines------------------------------------------------------
@@ -587,6 +586,9 @@ class mpl_2D:
 class absorbance:
     
     def __init__(self, data):
+        
+        if not type(data) == list:
+            data = [data]
 
         self.data = data
         
@@ -595,9 +597,6 @@ class absorbance:
         '''
         data can be a single object or a list of objects
         '''
-        
-        if not type(data) == list:
-            data = [data]
 
         self.data = data
         
@@ -659,7 +658,7 @@ class absorbance:
             self.ax2.grid(b=True)
             plt.xlabel(r'$\bar\nu / cm^{-1}$')
             
-        self.ax1.legend([data.name for data in self.data])
+        #self.ax1.legend([data.name for data in self.data])
             
             
         self.ax1.get_yaxis().set_ticks([])
