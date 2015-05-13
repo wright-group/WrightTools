@@ -14,6 +14,8 @@ import matplotlib.pyplot as plt
 
 import kit
 
+debug = False
+
 ### data class #################################################################
 
 class Axis:
@@ -875,7 +877,7 @@ def from_COLORS(filepaths, znull = None, name = None, cols = None, invert_d1 = T
             axis.points = np.linspace(min(xs)+tol, max(xs)-tol, num = len(xs))
 
     #grid data------------------------------------------------------------------
-
+    
     if len(scanned) == 1:
         #1D data
     
@@ -887,7 +889,7 @@ def from_COLORS(filepaths, znull = None, name = None, cols = None, invert_d1 = T
             channel = channels[key]
             zi = arr[channel.file_idx]
             channel.give_values(zi)
-        
+    
     else:
         #all other dimensionalities
 
@@ -903,7 +905,7 @@ def from_COLORS(filepaths, znull = None, name = None, cols = None, invert_d1 = T
             grid_i = griddata(points, zi, xi,
                               method='linear',fill_value=fill_value)
             channel.give_values(grid_i)
-        
+            
     #create data object---------------------------------------------------------
 
     data = Data(scanned, channels.values(), constant, znull)
@@ -1149,11 +1151,13 @@ def discover_dimensions(arr, dimension_cols, verbose = True):
                 else:
                     d_equal[i, j] = False
                     break
+    if debug: print d_equal
 
     #condense
     dims_unaccounted = range(len(dims))
     dims_condensed = []
     while dims_unaccounted:
+        if debug: print dims_unaccounted
         dim_current = dims_unaccounted[0]
         index = dims[dim_current][0]
         tolerance = [dims[dim_current][1]]
@@ -1162,6 +1166,7 @@ def discover_dimensions(arr, dimension_cols, verbose = True):
         dims_unaccounted.pop(0)
         indicies = range(len(dims_unaccounted))
         indicies.reverse()
+        if debug: print indicies
         for i in indicies:
             dim_check = dims_unaccounted[i]
             if d_equal[dim_check, dim_current]:
@@ -1171,6 +1176,7 @@ def discover_dimensions(arr, dimension_cols, verbose = True):
         tolerance = max(tolerance)
         dims_condensed.append([index, tolerance, units, key])
     dims = dims_condensed
+    if debug: print dims
     
     #which dimensions are scanned-----------------------------------------------
     
@@ -1186,7 +1192,7 @@ def discover_dimensions(arr, dimension_cols, verbose = True):
             scanned.append([name, index, tolerance, None])
         else:
             constant_list.append([name, index, tolerance, arr[index, 0]])
-            
+     
     #order scanned dimensions (..., zi, yi, xi)
     first_change_indicies = []
     for axis in scanned:
@@ -1201,7 +1207,7 @@ def discover_dimensions(arr, dimension_cols, verbose = True):
                 break
     scanned_ordered = [scanned[i] for i in np.argsort(first_change_indicies)]
     scanned_ordered.reverse()
-    
+
     #return---------------------------------------------------------------------
 
     #package back into ordered dictionary of objects

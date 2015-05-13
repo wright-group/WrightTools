@@ -650,7 +650,8 @@ class absorbance:
             
             #compute second derivative
             xi2, zi2= self._smooth(np.array([xi,zi]))
-            plotData = np.array([np.delete(xi2, [0, len(xi2)-1]), np.diff(zi2, n=2)])
+            #plotData = np.array([np.delete(xi2, [0, len(xi2)-1]), np.diff(zi2, n=2)])
+            plotData = kit.diff(xi2, zi2, order = 2)
             
             #plot the data!
             self.ax2.plot(plotData[0], plotData[1], lw = 2)
@@ -659,8 +660,7 @@ class absorbance:
             plt.xlabel(r'$\bar\nu / cm^{-1}$')
             
         #self.ax1.legend([data.name for data in self.data])
-            
-            
+        
         self.ax1.get_yaxis().set_ticks([])
         
         self.ax2.get_yaxis().set_ticks([])
