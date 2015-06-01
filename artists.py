@@ -592,20 +592,7 @@ class absorbance:
 
         self.data = data
         
-    def plot(self, channel_index = 0, font_size = 12, xlim = None, ylim = None):
-
-        '''
-        data can be a single object or a list of objects
-        '''
-
-        self.data = data
-        
-
-        xi = self.data.axes[0].points
-        zi = self.data.channels[channel_index].values
-        name = self.data.name
-
-    def plot(self, channel_index = 0, font_size = 12, xlim = None, ylim = None):
+    def plot(self, channel_index = 0, font_size = 12, xlim = None, ylim = None, n_smooth = 10):
         
         #prepare plot environment-----------------------------------------------
     
@@ -616,7 +603,6 @@ class absorbance:
         plt.ylabel('absorbance')
         
         self.ax2 = plt.subplot(212, sharex=self.ax1)
-        self.ax2.set_ylim(-0.001, 0.001)
         
         plt.ylabel('2nd derivative')
         matplotlib.rcParams.update({'font.size': font_size})
@@ -649,8 +635,7 @@ class absorbance:
             #now plot 2nd derivative--------------------------------------------
             
             #compute second derivative
-            xi2, zi2= self._smooth(np.array([xi,zi]))
-            #plotData = np.array([np.delete(xi2, [0, len(xi2)-1]), np.diff(zi2, n=2)])
+            xi2, zi2= self._smooth(np.array([xi,zi]), n_smooth)
             plotData = kit.diff(xi2, zi2, order = 2)
             
             #plot the data!
@@ -675,7 +660,7 @@ class absorbance:
                 max_index = np.argmin(abs(xi - max(xlim)))
                 zi_truncated = zi[min_index:max_index]
                 extra = (zi_truncated.max() - zi_truncated.min())*0.1
-                axis.set_ylim(zi_truncated.min() - extra, zi_truncated.max() + extra)
+                #axis.set_ylim(zi_truncated.min() - extra, zi_truncated.max() + extra)
                 
     def _smooth(self, dat1, n=20, window_type='default'):
         #data is an array of type [xlis,ylis]        

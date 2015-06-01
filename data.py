@@ -385,7 +385,7 @@ class Data:
         
     def flip(self, axis):
         '''
-        invert arrays along axis \n
+        invert direction of arrays along axis. \n
         axis may be an integer (index) or a string (name)
         '''
         
@@ -414,10 +414,10 @@ class Data:
             transpose_order = [len(values.shape)-1 if i==axis_index else i for i in transpose_order] #replace axis_index with zero
             transpose_order[len(values.shape)-1] = axis_index
             values = values.transpose(transpose_order)
-            values = values[:,::-1]
+            values = values[...,::-1]
             #transpose out
             values = values.transpose(transpose_order)
-        
+            channel.values = values
         
         
     def level(self, channel_index, axis, npts, verbose = True):
@@ -905,6 +905,7 @@ def from_COLORS(filepaths, znull = None, name = None, cols = None, invert_d1 = T
             grid_i = griddata(points, zi, xi,
                               method='linear',fill_value=fill_value)
             channel.give_values(grid_i)
+            if debug: print key
             
     #create data object---------------------------------------------------------
 

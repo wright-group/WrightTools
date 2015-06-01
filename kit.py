@@ -90,7 +90,7 @@ def glob_handler(extension, folder = None, identifier = None):
 
     return filepaths
     
-def plot_dats(folder = None):
+def plot_dats(folder = None, transpose = True):
     '''
     convinience function to plot raw data
     '''
@@ -124,7 +124,7 @@ def plot_dats(folder = None):
             
             #2D
             elif len(dat_data.axes) == 2:
-                dat_data.transpose() #more consistent with defaults this way
+                if transpose: dat_data.transpose()
                 artist = artists.mpl_2D(dat_data, dat_data.axes[0].name, dat_data.axes[1].name)
                 artist.plot(0, pixelated = True, contours = 0, xbin = True, ybin = True, 
                             autosave = True, output_folder = folder, fname = fname)
