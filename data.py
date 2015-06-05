@@ -199,7 +199,6 @@ class Data:
         for arg in [znull, zmin, zmax]:
             for i in range(len(self.channels)):
                 channel = self.channels[i]
-                
             
         #other------------------------------------------------------------------
   
@@ -480,6 +479,13 @@ class Data:
             
             print 'channel', channel.name, 'offset by', axis.name, 'between', int(points.min()), 'and', int(points.max()), axis.units
         
+    def normalize(self, channel = 0, verbose = True):
+        '''
+        make 'channel' between zero and 1
+        '''
+
+        self.channels[channel].values -= self.channels[channel].values.min()
+        self.channels[channel].values /= self.channels[channel].values.max()
         
     def save(self, filepath = None, verbose = True):
         '''
@@ -497,6 +503,18 @@ class Data:
             print 'data saved at', filepath
         
         return filepath
+    
+    def scale(self, channel = 0, kind = 'amplitude', verbose = True):
+        '''
+        perform scaling operations on the data
+        '''
+        
+        if kind in ['amp', 'amplitude']:
+            channel_data = self.channels[channel].values
+            channel_data -= channel_data.min()
+            channel_data += 0.001
+            channel_data = np.sqrt(channel_data)
+            self.channels[channel].values = channel_data
     
     def smooth(self, factors):
         '''

@@ -187,7 +187,7 @@ angle = {'kind': 'angle',
 energy = {'kind': 'energy',
           'nm': ['x', 'x', r'\lambda', r'nm'],
           'wn': ['1e7/x', '1e7/x', r'\bar\nu', r'cm^{-1}'],
-          'eV': ['x/1240.', '1240./x', r'E', r'eV']} 
+          'eV': ['1240./x', '1240./x', r'E', r'eV']} 
      
 #time units (native: s)
 time = {'kind': 'time',
