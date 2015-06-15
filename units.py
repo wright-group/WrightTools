@@ -88,6 +88,10 @@ fluence['default'] = r'\mathcal{F}'
 pulse_width = symbol_dict()
 pulse_width['default'] = r'\sigma'
 
+#catch all
+none = symbol_dict()
+none['default'] = ''
+
 def get_default_symbol_type(units_str):
     if units_str in ['nm', 'wn', 'eV']:
         return 'color'
@@ -95,3 +99,7 @@ def get_default_symbol_type(units_str):
         return 'delay'
     elif units_str in ['uJ per sq. cm']:
         return 'fluence'
+    elif units_str in ['FWHM']:
+        return 'pulse_width'
+    else:
+        return 'none'
