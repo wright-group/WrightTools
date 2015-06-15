@@ -173,68 +173,43 @@ def diff(xi, yi, order = 1):
     yi_out = fdiff(xi)
     
     return np.array([xi, yi_out])
-
-### units ######################################################################
-         
-#units are stored in dictionaries of like kind. format:
-#    unit : to native, from native, units_symbol, units_label
-         
-#angle units (native: rad)
-angle = {'kind': 'angle',
-         'rad': ['x', 'x', r'\phi', r'rad']}
-         
-#energy units (native: nm)
-energy = {'kind': 'energy',
-          'nm': ['x', 'x', r'\lambda', r'nm'],
-          'wn': ['1e7/x', '1e7/x', r'\bar\nu', r'cm^{-1}'],
-          'eV': ['1240./x', '1240./x', r'E', r'eV']} 
-     
-#time units (native: s)
-time = {'kind': 'time',
-        'fs': ['x/1e15', 'x*1e15', r'\tau', r'fs'],
-        'ps': ['x/1e12', 'x*1e12', r'\tau', r'ps'],
-        'ns': ['x/1e9', 'x*1e9', r'\tau', r'ns'],
-        'us': ['x/1e6', 'x*1e6', r'\tau', r'us'],
-        'ms': ['x/1000.', 'x*1000.', r'\tau', r'ms'],
-        's':  ['x', 'x', r'\tau', r's'],
-        'm':  ['x*60.', 'x/60.', r'\tau', r'm'],
-        'h':  ['x*3600.', 'x/3600.', r'\tau', r'h'],
-        'd':  ['x*86400.', 'x/86400.', r'\tau', r'd']}
-            
-#position units (native: mm)
-position = {'kind': 'position',
-            'nm_p': ['x/1e6', '1e6/x'], #can't have same name as nm for energy
-            'um': ['x/1000.', '1000/x.'],
-            'mm': ['x', 'x'],
-            'cm': ['10.*x', 'x/10.'],
-            'in': ['x*0.039370', '0.039370*x']}
-
-#pulse width units (native: FWHM)
-pulse_width = {'kind': 'pulse_width',
-               'FWHM': ['x', 'x', r'\sigma', r'FWHM']}        
-            
-#fluence units (native: uJ per sq. cm)
-fluence = {'kind': 'fluence', 
-           'uJ per sq. cm': ['x', 'x', r'\mathcal{F}', r'\frac{\mu J}{cm^{2}}']}
-       
-unit_dicts = [angle, energy, time, position, pulse_width, fluence] 
-            
-def unit_converter(val, current_unit, destination_unit):
-
-    x = val
-    
-    for dic in unit_dicts:
-        if current_unit in dic.keys() and destination_unit in dic.keys():
-            native = eval(dic[current_unit][0])
-            x = native
-            out = eval(dic[destination_unit][1])
-            return out
-
-    #if all dictionaries fail
-    print 'conversion not valid: returning input'
-    return val
     
 ### uncategorized ##############################################################
+
+class suppress_stdout_stderr(object):
+    '''
+    A context manager for doing a "deep suppression" of stdout and stderr in 
+    Python, i.e. will suppress all print, even if the print originates in a 
+    compiled C/Fortran sub-function.
+    
+    This will not suppress raised exceptions, since exceptions are printed
+    to stderr just before a script exits, and after the context manager has
+    exited (at least, I think that is why it lets exceptions through).  
+
+    from http://stackoverflow.com/questions/11130156/suppress-stdout-stderr-print-from-python-functions
+    
+    with wt.kit.suppress_stdout_stderr():
+        rogue_function()
+    '''
+    def __init__(self):
+        # Open a pair of null files
+        self.null_fds =  [os.open(os.devnull,os.O_RDWR) for x in range(2)]
+        # Save the actual stdout (1) and stderr (2) file descriptors.
+        self.save_fds = (os.dup(1), os.dup(2))
+
+    def __enter__(self):
+        # Assign the null pointers to stdout and stderr.
+        os.dup2(self.null_fds[0],1)
+        os.dup2(self.null_fds[1],2)
+
+    def __exit__(self, *_):
+        # Re-assign the real stdout/stderr back to (1) and (2)
+        os.dup2(self.save_fds[0],1)
+        os.dup2(self.save_fds[1],2)
+        # Close the null files
+        os.close(self.null_fds[0])
+        os.close(self.null_fds[1])
+
 
 def update_progress(progress, carriage_return = True, length = 50):
     '''

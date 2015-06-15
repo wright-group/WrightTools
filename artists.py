@@ -246,7 +246,7 @@ class mpl_1D:
             
             constants_text = '\n'
             for constant in constants:
-                constants_text += constant.get_label(units = True, points = True) + '    '       
+                constants_text += constant.get_label(show_units = True, points = True) + '    '       
                 
             plt.suptitle(title_text + constants_text, fontsize = self.font_size)
             
@@ -557,7 +557,7 @@ class mpl_2D:
             
             constants_text = '\n'
             for constant in constants:
-                constants_text += constant.get_label(units = True, points = True) + '    '         
+                constants_text += constant.get_label(show_units = True, points = True) + '    '         
                 
             plt.suptitle(title_text + constants_text, fontsize = self.font_size)
             

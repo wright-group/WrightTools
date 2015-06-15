@@ -13,6 +13,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 
 import kit
+import units
 
 debug = False
 
@@ -20,40 +21,46 @@ debug = False
 
 class Axis:
     
-    def __init__(self, points, units,
+    def __init__(self, points, init_units, symbol_type = None,
                  tolerance = None, file_idx = None,
                  name = '', label = None, label_seed = ['']):
         
         self.name = name
         self.tolerance = tolerance
         self.points = points
-        self.units = units
+        self.units = init_units
         self.file_idx = file_idx        
         self.label_seed = label_seed        
         self.label = label
         
         #get units kind
         self.units_kind = None
-        for dic in kit.unit_dicts:
+        for dic in units.unit_dicts:
             if self.units in dic.keys():
                 self.units_kind = dic['kind']
+                
+        #get symbol type
+        if symbol_type:
+            self.symbol_type = symbol_type
+        else:
+            self.symbol_type = units.get_default_symbol_type(self.units)
 
         self.get_label()        
         
     def convert(self, destination_units):
         
-        self.points = kit.unit_converter(self.points, self.units, destination_units)
+        self.points = units.converter(self.points, self.units, destination_units)
         self.units = destination_units
         
-    def get_label(self, units = True, points = False, decimals = 0):
+    def get_label(self, show_units = True, points = False, decimals = 0):
 
         self.label = r'$\mathsf{'
         
         #label
         for part in self.label_seed:
             if self.units_kind:       
-                units_dictionary = getattr(kit, self.units_kind)
-                self.label += units_dictionary[self.units][2]
+                units_dictionary = getattr(units, self.units_kind)
+                self.label += getattr(units, self.symbol_type)[self.units]
                 self.label += r'_{' + str(part) + r'}'
             else:
                 self.label += self.name
@@ -67,12 +74,12 @@ class Axis:
                 self.label += r'=\,' + str(np.round(self.points, decimals = decimals))
 
         #units
-        if units:
+        if show_units:
             if self.units_kind:       
-                units_dictionary = getattr(kit, self.units_kind)
+                units_dictionary = getattr(units, self.units_kind)
                 self.label += r'\,'
                 if not points: self.label += r'\left('
-                self.label += units_dictionary[self.units][3]
+                self.label += units_dictionary[self.units][2]
                 if not points: self.label += r'\right)'
             else:
                 pass
@@ -268,9 +275,9 @@ class Data:
             for i in range(len(index[1:])):
                 idx = index[1:][i]
                 name = iterated_dimensions[i]
-                units = getattr(self, name).units
+                axis_units = getattr(self, name).units
                 position = getattr(self, name).points[idx]
-                chopped_constants[name] = [position, units]
+                chopped_constants[name] = [position, axis_units]
 
             #re-order array: [all_chopped_constants, channels, all_chopped_axes]
             
@@ -284,7 +291,7 @@ class Data:
                 transpose_order.append(idx)
                 #get index of nearest value
                 val = chopped_constants[dim][0]
-                val = kit.unit_converter(val, chopped_constants[dim][1], self.axes[idx].units)
+                val = units.converter(val, chopped_constants[dim][1], self.axes[idx].units)
                 c_idx = np.argmin(abs(self.axes[idx].points - val))
                 constant_indicies.append(c_idx)
                 obj = copy.copy(self.axes[idx])
@@ -332,20 +339,20 @@ class Data:
 
         return out
         
-    def convert(self, units, verbose = True):
+    def convert(self, destination_units, verbose = True):
         '''
         convinience method                                                    \n
         converts all compatable constants and axes to units 
         '''
         
         #get kind of units
-        for dic in kit.unit_dicts:
-            if units in dic.keys():
+        for dic in units.unit_dicts:
+            if destination_units in dic.keys():
                 units_kind = dic['kind']
         
         for axis in self.axes + self.constants:
             if axis.units_kind == units_kind:
-                axis.convert(units)
+                axis.convert(destination_units)
                 if verbose:
                     print 'axis', axis.name, 'converted'
         
@@ -486,6 +493,9 @@ class Data:
 
         self.channels[channel].values -= self.channels[channel].values.min()
         self.channels[channel].values /= self.channels[channel].values.max()
+        
+        self.channels[channel].zmin = 0.
+        self.channels[channel].zmax = 1.
         
     def save(self, filepath = None, verbose = True):
         '''
