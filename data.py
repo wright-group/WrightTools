@@ -1000,7 +1000,163 @@ def from_JASCO(filepath, name = None, verbose = True):
     #return---------------------------------------------------------------------
     
     return data
+
+def from_KENT(filepaths, znull = None, name = None, 
+              ignore = ['wm'], use_norm = False, verbose = True):
+    '''
+    filepaths may be string or list \n
+    '''
+
+    #do we have a list of files or just one file?-------------------------------
     
+    if type(filepaths) == list:
+        file_example = filepaths[0]
+    else:
+        file_example = filepaths
+        filepaths = [filepaths]
+    
+    #define format of dat file--------------------------------------------------
+
+    axes = collections.OrderedDict()
+    axes['w1']   = Axis(None, 'wn', tolerance = 0.5,  file_idx = 0,  name = 'w1',  label_seed = ['1'])
+    axes['w2']   = Axis(None, 'wn', tolerance = 0.5,  file_idx = 1,  name = 'w2',   label_seed = ['2'])
+    axes['wm']   = Axis(None, 'wn', tolerance = 0.5,  file_idx = 2,  name = 'wm',   label_seed = ['m'])
+    axes['d1']   = Axis(None, 'ps', tolerance = 3.0,  file_idx = 3,  name = 'd1',   label_seed = ['1'])
+    axes['d2']   = Axis(None, 'ps', tolerance = 3.0,  file_idx = 4,  name = 'd2',   label_seed = ['2'])
+    
+    channels = collections.OrderedDict()
+    channels['signal'] = Channel(None, 'V',  file_idx = 5, name = 'signal',  label_seed = ['0'])
+    channels['OPA2']   = Channel(None, 'V',  file_idx = 6, name = 'OPA2',  label_seed = ['1'])
+    channels['OPA1']   = Channel(None, 'V',  file_idx = 7, name = 'OPA1',  label_seed = ['2'])
+            
+    #import full array----------------------------------------------------------
+            
+    for i in range(len(filepaths)):
+        dat = np.genfromtxt(filepaths[i]).T
+        if verbose: print 'dat imported:', dat.shape
+        if i == 0:
+            arr = dat
+        else:      
+            arr = np.append(arr, dat, axis = 1)
+            
+    #recognize dimensionality of data-------------------------------------------
+        
+    axes_discover = axes.copy()
+    for key in ignore:
+        if key in axes_discover:
+            axes_discover.pop(key) #remove dimensions that mess up discovery
+            
+    scanned, constant = discover_dimensions(arr, axes_discover)
+    
+    #get axes points------------------------------------------------------------
+
+    for axis in scanned:
+        
+        #generate lists from data
+        lis = sorted(arr[axis.file_idx])
+        tol = axis.tolerance
+        
+        # values are binned according to their averages now, so min and max 
+        #  are better represented
+        xstd = []
+        xs = []
+        
+        # check to see if unique values are sufficiently unique
+        # deplete to list of values by finding points that are within 
+        #  tolerance
+        while len(lis) > 0:
+            # find all the xi's that are like this one and group them
+            # after grouping, remove from the list
+            set_val = lis[0]
+            xi_lis = [xi for xi in lis if np.abs(set_val - xi) < tol]
+            # the complement of xi_lis is what remains of xlis, then
+            lis = [xi for xi in lis if not np.abs(xi_lis[0] - xi) < tol]
+            xi_lis_average = sum(xi_lis) / len(xi_lis)
+            xs.append(xi_lis_average)
+            xstdi = sum(np.abs(xi_lis - xi_lis_average)) / len(xi_lis)
+            xstd.append(xstdi)
+        
+        # create uniformly spaced x and y lists for gridding
+        # infinitesimal offset used to properly interpolate on bounds; can
+        #   be a problem, especially for stepping axis
+        tol = sum(xstd) / len(xstd)
+        tol = max(tol, 0.3)
+        axis.points = np.linspace(min(xs)+tol, max(xs)-tol, num = len(xs))
+
+    #grid data------------------------------------------------------------------
+    #May not need, but doesnt hurt to include
+    if len(scanned) == 1:
+        #1D data
+    
+        axis = scanned[0]
+        axis.points = arr[axis.file_idx]
+        scanned[0] = axis
+    
+        for key in channels.keys():
+            channel = channels[key]
+            zi = arr[channel.file_idx]
+            channel.give_values(zi)
+    
+    else:
+        #all other dimensionalities
+
+        points = tuple(arr[axis.file_idx] for axis in scanned)
+        #beware, meshgrid gives wrong answer with default indexing
+        #this took me many hours to figure out... - blaise
+        xi = tuple(np.meshgrid(*[axis.points for axis in scanned], indexing = 'ij'))
+    
+        for key in channels.keys():
+            channel = channels[key]
+            zi = arr[channel.file_idx]
+            fill_value = min(zi)
+            grid_i = griddata(points, zi, xi,
+                         method='linear',fill_value=fill_value)
+            channel.give_values(grid_i)
+            if debug: print key
+            
+    #create data object---------------------------------------------------------
+
+    data = Data(scanned, channels.values(), constant, znull)
+    
+
+    for axis in data.axes:
+        axis.get_label()
+    for axis in data.constants:
+        axis.get_label()
+    
+    #add extra stuff to data object---------------------------------------------
+
+    data.source = filepaths
+    
+    if not name:
+        name = kit.filename_parse(file_example)[1]
+    data.name = name
+
+    #normalize the data---------------------------------------------------------
+    
+    if use_norm:
+       
+        #normalize the OPAs
+        OPA1 = data.channels[2].values/data.axes[0].points
+        OPA2 = data.channels[1].values/data.axes[1].points
+        
+        #Signal normalization
+        data_norm = data.channels[0].values*data.axes[0].points*data.axes[1].points/(OPA1*OPA2)
+
+        data.channels[0].values = data_norm
+        data.channels[0].zmax = data_norm.max()
+        data.channels[0].zmin = data_norm.min()
+
+    #return---------------------------------------------------------------------
+    
+    if verbose:
+        print 'data object succesfully created'
+        print 'axis names:', data.axis_names
+        print 'values shape:', channels.values()[0].values.shape
+        
+    return data
+       
+       
 def from_NISE(measure_object, name = 'simulation', ignore_constants = ['A', 'p'],
               flip_delays = True, verbose = True):
     
