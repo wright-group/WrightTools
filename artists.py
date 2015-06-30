@@ -592,21 +592,28 @@ class absorbance:
 
         self.data = data
         
-    def plot(self, channel_index = 0, font_size = 12, xlim = None, ylim = None, n_smooth = 10):
+    def plot(self, channel_index = 0, font_size = 12, xlim = None, ylim = None,
+             yticks = True, derivative = True, n_smooth = 10,):
         
         #prepare plot environment-----------------------------------------------
-    
-        self.ax1 = plt.subplot(211)
-        self.ax1.legend(loc=4)
-        self.ax1.grid(b=True)
-        self.ax1.set_ylim(0, 1.1)
-        plt.ylabel('absorbance')
-        
-        self.ax2 = plt.subplot(212, sharex=self.ax1)
-        
-        plt.ylabel('2nd derivative')
-        matplotlib.rcParams.update({'font.size': font_size})
 
+        matplotlib.rcParams.update({'font.size': font_size})
+        self.font_size = font_size
+        
+        if derivative:
+            gs = grd.GridSpec(2, 1, hspace = 0.05)
+            self.ax1 = plt.subplot(gs[0])
+            plt.ylabel('OD')
+            plt.grid()
+            plt.setp(self.ax1.get_xticklabels(), visible=False)
+            self.ax2 = plt.subplot(gs[1], sharex = self.ax1)
+            plt.grid()
+            plt.ylabel('2nd derivative')           
+        else:
+            self.ax1 = plt.subplot(111)
+            plt.ylabel('OD')
+            plt.grid()
+        
         for data in self.data:        
         
             #import data--------------------------------------------------------
@@ -634,22 +641,35 @@ class absorbance:
             
             #now plot 2nd derivative--------------------------------------------
             
-            #compute second derivative
-            xi2, zi2= self._smooth(np.array([xi,zi]), n_smooth)
-            plotData = kit.diff(xi2, zi2, order = 2)
+            if derivative:
             
-            #plot the data!
-            self.ax2.plot(plotData[0], plotData[1], lw = 2)
+                #compute second derivative
+                xi2, zi2= self._smooth(np.array([xi,zi]), n_smooth)
+                plotData = kit.diff(xi2, zi2, order = 2)
+                
+                #plot the data!
+                self.ax2.plot(plotData[0], plotData[1], lw = 2)
+                
+                self.ax2.grid(b=True)
+                plt.xlabel(data.axes[0].get_label())
             
-            self.ax2.grid(b=True)
-            plt.xlabel(r'$\bar\nu / cm^{-1}$')
+        #legend-----------------------------------------------------------------            
             
         #self.ax1.legend([data.name for data in self.data])
         
-        self.ax1.get_yaxis().set_ticks([])
+        #ticks------------------------------------------------------------------
         
-        self.ax2.get_yaxis().set_ticks([])
-        self.ax2.axhline(0, color = 'k', ls = ':')
+        if not yticks: self.ax1.get_yaxis().set_ticks([])
+        if derivative:
+            self.ax2.get_yaxis().set_ticks([])
+            self.ax2.axhline(0, color = 'k', ls = ':')
+            
+        #title------------------------------------------------------------------
+            
+        if len(self.data) == 1: #only attempt this if we are plotting one data object
+            title_text = self.data[0].name
+            print title_text
+            plt.suptitle(title_text, fontsize = self.font_size)
 
         #finish-----------------------------------------------------------------
         
@@ -660,7 +680,10 @@ class absorbance:
                 max_index = np.argmin(abs(xi - max(xlim)))
                 zi_truncated = zi[min_index:max_index]
                 extra = (zi_truncated.max() - zi_truncated.min())*0.1
-                #axis.set_ylim(zi_truncated.min() - extra, zi_truncated.max() + extra)
+                axis.set_ylim(zi_truncated.min() - extra, zi_truncated.max() + extra)
+                
+        if ylim:
+            self.ax1.set_ylim(ylim)
                 
     def _smooth(self, dat1, n=20, window_type='default'):
         #data is an array of type [xlis,ylis]        
