@@ -992,10 +992,14 @@ def from_JASCO(filepath, name = None, verbose = True):
     #now import file as a local var--18 lines are just txt and thus discarded
     data = np.genfromtxt(filepath, skip_header=18).T
     
+    #name
+    if not name:
+        name = filepath
+    
     #construct data
     x_axis = Axis(data[0], 'nm', name = 'wm')
     signal = Channel(data[1], 'sig', file_idx = 1, signed = False)
-    data = Data([x_axis], [signal], source = 'JASCO')
+    data = Data([x_axis], [signal], source = 'JASCO', name = name)
     
     #return---------------------------------------------------------------------
     
