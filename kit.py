@@ -5,7 +5,7 @@ a collection of small, general purpose objects and methods
 import os
 
 ### files ######################################################################
- 
+
 def filename_parse(fstr):
     """
     parses a filepath string into it's path, name, and suffix
@@ -26,7 +26,7 @@ def filename_parse(fstr):
         file_name = split[-1]
         file_suffix = None
     return file_path, file_name, file_suffix
-    
+
 def find_name(fname, suffix):
     """
     save the file using fname, and tacking on a number if fname already exists
@@ -55,15 +55,15 @@ def find_name(fname, suffix):
             # file doesn't exist and is safe to write to this path
             good_name = True
     return
-    
+
 def get_box_path():
     box_path = os.path.join(os.path.expanduser('~'), 'Box Sync', 'Wright Shared')
     return box_path
 
 def get_timestamp():
-    
+
     import time
-    
+
     return time.strftime('%Y.%m.%d %H_%M_%S')
 
 def glob_handler(extension, folder = None, identifier = None):
@@ -71,11 +71,11 @@ def glob_handler(extension, folder = None, identifier = None):
     returns a list of all files matching specified inputs \n
     if no folder is specified, looks in chdir
     '''
-    
+
     import glob
 
     filepaths = []
-    
+
     if folder:
         glob_str = folder + '\\' + '*' + extension + '*'
     else:
@@ -89,57 +89,57 @@ def glob_handler(extension, folder = None, identifier = None):
             filepaths.append(filepath)
 
     return filepaths
-    
+
 def plot_dats(folder = None, transpose = True):
     '''
     convinience function to plot raw data
     '''
-    
+
     import data
     import artists
-    
+
     if folder:
         pass
     else:
         folder = os.getcwd()
 
     files = glob_handler('.dat', folder = folder)
-    
+
     for _file in files:
 
         print ' '
 
-        try: 
-            
+        try:
+
             dat_data = data.from_COLORS(_file)
-            
-            fname = filename_parse(_file)[1]   
-            
+
+            fname = filename_parse(_file)[1]
+
             dat_data.convert('wn')
-            
+
             #1D
             if len(dat_data.axes) == 1:
                 artist = artists.mpl_1D(dat_data, dat_data.axes[0].name)
                 artist.plot(0, autosave = True, output_folder = folder, fname = fname)
-            
+
             #2D
             elif len(dat_data.axes) == 2:
                 if transpose: dat_data.transpose()
                 artist = artists.mpl_2D(dat_data, dat_data.axes[0].name, dat_data.axes[1].name)
-                artist.plot(0, pixelated = True, contours = 0, xbin = True, ybin = True, 
+                artist.plot(0, pixelated = True, contours = 0, xbin = True, ybin = True,
                             autosave = True, output_folder = folder, fname = fname)
-            
+
             else:
                 print 'error! - dimensionality of data ({}) not recognized'.format(len(dat_data.axes))
-            
+
         except:
-            import sys            
+            import sys
             print 'dat {} not recognized as plottible in plot_dats'.format(filename_parse(_file)[1])
             print sys.exc_info()[0]
             pass
-        
+
 ### math #######################################################################
-        
+
 def diff(xi, yi, order = 1):
     '''
     numpy.diff is a convinient method but it only works for evenly spaced data \n
@@ -147,47 +147,57 @@ def diff(xi, yi, order = 1):
     returns numpy array [xi, yi_out]. edge points are padded.
     '''
     import numpy as np
-    
+
     #grid data to be even-------------------------------------------------------
 
     #get function that describes data
-    import scipy    
+    import scipy
     f = scipy.interpolate.interp1d(xi, yi, kind = 'linear')
-    
+
     xi_even = np.linspace(min(xi), max(xi), len(xi))
     yi_even = f(xi_even)
 
-    #call numpy.diff------------------------------------------------------------   
-    
+    #call numpy.diff------------------------------------------------------------
+
     yi_out_even = np.diff(yi_even, n = order)
     yi_out_even = np.pad(yi_out_even, order, mode = 'edge')
     yi_out_even = np.delete(yi_out_even, range(order))
-    
+
     #put data back onto original xi points--------------------------------------
-    
+
     xi_even += xi_even[1] - xi_even[0] #offset by half step...
-    
-    fdiff = scipy.interpolate.interp1d(xi_even, yi_out_even, 
+
+    fdiff = scipy.interpolate.interp1d(xi_even, yi_out_even,
                                        kind = 'linear', bounds_error = False)
-    
+
     yi_out = fdiff(xi)
-    
+
     return np.array([xi, yi_out])
-    
+
+def smooth_1D(arr, n = 10):
+    '''
+    smooth 1D data by 'running average'\n
+    int n smoothing factor (num points)
+    '''
+    for i in range(n, len(arr)-n):
+        window = arr[i-n:i+n].copy()
+        arr[i] = window.mean()
+    return arr
+
 ### uncategorized ##############################################################
 
 class suppress_stdout_stderr(object):
     '''
-    A context manager for doing a "deep suppression" of stdout and stderr in 
-    Python, i.e. will suppress all print, even if the print originates in a 
+    A context manager for doing a "deep suppression" of stdout and stderr in
+    Python, i.e. will suppress all print, even if the print originates in a
     compiled C/Fortran sub-function.
-    
+
     This will not suppress raised exceptions, since exceptions are printed
     to stderr just before a script exits, and after the context manager has
-    exited (at least, I think that is why it lets exceptions through).  
+    exited (at least, I think that is why it lets exceptions through).
 
     from http://stackoverflow.com/questions/11130156/suppress-stdout-stderr-print-from-python-functions
-    
+
     with wt.kit.suppress_stdout_stderr():
         rogue_function()
     '''
@@ -213,9 +223,9 @@ class suppress_stdout_stderr(object):
 
 def update_progress(progress, carriage_return = True, length = 50):
     '''
-    prints a pretty progress bar to the console \n
-    accepts 'progress' as a percentage          \n
-    carriage_return toggles overwrite behavior  \n
+    prints a pretty progress bar to the console     \n
+    accepts 'progress' as a percentage              \n
+    bool carriage_return toggles overwrite behavior \n
     '''
     #make progress bar string
     progress_bar = ''
@@ -229,10 +239,13 @@ def update_progress(progress, carriage_return = True, length = 50):
     if progress == 100:
         progress_bar[-2:] = '\n'
     print progress_bar
-    
+
 class Timer:
+    '''
+    with Timer(): your_code()
+    '''
     def __enter__(self, progress=None, verbose=True):
-        self.verbose = verbose        
+        self.verbose = verbose
         self.start = clock()
     def __exit__(self, type, value, traceback):
         self.end = clock()
