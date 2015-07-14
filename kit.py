@@ -4,7 +4,9 @@ a collection of small, general purpose objects and methods
 
 import os
 
-### files ######################################################################
+
+### files #####################################################################
+
 
 def filename_parse(fstr):
     """
@@ -26,6 +28,7 @@ def filename_parse(fstr):
         file_name = split[-1]
         file_suffix = None
     return file_path, file_name, file_suffix
+
 
 def find_name(fname, suffix):
     """
@@ -56,9 +59,28 @@ def find_name(fname, suffix):
             good_name = True
     return
 
+
 def get_box_path():
     box_path = os.path.join(os.path.expanduser('~'), 'Box Sync', 'Wright Shared')
+    
+    if os.path.isdir(box_path):
+        #find root box directory given the current directory (given that current is within box)
+        folders = os.getcwd().split('\\')
+        found = False
+        i=0
+        while (found == False and i < range(len(folders))):
+            if folders[i] == 'Box Sync':
+                found = True
+            i+=1
+        if found:
+            box_path =  str(os.path.join(folders[0], r'\\', *folders[1:i]))
+            box_path = os.path.join(box_path, 'Wright Shared')
+        else:
+            print 'could not find the root directory'
+            return None    
+    
     return box_path
+
 
 def get_timestamp():
 
@@ -66,7 +88,8 @@ def get_timestamp():
 
     return time.strftime('%Y.%m.%d %H_%M_%S')
 
-def glob_handler(extension, folder = None, identifier = None):
+
+def glob_handler(extension, folder=None, identifier=None):
     '''
     returns a list of all files matching specified inputs \n
     if no folder is specified, looks in chdir
@@ -77,7 +100,7 @@ def glob_handler(extension, folder = None, identifier = None):
     filepaths = []
 
     if folder:
-        glob_str = folder + '\\' + '*' + extension + '*'
+        glob_str = os.path.join(folder, '*' + extension)
     else:
         glob_str = '*' + extension + '*'
 
@@ -90,7 +113,8 @@ def glob_handler(extension, folder = None, identifier = None):
 
     return filepaths
 
-def plot_dats(folder = None, transpose = True):
+
+def plot_dats(folder=None, transpose=True):
     '''
     convinience function to plot raw data
     '''
@@ -138,7 +162,9 @@ def plot_dats(folder = None, transpose = True):
             print sys.exc_info()[0]
             pass
 
-### math #######################################################################
+
+### math ######################################################################
+
 
 def diff(xi, yi, order = 1):
     '''
@@ -148,7 +174,7 @@ def diff(xi, yi, order = 1):
     '''
     import numpy as np
 
-    #grid data to be even-------------------------------------------------------
+    #grid data to be even------------------------------------------------------
 
     #get function that describes data
     import scipy
@@ -157,13 +183,13 @@ def diff(xi, yi, order = 1):
     xi_even = np.linspace(min(xi), max(xi), len(xi))
     yi_even = f(xi_even)
 
-    #call numpy.diff------------------------------------------------------------
+    #call numpy.diff-----------------------------------------------------------
 
     yi_out_even = np.diff(yi_even, n = order)
     yi_out_even = np.pad(yi_out_even, order, mode = 'edge')
     yi_out_even = np.delete(yi_out_even, range(order))
 
-    #put data back onto original xi points--------------------------------------
+    #put data back onto original xi points-------------------------------------
 
     xi_even += xi_even[1] - xi_even[0] #offset by half step...
 
@@ -173,6 +199,7 @@ def diff(xi, yi, order = 1):
     yi_out = fdiff(xi)
 
     return np.array([xi, yi_out])
+
 
 def smooth_1D(arr, n = 10):
     '''
@@ -184,7 +211,7 @@ def smooth_1D(arr, n = 10):
         arr[i] = window.mean()
     return arr
 
-### uncategorized ##############################################################
+### uncategorized #############################################################
 
 class suppress_stdout_stderr(object):
     '''
@@ -203,25 +230,25 @@ class suppress_stdout_stderr(object):
     '''
     def __init__(self):
         # Open a pair of null files
-        self.null_fds =  [os.open(os.devnull,os.O_RDWR) for x in range(2)]
+        self.null_fds = [os.open(os.devnull, os.O_RDWR) for x in range(2)]
         # Save the actual stdout (1) and stderr (2) file descriptors.
         self.save_fds = (os.dup(1), os.dup(2))
 
     def __enter__(self):
         # Assign the null pointers to stdout and stderr.
-        os.dup2(self.null_fds[0],1)
-        os.dup2(self.null_fds[1],2)
+        os.dup2(self.null_fds[0], 1)
+        os.dup2(self.null_fds[1], 2)
 
     def __exit__(self, *_):
         # Re-assign the real stdout/stderr back to (1) and (2)
-        os.dup2(self.save_fds[0],1)
-        os.dup2(self.save_fds[1],2)
+        os.dup2(self.save_fds[0], 1)
+        os.dup2(self.save_fds[1], 2)
         # Close the null files
         os.close(self.null_fds[0])
         os.close(self.null_fds[1])
 
 
-def update_progress(progress, carriage_return = True, length = 50):
+def update_progress(progress, carriage_return=True, length=50):
     '''
     prints a pretty progress bar to the console     \n
     accepts 'progress' as a percentage              \n
