@@ -1,6 +1,8 @@
 '''
 a collection of small, general purpose objects and methods
 '''
+### import ####################################################################
+
 
 import os
 
@@ -63,7 +65,7 @@ def find_name(fname, suffix):
 def get_box_path():
     box_path = os.path.join(os.path.expanduser('~'), 'Box Sync', 'Wright Shared')
     
-    if os.path.isdir(box_path):
+    if not os.path.isdir(box_path):
         #find root box directory given the current directory (given that current is within box)
         folders = os.getcwd().split('\\')
         found = False
@@ -174,24 +176,24 @@ def diff(xi, yi, order = 1):
     '''
     import numpy as np
 
-    #grid data to be even------------------------------------------------------
+    # grid data to be even ----------------------------------------------------
 
-    #get function that describes data
+    # get function that describes data
     import scipy
     f = scipy.interpolate.interp1d(xi, yi, kind = 'linear')
 
     xi_even = np.linspace(min(xi), max(xi), len(xi))
     yi_even = f(xi_even)
 
-    #call numpy.diff-----------------------------------------------------------
+    # call numpy.diff ---------------------------------------------------------
 
     yi_out_even = np.diff(yi_even, n = order)
     yi_out_even = np.pad(yi_out_even, order, mode = 'edge')
     yi_out_even = np.delete(yi_out_even, range(order))
 
-    #put data back onto original xi points-------------------------------------
+    # put data back onto original xi points -----------------------------------
 
-    xi_even += xi_even[1] - xi_even[0] #offset by half step...
+    xi_even += xi_even[1] - xi_even[0]  # offset by half step...
 
     fdiff = scipy.interpolate.interp1d(xi_even, yi_out_even,
                                        kind = 'linear', bounds_error = False)
@@ -211,7 +213,9 @@ def smooth_1D(arr, n = 10):
         arr[i] = window.mean()
     return arr
 
+
 ### uncategorized #############################################################
+
 
 class suppress_stdout_stderr(object):
     '''
@@ -266,6 +270,7 @@ def update_progress(progress, carriage_return=True, length=50):
     if progress == 100:
         progress_bar[-2:] = '\n'
     print progress_bar
+
 
 class Timer:
     '''

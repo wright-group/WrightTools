@@ -1,3 +1,6 @@
+### import ####################################################################
+
+
 import os
 import copy
 import time
@@ -9,15 +12,14 @@ import numpy as np
 
 from scipy.interpolate import griddata, interp1d
 
-import matplotlib
-import matplotlib.pyplot as plt
-
 import kit
 import units
 
 debug = False
 
-### data class #################################################################
+
+### data class ################################################################
+
 
 class Axis:
     
@@ -33,13 +35,13 @@ class Axis:
         self.label_seed = label_seed        
         self.label = label
         
-        #get units kind
+        # get units kind
         self.units_kind = None
         for dic in units.unit_dicts:
             if self.units in dic.keys():
                 self.units_kind = dic['kind']
                 
-        #get symbol type
+        # get symbol type
         if symbol_type:
             self.symbol_type = symbol_type
         else:
@@ -56,7 +58,7 @@ class Axis:
 
         self.label = r'$\mathsf{'
         
-        #label
+        # label
         for part in self.label_seed:
             if self.units_kind:       
                 units_dictionary = getattr(units, self.units_kind)
@@ -66,14 +68,14 @@ class Axis:
                 self.label += self.name
             self.label += r'='
             
-        #remove the last equals sign
+        # remove the last equals sign
         self.label = self.label[:-1]
         
         if points:
             if not self.points == None:
                 self.label += r'=\,' + str(np.round(self.points, decimals = decimals))
 
-        #units
+        # units
         if show_units:
             if self.units_kind:       
                 units_dictionary = getattr(units, self.units_kind)
@@ -95,7 +97,8 @@ class Axis:
         _step = (_max-_min)/(len(self.points)-1)
         
         return _min, _max, _step
-        
+
+     
 class Channel:
     
     def __init__(self, values, units,
@@ -103,7 +106,7 @@ class Channel:
                  znull = None, zmin = None, zmax = None, signed = None,
                  name = None, label = None, label_seed = None):
                      
-        #general import---------------------------------------------------------
+        # general import ------------------------------------------------------
         
         self.name = name
         self.label = label
@@ -112,7 +115,7 @@ class Channel:
         self.units = units
         self.file_idx = file_idx
 
-        #values-----------------------------------------------------------------
+        # values --------------------------------------------------------------
 
         if not values == None:
             self.give_values(values, znull, zmin, zmax, signed)
@@ -176,6 +179,7 @@ class Channel:
         
         self.values = - self.values
 
+
 class Data:
 
     def __init__(self, axes, channels, constants = [], 
@@ -186,7 +190,7 @@ class Data:
         create data objects by calling the methods of this script
         '''
         
-        #axes-------------------------------------------------------------------
+        # axes ----------------------------------------------------------------
         
         #check that no two names are the same
         self.axis_names = []
@@ -200,14 +204,14 @@ class Data:
         for axis in self.axes:
             setattr(self, axis.name, axis)
         
-        #channels---------------------------------------------------------------
+        # channels ------------------------------------------------------------
         
         self.channels = channels
         for arg in [znull, zmin, zmax]:
             for i in range(len(self.channels)):
                 channel = self.channels[i]
             
-        #other------------------------------------------------------------------
+        # other ---------------------------------------------------------------
   
         self.constants = constants 
         
@@ -224,7 +228,7 @@ class Data:
         all axes must be accounted for          \n
         '''
         
-        #organize arguments recieved--------------------------------------------
+        # organize arguments recieved -----------------------------------------
 
         axes_args = []
         chopped_constants = {}
@@ -240,7 +244,7 @@ class Data:
             if name == 'verbose':
                 verbose = value
         
-        #interpret arguments recieved-------------------------------------------
+        # interpret arguments recieved ----------------------------------------
         
         for i in range(len(axes_args)):
             arg = axes_args[i]
@@ -252,9 +256,9 @@ class Data:
                 print 'argument {arg} not recognized in Data.chop!'.format(arg)
             axes_args[i] = arg
         
-        #iterate!---------------------------------------------------------------
+        # iterate! ------------------------------------------------------------
                 
-        #find iterated dimensions
+        # find iterated dimensions
         iterated_dimensions = []
         iterated_shape = [1]
         for name in self.axis_names:
@@ -263,14 +267,14 @@ class Data:
                 length = len(getattr(self, name).points)
                 iterated_shape.append(length)
                 
-        #make copies of channel objects for handing out
+        # make copies of channel objects for handing out
         channels_chopped = copy.deepcopy(self.channels)
     
         chopped_constants_everywhere = chopped_constants
         out = []
         for index in np.ndindex(tuple(iterated_shape)):
 
-            #get chopped_constants correct for this iteration
+            # get chopped_constants correct for this iteration
             chopped_constants = chopped_constants_everywhere.copy()
             for i in range(len(index[1:])):
                 idx = index[1:][i]
@@ -279,17 +283,17 @@ class Data:
                 position = getattr(self, name).points[idx]
                 chopped_constants[name] = [position, axis_units]
 
-            #re-order array: [all_chopped_constants, channels, all_chopped_axes]
+            # re-order array: [all_chopped_constants, channels, all_chopped_axes]
             
             transpose_order = []
             constant_indicies = []
             
-            #handle constants first
-            constants = list(self.constants) #copy
+            # handle constants first
+            constants = list(self.constants)  # copy
             for dim in chopped_constants.keys():
                 idx = [idx for idx in range(len(self.axes)) if self.axes[idx].name == dim][0]
                 transpose_order.append(idx)
-                #get index of nearest value
+                # get index of nearest value
                 val = chopped_constants[dim][0]
                 val = units.converter(val, chopped_constants[dim][1], self.axes[idx].units)
                 c_idx = np.argmin(abs(self.axes[idx].points - val))
@@ -298,14 +302,14 @@ class Data:
                 obj.points = self.axes[idx].points[c_idx]
                 constants.append(obj)
 
-            #now handle axes
+            # now handle axes
             axes_chopped = []
             for dim in axes_args:
                 idx = [idx for idx in range(len(self.axes)) if self.axes[idx].name == dim][0]
                 transpose_order.append(idx)
                 axes_chopped.append(self.axes[idx])
                 
-            #ensure that everything is kosher
+            # ensure that everything is kosher
             if len(transpose_order) == len(self.channels[0].values.shape):
                 pass
             else:
@@ -319,7 +323,7 @@ class Data:
                 print 'chop failed: same dimension used twice'
                 return
     
-            #chop
+            # chop
             for i in range(len(self.channels)):
                 values = self.channels[i].values
                 values = values.transpose(transpose_order)
@@ -327,12 +331,12 @@ class Data:
                     values = values[idx]
                 channels_chopped[i].values = values
                     
-            #finish iteration
+            # finish iteration
             data_out = Data(axes_chopped, copy.deepcopy(channels_chopped), constants = constants,
                             name = self.name, source = self.source)
             out.append(data_out)
         
-        #return-----------------------------------------------------------------
+        # return --------------------------------------------------------------
         
         if verbose:
             print 'chopped data into %d piece(s)'%len(out), 'in', axes_args
@@ -341,11 +345,11 @@ class Data:
         
     def convert(self, destination_units, verbose = True):
         '''
-        convinience method                                                    \n
+        convinience method \n
         converts all compatable constants and axes to units 
         '''
         
-        #get kind of units
+        # get kind of units
         for dic in units.unit_dicts:
             if destination_units in dic.keys():
                 units_kind = dic['kind']
@@ -357,7 +361,6 @@ class Data:
                     print 'axis', axis.name, 'converted'
         
     def copy(self):
-        
         return copy.deepcopy(self)
         
     def dOD(self, signal_channel_index, reference_channel_index, 
@@ -372,16 +375,16 @@ class Data:
         
         if method == 'boxcar':
             print 'boxcar'
-            #assume data collected with boxcar i.e.
-            #sig = 1/2 dT
-            #ref = T + 1/2 dT
+            # assume data collected with boxcar i.e.
+            # sig = 1/2 dT
+            # ref = T + 1/2 dT
             dT = 2 * dT
             out = -np.log10((T + dT) / T)
         else:
             print 'method not recognized in dOD, returning'
             return
   
-        #reset znull, zmin, zmax------------------------------------------------
+        # reset znull, zmin, zmax ---------------------------------------------
   
         self.channels[signal_channel_index].give_values(out)
         self.channels[signal_channel_index].znull = 0.
@@ -395,7 +398,7 @@ class Data:
         axis may be an integer (index) or a string (name)
         '''
         
-        #axis-------------------------------------------------------------------
+        # axis ----------------------------------------------------------------
         
         if type(axis) == int:
             axis_index = axis
@@ -406,22 +409,21 @@ class Data:
             
         axis = self.axes[axis_index]            
             
-        #flip-------------------------------------------------------------------
+        # flip ----------------------------------------------------------------
             
-        #axis
+        # axis
         axis.points = -axis.points
             
-            
-        #data
+        # data
         for channel in self.channels:
             values = channel.values            
-            #transpose so the axis of interest is last
+            # transpose so the axis of interest is last
             transpose_order = range(len(values.shape))
             transpose_order = [len(values.shape)-1 if i==axis_index else i for i in transpose_order] #replace axis_index with zero
             transpose_order[len(values.shape)-1] = axis_index
             values = values.transpose(transpose_order)
             values = values[...,::-1]
-            #transpose out
+            # transpose out
             values = values.transpose(transpose_order)
             channel.values = values
         
@@ -432,7 +434,7 @@ class Data:
         axis may be an integer (index) or a string (name)
         '''
         
-        #axis-------------------------------------------------------------------
+        # axis ----------------------------------------------------------------
         
         if type(axis) == int:
             axis_index = axis
@@ -441,25 +443,25 @@ class Data:
         else:
             print 'axis type', type(axis), 'not valid'
         
-        # verify npts not zero--------------------------------------------------
+        # verify npts not zero ------------------------------------------------
         
         npts = int(npts)
         if npts == 0:
             print 'cannot level if no sampling range is specified'
             return
 
-        #level------------------------------------------------------------------
+        # level ---------------------------------------------------------------
 
         channel = self.channels[channel_index]
         values = channel.values
         
-        #transpose so the axis of interest is last
+        # transpose so the axis of interest is last
         transpose_order = range(len(values.shape))
         transpose_order = [len(values.shape)-1 if i==axis_index else i for i in transpose_order] #replace axis_index with zero
         transpose_order[len(values.shape)-1] = axis_index
         values = values.transpose(transpose_order)
 
-        #subtract
+        # subtract
         for index in np.ndindex(values[..., 0].shape):
             if npts > 0:
                 offset = np.average(values[index][:npts])
@@ -467,16 +469,16 @@ class Data:
                 offset = np.average(values[index][npts:])
             values[index] = values[index] - offset
         
-        #transpose back
+        # transpose back
         values = values.transpose(transpose_order)
 
-        #return
+        # return
         channel.values = values
         channel.znull = 0.
         channel.zmax = values.max()
         channel.zmin = values.min()
         
-        #print
+        # print
         if verbose:
             axis = self.axes[axis_index]
             if npts > 0:
@@ -532,7 +534,7 @@ class Data:
         factors can be an integer or a list
         '''
         
-        #get factors------------------------------------------------------------        
+        # get factors ---------------------------------------------------------        
         
         if type(factors) == list:
             pass
@@ -541,7 +543,7 @@ class Data:
             dummy[::] = factors
             factors = list(dummy)
             
-        #smooth-----------------------------------------------------------------
+        # smooth --------------------------------------------------------------
             
         for channel in self.channels:
             
@@ -551,26 +553,26 @@ class Data:
                 
                 factor = factors[axis_index]
                 
-                #transpose so the axis of interest is last
+                # transpose so the axis of interest is last
                 transpose_order = range(len(values.shape))
                 transpose_order = [len(values.shape)-1 if i==axis_index else i for i in transpose_order] #replace axis_index with zero
                 transpose_order[len(values.shape)-1] = axis_index
                 values = values.transpose(transpose_order)
 
-                #get kaiser window                
+                # get kaiser window                
                 beta = 5.0
                 w = np.kaiser(2*factor+1, beta)
                 
-                #for all slices...
+                # for all slices...
                 for index in np.ndindex(values[..., 0].shape):
                     current_slice = values[index]
                     temp_slice = np.pad(current_slice, (factor,factor), mode = 'edge')
                     values[index] = np.convolve(temp_slice, w/w.sum(), mode='valid')
 
-                #transpose out
+                # transpose out
                 values = values.transpose(transpose_order)
             
-            #return array to channel object
+            # return array to channel object
             channel.values = values
             
     def transpose(self, axes = None, verbose = True):
@@ -603,158 +605,21 @@ class Data:
         '''
         import scipy.ndimage
         
-        #axes
+        # axes
         for axis in self.axes:
             axis.points = scipy.ndimage.interpolation.zoom(axis.points, factor, order=order)
         
-        #data (don't zoom along channel dimension)
+        # data (don't zoom along channel dimension)
         for channel in self.channels:
             channel.values = scipy.ndimage.interpolation.zoom(channel.values, factor, order=order)
             
             
         if verbose:
             print 'data zoomed to new shape:', self.channels[0].values.shape
-        
-        
-### data manipulation and usage methods ########################################
 
-def make_fit(**kwargs):
-    """
-    make a fit file filling in only the arguments specified
-    kwargs must be lists or arrays of uniform size and 1D shape
-    """
-    n = len(kwargs.values()[0])
-    out = np.zeros((n, 12))
-    #first column is just row number (unless overwritten)
-    out[:, 0] = range(n)
-    for name, value in kwargs.items():
-        #all kwargs have to be the same length to make an intelligable array
-        if len(value) == n:
-            if name in Fit.cols.keys():
-                out[:, Fit.cols[name][0]] = value
-            else:
-                print 'name {0} is not an appropriate column name'.format(name)
-                return
-        else:
-            print 'Error: not all columns are the same length:  len({0})={1}, len({2}) = {3}'.format(
-                kwargs.keys()[0], n, name, len(value))
-            return
-    return out
 
-def make_tune(obj, set_var, fname=None, amp='int', center='exp_val', fit=True,
-              offset=None, write=True):
-    """
-        function for turning dat scans into tune files using exp value
+### data creation methods #####################################################
 
-        takes a dat class object and transforms it into a fit file
-
-        need to specify which axis we need the expectation value from 
-        (set_var; either 'x' or 'y'; the other axis will be called int_var)
-
-        amp can measure either amplitude or integrated itensity
-
-        offset:  the a point contained within the set_var range that you wish 
-        to be the zero point--if such a point is included, the exp_values will
-        be shifted relative to it.  This is convenient in tunetests if you want 
-        to have a specific color you want to set zero delay to.
-    """
-    if set_var not in ['x', 'y', obj.xvar, obj.yvar]:
-        print 'Error:  set_var type not supported: {0}'.format(set_var)
-    # make sure obj type is appropriate and extract properties
-    #zimin = obj.zi.min()
-    tempzi = obj.zi - obj.znull
-    if set_var in ['y', obj.yvar]:
-        int_var = obj.xvar
-        set_var = obj.yvar
-        set_lis = obj.yi
-        #int_lis = obj.xi
-        axis = 1
-    elif set_var in ['x', obj.xvar]:
-        int_var = obj.yvar
-        set_var = obj.xvar
-        set_lis = obj.xi
-        #int_lis = obj.yi
-        axis = 0
-
-    # decide what tune type this is
-    # if exp value var is delay, call this zerotune, if mono, call it colortune
-    if int_var in ['lm', 'wm']:
-        fit_type = 'colortune'
-    elif int_var in ['d1', 'd2']:
-        fit_type = 'zerotune'
-    else:
-        # not sure what type of fit it is
-        fit_type = 'othertune'
-    if fit:
-        # use least squares fitting to fill in tune values
-        plsq = obj.fit_gauss(axis=set_var)
-        obj_amp, obj_exp, obj_width, obj_y0 = plsq
-    else:
-        # use expectation values and explicit measurements to extract values
-        # calculate the expectation value to get the peak center
-        obj_exp = obj.center(axis=set_var, center=center)
-        # calculate the width of the feature using the second moment
-        obj_width = obj.exp_value(axis=set_var, moment=2)
-        obj_width = np.sqrt(np.abs(obj_width - obj_exp**2))
-        # also include amplitude
-        if amp == 'int':
-            # convert area to max amplitude assuming gaussian form factor
-            obj_amp = obj.exp_value(axis=set_var, moment=0, norm=False)
-            obj_amp = obj_amp / (np.sqrt(2*np.pi)* obj_width)
-        elif amp == 'max':
-            obj_amp = tempzi.max(axis=axis) - obj.znull
-    # convert obj_width from stdev to fwhm
-    obj_width *= 2*np.sqrt(2*np.log(2))
-    # offset the values if specified
-    if offset is not None:
-        f_exp = interp1d(set_lis,obj_exp, kind='linear')
-        off = f_exp(offset)
-        obj_exp = obj_exp - off
-    # convert color to nm for fit file
-    if set_var in ['w1', 'w2', 'wm']:
-        set_lis = 10**7 / set_lis
-    # put wavelength in ascending order
-    pts = zip(set_lis, obj_exp, obj_amp)
-    pts.sort()
-    pts = zip(*pts)
-    set_lis, obj_exp, obj_amp = pts
-    out = makefit(set_pt=set_lis, mu=obj_exp, amp=obj_amp, sigma=obj_width)
-    # make a fit file using the expectation value data
-    # first, make sure fname has proper format 
-    # append descriptors to filename regardless of whether name is provided
-    # emulates how COLORS treats naming
-    if fit:
-        auto = '{0} {1} fitted'.format(set_var, fit_type)
-    elif center == 'exp_val':
-        auto = '{0} {1} exp_value center'.format(set_var, fit_type)
-    elif center == 'max':
-        auto = '{0} {1} max value center'.format(set_var, fit_type)
-    else:
-        auto = '{0} {1}'.format(set_var, fit_type)
-    # suffix:  let me add the .fit filename suffix
-    if fname is not None:
-        filepath, fname, filesuffix = filename_parse(fname)
-        # path:  don't imply path if an absolute path is given
-        fname = ' '.join([fname, auto])
-        if filepath is None:
-            filepath=obj.filepath
-    else:
-        # use object's filepath as default
-        filepath = obj.filepath
-        fname = auto
-    
-    if filepath is not None:
-        fname = filepath + '\\' + fname
-    fstr = find_name(fname, 'fit')
-    if not fstr:
-        print 'Could not write file without overwriting an existing file'
-        print 'Aborting file write'
-        return
-    with file(fstr+'.fit', 'a') as exp_file:
-        np.savetxt(exp_file, out, delimiter='\t', fmt='%.3f')
-    print 'saved as {0}'.format(fstr+'.fit')
-
-### data creation methods ######################################################
 
 def from_COLORS(filepaths, znull = None, name = None, cols = None, invert_d1 = True,
                 color_steps_as = 'energy', ignore = ['num', 'w3', 'wa', 'dref', 'm0', 'm1', 'm2', 'm3', 'm4', 'm5', 'm6'],
@@ -764,7 +629,7 @@ def from_COLORS(filepaths, znull = None, name = None, cols = None, invert_d1 = T
     color_steps_as one in 'energy', 'wavelength'
     '''
 
-    #do we have a list of files or just one file?-------------------------------
+    # do we have a list of files or just one file? ----------------------------
     
     if type(filepaths) == list:
         file_example = filepaths[0]
@@ -772,7 +637,7 @@ def from_COLORS(filepaths, znull = None, name = None, cols = None, invert_d1 = T
         file_example = filepaths
         filepaths = [filepaths]
     
-    #define format of dat file--------------------------------------------------
+    # define format of dat file -----------------------------------------------
     
     if cols:
         pass
@@ -839,7 +704,7 @@ def from_COLORS(filepaths, znull = None, name = None, cols = None, invert_d1 = T
         channels['ai2'] = Channel(None, 'V',  file_idx = 12, name = 'ai2',  label_seed = ['2'])
         channels['ai3'] = Channel(None, 'V',  file_idx = 13, name = 'ai3',  label_seed = ['3'])
             
-    #import full array----------------------------------------------------------
+    # import full array -------------------------------------------------------
             
     for i in range(len(filepaths)):
         dat = np.genfromtxt(filepaths[i]).T
@@ -853,20 +718,20 @@ def from_COLORS(filepaths, znull = None, name = None, cols = None, invert_d1 = T
         idx = axes['d1'].file_idx
         arr[idx] = -arr[idx]
         
-    #recognize dimensionality of data-------------------------------------------
+    # recognize dimensionality of data ----------------------------------------
         
     axes_discover = axes.copy()
     for key in ignore:
         if key in axes_discover:
-            axes_discover.pop(key) #remove dimensions that mess up discovery
+            axes_discover.pop(key)  # remove dimensions that mess up discovery
             
     scanned, constant = discover_dimensions(arr, axes_discover)
     
-    #get axes points------------------------------------------------------------
+    # get axes points ---------------------------------------------------------
 
     for axis in scanned:
         
-        #generate lists from data
+        # generate lists from data
         lis = sorted(arr[axis.file_idx])
         tol = axis.tolerance
         
@@ -904,10 +769,10 @@ def from_COLORS(filepaths, znull = None, name = None, cols = None, invert_d1 = T
         else:
             axis.points = np.linspace(min(xs)+tol, max(xs)-tol, num = len(xs))
 
-    #grid data------------------------------------------------------------------
+    # grid data ---------------------------------------------------------------
     
     if len(scanned) == 1:
-        #1D data
+        # 1D data
     
         axis = scanned[0]
         axis.points = arr[axis.file_idx]
@@ -919,11 +784,11 @@ def from_COLORS(filepaths, znull = None, name = None, cols = None, invert_d1 = T
             channel.give_values(zi)
     
     else:
-        #all other dimensionalities
+        # all other dimensionalities
 
         points = tuple(arr[axis.file_idx] for axis in scanned)
-        #beware, meshgrid gives wrong answer with default indexing
-        #this took me many hours to figure out... - blaise
+        # beware, meshgrid gives wrong answer with default indexing
+        # this took me many hours to figure out... - blaise
         xi = tuple(np.meshgrid(*[axis.points for axis in scanned], indexing = 'ij'))
     
         for key in channels.keys():
@@ -935,7 +800,7 @@ def from_COLORS(filepaths, znull = None, name = None, cols = None, invert_d1 = T
             channel.give_values(grid_i)
             if debug: print key
             
-    #create data object---------------------------------------------------------
+    # create data object ------------------------------------------------------
 
     data = Data(scanned, channels.values(), constant, znull)
     
@@ -950,7 +815,7 @@ def from_COLORS(filepaths, znull = None, name = None, cols = None, invert_d1 = T
     for axis in data.constants:
         axis.get_label()
     
-    #add extra stuff to data object---------------------------------------------
+    # add extra stuff to data object ------------------------------------------
 
     data.source = filepaths
     
@@ -958,7 +823,7 @@ def from_COLORS(filepaths, znull = None, name = None, cols = None, invert_d1 = T
         name = kit.filename_parse(file_example)[1]
     data.name = name
     
-    #return---------------------------------------------------------------------
+    # return ------------------------------------------------------------------
     
     if verbose:
         print 'data object succesfully created'
@@ -969,7 +834,7 @@ def from_COLORS(filepaths, znull = None, name = None, cols = None, invert_d1 = T
     
 def from_JASCO(filepath, name = None, verbose = True):
     
-    #check filepath-------------------------------------------------------------
+    # check filepath ----------------------------------------------------------
     
     if os.path.isfile(filepath):
         if verbose: print 'found the file!'
@@ -977,7 +842,7 @@ def from_JASCO(filepath, name = None, verbose = True):
         print 'Error: filepath does not yield a file'
         return
 
-    #is the file suffix one that we expect?  warn if it is not!
+    # is the file suffix one that we expect?  warn if it is not!
     filesuffix = os.path.basename(filepath).split('.')[-1]
     if filesuffix != 'txt':
         should_continue = raw_input('Filetype is not recognized and may not be supported.  Continue (y/n)?')
@@ -987,23 +852,22 @@ def from_JASCO(filepath, name = None, verbose = True):
             print 'Aborting'
             return
             
-    #import data----------------------------------------------------------------
+    # import data -------------------------------------------------------------
     
-    #now import file as a local var--18 lines are just txt and thus discarded
+    # now import file as a local var--18 lines are just txt and thus discarded
     data = np.genfromtxt(filepath, skip_header=18).T
     
-    #name
+    # name
     if not name:
         name = filepath
     
-    #construct data
+    # construct data
     x_axis = Axis(data[0], 'nm', name = 'wm')
     signal = Channel(data[1], 'sig', file_idx = 1, signed = False)
     data = Data([x_axis], [signal], source = 'JASCO', name = name)
     
-    #return---------------------------------------------------------------------
-    
     return data
+
 
 def from_KENT(filepaths, znull = None, name = None, 
               ignore = ['wm'], use_norm = False, verbose = True):
@@ -1011,7 +875,7 @@ def from_KENT(filepaths, znull = None, name = None,
     filepaths may be string or list \n
     '''
 
-    #do we have a list of files or just one file?-------------------------------
+    # do we have a list of files or just one file? ----------------------------
     
     if type(filepaths) == list:
         file_example = filepaths[0]
@@ -1019,7 +883,7 @@ def from_KENT(filepaths, znull = None, name = None,
         file_example = filepaths
         filepaths = [filepaths]
     
-    #define format of dat file--------------------------------------------------
+    # define format of dat file -----------------------------------------------
 
     axes = collections.OrderedDict()
     axes['w1']   = Axis(None, 'wn', tolerance = 0.5,  file_idx = 0,  name = 'w1',  label_seed = ['1'])
@@ -1033,7 +897,7 @@ def from_KENT(filepaths, znull = None, name = None,
     channels['OPA2']   = Channel(None, 'V',  file_idx = 6, name = 'OPA2',  label_seed = ['1'])
     channels['OPA1']   = Channel(None, 'V',  file_idx = 7, name = 'OPA1',  label_seed = ['2'])
             
-    #import full array----------------------------------------------------------
+    # import full array -------------------------------------------------------
             
     for i in range(len(filepaths)):
         dat = np.genfromtxt(filepaths[i]).T
@@ -1043,16 +907,16 @@ def from_KENT(filepaths, znull = None, name = None,
         else:      
             arr = np.append(arr, dat, axis = 1)
             
-    #recognize dimensionality of data-------------------------------------------
+    # recognize dimensionality of data ----------------------------------------
         
     axes_discover = axes.copy()
     for key in ignore:
         if key in axes_discover:
-            axes_discover.pop(key) #remove dimensions that mess up discovery
+            axes_discover.pop(key)  # remove dimensions that mess up discovery
             
     scanned, constant = discover_dimensions(arr, axes_discover)
     
-    #get axes points------------------------------------------------------------
+    # get axes points ---------------------------------------------------------
 
     for axis in scanned:
         
@@ -1087,10 +951,10 @@ def from_KENT(filepaths, znull = None, name = None,
         tol = max(tol, 0.3)
         axis.points = np.linspace(min(xs)+tol, max(xs)-tol, num = len(xs))
 
-    #grid data------------------------------------------------------------------
-    #May not need, but doesnt hurt to include
+    # grid data ---------------------------------------------------------------
+    # May not need, but doesnt hurt to include
     if len(scanned) == 1:
-        #1D data
+        # 1D data
     
         axis = scanned[0]
         axis.points = arr[axis.file_idx]
@@ -1102,11 +966,11 @@ def from_KENT(filepaths, znull = None, name = None,
             channel.give_values(zi)
     
     else:
-        #all other dimensionalities
+        # all other dimensionalities
 
         points = tuple(arr[axis.file_idx] for axis in scanned)
-        #beware, meshgrid gives wrong answer with default indexing
-        #this took me many hours to figure out... - blaise
+        # beware, meshgrid gives wrong answer with default indexing
+        # this took me many hours to figure out... - blaise
         xi = tuple(np.meshgrid(*[axis.points for axis in scanned], indexing = 'ij'))
     
         for key in channels.keys():
@@ -1118,7 +982,7 @@ def from_KENT(filepaths, znull = None, name = None,
             channel.give_values(grid_i)
             if debug: print key
             
-    #create data object---------------------------------------------------------
+    # create data object ------------------------------------------------------
 
     data = Data(scanned, channels.values(), constant, znull)
     
@@ -1128,7 +992,7 @@ def from_KENT(filepaths, znull = None, name = None,
     for axis in data.constants:
         axis.get_label()
     
-    #add extra stuff to data object---------------------------------------------
+    # add extra stuff to data object ------------------------------------------
 
     data.source = filepaths
     
@@ -1136,22 +1000,22 @@ def from_KENT(filepaths, znull = None, name = None,
         name = kit.filename_parse(file_example)[1]
     data.name = name
 
-    #normalize the data---------------------------------------------------------
+    # normalize the data ------------------------------------------------------
     
     if use_norm:
        
-        #normalize the OPAs
+        # normalize the OPAs
         OPA1 = data.channels[2].values/data.axes[0].points
         OPA2 = data.channels[1].values/data.axes[1].points
         
-        #Signal normalization
+        # Signal normalization
         data_norm = data.channels[0].values*data.axes[0].points*data.axes[1].points/(OPA1*OPA2)
 
         data.channels[0].values = data_norm
         data.channels[0].zmax = data_norm.max()
         data.channels[0].zmin = data_norm.min()
 
-    #return---------------------------------------------------------------------
+    # return ------------------------------------------------------------------
     
     if verbose:
         print 'data object succesfully created'
@@ -1170,7 +1034,7 @@ def from_NISE(measure_object, name = 'simulation', ignore_constants = ['A', 'p']
         print 'NISE is required to import scans, returning'
         return
     
-    #axes-----------------------------------------------------------------------
+    # axes --------------------------------------------------------------------
         
     NISE_axes = measure_object.scan_obj.axis_objs
     axes = []
@@ -1182,7 +1046,7 @@ def from_NISE(measure_object, name = 'simulation', ignore_constants = ['A', 'p']
         axis = Axis(points, units, name = axis_name, label_seed = label_seed)
         axes.append(axis)
         
-    #constants------------------------------------------------------------------
+    # constants ---------------------------------------------------------------
         
     NISE_units = {'A': 'uJ per sq. cm',
                   's': 'FWHM',
@@ -1197,18 +1061,18 @@ def from_NISE(measure_object, name = 'simulation', ignore_constants = ['A', 'p']
     for idx in range(len(positions_array)):
         key = pulse_class.cols.keys()[pulse_class.cols.values().index(idx)]
         axes_sametype = [NISE_axis for NISE_axis in NISE_axes if NISE_axis.pulse_var == key]
-        #get values that were not scanned
+        # get values that were not scanned
         indicies_scanned = []
         for axis in axes_sametype:
             indicies_scanned.append(axis.also)
         vals = np.delete(positions_array[idx], [item for sublist in indicies_scanned for item in sublist])
-        #find values that are co-set
+        # find values that are co-set
         equal = np.zeros((len(vals), len(vals)), dtype=bool)
-        for i in range(len(vals)): #test
-            for j in range(len(vals)): #against
+        for i in range(len(vals)):  # test
+            for j in range(len(vals)):  # against
                 if vals[i] == vals[j]:
                     equal[i, j] = True
-        #create constant Axis objects
+        # create constant Axis objects
         vals_accounted_for = np.zeros(len(vals), dtype=bool)
         while not all(vals_accounted_for) == True:
             for i in range(len(vals)):
@@ -1225,13 +1089,13 @@ def from_NISE(measure_object, name = 'simulation', ignore_constants = ['A', 'p']
                     if key not in ignore_constants:
                         constants.append(axis)
 
-    #channels-------------------------------------------------------------------
+    # channels ----------------------------------------------------------------
 
     zi = measure_object.pol
     channel = Channel(zi, 'au', label = 'amplitude')
     channels = [channel]
     
-    #data object----------------------------------------------------------------
+    # data object -------------------------------------------------------------
     
     if flip_delays:
         for lis in [axes, constants]:
@@ -1254,7 +1118,7 @@ def from_pickle(filepath, verbose = True):
 
 def from_shimadzu(filepath, name = None, verbose = True):
 
-    #check filepath-------------------------------------------------------------
+    # check filepath ----------------------------------------------------------
     
     if os.path.isfile(filepath):
         if verbose: print 'found the file!'
@@ -1262,7 +1126,7 @@ def from_shimadzu(filepath, name = None, verbose = True):
         print 'Error: filepath does not yield a file'
         return
 
-    #is the file suffix one that we expect?  warn if it is not!
+    # is the file suffix one that we expect?  warn if it is not!
     filesuffix = os.path.basename(filepath).split('.')[-1]
     if filesuffix != 'txt':
         should_continue = raw_input('Filetype is not recognized and may not be supported.  Continue (y/n)?')
@@ -1272,23 +1136,25 @@ def from_shimadzu(filepath, name = None, verbose = True):
             print 'Aborting'
             return
             
-    #import data----------------------------------------------------------------
+    # import data -------------------------------------------------------------
     
-    #now import file as a local var--18 lines are just txt and thus discarded
+    # now import file as a local var--18 lines are just txt and thus discarded
     data = np.genfromtxt(filepath, skip_header=2, delimiter = ',').T
 
     print data.shape
     
-    #construct data
+    # construct data
     x_axis = Axis(data[0], 'nm', name = 'wm')
     signal = Channel(data[1], 'sig', file_idx = 1, signed = False)
     data = Data([x_axis], [signal], source = 'Shimadzu')
     
-    #return---------------------------------------------------------------------
+    # return ------------------------------------------------------------------
     
     return data
-    
+
+
 ### other ######################################################################
+
 
 def discover_dimensions(arr, dimension_cols, verbose = True):
     '''
@@ -1304,7 +1170,7 @@ def discover_dimensions(arr, dimension_cols, verbose = True):
     
     input_cols = dimension_cols
     
-    #import values--------------------------------------------------------------
+    # import values -----------------------------------------------------------
     
     dc = dimension_cols 
     di = [dc[key].file_idx for key in dc.keys()]
@@ -1313,7 +1179,7 @@ def discover_dimensions(arr, dimension_cols, verbose = True):
     dk = [key for key in dc.keys()]
     dims = zip(di, dt, du, dk)
 
-    #remove nan dimensions and bad dimensions------------------------------------------------------
+    # remove nan dimensions and bad dimensions --------------------------------
     
     to_pop = []
     for i in range(len(dims)):
@@ -1324,13 +1190,13 @@ def discover_dimensions(arr, dimension_cols, verbose = True):
     for i in to_pop:
         dims.pop(i)
     
-    #which dimensions are equal-------------------------------------------------
+    # which dimensions are equal ----------------------------------------------
 
-    #find
+    # find
     d_equal = np.zeros((len(dims), len(dims)), dtype=bool)
     d_equal[:, :] = True
-    for i in range(len(dims)): #test
-        for j in range(len(dims)): #against
+    for i in range(len(dims)):  # test
+        for j in range(len(dims)):  # against
             for k in range(len(arr[0])):
                 upper_bound = arr[dims[i][0], k] + dims[i][1]
                 lower_bound = arr[dims[i][0], k] - dims[i][1]
@@ -1342,7 +1208,7 @@ def discover_dimensions(arr, dimension_cols, verbose = True):
                     break
     if debug: print d_equal
 
-    #condense
+    # condense
     dims_unaccounted = range(len(dims))
     dims_condensed = []
     while dims_unaccounted:
@@ -1367,9 +1233,9 @@ def discover_dimensions(arr, dimension_cols, verbose = True):
     dims = dims_condensed
     if debug: print dims
     
-    #which dimensions are scanned-----------------------------------------------
+    # which dimensions are scanned --------------------------------------------
     
-    #find
+    # find
     scanned = []
     constant_list = []
     for dim in dims:
@@ -1382,7 +1248,7 @@ def discover_dimensions(arr, dimension_cols, verbose = True):
         else:
             constant_list.append([name, index, tolerance, arr[index, 0]])
      
-    #order scanned dimensions (..., zi, yi, xi)
+    # order scanned dimensions (..., zi, yi, xi)
     first_change_indicies = []
     for axis in scanned:
         first_point = arr[axis[1], 0]
@@ -1397,9 +1263,9 @@ def discover_dimensions(arr, dimension_cols, verbose = True):
     scanned_ordered = [scanned[i] for i in np.argsort(first_change_indicies)]
     scanned_ordered.reverse()
 
-    #return---------------------------------------------------------------------
+    # return ------------------------------------------------------------------
 
-    #package back into ordered dictionary of objects
+    # package back into ordered dictionary of objects
 
     scanned = collections.OrderedDict()
     for axis in scanned_ordered:

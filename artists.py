@@ -1,3 +1,6 @@
+### import ####################################################################
+
+
 import os
 
 import numpy as np
@@ -6,14 +9,14 @@ import matplotlib
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import matplotlib.gridspec as grd
-matplotlib.rcParams['contour.negative_linestyle'] = 'solid'
 import matplotlib.colors as mplcolors
-
-from scipy.interpolate import griddata, interp1d
+matplotlib.rcParams['contour.negative_linestyle'] = 'solid'
 
 import kit
 
-### artist helpers #############################################################
+
+### artist helpers ############################################################
+
 
 def nm_to_rgb(nm):
     '''
@@ -21,9 +24,9 @@ def nm_to_rgb(nm):
     original code - http://www.physics.sfasu.edu/astro/color/spectra.html
     '''
 
-    w = int(wavelength)
+    w = int(nm)
 
-    #color----------------------------------------------------------------------
+    # color -------------------------------------------------------------------
 
     if w >= 380 and w < 440:
         R = -(w - 440.) / (440. - 350.)
@@ -54,7 +57,7 @@ def nm_to_rgb(nm):
         G = 0.0
         B = 0.0
 
-    #intensity correction-------------------------------------------------------
+    # intensity correction ----------------------------------------------------
 
     if w >= 380 and w < 420:
         SSS = 0.3 + 0.7*(w - 350) / (420 - 350)
@@ -66,13 +69,17 @@ def nm_to_rgb(nm):
         SSS = 0.0
     SSS *= 255
 
-    return [float(int(SSS*R)/256.), float(int(SSS*G)/256.), float(int(SSS*B)/256.)]
+    return [float(int(SSS*R)/256.),
+            float(int(SSS*G)/256.),
+            float(int(SSS*B)/256.)]
+
 
 def pcolor_helper(xi, yi, zi):
     '''
-    accepts xi, yi, zi as the normal rectangular arrays that would be given to contorf etc \n
-    returns list [X, Y, Z] appropriate for feeding directly into matplotlib.pyplot.pcolor
-    so that the pixels are centered correctly. \n
+    accepts xi, yi, zi as the normal rectangular arrays
+    that would be given to contorf etc \n
+    returns list [X, Y, Z] appropriate for feeding directly
+    into matplotlib.pyplot.pcolor so that the pixels are centered correctly. \n
     '''
 
     x_points = np.zeros(len(xi)+1)
@@ -80,10 +87,10 @@ def pcolor_helper(xi, yi, zi):
 
     for points, axis in [[x_points, xi], [y_points, yi]]:
         for j in range(len(points)):
-            if j == 0: #first point
+            if j == 0:  # first point
                 points[j] = axis[0] - (axis[1] - axis[0])
-            elif j == len(points)-1: #last point
-                points[j] = axis[-1] +  (axis[-1] - axis[-2])
+            elif j == len(points)-1:  # last point
+                points[j] = axis[-1] + (axis[-1] - axis[-2])
             else:
                 points[j] = np.average([axis[j], axis[j-1]])
 
@@ -91,7 +98,9 @@ def pcolor_helper(xi, yi, zi):
 
     return X, Y, zi
 
-### color maps #################################################################
+
+### color maps ################################################################
+
 
 default = ['#FFFFFF',
            '#0000FF',
@@ -171,37 +180,30 @@ colormaps = {'cubehelix': plt.get_cmap('cubehelix'),
              'skyebar':  mplcolors.LinearSegmentedColormap.from_list('skyebar', skyebar),
              'spectral': plt.get_cmap('nipy_spectral')}
 
-### general purpose artists ####################################################
+
+### general purpose artists ###################################################
+
 
 class mpl_1D:
 
     def __init__(self, data, xaxis = 0, at = {}, verbose = True):
-
-        #import data------------------------------------------------------------
-
+        # import data
         self.data = data
         self.chopped = self.data.chop(xaxis, at, verbose = False)
-
         if verbose:
             print 'mpl_1D recieved data to make %d plots'%len(self.chopped)
-
-        #defaults---------------------------------------------------------------
-
+        # defaults
         self.font_size = 15
 
     def plot(self, channel = 0, local = False,
              autosave = False, output_folder = None, fname = None,
              verbose = True):
-
         fig = None
-
         if len(self.chopped) > 10:
             if not autosave:
                 print 'too many images will be generated ({}): forcing autosave'.format(len(self.chopped))
                 autosave = True
-
-        #prepare output folder--------------------------------------------------
-
+        # prepare output folder
         if autosave:
             if output_folder:
                 pass
@@ -209,8 +211,7 @@ class mpl_1D:
                 timestamp = kit.get_timestamp()
                 os.mkdir(timestamp)
                 output_folder = timestamp
-
-        #chew through image generation
+        # chew through image generation
         for i in range(len(self.chopped)):
 
             if fig: plt.close(fig)
@@ -228,29 +229,29 @@ class mpl_1D:
             plt.plot(xi, zi)
             plt.grid()
 
-            #limits-------------------------------------------------------------
+            # limits ----------------------------------------------------------
 
             if local:
                 pass
             else:
                 plt.ylim(channels[channel].zmin, channels[channel].zmax)
 
-            #label axes---------------------------------------------------------
+            # label axes ------------------------------------------------------
 
             plt.xlabel(axes[0].get_label())
             plt.ylabel(channels[channel].name)
 
-            #title--------------------------------------------------------------
+            # title -----------------------------------------------------------
 
             title_text = self.data.name
 
             constants_text = '\n'
             for constant in constants:
-                constants_text += constant.get_label(show_units = True, points = True) + '    '
+                constants_text += constant.get_label(show_units=True, points=True) + '    '
 
-            plt.suptitle(title_text + constants_text, fontsize = self.font_size)
+            plt.suptitle(title_text + constants_text, fontsize=self.font_size)
 
-            #save figure--------------------------------------------------------
+            # save figure -----------------------------------------------------
 
             if autosave:
                 if fname:
@@ -264,22 +265,17 @@ class mpl_1D:
                 if verbose:
                     print 'image saved at', fpath
 
+
 class mpl_2D:
 
     def __init__(self, data, xaxis = 1, yaxis = 0, at = {}, verbose = True):
-
-        #import data------------------------------------------------------------
-
+        # import data
         self.data = data
         self.chopped = self.data.chop(yaxis, xaxis, at, verbose = False)
-
         if verbose:
             print 'mpl_2D recieved data to make %d plots'%len(self.chopped)
-
-        #defaults---------------------------------------------------------------
-
+        # defaults
         self.font_size = 15
-
         self._xsideplot = False
         self._ysideplot = False
         self._xsideplotdata = []
@@ -287,7 +283,6 @@ class mpl_2D:
 
     def sideplot(self, data, x = True, y = True):
         data = data.copy()
-
         if x:
             if self.chopped[0].axes[1].units_kind == data.axes[0].units_kind:
                 data.convert(self.chopped[0].axes[1].units)
@@ -315,16 +310,12 @@ class mpl_2D:
         dynamic_range forces the colorbar to use all of its colors (only matters
         for signed data)
         '''
-
         fig = None
-
         if len(self.chopped) > 10:
             if not autosave:
                 print 'too many images will be generated: forcing autosave'
                 autosave = True
-
-        #prepare output folder--------------------------------------------------
-
+        # prepare output folder
         if autosave:
             if output_folder:
                 pass
@@ -340,10 +331,10 @@ class mpl_2D:
                     os.mkdir(folder_name)
                     output_folder = folder_name
 
-        #chew through image generation
+        # chew through image generation
         for i in range(len(self.chopped)):
 
-            #get data to plot---------------------------------------------------
+            # get data to plot ------------------------------------------------
 
             current_chop = self.chopped[i]
             axes = current_chop.axes
@@ -355,7 +346,7 @@ class mpl_2D:
             channel = channels[channel_index]
             zi = channel.values
 
-            #normalize slices---------------------------------------------------
+            # normalize slices -------------------------------------------------
 
             if normalize_slices == 'both':
                 pass
@@ -381,7 +372,7 @@ class mpl_2D:
                 channel.zmin = zi.min()
                 channel.znull = 0
 
-            #create figure------------------------------------------------------
+            # create figure ---------------------------------------------------
 
             if fig: plt.close(fig)
 
@@ -392,7 +383,7 @@ class mpl_2D:
             subplot_main = plt.subplot(gs[0])
             subplot_main.patch.set_facecolor('grey')
 
-            #levels-------------------------------------------------------------
+            # levels ----------------------------------------------------------
 
             if channel.signed:
 
@@ -409,7 +400,7 @@ class mpl_2D:
                 else:
                     levels = np.linspace(channel.zmin, channel.zmax, 200)
 
-            #main plot----------------------------------------------------------
+            # main plot -------------------------------------------------------
 
             #get colormap
             mycm = colormaps[cmap]
@@ -429,7 +420,7 @@ class mpl_2D:
             plt.xlabel(xaxis.get_label(), fontsize = self.font_size)
             plt.ylabel(yaxis.get_label(), fontsize = self.font_size)
 
-            #variable marker lines----------------------------------------------
+            # variable marker lines -------------------------------------------
 
             if lines:
                 for constant in constants:
@@ -441,12 +432,12 @@ class mpl_2D:
                             if yaxis.units == constant.units:
                                 plt.axhline(constant.points, color = 'k', linewidth = 4, alpha = 0.25)
 
-            #grid---------------------------------------------------------------
+            # grid ------------------------------------------------------------
 
             plt.grid(b = True)
 
             if xaxis.units == yaxis.units:
-                #add diagonal line
+                # add diagonal line
                 if xlim:
                     x = xlim
                 else:
@@ -460,7 +451,7 @@ class mpl_2D:
                 diag_max = min(max(x), max(y))
                 plt.plot([diag_min, diag_max],[diag_min, diag_max],'k:')
 
-            #contour lines------------------------------------------------------
+            # contour lines ---------------------------------------------------
 
             if contours:
                 if contours_local:
@@ -470,7 +461,7 @@ class mpl_2D:
                 subplot_main.contour(xaxis.points, yaxis.points, zi,
                                      contours_levels, colors = 'k')
 
-            #finish main subplot------------------------------------------------
+            # finish main subplot ---------------------------------------------
 
             if xlim:
                 subplot_main.set_xlim(xlim[0], xlim[1])
@@ -481,7 +472,7 @@ class mpl_2D:
             else:
                 subplot_main.set_ylim(yaxis.points[0], yaxis.points[-1])
 
-            #sideplots----------------------------------------------------------
+            # sideplots -------------------------------------------------------
 
             divider = make_axes_locatable(subplot_main)
 
@@ -498,16 +489,16 @@ class mpl_2D:
                 else:
                     axCorrx.set_ylim([0,1.1])
 
-                #bin
+                # bin
                 if xbin:
                     x_ax_int = zi.sum(axis=0) - channel.znull * len(yaxis.points)
-                    #normalize (min is a pixel)
+                    # normalize (min is a pixel)
                     xmax = max(np.abs(x_ax_int))
                     x_ax_int = x_ax_int / xmax
                     axCorrx.plot(xaxis.points,x_ax_int, lw = 2)
                     axCorrx.set_xlim([xaxis.points.min(), xaxis.points.max()])
 
-                #data
+                # data
                 if self._xsideplot:
                     for s_xi, s_zi in self._xsideplotdata:
                         xlim =  axCorrx.get_xlim()
@@ -519,7 +510,7 @@ class mpl_2D:
                         s_zi = s_zi / max(s_zi_in_range)
                         axCorrx.plot(s_xi, s_zi, lw = 2)
                         
-                #line
+                # line
                 if lines:
                     for constant in constants:
                         if constant.units_kind == 'energy':
@@ -539,16 +530,16 @@ class mpl_2D:
                 else:
                     axCorry.set_xlim([0,1.1])
 
-                #bin
+                # bin
                 if ybin:
                     y_ax_int = zi.sum(axis=1) - channel.znull * len(xaxis.points)
-                    #normalize (min is a pixel)
+                    # normalize (min is a pixel)
                     ymax = max(np.abs(y_ax_int))
                     y_ax_int = y_ax_int / ymax
                     axCorry.plot(y_ax_int, yaxis.points, lw = 2)
                     axCorry.set_ylim([yaxis.points.min(), yaxis.points.max()])
 
-                #data
+                # data
                 if self._ysideplot:
                     for s_xi, s_zi in self._ysideplotdata:
                         xlim =  axCorry.get_ylim()
@@ -560,20 +551,20 @@ class mpl_2D:
                         s_zi = s_zi / max(s_zi_in_range)
                         axCorry.plot(s_zi, s_xi, lw = 2)
 
-                #line
+                # line
                 if lines:
                     for constant in constants:
                         if constant.units_kind == 'energy':
                             if yaxis.units == constant.units:
                                 axCorry.axvline(constant.points, color = 'k', linewidth = 4, alpha = 0.25)
 
-            #colorbar-----------------------------------------------------------
+            # colorbar --------------------------------------------------------
 
             if True:
                 subplot_cb = plt.subplot(gs[1])
                 plt.colorbar(cax, cax = subplot_cb)
 
-            #title--------------------------------------------------------------
+            # title -----------------------------------------------------------
 
             title_text = self.data.name
 
@@ -583,13 +574,13 @@ class mpl_2D:
 
             plt.suptitle(title_text + constants_text, fontsize = self.font_size)
 
-            #cleanup------------------------------------------------------------
+            # cleanup ---------------------------------------------------------
 
-            #plt.tight_layout()
+            # plt.tight_layout()
             factor = 0.12
             fig.subplots_adjust(left = factor, right = 1-factor, top = 1-factor, bottom = 0.15)
 
-            #save figure--------------------------------------------------------
+            # save figure -----------------------------------------------------
 
             if autosave:
                 if fname:
@@ -603,7 +594,9 @@ class mpl_2D:
                 if verbose:
                     print 'image saved at', fpath
 
+
 ### specific artists ###########################################################
+
 
 class absorbance:
 
@@ -617,7 +610,7 @@ class absorbance:
     def plot(self, channel_index = 0, font_size = 12, xlim = None, ylim = None,
              yticks = True, derivative = True, n_smooth = 10,):
 
-        #prepare plot environment-----------------------------------------------
+        # prepare plot environment --------------------------------------------
 
         matplotlib.rcParams.update({'font.size': font_size})
         self.font_size = font_size
@@ -638,12 +631,12 @@ class absorbance:
 
         for data in self.data:
 
-            #import data--------------------------------------------------------
+            # import data -----------------------------------------------------
 
             xi = data.axes[0].points
             zi = data.channels[channel_index].values
 
-            #scale--------------------------------------------------------------
+            # scale -----------------------------------------------------------
 
             if xlim:
                 plt.xlim(xlim[0], xlim[1])
@@ -657,43 +650,40 @@ class absorbance:
                 zi_truncated = zi[min(min_index,max_index):max(min_index, max_index)]
                 zi /= zi_truncated.max()
 
-            #plot absorbance----------------------------------------------------
+            # plot absorbance -------------------------------------------------
 
             self.ax1.plot(xi, zi, lw = 2)
 
-            #now plot 2nd derivative--------------------------------------------
+            # now plot 2nd derivative -----------------------------------------
 
             if derivative:
-
-                #compute second derivative
+                # compute second derivative
                 xi2, zi2= self._smooth(np.array([xi,zi]), n_smooth)
                 plotData = kit.diff(xi2, zi2, order = 2)
-
-                #plot the data!
+                # plot the data!
                 self.ax2.plot(plotData[0], plotData[1], lw = 2)
-
                 self.ax2.grid(b=True)
                 plt.xlabel(data.axes[0].get_label())
 
-        #legend-----------------------------------------------------------------
+        # legend --------------------------------------------------------------
 
         #self.ax1.legend([data.name for data in self.data])
 
-        #ticks------------------------------------------------------------------
+        # ticks ---------------------------------------------------------------
 
         if not yticks: self.ax1.get_yaxis().set_ticks([])
         if derivative:
             self.ax2.get_yaxis().set_ticks([])
             self.ax2.axhline(0, color = 'k', ls = ':')
 
-        #title------------------------------------------------------------------
+        # title ---------------------------------------------------------------
 
         if len(self.data) == 1: #only attempt this if we are plotting one data object
             title_text = self.data[0].name
             print title_text
             plt.suptitle(title_text, fontsize = self.font_size)
 
-        #finish-----------------------------------------------------------------
+        # finish --------------------------------------------------------------
 
         if xlim:
             plt.xlim(xlim[0], xlim[1])
@@ -708,13 +698,16 @@ class absorbance:
             self.ax1.set_ylim(ylim)
 
     def _smooth(self, dat1, n=20, window_type='default'):
-        #data is an array of type [xlis,ylis]
-        #smooth to prevent 2nd derivative from being noisy
+        '''
+        data is an array of type [xlis,ylis] \n
+        smooth to prevent 2nd derivative from being noisy
+        '''
         for i in range(n, len(dat1[1])-n):
-            #change the x value to the average
+            # change the x value to the average
             window = dat1[1][i-n:i+n].copy()
             dat1[1][i] = window.mean()
         return dat1[:][:,n:-n]
+
 
 class compare_and_share():
     '''
@@ -756,6 +749,7 @@ class compare_and_share():
         plt.savefig('against fluence.png', transparent = True)
         plt.close()
         '''
+
 
 class difference_2D():
     '''
