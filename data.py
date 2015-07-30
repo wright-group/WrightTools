@@ -490,13 +490,13 @@ class Data:
         
     def normalize(self, channel = 0, verbose = True):
         '''
-        make 'channel' between zero and 1
+        make 'channel' between znull=zero and zmax=1
         '''
 
-        self.channels[channel].values -= self.channels[channel].values.min()
         self.channels[channel].values /= self.channels[channel].values.max()
         
-        self.channels[channel].zmin = 0.
+        self.channels[channel].zmin = self.channels[channel].values.min()
+        self.channels[channel].znull = 0.
         self.channels[channel].zmax = 1.
         
     def save(self, filepath = None, verbose = True):
@@ -518,15 +518,25 @@ class Data:
     
     def scale(self, channel = 0, kind = 'amplitude', verbose = True):
         '''
-        perform scaling operations on the data
+        perform a scaling operation on the data \n
+        kind one in 'amp', 'log', 'invert'
         '''
         
+        channel = self.channels[channel]
+        
         if kind in ['amp', 'amplitude']:
-            channel_data = self.channels[channel].values
-            channel_data -= channel_data.min()
-            channel_data += 0.001
-            channel_data = np.sqrt(channel_data)
-            self.channels[channel].values = channel_data
+            channel_data = channel.values
+            channel_data_abs = np.sqrt(np.abs(channel_data))
+            factor = np.ones(channel_data.shape)
+            factor[channel_data < 0] = -1
+            channel_data_out = channel_data_abs * factor
+            channel.values = channel_data_out
+            
+        if kind in ['log']:
+            channel.values = np.log10(channel.values)
+            
+        if kind in ['invert']:
+            channel.values *= -1.
     
     def smooth(self, factors):
         '''
