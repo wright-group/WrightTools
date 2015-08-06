@@ -487,6 +487,85 @@ class Data:
                 points = axis.points[npts:]
             
             print 'channel', channel.name, 'offset by', axis.name, 'between', int(points.min()), 'and', int(points.max()), axis.units
+
+    def m(self, abs_data, channel = 0, this_exp='TG', 
+          indices=None, m=None,
+          bounds_error=True, verbose=True):
+        '''
+        normalize channel by absorptive effects given by absorption data object
+            'abs_data'
+        indices can be used to override default assignments for normalization
+        m can be used to override default assignments for functional forms
+         --> better to just add to the dictionary, though!
+        assumes all abs fxns are independent of each axis, so we can normalize 
+            each axis individually
+        need to be ready that:
+            1.  not all axes that m accepts may be present--in this case, 
+                assumes abs of 0 
+        currently in alpha testing...so be careful
+        known issues:  
+            --requires unique, integer (0<x<10) numbering for index 
+                identification
+        '''
+        # exp_name: [i], [m_i]
+        exp_types = {
+            'TG': [['1','2'], 
+                   [lambda a1: 10**-a1,
+                    lambda a2: ((1-10**-a2)/(a2*np.log(10)))**2
+                   ]
+            ],
+            'TA': [['2'],
+                   [lambda a2: 1-10**(-a2)]
+            ]
+        }
+        # try to figure out the experiment or adopt the imported norm functions
+        if this_exp in exp_types.keys():
+            if indices is None: indices = exp_types[this_exp][0]
+            m = exp_types[this_exp][1]
+        elif m is not None and indices is not None:
+            pass
+        else:
+            print 'm-factors for this experiment have not yet been implemented'
+            print 'currently available experiments:'
+            for key in exp_types.keys(): print key
+            print 'no m-factor normalization was performed'
+            return
+        # find which axes have m-factor dependence; move to the inside and 
+        # operate
+        m_axes = [axi for axi in self.axes if axi.units_kind == 'energy']
+        # loop through 'indices' and find axis whole label_seeds contain indi
+        for i,indi in enumerate(indices):
+            t_order = range(len(self.axes))
+            ni = [j for j in range(len(m_axes)) if indi in 
+                  m_axes[j].label_seed]
+            if verbose: print ni
+            # there should never be more than one axis that agrees
+            if len(ni) > 1: raise ValueError()
+            elif len(ni) > 0:
+                ni = ni[0]
+                axi = m_axes[ni]
+                mi = m[i]
+                # move index of interest to inside
+                if verbose: print t_order
+                t_order.pop(ni)
+                t_order.append(ni)
+                if verbose: print t_order
+                self.transpose(axes=t_order, verbose=verbose)
+                # evaluate ai ---------------------------------
+                abs_data.axes[0].convert(axi.units)
+                Ei = abs_data.axes[0].points
+                Ai = interp1d(Ei, abs_data.channels[0].values,
+                              bounds_error=bounds_error)
+                ai = Ai(axi.points)                
+                Mi = mi(ai) 
+                # apply Mi to channel ---------------------------------
+                self.channels[i].values /= Mi
+                # invert back out of the transpose
+                t_inv = [t_order.index(j) for j in range(len(t_order))]
+                self.transpose(axes=t_inv, verbose=verbose)
+            else:
+                print '{0} label_seed not found'.format(indi)
+        return
         
     def normalize(self, channel = 0, verbose = True):
         '''
@@ -588,7 +667,8 @@ class Data:
     def transpose(self, axes = None, verbose = True):
         '''
         transpose the dataset \n
-        by default, reverse the dimensions, otherwise permute the axes according to the values given \n
+        by default, reverse the dimensions, otherwise permute the axes 
+        according to the values given \n
         manipulates calling data object (returns nothing)
         '''
         
