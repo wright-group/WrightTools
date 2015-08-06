@@ -6,6 +6,8 @@ a collection of small, general purpose objects and methods
 
 import os
 
+from time import clock
+
 
 ### files #####################################################################
 
@@ -276,9 +278,11 @@ class Timer:
     '''
     with Timer(): your_code()
     '''
+
     def __enter__(self, progress=None, verbose=True):
         self.verbose = verbose
         self.start = clock()
+        
     def __exit__(self, type, value, traceback):
         self.end = clock()
         self.interval = self.end - self.start

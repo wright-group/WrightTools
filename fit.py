@@ -9,21 +9,41 @@ from scipy.optimize import leastsq
 
 ### functions to fit against ##################################################
 
-def gaussian(x, p):
+def exponential(p, x):
     '''
-    p = [peak amplitude, center, sigma]
+    p = [amplitude, decay constant, offset]
     '''
-    a, mu, sigma = p
-    return a*np.exp(-(x-mu)**2 / (2*np.abs(sigma)**2))
+    a, b, c = p
+    return a*np.exp(-x/b)+c
+
+def gaussian(p, x):
+    '''
+    p = [amplitude, center, FWHM, offset]
+    '''
+    a, b, c, d = p
+    return a*np.exp(-(x-b)**2/(2*np.abs(c/(2*np.sqrt(2*np.log(2))))**2))+d
     
-def lorentz(x, p):
+def lorentzian(p, x):
     '''
-    p  = [peak amplitude, center, FWHM]
+    p  = [amplitude, center, FWHM, offest]
     '''
-    a, center, FWHM = p
+    a, center, FWHM, offset = p
     x_var = (center - x) / (0.5*FWHM)
-    return a/(1+x_var**2)
+    return (a/(1+x_var**2))+offset
 
 ### methods ###################################################################
 
 
+### testing ###################################################################
+
+
+if __name__ == '__main__':
+    
+    xi = np.linspace(-10, 10, 100)
+    p = [1, 1, 2, 0]
+    zi = gaussian(p, xi)
+    
+    plt.plot(xi, zi)
+    plt.axvline(0)
+    plt.axhline(0.5)
+    

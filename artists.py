@@ -163,7 +163,7 @@ skyebar = ['#FFFFFF', #white
            '#FF0000', #red
            '#800000'] #dark red
 
-colormaps = {'cubehelix': plt.get_cmap('cubehelix'),
+colormaps = {'cubehelix': plt.get_cmap('cubehelix_r'),
              'default': mplcolors.LinearSegmentedColormap.from_list('wright', default),
              'experimental': mplcolors.LinearSegmentedColormap.from_list('experimental', experimental),
              'flag': plt.get_cmap('flag'),
