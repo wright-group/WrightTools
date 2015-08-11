@@ -394,7 +394,8 @@ class Data:
         
     def flip(self, axis):
         '''
-        invert direction of arrays along axis. \n
+        flip direction of arrays along axis. \n
+        does not change values of axis points \n
         axis may be an integer (index) or a string (name)
         '''
         
@@ -412,7 +413,7 @@ class Data:
         # flip ----------------------------------------------------------------
             
         # axis
-        axis.points = -axis.points
+        axis.points = axis.points[::-1]
             
         # data
         for channel in self.channels:
@@ -488,7 +489,7 @@ class Data:
             
             print 'channel', channel.name, 'offset by', axis.name, 'between', int(points.min()), 'and', int(points.max()), axis.units
 
-    def m(self, abs_data, channel = 0, this_exp='TG', 
+    def m(self, abs_data, channel=0, this_exp='TG', 
           indices=None, m=None,
           bounds_error=True, verbose=True):
         '''

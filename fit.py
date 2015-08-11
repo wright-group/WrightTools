@@ -31,7 +31,22 @@ def lorentzian(p, x):
     x_var = (center - x) / (0.5*FWHM)
     return (a/(1+x_var**2))+offset
 
-### methods ###################################################################
+### classes ###################################################################
+
+
+class LeastSquares:
+    
+    def __init__(self, function):
+        pass
+    
+    def _do(self, arr):
+        pass
+        
+    def guess(self):
+        pass
+    
+    def run(self, axis):
+        pass
 
 
 ### testing ###################################################################

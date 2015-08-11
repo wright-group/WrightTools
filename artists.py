@@ -4,6 +4,7 @@
 import os
 
 import numpy as np
+from numpy import r_
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -17,6 +18,75 @@ import kit
 
 ### artist helpers ############################################################
 
+
+def make_cubehelix(gamma=1.0, s=0.5, r=-1.5, h=0.5,
+                   lum_rev=False, darkest=0.8, plot=False):
+    '''
+    Define cubehelix type colorbars. \n
+    gamma intensity factor, s start color, 
+    r rotations, h 'hue' saturation factor \n
+    Returns white to black LinearSegmentedColormap. \n
+    Written by Dan \n
+    For more information see http://arxiv.org/abs/1108.5083 .
+    '''
+    # isoluminescent curve--helical color cycle
+    def get_color_function(p0, p1):
+        def color(x):
+            # Apply gamma factor to emphasise low or high intensity values
+            #xg = x ** gamma
+
+            # Calculate amplitude and angle of deviation from the black
+            # to white diagonal in the plane of constant
+            # perceived intensity.
+            xg = darkest * x**gamma
+            lum = 1-xg # starts at 1
+            if lum_rev:
+                lum = lum[::-1]
+            a = lum.copy()#h * lum*(1-lum)/2.
+            a[lum<0.5] = h * lum[lum<0.5]/2.
+            a[lum>=0.5] = h * (1-lum[lum>=0.5])/2.
+            phi = 2 * np.pi * (s / 3 + r * x)
+            out = lum + a * (p0 * np.cos(phi) + p1 * np.sin(phi))
+            return out
+        return color
+    rgb_dict = {'red':   get_color_function(-0.14861, 1.78277),
+                'green': get_color_function(-0.29227, -0.90649),
+                'blue':  get_color_function(1.97294, 0.0)}
+    cbar = matplotlib.colors.LinearSegmentedColormap('cubehelix', rgb_dict)
+    if plot:
+        # maybe broken? - BJT 2015.08.11
+        plt.figure()
+        x = np.linspace(0, 1.)
+        r = cbar._segmentdata['red'](x)
+        g = cbar._segmentdata['green'](x)
+        b = cbar._segmentdata['blue'](x)
+        k = .3*r + .59*g + .11*b
+        plt.plot(x, r, 'r', linewidth=5, alpha=0.6)
+        plt.plot(x, g, 'g', linewidth=5, alpha=0.6)
+        plt.plot(x, b, 'b', linewidth=5, alpha=0.6)
+        plt.plot(x, k, 'k:', linewidth=5, alpha=0.6)
+        plt.grid()
+    return cbar
+    
+
+def make_colormap(seq, name='CustomMap'):
+    '''
+    Return a LinearSegmentedColormap
+    seq: a sequence of floats and RGB-tuples. The floats should be increasing
+    and in the interval (0,1). \n
+    from http://nbviewer.ipython.org/gist/anonymous/a4fa0adb08f9e9ea4f94#
+    '''
+    seq = [(None,) * 3, 0.0] + list(seq) + [1.0, (None,) * 3]
+    cdict = {'red': [], 'green': [], 'blue': []}
+    for i, item in enumerate(seq):
+        if isinstance(item, float):
+            r1, g1, b1 = seq[i - 1]
+            r2, g2, b2 = seq[i + 1]
+            cdict['red'].append([item, r1, r2])
+            cdict['green'].append([item, g1, g2])
+            cdict['blue'].append([item, b1, b2])
+    return mplcolors.LinearSegmentedColormap(name, cdict)
+    
 
 def nm_to_rgb(nm):
     '''
@@ -102,13 +172,8 @@ def pcolor_helper(xi, yi, zi):
 ### color maps ################################################################
 
 
-default = ['#FFFFFF',
-           '#0000FF',
-           '#00FFFF',
-           '#00FF00',
-           '#FFFF00',
-           '#FF0000',
-           '#881111']
+cubehelix = make_cubehelix(gamma=0.5, s=0.25, r=-6/6., h=1.25, 
+                           lum_rev=False, darkest=0.7)
 
 experimental = ['#FFFFFF',
                 '#0000FF',
@@ -120,57 +185,118 @@ experimental = ['#FFFFFF',
                 '#FF0000',
                 '#881111']
 
-greenscale = ['#000000', #black
-              '#00FF00'] #green
+greenscale = ['#000000',  # black
+              '#00FF00']  # green
 
-greyscale = ['#FFFFFF', #white
-             '#000000'] #black
+greyscale = ['#FFFFFF',  # white
+             '#000000']  # black
 
-invisible = ['#FFFFFF', #white
-             '#FFFFFF'] #white
+invisible = ['#FFFFFF',  # white
+             '#FFFFFF']  # white
+             
+# isoluminant colorbar based on the research of Kindlmann et al.
+# http://dx.doi.org/10.1109/VISUAL.2002.1183788
+c = mplcolors.ColorConverter().to_rgb
+isoluminant = make_colormap([
+    c(r_[1.000,1.000,1.000]), c(r_[0.847,0.057,0.057]), 1/6.,
+    c(r_[0.847,0.057,0.057]), c(r_[0.527,0.527,0.000]), 2/6.,
+    c(r_[0.527,0.527,0.000]), c(r_[0.000,0.592,0.000]), 3/6.,
+    c(r_[0.000,0.592,0.000]), c(r_[0.000,0.559,0.559]), 4/6.,
+    c(r_[0.000,0.559,0.559]), c(r_[0.316,0.316,0.991]), 5/6.,
+    c(r_[0.316,0.316,0.991]), c(r_[0.718,0.000,0.718])],
+    name='isoluminant')
 
-signed = ['#0000FF', #blue
+isoluminant2 = make_colormap([
+    c(r_[1.000,1.000,1.000]), c(r_[0.718,0.000,0.718]), 1/6.,
+    c(r_[0.718,0.000,0.718]), c(r_[0.316,0.316,0.991]), 2/6.,
+    c(r_[0.316,0.316,0.991]), c(r_[0.000,0.559,0.559]), 3/6.,
+    c(r_[0.000,0.559,0.559]), c(r_[0.000,0.592,0.000]), 4/6.,
+    c(r_[0.000,0.592,0.000]), c(r_[0.527,0.527,0.000]), 5/6.,
+    c(r_[0.527,0.527,0.000]), c(r_[0.847,0.057,0.057])],
+    name='isoluminant2')
+    
+isoluminant3 = make_colormap([
+    c(r_[1.000,1.000,1.000]), c(r_[0.316,0.316,0.991]), 1/5.,
+    c(r_[0.316,0.316,0.991]), c(r_[0.000,0.559,0.559]), 2/5.,
+    c(r_[0.000,0.559,0.559]), c(r_[0.000,0.592,0.000]), 3/5.,
+    c(r_[0.000,0.592,0.000]), c(r_[0.527,0.527,0.000]), 4/5.,
+    c(r_[0.527,0.527,0.000]), c(r_[0.847,0.057,0.057])],
+    name='isoluminant3')
+
+signed = ['#0000FF',  # blue
           '#002AFF',
           '#0055FF',
           '#007FFF',
           '#00AAFF',
           '#00D4FF',
           '#00FFFF',
-          '#FFFFFF', #white
+          '#FFFFFF',  # white
           '#FFFF00',
           '#FFD400',
           '#FFAA00',
           '#FF7F00',
           '#FF5500',
           '#FF2A00',
-          '#FF0000'] #red
+          '#FF0000']  # red
 
-signed_old = ['#0000FF', #blue
-              '#00BBFF', #blue-aqua
-              '#00FFFF', #aqua
-              '#FFFFFF', #white
-              '#FFFF00', #yellow
-              '#FFBB00', #orange
-              '#FF0000'] #red
+signed_old = ['#0000FF',  # blue
+              '#00BBFF',  # blue-aqua
+              '#00FFFF',  # aqua
+              '#FFFFFF',  # white
+              '#FFFF00',  # yellow
+              '#FFBB00',  # orange
+              '#FF0000']  # red
 
-skyebar = ['#FFFFFF', #white
-           '#000000', #black
-           '#0000FF', #blue
-           '#00FFFF', #cyan
-           '#64FF00', #light green
-           '#FFFF00', #yellow
-           '#FF8000', #orange
-           '#FF0000', #red
-           '#800000'] #dark red
+skyebar = ['#FFFFFF',  # white
+           '#000000',  # black
+           '#0000FF',  # blue
+           '#00FFFF',  # cyan
+           '#64FF00',  # light green
+           '#FFFF00',  # yellow
+           '#FF8000',  # orange
+           '#FF0000',  # red
+           '#800000']  # dark red
 
-colormaps = {'cubehelix': plt.get_cmap('cubehelix_r'),
-             'default': mplcolors.LinearSegmentedColormap.from_list('wright', default),
+skyebar_d = ['#000000',  # black
+             '#0000FF',  # blue
+             '#00FFFF',  # cyan
+             '#64FF00',  # light green
+             '#FFFF00',  # yellow
+             '#FF8000',  # orange
+             '#FF0000',  # red
+             '#800000']  # dark red
+           
+skyebar_i = ['#000000',  # black
+             '#FFFFFF',  # white
+             '#0000FF',  # blue
+             '#00FFFF',  # cyan
+             '#64FF00',  # light green
+             '#FFFF00',  # yellow
+             '#FF8000',  # orange
+             '#FF0000',  # red
+             '#800000']  # dark red
+
+wright = ['#FFFFFF',
+          '#0000FF',
+          '#00FFFF',
+          '#00FF00',
+          '#FFFF00',
+          '#FF0000',
+          '#881111']
+
+colormaps = {'CMRmap': plt.get_cmap('CMRmap_r'),
+             'cubehelix': plt.get_cmap('cubehelix_r'),
+             'default': cubehelix,
              'experimental': mplcolors.LinearSegmentedColormap.from_list('experimental', experimental),
              'flag': plt.get_cmap('flag'),
              'earth': plt.get_cmap('gist_earth'),
+             'gnuplot2': plt.get_cmap('gnuplot2_r'),
              'greenscale': mplcolors.LinearSegmentedColormap.from_list('greenscale', greenscale),
              'greyscale': mplcolors.LinearSegmentedColormap.from_list('greyscale', greyscale),
              'invisible': mplcolors.LinearSegmentedColormap.from_list('invisible', invisible),
+             'isoluminant': isoluminant,
+             'isoluminant2': isoluminant2,
+             'isoluminant3': isoluminant3,
              'ncar': plt.get_cmap('gist_ncar'),
              'paired': plt.get_cmap('Paired'),
              'prism': plt.get_cmap('prism'),
@@ -178,7 +304,10 @@ colormaps = {'cubehelix': plt.get_cmap('cubehelix_r'),
              'signed':  mplcolors.LinearSegmentedColormap.from_list('signed', signed),
              'signed_old':  mplcolors.LinearSegmentedColormap.from_list('signed', signed_old),
              'skyebar':  mplcolors.LinearSegmentedColormap.from_list('skyebar', skyebar),
-             'spectral': plt.get_cmap('nipy_spectral')}
+             'skyebar_d': mplcolors.LinearSegmentedColormap.from_list('skyebar dark', skyebar_d), 
+             'skyebar_i': mplcolors.LinearSegmentedColormap.from_list('skyebar inverted', skyebar_i),                          
+             'spectral': plt.get_cmap('nipy_spectral'),
+             'wright': mplcolors.LinearSegmentedColormap.from_list('wright', wright)}
 
 
 ### general purpose artists ###################################################
@@ -298,12 +427,12 @@ class mpl_2D:
             else:
                 print 'given data ({0}), does not aggree with y ({1})'.format(data.axes[0].units_kind, self.chopped[0].axes[0].units_kind)
 
-    def plot(self, channel_index = 0,
-             contours = 9, pixelated = False, lines = True, cmap = 'default',
+    def plot(self, channel_index=0,
+             contours=9, pixelated=True, lines=True, cmap='default', facecolor='w',
              dynamic_range = False, local = False, contours_local = True, normalize_slices = 'both',
-             xbin = False, ybin = False, xlim = None, ylim = None,
-             autosave = False, output_folder = None, fname = None,
-             verbose = True):
+             xbin= False, ybin=False, xlim=None, ylim=None,
+             autosave=False, output_folder=None, fname=None,
+             verbose=True):
         '''
         set contours to zero to turn off
 
@@ -374,14 +503,15 @@ class mpl_2D:
 
             # create figure ---------------------------------------------------
 
-            if fig: plt.close(fig)
+            if fig:
+                plt.close(fig)
 
             fig = plt.figure(figsize=(8, 7))
 
             gs = grd.GridSpec(1, 2, width_ratios=[20, 1], wspace=0.1)
 
             subplot_main = plt.subplot(gs[0])
-            subplot_main.patch.set_facecolor('grey')
+            subplot_main.patch.set_facecolor(facecolor)
 
             # levels ----------------------------------------------------------
 
@@ -396,9 +526,9 @@ class mpl_2D:
             else:
 
                 if local:
-                    levels = np.linspace(zi.min(), zi.max(), 200)
+                    levels = np.linspace(channel.znull, zi.max(), 200)
                 else:
-                    levels = np.linspace(channel.zmin, channel.zmax, 200)
+                    levels = np.linspace(channel.znull, channel.zmax, 200)
 
             # main plot -------------------------------------------------------
 
@@ -408,13 +538,13 @@ class mpl_2D:
             #fill in main data environment
             if pixelated:
                 xi, yi, zi = pcolor_helper(xaxis.points, yaxis.points, zi)
-                cax = plt.pcolor(xi, yi, zi, cmap = mycm,
-                                 vmin = levels.min(), vmax = levels.max())
+                cax = plt.pcolor(xi, yi, zi, cmap=mycm,
+                                 vmin=levels.min(), vmax=levels.max())
                 plt.xlim(xaxis.points.min(), xaxis.points.max())
                 plt.ylim(yaxis.points.min(), yaxis.points.max())
             else:
                 cax = subplot_main.contourf(xaxis.points, yaxis.points, zi,
-                                            levels, cmap = mycm)
+                                            levels, cmap=mycm)
 
             plt.xticks(rotation = 45)
             plt.xlabel(xaxis.get_label(), fontsize = self.font_size)
@@ -455,7 +585,9 @@ class mpl_2D:
 
             if contours:
                 if contours_local:
-                    contours_levels = np.linspace(zi.min(), zi.max(), contours)
+                    # force top and bottom contour to be just outside of data range
+                    # add two contours
+                    contours_levels = np.linspace(channel.znull-1e-10, zi.max()+1e-10, contours+2)
                 else:
                     contours_levels = contours
                 subplot_main.contour(xaxis.points, yaxis.points, zi,
@@ -478,7 +610,7 @@ class mpl_2D:
 
             if xbin or self._xsideplot:
 
-                axCorrx = divider.append_axes('top', 0.75, pad=0.3, sharex=subplot_main)
+                axCorrx = divider.append_axes('top', 0.75, pad=0.0, sharex=subplot_main)
                 axCorrx.autoscale(False)
                 axCorrx.set_adjustable('box-forced')
                 plt.setp(axCorrx.get_xticklabels(), visible=False)
@@ -519,7 +651,7 @@ class mpl_2D:
 
             if ybin or self._ysideplot:
 
-                axCorry = divider.append_axes('right', 0.75, pad=0.3, sharey=subplot_main)
+                axCorry = divider.append_axes('right', 0.75, pad=0.0, sharey=subplot_main)
                 axCorry.autoscale(False)
                 axCorry.set_adjustable('box-forced')
                 plt.setp(axCorry.get_xticklabels(), visible=False)
@@ -562,7 +694,8 @@ class mpl_2D:
 
             if True:
                 subplot_cb = plt.subplot(gs[1])
-                plt.colorbar(cax, cax = subplot_cb)
+                cbar_ticks = np.linspace(levels.min(), levels.max(), 11)
+                plt.colorbar(cax, cax=subplot_cb, ticks=cbar_ticks)
 
             # title -----------------------------------------------------------
 
