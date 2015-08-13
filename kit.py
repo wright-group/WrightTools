@@ -219,6 +219,34 @@ def smooth_1D(arr, n = 10):
 ### uncategorized #############################################################
 
 
+def get_methods(the_class, class_only=False, instance_only=False,
+                exclude_internal=True):
+    '''
+    get a list of strings corresponding to the names of the methods
+    of an object.
+    '''
+    import inspect
+
+    def acceptMethod(tup):
+        # internal function that analyzes the tuples returned by getmembers 
+        # tup[1] is the actual member object
+        is_method = inspect.ismethod(tup[1])
+        if is_method:
+            bound_to = tup[1].im_self
+            internal = tup[1].im_func.func_name[:2] == '__' and tup[1].im_func.func_name[-2:] == '__'
+            if internal and exclude_internal:
+                include = False
+            else:
+                include = (bound_to == the_class and not instance_only) or (bound_to == None and not class_only)
+        else:
+            include = False
+        return include
+
+    # filter to return results according to internal function and arguments
+    tups = filter(acceptMethod, inspect.getmembers(the_class))
+    return [tup[0] for tup in tups]
+
+
 class suppress_stdout_stderr(object):
     '''
     A context manager for doing a "deep suppression" of stdout and stderr in

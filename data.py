@@ -236,7 +236,7 @@ class Data:
         for arg in args:
             if type(arg) in (str, int):
                 axes_args.append(arg)
-            elif type(arg) == dict:
+            elif type(arg) in (dict, collections.OrderedDict):
                 chopped_constants = arg
                 
         verbose = True
