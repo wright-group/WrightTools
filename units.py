@@ -2,6 +2,7 @@
 unit and label handling in WrightTools
 '''
 
+
 ### import ####################################################################
 
 
@@ -22,7 +23,8 @@ angle = {'kind': 'angle',
 energy = {'kind': 'energy',
           'nm': ['x', 'x', r'nm'],
           'wn': ['1e7/x', '1e7/x', r'cm^{-1}'],
-          'eV': ['1240./x', '1240./x', r'eV']}
+          'eV': ['1240./x', '1240./x', r'eV'],
+          'meV': ['1240000./x', '1240000./x', r'meV']}
 
 # time units (native: s)
 time = {'kind': 'time',

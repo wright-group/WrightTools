@@ -2,6 +2,7 @@
 
 
 import os
+import ast
 import copy
 import time
 import collections
@@ -60,7 +61,7 @@ class Axis:
         
         # label
         for part in self.label_seed:
-            if self.units_kind:       
+            if self.units_kind:
                 units_dictionary = getattr(units, self.units_kind)
                 self.label += getattr(units, self.symbol_type)[self.units]
                 self.label += r'_{' + str(part) + r'}'
@@ -206,10 +207,12 @@ class Data:
         
         # channels ------------------------------------------------------------
         
+        self.channels_names = []
         self.channels = channels
         for arg in [znull, zmin, zmax]:
             for i in range(len(self.channels)):
                 channel = self.channels[i]
+                self.channels_names.append(channel.name)
             
         # other ---------------------------------------------------------------
   
@@ -712,9 +715,9 @@ class Data:
 ### data creation methods #####################################################
 
 
-def from_COLORS(filepaths, znull = None, name = None, cols = None, invert_d1 = True,
-                color_steps_as = 'energy', ignore = ['num', 'w3', 'wa', 'dref', 'm0', 'm1', 'm2', 'm3', 'm4', 'm5', 'm6'],
-                verbose = True):
+def from_COLORS(filepaths, znull=None, name=None, cols=None, invert_d1=True,
+                color_steps_as='energy', ignore=['num', 'w3', 'wa', 'dref', 'm0', 'm1', 'm2', 'm3', 'm4', 'm5', 'm6'],
+                even=True, verbose=True):
     '''
     filepaths may be string or list \n
     color_steps_as one in 'energy', 'wavelength'
@@ -851,14 +854,17 @@ def from_COLORS(filepaths, znull = None, name = None, cols = None, invert_d1 = T
         #   be a problem, especially for stepping axis
         tol = sum(xstd) / len(xstd)
         tol = max(tol, 0.3)
-        if axis.units_kind == 'energy' and color_steps_as == 'energy':
-            min_wn = 1e7/max(xs)+tol
-            max_wn = 1e7/min(xs)-tol
-            axis.units = 'wn'
-            axis.points = np.linspace(min_wn, max_wn, num = len(xs))
-            axis.convert('nm')
+        if even:            
+            if axis.units_kind == 'energy' and color_steps_as == 'energy':
+                min_wn = 1e7/max(xs)+tol
+                max_wn = 1e7/min(xs)-tol
+                axis.units = 'wn'
+                axis.points = np.linspace(min_wn, max_wn, num = len(xs))
+                axis.convert('nm')
+            else:
+                axis.points = np.linspace(min(xs)+tol, max(xs)-tol, num = len(xs))
         else:
-            axis.points = np.linspace(min(xs)+tol, max(xs)-tol, num = len(xs))
+            axis.points = np.array(xs)
 
     # grid data ---------------------------------------------------------------
     
@@ -1198,6 +1204,7 @@ def from_NISE(measure_object, name = 'simulation', ignore_constants = ['A', 'p']
     
     return data
 
+
 def from_pickle(filepath, verbose = True):
     
     data = pickle.load(open(filepath, 'rb'))
@@ -1206,6 +1213,184 @@ def from_pickle(filepath, verbose = True):
         print 'data opened from', filepath
     
     return data
+
+
+def from_PyCMDS(filepath, znull=None, name=None, cols=None, 
+                color_steps_as='energy', even=True, verbose=True):
+    
+    # get header information --------------------------------------------------
+    
+    headers = collections.OrderedDict()
+    for line in open(filepath):
+        if line[0] == '#':
+            split = line.split(':')
+            key = split[0][2:]
+            item = split[1].split('\t')
+            if item[0] == '':
+                item = [item[1]]
+            item = [i.strip() for i in item]  # remove dumb things
+            item = [ast.literal_eval(i) for i in item]
+            if len(item) == 1:
+                item = item[0]
+            headers[key] = item
+        else:
+            # all header lines are at the beginning
+            break
+
+    axes = collections.OrderedDict()
+    channels = collections.OrderedDict()
+    for i in range(len(headers['name'])):
+        if headers['units'][i] == 'V':
+            channels[headers['name'][i]] = Channel(None, 'V', file_idx=i, name=headers['name'][i], label_seed=headers['label'][i])
+        else:
+            axes[headers['name'][i]] = Axis(None, headers['units'][i], tolerance=headers['tolerance'][i], file_idx=i, name=headers['name'][i], label_seed=[headers['label'][i]])
+
+    # get array ---------------------------------------------------------------
+    
+    arr = np.genfromtxt(filepath).T
+    
+    # recognize dimensionality of data ----------------------------------------
+    
+    scanned = []
+    constant = []
+    
+    for key in headers['ignore']:
+        axes.pop(key)
+        
+    for string in headers['axes']:
+        keys = string.split('=')
+        axis = axes[keys[0]]
+        axis.label_seed = [axes[key].label_seed[0] for key in keys]
+        scanned.append(axis)
+        for key in keys:
+            axes.pop(key)
+            
+    # get values for constant axes
+    for key in axes:
+        axes[key].points = np.mean(arr[axes[key].file_idx])
+            
+    while len(axes) > 0:
+        for key in axes:         
+            axis = axes.pop(key)
+            for key in axes:
+                if axes[key].units == axis.units:
+                    val = axes[key].points
+                    test = axis.points
+                    tol = axis.tolerance
+                    if test-tol < val < test+tol:
+                        axis.label_seed.append(axes[key].label_seed[0])
+                        axes.pop(key)
+            constant.append(axis)
+            break
+        
+    # get axes points ---------------------------------------------------------
+
+    for axis in scanned:
+        
+        # generate lists from data
+        lis = sorted(arr[axis.file_idx])
+        tol = axis.tolerance
+        
+        # values are binned according to their averages now, so min and max 
+        #  are better represented
+        xstd = []
+        xs = []
+        
+        # check to see if unique values are sufficiently unique
+        # deplete to list of values by finding points that are within 
+        #  tolerance
+        while len(lis) > 0:
+            # find all the xi's that are like this one and group them
+            # after grouping, remove from the list
+            set_val = lis[0]
+            xi_lis = [xi for xi in lis if np.abs(set_val - xi) < tol]
+            # the complement of xi_lis is what remains of xlis, then
+            lis = [xi for xi in lis if not np.abs(xi_lis[0] - xi) < tol]
+            xi_lis_average = sum(xi_lis) / len(xi_lis)
+            xs.append(xi_lis_average)
+            xstdi = sum(np.abs(xi_lis - xi_lis_average)) / len(xi_lis)
+            xstd.append(xstdi)
+        
+        # create uniformly spaced x and y lists for gridding
+        # infinitesimal offset used to properly interpolate on bounds; can
+        #   be a problem, especially for stepping axis
+        tol = sum(xstd) / len(xstd)
+        tol = max(tol, 0.3)
+        if even:            
+            if axis.units_kind == 'energy' and color_steps_as == 'energy':
+                min_wn = 1e7/max(xs)+tol
+                max_wn = 1e7/min(xs)-tol
+                axis.units = 'wn'
+                axis.points = np.linspace(min_wn, max_wn, num = len(xs))
+                axis.convert('nm')
+            else:
+                axis.points = np.linspace(min(xs)+tol, max(xs)-tol, num = len(xs))
+        else:
+            axis.points = np.array(xs)
+
+    # grid data ---------------------------------------------------------------
+    
+    if len(scanned) == 1:
+        # 1D data
+    
+        axis = scanned[0]
+        axis.points = arr[axis.file_idx]
+        scanned[0] = axis
+    
+        for key in channels.keys():
+            channel = channels[key]
+            zi = arr[channel.file_idx]
+            channel.give_values(zi)
+    
+    else:
+        # all other dimensionalities
+
+        points = tuple(arr[axis.file_idx] for axis in scanned)
+        # beware, meshgrid gives wrong answer with default indexing
+        # this took me many hours to figure out... - blaise
+        xi = tuple(np.meshgrid(*[axis.points for axis in scanned], indexing = 'ij'))
+    
+        for key in channels.keys():
+            channel = channels[key]
+            zi = arr[channel.file_idx]
+            fill_value = min(zi)
+            grid_i = griddata(points, zi, xi,
+                              method='linear',fill_value=fill_value)
+            channel.give_values(grid_i)
+            if debug: print key
+            
+    # create data object ------------------------------------------------------
+
+    data = Data(scanned, channels.values(), constant, znull)
+    
+    if color_steps_as == 'energy':
+        try: 
+            data.convert('wn', verbose = False)
+        except:
+            pass
+        
+    for axis in data.axes:
+        axis.get_label()
+    for axis in data.constants:
+        axis.get_label()
+    
+    # add extra stuff to data object ------------------------------------------
+
+    data.source = headers['origin']
+    
+    if not name:
+        name = kit.filename_parse(filepath)[1]
+    data.name = name
+    
+    # return ------------------------------------------------------------------
+    
+    if verbose:
+        print 'data object succesfully created'
+        print 'axis names:', data.axis_names
+        print 'values shape:', channels.values()[0].values.shape
+        
+    return data
+
 
 def from_shimadzu(filepath, name = None, verbose = True):
 

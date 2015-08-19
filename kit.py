@@ -1,12 +1,16 @@
 '''
 a collection of small, general purpose objects and methods
 '''
+
+
 ### import ####################################################################
 
 
 import os
 
 from time import clock
+
+import units
 
 
 ### files #####################################################################
@@ -203,6 +207,17 @@ def diff(xi, yi, order = 1):
     yi_out = fdiff(xi)
 
     return np.array([xi, yi_out])
+
+
+def mono_resolution(grooves_per_mm, slit_width, focal_length, output_color, output_units='wn'):
+    '''
+    slit width mm, focal_length mm, output_color nm
+    '''
+    d_lambda = 1e6*slit_width/(grooves_per_mm*focal_length)  # nm
+    upper = output_color + d_lambda/2  # nm
+    lower = output_color - d_lambda/2  # nm
+    return abs(units.converter(upper, 'nm', output_units) - 
+               units.converter(lower, 'nm', output_units))
 
 
 def smooth_1D(arr, n = 10):
