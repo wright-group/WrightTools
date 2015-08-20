@@ -40,11 +40,11 @@ time = {'kind': 'time',
 
 # position units (native: mm)
 position = {'kind': 'position',
-            'nm_p': ['x/1e6', '1e6/x'],  # can't have same name as energy nm
-            'um': ['x/1000.', '1000/x.'],
-            'mm': ['x', 'x'],
-            'cm': ['10.*x', 'x/10.'],
-            'in': ['x*0.039370', '0.039370*x']}
+            'nm_p': ['x/1e6', '1e6/x', r'nm'],  # can't have same name as energy nm
+            'um': ['x/1000.', '1000/x.', r'um'],
+            'mm': ['x', 'x', r'mm'],
+            'cm': ['10.*x', 'x/10.', r'cm'],
+            'in': ['x*0.039370', '0.039370*x', r'in']}
 
 # pulse width units (native: FWHM)
 pulse_width = {'kind': 'pulse_width',

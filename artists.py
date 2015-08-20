@@ -332,14 +332,23 @@ class mpl_1D:
             if not autosave:
                 print 'too many images will be generated ({}): forcing autosave'.format(len(self.chopped))
                 autosave = True
+                
         # prepare output folder
         if autosave:
             if output_folder:
                 pass
             else:
-                timestamp = kit.get_timestamp()
-                os.mkdir(timestamp)
-                output_folder = timestamp
+                if len(self.chopped) == 1:
+                    output_folder = os.getcwd()
+                    if fname:
+                        pass
+                    else:
+                        fname = self.data.name
+                else:
+                    folder_name = 'mpl_1D ' + kit.get_timestamp()
+                    os.mkdir(folder_name)
+                    output_folder = folder_name
+        
         # chew through image generation
         for i in range(len(self.chopped)):
 
@@ -379,6 +388,12 @@ class mpl_1D:
                 constants_text += constant.get_label(show_units=True, points=True) + '    '
 
             plt.suptitle(title_text + constants_text, fontsize=self.font_size)
+            
+            # cleanup ---------------------------------------------------------
+
+            # plt.tight_layout()
+            factor = 0.12
+            fig.subplots_adjust(left = factor, right = 1-factor, top = 1-factor, bottom = 0.15)
 
             # save figure -----------------------------------------------------
 
@@ -444,6 +459,7 @@ class mpl_2D:
             if not autosave:
                 print 'too many images will be generated: forcing autosave'
                 autosave = True
+        
         # prepare output folder
         if autosave:
             if output_folder:
