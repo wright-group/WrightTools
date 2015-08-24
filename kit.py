@@ -321,9 +321,11 @@ class Timer:
     '''
     with Timer(): your_code()
     '''
-
-    def __enter__(self, progress=None, verbose=True):
+    
+    def __init__(self, verbose=True):
         self.verbose = verbose
+
+    def __enter__(self, progress=None):
         self.start = clock()
         
     def __exit__(self, type, value, traceback):

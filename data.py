@@ -118,7 +118,7 @@ class Channel:
 
         # values --------------------------------------------------------------
 
-        if not values == None:
+        if not values is None:
             self.give_values(values, znull, zmin, zmax, signed)
         else:
             self.znull = znull
@@ -146,9 +146,9 @@ class Channel:
             if self.zmin:
                 pass
             else:
-                self.zmin = self.values.min()
+                self.zmin = np.nanmin(self.values)
         else:
-            self.zmin = self.values.min()
+            self.zmin =  np.nanmin(self.values)
             
         if zmax:
             self.zmax = zmax
@@ -156,9 +156,9 @@ class Channel:
             if self.zmax:
                 pass
             else:
-                self.zmax = self.values.max()
+                self.zmax = np.nanmax(self.values)
         else:
-            self.zmax = self.values.max()
+            self.zmax = np.nanmax(self.values)
             
         if signed:
             self.signed = signed
@@ -184,46 +184,40 @@ class Channel:
 class Data:
 
     def __init__(self, axes, channels, constants = [], 
-                 znull = None, zmin = None, zmax = None, 
                  name = '', source = None):
         '''
         central object for all data types                              \n
         create data objects by calling the methods of this script
         '''
-        
-        # axes ----------------------------------------------------------------
-        
-        #check that no two names are the same
-        self.axis_names = []
-        for axis in axes:
-            self.axis_names.append(axis.name)
-        if not len(self.axis_names) == len(set(self.axis_names)):
-            print 'init failed: each axis must have a unique name'
-            return
-                     
+ 
         self.axes = axes
-        for axis in self.axes:
-            setattr(self, axis.name, axis)
-        
-        # channels ------------------------------------------------------------
-        
-        self.channels_names = []
-        self.channels = channels
-        for arg in [znull, zmin, zmax]:
-            for i in range(len(self.channels)):
-                channel = self.channels[i]
-                self.channels_names.append(channel.name)
             
-        # other ---------------------------------------------------------------
-  
         self.constants = constants 
         
-        
+        self.channels = channels
+  
         self.name = name
         self.source = source
         
+        self._update()
         
+    def _update(self):
         
+        self.axis_names = [axis.name for axis in self.axes]
+        self.constant_names = [axis.name for axis in self.constants]
+        self.channel_names = [channel.name for channel in self.channels]
+        
+        all_names = self.axis_names + self.channel_names + self.constants
+        if len(all_names) == len(set(all_names)):
+            pass
+        else:
+            print 'axis, constant, and channel names must all be unique - your data object is now broken!!!!'
+            return
+        
+        for obj in self.axes + self.channels + self.constants:
+            setattr(self, obj.name, obj)
+            
+        self.shape = self.channels[0].values.shape
             
     def chop(self, *args, **kwargs):
         '''
@@ -346,7 +340,7 @@ class Data:
 
         return out
         
-    def convert(self, destination_units, verbose = True):
+    def convert(self, destination_units, verbose=True):
         '''
         convinience method \n
         converts all compatable constants and axes to units 
@@ -367,8 +361,8 @@ class Data:
         return copy.deepcopy(self)
         
     def dOD(self, signal_channel_index, reference_channel_index, 
-            method = 'boxcar',
-            verbose = True):
+            method='boxcar',
+            verbose=True):
         '''
         for differential scans:  convert zi signal from dT to dOD
         '''    
@@ -432,7 +426,7 @@ class Data:
             channel.values = values
         
         
-    def level(self, channel_index, axis, npts, verbose = True):
+    def level(self, channel_index, axis, npts, verbose=True):
         '''
         subtract offsets along the edge of axis \n
         axis may be an integer (index) or a string (name)
@@ -571,7 +565,7 @@ class Data:
                 print '{0} label_seed not found'.format(indi)
         return
         
-    def normalize(self, channel = 0, verbose = True):
+    def normalize(self, channel=0, verbose=True):
         '''
         make 'channel' between znull=zero and zmax=1
         '''
@@ -582,7 +576,7 @@ class Data:
         self.channels[channel].znull = 0.
         self.channels[channel].zmax = 1.
         
-    def save(self, filepath = None, verbose = True):
+    def save(self, filepath=None, verbose=True):
         '''
         pickle the data object
         '''
@@ -597,9 +591,9 @@ class Data:
         if verbose:
             print 'data saved at', filepath
         
-        return filepath
+        return filepath                  
     
-    def scale(self, channel = 0, kind = 'amplitude', verbose = True):
+    def scale(self, channel=0, kind='amplitude', verbose=True):
         '''
         perform a scaling operation on the data \n
         kind one in 'amp', 'log', 'invert'
@@ -667,8 +661,109 @@ class Data:
             
             # return array to channel object
             channel.values = values
-            
-    def transpose(self, axes = None, verbose = True):
+
+    def split(self, axis, positions, units='same',
+              direction='below', verbose=True):
+        '''
+        split the data object along a given axis
+        for one or multiple positions \n
+        axis may be an integer (index) or a string (name) \n
+        direction one in ['below', 'above'].
+        it is in axis (not positions) units
+        '''
+
+        # axis ----------------------------------------------------------------
+
+        if type(axis) == int:
+            axis_index = axis
+        elif type(axis) == str:
+            axis_index = self.axis_names.index(axis)
+        else:
+            print 'axis type', type(axis), 'not valid'
+
+        axis = self.axes[axis_index]
+
+        # indicies ------------------------------------------------------------
+
+        # positions must be iterable and should be a numpy array
+        if type(positions) in [int, float]:
+            positions = [positions]
+        positions = np.array(positions)
+
+        indicies = []
+        for position in positions:
+            idx = np.argmin(abs(axis.points - position))
+            indicies.append(idx)
+        indicies.sort()
+
+        # indicies must be unique
+        if len(indicies) == len(set(indicies)):
+            pass
+        else:
+            print 'some of your positions are too close together to split!'
+            indicies = list(set(indicies))
+
+        # set direction according to units
+        if axis.points[-1] < axis.points[0]:
+            directions = ['above', 'below']
+            direction = [i for i in directions if i is not direction][0]
+
+        if direction == 'above':
+            indicies = [i-1 for i in indicies]
+
+        # process -------------------------------------------------------------
+
+        outs = []
+        start = 0
+        stop = -1
+        for i in range(len(indicies)+1):
+            # get start and stop
+            start = stop + 1  # previous value
+            if i == len(indicies):
+                stop = len(axis.points)
+            else:
+                stop = indicies[i]
+            # new data object prepare
+            new_data = self.copy()
+            # axis of interest will be FIRST
+            transpose_order = range(len(new_data.axes))
+            transpose_order = [0 if i == axis_index else i for i in transpose_order]  # replace axis_index with zero
+            transpose_order[0] = axis_index
+            new_data.transpose(transpose_order, verbose=False)
+            # axis
+            new_data.axes[0].points = new_data.axes[0].points[start:stop]
+            # channels
+            for channel in new_data.channels:
+                channel.values = channel.values[start:stop]
+            # transpose out
+            new_data.transpose(transpose_order, verbose=False)
+            outs.append(new_data)
+
+        # post process --------------------------------------------------------
+
+        if verbose:
+            print 'split data into {0} pieces along {1}:'.format(len(indicies)+1, axis.name)
+            for i in range(len(outs)):
+                new_data = outs[i]
+                new_axis = new_data.axes[axis_index]
+                print '  {0} - {1} to {2} {3} (length {4})'.format(i, new_axis.points[0], new_axis.points[-1], new_axis.units, len(new_axis.points))
+
+        # deal with cases where only one element is left
+        for new_data in outs:
+            if len(new_data.axes[axis_index].points) == 1:
+                # remove axis
+                new_data.axis_names.pop(axis_index)
+                axis = new_data.axes.pop(axis_index)
+                new_data.constants.append(axis)
+                # reshape channels
+                shape = [i for i in new_data.channels[0].values.shape if not i == 1]
+                for channel in new_data.channels:
+                    channel.values.shape = shape
+                new_data.shape = shape
+
+        return outs
+
+    def transpose(self, axes=None, verbose=True):
         '''
         transpose the dataset \n
         by default, reverse the dimensions, otherwise permute the axes 
@@ -689,9 +784,11 @@ class Data:
             
         if verbose:
             print 'data transposed to', self.axis_names
+            
+        self.shape = self.channels[0].values.shape
 
 
-    def zoom(self, factor, order=1, verbose = True):
+    def zoom(self, factor, order=1, verbose=True):
         '''
         'zoom' the data array using spline interpolation of the requested order. \n
         the number of points along each axis is increased by factor of factor.   \n

@@ -550,6 +550,8 @@ class mpl_2D:
 
             #get colormap
             mycm = colormaps[cmap]
+            mycm.set_bad(facecolor)
+            mycm.set_under(facecolor)
 
             #fill in main data environment
             if pixelated:
@@ -711,7 +713,9 @@ class mpl_2D:
             if True:
                 subplot_cb = plt.subplot(gs[1])
                 cbar_ticks = np.linspace(levels.min(), levels.max(), 11)
-                plt.colorbar(cax, cax=subplot_cb, ticks=cbar_ticks)
+                cbar = plt.colorbar(cax, cax=subplot_cb, ticks=cbar_ticks)
+                cbar.set_label(channel.name)
+                
 
             # title -----------------------------------------------------------
 
