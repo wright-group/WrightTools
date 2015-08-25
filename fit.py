@@ -1,3 +1,8 @@
+'''
+fitting tools
+'''
+
+
 ### import ####################################################################
 
 
@@ -86,12 +91,12 @@ class Fitter:
         # transpose data ------------------------------------------------------
         # fitted axes will be LAST
         transpose_order = range(len(self.data.axes))
-        #transpose_order[-len(self.axes):] = self.axis_indicies
-        for i in range(len(self.axis_indicies)):
-            switch_index = len(self.data.axes)-(len(self.axis_indicies)-i)
-            axis_index = self.axis_indicies[i]
-            transpose_order[switch_index] = axis_index
-            transpose_order[axis_index] = switch_index
+        self.axis_indicies.reverse()
+        for i in range(len(self.axes)):
+            ai = self.axis_indicies[i]
+            ri = range(len(self.data.axes))[-(i+1)]
+            transpose_order[ri], transpose_order[ai] = transpose_order[ai], transpose_order[ri]
+        self.axis_indicies.reverse()
         self.data.transpose(transpose_order, verbose=False)
         # create output objects -----------------------------------------------
         # model

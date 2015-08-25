@@ -1,3 +1,8 @@
+'''
+central data object class and associated functions
+'''
+
+
 ### import ####################################################################
 
 
@@ -11,6 +16,7 @@ import pickle
 
 import numpy as np
 
+import scipy
 from scipy.interpolate import griddata, interp1d
 
 import kit
@@ -23,42 +29,38 @@ debug = False
 
 
 class Axis:
-    
-    def __init__(self, points, init_units, symbol_type = None,
-                 tolerance = None, file_idx = None,
-                 name = '', label = None, label_seed = ['']):
-        
+
+    def __init__(self, points, init_units, symbol_type=None,
+                 tolerance=None, file_idx=None,
+                 name='', label=None, label_seed=['']):
         self.name = name
         self.tolerance = tolerance
         self.points = points
         self.units = init_units
-        self.file_idx = file_idx        
-        self.label_seed = label_seed        
+        self.file_idx = file_idx
+        self.label_seed = label_seed
         self.label = label
-        
         # get units kind
         self.units_kind = None
         for dic in units.unit_dicts:
             if self.units in dic.keys():
                 self.units_kind = dic['kind']
-                
         # get symbol type
         if symbol_type:
             self.symbol_type = symbol_type
         else:
             self.symbol_type = units.get_default_symbol_type(self.units)
+        self.get_label()
 
-        self.get_label()        
-        
     def convert(self, destination_units):
-        
-        self.points = units.converter(self.points, self.units, destination_units)
+        self.points = units.converter(self.points, self.units,
+                                      destination_units)
         self.units = destination_units
-        
-    def get_label(self, show_units = True, points = False, decimals = 0):
+
+    def get_label(self, show_units=True, points=False, decimals=0):
 
         self.label = r'$\mathsf{'
-        
+
         # label
         for part in self.label_seed:
             if self.units_kind:
@@ -68,78 +70,114 @@ class Axis:
             else:
                 self.label += self.name
             self.label += r'='
-            
+
         # remove the last equals sign
         self.label = self.label[:-1]
-        
+
         if points:
-            if not self.points == None:
-                self.label += r'=\,' + str(np.round(self.points, decimals = decimals))
+            if self.points is not None:
+                self.label += r'=\,' + str(np.round(self.points, decimals=decimals))
 
         # units
         if show_units:
-            if self.units_kind:       
+            if self.units_kind:
                 units_dictionary = getattr(units, self.units_kind)
                 self.label += r'\,'
-                if not points: self.label += r'\left('
+                if not points:
+                    self.label += r'\left('
                 self.label += units_dictionary[self.units][2]
-                if not points: self.label += r'\right)'
+                if not points:
+                    self.label += r'\right)'
             else:
                 pass
-        
+
         self.label += r'}$'
-        
+
         return self.label
-        
+
     def min_max_step(self):
-        
+
         _min = self.points.min()
         _max = self.points.max()
         _step = (_max-_min)/(len(self.points)-1)
-        
+
         return _min, _max, _step
 
-     
+
 class Channel:
-    
+
     def __init__(self, values, units,
-                 file_idx = None,
-                 znull = None, zmin = None, zmax = None, signed = None,
-                 name = None, label = None, label_seed = None):
-                     
+                 file_idx=None,
+                 znull=None, zmin=None, zmax=None, signed=None,
+                 name=None, label=None, label_seed=None):
+
         # general import ------------------------------------------------------
-        
+
         self.name = name
         self.label = label
         self.label_seed = label_seed
-        
+
         self.units = units
         self.file_idx = file_idx
 
         # values --------------------------------------------------------------
 
-        if not values is None:
+        if values is not None:
             self.give_values(values, znull, zmin, zmax, signed)
         else:
             self.znull = znull
             self.zmin = zmin
             self.zmax = zmax
             self.signed = signed
-        
-    def give_values(self, values, znull = None, zmin = None, zmax = None, signed = None):
-        
+
+    def _update(self):
+        self.zmin = np.nanmin(self.values)
+        self.zmax = np.nanmax(self.values)
+
+    def clip(self, zmin=None, zmax=None, replace='nan'):
+        '''
+        clip (limit) the values in a channel \n
+        replace one in ['val', 'nan', 'mask']
+        '''
+        # decide what zmin and zmax will actually be
+        if zmax is not None:
+            pass
+        else:
+            zmax = np.nanmax(self.values)
+        if zmin is not None:
+            pass
+        else:
+            zmin = np.nanmin(self.values)
+        # replace values
+        if replace == 'val':
+            self.values.clip(zmin, zmax, out=self.values)
+        elif replace == 'nan':
+            self.values[self.values < zmin] = np.nan
+            self.values[self.values > zmax] = np.nan
+        elif replace == 'mask':
+            self.values = np.ma.masked_outside(self.values,
+                                               zmin, zmax,
+                                               copy=False)
+        else:
+            print 'replace not recognized in channel.clip'
+        # recalculate zmin and zmax of channel object
+        self._update()
+
+    def give_values(self, values, znull=None, zmin=None, zmax=None,
+                    signed=None):
+
         self.values = values
-        
+
         if znull:
             self.znull = znull
         elif hasattr(self, 'znull'):
             if self.znull:
                 pass
             else:
-                self.znull = self.values.min()
-        else: 
-            self.znull = self.values.min()
-            
+                self.znull = np.nanmin(self.values)
+        else:
+            self.znull = np.nanmin(self.values)
+
         if zmin:
             self.zmin = zmin
         elif hasattr(self, 'zmin'):
@@ -148,8 +186,8 @@ class Channel:
             else:
                 self.zmin = np.nanmin(self.values)
         else:
-            self.zmin =  np.nanmin(self.values)
-            
+            self.zmin = np.nanmin(self.values)
+
         if zmax:
             self.zmax = zmax
         elif hasattr(self, 'zmax'):
@@ -159,7 +197,7 @@ class Channel:
                 self.zmax = np.nanmax(self.values)
         else:
             self.zmax = np.nanmax(self.values)
-            
+
         if signed:
             self.signed = signed
         elif hasattr(self, 'signed'):
@@ -175,9 +213,8 @@ class Channel:
                 self.signed = True
             else:
                 self.signed = False
-                
+
     def invert(self):
-        
         self.values = - self.values
 
 
@@ -218,31 +255,31 @@ class Data:
             setattr(self, obj.name, obj)
             
         self.shape = self.channels[0].values.shape
-            
+
     def chop(self, *args, **kwargs):
         '''
         obtain a subset of the contained data   \n
         all axes must be accounted for          \n
         '''
-        
+
         # organize arguments recieved -----------------------------------------
 
         axes_args = []
         chopped_constants = {}
-        
+
         for arg in args:
             if type(arg) in (str, int):
                 axes_args.append(arg)
             elif type(arg) in (dict, collections.OrderedDict):
                 chopped_constants = arg
-                
+
         verbose = True
         for name, value in kwargs.items():
             if name == 'verbose':
                 verbose = value
-        
+
         # interpret arguments recieved ----------------------------------------
-        
+
         for i in range(len(axes_args)):
             arg = axes_args[i]
             if type(arg) == str:
@@ -252,21 +289,21 @@ class Data:
             else:
                 print 'argument {arg} not recognized in Data.chop!'.format(arg)
             axes_args[i] = arg
-        
+
         # iterate! ------------------------------------------------------------
-                
+
         # find iterated dimensions
         iterated_dimensions = []
         iterated_shape = [1]
         for name in self.axis_names:
-            if not name in axes_args and not name in chopped_constants.keys():
+            if name not in axes_args and name not in chopped_constants.keys():
                 iterated_dimensions.append(name)
                 length = len(getattr(self, name).points)
                 iterated_shape.append(length)
-                
+
         # make copies of channel objects for handing out
         channels_chopped = copy.deepcopy(self.channels)
-    
+
         chopped_constants_everywhere = chopped_constants
         out = []
         for index in np.ndindex(tuple(iterated_shape)):
@@ -281,10 +318,10 @@ class Data:
                 chopped_constants[name] = [position, axis_units]
 
             # re-order array: [all_chopped_constants, channels, all_chopped_axes]
-            
+
             transpose_order = []
             constant_indicies = []
-            
+
             # handle constants first
             constants = list(self.constants)  # copy
             for dim in chopped_constants.keys():
@@ -305,7 +342,7 @@ class Data:
                 idx = [idx for idx in range(len(self.axes)) if self.axes[idx].name == dim][0]
                 transpose_order.append(idx)
                 axes_chopped.append(self.axes[idx])
-                
+
             # ensure that everything is kosher
             if len(transpose_order) == len(self.channels[0].values.shape):
                 pass
@@ -319,31 +356,36 @@ class Data:
             else:
                 print 'chop failed: same dimension used twice'
                 return
-    
+
             # chop
             for i in range(len(self.channels)):
                 values = self.channels[i].values
                 values = values.transpose(transpose_order)
-                for idx in constant_indicies: 
+                for idx in constant_indicies:
                     values = values[idx]
                 channels_chopped[i].values = values
-                    
+
             # finish iteration
-            data_out = Data(axes_chopped, copy.deepcopy(channels_chopped), constants = constants,
-                            name = self.name, source = self.source)
+            data_out = Data(axes_chopped, copy.deepcopy(channels_chopped),
+                            constants=constants,
+                            name=self.name, source=self.source)
             out.append(data_out)
-        
+
         # return --------------------------------------------------------------
-        
+
         if verbose:
             print 'chopped data into %d piece(s)'%len(out), 'in', axes_args
 
         return out
-        
+
+    def clip(self, channel_index=0, *args, **kwargs):
+        self.channels[channel_index].clip(*args, **kwargs)
+
     def convert(self, destination_units, verbose=True):
         '''
         convinience method \n
-        converts all compatable constants and axes to units 
+        converts all compatable constants and axes to units \n
+        you may also convert axis objects directly
         '''
         
         # get kind of units
@@ -424,7 +466,28 @@ class Data:
             # transpose out
             values = values.transpose(transpose_order)
             channel.values = values
-        
+
+    def heal(self, channel_index=0, method='cubic', fill_value=np.nan):
+        '''
+        remove nans using interpolation \n
+        method one in ['linear', 'nearest', 'cubic'] \n
+        fills values outside of interpolation range using fill_value
+        '''        
+        values = self.channels[channel_index].values
+        points = [axis.points for axis in self.axes]
+        xi = tuple(np.meshgrid(*points, indexing = 'ij'))
+        # 'undo' gridding
+        arr = np.zeros((len(self.axes)+1, values.size))
+        for i in range(len(self.axes)):
+            arr[i] = xi[i].flatten()
+        arr[-1] = values.flatten()
+        # remove nans
+        arr = arr[:, ~np.isnan(arr).any(axis=0)]
+        # grid data wants tuples
+        tup = tuple([arr[i] for i in range(len(arr)-1)])
+        # grid data
+        out = griddata(tup, arr[-1], xi, method=method, fill_value=fill_value)
+        self.channels[channel_index].values = out
         
     def level(self, channel_index, axis, npts, verbose=True):
         '''
