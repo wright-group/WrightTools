@@ -467,7 +467,7 @@ class Data:
             values = values.transpose(transpose_order)
             channel.values = values
 
-    def heal(self, channel_index=0, method='cubic', fill_value=np.nan):
+    def heal(self, channel_index=0, method='linear', fill_value=np.nan):
         '''
         remove nans using interpolation \n
         method one in ['linear', 'nearest', 'cubic'] \n
@@ -488,6 +488,7 @@ class Data:
         # grid data
         out = griddata(tup, arr[-1], xi, method=method, fill_value=fill_value)
         self.channels[channel_index].values = out
+        self.channels[channel_index]._update()
         
     def level(self, channel_index, axis, npts, verbose=True):
         '''
@@ -628,6 +629,62 @@ class Data:
                 print '{0} label_seed not found'.format(indi)
         return
         
+    def map_axis(self, axis, points, input_units='same', verbose=True):
+        '''
+        map points of an axis to new points using linear interpolation \n
+        axis may be an integer (index) or a string (name) \n
+        out of bounds points are np.nan
+        '''
+        
+        # get axis index ------------------------------------------------------
+        
+        if type(axis) == int:
+            axis_index = axis
+        elif type(axis) == str:
+            axis_index =  self.axis_names.index(axis)
+        else:
+            print 'axis type', type(axis), 'not valid'
+        axis = self.axes[axis_index]
+        
+        # transform points to axis units --------------------------------------
+
+        if input_units == 'same':
+            pass
+        else:
+            points = units.converter(points, input_units, axis.units)
+
+        # points must be ascending --------------------------------------------
+
+        flipped = np.zeros(len(self.axes), dtype=np.bool)
+        for i in range(len(self.axes)):
+            if self.axes[i].points[0] > self.axes[i].points[-1]:
+                self.flip(i)
+                flipped[i] = True
+
+        # interpn data --------------------------------------------------------
+
+        old_points = [a.points for a in self.axes]
+        new_points = [a.points if a is not axis else points for a in self.axes]
+
+        xi = tuple(np.meshgrid(*new_points, indexing='ij'))
+        for channel in self.channels:
+            values = channel.values
+            channel.values = scipy.interpolate.interpn(old_points, values, xi,
+                                                       method='linear',
+                                                       bounds_error=False,
+                                                       fill_value=np.nan)
+                                                       
+        # cleanup -------------------------------------------------------------
+        
+        for i in range(len(self.axes)):
+            if not i == axis_index:
+                if flipped[i]:
+                    self.flip(i)
+
+        axis.points = points
+            
+        self._update()
+
     def normalize(self, channel=0, verbose=True):
         '''
         make 'channel' between znull=zero and zmax=1
