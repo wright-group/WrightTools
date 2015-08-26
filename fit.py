@@ -71,12 +71,48 @@ class Exponential(Function):
         p0[2] = values.min()  # offset
         return p0
 
+class Gaussian(Function):
+    def __init__(self):
+        Function.__init__(self)
+        self.params = ['mean','width','amplitude','y0']
+        self.limits = {}
+
+    def evaluate(self,p,xi):
+        # evaluate
+        for i, name in zip(range(len(p)), self.params):
+            if name in self.limits.keys():
+                p[i] = np.clip(p[i], *self.limits[name])
+        m, w, amp, y0 = p
+        return amp*np.exp(-(xi-m)**2/(2*w**2)) + y0
+
+    def guess(self, values, xi):
+        Use_visible_baseline = False
+        if Use_visible_baseline:
+            ystdev = np.std(values)
+            good = False
+            baseline = []
+            for i in values:
+                if abs(i)<= 3*ystdev:
+                    baseline.append(i)
+                else: good=True
+            if good:
+                y0 = np.average(baseline)
+            else:
+                # No data was rejected, so no visible baseline or no visible peak
+                y0 = min(values)
+        else:
+            y0 = min(values)
+        yi = np.array([i-y0 for i in values])
+        mean = sum(np.multiply(xi,yi))/sum(yi)
+        width = np.sqrt(abs(sum((xi-mean)**2*yi)/sum(yi)))
+        amp = max(yi)
+        return [mean,width,amp,y0]
 
 ### fitter ####################################################################
 
 
 class Fitter:
-    
+
     def __init__(self, function, data, *args):
         self.function = function
         self.data = data.copy()
@@ -86,7 +122,7 @@ class Fitter:
         self.not_fit_indicies = [self.data.axis_names.index(name) for name in self.data.axis_names if name not in self.axes]
         self.fit_shape = [self.data.axes[i].points.shape[0] for i in self.not_fit_indicies]
         print 'fitter recieved data to make %d fits'%np.product(self.fit_shape)
-        
+
     def run(self, channel_index=0, verbose=True):
         # transpose data ------------------------------------------------------
         # fitted axes will be LAST
@@ -150,7 +186,7 @@ class Fitter:
             channel.zmax = np.nanmax(values)
             channel.znull = 0
             channel.zmin = np.nanmin(values)
-        self.outs._update()        
+        self.outs._update()
         return self.outs
 
 
@@ -158,5 +194,5 @@ class Fitter:
 
 
 if __name__ == '__main__':
-    
+
     pass
