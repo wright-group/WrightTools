@@ -21,6 +21,7 @@ from scipy.interpolate import griddata, interp1d
 
 import kit
 import units
+import units as wt_units  # moving forward I want to use this
 
 debug = False
 
@@ -109,7 +110,7 @@ class Channel:
     def __init__(self, values, units,
                  file_idx=None,
                  znull=None, zmin=None, zmax=None, signed=None,
-                 name=None, label=None, label_seed=None):
+                 name='channel', label=None, label_seed=None):
 
         # general import ------------------------------------------------------
 
@@ -216,6 +217,10 @@ class Channel:
 
     def invert(self):
         self.values = - self.values
+        
+    def normalize(self):
+        self.values /= np.nanmax(self.values)
+        self._update()
 
 
 class Data:
@@ -378,8 +383,71 @@ class Data:
 
         return out
 
-    def clip(self, channel_index=0, *args, **kwargs):
-        self.channels[channel_index].clip(*args, **kwargs)
+    def clip(self, channel=0, *args, **kwargs):
+        '''
+        channel may be an integer (index) or a string (name) \n
+        '''
+        # get channel
+        if type(channel) == int:
+            channel_index = channel
+        elif type(channel) == str:
+            channel_index = self.channel_names.index(channel)
+        else:
+            print 'channel type', type(channel), 'not valid'
+        channel = self.channels[channel_index]
+        # call clip on channel object
+        channel.clip(*args, **kwargs)
+
+    def collapse(self, axis, method='integrate'):
+        '''
+        collapse the data object along a given axis \n
+        method options one in ['integrate', 'sum', 'max', 'min', 'average'] \n
+        method argument may be one of the options above, or a list of options
+        corresponding to the number of channels in the data object \n
+        axis may be an integer (index) or a string (name) \n
+        to get a slice of the data consider using data.chop \n
+        '''
+
+        # get axis index ------------------------------------------------------
+
+        if type(axis) == int:
+            axis_index = axis
+        elif type(axis) == str:
+            axis_index = self.axis_names.index(axis)
+        else:
+            print 'axis type', type(axis), 'not valid'
+
+        # methods -------------------------------------------------------------
+
+        if type(method) == list:
+            if len(method) == len(self.channels):
+                methods = method
+            else:
+                print 'method argument incompatible in data.collapse'
+        elif type(method) == str:
+            methods = [method for _ in self.channels]
+
+        # collapse ------------------------------------------------------------
+
+        for method, channel in zip(methods, self.channels):
+            if method in ['int', 'integrate']:
+                channel.values = np.trapz(y=channel.values, x=self.axes[axis_index].points, axis=axis_index)
+            elif method == 'sum':
+                channel.values = channel.values.sum(axis=axis_index)
+            elif method in ['max', 'maximum']:
+                channel.values = np.nanmax(channel.values, axis=axis_index)
+            elif method in ['min', 'minimum']:
+                channel.values = np.nanmin(channel.values, axis=axis_index)
+            elif method in ['ave', 'average']:
+                channel.values = np.average(channel.values, axis=axis_index)
+            else:
+                print 'method not recognized in data.collapse'
+            channel._update()
+            
+        # cleanup -------------------------------------------------------------
+            
+        self.axes.pop(axis_index)
+        self._update()
 
     def convert(self, destination_units, verbose=True):
         '''
@@ -401,6 +469,63 @@ class Data:
         
     def copy(self):
         return copy.deepcopy(self)
+        
+    def divide(self, divisor, channel=0, divisor_channel=0):
+        '''
+        divide another data object into current data object \n
+        channel, divisor_channel may be an integer (index) or a string (name)
+        '''
+
+        divisor = divisor.copy()
+
+        # map points ----------------------------------------------------------
+
+        for name in divisor.axis_names:
+            if name in self.axis_names:
+                axis = getattr(self, name)
+                divisor_axis = getattr(divisor, name)
+                divisor_axis.convert(axis.units)
+                divisor.map_axis(name, axis.points)
+            else:
+                raise RuntimeError('all axes in divisor must be contained in self')
+
+        # divide --------------------------------------------------------------
+        
+        # transpose so axes of divisor are last (in order)
+        axis_indicies = [self.axis_names.index(name) for name in divisor.axis_names]
+        axis_indicies.reverse()        
+        transpose_order = range(len(self.axes))
+        for i in range(len(axis_indicies)):
+            ai = axis_indicies[i]
+            ri = range(len(self.axes))[-(i+1)]
+            transpose_order[ri], transpose_order[ai] = transpose_order[ai], transpose_order[ri]
+        self.transpose(transpose_order, verbose=False)
+        
+        # get own channel
+        if type(channel) == int:
+            channel_index = channel
+        elif type(channel) == str:
+            channel_index = self.channel_names.index(channel)
+        else:
+            print 'channel type', type(channel), 'not valid'
+        channel = self.channels[channel_index]
+        
+        # get divisor channel
+        if type(divisor_channel) == int:
+            divisor_channel_index = divisor_channel
+        elif type(divisor_channel) == str:
+            divisor_channel_index = divisor.channel_names.index(divisor_channel)
+        else:
+            print 'divisor channel type', type(channel), 'not valid'
+        divisor_channel = divisor.channels[divisor_channel_index]
+        
+        # do division
+        channel.values /= divisor_channel.values
+        channel._update()
+        
+        # transpose out
+        self.transpose(transpose_order, verbose=False)
+
         
     def dOD(self, signal_channel_index, reference_channel_index, 
             method='boxcar',
@@ -467,34 +592,63 @@ class Data:
             values = values.transpose(transpose_order)
             channel.values = values
 
-    def heal(self, channel_index=0, method='linear', fill_value=np.nan):
+    def heal(self, channel=0, method='linear', fill_value=np.nan, 
+             verbose=True):
         '''
         remove nans using interpolation \n
-        method one in ['linear', 'nearest', 'cubic'] \n
-        fills values outside of interpolation range using fill_value
-        '''        
-        values = self.channels[channel_index].values
-        points = [axis.points for axis in self.axes]
-        xi = tuple(np.meshgrid(*points, indexing = 'ij'))
-        # 'undo' gridding
-        arr = np.zeros((len(self.axes)+1, values.size))
-        for i in range(len(self.axes)):
-            arr[i] = xi[i].flatten()
-        arr[-1] = values.flatten()
-        # remove nans
-        arr = arr[:, ~np.isnan(arr).any(axis=0)]
-        # grid data wants tuples
-        tup = tuple([arr[i] for i in range(len(arr)-1)])
-        # grid data
-        out = griddata(tup, arr[-1], xi, method=method, fill_value=fill_value)
-        self.channels[channel_index].values = out
-        self.channels[channel_index]._update()
-        
-    def level(self, channel_index, axis, npts, verbose=True):
+        method one in ['linear', 'nearest', 'cubic']. note that cubic
+        interpolation is only possible for 1D and 2D data. healing may take
+        minutes for very large datasets. interpolation speed
+        goes nearest, linear, cubic. read the griddata docs for more info\n
+        fills values outside of interpolation range using fill_value \n
+        channel may be an integer (index) or a string (name)
+        '''
+        timer = kit.Timer(verbose=False)
+        with timer:
+            # channel
+            if type(channel) == int:
+                channel_index = channel
+            elif type(channel) == str:
+                channel_index = self.channel_names.index(channel)
+            else:
+                print 'channel type', type(channel), 'not valid'
+            channel = self.channels[channel_index]
+            values = self.channels[channel_index].values
+            points = [axis.points for axis in self.axes]
+            xi = tuple(np.meshgrid(*points, indexing='ij'))
+            # 'undo' gridding
+            arr = np.zeros((len(self.axes)+1, values.size))
+            for i in range(len(self.axes)):
+                arr[i] = xi[i].flatten()
+            arr[-1] = values.flatten()
+            # remove nans
+            arr = arr[:, ~np.isnan(arr).any(axis=0)]
+            # grid data wants tuples
+            tup = tuple([arr[i] for i in range(len(arr)-1)])
+            # grid data
+            out = griddata(tup, arr[-1], xi, method=method, fill_value=fill_value)
+            self.channels[channel_index].values = out
+            self.channels[channel_index]._update()
+        # print
+        if verbose:
+            print 'channel {0} healed in {1} seconds'.format(channel.name, np.around(timer.interval, decimals=3))
+
+    def level(self, channel, axis, npts, verbose=True):
         '''
         subtract offsets along the edge of axis \n
-        axis may be an integer (index) or a string (name)
+        channel may be an integer (index) or a string (name) \n
+        axis may be an integer (index) or a string (name) \n
         '''
+
+        # channel -------------------------------------------------------------
+        
+        if type(channel) == int:
+            channel_index = channel
+        elif type(channel) == str:
+            channel_index = self.channel_names.index(channel)
+        else:
+            print 'channel type', type(channel), 'not valid'
+        channel = self.channels[channel_index]
         
         # axis ----------------------------------------------------------------
         
@@ -602,7 +756,8 @@ class Data:
                   m_axes[j].label_seed]
             if verbose: print ni
             # there should never be more than one axis that agrees
-            if len(ni) > 1: raise ValueError()
+            if len(ni) > 1: 
+                raise ValueError()
             elif len(ni) > 0:
                 ni = ni[0]
                 axi = m_axes[ni]
@@ -685,16 +840,136 @@ class Data:
             
         self._update()
 
-    def normalize(self, channel=0, verbose=True):
+    def normalize(self, channel=0):
         '''
-        make 'channel' between znull=zero and zmax=1
+        make 'channel' between znull=zero and zmax=1 \n
+        channel may be an integer (index) or a string (name)
+        '''
+        # get channel
+        if type(channel) == int:
+            channel_index = channel
+        elif type(channel) == str:
+            channel_index =  self.channel_names.index(channel)
+        else:
+            print 'channel type', type(channel), 'not valid'
+        channel = self.channels[channel_index]
+        # call normalize on channel
+        channel.normalize()
+
+    def offset(self, points, offsets, along, offset_axis, by_channel_index=0,
+               units='same', offset_units='same', mode='valid',
+               method='linear', verbose=True):
+        '''
+        offset 'offset_axis' conditionally based on value of 'along' axis \n
+        mode one in 'valid', 'full', 'old'. points outside of qhull will
+        be written np.nan \n
+        can take several minutes to complete \n
+        along, offset_axis may be an integer (index) or a string (name)
         '''
 
-        self.channels[channel].values /= self.channels[channel].values.max()
+        # axis ----------------------------------------------------------------
+
+        if type(along) == int:
+            axis_index = along
+        elif type(along) == str:
+            axis_index = self.axis_names.index(along)
+        else:
+            print 'axis type', type(along), 'not valid'
+        axis = self.axes[axis_index]
+
+        # values & points -----------------------------------------------------
+
+        # get values, points, units
+        if units == 'same':
+            input_units = axis.units
+        else:
+            input_units = units
+
+        # check offsets is 1D or 0D
+        if len(offsets.shape) == 1:
+            pass
+        else:
+            raise RuntimeError('values must be 1D or 0D in offset!')
+
+        # check if units is compatible, convert
+        dictionary = getattr(wt_units, axis.units_kind)
+        if input_units in dictionary.keys():
+            pass
+        else:
+            raise RuntimeError('units incompatible in offset!')
+        points = wt_units.converter(points, input_units, axis.units)
+
+        # create correction array
+        function = interp1d(points, offsets, bounds_error=False)
+        corrections = function(axis.points)
+
+        # remove nans
+        finite_indicies = np.where(np.isfinite(corrections))[0]
+        left_pad_width = finite_indicies[0]
+        right_pad_width = len(corrections) - finite_indicies[-1] - 1
+        corrections = np.pad(corrections[np.isfinite(corrections)], (int(left_pad_width), int(right_pad_width)), mode='edge')
+
+        # do correction -------------------------------------------------------
+
+        # transpose so axis is last
+        transpose_order = np.arange(len(self.axes))
+        transpose_order[axis_index] = len(self.axes) - 1
+        transpose_order[-1] = axis_index
+        self.transpose(transpose_order, verbose=False)
         
-        self.channels[channel].zmin = self.channels[channel].values.min()
-        self.channels[channel].znull = 0.
-        self.channels[channel].zmax = 1.
+        # get offset axis index
+        if type(offset_axis) == int:
+            offset_axis_index = offset_axis
+        elif type(offset_axis) == str:
+            offset_axis_index = self.axis_names.index(offset_axis)
+        else:
+            print 'offset_axis type', type(offset_axis), 'not valid'
+
+        # new points
+        new_points = [a.points for a in self.axes]
+        old_offset_axis_points = self.axes[offset_axis_index].points
+        spacing = (old_offset_axis_points.max()-old_offset_axis_points.min())/float(len(old_offset_axis_points))      
+        if mode == 'old':
+            new_offset_axis_points = old_offset_axis_points
+        elif mode == 'valid':
+            _max = old_offset_axis_points.max() + corrections.min()
+            _min = old_offset_axis_points.min() + corrections.max()
+            n = np.ceil((_max-_min)/spacing)
+            new_offset_axis_points = np.linspace(_min, _max, n)
+        elif mode == 'full':
+            _max = old_offset_axis_points.max() + corrections.max()
+            _min = old_offset_axis_points.min() + corrections.min()
+            n = np.ceil((_max-_min)/spacing)
+            new_offset_axis_points = np.linspace(_min, _max, n)
+        new_points[offset_axis_index] = new_offset_axis_points
+        new_xi = tuple(np.meshgrid(*new_points, indexing='ij'))
+
+        xi = tuple(np.meshgrid(*[a.points for a in self.axes], indexing='ij'))
+        for channel in self.channels:
+            
+            # 'undo' gridding
+            arr = np.zeros((len(self.axes)+1, channel.values.size))
+            for i in range(len(self.axes)):
+                arr[i] = xi[i].flatten()
+            arr[-1] = channel.values.flatten()
+            
+            # do corrections
+            corrections = list(corrections)
+            corrections = corrections*(len(arr[0])/len(corrections))
+            import matplotlib.pyplot as plt
+            arr[offset_axis_index] += corrections
+
+            # grid data
+            tup = tuple([arr[i] for i in range(len(arr)-1)])
+            out = griddata(tup, arr[-1], new_xi, method=method, fill_value=np.nan, rescale=True)
+            channel.values = out
+            channel._update()
+
+        self.axes[offset_axis_index].points = new_offset_axis_points
+        
+        # transpose out
+        self.transpose(transpose_order, verbose=False)
+        self._update()
         
     def save(self, filepath=None, verbose=True):
         '''
@@ -716,11 +991,18 @@ class Data:
     def scale(self, channel=0, kind='amplitude', verbose=True):
         '''
         perform a scaling operation on the data \n
-        kind one in 'amp', 'log', 'invert'
+        kind one in 'amp', 'log', 'invert' \n
+        channel may be an integer (index) or a string (name)
         '''
-        
-        channel = self.channels[channel]
-        
+        # get channel
+        if type(channel) == int:
+            channel_index = channel
+        elif type(channel) == str:
+            channel_index =  self.channel_names.index(channel)
+        else:
+            print 'channel type', type(channel), 'not valid'
+        channel = self.channels[channel_index]
+        # do scaling
         if kind in ['amp', 'amplitude']:
             channel_data = channel.values
             channel_data_abs = np.sqrt(np.abs(channel_data))
@@ -728,59 +1010,75 @@ class Data:
             factor[channel_data < 0] = -1
             channel_data_out = channel_data_abs * factor
             channel.values = channel_data_out
-            
         if kind in ['log']:
             channel.values = np.log10(channel.values)
-            
         if kind in ['invert']:
             channel.values *= -1.
     
-    def smooth(self, factors):
+    def smooth(self, factors, channel=None, verbose=True):
         '''
         smooth by multidimensional kaiser window   \n
-        factors can be an integer or a list
+        factors can be an integer or a list \n
+        channel may be an integer (index) or a string (name). default behavior
+        is to smooth all channels
         '''
-        
-        # get factors ---------------------------------------------------------        
-        
+
+        # get factors ---------------------------------------------------------
+
         if type(factors) == list:
             pass
         else:
             dummy = np.zeros(len(self.axes))
             dummy[::] = factors
             factors = list(dummy)
-            
+
+        # get channels --------------------------------------------------------
+
+        if channel is None:
+            channels = self.channels
+        else:
+            if type(channel) == int:
+                channel_index = channel
+            elif type(channel) == str:
+                channel_index = self.channel_names.index(channel)
+            else:
+                print 'channel type', type(channel), 'not valid'
+            channels = [self.channels[channel_index]]
+
         # smooth --------------------------------------------------------------
-            
-        for channel in self.channels:
-            
-            values = channel.values            
-            
+
+        for channel in channels:
+
+            values = channel.values
+
             for axis_index in range(len(factors)):
-                
+
                 factor = factors[axis_index]
-                
+
                 # transpose so the axis of interest is last
                 transpose_order = range(len(values.shape))
-                transpose_order = [len(values.shape)-1 if i==axis_index else i for i in transpose_order] #replace axis_index with zero
+                transpose_order = [len(values.shape)-1 if i == axis_index else i for i in transpose_order] # replace axis_index with zero
                 transpose_order[len(values.shape)-1] = axis_index
                 values = values.transpose(transpose_order)
 
-                # get kaiser window                
+                # get kaiser window
                 beta = 5.0
                 w = np.kaiser(2*factor+1, beta)
-                
+
                 # for all slices...
                 for index in np.ndindex(values[..., 0].shape):
                     current_slice = values[index]
-                    temp_slice = np.pad(current_slice, (factor,factor), mode = 'edge')
+                    temp_slice = np.pad(current_slice, (factor, factor), mode='edge')
                     values[index] = np.convolve(temp_slice, w/w.sum(), mode='valid')
 
                 # transpose out
                 values = values.transpose(transpose_order)
-            
+
             # return array to channel object
             channel.values = values
+            
+        if verbose:
+            print 'smoothed data'
 
     def split(self, axis, positions, units='same',
               direction='below', verbose=True):
@@ -866,7 +1164,7 @@ class Data:
             for i in range(len(outs)):
                 new_data = outs[i]
                 new_axis = new_data.axes[axis_index]
-                print '  {0} - {1} to {2} {3} (length {4})'.format(i, new_axis.points[0], new_axis.points[-1], new_axis.units, len(new_axis.points))
+                print '  {0} : {1} to {2} {3} (length {4})'.format(i, new_axis.points[0], new_axis.points[-1], new_axis.units, len(new_axis.points))
 
         # deal with cases where only one element is left
         for new_data in outs:
@@ -891,7 +1189,7 @@ class Data:
         manipulates calling data object (returns nothing)
         '''
         
-        if axes:
+        if axes is not None:
             pass
         else:
             axes = range(len(self.channels[0].values.shape))[::-1]
@@ -1406,7 +1704,7 @@ def from_NISE(measure_object, name = 'simulation', ignore_constants = ['A', 'p']
     # channels ----------------------------------------------------------------
 
     zi = measure_object.pol
-    channel = Channel(zi, 'au', label = 'amplitude')
+    channel = Channel(zi, 'au', label='amplitude', name='simulation')
     channels = [channel]
     
     # data object -------------------------------------------------------------

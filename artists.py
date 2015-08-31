@@ -612,7 +612,7 @@ class mpl_2D:
                 if contours_local:
                     # force top and bottom contour to be just outside of data range
                     # add two contours
-                    contours_levels = np.linspace(channel.znull-1e-10, zi.max()+1e-10, contours+2)
+                    contours_levels = np.linspace(channel.znull-1e-10, np.nanmax(zi)+1e-10, contours+2)
                 else:
                     contours_levels = contours
                 subplot_main.contour(xaxis.points, yaxis.points, zi,
