@@ -25,6 +25,11 @@ import kit
 ### artist helpers ############################################################
 
 
+def get_constant_text(constants):
+    string_list = [constant.get_label(show_units = True, points = True) for constant in constants]
+    text = '    '.join(string_list)
+    return text
+
 def make_cubehelix(gamma=1.0, s=0.5, r=-1.5, h=0.5,
                    lum_rev=False, darkest=0.8, plot=False):
     '''
@@ -389,13 +394,9 @@ class mpl_1D:
             # title -----------------------------------------------------------
 
             title_text = self.data.name
-
-            constants_text = '\n'
-            for constant in constants:
-                constants_text += constant.get_label(show_units=True, points=True) + '    '
-
+            constants_text = '\n' + get_constant_text(constants)
             plt.suptitle(title_text + constants_text, fontsize=self.font_size)
-            
+
             # cleanup ---------------------------------------------------------
 
             # plt.tight_layout()
@@ -728,10 +729,8 @@ class mpl_2D:
 
             title_text = self.data.name
 
-            constants_text = '\n'
-            for constant in constants:
-                constants_text += constant.get_label(show_units = True, points = True) + '    '
-
+            constants_text = '\n' + get_constant_text(constants)
+            
             plt.suptitle(title_text + constants_text, fontsize = self.font_size)
 
             # cleanup ---------------------------------------------------------
@@ -1094,18 +1093,17 @@ class difference_2D():
 
             title_text = self.minuend.name + ' - ' + self.subtrahend.name
 
-            constants_text = '\n'
-            for constant in constants:
-                constants_text += constant.get_label(show_units = True, points = True) + '    '
-
+            constants_text = '\n' + get_constant_text(constants)
+            
             plt.suptitle(title_text + constants_text, fontsize = self.font_size)
 
-            fig.subplots_adjust(left=0.075, right=1-0.075, top=0.90, bottom=0.15)
-            
             plt.figtext(0.03, 0.5, yaxis.get_label(), fontsize = self.font_size, rotation = 90)
             plt.figtext(0.5, 0.01, xaxis.get_label(), fontsize = self.font_size, horizontalalignment = 'center')            
 
             # cleanup ---------------------------------------------------------
+
+
+            fig.subplots_adjust(left=0.075, right=1-0.075, top=0.90, bottom=0.15)
 
             plt.setp(plt.subplot(gs[1]).get_yticklabels(), visible=False)
             plt.setp(plt.subplot(gs[4]).get_yticklabels(), visible=False)

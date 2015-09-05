@@ -139,15 +139,9 @@ class Fitter:
         self.model = self.data.copy()
         self.model.name = self.data.name + ' model'
         # outs
-        outs_dimensions = self.data.axis_names
-        at = collections.OrderedDict()
-        for arg in self.axes:
-            axis = getattr(self.data, arg)
-            at[arg] = [axis.points[0], axis.units]
-            outs_dimensions.remove(arg)
-            outs_dimensions
-        args = tuple(outs_dimensions) + tuple([at])
-        self.outs = self.data.chop(*args, verbose=False)[0]
+        self.outs = self.data.copy()
+        for a in self.axes:
+            self.outs.collapse(a, method='integrate')
         self.outs.name = self.data.name + ' outs'
         self.outs.channels.pop(channel_index)
         params_channels = []
