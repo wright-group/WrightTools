@@ -956,12 +956,13 @@ class Data:
             # do corrections
             corrections = list(corrections)
             corrections = corrections*(len(arr[0])/len(corrections))
-            import matplotlib.pyplot as plt
             arr[offset_axis_index] += corrections
 
             # grid data
             tup = tuple([arr[i] for i in range(len(arr)-1)])
-            out = griddata(tup, arr[-1], new_xi, method=method, fill_value=np.nan, rescale=True)
+            # note that rescale is crucial in this operation
+            out = griddata(tup, arr[-1], new_xi, method=method, 
+                           fill_value=np.nan, rescale=True)
             channel.values = out
             channel._update()
 
@@ -1014,6 +1015,7 @@ class Data:
             channel.values = np.log10(channel.values)
         if kind in ['invert']:
             channel.values *= -1.
+        channel._update()
     
     def smooth(self, factors, channel=None, verbose=True):
         '''
