@@ -550,18 +550,21 @@ class mpl_2D:
             else:
 
                 if local:
-                    levels = np.linspace(channel.znull, zi.max(), 200)
+                    levels = np.linspace(channel.znull, np.nanmax(zi), 200)
                 else:
-                    levels = np.linspace(channel.znull, channel.zmax, 200)
+                    if channel.zmax < channel.znull:
+                        levels = np.linspace(channel.zmin, channel.znull, 200)
+                    else:    
+                        levels = np.linspace(channel.znull, channel.zmax, 200)
 
             # main plot -------------------------------------------------------
 
-            #get colormap
+            # get colormap
             mycm = colormaps[cmap]
             mycm.set_bad(facecolor)
             mycm.set_under(facecolor)
 
-            #fill in main data environment
+            # fill in main data environment
             if pixelated:
                 xi, yi, zi = pcolor_helper(xaxis.points, yaxis.points, zi)
                 cax = plt.pcolor(xi, yi, zi, cmap=mycm,

@@ -1015,6 +1015,7 @@ class Data:
             channel.values = np.log10(channel.values)
         if kind in ['invert']:
             channel.values *= -1.
+        channel._update()
     
     def smooth(self, factors, channel=None, verbose=True):
         '''
