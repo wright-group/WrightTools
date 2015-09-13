@@ -18,6 +18,14 @@ import numpy as np
 # angle units (native: rad)
 angle = {'kind': 'angle',
          'rad': ['x', 'x', r'rad']}
+         
+# delay units (native: fs)
+fs_per_mm = 3336.
+delay = {'kind': 'delay',
+         'fs': ['x', 'x', r'fs'],
+         'ps': ['x*1e3', 'x/1e3', r'ps'],
+         'ns': ['x*1e6', 'x/1e6', r'ns'],
+         'mm_delay': ['x*2*fs_per_mm', 'x/(2*fs_per_mm)', r'mm']}
 
 # energy units (native: nm)
 energy = {'kind': 'energy',
@@ -28,15 +36,15 @@ energy = {'kind': 'energy',
 
 # time units (native: s)
 time = {'kind': 'time',
-        'fs': ['x/1e15', 'x*1e15', r'fs'],
-        'ps': ['x/1e12', 'x*1e12', r'ps'],
-        'ns': ['x/1e9', 'x*1e9', r'ns'],
-        'us': ['x/1e6', 'x*1e6', r'us'],
-        'ms': ['x/1000.', 'x*1000.', r'ms'],
-        's':  ['x', 'x', r's'],
-        'm':  ['x*60.', 'x/60.', r'm'],
-        'h':  ['x*3600.', 'x/3600.', r'h'],
-        'd':  ['x*86400.', 'x/86400.', r'd']}
+        'fs_t': ['x/1e15', 'x*1e15', r'fs'],
+        'ps_t': ['x/1e12', 'x*1e12', r'ps'],
+        'ns_t': ['x/1e9', 'x*1e9', r'ns'],
+        'us_t': ['x/1e6', 'x*1e6', r'us'],
+        'ms_t': ['x/1000.', 'x*1000.', r'ms'],
+        's_t':  ['x', 'x', r's'],
+        'm_t':  ['x*60.', 'x/60.', r'm'],
+        'h_t':  ['x*3600.', 'x/3600.', r'h'],
+        'd_t':  ['x*86400.', 'x/86400.', r'd']}
 
 # position units (native: mm)
 position = {'kind': 'position',
@@ -54,7 +62,7 @@ pulse_width = {'kind': 'pulse_width',
 fluence = {'kind': 'fluence',
            'uJ per sq. cm': ['x', 'x', r'\frac{\mu J}{cm^{2}}']}
 
-unit_dicts = [angle, energy, time, position, pulse_width, fluence]
+unit_dicts = [angle, delay, energy, time, position, pulse_width, fluence]
 
 
 def converter(val, current_unit, destination_unit):
@@ -85,37 +93,37 @@ class symbol_dict(dict):
         return self['default']
 
 # color
-color = symbol_dict()
-color['default'] = r'E'
-color['nm'] = r'\lambda'
-color['wn'] = r'\bar\nu'
-color['eV'] = r'\hslash\omega'
+color_symbols = symbol_dict()
+color_symbols['default'] = r'E'
+color_symbols['nm'] = r'\lambda'
+color_symbols['wn'] = r'\bar\nu'
+color_symbols['eV'] = r'\hslash\omega'
 
 # delay
-delay = symbol_dict()
-delay['default'] = r'\tau'
+delay_symbols = symbol_dict()
+delay_symbols['default'] = r'\tau'
 
 # fluence
-fluence = symbol_dict()
-fluence['default'] = r'\mathcal{F}'
+fluence_symbols = symbol_dict()
+fluence_symbols['default'] = r'\mathcal{F}'
 
 # pulse width
-pulse_width = symbol_dict()
-pulse_width['default'] = r'\sigma'
+pulse_width_symbols = symbol_dict()
+pulse_width_symbols['default'] = r'\sigma'
 
 # catch all
-none = symbol_dict()
-none['default'] = ''
+none_symbols = symbol_dict()
+none_symbols['default'] = ''
 
 
 def get_default_symbol_type(units_str):
     if units_str in ['nm', 'wn', 'eV']:
-        return 'color'
+        return 'color_symbols'
     elif units_str in ['fs', 'ps', 'ns']:
-        return 'delay'
+        return 'delay_symbols'
     elif units_str in ['uJ per sq. cm']:
-        return 'fluence'
+        return 'fluence_symbols'
     elif units_str in ['FWHM']:
-        return 'pulse_width'
+        return 'pulse_width_symbols'
     else:
-        return 'none'
+        return 'none_symbols'

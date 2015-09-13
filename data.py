@@ -20,6 +20,7 @@ import scipy
 from scipy.interpolate import griddata, interp1d
 
 import kit
+import kit as wt_kit
 import units
 import units as wt_units  # moving forward I want to use this
 
@@ -65,8 +66,8 @@ class Axis:
         # label
         for part in self.label_seed:
             if self.units_kind:
-                units_dictionary = getattr(units, self.units_kind)
-                self.label += getattr(units, self.symbol_type)[self.units]
+                units_dictionary = getattr(wt_units, self.units_kind)
+                self.label += getattr(wt_units, self.symbol_type)[self.units]
                 self.label += r'_{' + str(part) + r'}'
             else:
                 self.label += self.name
@@ -228,8 +229,18 @@ class Data:
     def __init__(self, axes, channels, constants = [], 
                  name = '', source = None):
         '''
-        central object for all data types                              \n
-        create data objects by calling the methods of this script
+        Central object-type for data in the Wright Group. \n
+        
+        Attributes
+        ----------
+        channels : list
+            A list of Channel objects. Channels are also inherited as 
+            attributes using the channel name: ``data.ai0``, for example.
+        axes : list
+            A list of Axis objects. Axes are also inherited as attributes using
+            the axis name: ``data.w1``, for example.
+        constants : list
+            A list of Axis objects, each with exactly one point.
         '''
  
         self.axes = axes
@@ -244,6 +255,10 @@ class Data:
         self._update()
         
     def _update(self):
+        '''
+        Ensure that the ``axis_names``, ``constant_names``, ``channel_names``,
+        and ``shape`` attributes are correct.
+        '''
         
         self.axis_names = [axis.name for axis in self.axes]
         self.constant_names = [axis.name for axis in self.constants]
@@ -263,8 +278,36 @@ class Data:
 
     def chop(self, *args, **kwargs):
         '''
-        obtain a subset of the contained data   \n
-        all axes must be accounted for          \n
+        Divide the dataset into its lower-dimensionality components.
+
+        Parameters
+        ----------
+        axis : str or int
+            Axes of the returned data objects. Strings refer to the names of
+            axes in this object, integers refer to their index.
+        at : dict
+            One dictionary may be supplied as a non-keyword argument. The
+            dictionaries keys are axis names. The values are lists:
+            ``[position, input units]``.
+        verbose : bool, optional
+            Keyword argument. Toggle talkback.
+
+        Returns
+        -------
+        list
+            A list of data objects.
+
+        See Also
+        --------
+        collapse
+            Collapse the dataset along one axis.
+        split
+            Split the dataset while maintaining its dimensionality.
+
+        Examples
+        --------
+        >>> data.chop('w1', 'w2', {'d2': [0, 'fs']})
+        [data]
         '''
 
         # organize arguments recieved -----------------------------------------
@@ -385,7 +428,12 @@ class Data:
 
     def clip(self, channel=0, *args, **kwargs):
         '''
-        channel may be an integer (index) or a string (name) \n
+        Wrapper method for Channel.clip. \n
+
+        Parameters
+        ----------
+        channel : int or str
+            The channel to call clip on.
         '''
         # get channel
         if type(channel) == int:
@@ -400,12 +448,23 @@ class Data:
 
     def collapse(self, axis, method='integrate'):
         '''
-        collapse the data object along a given axis \n
-        method options one in ['integrate', 'sum', 'max', 'min', 'average'] \n
-        method argument may be one of the options above, or a list of options
-        corresponding to the number of channels in the data object \n
-        axis may be an integer (index) or a string (name) \n
-        to get a slice of the data consider using data.chop \n
+        Collapse the dataset along one axis.
+        
+        Parameters
+        ----------
+        axis : int or str
+            The axis to collapse along.
+        method : {'integrate', 'average', 'sum', 'max', 'min'} (optional)
+            The method of collapsing the given axis. Method may also be list
+            of methods corresponding to the channels of the object. Default
+            is integrate.
+            
+        See Also
+        --------
+        chop
+            Divide the dataset into its lower-dimensionality components.
+        split
+            Split the dataset while maintaining its dimensionality.
         '''
 
         # get axis index ------------------------------------------------------
@@ -451,11 +510,22 @@ class Data:
 
     def convert(self, destination_units, verbose=True):
         '''
-        convinience method \n
-        converts all compatable constants and axes to units \n
-        you may also convert axis objects directly
+        Converts all compatable constants and axes to given units.
+
+        Parameters
+        ----------
+        destination_units : str
+            Destination units.
+        verbose : bool (optional)
+            Toggle talkback. Default is True.
+
+        See Also
+        --------
+        Axis.convert
+            Convert a single axis object to compatable units. Call on an
+            axis object in data.axes or data.constants.
         '''
-        
+
         # get kind of units
         for dic in units.unit_dicts:
             if destination_units in dic.keys():
@@ -468,12 +538,30 @@ class Data:
                     print 'axis', axis.name, 'converted'
         
     def copy(self):
+        '''
+        Copy the object.
+        
+        Returns
+        -------
+        data
+            A deep copy of the data object.
+        '''
         return copy.deepcopy(self)
         
     def divide(self, divisor, channel=0, divisor_channel=0):
         '''
-        divide another data object into current data object \n
-        channel, divisor_channel may be an integer (index) or a string (name)
+        Divide a given channel by another data object. Divisor may be self.
+        All axes in divisor must be contained in self.
+        
+        Parameters
+        ----------
+        divisor : data
+            The denominator in the division.
+        channel : int or str
+            The channel to divide into. The result will be written into this
+            channel. 
+        divisor_channel : int or str
+            The channel in the divisor object to use as an integer.
         '''
 
         divisor = divisor.copy()
@@ -558,9 +646,13 @@ class Data:
         
     def flip(self, axis):
         '''
-        flip direction of arrays along axis. \n
-        does not change values of axis points \n
-        axis may be an integer (index) or a string (name)
+        Flip direction of arrays along an axis. Changes the index of elements 
+        without changing their correspondance to axis positions.
+        
+        Parameters
+        ----------
+        axis : int or str
+            The axis to flip.
         '''
         
         # axis ----------------------------------------------------------------
@@ -595,13 +687,26 @@ class Data:
     def heal(self, channel=0, method='linear', fill_value=np.nan, 
              verbose=True):
         '''
-        remove nans using interpolation \n
-        method one in ['linear', 'nearest', 'cubic']. note that cubic
-        interpolation is only possible for 1D and 2D data. healing may take
-        minutes for very large datasets. interpolation speed
-        goes nearest, linear, cubic. read the griddata docs for more info\n
-        fills values outside of interpolation range using fill_value \n
-        channel may be an integer (index) or a string (name)
+        Remove nans from channel using interpolation.
+
+        Parameters
+        ----------
+        channel : int or str (optional)
+            Channel to heal. Default is 0.
+        method : {'linear', 'nearest', 'cubic'} (optional)
+            The interpolation method. Note that cubic interpolation is only
+            possible for 1D and 2D data. See `griddata <http://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.griddata.html>`_
+            for more information. Default is linear.
+        fill_value : number-like (optional)
+            The value written to pixels that cannot be filled by interpolation.
+            Default is nan.
+        verbose : bool (optional)
+            Toggle talkback. Default is True.
+
+        Notes
+        -----
+        Healing may take several minutes for large datasets. Interpolation
+        time goes as nearest, linear, then cubic.
         '''
         timer = kit.Timer(verbose=False)
         with timer:
@@ -635,9 +740,20 @@ class Data:
 
     def level(self, channel, axis, npts, verbose=True):
         '''
-        subtract offsets along the edge of axis \n
-        channel may be an integer (index) or a string (name) \n
-        axis may be an integer (index) or a string (name) \n
+        For a channel, subtract the average value of several points at the edge
+        of a given axis.
+
+        Parameters
+        ----------
+        channel : int or str
+            Channel to level.
+        axis : int or str
+            Axis to level along.
+        npts : int
+            Number of points to average for each slice. Positive numbers
+            take leading points and negative numbers take trailing points.
+        verbose : bool (optional)
+            Toggle talkback. Default is True.
         '''
 
         # channel -------------------------------------------------------------
@@ -786,9 +902,20 @@ class Data:
         
     def map_axis(self, axis, points, input_units='same', verbose=True):
         '''
-        map points of an axis to new points using linear interpolation \n
-        axis may be an integer (index) or a string (name) \n
-        out of bounds points are np.nan
+        Map points of an axis to new points using linear interpolation. Out-
+        of-bounds points are written nan.
+        
+        Parameters
+        ----------
+        axis : int or str
+            The axis to map onto.
+        points : 1D array-like
+            The new points.
+        input_units : str (optional)
+            The units of the new points. Default is same, which assumes
+            the new points have the same units as the axis.
+        verbose : bool (optional)
+            Toggle talkback. Default is True.
         '''
         
         # get axis index ------------------------------------------------------
@@ -837,34 +964,65 @@ class Data:
                     self.flip(i)
 
         axis.points = points
-            
+
         self._update()
 
     def normalize(self, channel=0):
         '''
-        make 'channel' between znull=zero and zmax=1 \n
-        channel may be an integer (index) or a string (name)
+        Normalize data in given channel so that null=0 and zmax=1.
+
+        Parameters
+        ----------
+        channel : str or int (optional)
+            Channel to normalize. Default is 0.
         '''
         # get channel
         if type(channel) == int:
             channel_index = channel
         elif type(channel) == str:
-            channel_index =  self.channel_names.index(channel)
+            channel_index = self.channel_names.index(channel)
         else:
             print 'channel type', type(channel), 'not valid'
         channel = self.channels[channel_index]
         # call normalize on channel
         channel.normalize()
 
-    def offset(self, points, offsets, along, offset_axis, by_channel_index=0,
+    def offset(self, points, offsets, along, offset_axis,
                units='same', offset_units='same', mode='valid',
                method='linear', verbose=True):
         '''
-        offset 'offset_axis' conditionally based on value of 'along' axis \n
-        mode one in 'valid', 'full', 'old'. points outside of qhull will
-        be written np.nan \n
-        can take several minutes to complete \n
-        along, offset_axis may be an integer (index) or a string (name)
+        Offset one axis based on another axis' values. Useful for correcting
+        instrumental artifacts such as zerotune.
+
+        Parameters
+        ----------
+        points : 1D array-like
+            Points.
+        offsets : 1D array-like
+            Offsets.
+        along : str or int
+            Axis that points array lies along.
+        offset_axis : str or int
+            Axis to offset using offsets.
+        units : str (optional)
+            Units of points array.
+        offset_units : str (optional)
+            Units of offsets aray.
+        mode : {'valid', 'full', 'old'} (optional)
+            Define how far the new axis will extend. Points outside of valid
+            interpolation range will be written nan.
+        method : {'linear', 'nearest', 'cubic'} (optional)
+            The interpolation method. Note that cubic interpolation is only
+            possible for 1D and 2D data. See `griddata <http://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.griddata.html>`_
+            for more information. Default is linear.
+        verbose : bool (optional)
+            Toggle talkback. Default is True.
+            
+        Examples
+        --------
+        >>> points  # an array of w1 points
+        >>> offsets  # an array of d1 corrections
+        >>> data.offset(points, offsets, 'w1', 'd1')
         '''
 
         # axis ----------------------------------------------------------------
@@ -974,32 +1132,58 @@ class Data:
         
     def save(self, filepath=None, verbose=True):
         '''
-        pickle the data object
-        '''
+        Save using the `pickle <https://docs.python.org/2/library/pickle.html>`_
+        module.
         
+        Parameters
+        ----------
+        filepath : str (optional)
+            The savepath. '.p' extension must be included. If not defined,
+            the pickle will be saved in the current working directory with a 
+            timestamp.
+        verbose : bool (optional)
+            Toggle talkback. Default is True.
+            
+        Returns
+        -------
+        str
+            The filepath of the saved pickle.
+            
+        See Also
+        --------
+        from_pickle
+            Generate a data object from a saved pickle.
+        '''
+        # get filepath
         if not filepath:
             chdir = os.getcwd()
-            timestamp = time.strftime('%Y.%m.%d %H_%M_%S')
+            timestamp = wt_kit.get_timestamp()
             filepath = os.path.join(chdir, timestamp + ' data.p')
-            
+        # save
         pickle.dump(self, open(filepath, 'wb'))
-        
+        # return
         if verbose:
             print 'data saved at', filepath
-        
-        return filepath                  
-    
+        return filepath
+
     def scale(self, channel=0, kind='amplitude', verbose=True):
         '''
-        perform a scaling operation on the data \n
-        kind one in 'amp', 'log', 'invert' \n
-        channel may be an integer (index) or a string (name)
+        Scale a channel.
+
+        Parameters
+        ----------
+        channel : int or str (optional)
+            The channel to scale. Default is 0.
+        kind : {'amplitude', 'log', 'invert'} (optional)
+            The scaling operation to perform.
+        verbose : bool (optional)
+            Toggle talkback. Default is True.
         '''
         # get channel
         if type(channel) == int:
             channel_index = channel
         elif type(channel) == str:
-            channel_index =  self.channel_names.index(channel)
+            channel_index = self.channel_names.index(channel)
         else:
             print 'channel type', type(channel), 'not valid'
         channel = self.channels[channel_index]
@@ -1016,13 +1200,21 @@ class Data:
         if kind in ['invert']:
             channel.values *= -1.
         channel._update()
-    
+
     def smooth(self, factors, channel=None, verbose=True):
         '''
-        smooth by multidimensional kaiser window   \n
-        factors can be an integer or a list \n
-        channel may be an integer (index) or a string (name). default behavior
-        is to smooth all channels
+        Smooth a channel using an n-dimenional `kaiser window <https://en.wikipedia.org/wiki/Kaiser_window>`_.
+
+        Parameters
+        ----------
+        factors : int or list of int
+            The smoothing factor. You may provide a list of smoothing factors
+            for each axis.
+        channel : int or str or None (optional)
+            The channel to smooth. If None, all channels will be smoothed.
+            Default is None.
+        verbose : bool (optional)
+            Toggle talkback. Default is True.
         '''
 
         # get factors ---------------------------------------------------------
@@ -1085,11 +1277,37 @@ class Data:
     def split(self, axis, positions, units='same',
               direction='below', verbose=True):
         '''
-        split the data object along a given axis
-        for one or multiple positions \n
-        axis may be an integer (index) or a string (name) \n
-        direction one in ['below', 'above'].
-        it is in axis (not positions) units
+        Split the data object along a given axis, in units.
+
+        Parameters
+        ----------
+        axis : int or str
+            The axis to split along.
+        positions : number-type or 1D array-type
+            The position(s) to split at, in units.
+        units : str (optional)
+            The units of the given positions. Default is same, which assumes
+            input units are identical to axis units.
+        direction : {'below', 'above'} (optional)
+            Choose which group of data the points at positions remains with.
+            Consider points [0, 1, 2, 3, 4, 5] and positions [3]. If direction
+            is above the returned objects are [0, 1, 2] and [3, 4, 5]. If
+            direction is below the returned objects are [0, 1, 2, 3] and
+            [4, 5]. Default is below.
+        verbose : bool (optional)
+            Toggle talkback. Default is True.
+
+        Returns
+        -------
+        list
+            A list of data objects.
+
+        See Also
+        --------
+        chop
+            Divide the dataset into its lower-dimensionality components.
+        collapse
+            Collapse the dataset along one axis.
         '''
 
         # axis ----------------------------------------------------------------
@@ -1185,10 +1403,15 @@ class Data:
 
     def transpose(self, axes=None, verbose=True):
         '''
-        transpose the dataset \n
-        by default, reverse the dimensions, otherwise permute the axes 
-        according to the values given \n
-        manipulates calling data object (returns nothing)
+        Transpose the dataset.
+        
+        Parameters
+        ----------
+        axes : None or list of int (optional)
+            The permutation to perform. If None axes are simply reversed. 
+            Default is None.
+        verbose : bool (optional)
+            Toggle talkback. Default is True.
         '''
         
         if axes is not None:
@@ -1200,31 +1423,41 @@ class Data:
         self.axis_names = [self.axis_names[i] for i in axes]
 
         for channel in self.channels:
-            channel.values = np.transpose(channel.values, axes = axes)
-            
+            channel.values = np.transpose(channel.values, axes=axes)
+
         if verbose:
             print 'data transposed to', self.axis_names
-            
-        self.shape = self.channels[0].values.shape
 
+        self.shape = self.channels[0].values.shape
 
     def zoom(self, factor, order=1, verbose=True):
         '''
-        'zoom' the data array using spline interpolation of the requested order. \n
-        the number of points along each axis is increased by factor of factor.   \n
-        essentially a wrapper for scipy.ndimage.interpolation.zoom
+        Zoom the data array using spline interpolation of the requested
+        order. The number of points along each axis is increased by factor.
+        See `scipy.ndimage.interpolation.zoom <http://docs.scipy.org/doc/scipy/reference/generated/scipy.ndimage.interpolation.zoom.html>`_
+        for more info.
+
+        Parameters
+        ----------
+        factor : positive int
+            The number of points along each axis will increase by this factor.
+        order : int (optional)
+            The order of the spline used to interpolate onto new points.
+        verbose : bool (optional)
+            Toggle talkback. Default is True.
         '''
         import scipy.ndimage
-        
         # axes
         for axis in self.axes:
-            axis.points = scipy.ndimage.interpolation.zoom(axis.points, factor, order=order)
-        
-        # data (don't zoom along channel dimension)
+            axis.points = scipy.ndimage.interpolation.zoom(axis.points,
+                                                           factor,
+                                                           order=order)
+        # channels
         for channel in self.channels:
-            channel.values = scipy.ndimage.interpolation.zoom(channel.values, factor, order=order)
-            
-            
+            channel.values = scipy.ndimage.interpolation.zoom(channel.values,
+                                                              factor,
+                                                              order=order)
+        # return
         if verbose:
             print 'data zoomed to new shape:', self.channels[0].values.shape
 
