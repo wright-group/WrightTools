@@ -5,7 +5,7 @@ plt.close('all')
 
 import WrightTools as wt
 
-if True:
+if False:
     # import data
     files = wt.kit.glob_handler('.dat', folder='data_files', identifier='Wigner')
     data = wt.data.from_COLORS(files, name='MoS2')
@@ -17,7 +17,17 @@ if True:
     data.save('data.p')
 
 data = wt.data.from_pickle('data.p')
+
+if True:
+    # plot data
+    artist = wt.artists.mpl_2D(data, 'w1', 'w2')
+    artist.plot()
+
+
 data = data.split('d2', -50)[1]
+
+
+    
 
 if False:
     # do the fit
@@ -70,7 +80,7 @@ if False:
     artist = wt.artists.difference_2D(data, model, 'w1', 'w2')
     artist.plot(output_folder='figures',)
 
-if True:
+if False:
     # plot outs
 
     outs = wt.data.from_pickle('outs.p')
@@ -79,5 +89,5 @@ if True:
     outs.heal(1, fill_value=outs.channels[1].znull)
     
     artist = wt.artists.mpl_2D(outs, 'w1', 'w2')
-    artist.plot(1, output_folder='figures', contours=9, pixelated=True,
+    artist.plot(0, output_folder='figures', contours=9, pixelated=True,
                 facecolor='grey', local=False, autosave=True)

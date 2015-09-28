@@ -750,14 +750,14 @@ class mpl_2D:
                 else:
                     file_name = str(i).zfill(3)
                 fpath = os.path.join(output_folder, file_name + '.png')
-                plt.savefig(fpath, facecolor = 'none')
+                plt.savefig(fpath, facecolor='none')
                 plt.close()
 
                 if verbose:
                     print 'image saved at', fpath
 
 
-### specific artists ###########################################################
+### specific artists ##########################################################
 
 
 class absorbance:
