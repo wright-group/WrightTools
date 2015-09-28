@@ -23,6 +23,7 @@ import kit
 import kit as wt_kit
 import units
 import units as wt_units  # moving forward I want to use this
+import shots_processing
 
 debug = False
 
@@ -1439,7 +1440,7 @@ class Data:
 
         Parameters
         ----------
-        factor : positive int
+        factor : float
             The number of points along each axis will increase by this factor.
         order : int (optional)
             The order of the spline used to interpolate onto new points.
@@ -1965,11 +1966,39 @@ def from_pickle(filepath, verbose = True):
     return data
 
 
-def from_PyCMDS(filepath, znull=None, name=None, cols=None, 
-                color_steps_as='energy', even=True, verbose=True):
+def from_PyCMDS(filepath, name=None, color_steps_as='energy', even=True,
+                shots_processing_module='mean_and_variance', verbose=True):
+    '''
+    Create a data object from a single PyCMDS output file.
     
-    # get header information --------------------------------------------------
+    Parameters
+    ----------
+    filepath : str
+        The file to load. Can accept .data, .fit, or .shots files.
+    name : str or None (optional)
+        The name to be applied to the new data object. If None, the filename is
+        used. Default is None.
+    color_steps_as : {'energy', 'wavelength'} (optional)
+        The gridding method to use for color axes. Default is energy'
+    even : bool (optional)
+        Toggles enforcement of gridding to regular array. The data must be
+        rectangular, but it doesn't necessarily have to be regular. Default
+        is True.
+    shots_processing_module : str (optional)
+        The module used to process .shots files, if provided. Must be the name
+        of a module in the shots_processing directory.
+    verbose : bool (optional)
+        Toggle talkback. Default is True.
     
+    Returns
+    -------
+    data
+        A Data instance.
+    '''
+    
+    # read from file ----------------------------------------------------------
+    
+    # header
     headers = collections.OrderedDict()
     for line in open(filepath):
         if line[0] == '#':
@@ -1987,6 +2016,42 @@ def from_PyCMDS(filepath, znull=None, name=None, cols=None,
             # all header lines are at the beginning
             break
 
+    # array
+    arr = np.genfromtxt(filepath).T
+
+    # process shots -----------------------------------------------------------
+
+    suffix = wt_kit.filename_parse(filepath)[2]
+    if suffix == 'shots':
+        aquisitions = arr.reshape([len(arr), headers['shots'], -1], order='F')
+        aquisitions = aquisitions.transpose(2, 0, 1)
+        # aquisitions has shape (pixels, cols, shots)
+        daq_indicies = [i for i, kind in enumerate(headers['kind']) if kind in ['channel', 'chopper']]
+        daq_names = [headers['name'][i] for i in daq_indicies]
+        daq_kinds = [headers['kind'][i] for i in daq_indicies]
+        passed_indicies = [i for i, kind in enumerate(headers['kind']) if kind not in ['channel', 'chopper']]
+        passed_indicies.pop(-1)
+        # test process to get dimensions
+        processing_module = getattr(shots_processing, 'mean_and_variance')
+        test_outs, test_names = processing_module.process(aquisitions[0, daq_indicies], daq_names, daq_kinds)
+        arr = np.full([len(passed_indicies) + len(test_names), len(aquisitions)], np.nan)       
+        for i in range(len(aquisitions)):
+            idx = 0
+            for j in passed_indicies:
+                arr[idx, i] = aquisitions[i, j, 0]
+                idx += 1
+            outs, names = processing_module.process(aquisitions[i, daq_indicies], daq_names, daq_kinds)
+            for out in outs:
+                arr[idx, i] = out
+                idx += 1
+        headers['kind'] = [headers['kind'][i] for i in passed_indicies] + ['channel' for _ in outs]
+        headers['units'] = [headers['units'][i] for i in passed_indicies] + ['V' for _ in outs]
+        headers['tolerance'] = [headers['tolerance'][i] for i in passed_indicies] + [None for _ in outs]
+        headers['label'] = [headers['label'][i] for i in passed_indicies] + ['' for _ in outs]
+        headers['name'] = [headers['name'][i] for i in passed_indicies] + names
+
+    # axes and channels -------------------------------------------------------
+
     axes = collections.OrderedDict()
     channels = collections.OrderedDict()
     for i in range(len(headers['name'])):
@@ -1995,10 +2060,6 @@ def from_PyCMDS(filepath, znull=None, name=None, cols=None,
         else:
             axes[headers['name'][i]] = Axis(None, headers['units'][i], tolerance=headers['tolerance'][i], file_idx=i, name=headers['name'][i], label_seed=[headers['label'][i]])
 
-    # get array ---------------------------------------------------------------
-    
-    arr = np.genfromtxt(filepath).T
-    
     # recognize dimensionality of data ----------------------------------------
     
     scanned = []
@@ -2111,7 +2172,7 @@ def from_PyCMDS(filepath, znull=None, name=None, cols=None,
             
     # create data object ------------------------------------------------------
 
-    data = Data(scanned, channels.values(), constant, znull)
+    data = Data(scanned, channels.values(), constant)
     
     if color_steps_as == 'energy':
         try: 

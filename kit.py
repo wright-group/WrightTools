@@ -29,7 +29,7 @@ def filename_parse(fstr):
     # try and guess whether a suffix is there or not
     # my current guess is based on the length of the final split string
     # suffix is either 3 or 4 characters
-    if len(split2[-1]) == 3 or len(split2[-1]) == 4:
+    if len(split2[-1]) in [3, 4, 5]:
         file_name = '.'.join(split2[0:-1])
         file_suffix = split2[-1]
     else:
