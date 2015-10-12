@@ -1,5 +1,5 @@
 '''
-central data object class and associated functions
+Central data object class and associated functions.
 '''
 
 
@@ -230,7 +230,7 @@ class Data:
     def __init__(self, axes, channels, constants = [], 
                  name = '', source = None):
         '''
-        Central object-type for data in the Wright Group. \n
+        Central object-type for data in the Wright Group.
         
         Attributes
         ----------
@@ -528,7 +528,7 @@ class Data:
         '''
 
         # get kind of units
-        for dic in units.unit_dicts:
+        for dic in wt_units.unit_dicts:
             if destination_units in dic.keys():
                 units_kind = dic['kind']
         
