@@ -225,7 +225,7 @@ class Curve:
             themselves.
         units : str (optional.)
             The input units if given as array. Default is same. Units of curve
-            object is not changed by map_points.
+            object are not changed by map_colors.
         '''
         # get new colors in input units
         if type(colors) == int:
@@ -253,7 +253,7 @@ class Curve:
         self.motor_names = [m.name for m in self.motors]
         for obj in self.motors:
             setattr(self, obj.name, obj)
-    
+
     def plot(self, autosave=False, save_path=''):
         '''
         Plot the curve.
@@ -272,6 +272,7 @@ class Curve:
             plt.yticks(ax.get_yticks()[1:-1])
             plt.yticks()
             plt.ylabel(motor.name)
+            ax.get_yaxis().get_major_formatter().set_useOffset(False)
             if motor_index != len(self.motors)-1:
                 plt.setp(ax.get_xticklabels(), visible=False)
         plt.xlabel('color ({})'.format(self.units))
