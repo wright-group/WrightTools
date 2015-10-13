@@ -51,14 +51,15 @@ class Poly:
 
     def __init__(self, colors, units, motors):
         '''
-        Fourth order polynomial.
+        Second order polynomial.
         '''
         self.colors = colors
-        self.n = 4
+        self.n = 2
         self.fit_params = []
         for motor in motors:
             out = np.polynomial.polynomial.polyfit(colors, motor.positions, self.n, full=True)
             self.fit_params.append(out)
+        self.linear = Linear(colors, units, motors)
         
     def get_motor_positions(self, color):
         outs = []
@@ -69,13 +70,12 @@ class Poly:
     
     def get_color(self, motor_index, motor_position):
         a = self.fit_params[motor_index][0][::-1].copy()
-        a[4] -= motor_position
+        a[-1] -= motor_position
         roots = np.real(np.roots(a))
-        for root in roots:
-            if self.colors.min() < root < self.colors.max():
-                return root
-        return roots[3]
-
+        # return root closest to guess from linear interpolation
+        guess = self.linear.get_color(motor_index, motor_position)
+        idx = (np.abs(roots - guess)).argmin()
+        return roots[idx]
 
 ### curve class ###############################################################
 
@@ -175,7 +175,6 @@ class Curve:
             color = self.interpolator.get_color(motor_index, motor_position)
             colors.append(color)
         # TODO: decide how to handle case of disagreement between colors
-        print colors
         return colors[0]
 
     def get_limits(self, units='same'):

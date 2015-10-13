@@ -177,13 +177,6 @@ def process_motortune(filepath, channel, old_curve_filepath, autosave=True):
             m_chosen[i] = m_old[i]
         if not m_old[i]-delta_motor < m_chosen[i] < m_old[i]+delta_motor:
             m_chosen[i] = m_old[i]
-    # ensure smoothness with spline
-    m_spline = UnivariateSpline(tunepoints, m_chosen, k=2, s=1000)
-    m_rough = np.copy(m_chosen)
-    # turn off for now
-    #m_chosen = m_spline(tunepoints)
-    # make plot
-    plt.plot(tunepoints, m_rough-m_old, lw=5, c='grey', alpha=0.5)
     plt.plot(tunepoints, m_chosen-m_old, lw=5, c='k', alpha=0.5)
     # generate tuning curve
     old_curve = wt_curve.from_800_curve(old_curve_filepath)
