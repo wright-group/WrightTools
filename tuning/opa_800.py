@@ -137,7 +137,7 @@ def process_motortune(filepath, channel, old_curve_filepath, autosave=True):
     detector_points = detector_points.T
     zi = detector_points
     # plot raw_data
-    fig = plt.figure()
+    fig = plt.figure(figsize=[8, 6])
     X, Y, Z = wt_artists.pcolor_helper(xi, yi, zi)
     plt.pcolor(X, Y, Z, cmap=cmap)
     plt.xlim(xi.min(), xi.max())
@@ -180,8 +180,8 @@ def process_motortune(filepath, channel, old_curve_filepath, autosave=True):
     # ensure smoothness with spline
     m_spline = UnivariateSpline(tunepoints, m_chosen, k=2, s=1000)
     m_rough = np.copy(m_chosen)
-    for i in range(len(m_chosen)):
-        m_chosen[i] = m_spline(tunepoints[i])
+    # turn off for now
+    #m_chosen = m_spline(tunepoints)
     # make plot
     plt.plot(tunepoints, m_rough-m_old, lw=5, c='grey', alpha=0.5)
     plt.plot(tunepoints, m_chosen-m_old, lw=5, c='k', alpha=0.5)

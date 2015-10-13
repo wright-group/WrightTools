@@ -26,8 +26,8 @@ def process(shots, names, kinds):
         out[out_index] = np.mean(shots[i])
         out_names.append(names[i] + '_mean')
         out_index += 1
-        out[out_index] = np.var(shots[i])
-        out_names.append(names[i] + '_variance')
+        out[out_index] = np.std(shots[i])
+        out_names.append(names[i] + '_std')
         out_index += 1
     return [out, out_names]
     
