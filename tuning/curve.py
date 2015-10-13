@@ -53,6 +53,7 @@ class Poly:
         '''
         Fourth order polynomial.
         '''
+        self.colors = colors
         self.n = 4
         self.fit_params = []
         for motor in motors:
@@ -69,7 +70,11 @@ class Poly:
     def get_color(self, motor_index, motor_position):
         a = self.fit_params[motor_index][0][::-1].copy()
         a[4] -= motor_position
-        return np.real(np.roots(a)[3])
+        roots = np.real(np.roots(a))
+        for root in roots:
+            if self.colors.min() < root < self.colors.max():
+                return root
+        return roots[3]
 
 
 ### curve class ###############################################################
@@ -116,7 +121,8 @@ class Curve:
         for obj in self.motors:
             setattr(self, obj.name, obj)
         # initialize function object
-        self.interpolator = method(colors, units, motors)
+        self.method = method
+        self.interpolate()
 
     def coerce_motors(self):
         '''
@@ -169,6 +175,7 @@ class Curve:
             color = self.interpolator.get_color(motor_index, motor_position)
             colors.append(color)
         # TODO: decide how to handle case of disagreement between colors
+        print colors
         return colors[0]
 
     def get_limits(self, units='same'):
@@ -212,6 +219,12 @@ class Curve:
         else:
             color = wt_units.converter(color, units, self.units)
         return self.interpolator.get_motor_positions(color)
+        
+    def interpolate(self):
+        '''
+        Generate the interploator object.
+        '''
+        self.interpolator = self.method(self.colors, self.units, self.motors)
 
     def map_colors(self, colors, units='same'):
         '''
@@ -253,6 +266,27 @@ class Curve:
         self.motor_names = [m.name for m in self.motors]
         for obj in self.motors:
             setattr(self, obj.name, obj)
+            
+    def offset(self, motor, amount):
+        '''
+        Offset given motor by some ammount.
+        
+        Parameters
+        ----------
+        motor : number or str
+            The motor index or name.
+        amount : number
+            The offset.
+        '''
+        if type(motor) in [float, int]:
+            motor_index = motor
+        elif type(motor) == str:
+            motor_index = self.motor_names.index(motor)
+        else:
+            print 'motor type not recognized in curve.offset'
+        # offset
+        self.motors[motor_index].positions += amount
+        self.interpolate()
 
     def plot(self, autosave=False, save_path=''):
         '''
