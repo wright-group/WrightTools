@@ -7,8 +7,9 @@ a collection of small, general purpose objects and methods
 
 
 import os
-
 from time import clock
+
+import numpy as np
 
 import units
 
@@ -229,6 +230,34 @@ def smooth_1D(arr, n = 10):
         window = arr[i-n:i+n].copy()
         arr[i] = window.mean()
     return arr
+    
+
+def unique(arr, tolerance=1e-6):
+    '''
+    Return unique elements in 1D array, within tolerance.
+    
+    Parameters
+    ----------
+    arr : array_like
+        Input array. This will be flattened if it is not already 1D.
+    tolerance : number (optional)
+        The tolerance for uniqueness.
+        
+    Returns
+    -------
+    array
+        The sorted unique values.
+    '''
+    arr = list(arr.flatten())
+    arr.sort()
+    unique = []
+    while len(arr) > 0:
+        current = arr[0]
+        lis = [xi for xi in arr if np.abs(current - xi) < tolerance]
+        arr = [xi for xi in arr if not np.abs(lis[0] - xi) < tolerance]
+        xi_lis_average = sum(lis) / len(lis)
+        unique.append(xi_lis_average)
+    return np.array(unique)
 
 
 ### uncategorized #############################################################

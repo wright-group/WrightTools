@@ -127,7 +127,7 @@ def process_motortune(filepath, channel, old_curve_filepath, autosave=True):
     motor_points = arr[motor_col]
     detector_points = arr[detector_col]
     # shape array
-    tunepoints = np.unique(opa_points)
+    tunepoints = wt_kit.unique(opa_points, tolerance=1)
     xi = tunepoints
     motor_points.shape = (len(tunepoints), -1)
     motor_points = motor_points.T
@@ -177,7 +177,7 @@ def process_motortune(filepath, channel, old_curve_filepath, autosave=True):
             m_chosen[i] = m_old[i]
         if not m_old[i]-delta_motor < m_chosen[i] < m_old[i]+delta_motor:
             m_chosen[i] = m_old[i]
-    plt.plot(tunepoints, m_chosen-m_old, lw=5, c='k', alpha=0.5)
+    plt.plot(tunepoints, m_chosen-m_old, lw=5, c='grey', alpha=0.5)
     # generate tuning curve
     old_curve = wt_curve.from_800_curve(old_curve_filepath)
     old_curve.map_colors(tunepoints)
@@ -191,7 +191,9 @@ def process_motortune(filepath, channel, old_curve_filepath, autosave=True):
             motors.append(motor)
     curve_name = 'OPA' + opa_name[-1] + ' '
     curve = wt_curve.Curve(tunepoints, 'wn', motors, curve_name, 'opa800', method=wt_curve.Poly)
-    curve.map_colors(25)    
+    curve.map_colors(25)
+    # add final curve points to plot
+    plt.plot(curve.colors, getattr(curve, motor_name[3:]).positions-m_old, lw=5, c='k', alpha=0.5)
     # save
     if autosave:
         out_dir = os.path.dirname(filepath)

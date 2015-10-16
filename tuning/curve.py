@@ -34,16 +34,23 @@ class Linear:
         '''
         Linear interpolation using scipy.interpolate.interp1d.
         '''
+        self.colors = colors
         self.units = units
-        self.functions = [scipy.interpolate.interp1d(colors, motor.positions)
-                          for motor in motors]
-        self.i_functions = [scipy.interpolate.interp1d(motor.positions, colors)
-                            for motor in motors]
+        self.motors = motors
+        self.functions = [scipy.interpolate.interp1d(colors, motor.positions) for motor in motors]
+        self.i_functions = [scipy.interpolate.interp1d(motor.positions, colors) for motor in motors]
 
     def get_motor_positions(self, color):
         return [f(color) for f in self.functions]
 
     def get_color(self, motor_index, motor_position):
+        motor = self.motors[motor_index]
+        if motor.positions.min() < motor_position < motor.positions.max():
+            pass
+        else:
+            # take closest valid motor position if outside of range
+            idx = (np.abs(motor.positions - motor_position)).argmin()
+            motor_position = motor.positions[idx]
         return self.i_functions[motor_index](motor_position)
 
 
@@ -296,6 +303,8 @@ class Curve:
         limits = self.get_limits()
         line_points = np.linspace(limits[0], limits[1], 1000) # get interpolated points
         positions = np.array([self.get_motor_positions(c) for c in line_points]).T
+        xmin = self.colors.min() - np.abs(self.colors[0]-self.colors[1])
+        xmax = self.colors.max() + np.abs(self.colors[0]-self.colors[1])
         for motor_index, motor in enumerate(self.motors):
             ax = plt.subplot(axs[motor_index])
             ax.scatter(self.colors, motor.positions, c='k')
@@ -305,6 +314,7 @@ class Curve:
             plt.yticks(ax.get_yticks()[1:-1])
             plt.yticks()
             plt.ylabel(motor.name)
+            plt.xlim(xmin, xmax)
             ax.get_yaxis().get_major_formatter().set_useOffset(False)
             if motor_index != len(self.motors)-1:
                 plt.setp(ax.get_xticklabels(), visible=False)
