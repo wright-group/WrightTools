@@ -66,12 +66,12 @@ class Axis:
 
         # label
         for part in self.label_seed:
-            if self.units_kind:
+            if self.units_kind is not None:
                 units_dictionary = getattr(wt_units, self.units_kind)
                 self.label += getattr(wt_units, self.symbol_type)[self.units]
                 self.label += r'_{' + str(part) + r'}'
             else:
-                self.label += self.name
+                self.label += self.name.replace('_', '\,\,')
             self.label += r'='
 
         # remove the last equals sign
@@ -95,7 +95,7 @@ class Axis:
                 pass
 
         self.label += r'}$'
-
+        
         return self.label
 
     def min_max_step(self):
