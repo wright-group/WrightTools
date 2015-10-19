@@ -171,7 +171,7 @@ def process_motortune(filepath, channel, old_curve_filepath, autosave=True):
             p0 = np.array([amplitude_guess, center_guess, sigma_guess])
             outs = leastsq(gauss_residuals, p0, args=(amplitude, ms))[0]
             m_chosen[i] = outs[1]
-    # if fail, take old value
+    # if fail, take old value << --- Might be better to take no value?
     for i in range(len(m_chosen)):
         if m_chosen[i] == 0 or np.isnan(m_chosen[i]):
             m_chosen[i] = m_old[i]
@@ -190,7 +190,7 @@ def process_motortune(filepath, channel, old_curve_filepath, autosave=True):
             motor = getattr(old_curve, name)
             motors.append(motor)
     curve_name = 'OPA' + opa_name[-1] + ' '
-    curve = wt_curve.Curve(tunepoints, 'wn', motors, curve_name, 'opa800', method=wt_curve.Poly)
+    curve = wt_curve.Curve(tunepoints, 'wn', motors, curve_name, 'opa800', method=wt_curve.Fourth_Poly)
     curve.map_colors(25)
     # add final curve points to plot
     plt.plot(curve.colors, getattr(curve, motor_name[3:]).positions-m_old, lw=5, c='k', alpha=0.5)
