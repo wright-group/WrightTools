@@ -2016,6 +2016,10 @@ def from_PyCMDS(filepath, name=None, color_steps_as='energy', even=True,
             # all header lines are at the beginning
             break
 
+    # name
+    if name is None:
+        name = headers['name']
+
     # array
     arr = np.genfromtxt(filepath).T
 
