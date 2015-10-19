@@ -57,11 +57,8 @@ class Linear:
 class Poly:
 
     def __init__(self, colors, units, motors):
-        '''
-        Second order polynomial.
-        '''
         self.colors = colors
-        self.n = 2
+        self.n = 4
         self.fit_params = []
         for motor in motors:
             out = np.polynomial.polynomial.polyfit(colors, motor.positions, self.n, full=True)
@@ -83,6 +80,7 @@ class Poly:
         guess = self.linear.get_color(motor_index, motor_position)
         idx = (np.abs(roots - guess)).argmin()
         return roots[idx]
+
 
 ### curve class ###############################################################
 

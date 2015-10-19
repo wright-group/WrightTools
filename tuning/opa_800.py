@@ -171,12 +171,6 @@ def process_motortune(filepath, channel, old_curve_filepath, autosave=True):
             p0 = np.array([amplitude_guess, center_guess, sigma_guess])
             outs = leastsq(gauss_residuals, p0, args=(amplitude, ms))[0]
             m_chosen[i] = outs[1]
-    # if fail, take old value
-    for i in range(len(m_chosen)):
-        if m_chosen[i] == 0 or np.isnan(m_chosen[i]):
-            m_chosen[i] = m_old[i]
-        if not m_old[i]-delta_motor < m_chosen[i] < m_old[i]+delta_motor:
-            m_chosen[i] = m_old[i]
     plt.plot(tunepoints, m_chosen-m_old, lw=5, c='grey', alpha=0.5)
     # generate tuning curve
     old_curve = wt_curve.from_800_curve(old_curve_filepath)
@@ -191,9 +185,13 @@ def process_motortune(filepath, channel, old_curve_filepath, autosave=True):
             motors.append(motor)
     curve_name = 'OPA' + opa_name[-1] + ' '
     curve = wt_curve.Curve(tunepoints, 'wn', motors, curve_name, 'opa800', method=wt_curve.Poly)
+    # map points
     curve.map_colors(25)
+    old_curve.map_colors(25)
     # add final curve points to plot
-    plt.plot(curve.colors, getattr(curve, motor_name[3:]).positions-m_old, lw=5, c='k', alpha=0.5)
+    plt.plot(curve.colors, getattr(curve, motor_name[3:]).positions-
+                           getattr(old_curve, motor_name[3:]).positions, 
+                           lw=5, c='k', alpha=0.5)
     # save
     if autosave:
         out_dir = os.path.dirname(filepath)
