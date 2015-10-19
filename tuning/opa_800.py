@@ -41,6 +41,7 @@ from pylab import *
 import curve as wt_curve
 from .. import kit as wt_kit
 from .. import artists as wt_artists
+from .. import units as wt_units
 cmap = wt_artists.colormaps['default']
 
 
@@ -192,6 +193,96 @@ def process_motortune(filepath, channel, old_curve_filepath, autosave=True):
     plt.plot(curve.colors, getattr(curve, motor_name[3:]).positions-
                            getattr(old_curve, motor_name[3:]).positions, 
                            lw=5, c='k', alpha=0.5)
+    # save
+    if autosave:
+        out_dir = os.path.dirname(filepath)
+        image_path = filepath.replace('.data', '.png')
+        plt.savefig(image_path, transparent=True, dpi=300)
+        plt.close(fig)
+        curve.save(save_directory=out_dir, plot=True)
+    else:
+        curve.plot()
+    # finish
+    return curve
+
+
+def process_tunetest(filepath, channel, autosave=True):
+    # recognize kind of scan
+    start = filepath.index('[') + 1
+    end = filepath.index(']')
+    dims = filepath[start:end].split(',')
+    opa_name = dims[0].strip()
+    print 'opa recognized as', opa_name
+    # import array
+    headers = get_headers(filepath)
+    arr = np.genfromtxt(filepath).T
+    opa_col = headers['name'].index(opa_name)
+    mono_col = headers['name'].index('wm')
+    detector_col = headers['name'].index(channel)
+    opa_points = arr[opa_col]
+    mono_points = arr[mono_col]
+    detector_points = arr[detector_col]
+    # shape array
+    tunepoints = wt_kit.unique(opa_points, tolerance=1)
+    xi = tunepoints
+    mono_points.shape = (len(tunepoints), -1)
+    mono_points = mono_points.T
+    mono_points = wt_units.converter(mono_points, 'nm', 'wn')
+    delta_mono = (mono_points[:, 0].max() - mono_points[:, 0].min())/2.
+    yi = np.linspace(-delta_mono, delta_mono, len(mono_points))
+    detector_points.shape = (len(tunepoints), -1)
+    detector_points = detector_points.T
+    zi = detector_points
+    # plot raw_data
+    fig = plt.figure(figsize=[8, 6])
+    X, Y, Z = wt_artists.pcolor_helper(xi, yi, zi)
+    plt.pcolor(X, Y, Z, cmap=cmap)
+    plt.xlim(xi.min(), xi.max())
+    plt.ylim(yi.min(), yi.max())
+    plt.grid()
+    plt.xlabel(opa_name)
+    plt.ylabel('$\Delta$ (wn)')
+    filename = wt_kit.filename_parse(filepath)[1]
+    plt.suptitle(filename)
+    # process motortune
+    m_chosen = np.zeros(len(tunepoints))
+    m_old = np.zeros(len(tunepoints))
+    for i in range(len(tunepoints)):
+        ms = mono_points[:, i]
+        m_old[i] = np.average(ms)
+        # create masked amplitude array
+        amplitude = detector_points.copy()[:, i]
+        mask = np.zeros(len(amplitude), dtype=bool)
+        for j in range(len(amplitude)):
+            if np.abs(amplitude[j]) < amplitude.max()/2.:
+                mask[j] = True
+        amplitude = np.ma.masked_array(amplitude, mask=mask)
+        ms = np.ma.masked_array(ms, mask=mask)
+        # find best
+        if True:
+            m_chosen[i] = expectation_value(amplitude, ms)
+        else:
+            amplitude_guess = max(amplitude)
+            center_guess = m_old[i]
+            sigma_guess = 0.25
+            p0 = np.array([amplitude_guess, center_guess, sigma_guess])
+            outs = leastsq(gauss_residuals, p0, args=(amplitude, ms))[0]
+            m_chosen[i] = outs[1]
+    plt.plot(tunepoints, -(m_chosen-m_old), lw=5, c='k', alpha=0.5)
+    # generate tuning curve
+    motors = []
+    for name in ['Grating', 'BBO', 'Mixer']:
+        motor_name = '_'.join([opa_name, name])
+        motor_col = headers['name'].index(motor_name)
+        motor_points = arr[motor_col]
+        motor_points.shape = (len(tunepoints), -1)
+        positions = motor_points[:, 0]
+        motor = wt_curve.Motor(positions, name)
+        motors.append(motor)
+    curve_name = 'OPA' + opa_name[-1] + ' '
+    curve = wt_curve.Curve(m_chosen, 'wn', motors, curve_name, 'opa800', method=wt_curve.Poly)
+    # map points
+    curve.map_colors(25)
     # save
     if autosave:
         out_dir = os.path.dirname(filepath)
