@@ -80,6 +80,36 @@ class Poly:
         guess = self.linear.get_color(motor_index, motor_position)
         idx = (np.abs(roots - guess)).argmin()
         return roots[idx]
+        
+class Fourth_Poly:
+
+    def __init__(self, colors, units, motors):
+        '''
+        4th order polynomial.
+        '''
+        self.colors = colors
+        self.n = 4
+        self.fit_params = []
+        for motor in motors:
+            out = np.polynomial.polynomial.polyfit(colors, motor.positions, self.n, full=True)
+            self.fit_params.append(out)
+        self.linear = Linear(colors, units, motors)
+        
+    def get_motor_positions(self, color):
+        outs = []
+        for params in self.fit_params:
+            out = np.polynomial.polynomial.polyval(color, params[0])
+            outs.append(out)
+        return outs
+    
+    def get_color(self, motor_index, motor_position):
+        a = self.fit_params[motor_index][0][::-1].copy()
+        a[-1] -= motor_position
+        roots = np.real(np.roots(a))
+        # return root closest to guess from linear interpolation
+        guess = self.linear.get_color(motor_index, motor_position)
+        idx = (np.abs(roots - guess)).argmin()
+        return roots[idx]
 
 
 ### curve class ###############################################################
