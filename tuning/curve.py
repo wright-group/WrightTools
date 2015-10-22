@@ -64,14 +64,14 @@ class Poly:
             out = np.polynomial.polynomial.polyfit(colors, motor.positions, self.n, full=True)
             self.fit_params.append(out)
         self.linear = Linear(colors, units, motors)
-        
+
     def get_motor_positions(self, color):
         outs = []
         for params in self.fit_params:
             out = np.polynomial.polynomial.polyval(color, params[0])
             outs.append(out)
         return outs
-    
+
     def get_color(self, motor_index, motor_position):
         a = self.fit_params[motor_index][0][::-1].copy()
         a[-1] -= motor_position
@@ -80,7 +80,7 @@ class Poly:
         guess = self.linear.get_color(motor_index, motor_position)
         idx = (np.abs(roots - guess)).argmin()
         return roots[idx]
-        
+
 class Fourth_Poly:
 
     def __init__(self, colors, units, motors):
@@ -94,14 +94,14 @@ class Fourth_Poly:
             out = np.polynomial.polynomial.polyfit(colors, motor.positions, self.n, full=True)
             self.fit_params.append(out)
         self.linear = Linear(colors, units, motors)
-        
+
     def get_motor_positions(self, color):
         outs = []
         for params in self.fit_params:
             out = np.polynomial.polynomial.polyval(color, params[0])
             outs.append(out)
         return outs
-    
+
     def get_color(self, motor_index, motor_position):
         a = self.fit_params[motor_index][0][::-1].copy()
         a[-1] -= motor_position
@@ -130,7 +130,7 @@ class Curve:
     def __init__(self, colors, units, motors, name, kind, method=Linear):
         '''
         Central object-type for all OPA tuning curves.
-        
+
         Parameters
         ----------
         colors : array
@@ -165,11 +165,11 @@ class Curve:
         positions. Can be thought of as 'smoothing' the curve.
         '''
         self.map_colors(self.colors, units='same')
-        
+
     def convert(self, units):
         '''
         Convert the colors.
-        
+
         Parameters
         ----------
         units : str
@@ -192,14 +192,14 @@ class Curve:
     def get_color(self, motor_positions, units='same'):
         '''
         Get the color given a set of motor positions.
-        
+
         Parameters
         ----------
         motor_positions : array
             The motor positions.
         units : str (optional)
             The units of the returned color.
-            
+
         Returns
         -------
         float
@@ -253,7 +253,7 @@ class Curve:
         else:
             color = wt_units.converter(color, units, self.units)
         return self.interpolator.get_motor_positions(color)
-        
+
     def interpolate(self):
         '''
         Generate the interploator object.
@@ -300,11 +300,11 @@ class Curve:
         self.motor_names = [m.name for m in self.motors]
         for obj in self.motors:
             setattr(self, obj.name, obj)
-            
+
     def offset(self, motor, amount):
         '''
         Offset given motor by some ammount.
-        
+
         Parameters
         ----------
         motor : number or str
@@ -406,6 +406,15 @@ def from_800_curve(filepath):
     curve = Curve(colors, 'wn', motors, name=name, kind='opa800', method=Poly)
     return curve
 
+def from_spd_800_curve(filepath):
+    arr = np.genfromtxt(filepath).T
+    colors = arr[0]
+    delay = Motor(arr[1], 'Delay')
+    motors = [delay]
+    path, name, suffix = wt_kit.filename_parse(filepath)
+    curve = Curve(colors, 'wn', motors, name=name, kind='opa800_spd', method=Poly)
+    return curve
+
 ### curve writing methods #####################################################
 
 def to_800_curve(curve, save_directory):
@@ -425,6 +434,28 @@ def to_800_curve(curve, save_directory):
     # save
     header1 = 'file created:\t' + timestamp
     header2 = 'Color (wn)\tGrating\tBBO\tMixer'
+    header = '\n'.join([header1, header2])
+    np.savetxt(out_path, out_arr.T, fmt='%.2f',
+               delimiter='\t', header=header)
+    return out_path
+
+def to_spd_curve(curve, save_directory):
+    # ensure curve is in wn
+    curve = curve.copy()
+    curve.convert('wn')
+    # array
+    colors = curve.colors
+    motors = curve.motors
+    out_arr = np.zeros([4, len(colors)])
+    out_arr[0] = colors
+    out_arr[1:4] = np.array([motor.positions for motor in motors])
+    # filename
+    timestamp = wt_kit.get_timestamp()
+    out_name = curve.name.split('-')[0] + '- ' + timestamp
+    out_path = os.path.join(save_directory, out_name + '.curve')
+    # save
+    header1 = 'file created:\t' + timestamp
+    header2 = 'Color (wn)\Delay'
     header = '\n'.join([header1, header2])
     np.savetxt(out_path, out_arr.T, fmt='%.2f',
                delimiter='\t', header=header)
