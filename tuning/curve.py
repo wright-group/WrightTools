@@ -58,7 +58,7 @@ class Poly:
 
     def __init__(self, colors, units, motors):
         self.colors = colors
-        self.n = 4
+        self.n = 8
         self.fit_params = []
         for motor in motors:
             out = np.polynomial.polynomial.polyfit(colors, motor.positions, self.n, full=True)
@@ -278,11 +278,8 @@ class Curve:
         if type(colors) == int:
             limits = self.get_limits(units)
             new_colors = np.linspace(limits[0], limits[1], colors)
-        elif type(colors) in [list, np.ndarray]:
-            new_colors = colors
         else:
-            print 'type not recognized in curve.map_points - using old points'
-            new_colors = self.colors
+            new_colors = colors
         # convert new colors to local units
         if units == 'same':
             units = self.units
