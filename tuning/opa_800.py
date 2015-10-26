@@ -109,7 +109,7 @@ def gauss_residuals(p, y, x):
 ### processing methods ########################################################
 
 
-def process_motortune(filepath, channel, old_curve_filepath, autosave=True):
+def process_motortune(filepath, channel, old_curve_filepath, autosave=True, flip=False):
     # recognize kind of scan
     start = filepath.index('[') + 1
     end = filepath.index(']')
@@ -172,6 +172,9 @@ def process_motortune(filepath, channel, old_curve_filepath, autosave=True):
             p0 = np.array([amplitude_guess, center_guess, sigma_guess])
             outs = leastsq(gauss_residuals, p0, args=(amplitude, ms))[0]
             m_chosen[i] = outs[1]
+    if flip:
+        m_chosen = m_chosen[::-1]-(m_old[::-1]-m_chosen[::-1])
+        m_old = m_old[::-1]
     plt.plot(tunepoints, m_chosen-m_old, lw=5, c='grey', alpha=0.5)
     # generate tuning curve
     old_curve = wt_curve.from_800_curve(old_curve_filepath)
@@ -188,7 +191,7 @@ def process_motortune(filepath, channel, old_curve_filepath, autosave=True):
     curve = wt_curve.Curve(tunepoints, 'wn', motors, curve_name, 'opa800', method=wt_curve.Poly)
     # map points
     curve.map_colors(25)
-    old_curve.map_colors(25)
+    old_curve.map_colors(curve.colors)
     # add final curve points to plot
     plt.plot(curve.colors, getattr(curve, motor_name[3:]).positions-
                            getattr(old_curve, motor_name[3:]).positions, 
@@ -229,7 +232,7 @@ def process_tunetest(filepath, channel, autosave=True):
     mono_points = mono_points.T
     mono_points = wt_units.converter(mono_points, 'nm', 'wn')
     delta_mono = (mono_points[:, 0].max() - mono_points[:, 0].min())/2.
-    yi = np.linspace(-delta_mono, delta_mono, len(mono_points))
+    yi = np.linspace(delta_mono, -delta_mono, len(mono_points))
     detector_points.shape = (len(tunepoints), -1)
     detector_points = detector_points.T
     zi = detector_points
@@ -268,7 +271,7 @@ def process_tunetest(filepath, channel, autosave=True):
             p0 = np.array([amplitude_guess, center_guess, sigma_guess])
             outs = leastsq(gauss_residuals, p0, args=(amplitude, ms))[0]
             m_chosen[i] = outs[1]
-    plt.plot(tunepoints, -(m_chosen-m_old), lw=5, c='k', alpha=0.5)
+    plt.plot(tunepoints, m_chosen-m_old, lw=5, c='k', alpha=0.5)
     # generate tuning curve
     motors = []
     for name in ['Grating', 'BBO', 'Mixer']:
@@ -282,7 +285,7 @@ def process_tunetest(filepath, channel, autosave=True):
     curve_name = 'OPA' + opa_name[-1] + ' '
     curve = wt_curve.Curve(m_chosen, 'wn', motors, curve_name, 'opa800', method=wt_curve.Poly)
     # map points
-    curve.map_colors(25)
+    #curve.map_colors(25)
     # save
     if autosave:
         out_dir = os.path.dirname(filepath)
