@@ -128,7 +128,7 @@ def process_motortune(filepath, channel, old_curve_filepath, autosave=True):
     motor_points = arr[motor_col]
     detector_points = arr[detector_col]
     # shape array
-    tunepoints = wt_kit.unique(opa_points, tolerance=1)
+    tunepoints = wt_kit.unique(opa_points, tolerance=5)
     xi = tunepoints
     motor_points.shape = (len(tunepoints), -1)
     motor_points = motor_points.T

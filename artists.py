@@ -25,6 +25,77 @@ import kit
 ### artist helpers ############################################################
 
 
+def corner_text(text, distance=0.1, ax=None, corner='UL', factor=200, 
+                fontsize=None, background_alpha=0.75):
+    '''
+    Place some text in the corner of the figure.
+    
+    Parameters
+    ----------
+    text : str
+        The text to use.
+    distance : number (optional)
+        Distance from the corner. Default is 0.05.
+    ax : axis (optional)
+        The axis object to label. If None, uses current axis. Default is None.
+    corner : {'UL', 'LL', 'UR', 'LR'} (optional)
+        The corner to label. Upper left, Lower left etc. Default is UL.
+    factor : number (optional)
+        Scaling factor. Default is 200.
+    fontsize : number (optional)
+        Text fontsize. If None, uses the matplotlib default. Default is None.
+    background_alpha : number (optional)
+        Transparency of background bounding box. Default is 0.75. Set to one
+        to make box opaque.
+    
+    Returns
+    -------
+    text
+        The matplotlib text object.
+    '''
+    # get axis
+    if ax is None:
+        ax = plt.gca()
+    # get bounds
+    x0, y0, width, height = ax.bbox.bounds
+    width_scaled = width/factor
+    height_scaled = height/factor
+    # get scaled postions
+    if corner == 'UL':
+        v_scaled = distance/width_scaled
+        h_scaled = 1-(distance/height_scaled)
+        va = 'top'
+        ha = 'left'
+    elif corner == 'LL':
+        v_scaled = distance/width_scaled
+        h_scaled = distance/height_scaled
+        va = 'bottom'
+        ha = 'left'
+    elif corner == 'UR':
+        v_scaled = 1-(distance/width_scaled)
+        h_scaled = 1-(distance/height_scaled)
+        va = 'top'
+        ha = 'right'
+    elif corner == 'LR':
+        v_scaled = 1-(distance/width_scaled)
+        h_scaled = distance/height_scaled
+        va = 'bottom'
+        ha = 'right'
+    else:
+        print 'corner not recognized'
+        v_scaled = h_scaled = 1.
+        va = 'center'
+        ha = 'center'
+    # apply text
+    props = dict(boxstyle='square', facecolor='white', alpha=0.8)
+    text = ax.text(v_scaled, h_scaled, text, transform=ax.transAxes, 
+                   fontsize=fontsize, 
+                   verticalalignment=va, 
+                   horizontalalignment=ha, 
+                   bbox=props)
+    return text
+
+
 def get_constant_text(constants):
     string_list = [constant.get_label(show_units = True, points = True) for constant in constants]
     text = '    '.join(string_list)

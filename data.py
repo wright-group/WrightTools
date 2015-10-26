@@ -1989,37 +1989,22 @@ def from_PyCMDS(filepath, name=None, color_steps_as='energy', even=True,
         of a module in the shots_processing directory.
     verbose : bool (optional)
         Toggle talkback. Default is True.
-    
+
     Returns
     -------
     data
         A Data instance.
     '''
-    
+
     # read from file ----------------------------------------------------------
-    
+
     # header
-    headers = collections.OrderedDict()
-    for line in open(filepath):
-        if line[0] == '#':
-            split = line.split(':')
-            key = split[0][2:]
-            item = split[1].split('\t')
-            if item[0] == '':
-                item = [item[1]]
-            item = [i.strip() for i in item]  # remove dumb things
-            item = [ast.literal_eval(i) for i in item]
-            if len(item) == 1:
-                item = item[0]
-            headers[key] = item
-        else:
-            # all header lines are at the beginning
-            break
+    headers = wt_kit.read_headers(filepath)
 
     # name
     if name is None:
-        name = headers['name']
-
+        name = headers['data name']
+    
     # array
     arr = np.genfromtxt(filepath).T
 
@@ -2191,7 +2176,7 @@ def from_PyCMDS(filepath, name=None, color_steps_as='energy', even=True,
     
     # add extra stuff to data object ------------------------------------------
 
-    data.source = headers['origin']
+    data.source = headers['data origin']
     
     if not name:
         name = kit.filename_parse(filepath)[1]
@@ -2240,8 +2225,41 @@ def from_shimadzu(filepath, name = None, verbose = True):
     data = Data([x_axis], [signal], source = 'Shimadzu')
     
     # return ------------------------------------------------------------------
-    
+
     return data
+
+
+def join(datas, verbose=True):
+    '''
+    Join a list of data objects together. Work in progress.
+
+    Parameters
+    ----------
+    datas : list of data
+        The list of data objects to join together.
+    verbose : bool (optional)
+        Toggle talkback. Default is True.
+
+    Returns
+    -------
+    data
+        A Data instance.
+    '''
+
+    # 'undo' gridding
+    arr = np.zeros((len(self.axes)+1, values.size))
+    for i in range(len(self.axes)):
+        arr[i] = xi[i].flatten()
+    arr[-1] = values.flatten()
+    # remove nans
+    arr = arr[:, ~np.isnan(arr).any(axis=0)]
+    # grid data wants tuples
+    tup = tuple([arr[i] for i in range(len(arr)-1)])
+    # grid data
+    out = griddata(tup, arr[-1], xi, method=method, fill_value=fill_value)
+    self.channels[channel_index].values = out
+    self.channels[channel_index]._update()
+
 
 
 ### other ######################################################################
