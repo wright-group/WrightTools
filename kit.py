@@ -7,6 +7,8 @@ a collection of small, general purpose objects and methods
 
 
 import os
+import ast
+import collections
 from time import clock
 
 import numpy as np
@@ -14,7 +16,7 @@ import numpy as np
 import units
 
 
-### files #####################################################################
+### file processing ###########################################################
 
 
 def filename_parse(fstr):
@@ -125,7 +127,7 @@ def glob_handler(extension, folder=None, identifier=None):
 
 def plot_dats(folder=None, transpose=True):
     '''
-    convinience function to plot raw data
+    Convinience function to plot raw data from COLORS
     '''
 
     import data
@@ -170,6 +172,38 @@ def plot_dats(folder=None, transpose=True):
             print 'dat {} not recognized as plottible in plot_dats'.format(filename_parse(_file)[1])
             print sys.exc_info()[0]
             pass
+
+
+def read_headers(filepath):
+    '''
+    Read 'Wright group formatted' headers from given path.
+    
+    Parameters
+    ----------
+    filepath : str
+        Path of file.
+        
+    Returns
+    -------
+    OrderedDict
+        Dictionary containing header information.
+    '''
+    headers = collections.OrderedDict()
+    for line in open(filepath):
+        if line[0] == '#':
+            split = line.split(':')
+            key = split[0][2:]
+            item = split[1].split('\t')
+            if item[0] == '':
+                item = [item[1]]
+            item = [i.strip() for i in item]  # remove dumb things
+            item = [ast.literal_eval(i) for i in item]
+            if len(item) == 1:
+                item = item[0]
+            headers[key] = item
+        else:
+            break  # all header lines are at the beginning
+    return headers
 
 
 ### math ######################################################################
