@@ -285,7 +285,7 @@ def process_tunetest(filepath, channel, autosave=True):
     curve_name = 'OPA' + opa_name[-1] + ' '
     curve = wt_curve.Curve(m_chosen, 'wn', motors, curve_name, 'opa800', method=wt_curve.Poly)
     # map points
-    #curve.map_colors(25)
+    curve.map_colors(25)
     # save
     if autosave:
         out_dir = os.path.dirname(filepath)

@@ -523,7 +523,7 @@ class mpl_2D:
 
     def plot(self, channel_index=0,
              contours=9, pixelated=True, lines=True, cmap='default', facecolor='w',
-             dynamic_range = False, local = False, contours_local = True, normalize_slices = 'both',
+             dynamic_range = False, local=False, contours_local=True, normalize_slices='both',
              xbin= False, ybin=False, xlim=None, ylim=None,
              autosave=False, output_folder=None, fname=None,
              verbose=True):
@@ -569,6 +569,7 @@ class mpl_2D:
             yaxis = axes[0]
             channel = channels[channel_index]
             zi = channel.values
+            zi = np.ma.masked_invalid(zi)
 
             # normalize slices -------------------------------------------------
 
@@ -632,17 +633,18 @@ class mpl_2D:
 
             # get colormap
             mycm = colormaps[cmap]
-            mycm.set_bad(facecolor)
+            mycm.set_bad([0.75, 0.75, 0.75], 1.)
             mycm.set_under(facecolor)
 
             # fill in main data environment
-            if pixelated:
-                xi, yi, zi = pcolor_helper(xaxis.points, yaxis.points, zi)
-                cax = plt.pcolor(xi, yi, zi, cmap=mycm,
+            # always plot pcolormesh
+            X, Y, Z = pcolor_helper(xaxis.points, yaxis.points, zi)
+            cax = plt.pcolormesh(X, Y, Z, cmap=mycm,
                                  vmin=levels.min(), vmax=levels.max())
-                plt.xlim(xaxis.points.min(), xaxis.points.max())
-                plt.ylim(yaxis.points.min(), yaxis.points.max())
-            else:
+            plt.xlim(xaxis.points.min(), xaxis.points.max())
+            plt.ylim(yaxis.points.min(), yaxis.points.max())
+            # overlap with contourf if not pixelated
+            if not pixelated:
                 cax = subplot_main.contourf(xaxis.points, yaxis.points, zi,
                                             levels, cmap=mycm)
 
@@ -723,7 +725,8 @@ class mpl_2D:
 
                 # bin
                 if xbin:
-                    x_ax_int = zi.sum(axis=0) - channel.znull * len(yaxis.points)
+                    x_ax_int = np.nansum(zi, axis=0) - channel.znull * len(yaxis.points)
+                    x_ax_int[x_ax_int==0] = np.nan
                     # normalize (min is a pixel)
                     xmax = max(np.abs(x_ax_int))
                     x_ax_int = x_ax_int / xmax
@@ -764,7 +767,8 @@ class mpl_2D:
 
                 # bin
                 if ybin:
-                    y_ax_int = zi.sum(axis=1) - channel.znull * len(xaxis.points)
+                    y_ax_int = np.nansum(zi, axis=1) - channel.znull * len(xaxis.points)
+                    y_ax_int[y_ax_int==0] = np.nan
                     # normalize (min is a pixel)
                     ymax = max(np.abs(y_ax_int))
                     y_ax_int = y_ax_int / ymax
@@ -1076,8 +1080,8 @@ class difference_2D():
                 #fill in main data environment
                 if pixelated:
                     xi, yi, zi = pcolor_helper(xaxis.points, yaxis.points, zi)
-                    cax = plt.pcolor(xi, yi, zi, cmap=mycm,
-                                     vmin=levels.min(), vmax=levels.max())
+                    cax = plt.pcolormesh(xi, yi, zi, cmap=mycm,
+                                         vmin=levels.min(), vmax=levels.max())
                     plt.xlim(xaxis.points.min(), xaxis.points.max())
                     plt.ylim(yaxis.points.min(), yaxis.points.max())
                 else:
