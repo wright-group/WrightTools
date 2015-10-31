@@ -171,7 +171,7 @@ class Channel:
 
         self.values = values
 
-        if znull:
+        if znull is not None:
             self.znull = znull
         elif hasattr(self, 'znull'):
             if self.znull:
@@ -181,7 +181,7 @@ class Channel:
         else:
             self.znull = np.nanmin(self.values)
 
-        if zmin:
+        if zmin is not None:
             self.zmin = zmin
         elif hasattr(self, 'zmin'):
             if self.zmin:
@@ -191,7 +191,7 @@ class Channel:
         else:
             self.zmin = np.nanmin(self.values)
 
-        if zmax:
+        if zmax is not None:
             self.zmax = zmax
         elif hasattr(self, 'zmax'):
             if self.zmax:
@@ -201,12 +201,10 @@ class Channel:
         else:
             self.zmax = np.nanmax(self.values)
 
-        if signed:
+        if signed is not None:
             self.signed = signed
         elif hasattr(self, 'signed'):
-            if self.signed:
-                pass
-            else:
+            if self.signed is None:
                 if self.zmin < self.znull:
                     self.signed = True
                 else:
@@ -2229,14 +2227,19 @@ def from_shimadzu(filepath, name = None, verbose = True):
     return data
 
 
-def join(datas, verbose=True):
+def join(datas, method='first', verbose=True):
     '''
-    Join a list of data objects together. Work in progress.
+    Join a list of data objects together. For now datas must have identical
+    dimensionalities (order and identity).
 
     Parameters
     ----------
     datas : list of data
         The list of data objects to join together.
+    method : {'first', 'sum', 'max', 'min'} (optional)
+        The method for how overlapping points get treated. Default is first,
+        meaning that the data object that appears first in data will take
+        precedence.
     verbose : bool (optional)
         Toggle talkback. Default is True.
 
@@ -2245,23 +2248,98 @@ def join(datas, verbose=True):
     data
         A Data instance.
     '''
-
-    # 'undo' gridding
-    arr = np.zeros((len(self.axes)+1, values.size))
-    for i in range(len(self.axes)):
-        arr[i] = xi[i].flatten()
-    arr[-1] = values.flatten()
-    # remove nans
-    arr = arr[:, ~np.isnan(arr).any(axis=0)]
-    # grid data wants tuples
-    tup = tuple([arr[i] for i in range(len(arr)-1)])
-    # grid data
-    out = griddata(tup, arr[-1], xi, method=method, fill_value=fill_value)
-    self.channels[channel_index].values = out
-    self.channels[channel_index]._update()
-
-
-
+    # TODO: a proper treatment of joining datas that have different dimensions
+    # with intellegent treatment of their constant dimensions. perhaps changing
+    # map_axis would be good for this. - Blaise 2015.10.31
+    
+    # copy datas so original objects are not changed
+    datas = [d.copy() for d in datas]
+    # get scanned dimensions
+    axis_names = []
+    axis_units = []
+    axis_objects = []
+    for data in datas:
+        for axis in data.axes:
+            if axis.name not in axis_names:
+                axis_names.append(axis.name)
+                axis_units.append(axis.units)
+                axis_objects.append(axis)
+    # TODO: transpose to same dimension orders
+    # convert into same units
+    for data in datas:
+        for axis_name, axis_unit in zip(axis_names, axis_units):
+            for axis in data.axes:
+                if axis.name == axis_name:
+                    axis.convert(axis_unit)
+    # get axis points
+    axis_points = []  # list of 1D arrays
+    for axis_name in axis_names:
+        all_points = np.array([])
+        step_sizes = []
+        for data in datas:
+            for axis in data.axes:
+                if axis.name == axis_name:
+                    all_points = np.concatenate([all_points, axis.points])
+                    this_axis_min = np.nanmin(axis.points)
+                    this_axis_max = np.nanmax(axis.points)
+                    this_axis_number = float(axis.points.size)
+                    step_size = (this_axis_max-this_axis_min)/this_axis_number
+                    step_sizes.append(step_size)
+        axis_min = np.nanmin(all_points)
+        axis_max = np.nanmax(all_points)
+        axis_step_size = min(step_sizes)
+        axis_n_points = np.ceil((axis_max-axis_min)/axis_step_size)
+        points = np.linspace(axis_min, axis_max, axis_n_points)
+        axis_points.append(points)
+    # map datas to new points
+    for axis_index, axis_name in enumerate(axis_names):
+        for data in datas:
+            for axis in data.axes:
+                if axis.name == axis_name:
+                    data.map_axis(axis_name, axis_points[axis_index])
+    # make new channel objects
+    channel_objects = []
+    n_channels = min([len(d.channels) for d in datas])
+    for channel_index in range(n_channels):
+        full = np.array([d.channels[channel_index].values for d in datas])
+        if method == 'first':
+            zis = np.full(full.shape[1:], np.nan)
+            for idx in np.ndindex(*full.shape[1:]):
+                for data_index in range(len(full)):
+                    value = full[data_index][idx]
+                    if not np.isnan(value):
+                        zis[idx] = value
+                        break
+        elif method == 'sum':
+            zis = np.nansum(full, axis=0)
+            zis[zis == 0.] = np.nan
+        elif method == 'max':
+            zis = np.nanmax(full, axis=0)
+        elif method == 'min':
+            zis = np.nanmin(full, axis=0)
+        else:
+            print 'method', method, 'not recognized in join'
+            return
+        zis[np.isnan(full).all(axis=0)] = np.nan  # if all datas NaN, zis NaN
+        channel = Channel(zis, 'V', znull=0., 
+                          signed=datas[0].channels[channel_index].signed,
+                          name=datas[0].channels[channel_index].name)
+        channel_objects.append(channel)
+    # make new data object
+    out = Data(axis_objects, channel_objects)
+    # finish
+    if verbose:
+        print len(datas), 'datas joined to create new data:'
+        print '  axes:'
+        for axis in out.axes:
+            points = axis.points
+            print '    {0} : {1} points from {2} to {3} {4}'.format(axis.name, points.size, min(points), max(points), axis.units)
+        print '  channels:'
+        for channel in out.channels:
+            percent_nan = np.around(100.*(np.isnan(channel.values).sum()/float(channel.values.size)), decimals=2)
+            print '    {0} : {1} to {2} ({3}% NaN)'.format(channel.name, channel.zmin, channel.zmax, percent_nan)
+    return out
+    
 ### other ######################################################################
 
 

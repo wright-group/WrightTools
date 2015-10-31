@@ -81,36 +81,6 @@ class Poly:
         idx = (np.abs(roots - guess)).argmin()
         return roots[idx]
 
-class Fourth_Poly:
-
-    def __init__(self, colors, units, motors):
-        '''
-        4th order polynomial.
-        '''
-        self.colors = colors
-        self.n = 4
-        self.fit_params = []
-        for motor in motors:
-            out = np.polynomial.polynomial.polyfit(colors, motor.positions, self.n, full=True)
-            self.fit_params.append(out)
-        self.linear = Linear(colors, units, motors)
-
-    def get_motor_positions(self, color):
-        outs = []
-        for params in self.fit_params:
-            out = np.polynomial.polynomial.polyval(color, params[0])
-            outs.append(out)
-        return outs
-
-    def get_color(self, motor_index, motor_position):
-        a = self.fit_params[motor_index][0][::-1].copy()
-        a[-1] -= motor_position
-        roots = np.real(np.roots(a))
-        # return root closest to guess from linear interpolation
-        guess = self.linear.get_color(motor_index, motor_position)
-        idx = (np.abs(roots - guess)).argmin()
-        return roots[idx]
-
 
 ### curve class ###############################################################
 
@@ -431,28 +401,6 @@ def to_800_curve(curve, save_directory):
     # save
     header1 = 'file created:\t' + timestamp
     header2 = 'Color (wn)\tGrating\tBBO\tMixer'
-    header = '\n'.join([header1, header2])
-    np.savetxt(out_path, out_arr.T, fmt='%.2f',
-               delimiter='\t', header=header)
-    return out_path
-
-def to_spd_curve(curve, save_directory):
-    # ensure curve is in wn
-    curve = curve.copy()
-    curve.convert('wn')
-    # array
-    colors = curve.colors
-    motors = curve.motors
-    out_arr = np.zeros([4, len(colors)])
-    out_arr[0] = colors
-    out_arr[1:4] = np.array([motor.positions for motor in motors])
-    # filename
-    timestamp = wt_kit.get_timestamp()
-    out_name = curve.name.split('-')[0] + '- ' + timestamp
-    out_path = os.path.join(save_directory, out_name + '.curve')
-    # save
-    header1 = 'file created:\t' + timestamp
-    header2 = 'Color (wn)\Delay'
     header = '\n'.join([header1, header2])
     np.savetxt(out_path, out_arr.T, fmt='%.2f',
                delimiter='\t', header=header)
