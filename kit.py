@@ -206,6 +206,51 @@ def read_headers(filepath):
     return headers
 
 
+def write_headers(filepath, dictionary):
+    '''
+    Write 'Wright Group formatted' headers to given file. Headers written can
+    be read again using read_headers.
+
+    Paramters
+    ---------
+    filepath : str
+        Path of file. File must not exist.
+    dictionary : dict or OrderedDict
+        Dictionary of header items.
+
+    Returns
+    -------
+    str
+        Filepath of file.
+    '''
+    dictionary = dictionary.copy()
+    header_items = []
+    for key, value in dictionary.items():
+        header_item = key + ':'
+        if type(value) == str:
+            header_item += '\t' + '\'' + value + '\''
+        elif type(value) == list:
+            for i in range(len(value)):
+                if type(value[i]) == str:
+                    value[i] = '\'' + value[i] + '\''
+                else:
+                    value[i] = str(value[i])
+            header_item += ' ' + '\t'.join(value)
+        elif type(value).__module__ == np.__name__:  # anything from numpy
+            header_item += ' ' + '\t'.join([str(i) for i in value])
+        else:
+            header_item += '\t' + str(value)
+        header_items.append(header_item)
+    # write header
+    header_str = ''
+    for item in header_items:
+        header_str += item + '\n'
+    header_str = header_str[:-1]  # remove final newline charachter
+    np.savetxt(filepath, [], header=header_str)
+    # return
+    return filepath
+
+
 ### math ######################################################################
 
 
@@ -306,7 +351,7 @@ def get_methods(the_class, class_only=False, instance_only=False,
     import inspect
 
     def acceptMethod(tup):
-        # internal function that analyzes the tuples returned by getmembers 
+        # internal function that analyzes the tuples returned by getmembers
         # tup[1] is the actual member object
         is_method = inspect.ismethod(tup[1])
         if is_method:
@@ -360,13 +405,64 @@ class suppress_stdout_stderr(object):
         os.close(self.null_fds[1])
 
 
+unicode_dictionary = collections.OrderedDict()
+unicode_dictionary['Alpha'] = u'\u0391'
+unicode_dictionary['Beta'] = u'\u0392'
+unicode_dictionary['Gamma'] = u'\u0392'
+unicode_dictionary['Delta'] = u'\u0394'
+unicode_dictionary['Epsilon'] = u'\u0395'
+unicode_dictionary['Zeta'] = u'\u0396'
+unicode_dictionary['Eta'] = u'\u0397'
+unicode_dictionary['Theta'] = u'\u0398'
+unicode_dictionary['Iota'] = u'\u0399'
+unicode_dictionary['Kappa'] = u'\u039A'
+unicode_dictionary['Lamda'] = u'\u039B'
+unicode_dictionary['Mu'] = u'\u039C'
+unicode_dictionary['Nu'] = u'\u039D'
+unicode_dictionary['Xi'] = u'\u039E'
+unicode_dictionary['Omicron'] = u'\u039F'
+unicode_dictionary['Pi'] = u'\u03A0'
+unicode_dictionary['Rho'] = u'\u03A1'
+unicode_dictionary['Sigma'] = u'\u03A3'
+unicode_dictionary['Tau'] = u'\u03A4'
+unicode_dictionary['Upsilon'] = u'\u03A5'
+unicode_dictionary['Phi'] = u'\u03A6'
+unicode_dictionary['Chi'] = u'\u03A7'
+unicode_dictionary['Psi'] = u'\u03A8'
+unicode_dictionary['Omega'] = u'\u03A9'
+unicode_dictionary['alpha'] = u'\u03B1'
+unicode_dictionary['beta'] = u'\u03B2'
+unicode_dictionary['gamma'] = u'\u03B3'
+unicode_dictionary['delta'] = u'\u03B4'
+unicode_dictionary['epsilon'] = u'\u03B5'
+unicode_dictionary['zeta'] = u'\u03B6'
+unicode_dictionary['eta'] = u'\u03B7'
+unicode_dictionary['theta'] = u'\u03B8'
+unicode_dictionary['iota'] = u'\u03B9'
+unicode_dictionary['kappa'] = u'\u03BA'
+unicode_dictionary['lamda'] = u'\u03BB'
+unicode_dictionary['mu'] = u'\u03BC'
+unicode_dictionary['nu'] = u'\u03BD'
+unicode_dictionary['xi'] = u'\u03BE'
+unicode_dictionary['omicron'] = u'\u03BF'
+unicode_dictionary['pi'] = u'\u03C0'
+unicode_dictionary['rho'] = u'\u03C1'
+unicode_dictionary['sigma'] = u'\u03C3'
+unicode_dictionary['tau'] = u'\u03C4'
+unicode_dictionary['upsilon'] = u'\u03C5'
+unicode_dictionary['phi'] = u'\u03C6'
+unicode_dictionary['chi'] = u'\u03C7'
+unicode_dictionary['psi'] = u'\u03C8'
+unicode_dictionary['omega'] = u'\u03C9'
+
+
 def update_progress(progress, carriage_return=True, length=50):
     '''
     prints a pretty progress bar to the console     \n
     accepts 'progress' as a percentage              \n
     bool carriage_return toggles overwrite behavior \n
     '''
-    #make progress bar string
+    # make progress bar string
     progress_bar = ''
     num_oct = int(progress * (length/100.))
     progress_bar = progress_bar + '[{0}{1}]'.format('#'*num_oct, ' '*(length-num_oct))
@@ -384,13 +480,13 @@ class Timer:
     '''
     with Timer(): your_code()
     '''
-    
+
     def __init__(self, verbose=True):
         self.verbose = verbose
 
     def __enter__(self, progress=None):
         self.start = clock()
-        
+
     def __exit__(self, type, value, traceback):
         self.end = clock()
         self.interval = self.end - self.start
