@@ -197,6 +197,7 @@ def read_headers(filepath):
             if item[0] == '':
                 item = [item[1]]
             item = [i.strip() for i in item]  # remove dumb things
+            item = [i if i is not '' else 'None' for i in item]  # handle empties
             item = [ast.literal_eval(i) for i in item]
             if len(item) == 1:
                 item = item[0]
