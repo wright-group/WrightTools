@@ -21,8 +21,7 @@ from scipy.interpolate import griddata, interp1d
 
 import kit
 import kit as wt_kit
-import units
-import units as wt_units  # moving forward I want to use this
+import units as wt_units
 import shots_processing
 
 debug = False
@@ -45,19 +44,19 @@ class Axis:
         self.label = label
         # get units kind
         self.units_kind = None
-        for dic in units.unit_dicts:
+        for dic in wt_units.unit_dicts:
             if self.units in dic.keys():
                 self.units_kind = dic['kind']
         # get symbol type
         if symbol_type:
             self.symbol_type = symbol_type
         else:
-            self.symbol_type = units.get_default_symbol_type(self.units)
+            self.symbol_type = wt_units.get_default_symbol_type(self.units)
         self.get_label()
 
     def convert(self, destination_units):
-        self.points = units.converter(self.points, self.units,
-                                      destination_units)
+        self.points = wt_units.converter(self.points, self.units,
+                                         destination_units)
         self.units = destination_units
 
     def get_label(self, show_units=True, points=False, decimals=0):
@@ -84,7 +83,7 @@ class Axis:
         # units
         if show_units:
             if self.units_kind:
-                units_dictionary = getattr(units, self.units_kind)
+                units_dictionary = getattr(wt_units, self.units_kind)
                 self.label += r'\,'
                 if not points:
                     self.label += r'\left('
@@ -1964,8 +1963,8 @@ def from_pickle(filepath, verbose = True):
     return data
 
 
-def from_PyCMDS(filepath, name=None, color_steps_as='energy', even=True,
-                shots_processing_module='mean_and_variance', verbose=True):
+def from_PyCMDS(filepath, name=None,
+                shots_processing_module='mean_and_std', verbose=True):
     '''
     Create a data object from a single PyCMDS output file.
     
@@ -1974,14 +1973,8 @@ def from_PyCMDS(filepath, name=None, color_steps_as='energy', even=True,
     filepath : str
         The file to load. Can accept .data, .fit, or .shots files.
     name : str or None (optional)
-        The name to be applied to the new data object. If None, the filename is
-        used. Default is None.
-    color_steps_as : {'energy', 'wavelength'} (optional)
-        The gridding method to use for color axes. Default is energy'
-    even : bool (optional)
-        Toggles enforcement of gridding to regular array. The data must be
-        rectangular, but it doesn't necessarily have to be regular. Default
-        is True.
+        The name to be applied to the new data object. If None, name is read
+        from file.
     shots_processing_module : str (optional)
         The module used to process .shots files, if provided. Must be the name
         of a module in the shots_processing directory.
@@ -1993,21 +1986,18 @@ def from_PyCMDS(filepath, name=None, color_steps_as='energy', even=True,
     data
         A Data instance.
     '''
-
-    # read from file ----------------------------------------------------------
-
     # header
     headers = wt_kit.read_headers(filepath)
-
     # name
-    if name is None:
-        name = headers['data name']
-    
+    if name is None:  # name not given in method arguments
+        data_name = headers['data name']
+    else:
+        data_name = name
+    if data_name == '':  # name not given in PyCMDS
+        data_name = headers['data origin']
     # array
     arr = np.genfromtxt(filepath).T
-
-    # process shots -----------------------------------------------------------
-
+    # process shots
     suffix = wt_kit.filename_parse(filepath)[2]
     if suffix == 'shots':
         aquisitions = arr.reshape([len(arr), headers['shots'], -1], order='F')
@@ -2019,7 +2009,7 @@ def from_PyCMDS(filepath, name=None, color_steps_as='energy', even=True,
         passed_indicies = [i for i, kind in enumerate(headers['kind']) if kind not in ['channel', 'chopper']]
         passed_indicies.pop(-1)
         # test process to get dimensions
-        processing_module = getattr(shots_processing, 'mean_and_variance')
+        processing_module = getattr(shots_processing, shots_processing_module)
         test_outs, test_names = processing_module.process(aquisitions[0, daq_indicies], daq_names, daq_kinds)
         arr = np.full([len(passed_indicies) + len(test_names), len(aquisitions)], np.nan)       
         for i in range(len(aquisitions)):
@@ -2031,166 +2021,58 @@ def from_PyCMDS(filepath, name=None, color_steps_as='energy', even=True,
             for out in outs:
                 arr[idx, i] = out
                 idx += 1
+        # TODO: actual handling for signed data somehow
+        # for now assume false
+        headers['channel signed'] = [False for _ in names]
         headers['kind'] = [headers['kind'][i] for i in passed_indicies] + ['channel' for _ in outs]
         headers['units'] = [headers['units'][i] for i in passed_indicies] + ['V' for _ in outs]
-        headers['tolerance'] = [headers['tolerance'][i] for i in passed_indicies] + [None for _ in outs]
         headers['label'] = [headers['label'][i] for i in passed_indicies] + ['' for _ in outs]
         headers['name'] = [headers['name'][i] for i in passed_indicies] + names
-
-    # axes and channels -------------------------------------------------------
-
-    axes = collections.OrderedDict()
-    channels = collections.OrderedDict()
-    for i in range(len(headers['name'])):
-        if headers['units'][i] == 'V':
-            channels[headers['name'][i]] = Channel(None, 'V', file_idx=i, name=headers['name'][i], label_seed=headers['label'][i])
-        else:
-            axes[headers['name'][i]] = Axis(None, headers['units'][i], tolerance=headers['tolerance'][i], file_idx=i, name=headers['name'][i], label_seed=[headers['label'][i]])
-
-    # recognize dimensionality of data ----------------------------------------
-    
-    scanned = []
-    constant = []
-    
-    for key in headers['ignore']:
-        axes.pop(key)
-        
-    for string in headers['axes']:
-        keys = string.split('=')
-        axis = axes[keys[0]]
-        axis.label_seed = [axes[key].label_seed[0] for key in keys]
-        scanned.append(axis)
-        for key in keys:
-            axes.pop(key)
-            
-    # get values for constant axes
-    for key in axes:
-        axes[key].points = np.mean(arr[axes[key].file_idx])
-            
-    while len(axes) > 0:
-        for key in axes:         
-            axis = axes.pop(key)
-            for key in axes:
-                if axes[key].units == axis.units:
-                    val = axes[key].points
-                    test = axis.points
-                    tol = axis.tolerance
-                    if test-tol < val < test+tol:
-                        axis.label_seed.append(axes[key].label_seed[0])
-                        axes.pop(key)
-            constant.append(axis)
-            break
-        
-    # get axes points ---------------------------------------------------------
-
-    for axis in scanned:
-        
-        # generate lists from data
-        lis = sorted(arr[axis.file_idx])
-        tol = axis.tolerance
-        
-        # values are binned according to their averages now, so min and max 
-        #  are better represented
-        xstd = []
-        xs = []
-        
-        # check to see if unique values are sufficiently unique
-        # deplete to list of values by finding points that are within 
-        #  tolerance
-        while len(lis) > 0:
-            # find all the xi's that are like this one and group them
-            # after grouping, remove from the list
-            set_val = lis[0]
-            xi_lis = [xi for xi in lis if np.abs(set_val - xi) < tol]
-            # the complement of xi_lis is what remains of xlis, then
-            lis = [xi for xi in lis if not np.abs(xi_lis[0] - xi) < tol]
-            xi_lis_average = sum(xi_lis) / len(xi_lis)
-            xs.append(xi_lis_average)
-            xstdi = sum(np.abs(xi_lis - xi_lis_average)) / len(xi_lis)
-            xstd.append(xstdi)
-        
-        # create uniformly spaced x and y lists for gridding
-        # infinitesimal offset used to properly interpolate on bounds; can
-        #   be a problem, especially for stepping axis
-        tol = sum(xstd) / len(xstd)
-        tol = max(tol, 0.3)
-        if even:            
-            if axis.units_kind == 'energy' and color_steps_as == 'energy':
-                min_wn = 1e7/max(xs)+tol
-                max_wn = 1e7/min(xs)-tol
-                axis.units = 'wn'
-                axis.points = np.linspace(min_wn, max_wn, num = len(xs))
-                axis.convert('nm')
-            else:
-                axis.points = np.linspace(min(xs)+tol, max(xs)-tol, num = len(xs))
-        else:
-            axis.points = np.array(xs)
-
-    # grid data ---------------------------------------------------------------
-    
-    if len(scanned) == 1:
-        # 1D data
-    
-        axis = scanned[0]
-        axis.points = arr[axis.file_idx]
-        scanned[0] = axis
-    
-        for key in channels.keys():
-            channel = channels[key]
-            zi = arr[channel.file_idx]
-            channel.give_values(zi)
-    
+    # get axes
+    axes = []
+    for name, identity, units in zip(headers['axis names'], 
+                                     headers['axis identities'], 
+                                     headers['axis units']):
+        points = np.array(headers[name + ' points'])
+        # label seed (temporary implementation)
+        index = headers['name'].index(name)
+        label = headers['label'][index]
+        label_seed = [label]
+        # create axis
+        axis = Axis(points, units, name=name, label_seed=label_seed)
+        axes.append(axis)
+    # get channels
+    shape = [a.points.size for a in axes]
+    channels = []
+    for i in range(len(arr)):
+        if headers['kind'][i] == 'channel':
+            zi = np.full(shape, np.nan)
+            for j in range(len(arr[0])):
+                idx = arr[:len(shape), j]
+                idx = tuple(idx.astype(np.int16))
+                zi[idx] = arr[i, j]
+            units = headers['units'][i]
+            signed = headers['channel signed'][len(channels)]
+            name = headers['name'][i]
+            label = headers['label'][i]
+            channel = Channel(zi, units, signed=signed, name=name, label=label)
+            channels.append(channel)
+    # get constants
+    if headers['constant names'] is None:
+        constants = []
     else:
-        # all other dimensionalities
-
-        points = tuple(arr[axis.file_idx] for axis in scanned)
-        # beware, meshgrid gives wrong answer with default indexing
-        # this took me many hours to figure out... - blaise
-        xi = tuple(np.meshgrid(*[axis.points for axis in scanned], indexing = 'ij'))
-    
-        for key in channels.keys():
-            channel = channels[key]
-            zi = arr[channel.file_idx]
-            fill_value = min(zi)
-            grid_i = griddata(points, zi, xi,
-                              method='linear',fill_value=fill_value)
-            channel.give_values(grid_i)
-            if debug: print key
-            
-    # create data object ------------------------------------------------------
-
-    data = Data(scanned, channels.values(), constant)
-    
-    if color_steps_as == 'energy':
-        try: 
-            data.convert('wn', verbose = False)
-        except:
-            pass
-        
-    for axis in data.axes:
-        axis.get_label()
-    for axis in data.constants:
-        axis.get_label()
-    
-    # add extra stuff to data object ------------------------------------------
-
-    data.source = headers['data origin']
-    
-    if not name:
-        name = kit.filename_parse(filepath)[1]
-    data.name = name
-    
-    # return ------------------------------------------------------------------
-    
+        constants = []
+    # create data object
+    data = Data(axes, channels, constants, name=data_name, source=filepath)
+    # return
     if verbose:
         print 'data object succesfully created'
         print 'axis names:', data.axis_names
         print 'values shape:', channels.values()[0].values.shape
-        
     return data
 
 
-def from_shimadzu(filepath, name = None, verbose = True):
+def from_shimadzu(filepath, name=None, verbose=True):
 
     # check filepath ----------------------------------------------------------
     
