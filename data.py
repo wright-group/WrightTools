@@ -2067,8 +2067,8 @@ def from_PyCMDS(filepath, name=None,
     # return
     if verbose:
         print 'data object succesfully created'
-        print 'axis names:', data.axis_names
-        print 'values shape:', channels.values()[0].values.shape
+        print '  axes:', data.axis_names
+        print '  shape:', data.shape
     return data
 
 
