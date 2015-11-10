@@ -7,6 +7,7 @@ a collection of small, general purpose objects and methods
 
 
 import os
+import re
 import ast
 import collections
 from time import clock
@@ -369,6 +370,31 @@ def get_methods(the_class, class_only=False, instance_only=False,
     # filter to return results according to internal function and arguments
     tups = filter(acceptMethod, inspect.getmembers(the_class))
     return [tup[0] for tup in tups]
+    
+
+def intersperse(lst, item):
+    '''
+    Put item between each existing item in list. \n
+    From http://stackoverflow.com/a/5921708
+    '''
+    result = [item] * (len(lst) * 2 - 1)
+    result[0::2] = lst
+    return result
+
+
+identity_operators = ['=', '+', '-', '*', '/', 'F']
+def parse_identity(string):
+    '''
+    Parse an identity string into its components.
+    
+    Returns
+    -------
+    tuple of lists
+        (names, operators)
+    '''
+    names = re.split("[=F]+", string)
+    operators = [c for c in list(string) if c in identity_operators]
+    return names, operators
 
 
 class suppress_stdout_stderr(object):
