@@ -1988,6 +1988,14 @@ def from_PyCMDS(filepath, name=None,
     '''
     # header
     headers = wt_kit.read_headers(filepath)
+    for key in headers.keys():
+        if 'axis ' in key or 'constant ' in key:
+            if headers[key] is None:
+                pass
+            elif type(headers) is list:
+                pass
+            else:
+                headers[key] = [headers[key]]
     # name
     if name is None:  # name not given in method arguments
         data_name = headers['data name']
@@ -2035,9 +2043,12 @@ def from_PyCMDS(filepath, name=None,
                                      headers['axis units']):
         points = np.array(headers[name + ' points'])
         # label seed (temporary implementation)
-        index = headers['name'].index(name)
-        label = headers['label'][index]
-        label_seed = [label]
+        try:
+            index = headers['name'].index(name)
+            label = headers['label'][index]
+            label_seed = [label]
+        except ValueError:
+            label_seed = ['']
         # create axis
         axis = Axis(points, units, name=name, label_seed=label_seed)
         axes.append(axis)
