@@ -1988,14 +1988,6 @@ def from_PyCMDS(filepath, name=None,
     '''
     # header
     headers = wt_kit.read_headers(filepath)
-    for key in headers.keys():
-        if 'axis ' in key or 'constant ' in key:
-            if headers[key] is None:
-                pass
-            elif type(headers) is list:
-                pass
-            else:
-                headers[key] = [headers[key]]
     # name
     if name is None:  # name not given in method arguments
         data_name = headers['data name']
@@ -2069,10 +2061,10 @@ def from_PyCMDS(filepath, name=None,
             channel = Channel(zi, units, signed=signed, name=name, label=label)
             channels.append(channel)
     # get constants
-    if headers['constant names'] is None:
-        constants = []
-    else:
-        constants = []
+    constants = []
+    for name, identity in zip(headers['constant names'], headers['constant identities']):
+        # TODO: handle PyCMDS constants
+        pass
     # create data object
     data = Data(axes, channels, constants, name=data_name, source=filepath)
     # return

@@ -199,8 +199,21 @@ def read_headers(filepath):
                 item = [item[1]]
             item = [i.strip() for i in item]  # remove dumb things
             item = [i if i is not '' else 'None' for i in item]  # handle empties
+            # handle lists
+            is_list = False
+            list_chars = ['[', ']']
+            for item_index, item_string in enumerate(item):
+                if item_string == '[]':
+                    continue
+                for char in item_string:
+                    if char in list_chars:
+                        is_list = True
+                for char in list_chars:
+                    item_string = item[item_index]
+                    item[item_index] = item_string.replace(char, '')
+            # eval contents
             item = [ast.literal_eval(i) for i in item]
-            if len(item) == 1:
+            if len(item) == 1 and not is_list:
                 item = item[0]
             headers[key] = item
         else:
@@ -237,9 +250,9 @@ def write_headers(filepath, dictionary):
                     value[i] = '\'' + value[i] + '\''
                 else:
                     value[i] = str(value[i])
-            header_item += ' ' + '\t'.join(value)
+            header_item += ' [' + '\t'.join(value) + ']'
         elif type(value).__module__ == np.__name__:  # anything from numpy
-            header_item += ' ' + '\t'.join([str(i) for i in value])
+            header_item += ' [' + '\t'.join([str(i) for i in value]) + ']'
         else:
             header_item += '\t' + str(value)
         header_items.append(header_item)
