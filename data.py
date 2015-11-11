@@ -375,7 +375,7 @@ class Data:
                 transpose_order.append(idx)
                 # get index of nearest value
                 val = chopped_constants[dim][0]
-                val = units.converter(val, chopped_constants[dim][1], self.axes[idx].units)
+                val = wt_units.converter(val, chopped_constants[dim][1], self.axes[idx].units)
                 c_idx = np.argmin(abs(self.axes[idx].points - val))
                 constant_indicies.append(c_idx)
                 obj = copy.copy(self.axes[idx])
@@ -931,7 +931,7 @@ class Data:
         if input_units == 'same':
             pass
         else:
-            points = units.converter(points, input_units, axis.units)
+            points = wt_units.converter(points, input_units, axis.units)
 
         # points must be ascending --------------------------------------------
 
