@@ -15,6 +15,7 @@ from time import clock
 import numpy as np
 
 import units
+from . import __version__
 
 
 ### file processing ###########################################################
@@ -112,6 +113,11 @@ def glob_handler(extension, folder=None, identifier=None):
     filepaths = []
 
     if folder:
+        # comment out [ and ]...
+        folder = folder.replace('[', '?')
+        folder = folder.replace(']', '*')
+        folder = folder.replace('?', '[[]')
+        folder = folder.replace('*', '[]]')
         glob_str = os.path.join(folder, '*' + extension)
     else:
         glob_str = '*' + extension + '*'

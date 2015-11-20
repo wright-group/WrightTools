@@ -521,18 +521,69 @@ class mpl_2D:
             else:
                 print 'given data ({0}), does not aggree with y ({1})'.format(data.axes[0].units_kind, self.chopped[0].axes[0].units_kind)
 
-    def plot(self, channel_index=0,
+    def plot(self, channel=0,
              contours=9, pixelated=True, lines=True, cmap='default', facecolor='w',
              dynamic_range = False, local=False, contours_local=True, normalize_slices='both',
              xbin= False, ybin=False, xlim=None, ylim=None,
              autosave=False, output_folder=None, fname=None,
              verbose=True):
         '''
-        set contours to zero to turn off
-
-        dynamic_range forces the colorbar to use all of its colors (only matters
-        for signed data)
+        Draw the plot(s).
+        
+        Parameters
+        ----------
+        channel : int or string (optional)
+            The index or name of the channel to plot. Default is 0.
+        contours : int (optional)
+            The number of black contour lines to add to the plot. You may set
+            contours to 0 to use no contours in your plot. Default is 9.
+        pixelated : bool (optional)
+            Toggle between pclolormesh and contourf (deulaney) as plotting
+            method. Default is True.
+        lines : bool (optional)
+            Toggle attempt to plot lines showing value of 'corresponding'
+            color dimensions. Default is True.
+        cmap : str (optional)
+            A key to the colormaps dictionary found in artists module. Default
+            is 'default'.
+        facecolor : str (optional)
+            Facecolor. Default is 'w'.
+        dyanmic_range : bool (optional)
+            Force the colorbar to use all of its colors. Only changes behavior
+            for signed data. Default is False.
+        local : bool (optional)
+            Toggle plotting locally. Default is False.
+        contours_local : bool (optional)
+            Toggle plotting contours locally. Default is True.
+        normalize_slices : {'both', 'horizontal', 'vertical'} (optional)
+            Normalization strategy. Default is both.
+        xbin : bool (optional)
+            Plot xbin. Default is False.
+        ybin : bool (optional)
+            Plot ybin. Default is False.
+        xlim : float (optional)
+            Control limit of plot in x. Default is None (data limit).
+        ylim : float (optional)
+            Control limit of plot in y. Default is None (data limit).
+        autosave : bool (optional)
+            Autosave.
+        output_folder : str (optional)
+            Output folder.
+        fname : str (optional)
+            File name.
+        verbose : bool (optional)
+            Toggle talkback. Default is True.
         '''
+        
+        # get channel index
+        if type(channel) in [int, float]:
+            channel_index = int(channel)
+        elif type(channel) == str:
+            channel_index = self.chopped[0].channel_names.index(channel)
+        else:
+            print 'channel type not recognized in mpl_2D!'
+
+        # prepare figure
         fig = None
         if len(self.chopped) > 10:
             if not autosave:

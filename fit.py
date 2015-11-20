@@ -19,6 +19,7 @@ from scipy import optimize as scipy_optimize
 
 import data as wt_data
 import kit as wt_kit
+from . import __version__
 
 
 ### functions objects #########################################################

@@ -21,6 +21,7 @@ import matplotlib.gridspec as grd
 
 from .. import units as wt_units
 from .. import kit as wt_kit
+from .. import __version__
 
 debug = False
 

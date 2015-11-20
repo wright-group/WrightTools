@@ -23,6 +23,7 @@ import kit
 import kit as wt_kit
 import units as wt_units
 import shots_processing
+from . import __version__
 
 debug = False
 
