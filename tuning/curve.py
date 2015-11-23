@@ -21,7 +21,6 @@ import matplotlib.gridspec as grd
 
 from .. import units as wt_units
 from .. import kit as wt_kit
-from .. import __version__
 
 debug = False
 
@@ -117,6 +116,10 @@ class Curve:
         method : interpolation class
             The interpolation method to use.
         '''
+        # version
+        from .. import __version__
+        self.__version__ = __version__
+        # inherit
         self.colors = colors
         self.units = units
         self.motors = motors
@@ -129,6 +132,7 @@ class Curve:
         # initialize function object
         self.method = method
         self.interpolate()
+        
 
     def coerce_motors(self):
         '''

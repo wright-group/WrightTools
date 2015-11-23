@@ -7,12 +7,14 @@ Import all subdirectories and modules.
 import os as _os
 _wt_dir = _os.path.dirname(__file__)
 
+import ConfigParser as _ConfigParser
+
 ### version information #######################################################
 
 # get config
-import ConfigParser as _ConfigParser
+_ini_path = _os.path.join(_wt_dir, 'main.ini')
 _config = _ConfigParser.SafeConfigParser()
-_config.read(_os.path.join(_wt_dir, 'main.ini')) 
+_config.read(_ini_path) 
 
 # attempt to update ini
 try:
@@ -20,7 +22,10 @@ try:
     with open(_HEAD_file) as _f:
         for _line in _f.readlines():
             _sha = _line.split(' ')[1]  # most recent commit is last
+    _sha.encode('ascii','ignore')
     _config.set('main', 'git sha', _sha)
+    with open(_ini_path, 'w') as _ini:    
+        _config.write(_ini)
 except:
     pass
 
@@ -29,7 +34,7 @@ except:
 # b - minor release
 # c - bugfix
 # d - git sha key
-__version__ = '1.0.0.' + _config.get('main', 'git sha')[:7]
+__version__ = _config.get('main', 'version') + '.' + _config.get('main', 'git sha')[:7]
 
 ## iterate ####################################################################
 

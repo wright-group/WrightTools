@@ -19,7 +19,6 @@ from scipy import optimize as scipy_optimize
 
 import data as wt_data
 import kit as wt_kit
-from . import __version__
 
 
 ### functions objects #########################################################
@@ -41,7 +40,62 @@ class Function:
         out = scipy_optimize.leastsq(self.residuals, p0, args=args)
         if out[1] not in [1]:  # solution was not found
             return np.full(len(p0), np.nan)
-        return out[0]
+        return out[0]     
+
+    
+class ExpectationValue(Function):
+    
+    def __init__(self):
+        Function.__init__(self)
+        self.params = ['value']
+        self.limits = {}
+        self.global_cutoff = None
+        
+    def evaluate(self, p, xi):
+        '''
+        Returns 1 at expectation value, 0 elsewhere.
+        '''
+        out = np.zeros(len(xi))
+        out[np.argmin(np.abs(xi-p[0]))] = 1
+        return out
+        
+    def fit(self, *args, **kwargs):
+        y, x = args
+        y_internal = np.ma.copy(y)
+        x_internal = np.ma.copy(x)
+        # apply global cutoff
+        if self.global_cutoff is not None:
+            y_internal[y<self.global_cutoff] = 0.
+        # get sum
+        sum_y = 0.
+        for i in range(len(y_internal)):
+            if np.ma.getmask(y_internal[i]) == True:
+                pass
+            elif np.isnan(y_internal[i]):
+                pass
+            else:
+                sum_y += y_internal[i]    
+        # divide by sum
+        for i in range(len(y_internal)):
+            if np.ma.getmask(y_internal[i]) == True:
+                pass
+            elif np.isnan(y_internal[i]):
+                pass
+            else:
+                y_internal[i] /= sum_y
+        # get expectation value    
+        value = 0.
+        for i in range(len(x_internal)):
+            if np.ma.getmask(y_internal[i]) == True:
+                pass
+            elif np.isnan(y_internal[i]):
+                pass
+            else:
+                value += y_internal[i]*x_internal[i]
+        return [value]
+
+    def guess(self, values, xi):
+        return 1.
 
 
 class Exponential(Function):
@@ -114,7 +168,7 @@ class Gaussian(Function):
 
 class Fitter:
 
-    def __init__(self, function, data, *args):
+    def __init__(self, function, data, *args, **kwargs):
         self.function = function
         self.data = data.copy()
         self.axes = args

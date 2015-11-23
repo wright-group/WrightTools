@@ -44,98 +44,62 @@ from .. import data as wt_data
 from .. import fit as wt_fit
 from .. import kit as wt_kit
 from .. import units as wt_units
-from .. import __version__
 cmap = wt_artists.colormaps['default']
-
-
-### helper methods ############################################################
-
-
-def get_headers(filepath):
-    headers = collections.OrderedDict()
-    for line in open(filepath):
-        if line[0] == '#':
-            split = line.split(':')
-            key = split[0][2:]
-            item = split[1].split('\t')
-            if item[0] == '':
-                item = [item[1]]
-            item = [i.strip() for i in item]  # remove dumb things
-            item = [ast.literal_eval(i) for i in item]
-            if len(item) == 1:
-                item = item[0]
-            headers[key] = item
-        else:
-            # all header lines are at the beginning
-            break
-    return headers
-
-
-def expectation_value(y, x):    
-    y_internal = np.ma.copy(y)
-    x_internal = np.ma.copy(x)
-    # get sum
-    sum_y = 0.
-    for i in range(len(y_internal)):
-        if np.ma.getmask(y_internal[i]) == True:
-            pass
-        elif np.isnan(y_internal[i]):
-            pass
-        else:
-            sum_y = sum_y + y_internal[i]    
-    # divide by sum
-    for i in range(len(y_internal)):
-        if np.ma.getmask(y_internal[i]) == True:
-            pass
-        elif np.isnan(y_internal[i]):
-            pass
-        else:
-            y_internal[i] = y_internal[i] / sum_y
-    # get expectation value    
-    value = 0.
-    for i in range(len(x_internal)):
-        if np.ma.getmask(y_internal[i]) == True:
-            pass
-        elif np.isnan(y_internal[i]):
-            pass
-        else:
-            value = value + y_internal[i]*x_internal[i]
-    return value
-    
-
-def gauss_residuals(p, y, x):
-    A, mu, sigma = p
-    err = y-np.abs(A)*np.exp(-(x-mu)**2 / (2*np.abs(sigma)**2))
-    return np.abs(err)
-
 
 ### processing methods ########################################################
 
 
-def process_motortune(filepath, channel, old_curve_filepath, autosave=True):
+def process_motortune(filepath, channel_name, old_curve_filepath, autosave=True,
+                      cutoff_factor=50, output_points_count=25):
+    channel_name = channel_name
     # make data object
     data = wt_data.from_PyCMDS(filepath, verbose=False)
     data.convert('wn', verbose=False)
+    # get channel index
+    channel_index = data.channel_names.index(channel_name)
     # check if data is compatible
     if not len(data.axes) == 2:
         print 'data must be 2 dimensional'
         return
-    # transpose into prefered representation (tune point, motor)
+    # transpose into prefered representation (motors, tune points)
     if len(data.axes[0].name) < len(data.axes[1].name):
-        data.transpose()
+        data.transpose(verbose=False)
+    tune_points = data.axes[1].points
+    # process data
+    data.level(channel_index, 0, -3)
     # get centers through expectation value
-    
-    
+    motor_axis_name = data.axes[0].name
+    function = wt_fit.ExpectationValue()
+    function.global_cutoff = data.channels[channel_index].zmax / cutoff_factor
+    fitter = wt_fit.Fitter(function, data, motor_axis_name, verbose=False)
+    outs = fitter.run(channel_index, verbose=False)
+    offsets = outs.value.values
+    # make curve
+    old_curve = wt_curve.from_800_curve(old_curve_filepath)
+    old_curve.map_colors(tune_points, 'wn')
+    motors = []
+    for motor_index, motor_name in enumerate([m.name for m in old_curve.motors]):
+        if motor_name == motor_axis_name.split('_')[-1]:
+            positions = data.axes[0].centers + offsets
+            motor = wt_curve.Motor(positions, motor_name)
+            motors.append(motor)
+            tuned_motor_index = motor_index
+        else:
+            motors.append(old_curve.motors[motor_index])
+    curve = wt_curve.Curve(tune_points, 'wn', motors, 
+                           name=old_curve.name.split('-')[0],
+                           kind='opa800', method=wt_curve.Poly)
+    curve.map_colors(output_points_count)
+    old_curve.map_colors(curve.colors)
     # plot data
     artist = wt_artists.mpl_2D(data)
-    artist.plot(0, autosave=True, fname=filepath)
-    
-    
-    # make curve
-    
-    
-    
+    artist.onplot(tune_points, offsets)
+    artist.onplot(curve.colors, curve.motors[tuned_motor_index].positions-old_curve.motors[tuned_motor_index].positions, alpha=1)
+    artist.plot(channel_index, autosave=True,
+                contours=0,
+                fname=filepath.replace('.data', ''))
     # plot curve
+    curve.save(save_directory=wt_kit.filename_parse(filepath)[0])
 
 
 def process_tunetest(filepath, channel, autosave=True):

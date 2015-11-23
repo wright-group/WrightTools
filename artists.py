@@ -21,7 +21,6 @@ matplotlib.rcParams['contour.negative_linestyle'] = 'solid'
 
 import kit
 
-
 ### artist helpers ############################################################
 
 
@@ -503,6 +502,7 @@ class mpl_2D:
         self._ysideplot = False
         self._xsideplotdata = []
         self._ysideplotdata = []
+        self._onplotdata = []
 
     def sideplot(self, data, x = True, y = True):
         data = data.copy()
@@ -520,6 +520,12 @@ class mpl_2D:
                 self._ysideplotdata.append([data.axes[0].points, data.channels[0].values])
             else:
                 print 'given data ({0}), does not aggree with y ({1})'.format(data.axes[0].units_kind, self.chopped[0].axes[0].units_kind)
+
+    def onplot(self, xi, yi, c='k', lw=5, alpha=0.3, **kwargs):
+        kwargs['c'] = c
+        kwargs['lw'] = lw
+        kwargs['alpha'] = alpha
+        self._onplotdata.append((xi, yi, kwargs))
 
     def plot(self, channel=0,
              contours=9, pixelated=True, lines=True, cmap='default', facecolor='w',
@@ -844,6 +850,11 @@ class mpl_2D:
                         if constant.units_kind == 'energy':
                             if yaxis.units == constant.units:
                                 axCorry.axvline(constant.points, color = 'k', linewidth = 4, alpha = 0.25)
+            
+            # onplot ----------------------------------------------------------
+            
+            for xi, yi, kwargs in self._onplotdata:
+                subplot_main.plot(xi, yi, **kwargs)
 
             # colorbar --------------------------------------------------------
 
@@ -876,7 +887,7 @@ class mpl_2D:
                 else:
                     file_name = str(i).zfill(3)
                 fpath = os.path.join(output_folder, file_name + '.png')
-                plt.savefig(fpath, facecolor='none')
+                plt.savefig(fpath, facecolor='none', dpi=300)
                 plt.close()
 
                 if verbose:

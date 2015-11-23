@@ -15,7 +15,6 @@ from time import clock
 import numpy as np
 
 import units
-from . import __version__
 
 
 ### file processing ###########################################################
