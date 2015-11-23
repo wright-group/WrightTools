@@ -10,6 +10,8 @@ import sys
 from PyQt4 import QtGui, QtCore
 app = QtGui.QApplication(sys.argv)
 
+from . import __version__
+
 
 ### MainWindow ################################################################
 

@@ -34,7 +34,7 @@ class Axis:
 
     def __init__(self, points, init_units, symbol_type=None,
                  tolerance=None, file_idx=None,
-                 name='', label=None, label_seed=['']):
+                 name='', label=None, label_seed=[''], **kwargs):
         self.name = name
         self.tolerance = tolerance
         self.points = points
@@ -42,6 +42,8 @@ class Axis:
         self.file_idx = file_idx
         self.label_seed = label_seed
         self.label = label
+        for key in kwargs.keys():
+            setattr(self, key, kwargs[key])
         # get units kind
         self.units_kind = None
         for dic in wt_units.unit_dicts:
@@ -224,8 +226,8 @@ class Channel:
 
 class Data:
 
-    def __init__(self, axes, channels, constants = [], 
-                 name = '', source = None):
+    def __init__(self, axes, channels, constants=[], 
+                 name='', source=None):
         '''
         Central object-type for data in the Wright Group.
         
@@ -240,6 +242,9 @@ class Data:
         constants : list
             A list of Axis objects, each with exactly one point.
         '''
+        
+        from . import __version__
+        self.__version__ = __version__
  
         self.axes = axes
             
@@ -1957,6 +1962,18 @@ def from_pickle(filepath, verbose = True):
     
     data = pickle.load(open(filepath, 'rb'))
     
+    if hasattr(data, '__version__'):
+        from . import __version__
+        if data.__version__.split('.')[0] == __version__.split('.')[0]:   # major versions agree
+            pass
+        else:
+            print 'pickled data is from different major version - consider remaking:'
+            print '  current:',  __version__
+            print '  pickle:', data.__version__
+    else:
+        print 'this pickle was made before November 2015 - you MUST remake your data object'
+        return
+    
     if verbose:
         print 'data opened from', filepath
     
@@ -2042,7 +2059,10 @@ def from_PyCMDS(filepath, name=None,
         except ValueError:
             label_seed = ['']
         # create axis
-        axis = Axis(points, units, name=name, label_seed=label_seed)
+        kwargs = {}
+        if 'D' in identity:
+            kwargs['centers'] = headers[name + ' centers']
+        axis = Axis(points, units, name=name, label_seed=label_seed, **kwargs)
         axes.append(axis)
     # get channels
     shape = [a.points.size for a in axes]
