@@ -229,7 +229,7 @@ class Data:
     def __init__(self, axes, channels, constants=[], 
                  name='', source=None):
         '''
-        Central object-type for data in the Wright Group.
+        Central class for data in the Wright Group.
         
         Attributes
         ----------
@@ -242,20 +242,33 @@ class Data:
         constants : list
             A list of Axis objects, each with exactly one point.
         '''
-        
+        # record version
         from . import __version__
         self.__version__ = __version__
- 
+        # assign
         self.axes = axes
-            
         self.constants = constants 
-        
         self.channels = channels
-  
         self.name = name
         self.source = source
-        
+        # update
         self._update()
+        # reserve a copy of own self at this stage
+        self._original = self.copy()
+        
+    def __repr__(self):
+        # when you inspect the object
+        outs = []
+        outs.append('WrightTools.Data object at ' + str(id(self)))
+        outs.append('  name: ' + self.name)
+        outs.append('  axes: ' + str(self.axis_names))
+        outs.append('  shape: ' + str(self.shape))
+        outs.append('  version: ' + self.__version__)
+        return '\n'.join(outs)
+        
+    def __str__(self):
+        # when you print the object
+        return self.__repr__()
         
     def _update(self):
         '''
@@ -1131,6 +1144,20 @@ class Data:
         
         # transpose out
         self.transpose(transpose_order, verbose=False)
+        self._update()
+        
+    def revert(self):
+        '''
+        Revert this data object back to its original state.
+        '''
+        for attribute_name in dir(self):
+            if attribute_name not in ['original']:
+                # if attribute does not exist in original, delete it
+                try:
+                    original_attribute = getattr(self._original, attribute_name)
+                    setattr(self, attribute_name, original_attribute)
+                except AttributeError:
+                    delattr(self, attribute_name)
         self._update()
         
     def save(self, filepath=None, verbose=True):
