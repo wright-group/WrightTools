@@ -33,18 +33,15 @@ energy = {'kind': 'energy',
           'wn': ['1e7/x', '1e7/x', r'cm^{-1}'],
           'eV': ['1240./x', '1240./x', r'eV'],
           'meV': ['1240000./x', '1240000./x', r'meV']}
-
-# time units (native: s)
-time = {'kind': 'time',
-        'fs_t': ['x/1e15', 'x*1e15', r'fs'],
-        'ps_t': ['x/1e12', 'x*1e12', r'ps'],
-        'ns_t': ['x/1e9', 'x*1e9', r'ns'],
-        'us_t': ['x/1e6', 'x*1e6', r'us'],
-        'ms_t': ['x/1000.', 'x*1000.', r'ms'],
-        's_t':  ['x', 'x', r's'],
-        'm_t':  ['x*60.', 'x/60.', r'm'],
-        'h_t':  ['x*3600.', 'x/3600.', r'h'],
-        'd_t':  ['x*86400.', 'x/86400.', r'd']}
+          
+# fluence units (native: uJ per sq. cm)
+fluence = {'kind': 'fluence',
+           'uJ per sq. cm': ['x', 'x', r'\frac{\mu J}{cm^{2}}']}
+           
+# optical density units (native: od)
+od = {'kind': 'od',
+      'mOD': ['1e3*x', 'x/1e3', r'mOD'],
+      'OD': ['x', 'x', r'OD']}
 
 # position units (native: mm)
 position = {'kind': 'position',
@@ -57,10 +54,18 @@ position = {'kind': 'position',
 # pulse width units (native: FWHM)
 pulse_width = {'kind': 'pulse_width',
                'FWHM': ['x', 'x', r'FWHM']}
-
-# fluence units (native: uJ per sq. cm)
-fluence = {'kind': 'fluence',
-           'uJ per sq. cm': ['x', 'x', r'\frac{\mu J}{cm^{2}}']}
+               
+# time units (native: s)
+time = {'kind': 'time',
+        'fs_t': ['x/1e15', 'x*1e15', r'fs'],
+        'ps_t': ['x/1e12', 'x*1e12', r'ps'],
+        'ns_t': ['x/1e9', 'x*1e9', r'ns'],
+        'us_t': ['x/1e6', 'x*1e6', r'us'],
+        'ms_t': ['x/1000.', 'x*1000.', r'ms'],
+        's_t':  ['x', 'x', r's'],
+        'm_t':  ['x*60.', 'x/60.', r'm'],
+        'h_t':  ['x*3600.', 'x/3600.', r'h'],
+        'd_t':  ['x*86400.', 'x/86400.', r'd']}
 
 unit_dicts = [angle, delay, energy, time, position, pulse_width, fluence]
 

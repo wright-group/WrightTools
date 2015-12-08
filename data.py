@@ -1151,7 +1151,7 @@ class Data:
         Revert this data object back to its original state.
         '''
         for attribute_name in dir(self):
-            if attribute_name not in ['original']:
+            if attribute_name not in ['_original'] + wt_kit.get_methods(self):
                 # if attribute does not exist in original, delete it
                 try:
                     original_attribute = getattr(self._original, attribute_name)
