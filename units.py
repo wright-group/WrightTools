@@ -67,7 +67,7 @@ time = {'kind': 'time',
         'h_t':  ['x*3600.', 'x/3600.', r'h'],
         'd_t':  ['x*86400.', 'x/86400.', r'd']}
 
-unit_dicts = [angle, delay, energy, time, position, pulse_width, fluence]
+unit_dicts = [angle, delay, energy, time, position, pulse_width, fluence, od]
 
 
 def converter(val, current_unit, destination_unit):
