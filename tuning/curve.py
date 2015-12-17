@@ -463,7 +463,7 @@ class Curve:
         # save
         if self.kind == 'opa800':
             out_path = to_800_curve(self, save_directory)
-        if self.kind == 'TOPAS-C':
+        elif self.kind == 'TOPAS-C':
             out_path = to_TOPAS_crvs(self, save_directory, **kwargs)
         else:
             print 'kind', self.kind, 'does not know how to save!'
@@ -568,7 +568,7 @@ def to_800_curve(curve, save_directory):
     header1 = 'file created:\t' + timestamp
     header2 = 'Color (wn)\tGrating\tBBO\tMixer'
     header = '\n'.join([header1, header2])
-    np.savetxt(out_path, out_arr.T, fmt='%.2f',
+    np.savetxt(out_path, out_arr.T, fmt=['%.2f','%.3f', '%.3f', '%.5f'],
                delimiter='\t', header=header)
     return out_path
 
