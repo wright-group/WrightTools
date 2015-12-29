@@ -2086,25 +2086,57 @@ def from_PyCMDS(filepath, name=None,
         except ValueError:
             label_seed = ['']
         # create axis
-        kwargs = {}
+        kwargs = {'identity': identity}
         if 'D' in identity:
             kwargs['centers'] = headers[name + ' centers']
         axis = Axis(points, units, name=name, label_seed=label_seed, **kwargs)
         axes.append(axis)
-    # get channels
+    # create grid to interpolate onto
+    meshgrid = tuple(np.meshgrid(*[a.points for a in axes], indexing = 'ij'))
+    # prepare points for interpolation
     shape = [a.points.size for a in axes]
+    points_dict = collections.OrderedDict()
+    for i, axis in enumerate(axes):
+        # TODO: math and proper full recognition...
+        axis_col_name = [name for name in headers['name'] if name in axis.identity][0]
+        axis_index = headers['name'].index(axis_col_name)
+        points = arr[axis_index]
+        points.shape = shape
+        points = wt_units.converter(points, headers['units'][axis_index], axis.units)
+        # take case of scan about center
+        if axis.identity[0] == 'D':
+            # transpose so this axis is first
+            transpose_order = range(len(axes))
+            transpose_order[0] = i
+            transpose_order[i] = 0
+            points = points.transpose(transpose_order)
+            # subtract out centers
+            centers = headers[axis.name + ' centers']
+            points -= centers
+            # transpose out
+            points = points.transpose(transpose_order)
+        points = points.flatten()
+        points_dict[axis.name] = points
+    all_points = tuple(points_dict.values())
+    # prepare values for interpolation
+    values_dict = collections.OrderedDict()
+    for i, kind in enumerate(headers['kind']):
+        if kind == 'channel':
+            values_dict[headers['name'][i]] = arr[i]
+    # create channels
     channels = []
     for i in range(len(arr)):
         if headers['kind'][i] == 'channel':
-            zi = np.full(shape, np.nan)
-            for j in range(len(arr[0])):
-                idx = arr[:len(shape), j]
-                idx = tuple(idx.astype(np.int16))
-                zi[idx] = arr[i, j]
+            # unpack
             units = headers['units'][i]
             signed = headers['channel signed'][len(channels)]
             name = headers['name'][i]
             label = headers['label'][i]
+            # interpolate
+            values = values_dict[name]
+            zi = griddata(all_points, values, meshgrid, rescale=True,
+                          method='linear',fill_value=np.nan)
+            # assemble
             channel = Channel(zi, units, signed=signed, name=name, label=label)
             channels.append(channel)
     # get constants

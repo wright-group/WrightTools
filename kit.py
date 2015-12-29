@@ -9,6 +9,7 @@ a collection of small, general purpose objects and methods
 import os
 import re
 import ast
+import copy
 import collections
 from time import clock
 
@@ -243,7 +244,7 @@ def write_headers(filepath, dictionary):
     str
         Filepath of file.
     '''
-    dictionary = dictionary.copy()
+    dictionary = copy.deepcopy(dictionary)
     header_items = []
     for key, value in dictionary.items():
         header_item = key + ':'

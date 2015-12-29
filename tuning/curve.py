@@ -239,8 +239,8 @@ class Curve:
             units_colors = wt_units.converter(self.colors, self.units, units)
             return [units_colors.min(), units_colors.max()]
             
-    def get_motor_names(self):
-        if self.subcurve:
+    def get_motor_names(self, full=True):
+        if self.subcurve and full:
             subcurve_motor_names = self.subcurve.get_motor_names()
         else:
             subcurve_motor_names = []
@@ -270,11 +270,11 @@ class Curve:
         # evaluate
         if full and self.subcurve:
             source_color = self.source_color_interpolator.get_motor_positions(color)
-            source_motor_positions = self.subcurve.interpolator.get_motor_positions(source_color)
-            own_motor_positions = self.interpolator.get_motor_positions(color)
-            return source_motor_positions + own_motor_positions
+            source_motor_positions = np.array(self.subcurve.interpolator.get_motor_positions(source_color)).squeeze()
+            own_motor_positions = np.array(self.interpolator.get_motor_positions(color)).flatten()
+            return np.vstack((source_motor_positions, own_motor_positions)).squeeze()
         else:
-            return self.interpolator.get_motor_positions(color)
+            return np.array(self.interpolator.get_motor_positions(color)).squeeze()
             
     def get_source_color(self, color, units='same'):
         if not self.subcurve:
