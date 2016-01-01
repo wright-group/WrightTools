@@ -29,10 +29,10 @@ debug = False
 ### define ####################################################################
 
 
-TOPAS_motor_names = {0: ['Crystal 1', 'Delay 1', 'Crystal 2', 'Delay 2'],
-                     1: ['Mixer 1'],
-                     2: ['Mixer 2'],
-                     3: ['Mixer 3']}
+TOPAS_motor_names = {0: ['Crystal_1', 'Delay_1', 'Crystal_2', 'Delay_2'],
+                     1: ['Mixer_1'],
+                     2: ['Mixer_2'],
+                     3: ['Mixer_3']}
 
                                          # [num_between, motor_names]
 TOPAS_interactions = {'NON-NON-NON-Sig': [8 , TOPAS_motor_names[0]],

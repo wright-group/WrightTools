@@ -2092,7 +2092,10 @@ def from_PyCMDS(filepath, name=None,
         axis = Axis(points, units, name=name, label_seed=label_seed, **kwargs)
         axes.append(axis)
     # create grid to interpolate onto
-    meshgrid = tuple(np.meshgrid(*[a.points for a in axes], indexing = 'ij'))
+    if len(axes) == 1:
+        meshgrid = tuple([a.points for a in axes])
+    else:
+        meshgrid = tuple(np.meshgrid(*[a.points for a in axes], indexing = 'ij'))
     # prepare points for interpolation
     shape = [a.points.size for a in axes]
     points_dict = collections.OrderedDict()
