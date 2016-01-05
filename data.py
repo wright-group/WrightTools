@@ -2091,21 +2091,23 @@ def from_PyCMDS(filepath, name=None,
             kwargs['centers'] = headers[name + ' centers']
         axis = Axis(points, units, name=name, label_seed=label_seed, **kwargs)
         axes.append(axis)
-    # create grid to interpolate onto
-    if len(axes) == 1:
-        meshgrid = tuple([a.points for a in axes])
-    else:
-        meshgrid = tuple(np.meshgrid(*[a.points for a in axes], indexing = 'ij'))
+    # get indicies arrays
+    indicies = arr[:len(axes)].T
+    indicies = indicies.astype('int64')
     # prepare points for interpolation
-    shape = [a.points.size for a in axes]
+    shape = tuple([a.points.size for a in axes])
     points_dict = collections.OrderedDict()
     for i, axis in enumerate(axes):
         # TODO: math and proper full recognition...
         axis_col_name = [name for name in headers['name'] if name in axis.identity][0]
         axis_index = headers['name'].index(axis_col_name)
-        points = arr[axis_index]
-        points.shape = shape
-        points = wt_units.converter(points, headers['units'][axis_index], axis.units)
+        lis = arr[axis_index]
+        # shape array acording to recorded coordinates
+        points = np.full(shape, np.nan)
+        for j, idx in enumerate(indicies):
+            points[tuple(idx)] = lis[j]
+        # convert array
+        points = wt_units.converter(points, headers['units'][axis_index], axis.units)       
         # take case of scan about center
         if axis.identity[0] == 'D':
             # transpose so this axis is first
@@ -2120,12 +2122,20 @@ def from_PyCMDS(filepath, name=None,
             points = points.transpose(transpose_order)
         points = points.flatten()
         points_dict[axis.name] = points
+        # coerce axis edges to actual points
+        axis.points[np.argmax(axis.points)] = points.max()
+        axis.points[np.argmin(axis.points)] = points.min()
     all_points = tuple(points_dict.values())
     # prepare values for interpolation
     values_dict = collections.OrderedDict()
     for i, kind in enumerate(headers['kind']):
         if kind == 'channel':
             values_dict[headers['name'][i]] = arr[i]
+    # create grid to interpolate onto
+    if len(axes) == 1:
+        meshgrid = tuple([a.points for a in axes])
+    else:
+        meshgrid = tuple(np.meshgrid(*[a.points for a in axes], indexing = 'ij'))
     # create channels
     channels = []
     for i in range(len(arr)):
@@ -2138,7 +2148,7 @@ def from_PyCMDS(filepath, name=None,
             # interpolate
             values = values_dict[name]
             zi = griddata(all_points, values, meshgrid, rescale=True,
-                          method='linear',fill_value=np.nan)
+                          method='linear', fill_value=np.nan)
             # assemble
             channel = Channel(zi, units, signed=signed, name=name, label=label)
             channels.append(channel)

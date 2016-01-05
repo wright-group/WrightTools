@@ -201,27 +201,31 @@ def read_headers(filepath):
             split = line.split(':')
             key = split[0][2:]
             item = split[1].split('\t')
-            if item[0] == '':
-                item = [item[1]]
-            item = [i.strip() for i in item]  # remove dumb things
-            item = [i if i is not '' else 'None' for i in item]  # handle empties
-            # handle lists
-            is_list = False
-            list_chars = ['[', ']']
-            for item_index, item_string in enumerate(item):
-                if item_string == '[]':
-                    continue
-                for char in item_string:
-                    if char in list_chars:
-                        is_list = True
-                for char in list_chars:
-                    item_string = item[item_index]
-                    item[item_index] = item_string.replace(char, '')
-            # eval contents
-            item = [ast.literal_eval(i) for i in item]
-            if len(item) == 1 and not is_list:
-                item = item[0]
-            headers[key] = item
+            if split[1][0:3] == ' [[':  # case of multidimensional arrays
+                arr = string2array(split[1][1:])
+                headers[key] = arr
+            else:
+                if item[0] == '':
+                    item = [item[1]]
+                item = [i.strip() for i in item]  # remove dumb things
+                item = [i if i is not '' else 'None' for i in item]  # handle empties
+                # handle lists
+                is_list = False
+                list_chars = ['[', ']']
+                for item_index, item_string in enumerate(item):
+                    if item_string == '[]':
+                        continue
+                    for char in item_string:
+                        if char in list_chars:
+                            is_list = True
+                    for char in list_chars:
+                        item_string = item[item_index]
+                        item[item_index] = item_string.replace(char, '')
+                # eval contents
+                item = [ast.literal_eval(i) for i in item]
+                if len(item) == 1 and not is_list:
+                    item = item[0]
+                headers[key] = item
         else:
             break  # all header lines are at the beginning
     return headers
@@ -258,7 +262,11 @@ def write_headers(filepath, dictionary):
                     value[i] = str(value[i])
             header_item += ' [' + '\t'.join(value) + ']'
         elif type(value).__module__ == np.__name__:  # anything from numpy
-            header_item += ' [' + '\t'.join([str(i) for i in value]) + ']'
+            if hasattr(value, 'shape'):
+                string = array2string(value)
+                header_item += ' ' + string
+            else:
+                header_item += ' [' + '\t'.join([str(i) for i in value]) + ']'
         else:
             header_item += '\t' + str(value)
         header_items.append(header_item)
@@ -363,6 +371,22 @@ def unique(arr, tolerance=1e-6):
 ### uncategorized #############################################################
 
 
+def array2string(array, sep='\t'):
+    '''
+    Generate a string from an array with useful formatting. Great for writing
+    arrays into single lines in files.
+    
+    See Also
+    --------
+    string2array
+    '''
+    np.set_printoptions(threshold=array.size)
+    string = np.array2string(array, separator=sep)
+    string = string.replace('\n', sep)
+    string = re.sub(r'({})(?=\1)'.format(sep), '', string)
+    return string
+
+
 def get_methods(the_class, class_only=False, instance_only=False,
                 exclude_internal=True):
     '''
@@ -449,6 +473,49 @@ class suppress_stdout_stderr(object):
         # Close the null files
         os.close(self.null_fds[0])
         os.close(self.null_fds[1])
+        
+
+def string2array(string, sep='\t'):
+    '''
+    Generate an array from a string created using array2string.
+    
+    See Also
+    --------
+    array2string
+    '''
+    # discover size
+    size = string.count('\t')+1 
+    # discover dimensionality
+    dimensionality = 0
+    while string[dimensionality] == '[':
+        dimensionality += 1
+    # discover shape
+    shape = []       
+    for i in range(1, dimensionality+1)[::-1]:
+        to_match = '['*(i-1) + ' '
+        count = string.count(to_match)
+        shape.append(count)
+    shape[-1] = size / shape[-2]
+    for i in range(1, dimensionality-1)[::-1]:
+        shape[i] = shape[i] / shape[i-1]
+    shape = tuple(shape)
+    # import list of floats
+    l = string.split(' ')
+    for i, item in enumerate(l):
+        bad_chars = ['[', ']', '\t']
+        for bad_char in bad_chars:
+            item = item.replace(bad_char, '')
+        l[i] = item
+    for i in range(len(l))[::-1]:
+        if l[i] == '':
+            l.pop(i)
+        else:
+            l[i] = float(l[i])
+    # create and reshape array
+    arr = np.array(l)
+    arr.shape = shape
+    # finish
+    return arr
 
 
 unicode_dictionary = collections.OrderedDict()

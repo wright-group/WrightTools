@@ -178,7 +178,14 @@ class Fitter:
         self.fit_shape = [self.data.axes[i].points.shape[0] for i in self.not_fit_indicies]
         print 'fitter recieved data to make %d fits'%np.product(self.fit_shape)
 
-    def run(self, channel_index=0, verbose=True):
+    def run(self, channel=0, verbose=True):
+        # get channel ---------------------------------------------------------
+        if type(channel) == int:
+            channel_index = channel
+        elif type(channel) == str:
+            channel_index = self.data.channel_names.index(channel)
+        else:
+            print 'channel type', type(channel), 'not valid'
         # transpose data ------------------------------------------------------
         # fitted axes will be LAST
         transpose_order = range(len(self.data.axes))
