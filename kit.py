@@ -9,6 +9,7 @@ a collection of small, general purpose objects and methods
 import os
 import re
 import ast
+import sys
 import copy
 import collections
 from time import clock
@@ -222,6 +223,7 @@ def read_headers(filepath):
                         item_string = item[item_index]
                         item[item_index] = item_string.replace(char, '')
                 # eval contents
+                item = [i.strip() for i in item]  # remove dumb things
                 item = [ast.literal_eval(i) for i in item]
                 if len(item) == 1 and not is_list:
                     item = item[0]
@@ -280,7 +282,7 @@ def write_headers(filepath, dictionary):
     return filepath
 
 
-### math ######################################################################
+### array and math ############################################################
 
 
 def diff(xi, yi, order = 1):
@@ -327,6 +329,31 @@ def mono_resolution(grooves_per_mm, slit_width, focal_length, output_color, outp
     lower = output_color - d_lambda/2  # nm
     return abs(units.converter(upper, 'nm', output_units) - 
                units.converter(lower, 'nm', output_units))
+
+
+def remove_nans_1D(arrs):
+    '''
+    Remove nans in a list of 1D arrays. Removes indicies in all arrays if any
+    array is nan at that index. All input arrays must have the same size.
+    
+    Parameters
+    ----------
+    arrs : list of 1D arrays
+        The arrays to remove nans from
+        
+    Returns
+    -------
+    list
+        List of 1D arrays in same order as given, with nan indicies removed.
+    '''
+    # find all indicies to keep
+    bads = np.array([])
+    for arr in arrs:
+        bad = np.array(np.where(np.isnan(arr))).flatten()
+        bads = np.hstack((bad, bads))
+    goods = [i for i in np.arange(len(arrs[0])) if i not in bads]
+    # apply
+    return [a[goods] for a in arrs]
 
 
 def smooth_1D(arr, n = 10):
@@ -569,24 +596,24 @@ unicode_dictionary['psi'] = u'\u03C8'
 unicode_dictionary['omega'] = u'\u03C9'
 
 
-def update_progress(progress, carriage_return=True, length=50):
+def update_progress(progress, carriage_return=False, length=50):
     '''
     prints a pretty progress bar to the console     \n
     accepts 'progress' as a percentage              \n
     bool carriage_return toggles overwrite behavior \n
     '''
     # make progress bar string
-    progress_bar = ''
+    text =  '\r'
     num_oct = int(progress * (length/100.))
-    progress_bar = progress_bar + '[{0}{1}]'.format('#'*num_oct, ' '*(length-num_oct))
-    progress_bar = progress_bar + ' {}%'.format(np.round(progress, decimals = 2))
+    text += '[{0}{1}]'.format('#'*num_oct, ' '*(length-num_oct))
+    text += ' {}%'.format(np.round(progress, decimals = 2))
     if carriage_return:
-        progress_bar = progress_bar + '\r'
-        print progress_bar,
-        return
-    if progress == 100:
-        progress_bar[-2:] = '\n'
-    print progress_bar
+        text += '\r\n'
+    sys.stdout.write(text)
+    if progress == 100.:
+        print '\n'
+    else:
+        sys.stdout.flush()
 
 
 class Timer:

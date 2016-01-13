@@ -149,7 +149,7 @@ class Curve:
         from .. import __version__
         self.__version__ = __version__
         # inherit
-        self.colors = colors
+        self.colors = np.array(colors)  # needs to be array for some interpolation methods
         self.units = units
         self.motors = motors
         self.name = name
@@ -164,6 +164,17 @@ class Curve:
         # initialize function object
         self.method = method
         self.interpolate()
+        
+    
+    def __repr__(self):
+        # when you inspect the object
+        outs = []
+        outs.append('WrightTools.tuning.curve.Curve object at ' + str(id(self)))
+        outs.append('  name: ' + self.name)
+        outs.append('  interaction: ' + self.interaction)
+        outs.append('  range: {0} - {1} ({2})'.format(self.colors.min(), self.colors.max(), self.units))
+        outs.append('  number: ' + str(len(self.colors)))
+        return '\n'.join(outs)
         
 
     def coerce_motors(self):
@@ -466,7 +477,8 @@ class Curve:
         elif self.kind == 'TOPAS-C':
             out_path = to_TOPAS_crvs(self, save_directory, **kwargs)
         else:
-            print 'kind', self.kind, 'does not know how to save!'
+            error_text = ' '.join(['kind', self.kind, 'does not know how to save!'])
+            raise LookupError(error_text)
         # plot
         if plot:
             image_path = os.path.splitext(out_path)[0] + '.png'

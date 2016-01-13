@@ -259,7 +259,7 @@ class Data:
     def __repr__(self):
         # when you inspect the object
         outs = []
-        outs.append('WrightTools.Data object at ' + str(id(self)))
+        outs.append('WrightTools.data.Data object at ' + str(id(self)))
         outs.append('  name: ' + self.name)
         outs.append('  axes: ' + str(self.axis_names))
         outs.append('  shape: ' + str(self.shape))
@@ -964,13 +964,18 @@ class Data:
         old_points = [a.points for a in self.axes]
         new_points = [a.points if a is not axis else points for a in self.axes]
 
-        xi = tuple(np.meshgrid(*new_points, indexing='ij'))
-        for channel in self.channels:
-            values = channel.values
-            channel.values = scipy.interpolate.interpn(old_points, values, xi,
-                                                       method='linear',
-                                                       bounds_error=False,
-                                                       fill_value=np.nan)
+        if len(self.axes) == 1:
+            for channel in self.channels:
+                function = scipy.interpolate.interp1d(self.axes[0].points, channel.values)
+                channel.values = function(new_points[0])
+        else:
+            xi = tuple(np.meshgrid(*new_points, indexing='ij'))
+            for channel in self.channels:
+                values = channel.values
+                channel.values = scipy.interpolate.interpn(old_points, values, xi,
+                                                           method='linear',
+                                                           bounds_error=False,
+                                                           fill_value=np.nan)
                                                        
         # cleanup -------------------------------------------------------------
         
@@ -2099,7 +2104,7 @@ def from_PyCMDS(filepath, name=None,
     points_dict = collections.OrderedDict()
     for i, axis in enumerate(axes):
         # TODO: math and proper full recognition...
-        axis_col_name = [name for name in headers['name'] if name in axis.identity][0]
+        axis_col_name = [name for name in headers['name'][::-1] if name in axis.identity][0]
         axis_index = headers['name'].index(axis_col_name)
         lis = arr[axis_index]
         # shape array acording to recorded coordinates
@@ -2116,7 +2121,10 @@ def from_PyCMDS(filepath, name=None,
             transpose_order[i] = 0
             points = points.transpose(transpose_order)
             # subtract out centers
-            centers = headers[axis.name + ' centers']
+            centers = np.array(headers[axis.name + ' centers'])
+            # TODO: REMOVE THIS >:(
+            if axis.name == 'wa':
+                centers = centers.T
             points -= centers
             # transpose out
             points = points.transpose(transpose_order)
@@ -2133,9 +2141,9 @@ def from_PyCMDS(filepath, name=None,
             values_dict[headers['name'][i]] = arr[i]
     # create grid to interpolate onto
     if len(axes) == 1:
-        meshgrid = tuple([a.points for a in axes])
+        meshgrid = tuple([axes[0].points])
     else:
-        meshgrid = tuple(np.meshgrid(*[a.points for a in axes], indexing = 'ij'))
+        meshgrid = tuple(np.meshgrid(*[a.points for a in axes], indexing='ij'))
     # create channels
     channels = []
     for i in range(len(arr)):
@@ -2197,7 +2205,7 @@ def from_shimadzu(filepath, name=None, verbose=True):
     # construct data
     x_axis = Axis(data[0], 'nm', name = 'wm')
     signal = Channel(data[1], 'sig', file_idx = 1, signed = False)
-    data = Data([x_axis], [signal], source = 'Shimadzu')
+    data = Data([x_axis], [signal], source='Shimadzu', name=name)
     
     # return ------------------------------------------------------------------
 
