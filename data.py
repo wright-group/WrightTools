@@ -259,7 +259,7 @@ class Data:
     def __repr__(self):
         # when you inspect the object
         outs = []
-        outs.append('WrightTools.Data object at ' + str(id(self)))
+        outs.append('WrightTools.data.Data object at ' + str(id(self)))
         outs.append('  name: ' + self.name)
         outs.append('  axes: ' + str(self.axis_names))
         outs.append('  shape: ' + str(self.shape))
@@ -964,13 +964,18 @@ class Data:
         old_points = [a.points for a in self.axes]
         new_points = [a.points if a is not axis else points for a in self.axes]
 
-        xi = tuple(np.meshgrid(*new_points, indexing='ij'))
-        for channel in self.channels:
-            values = channel.values
-            channel.values = scipy.interpolate.interpn(old_points, values, xi,
-                                                       method='linear',
-                                                       bounds_error=False,
-                                                       fill_value=np.nan)
+        if len(self.axes) == 1:
+            for channel in self.channels:
+                function = scipy.interpolate.interp1d(self.axes[0].points, channel.values)
+                channel.values = function(new_points[0])
+        else:
+            xi = tuple(np.meshgrid(*new_points, indexing='ij'))
+            for channel in self.channels:
+                values = channel.values
+                channel.values = scipy.interpolate.interpn(old_points, values, xi,
+                                                           method='linear',
+                                                           bounds_error=False,
+                                                           fill_value=np.nan)
                                                        
         # cleanup -------------------------------------------------------------
         
@@ -2086,25 +2091,73 @@ def from_PyCMDS(filepath, name=None,
         except ValueError:
             label_seed = ['']
         # create axis
-        kwargs = {}
+        kwargs = {'identity': identity}
         if 'D' in identity:
             kwargs['centers'] = headers[name + ' centers']
         axis = Axis(points, units, name=name, label_seed=label_seed, **kwargs)
         axes.append(axis)
-    # get channels
-    shape = [a.points.size for a in axes]
+    # get indicies arrays
+    indicies = arr[:len(axes)].T
+    indicies = indicies.astype('int64')
+    # prepare points for interpolation
+    shape = tuple([a.points.size for a in axes])
+    points_dict = collections.OrderedDict()
+    for i, axis in enumerate(axes):
+        # TODO: math and proper full recognition...
+        axis_col_name = [name for name in headers['name'][::-1] if name in axis.identity][0]
+        axis_index = headers['name'].index(axis_col_name)
+        lis = arr[axis_index]
+        # shape array acording to recorded coordinates
+        points = np.full(shape, np.nan)
+        for j, idx in enumerate(indicies):
+            points[tuple(idx)] = lis[j]
+        # convert array
+        points = wt_units.converter(points, headers['units'][axis_index], axis.units)       
+        # take case of scan about center
+        if axis.identity[0] == 'D':
+            # transpose so this axis is first
+            transpose_order = range(len(axes))
+            transpose_order[0] = i
+            transpose_order[i] = 0
+            points = points.transpose(transpose_order)
+            # subtract out centers
+            centers = np.array(headers[axis.name + ' centers'])
+            # TODO: REMOVE THIS >:(
+            if axis.name == 'wa':
+                centers = centers.T
+            points -= centers
+            # transpose out
+            points = points.transpose(transpose_order)
+        points = points.flatten()
+        points_dict[axis.name] = points
+        # coerce axis edges to actual points
+        axis.points[np.argmax(axis.points)] = points.max()
+        axis.points[np.argmin(axis.points)] = points.min()
+    all_points = tuple(points_dict.values())
+    # prepare values for interpolation
+    values_dict = collections.OrderedDict()
+    for i, kind in enumerate(headers['kind']):
+        if kind == 'channel':
+            values_dict[headers['name'][i]] = arr[i]
+    # create grid to interpolate onto
+    if len(axes) == 1:
+        meshgrid = tuple([axes[0].points])
+    else:
+        meshgrid = tuple(np.meshgrid(*[a.points for a in axes], indexing='ij'))
+    # create channels
     channels = []
     for i in range(len(arr)):
         if headers['kind'][i] == 'channel':
-            zi = np.full(shape, np.nan)
-            for j in range(len(arr[0])):
-                idx = arr[:len(shape), j]
-                idx = tuple(idx.astype(np.int16))
-                zi[idx] = arr[i, j]
+            # unpack
             units = headers['units'][i]
             signed = headers['channel signed'][len(channels)]
             name = headers['name'][i]
             label = headers['label'][i]
+            # interpolate
+            values = values_dict[name]
+            zi = griddata(all_points, values, meshgrid, rescale=True,
+                          method='linear', fill_value=np.nan)
+            # assemble
             channel = Channel(zi, units, signed=signed, name=name, label=label)
             channels.append(channel)
     # get constants
@@ -2152,7 +2205,7 @@ def from_shimadzu(filepath, name=None, verbose=True):
     # construct data
     x_axis = Axis(data[0], 'nm', name = 'wm')
     signal = Channel(data[1], 'sig', file_idx = 1, signed = False)
-    data = Data([x_axis], [signal], source = 'Shimadzu')
+    data = Data([x_axis], [signal], source='Shimadzu', name=name)
     
     # return ------------------------------------------------------------------
 

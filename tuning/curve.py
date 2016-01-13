@@ -29,10 +29,10 @@ debug = False
 ### define ####################################################################
 
 
-TOPAS_motor_names = {0: ['Crystal 1', 'Delay 1', 'Crystal 2', 'Delay 2'],
-                     1: ['Mixer 1'],
-                     2: ['Mixer 2'],
-                     3: ['Mixer 3']}
+TOPAS_motor_names = {0: ['Crystal_1', 'Delay_1', 'Crystal_2', 'Delay_2'],
+                     1: ['Mixer_1'],
+                     2: ['Mixer_2'],
+                     3: ['Mixer_3']}
 
                                          # [num_between, motor_names]
 TOPAS_interactions = {'NON-NON-NON-Sig': [8 , TOPAS_motor_names[0]],
@@ -149,7 +149,7 @@ class Curve:
         from .. import __version__
         self.__version__ = __version__
         # inherit
-        self.colors = colors
+        self.colors = np.array(colors)  # needs to be array for some interpolation methods
         self.units = units
         self.motors = motors
         self.name = name
@@ -164,6 +164,17 @@ class Curve:
         # initialize function object
         self.method = method
         self.interpolate()
+        
+    
+    def __repr__(self):
+        # when you inspect the object
+        outs = []
+        outs.append('WrightTools.tuning.curve.Curve object at ' + str(id(self)))
+        outs.append('  name: ' + self.name)
+        outs.append('  interaction: ' + self.interaction)
+        outs.append('  range: {0} - {1} ({2})'.format(self.colors.min(), self.colors.max(), self.units))
+        outs.append('  number: ' + str(len(self.colors)))
+        return '\n'.join(outs)
         
 
     def coerce_motors(self):
@@ -239,8 +250,8 @@ class Curve:
             units_colors = wt_units.converter(self.colors, self.units, units)
             return [units_colors.min(), units_colors.max()]
             
-    def get_motor_names(self):
-        if self.subcurve:
+    def get_motor_names(self, full=True):
+        if self.subcurve and full:
             subcurve_motor_names = self.subcurve.get_motor_names()
         else:
             subcurve_motor_names = []
@@ -270,11 +281,11 @@ class Curve:
         # evaluate
         if full and self.subcurve:
             source_color = self.source_color_interpolator.get_motor_positions(color)
-            source_motor_positions = self.subcurve.interpolator.get_motor_positions(source_color)
-            own_motor_positions = self.interpolator.get_motor_positions(color)
-            return source_motor_positions + own_motor_positions
+            source_motor_positions = np.array(self.subcurve.interpolator.get_motor_positions(source_color)).squeeze()
+            own_motor_positions = np.array(self.interpolator.get_motor_positions(color)).flatten()
+            return np.vstack((source_motor_positions, own_motor_positions)).squeeze()
         else:
-            return self.interpolator.get_motor_positions(color)
+            return np.array(self.interpolator.get_motor_positions(color)).squeeze()
             
     def get_source_color(self, color, units='same'):
         if not self.subcurve:
@@ -466,7 +477,8 @@ class Curve:
         elif self.kind == 'TOPAS-C':
             out_path = to_TOPAS_crvs(self, save_directory, **kwargs)
         else:
-            print 'kind', self.kind, 'does not know how to save!'
+            error_text = ' '.join(['kind', self.kind, 'does not know how to save!'])
+            raise LookupError(error_text)
         # plot
         if plot:
             image_path = os.path.splitext(out_path)[0] + '.png'

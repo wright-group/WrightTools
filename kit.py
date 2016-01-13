@@ -9,6 +9,8 @@ a collection of small, general purpose objects and methods
 import os
 import re
 import ast
+import sys
+import copy
 import collections
 from time import clock
 
@@ -200,27 +202,32 @@ def read_headers(filepath):
             split = line.split(':')
             key = split[0][2:]
             item = split[1].split('\t')
-            if item[0] == '':
-                item = [item[1]]
-            item = [i.strip() for i in item]  # remove dumb things
-            item = [i if i is not '' else 'None' for i in item]  # handle empties
-            # handle lists
-            is_list = False
-            list_chars = ['[', ']']
-            for item_index, item_string in enumerate(item):
-                if item_string == '[]':
-                    continue
-                for char in item_string:
-                    if char in list_chars:
-                        is_list = True
-                for char in list_chars:
-                    item_string = item[item_index]
-                    item[item_index] = item_string.replace(char, '')
-            # eval contents
-            item = [ast.literal_eval(i) for i in item]
-            if len(item) == 1 and not is_list:
-                item = item[0]
-            headers[key] = item
+            if split[1][0:3] == ' [[':  # case of multidimensional arrays
+                arr = string2array(split[1][1:])
+                headers[key] = arr
+            else:
+                if item[0] == '':
+                    item = [item[1]]
+                item = [i.strip() for i in item]  # remove dumb things
+                item = [i if i is not '' else 'None' for i in item]  # handle empties
+                # handle lists
+                is_list = False
+                list_chars = ['[', ']']
+                for item_index, item_string in enumerate(item):
+                    if item_string == '[]':
+                        continue
+                    for char in item_string:
+                        if char in list_chars:
+                            is_list = True
+                    for char in list_chars:
+                        item_string = item[item_index]
+                        item[item_index] = item_string.replace(char, '')
+                # eval contents
+                item = [i.strip() for i in item]  # remove dumb things
+                item = [ast.literal_eval(i) for i in item]
+                if len(item) == 1 and not is_list:
+                    item = item[0]
+                headers[key] = item
         else:
             break  # all header lines are at the beginning
     return headers
@@ -243,7 +250,7 @@ def write_headers(filepath, dictionary):
     str
         Filepath of file.
     '''
-    dictionary = dictionary.copy()
+    dictionary = copy.deepcopy(dictionary)
     header_items = []
     for key, value in dictionary.items():
         header_item = key + ':'
@@ -257,7 +264,11 @@ def write_headers(filepath, dictionary):
                     value[i] = str(value[i])
             header_item += ' [' + '\t'.join(value) + ']'
         elif type(value).__module__ == np.__name__:  # anything from numpy
-            header_item += ' [' + '\t'.join([str(i) for i in value]) + ']'
+            if hasattr(value, 'shape'):
+                string = array2string(value)
+                header_item += ' ' + string
+            else:
+                header_item += ' [' + '\t'.join([str(i) for i in value]) + ']'
         else:
             header_item += '\t' + str(value)
         header_items.append(header_item)
@@ -271,7 +282,7 @@ def write_headers(filepath, dictionary):
     return filepath
 
 
-### math ######################################################################
+### array and math ############################################################
 
 
 def diff(xi, yi, order = 1):
@@ -320,6 +331,31 @@ def mono_resolution(grooves_per_mm, slit_width, focal_length, output_color, outp
                units.converter(lower, 'nm', output_units))
 
 
+def remove_nans_1D(arrs):
+    '''
+    Remove nans in a list of 1D arrays. Removes indicies in all arrays if any
+    array is nan at that index. All input arrays must have the same size.
+    
+    Parameters
+    ----------
+    arrs : list of 1D arrays
+        The arrays to remove nans from
+        
+    Returns
+    -------
+    list
+        List of 1D arrays in same order as given, with nan indicies removed.
+    '''
+    # find all indicies to keep
+    bads = np.array([])
+    for arr in arrs:
+        bad = np.array(np.where(np.isnan(arr))).flatten()
+        bads = np.hstack((bad, bads))
+    goods = [i for i in np.arange(len(arrs[0])) if i not in bads]
+    # apply
+    return [a[goods] for a in arrs]
+
+
 def smooth_1D(arr, n = 10):
     '''
     smooth 1D data by 'running average'\n
@@ -360,6 +396,22 @@ def unique(arr, tolerance=1e-6):
 
 
 ### uncategorized #############################################################
+
+
+def array2string(array, sep='\t'):
+    '''
+    Generate a string from an array with useful formatting. Great for writing
+    arrays into single lines in files.
+    
+    See Also
+    --------
+    string2array
+    '''
+    np.set_printoptions(threshold=array.size)
+    string = np.array2string(array, separator=sep)
+    string = string.replace('\n', sep)
+    string = re.sub(r'({})(?=\1)'.format(sep), '', string)
+    return string
 
 
 def get_methods(the_class, class_only=False, instance_only=False,
@@ -448,6 +500,49 @@ class suppress_stdout_stderr(object):
         # Close the null files
         os.close(self.null_fds[0])
         os.close(self.null_fds[1])
+        
+
+def string2array(string, sep='\t'):
+    '''
+    Generate an array from a string created using array2string.
+    
+    See Also
+    --------
+    array2string
+    '''
+    # discover size
+    size = string.count('\t')+1 
+    # discover dimensionality
+    dimensionality = 0
+    while string[dimensionality] == '[':
+        dimensionality += 1
+    # discover shape
+    shape = []       
+    for i in range(1, dimensionality+1)[::-1]:
+        to_match = '['*(i-1) + ' '
+        count = string.count(to_match)
+        shape.append(count)
+    shape[-1] = size / shape[-2]
+    for i in range(1, dimensionality-1)[::-1]:
+        shape[i] = shape[i] / shape[i-1]
+    shape = tuple(shape)
+    # import list of floats
+    l = string.split(' ')
+    for i, item in enumerate(l):
+        bad_chars = ['[', ']', '\t']
+        for bad_char in bad_chars:
+            item = item.replace(bad_char, '')
+        l[i] = item
+    for i in range(len(l))[::-1]:
+        if l[i] == '':
+            l.pop(i)
+        else:
+            l[i] = float(l[i])
+    # create and reshape array
+    arr = np.array(l)
+    arr.shape = shape
+    # finish
+    return arr
 
 
 unicode_dictionary = collections.OrderedDict()
@@ -501,24 +596,24 @@ unicode_dictionary['psi'] = u'\u03C8'
 unicode_dictionary['omega'] = u'\u03C9'
 
 
-def update_progress(progress, carriage_return=True, length=50):
+def update_progress(progress, carriage_return=False, length=50):
     '''
     prints a pretty progress bar to the console     \n
     accepts 'progress' as a percentage              \n
     bool carriage_return toggles overwrite behavior \n
     '''
     # make progress bar string
-    progress_bar = ''
+    text =  '\r'
     num_oct = int(progress * (length/100.))
-    progress_bar = progress_bar + '[{0}{1}]'.format('#'*num_oct, ' '*(length-num_oct))
-    progress_bar = progress_bar + ' {}%'.format(np.round(progress, decimals = 2))
+    text += '[{0}{1}]'.format('#'*num_oct, ' '*(length-num_oct))
+    text += ' {}%'.format(np.round(progress, decimals = 2))
     if carriage_return:
-        progress_bar = progress_bar + '\r'
-        print progress_bar,
-        return
-    if progress == 100:
-        progress_bar[-2:] = '\n'
-    print progress_bar
+        text += '\r\n'
+    sys.stdout.write(text)
+    if progress == 100.:
+        print '\n'
+    else:
+        sys.stdout.flush()
 
 
 class Timer:

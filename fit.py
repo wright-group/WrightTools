@@ -33,6 +33,10 @@ class Function:
         return args[0] - self.evaluate(p, *args[1:])
 
     def fit(self, *args, **kwargs):
+        if self.dimensionality == 1:
+            args = tuple(wt_kit.remove_nans_1D(args))
+            if len(args[0]) == 0:
+                return [np.nan]*len(self.params)
         if 'p0' in kwargs:
             p0 = kwargs['p0']
         else:
@@ -47,6 +51,7 @@ class ExpectationValue(Function):
     
     def __init__(self):
         Function.__init__(self)
+        self.dimensionality = 1
         self.params = ['value']
         self.limits = {}
         self.global_cutoff = None
@@ -102,6 +107,7 @@ class Exponential(Function):
 
     def __init__(self):
         Function.__init__(self)
+        self.dimensionality = 1
         self.params = ['amplitude', 'tau', 'offset']
         self.limits = {}
 
@@ -111,10 +117,11 @@ class Exponential(Function):
             x = xi.copy()*-1
         else:
             x = xi.copy()
-        # evaluate
+        # enforce limits
         for i, name in zip(range(len(p)), self.params):
             if name in self.limits.keys():
                 p[i] = np.clip(p[i], *self.limits[name])
+        # evaluate
         a, b, c = p
         return a*np.exp(-x/b)+c
 
@@ -129,39 +136,45 @@ class Exponential(Function):
 class Gaussian(Function):
     def __init__(self):
         Function.__init__(self)
-        self.params = ['mean','width','amplitude','y0']
-        self.limits = {}
+        self.dimensionality = 1
+        self.params = ['mean','width','amplitude','baseline']
+        self.limits = {'width': [0, np.inf]}
 
-    def evaluate(self,p,xi):
-        # evaluate
+    def evaluate(self, p, xi):
+        # enforce limits
         for i, name in zip(range(len(p)), self.params):
             if name in self.limits.keys():
                 p[i] = np.clip(p[i], *self.limits[name])
-        m, w, amp, y0 = p
-        return amp*np.exp(-(xi-m)**2/(2*w**2)) + y0
+        # evaluate
+        m, w, amp, baseline = p
+        return amp*np.exp(-(xi-m)**2/(2*w**2)) + baseline
 
     def guess(self, values, xi):
+        values, xi = wt_kit.remove_nans_1D([values, xi])
+        if len(values) == 0:
+            return [np.nan]*4
         Use_visible_baseline = False
         if Use_visible_baseline:
             ystdev = np.std(values)
             good = False
-            baseline = []
+            baselines = []
             for i in values:
                 if abs(i)<= 3*ystdev:
-                    baseline.append(i)
+                    baselines.append(i)
                 else: good=True
             if good:
-                y0 = np.average(baseline)
+                baseline = np.average(baselines)
             else:
                 # No data was rejected, so no visible baseline or no visible peak
-                y0 = min(values)
+                baseline = min(values)
         else:
-            y0 = min(values)
-        yi = np.array([i-y0 for i in values])
-        mean = sum(np.multiply(xi,yi))/sum(yi)
-        width = np.sqrt(abs(sum((xi-mean)**2*yi)/sum(yi)))
-        amp = max(yi)
-        return [mean,width,amp,y0]
+            baseline = min(values)
+        values -= baseline
+        mean = sum(np.multiply(xi, values))/sum(values)
+        width = np.sqrt(abs(sum((xi-mean)**2*values)/sum(values)))
+        amp = max(values)
+        p0 = [mean, width, amp, baseline]
+        return p0
 
 ### fitter ####################################################################
 
@@ -178,7 +191,14 @@ class Fitter:
         self.fit_shape = [self.data.axes[i].points.shape[0] for i in self.not_fit_indicies]
         print 'fitter recieved data to make %d fits'%np.product(self.fit_shape)
 
-    def run(self, channel_index=0, verbose=True):
+    def run(self, channel=0, verbose=True):
+        # get channel ---------------------------------------------------------
+        if type(channel) == int:
+            channel_index = channel
+        elif type(channel) == str:
+            channel_index = self.data.channel_names.index(channel)
+        else:
+            print 'channel type', type(channel), 'not valid'
         # transpose data ------------------------------------------------------
         # fitted axes will be LAST
         transpose_order = range(len(self.data.axes))
