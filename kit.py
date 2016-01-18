@@ -356,6 +356,35 @@ def remove_nans_1D(arrs):
     return [a[goods] for a in arrs]
 
 
+def share_nans(arrs1):
+    # Written by DJM. darienmorrow@gmail.com. January 15, 2016.    
+    '''
+    Takes a list of nD arrays and returns a new list of nD arrays. 
+    The new list is in the same order as the old list. 
+    If one indexed element in an old array is nan then every element for that
+    index in all new arrays in the list is then nan.
+    
+    Parameters
+    ----------
+    arrs1 : list of nD arrays
+        The arrays to syncronize nans from
+        
+    Returns
+    -------
+    list
+        List of nD arrays in same order as given, with nan indicies syncronized.
+    '''
+    
+    nans = np.zeros((arrs1[0].shape))
+    
+    for arr in arrs1:
+        nans *= arr       
+ 
+    arrs2 = [a + nans for a in arrs1]
+
+    return arrs2
+
+
 def smooth_1D(arr, n = 10):
     '''
     smooth 1D data by 'running average'\n
