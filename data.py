@@ -56,6 +56,19 @@ class Axis:
             self.symbol_type = wt_units.get_default_symbol_type(self.units)
         self.get_label()
 
+    def __repr__(self):
+        # when you inspect the object
+        outs = []
+        outs.append('WrightTools.data.Axis object at ' + str(id(self)))
+        outs.append('  name: ' + self.name)
+        outs.append('  range: {0} - {1} ({2})'.format(self.points.min(), self.points.max(), self.units))
+        outs.append('  number: ' + str(len(self.points)))
+        return '\n'.join(outs)
+
+    def __str__(self):
+        # when you print the object
+        return self.__repr__()
+
     def convert(self, destination_units):
         self.points = wt_units.converter(self.points, self.units,
                                          destination_units)
@@ -133,6 +146,21 @@ class Channel:
             self.zmin = zmin
             self.zmax = zmax
             self.signed = signed
+
+    def __repr__(self):
+        # when you inspect the object
+        outs = []
+        outs.append('WrightTools.data.Channel object at ' + str(id(self)))
+        outs.append('  name: ' + self.name)
+        outs.append('  zmin: ' + str(self.zmin))
+        outs.append('  zmax: ' + str(self.zmax))
+        outs.append('  znull: ' + str(self.znull))
+        outs.append('  signed: ' + str(self.signed))
+        return '\n'.join(outs)
+
+    def __str__(self):
+        # when you print the object
+        return self.__repr__()
 
     def _update(self):
         self.zmin = np.nanmin(self.values)

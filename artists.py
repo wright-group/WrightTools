@@ -1,5 +1,5 @@
 '''
-tools used in plotting data
+Tools for visualizing data.
 '''
 
 
@@ -19,7 +19,9 @@ import matplotlib.gridspec as grd
 import matplotlib.colors as mplcolors
 matplotlib.rcParams['contour.negative_linestyle'] = 'solid'
 
-import kit
+import kit  # legacy...
+import kit as wt_kit
+
 
 ### artist helpers ############################################################
 
@@ -120,10 +122,10 @@ def make_cubehelix(gamma=1.0, s=0.5, r=-1.5, h=0.5,
             # to white diagonal in the plane of constant
             # perceived intensity.
             xg = darkest * x**gamma
-            lum = 1-xg # starts at 1
+            lum = 1-xg  # starts at 1
             if lum_rev:
                 lum = lum[::-1]
-            a = lum.copy()#h * lum*(1-lum)/2.
+            a = lum.copy()  # h * lum*(1-lum)/2.
             a[lum<0.5] = h * lum[lum<0.5]/2.
             a[lum>=0.5] = h * (1-lum[lum>=0.5])/2.
             phi = 2 * np.pi * (s / 3 + r * x)
@@ -135,22 +137,11 @@ def make_cubehelix(gamma=1.0, s=0.5, r=-1.5, h=0.5,
                 'blue':  get_color_function(1.97294, 0.0)}
     cbar = matplotlib.colors.LinearSegmentedColormap('cubehelix', rgb_dict)
     if plot:
-        # maybe broken? - BJT 2015.08.11
-        plt.figure()
-        x = np.linspace(0, 1.)
-        r = cbar._segmentdata['red'](x)
-        g = cbar._segmentdata['green'](x)
-        b = cbar._segmentdata['blue'](x)
-        k = .3*r + .59*g + .11*b
-        plt.plot(x, r, 'r', linewidth=5, alpha=0.6)
-        plt.plot(x, g, 'g', linewidth=5, alpha=0.6)
-        plt.plot(x, b, 'b', linewidth=5, alpha=0.6)
-        plt.plot(x, k, 'k:', linewidth=5, alpha=0.6)
-        plt.grid()
+        plot_colormap(cbar)
     return cbar
     
 
-def make_colormap(seq, name='CustomMap'):
+def make_colormap(seq, name='CustomMap', plot=False):
     '''
     Return a LinearSegmentedColormap
     seq: a sequence of floats and RGB-tuples. The floats should be increasing
@@ -166,7 +157,10 @@ def make_colormap(seq, name='CustomMap'):
             cdict['red'].append([item, r1, r2])
             cdict['green'].append([item, g1, g2])
             cdict['blue'].append([item, b1, b2])
-    return mplcolors.LinearSegmentedColormap(name, cdict)
+    cmap = mplcolors.LinearSegmentedColormap(name, cdict)
+    if plot:
+        plot_colormap(cmap)
+    return cmap
     
 
 def nm_to_rgb(nm):
@@ -248,6 +242,32 @@ def pcolor_helper(xi, yi, zi):
     X, Y = np.meshgrid(x_points, y_points)
 
     return X, Y, zi
+
+
+def plot_colormap(cmap):
+    plt.figure(figsize=[8, 4])
+    gs = grd.GridSpec(2, 1, height_ratios=[1, 10], hspace=0.05)
+    # colorbar
+    ax = plt.subplot(gs[0])
+    gradient = np.linspace(0, 1, 256)
+    gradient = np.vstack((gradient, gradient))
+    ax.imshow(gradient, aspect='auto', cmap=cmap, vmin=0., vmax=1.)
+    ax.set_axis_off()
+    # components
+    ax = plt.subplot(gs[1])
+    x = gradient[0]
+    r = cmap._segmentdata['red'](x)
+    g = cmap._segmentdata['green'](x)
+    b = cmap._segmentdata['blue'](x)
+    k = .3*r + .59*g + .11*b
+    plt.plot(x, r, 'r', linewidth=5, alpha=0.6)
+    plt.plot(x, g, 'g', linewidth=5, alpha=0.6)
+    plt.plot(x, b, 'b', linewidth=5, alpha=0.6)
+    plt.plot(x, k, 'k:', linewidth=5, alpha=0.6)
+    # finish
+    plt.grid()
+    plt.xlabel('value', fontsize=16)
+    plt.ylabel('intensity', fontsize=16)
 
 
 ### color maps ################################################################
@@ -365,31 +385,32 @@ wright = ['#FFFFFF',
           '#FF0000',
           '#881111']
 
-colormaps = {'CMRmap': plt.get_cmap('CMRmap_r'),
-             'cubehelix': plt.get_cmap('cubehelix_r'),
-             'default': cubehelix,
-             'experimental': mplcolors.LinearSegmentedColormap.from_list('experimental', experimental),
-             'flag': plt.get_cmap('flag'),
-             'earth': plt.get_cmap('gist_earth'),
-             'gnuplot2': plt.get_cmap('gnuplot2_r'),
-             'greenscale': mplcolors.LinearSegmentedColormap.from_list('greenscale', greenscale),
-             'greyscale': mplcolors.LinearSegmentedColormap.from_list('greyscale', greyscale),
-             'invisible': mplcolors.LinearSegmentedColormap.from_list('invisible', invisible),
-             'isoluminant': isoluminant,
-             'isoluminant2': isoluminant2,
-             'isoluminant3': isoluminant3,
-             'ncar': plt.get_cmap('gist_ncar'),
-             'paired': plt.get_cmap('Paired'),
-             'prism': plt.get_cmap('prism'),
-             'rainbow': plt.get_cmap('rainbow'),
-             'seismic': plt.get_cmap('seismic'),
-             'signed':  mplcolors.LinearSegmentedColormap.from_list('signed', signed),
-             'signed_old':  mplcolors.LinearSegmentedColormap.from_list('signed', signed_old),
-             'skyebar':  mplcolors.LinearSegmentedColormap.from_list('skyebar', skyebar),
-             'skyebar_d': mplcolors.LinearSegmentedColormap.from_list('skyebar dark', skyebar_d), 
-             'skyebar_i': mplcolors.LinearSegmentedColormap.from_list('skyebar inverted', skyebar_i),                          
-             'spectral': plt.get_cmap('nipy_spectral'),
-             'wright': mplcolors.LinearSegmentedColormap.from_list('wright', wright)}
+colormaps = collections.OrderedDict()
+colormaps['CMRmap'] = plt.get_cmap('CMRmap_r')
+colormaps['cubehelix'] = plt.get_cmap('cubehelix_r')
+colormaps['default'] = cubehelix
+colormaps['experimental'] = mplcolors.LinearSegmentedColormap.from_list('experimental', experimental)
+colormaps['flag'] = plt.get_cmap('flag')
+colormaps['earth'] = plt.get_cmap('gist_earth')
+colormaps['gnuplot2'] = plt.get_cmap('gnuplot2_r')
+colormaps['greenscale'] = mplcolors.LinearSegmentedColormap.from_list('greenscale', greenscale)
+colormaps['greyscale'] = mplcolors.LinearSegmentedColormap.from_list('greyscale', greyscale)
+colormaps['invisible'] = mplcolors.LinearSegmentedColormap.from_list('invisible', invisible)
+colormaps['isoluminant'] = isoluminant
+colormaps['isoluminant2'] = isoluminant2
+colormaps['isoluminant3'] = isoluminant3
+colormaps['ncar'] = plt.get_cmap('gist_ncar')
+colormaps['paried'] = plt.get_cmap('Paired')
+colormaps['prism'] = plt.get_cmap('prism')
+colormaps['rainbow'] = plt.get_cmap('rainbow')
+colormaps['seismic'] = plt.get_cmap('seismic')
+colormaps['signed'] = mplcolors.LinearSegmentedColormap.from_list('signed', signed)
+colormaps['signed_old'] = mplcolors.LinearSegmentedColormap.from_list('signed', signed_old)
+colormaps['skyebar'] = mplcolors.LinearSegmentedColormap.from_list('skyebar', skyebar)
+colormaps['skyebar_d'] = mplcolors.LinearSegmentedColormap.from_list('skyebar dark', skyebar_d)
+colormaps['skyebar_i'] = mplcolors.LinearSegmentedColormap.from_list('skyebar inverted', skyebar_i)
+colormaps['spectral'] = plt.get_cmap('nipy_spectral')
+colormaps['wright'] = mplcolors.LinearSegmentedColormap.from_list('wright', wright)
 
 
 ### general purpose artists ###################################################

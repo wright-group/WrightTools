@@ -165,7 +165,6 @@ class Curve:
         self.method = method
         self.interpolate()
         
-    
     def __repr__(self):
         # when you inspect the object
         outs = []
@@ -176,7 +175,6 @@ class Curve:
         outs.append('  number: ' + str(len(self.colors)))
         return '\n'.join(outs)
         
-
     def coerce_motors(self):
         '''
         Coerce the motor positions to lie exactly along the interpolation

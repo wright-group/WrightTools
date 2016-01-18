@@ -44,6 +44,18 @@ def filename_parse(fstr):
     return file_path, file_name, file_suffix
 
 
+def file_len(fname):
+    '''
+    Cheaply get the number of lines in a file. File is not entirely loaded 
+    into memory.
+    '''
+    # adapted from http://stackoverflow.com/questions/845058
+    with open(fname) as f:
+        for i, l in enumerate(f):
+            pass
+    return i + 1
+
+
 def find_name(fname, suffix):
     """
     save the file using fname, and tacking on a number if fname already exists
