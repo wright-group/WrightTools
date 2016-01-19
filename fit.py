@@ -88,7 +88,7 @@ class ExpectationValue(Function):
                 pass
             else:
                 y_internal[i] /= sum_y
-        # get expectation value    
+        # get expectation value
         value = 0.
         for i in range(len(x_internal)):
             if np.ma.getmask(y_internal[i]) == True:

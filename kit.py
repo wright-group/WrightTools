@@ -11,6 +11,7 @@ import re
 import ast
 import sys
 import copy
+import linecache
 import collections
 from time import clock
 
@@ -84,6 +85,63 @@ def find_name(fname, suffix):
             # file doesn't exist and is safe to write to this path
             good_name = True
     return
+    
+    
+class FileSlicer:
+    
+    def __init__(self, path):
+        '''
+        Access groups of lines from a file quickly, without loading the entire
+        file into memory. Lines are accesed from Useful especially in cases where 
+        
+        Mostly a convinient wrapper around the standard library 'linecache'
+        module.
+        '''
+        self.path = path
+        self.n = 0
+        self.length = file_len(path)
+    
+    def get(self, line_count):
+        '''
+        Get the next group of lines from the file.
+        
+        Parameters
+        ----------
+        line_count : int
+            The number of lines to read from the file.
+            
+        Returns
+        -------
+        list
+            List of lines as strings.
+        '''
+        # calculate indicies
+        start = self.n
+        stop = self.n + line_count
+        if stop > self.length:
+            raise IndexError('there are no more lines in the slicer: ' +
+                             '(file length {})'.format(self.length))
+        # get lines using list comprehension
+        # for some reason linecache is 1 indexed >:-(
+        out = [linecache.getline(self.path, i) for i in range(start+1, stop+1)]
+        # finish
+        self.n += line_count
+        return out
+    
+    def skip(self, line_count):
+        '''
+        Skip the next group of lines from the file.
+        
+        Parameters
+        ----------
+        line_count : int
+            The number of lines to skip.
+        '''
+        if self.n + line_count > self.length:
+            raise IndexError('there are no more lines in the slicer: ' +
+                             '(file length {})'.format(self.length))        
+        # finish
+        self.n += line_count
 
 
 def get_box_path():
