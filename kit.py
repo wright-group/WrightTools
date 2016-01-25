@@ -11,6 +11,7 @@ import re
 import ast
 import sys
 import copy
+import itertools
 import linecache
 import collections
 from time import clock
@@ -89,17 +90,31 @@ def find_name(fname, suffix):
     
 class FileSlicer:
     
-    def __init__(self, path):
+    def __init__(self, path, skip_headers=True, header_charachter='#'):
         '''
         Access groups of lines from a file quickly, without loading the entire
         file into memory. Lines are accesed from Useful especially in cases where 
         
         Mostly a convinient wrapper around the standard library 'linecache'
         module.
+        
+        Parameters
+        ----------
+        path : string
+            Path to the file.
+        skip_headers : bool (optional)
+            Toggle to skip headers at beginning of file. Default is True.
+        header_charachter : string (optional)
+            Charachter that appears at the beginning of header lines for this
+            file. Default is '#'.
         '''
         self.path = path
         self.n = 0
         self.length = file_len(path)
+        if skip_headers:
+            with open(path) as f:
+                while f.readline()[0] == header_charachter:
+                    self.n += 1
     
     def get(self, line_count):
         '''
@@ -511,6 +526,34 @@ def array2string(array, sep='\t'):
     string = string.replace('\n', sep)
     string = re.sub(r'({})(?=\1)'.format(sep), '', string)
     return string
+    
+    
+def flatten_list(l):
+    '''
+    Flatten an irregular list. Works generally but may be slower than it could
+    be if you can make assumptions about your list.
+    
+    Adapted from http://stackoverflow.com/questions/2158395
+    
+    Example
+    -------
+    >>> l = [[[1, 2, 3], [4, 5]], 6]
+    >>> wt.kit.flatten_list(l)
+    [1, 2, 3, 4, 5, 6]
+    '''
+    listIsNested = True
+    while listIsNested:  # outer loop
+        keepChecking = False
+        Temp = []
+        for element in l:  # inner loop
+            if isinstance(element,list):
+                Temp.extend(element)
+                keepChecking = True
+            else:
+                Temp.append(element)
+        listIsNested = keepChecking  # determine if outer loop exits
+        l = Temp[:]
+    return l
 
 
 def get_methods(the_class, class_only=False, instance_only=False,
@@ -627,6 +670,7 @@ def string2array(string, sep='\t'):
     shape = tuple(shape)
     # import list of floats
     l = string.split(' ')
+    l = flatten_list([i.split('-') for i in l])  # annoyingly series of negative values get past previous filters
     for i, item in enumerate(l):
         bad_chars = ['[', ']', '\t']
         for bad_char in bad_chars:
@@ -639,6 +683,7 @@ def string2array(string, sep='\t'):
             l[i] = float(l[i])
     # create and reshape array
     arr = np.array(l)
+    print arr.shape, shape
     arr.shape = shape
     # finish
     return arr

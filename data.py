@@ -32,13 +32,13 @@ debug = False
 
 class Axis:
 
-    def __init__(self, points, init_units, symbol_type=None,
+    def __init__(self, points, units, symbol_type=None,
                  tolerance=None, file_idx=None,
                  name='', label=None, label_seed=[''], **kwargs):
         self.name = name
         self.tolerance = tolerance
         self.points = points
-        self.units = init_units
+        self.units = units
         self.file_idx = file_idx
         self.label_seed = label_seed
         self.label = label
@@ -246,6 +246,18 @@ class Channel:
 
     def invert(self):
         self.values = - self.values
+
+    def max(self):
+        '''
+        Maximum, ignorning nans.
+        '''
+        return np.nanmax(self.values)
+        
+    def min(self):
+        '''
+        Minimum, ignoring nans.
+        '''
+        return np.nanmin(self.values)
         
     def normalize(self):
         self.values /= np.nanmax(self.values)
@@ -1263,6 +1275,19 @@ class Data:
         if kind in ['invert']:
             channel.values *= -1.
         channel._update()
+
+    def share_nans(self):
+        '''
+        Share not-a-numbers between all channels. If any channel is nan at a
+        given index, all channels will be nan at that index after this
+        operation.
+
+        Uses the share_nans method found in wt.kit.
+        '''
+        arrs = [c.values for c in self.channels]
+        outs = wt_kit.share_nans(arrs)
+        for c, a, in zip(self.channels, outs):
+            c.values = a
 
     def smooth(self, factors, channel=None, verbose=True):
         '''
