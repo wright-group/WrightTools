@@ -661,9 +661,10 @@ def string2array(string, sep='\t'):
     # discover shape
     shape = []       
     for i in range(1, dimensionality+1)[::-1]:
-        to_match = '['*(i-1) + ' '
-        count = string.count(to_match)
-        shape.append(count)
+        to_match = '['*(i-1)
+        count_positive = string.count(to_match + ' ')
+        cout_negative = string.count(to_match + '-')
+        shape.append(count_positive + cout_negative)
     shape[-1] = size / shape[-2]
     for i in range(1, dimensionality-1)[::-1]:
         shape[i] = shape[i] / shape[i-1]
@@ -683,7 +684,6 @@ def string2array(string, sep='\t'):
             l[i] = float(l[i])
     # create and reshape array
     arr = np.array(l)
-    print arr.shape, shape
     arr.shape = shape
     # finish
     return arr

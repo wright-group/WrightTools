@@ -137,6 +137,39 @@ def diagonal_line(xi, yi, ax=None, c='k', ls=':', lw=1):
     return line
 
 
+def get_color_cycle(n, cmap='rainbow', rotations=3):
+    '''
+    Get a list of RGBA colors. Useful for plotting lots of elements, keeping
+    the color of each unique.
+
+    Parameters
+    ----------
+    n : integer
+        The number of colors to return.
+    cmap : string (optional)
+        The colormap to use in the cycle. Default is rainbow.
+    rotations : integer (optional)
+        The number of times to repeat the colormap over the cycle. Default is
+        3.
+    
+    Returns
+    -------
+    list
+        List of RGBA lists.
+    '''
+    cmap = colormaps[cmap]
+    if np.mod(n, rotations) == 0:
+        per = np.floor_divide(n, rotations)
+    else:
+        per = np.floor_divide(n, rotations) + 1
+    vals = list(np.linspace(0, 1, per))
+    vals = vals * rotations
+    vals = vals[:n]
+    print vals
+    out = cmap(vals)
+    return out
+
+
 def get_constant_text(constants):
     string_list = [constant.get_label(show_units = True, points = True) for constant in constants]
     text = '    '.join(string_list)
