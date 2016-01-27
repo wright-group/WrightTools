@@ -89,18 +89,59 @@ def corner_text(text, distance=0.1, ax=None, corner='UL', factor=200,
         ha = 'center'
     # apply text
     props = dict(boxstyle='square', facecolor='white', alpha=0.8)
-    text = ax.text(v_scaled, h_scaled, text, transform=ax.transAxes, 
-                   fontsize=fontsize, 
-                   verticalalignment=va, 
-                   horizontalalignment=ha, 
-                   bbox=props)
-    return text
+    args = [v_scaled, h_scaled, text]
+    kwargs = {}
+    kwargs['fontsize'] = fontsize
+    kwargs['verticalalignment'] = va
+    kwargs['horizontalalignment'] = ha
+    kwargs['bbox'] = props
+    kwargs['transform'] = ax.transAxes
+    if 'zlabel' in ax.properties().keys():  # axis is 3D projection
+        out = ax.text2D(*args, **kwargs)
+    else:
+        out = ax.text(*args, **kwargs)
+    return out
+
+
+def diagonal_line(xi, yi, ax=None, c='k', ls=':', lw=1):
+    '''
+    Plot a diagonal line.
+    
+    Parameters
+    ----------
+    xi : 1D array-like
+        The x axis points.
+    yi : 1D array-like
+        The y axis points.
+    ax : axis (optional)
+        Axis to plot on. If none is supplied, the current axis is used.
+    c : string (optional)
+        Line color. Default is k.
+    ls : string (optional)
+        Line style. Default is : (dotted).
+    lw : float (optional)
+        Line width. Default is 1.
+    
+    Returns
+    -------
+    matplotlib.lines.Line2D object
+        The plotted line.
+    '''
+    # get axis
+    if ax is None:
+        ax = plt.gca()
+    # make plot
+    diag_min = max(min(xi), min(yi))
+    diag_max = min(max(xi), max(yi))
+    line = ax.plot([diag_min, diag_max], [diag_min, diag_max], c=c, ls=ls, lw=lw)
+    return line
 
 
 def get_constant_text(constants):
     string_list = [constant.get_label(show_units = True, points = True) for constant in constants]
     text = '    '.join(string_list)
     return text
+
 
 def make_cubehelix(gamma=1.0, s=0.5, r=-1.5, h=0.5,
                    lum_rev=False, darkest=0.8, plot=False):

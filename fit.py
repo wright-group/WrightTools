@@ -21,6 +21,42 @@ import data as wt_data
 import kit as wt_kit
 
 
+### helper functions ##########################################################
+
+
+def get_baseline(values, deviations=3):
+    '''
+    Guess the baseline for a data set.
+    
+    Returns the average of all points in ``values`` less than n ``deviations``
+    away from zero.
+    
+    Obviously, works best for data in which signal is relatively sparse so that
+    noise dominates the standard deviation.
+    
+    As a fallback, returns the minimum of ``values``.
+    
+    Parameters
+    ----------
+    values : array-like
+        The values to find the baseline of.
+    deviations : integer (optional)
+        The number of standard deviations away from zero to exclude.
+        
+    Returns
+    -------
+    float
+        Baseline guess.
+    '''
+    values_internal = values.copy()
+    std = np.std(values)
+    values_internal[np.abs(values_internal) <= deviations*std] = np.nan
+    baseline = np.average(values_internal)    
+    if np.isnan(baseline):
+        baseline = np.nanmin(values)
+    return baseline
+
+
 ### functions objects #########################################################
 
 
@@ -155,18 +191,7 @@ class Gaussian(Function):
             return [np.nan]*4
         Use_visible_baseline = False
         if Use_visible_baseline:
-            ystdev = np.std(values)
-            good = False
-            baselines = []
-            for i in values:
-                if abs(i)<= 3*ystdev:
-                    baselines.append(i)
-                else: good=True
-            if good:
-                baseline = np.average(baselines)
-            else:
-                # No data was rejected, so no visible baseline or no visible peak
-                baseline = min(values)
+            baseline = get_baseline(values)
         else:
             baseline = min(values)
         values -= baseline
@@ -175,6 +200,42 @@ class Gaussian(Function):
         amp = max(values)
         p0 = [mean, width, amp, baseline]
         return p0
+        
+class Moments(Function):
+    
+    def __init__(self):
+        Function.__init__(self)
+        self.dimensionality = 1
+        self.params = ['integral', 'one', 'two', 'three', 'four', 'baseline']
+        self.limits = {}
+
+    def evaluate(self, p, xi):
+        '''
+        Currently just returns nans.
+        '''
+        # TODO: fix this (how should it work?!)
+        return np.full(xi.shape, np.nan)
+        
+    def fit(self, *args, **kwargs):
+        y, x = args
+        y_internal = np.ma.copy(y)
+        x_internal = np.ma.copy(x)
+        # subtract baseline
+        baseline = get_baseline(y_internal)
+        y_internal -= baseline
+        # calculate moments
+        outs = [scipy.integrate.trapz(y_internal, x_internal)]
+        outs.append(np.sum((x_internal*y_internal) / np.sum(y_internal)))
+        for n in range(2, 5):
+            mu = np.sum(((x_internal-outs[1])**n)*y_internal) / np.sum(y_internal)
+            outs.append(mu)
+        # finish
+        outs.append(baseline)
+        return outs
+
+    def guess(self, values, xi):
+        return [0]*6
+    
 
 ### fitter ####################################################################
 
