@@ -220,14 +220,24 @@ class Moments(Function):
         y, x = args
         y_internal = np.ma.copy(y)
         x_internal = np.ma.copy(x)
+        # x must be ascending here, because of how np.trapz works
+        if x_internal[0] > x_internal[-1]:
+            y_internal = y_internal[::-1]
+            x_internal = x_internal[::-1]
         # subtract baseline
         baseline = get_baseline(y_internal)
         y_internal -= baseline
-        # calculate moments
-        outs = [scipy.integrate.trapz(y_internal, x_internal)]
+        # calculate
+        # integral
+        outs = [np.trapz(y_internal, x_internal)]
+        # first moment (expectation value)
         outs.append(np.sum((x_internal*y_internal) / np.sum(y_internal)))
-        for n in range(2, 5):
-            mu = np.sum(((x_internal-outs[1])**n)*y_internal) / np.sum(y_internal)
+        # second moment (central) (variance)
+        outs.append(np.sum((x_internal-outs[1])*y_internal) / np.sum(y_internal))
+        sdev = np.sqrt(outs[2])
+        # third and fourth moment (standardized)
+        for n in range(3, 5):
+            mu = np.sum(((x_internal-outs[1])**n)*y_internal) / (np.sum(y_internal)*(sdev**n))
             outs.append(mu)
         # finish
         outs.append(baseline)

@@ -115,6 +115,12 @@ class FileSlicer:
             with open(path) as f:
                 while f.readline()[0] == header_charachter:
                     self.n += 1
+                    
+    def close(self):
+        '''
+        Clear the cache, attempting to free as much memory as possible.
+        '''
+        linecache.clearcache()
     
     def get(self, line_count):
         '''
