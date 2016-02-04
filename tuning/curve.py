@@ -278,12 +278,22 @@ class Curve:
             color = wt_units.converter(color, units, self.units)
         # evaluate
         if full and self.subcurve:
-            source_color = self.source_color_interpolator.get_motor_positions(color)
-            source_motor_positions = np.array(self.subcurve.interpolator.get_motor_positions(source_color)).squeeze()
-            own_motor_positions = np.array(self.interpolator.get_motor_positions(color)).flatten()
-            return np.vstack((source_motor_positions, own_motor_positions)).squeeze()
+            def is_numeric(obj):
+                attrs = ['__add__', '__sub__', '__mul__', '__div__', '__pow__']
+                return all([hasattr(obj, attr) for attr in attrs] + [not hasattr(obj, '__len__')])
+            if is_numeric(color):
+                color = np.array([color])
+            out = []
+            for c in color:
+                source_color = self.source_color_interpolator.get_motor_positions(c)
+                source_motor_positions = np.array(self.subcurve.interpolator.get_motor_positions(source_color)).squeeze()
+                own_motor_positions = np.array(self.interpolator.get_motor_positions(c)).flatten()
+                out.append(np.concatenate((source_motor_positions, own_motor_positions)))
+            out = np.array(out)
+            return out.squeeze().T
         else:
-            return np.array(self.interpolator.get_motor_positions(color)).squeeze()
+            out = np.array(self.interpolator.get_motor_positions(color))
+            return out
             
     def get_source_color(self, color, units='same'):
         if not self.subcurve:
@@ -329,18 +339,26 @@ class Curve:
             units = self.units
         new_colors = wt_units.converter(new_colors, units, self.units)
         new_colors.sort()
-        # map motors
+        # ensure that motor interpolators agree with current motor positions
+        self.interpolate()
+        # map own motors
         new_motors = []
         for motor_index, motor in enumerate(self.motors):
-            positions = self.get_motor_positions(new_colors)[motor_index]
+            positions = self.get_motor_positions(new_colors, full=False)[motor_index]
             new_motor = Motor(positions, motor.name)  # new motor objects
             new_motors.append(new_motor)
+        # map source colors, subcurves
+        if self.subcurve:
+            new_source_colors = np.array(self.source_color_interpolator.get_motor_positions(new_colors)).squeeze()
+            self.subcurve.map_colors(new_source_colors)
+            self.source_colors.positions = new_source_colors
         # finish
         self.colors = new_colors
         self.motors = new_motors
         self.motor_names = [m.name for m in self.motors]
         for obj in self.motors:
             setattr(self, obj.name, obj)
+        self.interpolate()
 
     def offset(self, motor, amount):
         '''
@@ -641,6 +659,7 @@ def to_TOPAS_crvs(curve, save_directory, **kwargs):
         arr[1] = curve.colors
         arr[2] = 1
         arr[3] = curve.motors[0].positions
+        to_insert[interaction_string] = arr
     # generate output
     out_lines = copy.copy(crv_lines)
     for interaction_string, arr in to_insert.items():
