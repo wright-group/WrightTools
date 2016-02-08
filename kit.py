@@ -11,6 +11,8 @@ import re
 import ast
 import sys
 import copy
+import itertools
+import linecache
 import collections
 from time import clock
 
@@ -44,6 +46,18 @@ def filename_parse(fstr):
     return file_path, file_name, file_suffix
 
 
+def file_len(fname):
+    '''
+    Cheaply get the number of lines in a file. File is not entirely loaded 
+    into memory.
+    '''
+    # adapted from http://stackoverflow.com/questions/845058
+    with open(fname) as f:
+        for i, l in enumerate(f):
+            pass
+    return i + 1
+
+
 def find_name(fname, suffix):
     """
     save the file using fname, and tacking on a number if fname already exists
@@ -72,6 +86,83 @@ def find_name(fname, suffix):
             # file doesn't exist and is safe to write to this path
             good_name = True
     return
+    
+    
+class FileSlicer:
+    
+    def __init__(self, path, skip_headers=True, header_charachter='#'):
+        '''
+        Access groups of lines from a file quickly, without loading the entire
+        file into memory. Lines are accesed from Useful especially in cases where 
+        
+        Mostly a convinient wrapper around the standard library 'linecache'
+        module.
+        
+        Parameters
+        ----------
+        path : string
+            Path to the file.
+        skip_headers : bool (optional)
+            Toggle to skip headers at beginning of file. Default is True.
+        header_charachter : string (optional)
+            Charachter that appears at the beginning of header lines for this
+            file. Default is '#'.
+        '''
+        self.path = path
+        self.n = 0
+        self.length = file_len(path)
+        if skip_headers:
+            with open(path) as f:
+                while f.readline()[0] == header_charachter:
+                    self.n += 1
+                    
+    def close(self):
+        '''
+        Clear the cache, attempting to free as much memory as possible.
+        '''
+        linecache.clearcache()
+    
+    def get(self, line_count):
+        '''
+        Get the next group of lines from the file.
+        
+        Parameters
+        ----------
+        line_count : int
+            The number of lines to read from the file.
+            
+        Returns
+        -------
+        list
+            List of lines as strings.
+        '''
+        # calculate indicies
+        start = self.n
+        stop = self.n + line_count
+        if stop > self.length:
+            raise IndexError('there are no more lines in the slicer: ' +
+                             '(file length {})'.format(self.length))
+        # get lines using list comprehension
+        # for some reason linecache is 1 indexed >:-(
+        out = [linecache.getline(self.path, i) for i in range(start+1, stop+1)]
+        # finish
+        self.n += line_count
+        return out
+    
+    def skip(self, line_count):
+        '''
+        Skip the next group of lines from the file.
+        
+        Parameters
+        ----------
+        line_count : int
+            The number of lines to skip.
+        '''
+        if self.n + line_count > self.length:
+            raise IndexError('there are no more lines in the slicer: ' +
+                             '(file length {})'.format(self.length))        
+        # finish
+        self.n += line_count
 
 
 def get_box_path():
@@ -285,6 +376,59 @@ def write_headers(filepath, dictionary):
 ### array and math ############################################################
 
 
+def closest_pair(arr, give='indicies'):
+    '''
+    Find the pair of indices corresponding to the closest elements in an array.
+    If multiple pairs are equally close, both pairs of indicies are returned.
+    Optionally returns the closest distance itself.
+
+    I am sure that this could be written as a cheaper operation. I
+    wrote this as a quick and dirty method because I need it now to use on some
+    relatively small arrays. Feel free to refactor if you need this operation
+    done as fast as possible. - Blaise 2016.02.07
+
+    Parameters
+    ----------
+    arr : numpy.ndarray
+        The array to search.
+    give : {'indicies', 'distance'} (optional)
+        Toggle return behavior. If 'distance', returns a single float - the
+        closest distance itself. Default is indicies.
+
+    Returns
+    -------
+    list of lists of two tuples
+        List containing lists of two tuples: indicies the nearest pair in the
+        array.
+
+    Examples
+    --------
+    >>> arr = np.array([0, 1, 2, 3, 3, 4, 5, 6, 1])
+    >>> closest_pair(arr)
+    [[(1,), (8,)], [(3,), (4,)]]
+    '''
+    idxs = [idx for idx in np.ndindex(arr.shape)]
+    outs = []
+    min_dist = arr.max() - arr.min()
+    for idxa in idxs:
+        for idxb in idxs:
+            if idxa == idxb:
+                continue
+            dist = abs(arr[idxa]-arr[idxb])
+            if dist == min_dist:
+                if not [idxb, idxa] in outs:
+                    outs.append([idxa, idxb])
+            elif dist < min_dist:
+                min_dist = dist
+                outs = [[idxa, idxb]]
+    if give == 'indicies':
+        return outs
+    elif give == 'distance':
+        return min_dist
+    else:
+        raise KeyError('give not recognized in closest_pair')
+
+
 def diff(xi, yi, order = 1):
     '''
     numpy.diff is a convinient method but it only works for evenly spaced data \n
@@ -441,6 +585,34 @@ def array2string(array, sep='\t'):
     string = string.replace('\n', sep)
     string = re.sub(r'({})(?=\1)'.format(sep), '', string)
     return string
+    
+    
+def flatten_list(l):
+    '''
+    Flatten an irregular list. Works generally but may be slower than it could
+    be if you can make assumptions about your list.
+    
+    Adapted from http://stackoverflow.com/questions/2158395
+    
+    Example
+    -------
+    >>> l = [[[1, 2, 3], [4, 5]], 6]
+    >>> wt.kit.flatten_list(l)
+    [1, 2, 3, 4, 5, 6]
+    '''
+    listIsNested = True
+    while listIsNested:  # outer loop
+        keepChecking = False
+        Temp = []
+        for element in l:  # inner loop
+            if isinstance(element,list):
+                Temp.extend(element)
+                keepChecking = True
+            else:
+                Temp.append(element)
+        listIsNested = keepChecking  # determine if outer loop exits
+        l = Temp[:]
+    return l
 
 
 def get_methods(the_class, class_only=False, instance_only=False,
@@ -548,15 +720,17 @@ def string2array(string, sep='\t'):
     # discover shape
     shape = []       
     for i in range(1, dimensionality+1)[::-1]:
-        to_match = '['*(i-1) + ' '
-        count = string.count(to_match)
-        shape.append(count)
+        to_match = '['*(i-1)
+        count_positive = string.count(to_match + ' ')
+        cout_negative = string.count(to_match + '-')
+        shape.append(count_positive + cout_negative)
     shape[-1] = size / shape[-2]
     for i in range(1, dimensionality-1)[::-1]:
         shape[i] = shape[i] / shape[i-1]
     shape = tuple(shape)
     # import list of floats
     l = string.split(' ')
+    l = flatten_list([i.split('-') for i in l])  # annoyingly series of negative values get past previous filters
     for i, item in enumerate(l):
         bad_chars = ['[', ']', '\t']
         for bad_char in bad_chars:
