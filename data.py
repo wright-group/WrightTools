@@ -12,6 +12,12 @@ import copy
 import time
 import collections
 
+import warnings
+# I hate how the warning module prints, so I overload the method
+def _my_warning(message, category=UserWarning, filename='', lineno=-1):
+    print 'WARNING:', message
+warnings.showwarning = _my_warning
+
 import pickle
 
 import numpy as np
@@ -1579,7 +1585,7 @@ def from_COLORS(filepaths, znull=None, name=None, cols=None, invert_d1=True,
             cols = 'v2'
         elif num_cols in [20]:
             cols = 'v1'
-        elif num_cols == 16:
+        elif num_cols in [15, 16, 19]:
             cols = 'v0'
         if verbose:
             print 'cols recognized as', cols, '(%d)'%num_cols
@@ -2152,17 +2158,26 @@ def from_PyCMDS(filepath, name=None,
     # get indicies arrays
     indicies = arr[:len(axes)].T
     indicies = indicies.astype('int64')
-    # prepare points for interpolation
+    # get interpolation toggles
+    if 'axis interpolate' in headers:
+        interpolate_toggles = headers['axis interpolate']
+    else:
+        # old data files may not have interpolate toggles in headers
+        # assume no interpolation, unless the axis is the array detector
+        interpolate_toggles = [True if name == 'wa' else False for name in headers['axis names']]
+    # get assorted remaining things
     shape = tuple([a.points.size for a in axes])
+    tols = [wt_kit.closest_pair(axis.points, give='distance')/2. for axis in axes]   
+    # prepare points for interpolation
     points_dict = collections.OrderedDict()
     for i, axis in enumerate(axes):
         # TODO: math and proper full recognition...
         axis_col_name = [name for name in headers['name'][::-1] if name in axis.identity][0]
-        axis_index = headers['name'].index(axis_col_name)
-        lis = arr[axis_index]
+        axis_index = headers['name'].index(axis_col_name)            
         # shape array acording to recorded coordinates
         points = np.full(shape, np.nan)
         for j, idx in enumerate(indicies):
+            lis = arr[axis_index]
             points[tuple(idx)] = lis[j]
         # convert array
         points = wt_units.converter(points, headers['units'][axis_index], axis.units)       
@@ -2175,7 +2190,7 @@ def from_PyCMDS(filepath, name=None,
             points = points.transpose(transpose_order)
             # subtract out centers
             centers = np.array(headers[axis.name + ' centers'])
-            # TODO: REMOVE THIS >:(
+            # TODO: REMOVE THIS TRANSFORM >:(
             if axis.name == 'wa':
                 centers = centers.T
             points -= centers
@@ -2183,6 +2198,14 @@ def from_PyCMDS(filepath, name=None,
             points = points.transpose(transpose_order)
         points = points.flatten()
         points_dict[axis.name] = points
+        # check, coerce non-interpolated axes
+        for j, idx in enumerate(indicies):
+            actual = points[j]
+            expected = axis.points[idx[i]]
+            if abs(actual-expected) > tols[i]:
+                warnings.warn('at least one point exceded tolerance ' +
+                              'in axis {}'.format(axis.name))
+            points[j] = expected
         # coerce axis edges to actual points
         axis.points[np.argmax(axis.points)] = points.max()
         axis.points[np.argmin(axis.points)] = points.min()
@@ -2197,20 +2220,42 @@ def from_PyCMDS(filepath, name=None,
         meshgrid = tuple([axes[0].points])
     else:
         meshgrid = tuple(np.meshgrid(*[a.points for a in axes], indexing='ij'))
-    # create channels
-    channels = []
-    for i in range(len(arr)):
-        if headers['kind'][i] == 'channel':
-            # unpack
-            units = headers['units'][i]
-            signed = headers['channel signed'][len(channels)]
-            name = headers['name'][i]
-            label = headers['label'][i]
-            # interpolate
-            values = values_dict[name]
-            zi = griddata(all_points, values, meshgrid, rescale=True,
-                          method='linear', fill_value=np.nan)
-            # assemble
+    if any(interpolate_toggles):
+        # create channels through linear interpolation
+        channels = []
+        for i in range(len(arr)):
+            if headers['kind'][i] == 'channel':
+                # unpack
+                units = headers['units'][i]
+                signed = headers['channel signed'][len(channels)]
+                name = headers['name'][i]
+                label = headers['label'][i]
+                # interpolate
+                values = values_dict[name]
+                zi = griddata(all_points, values, meshgrid, rescale=True,
+                              method='linear', fill_value=np.nan)
+                # assemble
+                channel = Channel(zi, units, signed=signed, name=name, label=label)
+                channels.append(channel)
+    else:
+        # if none of the axes are interpolated onto,
+        # simply fill zis based on recorded axis index
+        num_channels = headers['kind'].count('channel')
+        channel_indicies = [i for i, kind in enumerate(headers['kind']) if kind == 'channel']
+        zis = [np.full(shape, np.nan) for _ in range(num_channels)]
+        # iterate through each row of the array, filling zis
+        for i in range(len(arr[0])):
+            idx = tuple(indicies[i])  # yes, this MUST be a tuple >:(
+            for zi_index, arr_index in enumerate(channel_indicies):
+                zis[zi_index][idx] = arr[arr_index, i]
+        # assemble channels
+        channels = []
+        for zi_index, arr_index in zip(range(len(zis)), channel_indicies):
+            zi = zis[zi_index]
+            units = headers['units'][arr_index]
+            signed = headers['channel signed'][zi_index]
+            name = headers['name'][arr_index]
+            label = headers['label'][arr_index]
             channel = Channel(zi, units, signed=signed, name=name, label=label)
             channels.append(channel)
     # get constants

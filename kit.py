@@ -376,6 +376,59 @@ def write_headers(filepath, dictionary):
 ### array and math ############################################################
 
 
+def closest_pair(arr, give='indicies'):
+    '''
+    Find the pair of indices corresponding to the closest elements in an array.
+    If multiple pairs are equally close, both pairs of indicies are returned.
+    Optionally returns the closest distance itself.
+
+    I am sure that this could be written as a cheaper operation. I
+    wrote this as a quick and dirty method because I need it now to use on some
+    relatively small arrays. Feel free to refactor if you need this operation
+    done as fast as possible. - Blaise 2016.02.07
+
+    Parameters
+    ----------
+    arr : numpy.ndarray
+        The array to search.
+    give : {'indicies', 'distance'} (optional)
+        Toggle return behavior. If 'distance', returns a single float - the
+        closest distance itself. Default is indicies.
+
+    Returns
+    -------
+    list of lists of two tuples
+        List containing lists of two tuples: indicies the nearest pair in the
+        array.
+
+    Examples
+    --------
+    >>> arr = np.array([0, 1, 2, 3, 3, 4, 5, 6, 1])
+    >>> closest_pair(arr)
+    [[(1,), (8,)], [(3,), (4,)]]
+    '''
+    idxs = [idx for idx in np.ndindex(arr.shape)]
+    outs = []
+    min_dist = arr.max() - arr.min()
+    for idxa in idxs:
+        for idxb in idxs:
+            if idxa == idxb:
+                continue
+            dist = abs(arr[idxa]-arr[idxb])
+            if dist == min_dist:
+                if not [idxb, idxa] in outs:
+                    outs.append([idxa, idxb])
+            elif dist < min_dist:
+                min_dist = dist
+                outs = [[idxa, idxb]]
+    if give == 'indicies':
+        return outs
+    elif give == 'distance':
+        return min_dist
+    else:
+        raise KeyError('give not recognized in closest_pair')
+
+
 def diff(xi, yi, order = 1):
     '''
     numpy.diff is a convinient method but it only works for evenly spaced data \n
