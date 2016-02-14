@@ -41,7 +41,7 @@ class Subplot:
         self.ax.set_title(title, fontsize=16)
         
     def add_arrow(self, index, between, kind, label, 
-                  head_size=0.075, font_size=12, color='k'):
+                  head_size=0.1, font_size=14, color='k'):
         x_pos = np.linspace(0, 1, self.interactions)[index]
         # calculate arrow length
         arrow_length = self.energies[between[1]] - self.energies[between[0]]
@@ -72,7 +72,7 @@ class Subplot:
                                    head_length=head_size,
                                    fc=color, ec=color, linestyle='solid', linewidth=0)
         # add text
-        text = self.ax.text(x_pos, -0.125, label, fontsize=font_size, horizontalalignment='center')
+        text = self.ax.text(x_pos, -0.2, label, fontsize=font_size, horizontalalignment='center')
         # plot energies
         for energy in self.energies:
             self.ax.axhline(energy, color='k', linewidth=2, ls='-')

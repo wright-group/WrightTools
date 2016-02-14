@@ -18,6 +18,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 import matplotlib.gridspec as grd
 import matplotlib.colors as mplcolors
 matplotlib.rcParams['contour.negative_linestyle'] = 'solid'
+matplotlib.rcParams['font.size'] = 14
 
 import kit  # legacy...
 import kit as wt_kit
@@ -26,7 +27,15 @@ import kit as wt_kit
 ### artist helpers ############################################################
 
 
-def corner_text(text, distance=0.1, ax=None, corner='UL', factor=200, 
+def _title(fig, title, subtitle, margin=1):
+    fig.suptitle(title, fontsize=20)
+    height = fig.get_figheight()  # inches
+    distance = margin / 2.  # distance from top of plot, in inches
+    ratio = 1 - distance/height
+    fig.text(0.5, ratio, subtitle, fontsize=18, ha='center', va='top')
+
+
+def corner_text(text, distance=0.075, ax=None, corner='UL', factor=200, 
                 fontsize=None, background_alpha=0.75):
     '''
     Place some text in the corner of the figure.
@@ -57,38 +66,9 @@ def corner_text(text, distance=0.1, ax=None, corner='UL', factor=200,
     # get axis
     if ax is None:
         ax = plt.gca()
-    # get bounds
-    x0, y0, width, height = ax.bbox.bounds
-    width_scaled = width/factor
-    height_scaled = height/factor
-    # get scaled postions
-    if corner == 'UL':
-        v_scaled = distance/width_scaled
-        h_scaled = 1-(distance/height_scaled)
-        va = 'top'
-        ha = 'left'
-    elif corner == 'LL':
-        v_scaled = distance/width_scaled
-        h_scaled = distance/height_scaled
-        va = 'bottom'
-        ha = 'left'
-    elif corner == 'UR':
-        v_scaled = 1-(distance/width_scaled)
-        h_scaled = 1-(distance/height_scaled)
-        va = 'top'
-        ha = 'right'
-    elif corner == 'LR':
-        v_scaled = 1-(distance/width_scaled)
-        h_scaled = distance/height_scaled
-        va = 'bottom'
-        ha = 'right'
-    else:
-        print 'corner not recognized'
-        v_scaled = h_scaled = 1.
-        va = 'center'
-        ha = 'center'
+    [h_scaled, v_scaled], [va, ha] = get_scaled_bounds(ax, corner, distance, factor)
     # apply text
-    props = dict(boxstyle='square', facecolor='white', alpha=0.8)
+    props = dict(boxstyle='square', facecolor='white', alpha=background_alpha)
     args = [v_scaled, h_scaled, text]
     kwargs = {}
     kwargs['fontsize'] = fontsize
@@ -101,6 +81,141 @@ def corner_text(text, distance=0.1, ax=None, corner='UL', factor=200,
     else:
         out = ax.text(*args, **kwargs)
     return out
+
+
+def create_figure(width='single', nrows=1, cols=[1, 'cbar'], margin=1.,
+                  hspace=0.25, wspace=0.25, cbar_width=0.25, aspects=[]):
+    '''
+    Re-parameterization of matplotlib figure creation tools, exposing variables
+    convinient for the Wright Group.
+
+    Figures are defined primarily by their width. Height is defined by the
+    aspect ratios of the subplots contained within. hspace, wspace, and
+    cbar_width are defined in inches, making it easier to make consistent
+    plots. Margins are enforced to be equal around the entire plot, starting
+    from the edges of the subplots.
+
+    Parameters
+    ----------
+    width : {'single', 'double'} or float (optional)
+        The total width of the generated figure. Can be given in inches
+        directly, or can be specified using keys. Default is 'single' (6.5
+        inches).
+    nrows : int (optional)
+        The number of subplot rows in the figure. Default is 1.
+    cols : list (optional)
+        A list of numbers, defining the number and width-ratios of the
+        figure columns. May also contain the special string 'cbar', defining
+        a column as a colorbar-containing column. Default is [1, 'cbar'].
+    margin : float (optional)
+        Margin in inches. Margin is applied evenly around the figure, starting
+        from the subplot boundaries (so that ticks and labels appear in the
+        margin). Default is 1.
+    hspace : float (optional)
+        The 'height space' (space seperating two subplots vertically), in
+        inches. Default is 0.25.
+    wspace : float (optional)
+        The 'width space' (space seperating two subplots horizontally), in
+        inches. Default is 0.25.
+    cbar_width : float (optional)
+        The width of the colorbar in inches. Default is 0.25.
+    aspects : list of lists (optional)
+        Define the aspect ratio of individual subplots. List of lists, each
+        sub-ist having the format [[row, col], aspect]. The figure will expand
+        vertically to acomidate the defined aspect ratio. Aspects are V/H so
+        aspects larger than 1 will be taller than wide and vice-versa for
+        aspects smaller than 1. You may only define the aspect for one subplot
+        in each row. If no aspect is defined for a particular row, the leftmost
+        subplot will have an aspect of 1. Default is [].
+
+    Returns
+    -------
+    tuple
+        (matplotlib.figure.Figure, matplotlib.gridspec.GridSpec). GridSpec
+        contains SubplotSpec objects that can have axes placed into them.
+        The SubplotSpec objects can be accessed through indexing: [row, col].
+        Slicing works, for example ``cax = plt.subplot(gs[:, -1])``. See
+        `matplotlib documentation <http://matplotlib.org/1.4.0/users/gridspec.html#gridspec-and-subplotspec>`_
+        for more information.
+
+    Notes
+    -----
+    To ensure the margins work as expected, save the fig with
+    the same margins (``pad_inches``) as specified in this function. Common
+    savefig call:
+    ``plt.savefig(plt.savefig(output_path, dpi=300, transparent=True,
+    pad_inches=1))``
+
+    See also
+    --------
+    wt.artists.plot_margins
+        Plot lines to visualize the figure edges, margins, and centers. For
+        debug and design purposes.
+    wt.artsits.subplots_adjust
+        Enforce margins for figure generated elsewhere.
+    '''
+    # get width
+    if width == 'double':
+        figure_width = 14.
+    elif width == 'single':
+        figure_width = 6.5
+    else:
+        figure_width = float(width)
+    # check if aspect constraints are valid
+    rows_in_aspects = [item[0][0] for item in aspects]
+    if not len(rows_in_aspects) == len(set(rows_in_aspects)):
+        raise Exception('can only specify aspect for one plot in each row')
+    # get width avalible to subplots (not including colorbars)
+    total_subplot_width = figure_width - 2*margin
+    total_subplot_width -= (len(cols)-1) * wspace  # whitespace in width
+    total_subplot_width -= cols.count('cbar') * cbar_width  # colorbar width
+    # converters
+    def in_to_mpl(inches, total, n):
+        return (inches*n)/(total-inches*n+inches)
+    def mpl_to_in(mpl, total, n):
+        return (total/(n+mpl*(n-1)))*mpl
+    # calculate column widths, width_ratio
+    subplot_ratios = np.array([i for i in cols if not i == 'cbar'], dtype=np.float)
+    subplot_ratios /= sum(subplot_ratios)
+    subplot_widths = total_subplot_width * subplot_ratios
+    print subplot_widths
+    width_ratios = []
+    cols_idxs = []
+    i = 0
+    for col in cols:
+        if not col == 'cbar':
+            width_ratios.append(subplot_widths[i])
+            cols_idxs.append(i)
+            i += 1
+        else:
+            width_ratios.append(cbar_width)
+            cols_idxs.append(np.nan)
+    # calculate figure height, height_ratios, figure height
+    subplot_heights = []
+    for row_index in range(nrows):
+        if row_index in rows_in_aspects:
+            aspect = aspects[rows_in_aspects.index(row_index)][1]
+            col_index = aspects[rows_in_aspects.index(row_index)][0][1]
+            height = subplot_widths[col_index] * aspect
+            subplot_heights.append(height)
+        else:
+            # make the leftmost (zero indexed) plot square as default
+            subplot_heights.append(subplot_widths[0])
+    height_ratios = subplot_heights
+    figure_height = sum(subplot_heights)
+    figure_height += (nrows-1) * hspace
+    figure_height += 2*margin
+    # make figure
+    fig = plt.figure(figsize=[figure_width, figure_height])
+    # get hspace, wspace in relative units
+    hspace = in_to_mpl(hspace, figure_height-2*margin, nrows)
+    wspace = in_to_mpl(wspace, figure_width-2*margin, len(cols))
+    # make gridpsec
+    gs = grd.GridSpec(nrows, len(cols), hspace=hspace, wspace=wspace,
+                      width_ratios=width_ratios, height_ratios=height_ratios)
+    # finish
+    subplots_adjust(fig, inches=margin)
+    return fig, gs
 
 
 def diagonal_line(xi, yi, ax=None, c='k', ls=':', lw=1):
@@ -174,6 +289,40 @@ def get_constant_text(constants):
     string_list = [constant.get_label(show_units = True, points = True) for constant in constants]
     text = '    '.join(string_list)
     return text
+
+
+def get_scaled_bounds(ax, position, distance=0.1, factor=200):
+    # get bounds
+    x0, y0, width, height = ax.bbox.bounds
+    width_scaled = width/factor
+    height_scaled = height/factor
+    # get scaled postions
+    if position == 'UL':
+        v_scaled = distance/width_scaled
+        h_scaled = 1-(distance/height_scaled)
+        va = 'top'
+        ha = 'left'
+    elif position == 'LL':
+        v_scaled = distance/width_scaled
+        h_scaled = distance/height_scaled
+        va = 'bottom'
+        ha = 'left'
+    elif position == 'UR':
+        v_scaled = 1-(distance/width_scaled)
+        h_scaled = 1-(distance/height_scaled)
+        va = 'top'
+        ha = 'right'
+    elif position == 'LR':
+        v_scaled = 1-(distance/width_scaled)
+        h_scaled = distance/height_scaled
+        va = 'bottom'
+        ha = 'right'
+    else:
+        print 'corner not recognized'
+        v_scaled = h_scaled = 1.
+        va = 'center'
+        ha = 'center'
+    return [h_scaled, v_scaled], [va, ha]
 
 
 def make_cubehelix(gamma=1.0, s=0.5, r=-1.5, h=0.5,
@@ -340,8 +489,69 @@ def plot_colormap(cmap):
     plt.plot(x, k, 'k:', linewidth=5, alpha=0.6)
     # finish
     plt.grid()
-    plt.xlabel('value', fontsize=16)
-    plt.ylabel('intensity', fontsize=16)
+    plt.xlabel('value', fontsize=17)
+    plt.ylabel('intensity', fontsize=17)
+
+
+def plot_margins(fig=None, inches=1., centers=True, edges=True):
+    '''
+    Add lines onto a figure indicating the margins, centers, and edges. Useful
+    for ensuring your figure design scripts work as intended, and for laying
+    out figures.
+    
+    Parameters
+    ----------
+    fig : matplotlib.figure.Figure object (optional)
+        The figure to plot onto. If None, gets current figure. Default is None.
+    inches : float (optional)
+        The size of the figure margin, in inches. Default is 1.
+    centers : bool (optional)
+        Toggle for plotting lines indicating the figure center. Default is
+        True.
+    edges : bool (optional)
+        Toggle for plotting lines indicating the figure edges. Default is True.
+    '''
+    if fig is None:
+        fig = plt.gcf()
+    size = fig.get_size_inches()  # [H, V]
+    trans_vert = inches/size[0]
+    left = matplotlib.lines.Line2D([trans_vert, trans_vert], [0, 1], transform=fig.transFigure, figure=fig)
+    right = matplotlib.lines.Line2D([1-trans_vert, 1-trans_vert], [0, 1], transform=fig.transFigure, figure=fig)
+    trans_horz = inches/size[1]
+    bottom = matplotlib.lines.Line2D([0, 1], [trans_horz, trans_horz], transform=fig.transFigure, figure=fig)
+    top = matplotlib.lines.Line2D([0, 1], [1-trans_horz, 1-trans_horz], transform=fig.transFigure, figure=fig)      
+    fig.lines.extend([left, right, bottom, top])
+    if centers:
+        vert = matplotlib.lines.Line2D([0.5, 0.5], [0, 1], transform=fig.transFigure, figure=fig, c='r')
+        horiz = matplotlib.lines.Line2D([0, 1], [0.5, 0.5], transform=fig.transFigure, figure=fig, c='r')
+        fig.lines.extend([vert, horiz])
+    if edges:
+        left = matplotlib.lines.Line2D([0, 0], [0, 1], transform=fig.transFigure, figure=fig, c='k')
+        right = matplotlib.lines.Line2D([1, 1], [0, 1], transform=fig.transFigure, figure=fig, c='k')
+        bottom = matplotlib.lines.Line2D([0, 1], [0, 0], transform=fig.transFigure, figure=fig, c='k')
+        top = matplotlib.lines.Line2D([0, 1], [1, 1], transform=fig.transFigure, figure=fig, c='k')
+        fig.lines.extend([left, right, bottom, top])
+
+
+def subplots_adjust(fig=None, inches=1):
+    '''
+    Enforce margin to be equal around figure, starting at subplots.
+
+    You probably should be using wt.artists.create_figure instead.
+
+    See also
+    --------
+    wt.artists.plot_margins
+        Visualize margins, for debugging / layout.
+    wt.artists.create_figure
+        Convinience method for creating well-behaved figures.
+    '''
+    if fig is None:
+        fig = plt.gcf()
+    size = fig.get_size_inches()
+    vert = inches/size[0]
+    horz = inches/size[1]
+    fig.subplots_adjust(vert, horz, 1-vert, 1-horz)
 
 
 ### color maps ################################################################
@@ -501,16 +711,14 @@ class mpl_1D:
         # defaults
         self.font_size = 15
 
-    def plot(self, channel = 0, local = False,
-             autosave = False, output_folder = None, fname = None,
-             verbose = True):
+    def plot(self, channel=0, local=False, autosave=False, output_folder=None,
+             fname=None, lines=True, verbose=True):
         fig = None
         if len(self.chopped) > 10:
             if not autosave:
                 print 'too many images will be generated ({}): forcing autosave'.format(len(self.chopped))
                 autosave = True
-                
-        # prepare output folder
+        # prepare output folders
         if autosave:
             if output_folder:
                 pass
@@ -525,51 +733,43 @@ class mpl_1D:
                     folder_name = 'mpl_1D ' + kit.get_timestamp()
                     os.mkdir(folder_name)
                     output_folder = folder_name
-        
         # chew through image generation
         for i in range(len(self.chopped)):
-
-            if fig: plt.close(fig)
-
-            fig = plt.figure(figsize=(8, 6))
-
+            if fig and autosave:
+                plt.close(fig)
+            aspects = [[[0, 0], 0.5]]
+            fig, gs = create_figure(width='single', nrows=1, cols=[1], aspects=aspects)
             current_chop = self.chopped[i]
             axes = current_chop.axes
             channels = current_chop.channels
             constants = current_chop.constants
-
+            axis = axes[0]
             xi = axes[0].points
             zi = channels[channel].values
-
-            plt.plot(xi, zi)
+            plt.plot(xi, zi, lw=2)
+            plt.scatter(xi, zi, color='grey', alpha=0.5, edgecolor='none')
             plt.grid()
-
-            # limits ----------------------------------------------------------
-
+            # variable marker lines
+            if lines:
+                for constant in constants:
+                        if constant.units_kind == 'energy':
+                            if axis.units == constant.units:
+                                plt.axvline(constant.points, color='k', linewidth=4, alpha=0.25)
+            # limits
             if local:
                 pass
             else:
                 plt.ylim(channels[channel].zmin, channels[channel].zmax)
-
-            # label axes ------------------------------------------------------
-
-            plt.xlabel(axes[0].get_label())
-            plt.ylabel(channels[channel].name)
-
-            # title -----------------------------------------------------------
-
+            # label axes
+            plt.xlabel(axes[0].get_label(), fontsize=18)
+            plt.ylabel(channels[channel].name, fontsize=18)
+            plt.xticks(rotation=45)
+            plt.xlim(xi.min(), xi.max())
+            # title
             title_text = self.data.name
             constants_text = '\n' + get_constant_text(constants)
-            plt.suptitle(title_text + constants_text, fontsize=self.font_size)
-
-            # cleanup ---------------------------------------------------------
-
-            # plt.tight_layout()
-            factor = 0.12
-            fig.subplots_adjust(left = factor, right = 1-factor, top = 1-factor, bottom = 0.15)
-
-            # save figure -----------------------------------------------------
-
+            plt.suptitle(title_text + constants_text, fontsize=20)
+            # save
             if autosave:
                 if fname:
                     file_name = fname + ' ' + str(i).zfill(3)
@@ -592,7 +792,6 @@ class mpl_2D:
         if verbose:
             print 'mpl_2D recieved data to make %d plots'%len(self.chopped)
         # defaults
-        self.font_size = 15
         self._xsideplot = False
         self._ysideplot = False
         self._xsideplotdata = []
@@ -623,11 +822,11 @@ class mpl_2D:
         self._onplotdata.append((xi, yi, kwargs))
 
     def plot(self, channel=0,
-             contours=9, pixelated=True, lines=True, cmap='default', facecolor='w',
-             dynamic_range = False, local=False, contours_local=True, normalize_slices='both',
-             xbin= False, ybin=False, xlim=None, ylim=None,
-             autosave=False, output_folder=None, fname=None,
-             verbose=True):
+             contours=9, pixelated=True, lines=True, cmap='default', 
+             facecolor='w', dynamic_range = False, local=False, 
+             contours_local=True, normalize_slices='both',  xbin= False, 
+             ybin=False, xlim=None, ylim=None, autosave=False, 
+             output_folder=None, fname=None, verbose=True):
         '''
         Draw the plot(s).
         
@@ -675,7 +874,6 @@ class mpl_2D:
         verbose : bool (optional)
             Toggle talkback. Default is True.
         '''
-        
         # get channel index
         if type(channel) in [int, float]:
             channel_index = int(channel)
@@ -683,14 +881,12 @@ class mpl_2D:
             channel_index = self.chopped[0].channel_names.index(channel)
         else:
             print 'channel type not recognized in mpl_2D!'
-
         # prepare figure
         fig = None
         if len(self.chopped) > 10:
             if not autosave:
                 print 'too many images will be generated: forcing autosave'
                 autosave = True
-        
         # prepare output folder
         if autosave:
             if output_folder:
@@ -706,25 +902,19 @@ class mpl_2D:
                     folder_name = 'mpl_2D ' + kit.get_timestamp()
                     os.mkdir(folder_name)
                     output_folder = folder_name
-
         # chew through image generation
         for i in range(len(self.chopped)):
-
             # get data to plot ------------------------------------------------
-
             current_chop = self.chopped[i]
             axes = current_chop.axes
             channels = current_chop.channels
             constants = current_chop.constants
-
             xaxis = axes[1]
             yaxis = axes[0]
             channel = channels[channel_index]
             zi = channel.values
             zi = np.ma.masked_invalid(zi)
-
-            # normalize slices -------------------------------------------------
-
+            # normalize slices ------------------------------------------------
             if normalize_slices == 'both':
                 pass
             elif normalize_slices == 'horizontal':
@@ -748,46 +938,32 @@ class mpl_2D:
                 channel.zmax = zi.max()
                 channel.zmin = zi.min()
                 channel.znull = 0
-
             # create figure ---------------------------------------------------
-
-            if fig:
+            if fig and autosave:
                 plt.close(fig)
-
-            fig = plt.figure(figsize=(8, 7))
-
-            gs = grd.GridSpec(1, 2, width_ratios=[20, 1], wspace=0.1)
-
+            fig, gs = create_figure(width='single', nrows=1, cols=[1, 'cbar'])
             subplot_main = plt.subplot(gs[0])
             subplot_main.patch.set_facecolor(facecolor)
-
             # levels ----------------------------------------------------------
-
             if channel.signed:
-
                 if dynamic_range:
                     limit = min(abs(channel.znull - channel.zmin), abs(channel.znull - channel.zmax))
                 else:
                     limit = max(abs(channel.znull - channel.zmin), abs(channel.znull - channel.zmax))
                 levels = np.linspace(-limit + channel.znull, limit + channel.znull, 200)
-
             else:
-
                 if local:
                     levels = np.linspace(channel.znull, np.nanmax(zi), 200)
                 else:
                     if channel.zmax < channel.znull:
                         levels = np.linspace(channel.zmin, channel.znull, 200)
-                    else:    
+                    else:
                         levels = np.linspace(channel.znull, channel.zmax, 200)
-
             # main plot -------------------------------------------------------
-
             # get colormap
             mycm = colormaps[cmap]
             mycm.set_bad([0.75, 0.75, 0.75], 1.)
             mycm.set_under(facecolor)
-
             # fill in main data environment
             # always plot pcolormesh
             X, Y, Z = pcolor_helper(xaxis.points, yaxis.points, zi)
@@ -799,13 +975,11 @@ class mpl_2D:
             if not pixelated:
                 cax = subplot_main.contourf(xaxis.points, yaxis.points, zi,
                                             levels, cmap=mycm)
-
-            plt.xticks(rotation = 45)
-            plt.xlabel(xaxis.get_label(), fontsize = self.font_size)
-            plt.ylabel(yaxis.get_label(), fontsize = self.font_size)
-
+            plt.xticks(rotation=45, fontsize=14)
+            plt.yticks(fontsize=14)
+            plt.xlabel(xaxis.get_label(), fontsize=18)
+            plt.ylabel(yaxis.get_label(), fontsize=17)
             # variable marker lines -------------------------------------------
-
             if lines:
                 for constant in constants:
                         if constant.units_kind == 'energy':
@@ -815,11 +989,8 @@ class mpl_2D:
                             #y axis
                             if yaxis.units == constant.units:
                                 plt.axhline(constant.points, color = 'k', linewidth = 4, alpha = 0.25)
-
             # grid ------------------------------------------------------------
-
             plt.grid(b = True)
-
             if xaxis.units == yaxis.units:
                 # add diagonal line
                 if xlim:
@@ -830,13 +1001,10 @@ class mpl_2D:
                     y = ylim
                 else:
                     y = yaxis.points
-
                 diag_min = max(min(x), min(y))
                 diag_max = min(max(x), max(y))
                 plt.plot([diag_min, diag_max],[diag_min, diag_max],'k:')
-
             # contour lines ---------------------------------------------------
-
             if contours:
                 if contours_local:
                     # force top and bottom contour to be just outside of data range
@@ -846,9 +1014,7 @@ class mpl_2D:
                     contours_levels = contours
                 subplot_main.contour(xaxis.points, yaxis.points, zi,
                                      contours_levels, colors = 'k')
-
             # finish main subplot ---------------------------------------------
-
             if xlim:
                 subplot_main.set_xlim(xlim[0], xlim[1])
             else:
@@ -857,13 +1023,9 @@ class mpl_2D:
                 subplot_main.set_ylim(ylim[0], ylim[1])
             else:
                 subplot_main.set_ylim(yaxis.points[0], yaxis.points[-1])
-
             # sideplots -------------------------------------------------------
-
             divider = make_axes_locatable(subplot_main)
-
             if xbin or self._xsideplot:
-
                 axCorrx = divider.append_axes('top', 0.75, pad=0.0, sharex=subplot_main)
                 axCorrx.autoscale(False)
                 axCorrx.set_adjustable('box-forced')
@@ -874,7 +1036,6 @@ class mpl_2D:
                     axCorrx.set_ylim([-1.1,1.1])
                 else:
                     axCorrx.set_ylim([0,1.1])
-
                 # bin
                 if xbin:
                     x_ax_int = np.nansum(zi, axis=0) - channel.znull * len(yaxis.points)
@@ -884,7 +1045,6 @@ class mpl_2D:
                     x_ax_int = x_ax_int / xmax
                     axCorrx.plot(xaxis.points,x_ax_int, lw = 2)
                     axCorrx.set_xlim([xaxis.points.min(), xaxis.points.max()])
-
                 # data
                 if self._xsideplot:
                     for s_xi, s_zi in self._xsideplotdata:
@@ -896,16 +1056,13 @@ class mpl_2D:
                         s_zi_in_range = s_zi[min(min_index, max_index):max(min_index, max_index)]
                         s_zi = s_zi / max(s_zi_in_range)
                         axCorrx.plot(s_xi, s_zi, lw = 2)
-                        
                 # line
                 if lines:
                     for constant in constants:
                         if constant.units_kind == 'energy':
                             if xaxis.units == constant.units:
                                 axCorrx.axvline(constant.points, color = 'k', linewidth = 4, alpha = 0.25)
-
             if ybin or self._ysideplot:
-
                 axCorry = divider.append_axes('right', 0.75, pad=0.0, sharey=subplot_main)
                 axCorry.autoscale(False)
                 axCorry.set_adjustable('box-forced')
@@ -916,7 +1073,6 @@ class mpl_2D:
                     axCorry.set_xlim([-1.1,1.1])
                 else:
                     axCorry.set_xlim([0,1.1])
-
                 # bin
                 if ybin:
                     y_ax_int = np.nansum(zi, axis=1) - channel.znull * len(xaxis.points)
@@ -926,7 +1082,6 @@ class mpl_2D:
                     y_ax_int = y_ax_int / ymax
                     axCorry.plot(y_ax_int, yaxis.points, lw = 2)
                     axCorry.set_ylim([yaxis.points.min(), yaxis.points.max()])
-
                 # data
                 if self._ysideplot:
                     for s_xi, s_zi in self._ysideplotdata:
@@ -938,44 +1093,26 @@ class mpl_2D:
                         s_zi_in_range = s_zi[min(min_index, max_index):max(min_index, max_index)]
                         s_zi = s_zi / max(s_zi_in_range)
                         axCorry.plot(s_zi, s_xi, lw = 2)
-
                 # line
                 if lines:
                     for constant in constants:
                         if constant.units_kind == 'energy':
                             if yaxis.units == constant.units:
                                 axCorry.axvline(constant.points, color = 'k', linewidth = 4, alpha = 0.25)
-            
             # onplot ----------------------------------------------------------
-            
             for xi, yi, kwargs in self._onplotdata:
                 subplot_main.plot(xi, yi, **kwargs)
-
             # colorbar --------------------------------------------------------
-
-            if True:
-                subplot_cb = plt.subplot(gs[1])
-                cbar_ticks = np.linspace(levels.min(), levels.max(), 11)
-                cbar = plt.colorbar(cax, cax=subplot_cb, ticks=cbar_ticks)
-                cbar.set_label(channel.name)
-                
-
+            subplot_cb = plt.subplot(gs[1])
+            cbar_ticks = np.linspace(levels.min(), levels.max(), 11)
+            cbar = plt.colorbar(cax, cax=subplot_cb, cmap=mycm, ticks=cbar_ticks, format='%.3f')
+            cbar.set_label(channel.name, fontsize=18)
+            cbar.ax.tick_params(labelsize=14)
             # title -----------------------------------------------------------
-
             title_text = self.data.name
-
-            constants_text = '\n' + get_constant_text(constants)
-            
-            plt.suptitle(title_text + constants_text, fontsize = self.font_size)
-
-            # cleanup ---------------------------------------------------------
-
-            # plt.tight_layout()
-            factor = 0.12
-            fig.subplots_adjust(left = factor, right = 1-factor, top = 1-factor, bottom = 0.15)
-
+            constants_text = get_constant_text(constants)            
+            _title(fig, title_text, constants_text)
             # save figure -----------------------------------------------------
-
             if autosave:
                 if fname:
                     file_name = fname + ' ' + str(i).zfill(3)
@@ -984,7 +1121,6 @@ class mpl_2D:
                 fpath = os.path.join(output_folder, file_name + '.png')
                 plt.savefig(fpath, facecolor='none', dpi=300)
                 plt.close()
-
                 if verbose:
                     print 'image saved at', fpath
 
@@ -1001,27 +1137,32 @@ class absorbance:
 
         self.data = data
 
-    def plot(self, channel_index = 0, font_size = 12, xlim = None, ylim = None,
+    def plot(self, channel_index = 0, xlim = None, ylim = None,
              yticks = True, derivative = True, n_smooth = 10,):
 
         # prepare plot environment --------------------------------------------
 
-        matplotlib.rcParams.update({'font.size': font_size})
-        self.font_size = font_size
+        self.font_size = 14
 
         if derivative:
-            gs = grd.GridSpec(2, 1, hspace = 0.05)
+            aspects = [[[0, 0], 0.35], [[1, 0], 0.35]]
+            hspace = 0.1
+            fig, gs = create_figure(width='single', cols=[1], hspace=hspace, nrows=2, aspects=aspects)
             self.ax1 = plt.subplot(gs[0])
-            plt.ylabel('OD')
+            plt.ylabel('OD', fontsize=18)
             plt.grid()
             plt.setp(self.ax1.get_xticklabels(), visible=False)
             self.ax2 = plt.subplot(gs[1], sharex = self.ax1)
             plt.grid()
-            plt.ylabel('2nd derivative')
+            plt.ylabel('2nd der.', fontsize=18)
         else:
+            aspects = [[[0, 0], 0.35]]
+            fig, gs = create_figure(width='single', cols=[1], aspects=aspects)
             self.ax1 = plt.subplot(111)
-            plt.ylabel('OD')
+            plt.ylabel('OD', fontsize=18)
             plt.grid()
+        
+        plt.xticks(rotation=45)
 
         for data in self.data:
 
@@ -1057,7 +1198,7 @@ class absorbance:
                 # plot the data!
                 self.ax2.plot(plotData[0], plotData[1], lw = 2)
                 self.ax2.grid(b=True)
-                plt.xlabel(data.axes[0].get_label())
+                plt.xlabel(data.axes[0].get_label(), fontsize=18)
 
         # legend --------------------------------------------------------------
 
