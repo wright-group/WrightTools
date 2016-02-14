@@ -817,9 +817,7 @@ class Data:
         verbose : bool (optional)
             Toggle talkback. Default is True.
         '''
-
-        # channel -------------------------------------------------------------
-        
+        # channel -------------------------------------------------------------        
         if type(channel) == int:
             channel_index = channel
         elif type(channel) == str:
@@ -827,51 +825,40 @@ class Data:
         else:
             print 'channel type', type(channel), 'not valid'
         channel = self.channels[channel_index]
-        
-        # axis ----------------------------------------------------------------
-        
+        # axis ----------------------------------------------------------------        
         if type(axis) == int:
             axis_index = axis
         elif type(axis) == str:
-            axis_index =  self.axis_names.index(axis)
+            axis_index = self.axis_names.index(axis)
         else:
             print 'axis type', type(axis), 'not valid'
-        
-        # verify npts not zero ------------------------------------------------
-        
+        # verify npts not zero ------------------------------------------------        
         npts = int(npts)
         if npts == 0:
             print 'cannot level if no sampling range is specified'
             return
-
         # level ---------------------------------------------------------------
-
         channel = self.channels[channel_index]
         values = channel.values
-        
         # transpose so the axis of interest is last
         transpose_order = range(len(values.shape))
         transpose_order = [len(values.shape)-1 if i==axis_index else i for i in transpose_order] #replace axis_index with zero
         transpose_order[len(values.shape)-1] = axis_index
         values = values.transpose(transpose_order)
-
         # subtract
         for index in np.ndindex(values[..., 0].shape):
             if npts > 0:
-                offset = np.average(values[index][:npts])
+                offset = np.nanmean(values[index][:npts])
             elif npts < 0:
-                offset = np.average(values[index][npts:])
+                offset = np.nanmean(values[index][npts:])
             values[index] = values[index] - offset
-        
         # transpose back
         values = values.transpose(transpose_order)
-
         # return
         channel.values = values
         channel.znull = 0.
         channel.zmax = values.max()
         channel.zmin = values.min()
-        
         # print
         if verbose:
             axis = self.axes[axis_index]
@@ -879,7 +866,6 @@ class Data:
                 points = axis.points[:npts]
             if npts < 0:
                 points = axis.points[npts:]
-            
             print 'channel', channel.name, 'offset by', axis.name, 'between', int(points.min()), 'and', int(points.max()), axis.units
 
     def m(self, abs_data, channel=0, this_exp='TG', 

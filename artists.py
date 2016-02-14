@@ -18,12 +18,21 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 import matplotlib.gridspec as grd
 import matplotlib.colors as mplcolors
 matplotlib.rcParams['contour.negative_linestyle'] = 'solid'
+matplotlib.rcParams['font.size'] = 14
 
 import kit  # legacy...
 import kit as wt_kit
 
 
 ### artist helpers ############################################################
+
+
+def _title(fig, title, subtitle, margin=1):
+    fig.suptitle(title, fontsize=20)
+    height = fig.get_figheight()  # inches
+    distance = margin / 2.  # distance from top of plot, in inches
+    ratio = 1 - distance/height
+    fig.text(0.5, ratio, subtitle, fontsize=18, ha='center', va='top')
 
 
 def corner_text(text, distance=0.075, ax=None, corner='UL', factor=200, 
@@ -480,8 +489,8 @@ def plot_colormap(cmap):
     plt.plot(x, k, 'k:', linewidth=5, alpha=0.6)
     # finish
     plt.grid()
-    plt.xlabel('value', fontsize=16)
-    plt.ylabel('intensity', fontsize=16)
+    plt.xlabel('value', fontsize=17)
+    plt.ylabel('intensity', fontsize=17)
 
 
 def plot_margins(fig=None, inches=1., centers=True, edges=True):
@@ -702,9 +711,8 @@ class mpl_1D:
         # defaults
         self.font_size = 15
 
-    def plot(self, channel = 0, local = False,
-             autosave = False, output_folder = None, fname = None,
-             verbose = True):
+    def plot(self, channel=0, local=False, autosave=False, output_folder=None,
+             fname=None, lines=True, verbose=True):
         fig = None
         if len(self.chopped) > 10:
             if not autosave:
@@ -735,24 +743,32 @@ class mpl_1D:
             axes = current_chop.axes
             channels = current_chop.channels
             constants = current_chop.constants
+            axis = axes[0]
             xi = axes[0].points
             zi = channels[channel].values
-            plt.plot(xi, zi)
+            plt.plot(xi, zi, lw=2)
+            plt.scatter(xi, zi, color='grey', alpha=0.5, edgecolor='none')
             plt.grid()
+            # variable marker lines
+            if lines:
+                for constant in constants:
+                        if constant.units_kind == 'energy':
+                            if axis.units == constant.units:
+                                plt.axvline(constant.points, color='k', linewidth=4, alpha=0.25)
             # limits
             if local:
                 pass
             else:
                 plt.ylim(channels[channel].zmin, channels[channel].zmax)
             # label axes
-            plt.xlabel(axes[0].get_label())
-            plt.ylabel(channels[channel].name)
+            plt.xlabel(axes[0].get_label(), fontsize=18)
+            plt.ylabel(channels[channel].name, fontsize=18)
             plt.xticks(rotation=45)
+            plt.xlim(xi.min(), xi.max())
             # title
             title_text = self.data.name
             constants_text = '\n' + get_constant_text(constants)
             plt.suptitle(title_text + constants_text, fontsize=20)
-            plot_margins(fig)
             # save
             if autosave:
                 if fname:
@@ -959,10 +975,10 @@ class mpl_2D:
             if not pixelated:
                 cax = subplot_main.contourf(xaxis.points, yaxis.points, zi,
                                             levels, cmap=mycm)
-            plt.xticks(rotation=45, fontsize=10)
-            plt.yticks(fontsize=10)
-            plt.xlabel(xaxis.get_label(), fontsize=16)
-            plt.ylabel(yaxis.get_label(), fontsize=16)
+            plt.xticks(rotation=45, fontsize=14)
+            plt.yticks(fontsize=14)
+            plt.xlabel(xaxis.get_label(), fontsize=18)
+            plt.ylabel(yaxis.get_label(), fontsize=17)
             # variable marker lines -------------------------------------------
             if lines:
                 for constant in constants:
@@ -1087,16 +1103,15 @@ class mpl_2D:
             for xi, yi, kwargs in self._onplotdata:
                 subplot_main.plot(xi, yi, **kwargs)
             # colorbar --------------------------------------------------------
-            if True:
-                subplot_cb = plt.subplot(gs[1])
-                cbar_ticks = np.linspace(levels.min(), levels.max(), 11)
-                cbar = plt.colorbar(cax, cax=subplot_cb, cmap=mycm, ticks=cbar_ticks)
-                cbar.set_label(channel.name, fontsize=16)
-                cbar.ax.tick_params(labelsize=10)
+            subplot_cb = plt.subplot(gs[1])
+            cbar_ticks = np.linspace(levels.min(), levels.max(), 11)
+            cbar = plt.colorbar(cax, cax=subplot_cb, cmap=mycm, ticks=cbar_ticks, format='%.3f')
+            cbar.set_label(channel.name, fontsize=18)
+            cbar.ax.tick_params(labelsize=14)
             # title -----------------------------------------------------------
             title_text = self.data.name
-            constants_text = '\n' + get_constant_text(constants)            
-            plt.suptitle(title_text + constants_text, fontsize=20)
+            constants_text = get_constant_text(constants)            
+            _title(fig, title_text, constants_text)
             # save figure -----------------------------------------------------
             if autosave:
                 if fname:
@@ -1122,27 +1137,32 @@ class absorbance:
 
         self.data = data
 
-    def plot(self, channel_index = 0, font_size = 12, xlim = None, ylim = None,
+    def plot(self, channel_index = 0, xlim = None, ylim = None,
              yticks = True, derivative = True, n_smooth = 10,):
 
         # prepare plot environment --------------------------------------------
 
-        matplotlib.rcParams.update({'font.size': font_size})
-        self.font_size = font_size
+        self.font_size = 14
 
         if derivative:
-            gs = grd.GridSpec(2, 1, hspace = 0.05)
+            aspects = [[[0, 0], 0.35], [[1, 0], 0.35]]
+            hspace = 0.1
+            fig, gs = create_figure(width='single', cols=[1], hspace=hspace, nrows=2, aspects=aspects)
             self.ax1 = plt.subplot(gs[0])
-            plt.ylabel('OD')
+            plt.ylabel('OD', fontsize=18)
             plt.grid()
             plt.setp(self.ax1.get_xticklabels(), visible=False)
             self.ax2 = plt.subplot(gs[1], sharex = self.ax1)
             plt.grid()
-            plt.ylabel('2nd derivative')
+            plt.ylabel('2nd der.', fontsize=18)
         else:
+            aspects = [[[0, 0], 0.35]]
+            fig, gs = create_figure(width='single', cols=[1], aspects=aspects)
             self.ax1 = plt.subplot(111)
-            plt.ylabel('OD')
+            plt.ylabel('OD', fontsize=18)
             plt.grid()
+        
+        plt.xticks(rotation=45)
 
         for data in self.data:
 
@@ -1178,7 +1198,7 @@ class absorbance:
                 # plot the data!
                 self.ax2.plot(plotData[0], plotData[1], lw = 2)
                 self.ax2.grid(b=True)
-                plt.xlabel(data.axes[0].get_label())
+                plt.xlabel(data.axes[0].get_label(), fontsize=18)
 
         # legend --------------------------------------------------------------
 
