@@ -2,7 +2,7 @@ import numpy as np
 
 def process(shots, names, kinds):
     '''
-    Return the mean and the variance of every channel. Choppers are ignored.
+    Return the mean and the variance of every channel.
     
     Parameters
     ----------
@@ -19,7 +19,8 @@ def process(shots, names, kinds):
         [ndarray (channels), list of channel names]
     '''
     channel_indicies = [i for i, x in enumerate(kinds) if x == 'channel']
-    out = np.full(len(channel_indicies)*2, np.nan)
+    chopper_index = len(kinds) - 1
+    out = np.full(len(channel_indicies)*3, np.nan)
     out_index = 0
     out_names = []
     for i in channel_indicies:
@@ -28,6 +29,9 @@ def process(shots, names, kinds):
         out_index += 1
         out[out_index] = np.std(shots[i])
         out_names.append(names[i] + '_std')
+        out_index += 1
+        out[out_index] = np.mean(shots[i]*shots[chopper_index])
+        out_names.append(names[i] + '_diff')
         out_index += 1
     return [out, out_names]
     

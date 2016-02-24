@@ -178,7 +178,6 @@ def create_figure(width='single', nrows=1, cols=[1, 'cbar'], margin=1.,
     subplot_ratios = np.array([i for i in cols if not i == 'cbar'], dtype=np.float)
     subplot_ratios /= sum(subplot_ratios)
     subplot_widths = total_subplot_width * subplot_ratios
-    print subplot_widths
     width_ratios = []
     cols_idxs = []
     i = 0
