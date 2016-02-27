@@ -1796,8 +1796,8 @@ def from_JASCO(filepath, name = None, verbose = True):
     return data
 
 
-def from_KENT(filepaths, znull = None, name = None, 
-              ignore = ['wm'], use_norm = False, verbose = True):
+def from_KENT(filepaths, znull=None, name=None, ignore=['wm'], use_norm=False, 
+              delay_tolerance=0.1, frequency_tolerance=0.5, verbose=True):
     '''
     filepaths may be string or list \n
     '''
@@ -1813,11 +1813,11 @@ def from_KENT(filepaths, znull = None, name = None,
     # define format of dat file -----------------------------------------------
 
     axes = collections.OrderedDict()
-    axes['w1']   = Axis(None, 'wn', tolerance = 0.5,  file_idx = 0,  name = 'w1',  label_seed = ['1'])
-    axes['w2']   = Axis(None, 'wn', tolerance = 0.5,  file_idx = 1,  name = 'w2',   label_seed = ['2'])
-    axes['wm']   = Axis(None, 'wn', tolerance = 0.5,  file_idx = 2,  name = 'wm',   label_seed = ['m'])
-    axes['d1']   = Axis(None, 'ps', tolerance = 3.0,  file_idx = 3,  name = 'd1',   label_seed = ['1'])
-    axes['d2']   = Axis(None, 'ps', tolerance = 3.0,  file_idx = 4,  name = 'd2',   label_seed = ['2'])
+    axes['w1']   = Axis(None, 'wn', tolerance=frequency_tolerance,  file_idx = 0,  name = 'w1',  label_seed = ['1'])
+    axes['w2']   = Axis(None, 'wn', tolerance=frequency_tolerance,  file_idx = 1,  name = 'w2',   label_seed = ['2'])
+    axes['wm']   = Axis(None, 'wn', tolerance=frequency_tolerance,  file_idx = 2,  name = 'wm',   label_seed = ['m'])
+    axes['d1']   = Axis(None, 'ps', tolerance=delay_tolerance,  file_idx = 3,  name = 'd1',   label_seed = ['1'])
+    axes['d2']   = Axis(None, 'ps', tolerance=delay_tolerance,  file_idx = 4,  name = 'd2',   label_seed = ['2'])
     
     channels = collections.OrderedDict()
     channels['signal'] = Channel(None, 'V',  file_idx = 5, name = 'signal',  label_seed = ['0'])
@@ -1828,7 +1828,7 @@ def from_KENT(filepaths, znull = None, name = None,
             
     for i in range(len(filepaths)):
         dat = np.genfromtxt(filepaths[i]).T
-        if verbose: print 'dat imported:', dat.shape
+        if verbose: print 'file imported:', dat.shape
         if i == 0:
             arr = dat
         else:      
