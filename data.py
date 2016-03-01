@@ -80,7 +80,7 @@ class Axis:
                                          destination_units)
         self.units = destination_units
 
-    def get_label(self, show_units=True, points=False, decimals=0):
+    def get_label(self, show_units=True, points=False, decimals=2):
 
         self.label = r'$\mathsf{'
 

@@ -940,7 +940,16 @@ class mpl_2D:
             # create figure ---------------------------------------------------
             if fig and autosave:
                 plt.close(fig)
-            fig, gs = create_figure(width='single', nrows=1, cols=[1, 'cbar'])
+            if xaxis.units == yaxis.units:
+                xr = xaxis.points.max() - xaxis.points.min()
+                yr = yaxis.points.max() - yaxis.points.min()
+                aspect = np.abs(yr/xr)
+                if 4 < aspect or aspect < 0.25:
+                    # TODO: raise warning here
+                    aspect = np.clip(aspect, 0.25, 4.)
+            else:
+                aspect = 1
+            fig, gs = create_figure(width='single', nrows=1, cols=[1, 'cbar'], aspects=[[[0, 0], aspect]])
             subplot_main = plt.subplot(gs[0])
             subplot_main.patch.set_facecolor(facecolor)
             # levels ----------------------------------------------------------
@@ -978,16 +987,24 @@ class mpl_2D:
             plt.yticks(fontsize=14)
             plt.xlabel(xaxis.get_label(), fontsize=18)
             plt.ylabel(yaxis.get_label(), fontsize=17)
+            # delay space deliniation lines -----------------------------------
+            if lines:
+                if xaxis.units_kind == 'delay':
+                    plt.axvline(0, lw=2, c='k')
+                if yaxis.units_kind == 'delay':
+                    plt.axhline(0, lw=2, c='k')
+                if xaxis.units_kind == 'delay' and xaxis.units == yaxis.units:
+                    diagonal_line(xaxis.points, yaxis.points, c='k', lw=2, ls='-')
             # variable marker lines -------------------------------------------
             if lines:
                 for constant in constants:
                         if constant.units_kind == 'energy':
                             #x axis
                             if xaxis.units == constant.units:
-                                plt.axvline(constant.points, color = 'k', linewidth = 4, alpha = 0.25)
+                                plt.axvline(constant.points, color='k', linewidth=4, alpha=0.25)
                             #y axis
                             if yaxis.units == constant.units:
-                                plt.axhline(constant.points, color = 'k', linewidth = 4, alpha = 0.25)
+                                plt.axhline(constant.points, color='k', linewidth=4, alpha=0.25)
             # grid ------------------------------------------------------------
             plt.grid(b = True)
             if xaxis.units == yaxis.units:

@@ -88,7 +88,8 @@ def process_motortune(filepath, channel_name, old_curve_filepath, autosave=True,
             motors.append(old_curve.motors[motor_index])
     curve = wt_curve.Curve(tune_points, 'wn', motors, 
                            name=old_curve.name.split('-')[0],
-                           kind='opa800', method=wt_curve.Poly)
+                           kind='opa800', interaction='DFG', 
+                           method=wt_curve.Poly)
     curve.map_colors(output_points_count)
     old_curve.map_colors(curve.colors)
     # plot data
@@ -176,7 +177,8 @@ def process_tunetest(filepath, channel, autosave=True):
         motor = wt_curve.Motor(positions, name)
         motors.append(motor)
     curve_name = 'OPA' + opa_name[-1] + ' '
-    curve = wt_curve.Curve(m_chosen, 'wn', motors, curve_name, 'opa800', method=wt_curve.Poly)
+    curve = wt_curve.Curve(m_chosen, 'wn', motors, curve_name, 'opa800', 
+                           interaction='DFG', method=wt_curve.Poly)
     # map points
     curve.map_colors(25)
     # save
