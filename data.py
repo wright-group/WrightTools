@@ -80,7 +80,7 @@ class Axis:
                                          destination_units)
         self.units = destination_units
 
-    def get_label(self, show_units=True, points=False, decimals=0):
+    def get_label(self, show_units=True, points=False, decimals=2):
 
         self.label = r'$\mathsf{'
 
@@ -1796,8 +1796,8 @@ def from_JASCO(filepath, name = None, verbose = True):
     return data
 
 
-def from_KENT(filepaths, znull = None, name = None, 
-              ignore = ['wm'], use_norm = False, verbose = True):
+def from_KENT(filepaths, znull=None, name=None, ignore=['wm'], use_norm=False, 
+              delay_tolerance=0.1, frequency_tolerance=0.5, verbose=True):
     '''
     filepaths may be string or list \n
     '''
@@ -1813,11 +1813,11 @@ def from_KENT(filepaths, znull = None, name = None,
     # define format of dat file -----------------------------------------------
 
     axes = collections.OrderedDict()
-    axes['w1']   = Axis(None, 'wn', tolerance = 0.5,  file_idx = 0,  name = 'w1',  label_seed = ['1'])
-    axes['w2']   = Axis(None, 'wn', tolerance = 0.5,  file_idx = 1,  name = 'w2',   label_seed = ['2'])
-    axes['wm']   = Axis(None, 'wn', tolerance = 0.5,  file_idx = 2,  name = 'wm',   label_seed = ['m'])
-    axes['d1']   = Axis(None, 'ps', tolerance = 3.0,  file_idx = 3,  name = 'd1',   label_seed = ['1'])
-    axes['d2']   = Axis(None, 'ps', tolerance = 3.0,  file_idx = 4,  name = 'd2',   label_seed = ['2'])
+    axes['w1']   = Axis(None, 'wn', tolerance=frequency_tolerance,  file_idx = 0,  name = 'w1',  label_seed = ['1'])
+    axes['w2']   = Axis(None, 'wn', tolerance=frequency_tolerance,  file_idx = 1,  name = 'w2',   label_seed = ['2'])
+    axes['wm']   = Axis(None, 'wn', tolerance=frequency_tolerance,  file_idx = 2,  name = 'wm',   label_seed = ['m'])
+    axes['d1']   = Axis(None, 'ps', tolerance=delay_tolerance,  file_idx = 3,  name = 'd1',   label_seed = ['1'])
+    axes['d2']   = Axis(None, 'ps', tolerance=delay_tolerance,  file_idx = 4,  name = 'd2',   label_seed = ['2'])
     
     channels = collections.OrderedDict()
     channels['signal'] = Channel(None, 'V',  file_idx = 5, name = 'signal',  label_seed = ['0'])
@@ -1828,7 +1828,7 @@ def from_KENT(filepaths, znull = None, name = None,
             
     for i in range(len(filepaths)):
         dat = np.genfromtxt(filepaths[i]).T
-        if verbose: print 'dat imported:', dat.shape
+        if verbose: print 'file imported:', dat.shape
         if i == 0:
             arr = dat
         else:      
@@ -2145,7 +2145,7 @@ def from_PyCMDS(filepath, name=None,
     indicies = arr[:len(axes)].T
     indicies = indicies.astype('int64')
     # get interpolation toggles
-    if 'axis interpolate' in headers:
+    if 'axis interpolate' in headers.keys():
         interpolate_toggles = headers['axis interpolate']
     else:
         # old data files may not have interpolate toggles in headers
@@ -2153,7 +2153,7 @@ def from_PyCMDS(filepath, name=None,
         interpolate_toggles = [True if name == 'wa' else False for name in headers['axis names']]
     # get assorted remaining things
     shape = tuple([a.points.size for a in axes])
-    tols = [wt_kit.closest_pair(axis.points, give='distance')/2. for axis in axes]   
+    tols = [wt_kit.closest_pair(a.points, give='distance')/2. for a in axes]   
     # prepare points for interpolation
     points_dict = collections.OrderedDict()
     for i, axis in enumerate(axes):
@@ -2176,25 +2176,20 @@ def from_PyCMDS(filepath, name=None,
             points = points.transpose(transpose_order)
             # subtract out centers
             centers = np.array(headers[axis.name + ' centers'])
-            # TODO: REMOVE THIS TRANSFORM >:(
-            if axis.name == 'wa':
-                centers = centers.T
             points -= centers
             # transpose out
             points = points.transpose(transpose_order)
         points = points.flatten()
         points_dict[axis.name] = points
         # check, coerce non-interpolated axes
-        for j, idx in enumerate(indicies):
-            actual = points[j]
-            expected = axis.points[idx[i]]
-            if abs(actual-expected) > tols[i]:
-                warnings.warn('at least one point exceded tolerance ' +
-                              'in axis {}'.format(axis.name))
-            points[j] = expected
-        # coerce axis edges to actual points
-        axis.points[np.argmax(axis.points)] = points.max()
-        axis.points[np.argmin(axis.points)] = points.min()
+        if not interpolate_toggles[i]:
+            for j, idx in enumerate(indicies):
+                actual = points[j]
+                expected = axis.points[idx[i]]
+                if abs(actual-expected) > tols[i]:
+                    warnings.warn('at least one point exceded tolerance ' +
+                                  'in axis {}'.format(axis.name))
+                points[j] = expected
     all_points = tuple(points_dict.values())
     # prepare values for interpolation
     values_dict = collections.OrderedDict()
