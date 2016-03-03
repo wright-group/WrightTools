@@ -12,6 +12,12 @@ import copy
 import time
 import collections
 
+import warnings
+# I hate how the warning module prints, so I overload the method
+def _my_warning(message, category=UserWarning, filename='', lineno=-1):
+    print 'WARNING:', message
+warnings.showwarning = _my_warning
+
 import pickle
 
 import numpy as np
@@ -32,13 +38,13 @@ debug = False
 
 class Axis:
 
-    def __init__(self, points, init_units, symbol_type=None,
+    def __init__(self, points, units, symbol_type=None,
                  tolerance=None, file_idx=None,
                  name='', label=None, label_seed=[''], **kwargs):
         self.name = name
         self.tolerance = tolerance
         self.points = points
-        self.units = init_units
+        self.units = units
         self.file_idx = file_idx
         self.label_seed = label_seed
         self.label = label
@@ -55,6 +61,19 @@ class Axis:
         else:
             self.symbol_type = wt_units.get_default_symbol_type(self.units)
         self.get_label()
+
+    def __repr__(self):
+        # when you inspect the object
+        outs = []
+        outs.append('WrightTools.data.Axis object at ' + str(id(self)))
+        outs.append('  name: ' + self.name)
+        outs.append('  range: {0} - {1} ({2})'.format(self.points.min(), self.points.max(), self.units))
+        outs.append('  number: ' + str(len(self.points)))
+        return '\n'.join(outs)
+
+    def __str__(self):
+        # when you print the object
+        return self.__repr__()
 
     def convert(self, destination_units):
         self.points = wt_units.converter(self.points, self.units,
@@ -133,6 +152,21 @@ class Channel:
             self.zmin = zmin
             self.zmax = zmax
             self.signed = signed
+
+    def __repr__(self):
+        # when you inspect the object
+        outs = []
+        outs.append('WrightTools.data.Channel object at ' + str(id(self)))
+        outs.append('  name: ' + self.name)
+        outs.append('  zmin: ' + str(self.zmin))
+        outs.append('  zmax: ' + str(self.zmax))
+        outs.append('  znull: ' + str(self.znull))
+        outs.append('  signed: ' + str(self.signed))
+        return '\n'.join(outs)
+
+    def __str__(self):
+        # when you print the object
+        return self.__repr__()
 
     def _update(self):
         self.zmin = np.nanmin(self.values)
@@ -218,6 +252,18 @@ class Channel:
 
     def invert(self):
         self.values = - self.values
+
+    def max(self):
+        '''
+        Maximum, ignorning nans.
+        '''
+        return np.nanmax(self.values)
+        
+    def min(self):
+        '''
+        Minimum, ignoring nans.
+        '''
+        return np.nanmin(self.values)
         
     def normalize(self):
         self.values /= np.nanmax(self.values)
@@ -771,9 +817,7 @@ class Data:
         verbose : bool (optional)
             Toggle talkback. Default is True.
         '''
-
-        # channel -------------------------------------------------------------
-        
+        # channel -------------------------------------------------------------        
         if type(channel) == int:
             channel_index = channel
         elif type(channel) == str:
@@ -781,51 +825,40 @@ class Data:
         else:
             print 'channel type', type(channel), 'not valid'
         channel = self.channels[channel_index]
-        
-        # axis ----------------------------------------------------------------
-        
+        # axis ----------------------------------------------------------------        
         if type(axis) == int:
             axis_index = axis
         elif type(axis) == str:
-            axis_index =  self.axis_names.index(axis)
+            axis_index = self.axis_names.index(axis)
         else:
             print 'axis type', type(axis), 'not valid'
-        
-        # verify npts not zero ------------------------------------------------
-        
+        # verify npts not zero ------------------------------------------------        
         npts = int(npts)
         if npts == 0:
             print 'cannot level if no sampling range is specified'
             return
-
         # level ---------------------------------------------------------------
-
         channel = self.channels[channel_index]
         values = channel.values
-        
         # transpose so the axis of interest is last
         transpose_order = range(len(values.shape))
         transpose_order = [len(values.shape)-1 if i==axis_index else i for i in transpose_order] #replace axis_index with zero
         transpose_order[len(values.shape)-1] = axis_index
         values = values.transpose(transpose_order)
-
         # subtract
         for index in np.ndindex(values[..., 0].shape):
             if npts > 0:
-                offset = np.average(values[index][:npts])
+                offset = np.nanmean(values[index][:npts])
             elif npts < 0:
-                offset = np.average(values[index][npts:])
+                offset = np.nanmean(values[index][npts:])
             values[index] = values[index] - offset
-        
         # transpose back
         values = values.transpose(transpose_order)
-
         # return
         channel.values = values
         channel.znull = 0.
         channel.zmax = values.max()
         channel.zmin = values.min()
-        
         # print
         if verbose:
             axis = self.axes[axis_index]
@@ -833,7 +866,6 @@ class Data:
                 points = axis.points[:npts]
             if npts < 0:
                 points = axis.points[npts:]
-            
             print 'channel', channel.name, 'offset by', axis.name, 'between', int(points.min()), 'and', int(points.max()), axis.units
 
     def m(self, abs_data, channel=0, this_exp='TG', 
@@ -1236,6 +1268,19 @@ class Data:
             channel.values *= -1.
         channel._update()
 
+    def share_nans(self):
+        '''
+        Share not-a-numbers between all channels. If any channel is nan at a
+        given index, all channels will be nan at that index after this
+        operation.
+
+        Uses the share_nans method found in wt.kit.
+        '''
+        arrs = [c.values for c in self.channels]
+        outs = wt_kit.share_nans(arrs)
+        for c, a, in zip(self.channels, outs):
+            c.values = a
+
     def smooth(self, factors, channel=None, verbose=True):
         '''
         Smooth a channel using an n-dimenional `kaiser window <https://en.wikipedia.org/wiki/Kaiser_window>`_.
@@ -1526,7 +1571,7 @@ def from_COLORS(filepaths, znull=None, name=None, cols=None, invert_d1=True,
             cols = 'v2'
         elif num_cols in [20]:
             cols = 'v1'
-        elif num_cols == 16:
+        elif num_cols in [15, 16, 19]:
             cols = 'v0'
         if verbose:
             print 'cols recognized as', cols, '(%d)'%num_cols
@@ -2099,17 +2144,26 @@ def from_PyCMDS(filepath, name=None,
     # get indicies arrays
     indicies = arr[:len(axes)].T
     indicies = indicies.astype('int64')
-    # prepare points for interpolation
+    # get interpolation toggles
+    if 'axis interpolate' in headers:
+        interpolate_toggles = headers['axis interpolate']
+    else:
+        # old data files may not have interpolate toggles in headers
+        # assume no interpolation, unless the axis is the array detector
+        interpolate_toggles = [True if name == 'wa' else False for name in headers['axis names']]
+    # get assorted remaining things
     shape = tuple([a.points.size for a in axes])
+    tols = [wt_kit.closest_pair(axis.points, give='distance')/2. for axis in axes]   
+    # prepare points for interpolation
     points_dict = collections.OrderedDict()
     for i, axis in enumerate(axes):
         # TODO: math and proper full recognition...
         axis_col_name = [name for name in headers['name'][::-1] if name in axis.identity][0]
-        axis_index = headers['name'].index(axis_col_name)
-        lis = arr[axis_index]
+        axis_index = headers['name'].index(axis_col_name)            
         # shape array acording to recorded coordinates
         points = np.full(shape, np.nan)
         for j, idx in enumerate(indicies):
+            lis = arr[axis_index]
             points[tuple(idx)] = lis[j]
         # convert array
         points = wt_units.converter(points, headers['units'][axis_index], axis.units)       
@@ -2122,7 +2176,7 @@ def from_PyCMDS(filepath, name=None,
             points = points.transpose(transpose_order)
             # subtract out centers
             centers = np.array(headers[axis.name + ' centers'])
-            # TODO: REMOVE THIS >:(
+            # TODO: REMOVE THIS TRANSFORM >:(
             if axis.name == 'wa':
                 centers = centers.T
             points -= centers
@@ -2130,6 +2184,14 @@ def from_PyCMDS(filepath, name=None,
             points = points.transpose(transpose_order)
         points = points.flatten()
         points_dict[axis.name] = points
+        # check, coerce non-interpolated axes
+        for j, idx in enumerate(indicies):
+            actual = points[j]
+            expected = axis.points[idx[i]]
+            if abs(actual-expected) > tols[i]:
+                warnings.warn('at least one point exceded tolerance ' +
+                              'in axis {}'.format(axis.name))
+            points[j] = expected
         # coerce axis edges to actual points
         axis.points[np.argmax(axis.points)] = points.max()
         axis.points[np.argmin(axis.points)] = points.min()
@@ -2144,20 +2206,42 @@ def from_PyCMDS(filepath, name=None,
         meshgrid = tuple([axes[0].points])
     else:
         meshgrid = tuple(np.meshgrid(*[a.points for a in axes], indexing='ij'))
-    # create channels
-    channels = []
-    for i in range(len(arr)):
-        if headers['kind'][i] == 'channel':
-            # unpack
-            units = headers['units'][i]
-            signed = headers['channel signed'][len(channels)]
-            name = headers['name'][i]
-            label = headers['label'][i]
-            # interpolate
-            values = values_dict[name]
-            zi = griddata(all_points, values, meshgrid, rescale=True,
-                          method='linear', fill_value=np.nan)
-            # assemble
+    if any(interpolate_toggles):
+        # create channels through linear interpolation
+        channels = []
+        for i in range(len(arr)):
+            if headers['kind'][i] == 'channel':
+                # unpack
+                units = headers['units'][i]
+                signed = headers['channel signed'][len(channels)]
+                name = headers['name'][i]
+                label = headers['label'][i]
+                # interpolate
+                values = values_dict[name]
+                zi = griddata(all_points, values, meshgrid, rescale=True,
+                              method='linear', fill_value=np.nan)
+                # assemble
+                channel = Channel(zi, units, signed=signed, name=name, label=label)
+                channels.append(channel)
+    else:
+        # if none of the axes are interpolated onto,
+        # simply fill zis based on recorded axis index
+        num_channels = headers['kind'].count('channel')
+        channel_indicies = [i for i, kind in enumerate(headers['kind']) if kind == 'channel']
+        zis = [np.full(shape, np.nan) for _ in range(num_channels)]
+        # iterate through each row of the array, filling zis
+        for i in range(len(arr[0])):
+            idx = tuple(indicies[i])  # yes, this MUST be a tuple >:(
+            for zi_index, arr_index in enumerate(channel_indicies):
+                zis[zi_index][idx] = arr[arr_index, i]
+        # assemble channels
+        channels = []
+        for zi_index, arr_index in zip(range(len(zis)), channel_indicies):
+            zi = zis[zi_index]
+            units = headers['units'][arr_index]
+            signed = headers['channel signed'][zi_index]
+            name = headers['name'][arr_index]
+            label = headers['label'][arr_index]
             channel = Channel(zi, units, signed=signed, name=name, label=label)
             channels.append(channel)
     # get constants

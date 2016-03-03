@@ -1,5 +1,83 @@
+### import ####################################################################
+
+
 import numpy as np
 import matplotlib.pyplot as plt
+
+
+### define ####################################################################
+
+
+### subplot ###################################################################
+
+
+class Subplot:
+    
+    def __init__(self, ax, energies, interactions, title=''):
+        '''
+        Subplot.
+        
+        Parameters
+        ----------
+        ax : matplotlib axis
+            The axis.
+        energies : 1D array-like
+            Energies (scaled between 0 and 1)
+        interactions : integer
+            
+        '''
+        self.ax = ax
+        self.interactions = interactions
+        # plot energies
+        self.energies = energies
+        for energy in self.energies:
+            self.ax.axhline(energy, color='k', linewidth=2, ls='-')
+        # set limits
+        self.ax.set_xlim(-0.1, 1.1)
+        self.ax.set_ylim(-0.1, 1.1)
+        # remove guff
+        self.ax.axis('off')
+        # title
+        self.ax.set_title(title, fontsize=16)
+        
+    def add_arrow(self, index, between, kind, label, 
+                  head_size=0.1, font_size=14, color='k'):
+        x_pos = np.linspace(0, 1, self.interactions)[index]
+        # calculate arrow length
+        arrow_length = self.energies[between[1]] - self.energies[between[0]]
+        arrow_end = self.energies[between[1]]
+        if arrow_length > 0:
+            direction = 1
+            y_poss = [self.energies[between[0]], self.energies[between[1]] - head_size]
+        elif arrow_length < 0:
+            direction = -1
+            y_poss = [self.energies[between[0]], self.energies[between[1]] + head_size]
+        else:
+            print 'between invalid!'
+            return
+        # add line
+        length = abs(y_poss[0] - y_poss[1])
+        if kind == 'ket':
+            line = self.ax.plot([x_pos, x_pos], y_poss, linestyle = '-', color = color, linewidth = 2)
+        elif kind == 'bra':
+            line = self.ax.plot([x_pos, x_pos], y_poss, linestyle = '--', color = color, linewidth = 2)
+        elif kind == 'out':
+            yi = np.linspace(y_poss[0], y_poss[1], 100)
+            xi = np.sin((yi - y_poss[0])*int((1/length)*20)*2*np.pi*length)/40 + x_pos
+            line = self.ax.plot(xi, yi, linestyle = '-', color = color, linewidth = 2, solid_capstyle='butt')
+        # add arrow head
+        arrow_head = self.ax.arrow(x_pos, arrow_end - head_size * direction, 
+                                   0, 0.0001*direction,
+                                   head_width=head_size*2, 
+                                   head_length=head_size,
+                                   fc=color, ec=color, linestyle='solid', linewidth=0)
+        # add text
+        text = self.ax.text(x_pos, -0.2, label, fontsize=font_size, horizontalalignment='center')
+        # plot energies
+        for energy in self.energies:
+            self.ax.axhline(energy, color='k', linewidth=2, ls='-')
+
+### artist ####################################################################
 
 
 class Artist:
@@ -108,6 +186,10 @@ class Artist:
         # close
         if close:
             plt.close()
+
+
+### testing ###################################################################
+
 
 if __name__ == '__main__':
     # testing code
