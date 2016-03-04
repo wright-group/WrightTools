@@ -319,7 +319,7 @@ def process_preamp_motortune(OPA_index, data_filepath, curves, save=True):
     old_curve = wt_curve.from_TOPAS_crvs(curves, 'NON-NON-NON-Sig')
     # get array data
     array_colors = arr[headers['name'].index('wa')]
-    array_data = arr[headers['name'].index('array')]
+    array_data = arr[headers['name'].index('array_signal')]
     array_colors.shape = (-1, 256)
     array_data.shape = (-1, 256)
     array_colors = wt_units.converter(array_colors, 'nm', 'wn')

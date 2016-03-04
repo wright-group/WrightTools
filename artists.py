@@ -775,9 +775,8 @@ class mpl_1D:
                 else:
                     file_name = str(i).zfill(3)
                 fpath = os.path.join(output_folder, file_name + '.png')
-                plt.savefig(fpath, transparent = True)
+                plt.savefig(fpath, transparent=True, dpi=300, pad_inches=1.)
                 plt.close()
-
                 if verbose:
                     print 'image saved at', fpath
 
@@ -944,9 +943,9 @@ class mpl_2D:
                 xr = xaxis.points.max() - xaxis.points.min()
                 yr = yaxis.points.max() - yaxis.points.min()
                 aspect = np.abs(yr/xr)
-                if 4 < aspect or aspect < 0.25:
+                if 3 < aspect or aspect < 1/3.:
                     # TODO: raise warning here
-                    aspect = np.clip(aspect, 0.25, 4.)
+                    aspect = np.clip(aspect, 1/3., 3.)
             else:
                 aspect = 1
             fig, gs = create_figure(width='single', nrows=1, cols=[1, 'cbar'], aspects=[[[0, 0], aspect]])
@@ -1135,7 +1134,7 @@ class mpl_2D:
                 else:
                     file_name = str(i).zfill(3)
                 fpath = os.path.join(output_folder, file_name + '.png')
-                plt.savefig(fpath, facecolor='none', dpi=300)
+                plt.savefig(fpath, facecolor='none', transparent=True, dpi=300, pad_inches=1.)
                 plt.close()
                 if verbose:
                     print 'image saved at', fpath
