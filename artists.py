@@ -712,6 +712,14 @@ class mpl_1D:
 
     def plot(self, channel=0, local=False, autosave=False, output_folder=None,
              fname=None, lines=True, verbose=True):
+        # get channel index
+        if type(channel) in [int, float]:
+            channel_index = int(channel)
+        elif type(channel) == str:
+            channel_index = self.chopped[0].channel_names.index(channel)
+        else:
+            print 'channel type not recognized in mpl_1D!'
+        # prepare figure
         fig = None
         if len(self.chopped) > 10:
             if not autosave:
@@ -744,7 +752,7 @@ class mpl_1D:
             constants = current_chop.constants
             axis = axes[0]
             xi = axes[0].points
-            zi = channels[channel].values
+            zi = channels[channel_index].values
             plt.plot(xi, zi, lw=2)
             plt.scatter(xi, zi, color='grey', alpha=0.5, edgecolor='none')
             plt.grid()
@@ -758,10 +766,10 @@ class mpl_1D:
             if local:
                 pass
             else:
-                plt.ylim(channels[channel].zmin, channels[channel].zmax)
+                plt.ylim(channels[channel_index].zmin, channels[channel_index].zmax)
             # label axes
             plt.xlabel(axes[0].get_label(), fontsize=18)
-            plt.ylabel(channels[channel].name, fontsize=18)
+            plt.ylabel(channels[channel_index].name, fontsize=18)
             plt.xticks(rotation=45)
             plt.xlim(xi.min(), xi.max())
             # title
