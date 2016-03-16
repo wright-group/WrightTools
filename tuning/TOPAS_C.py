@@ -93,7 +93,7 @@ def process_C2_motortune(opa_index, data_filepath, curves, save=True):
     # extract information from file
     headers = wt_kit.read_headers(data_filepath)
     wa_index = headers['name'].index('wa')
-    zi_index = headers['name'].index('array')
+    zi_index = headers['name'].index('array_signal')
     # fit array data
     outs = []
     function = wt_fit.Gaussian()
@@ -142,12 +142,19 @@ def process_C2_motortune(opa_index, data_filepath, curves, save=True):
         xi = c2
         yi = mismatch[:, i]
         xi, yi = wt_kit.remove_nans_1D([xi, yi])
+        if len(xi) == 0:
+            ps.append(None)
+            continue
         p = np.ma.polyfit(yi, xi, 2)
         ps.append(p)
-    chosen_deltas = [l[-1] for l in ps]
-    chosen_c2 = old_curve.motors[2].positions + chosen_deltas
+    chosen_ws = []
+    chosen_c2 = []
+    for i in range(ws.size):
+        if ps[i] is not None:
+            chosen_ws.append(ws[i])
+            chosen_c2.append(old_curve.motors[2].positions[i] + ps[i][-1])
     # ensure smoothness with spline
-    spline = UnivariateSpline(ws, chosen_c2, k=2, s=1000)
+    spline = UnivariateSpline(chosen_ws, chosen_c2, k=2, s=1000)
     chosen_c2 = spline(ws)
     # create new tuning curve
     curve = old_curve.copy()
@@ -169,10 +176,11 @@ def process_C2_motortune(opa_index, data_filepath, curves, save=True):
         yi = mismatch[:, i]
         ax.scatter(xi, yi, c=colors[i], edgecolor='none')
         # poly fit
-        p = ps[i]
-        yi = np.linspace(-100, 100, 100)
-        xi = np.polyval(p, yi) + old_curve.motors[2].positions[i]
-        ax.plot(xi, yi, c=colors[i], lw=1)
+        if ps[i] is not None:
+            p = ps[i]
+            yi = np.linspace(-100, 100, 100)
+            xi = np.polyval(p, yi) + old_curve.motors[2].positions[i]
+            ax.plot(xi, yi, c=colors[i], lw=1)
         # chosen point
         ax.scatter(curve.motors[2].positions[i], 0, c=colors[i], marker='x', s=100)
     ax.grid()
@@ -211,7 +219,7 @@ def process_D2_motortune(opa_index, data_filepath, curves, save=True):
     # extract information from file
     headers = wt_kit.read_headers(data_filepath)
     wa_index = headers['name'].index('wa')
-    zi_index = headers['name'].index('array')
+    zi_index = headers['name'].index('array_signal')
     # fit array data
     outs = []
     function = wt_fit.Gaussian()
@@ -319,7 +327,7 @@ def process_preamp_motortune(OPA_index, data_filepath, curves, save=True):
     old_curve = wt_curve.from_TOPAS_crvs(curves, 'NON-NON-NON-Sig')
     # get array data
     array_colors = arr[headers['name'].index('wa')]
-    array_data = arr[headers['name'].index('array')]
+    array_data = arr[headers['name'].index('array_signal')]
     array_colors.shape = (-1, 256)
     array_data.shape = (-1, 256)
     array_colors = wt_units.converter(array_colors, 'nm', 'wn')

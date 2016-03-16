@@ -30,7 +30,7 @@ def process(shots, names, kinds):
         out[out_index] = np.std(shots[i])
         out_names.append(names[i] + '_std')
         out_index += 1
-        out[out_index] = np.mean(shots[i]*shots[chopper_index])
+        out[out_index] = np.mean(shots[i]*shots[chopper_index])*2
         out_names.append(names[i] + '_diff')
         out_index += 1
     return [out, out_names]
