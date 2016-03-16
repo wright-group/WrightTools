@@ -17,6 +17,41 @@ import urllib
 
 ### helper methods ############################################################
 
+def _authenticate(path):
+    """
+    Authenticate Google Drive API for usage in PyCMDS.
+    
+    Attributes
+    ----------
+    path : string
+        Folder path of mycreds.txt file.
+    
+    NB: This function requires a Client_secrets.json file to be in the working directory.
+    
+    This function, once run, will open up a login window in a web browser.
+    The user must then athenticate via email and password to authorize the
+        API for usage with that particular account.
+    Note that 'mycreds.txt' may just be an empty text file. This function will
+        create the correct dictionary structure in the file upon completion. 
+    """
+        
+    from pydrive.auth import GoogleAuth
+    from pydrive.drive import GoogleDrive
+    from pydrive.files import GoogleDriveFile                
+        
+    creds_path = os.path.join(path, 'mycreds.txt')
+    gauth = GoogleAuth()
+    gauth.LoadCredentialsFile(creds_path)  # try to load saved client credentials.
+    if gauth.credentials is None:
+        gauth.LocalWebserverAuth()  # authenticate if credentials are not found.
+    elif gauth.access_token_expired:
+        gauth.Refresh()  # refresh credentials if they are expired.
+    else:
+        gauth.Authorize()  # initialize the saved credentials.
+    gauth.SaveCredentialsFile(creds_path) # save the current credentials to a file
+
+
+
 
 def filenamegetter(fileID):
     """
