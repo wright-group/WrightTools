@@ -121,38 +121,31 @@ def contentelucidator(fileID, titleYN, folderYN, contentsYN):
 
 
 def download(fileID, output_folder=None):
-    # TODO:
-    urltoopen = ''.join(['https://drive.google.com/folderview?id=',fileID,'&usp=sharing'])    
-    gdrivecontent0 = urllib.urlopen(urltoopen).readlines()  
-    # Title corresponding to fileID.
-    title = gdrivecontent0[0].split("<title>")[1].split("</title>")[0]    
-    print title
-
-    for element in gdrivecontent0:
-        print 'new line______________'  
-        print ''
-        print element
+    url = ''.join(['https://drive.google.com/folderview?id=', fileID, '&usp=sharing'])    
+    lines = urllib.urlopen(url).readlines()  
+    title = lines[0].split("<title>")[1].split("</title>")[0]    
+    # remove irrelevant lines
+    for i in range(len(lines))[::-1]:
+        if not lines[i][:3] == ',[,':
+            lines.pop(i)
+    return lines
     
-    print 'new new line______________'
-    frank = gdrivecontent0[2].split(',')
-    print frank[-1]
-    jill = str(frank[-1])
-    print jill[15]    
-    print jill[15] == "]"
-    print jill == str(frank[-1])
+
 
 
 ### testing ###################################################################
 
 
 if __name__ == '__main__':
-    #folder
-    #gdrive_universaldownloader('0B5XBhboKMJCTbFR4WUY0TG5QajA')
-    #file
-    download('0B8z-JGr_8g4RWm0wb0tDWjZUcWc')
-    download('0B5XBhboKMJCTbFR4WUY0TG5QajA')  
+    fileID = '0B5XBhboKMJCTYjRIQjlDVi1icEU'
+    out = download(fileID)
     
     if False:
+        #folder
+        #gdrive_universaldownloader('0B5XBhboKMJCTbFR4WUY0TG5QajA')
+        #file
+        download('0B8z-JGr_8g4RWm0wb0tDWjZUcWc')
+        download('0B5XBhboKMJCTbFR4WUY0TG5QajA')
         contentelucidator('0B5XBhboKMJCTbFR4WUY0TG5QajA', True, True, True)
         print filenamegetter('0B5XBhboKMJCTbFR4WUY0TG5QajA')
         filedownloader('0B8z-JGr_8g4RWm0wb0tDWjZUcWc','/Users/darienmorrow/Desktop/')
