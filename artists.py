@@ -27,12 +27,42 @@ import kit as wt_kit
 ### artist helpers ############################################################
 
 
-def _title(fig, title, subtitle, margin=1):
+def _title(fig, title, subtitle='', margin=1):
     fig.suptitle(title, fontsize=20)
     height = fig.get_figheight()  # inches
     distance = margin / 2.  # distance from top of plot, in inches
     ratio = 1 - distance/height
     fig.text(0.5, ratio, subtitle, fontsize=18, ha='center', va='top')
+    
+    
+def add_sideplot(ax, along):
+    '''
+    Add a sideplot to an axis.
+    
+    Parameters
+    ----------
+    along : {'x', 'y'}
+    
+    Returns
+    -------
+    axCorr
+    '''
+    # divider should only be created once
+    if hasattr(ax, 'wt_sideplot_divider'):
+        divider = ax.wt_sideplot_divider
+    else:
+        divider = make_axes_locatable(ax)
+        setattr(ax, 'wt_sideplot_divider', divider)
+    # create sideplot axis
+    if along == 'x':
+        axCorr = divider.append_axes('top', 0.75, pad=0.0, sharex=ax)
+    elif along == 'y':
+        axCorr = divider.append_axes('right', 0.75, pad=0.0, sharey=ax)
+    axCorr.autoscale(False)
+    axCorr.set_adjustable('box-forced')
+    plt.setp(axCorr.get_xticklabels(), visible=False)
+    plt.setp(axCorr.get_yticklabels(), visible=False)
+    return axCorr
 
 
 def corner_text(text, distance=0.075, ax=None, corner='UL', factor=200, 
@@ -84,7 +114,8 @@ def corner_text(text, distance=0.075, ax=None, corner='UL', factor=200,
 
 
 def create_figure(width='single', nrows=1, cols=[1, 'cbar'], margin=1.,
-                  hspace=0.25, wspace=0.25, cbar_width=0.25, aspects=[]):
+                  hspace=0.25, wspace=0.25, cbar_width=0.25, aspects=[],
+                  default_aspect=1):
     '''
     Re-parameterization of matplotlib figure creation tools, exposing variables
     convinient for the Wright Group.
@@ -126,7 +157,7 @@ def create_figure(width='single', nrows=1, cols=[1, 'cbar'], margin=1.,
         aspects larger than 1 will be taller than wide and vice-versa for
         aspects smaller than 1. You may only define the aspect for one subplot
         in each row. If no aspect is defined for a particular row, the leftmost
-        subplot will have an aspect of 1. Default is [].
+        subplot will have an aspect of ``default_aspect``. Default is [].
 
     Returns
     -------
@@ -199,7 +230,7 @@ def create_figure(width='single', nrows=1, cols=[1, 'cbar'], margin=1.,
             subplot_heights.append(height)
         else:
             # make the leftmost (zero indexed) plot square as default
-            subplot_heights.append(subplot_widths[0])
+            subplot_heights.append(subplot_widths[0] * default_aspect)
     height_ratios = subplot_heights
     figure_height = sum(subplot_heights)
     figure_height += (nrows-1) * hspace
@@ -804,7 +835,7 @@ class mpl_2D:
         self._ysideplotdata = []
         self._onplotdata = []
 
-    def sideplot(self, data, x = True, y = True):
+    def sideplot(self, data, x=True, y=True):
         data = data.copy()
         if x:
             if self.chopped[0].axes[1].units_kind == data.axes[0].units_kind:
