@@ -57,17 +57,15 @@ class Linear:
 
     def __init__(self, colors, units, motors):
         '''
-        Linear interpolation using scipy.interpolate.interp1d.
+        Linear interpolation using scipy.interpolate.InterpolatedUnivariateSpline.
         '''
         self.colors = colors
         self.units = units
         self.motors = motors
-        self.functions = [scipy.interpolate.interp1d(colors, motor.positions) for motor in motors]
-        self.i_functions = [scipy.interpolate.interp1d(motor.positions, colors) for motor in motors]
+        self.functions = [scipy.interpolate.InterpolatedUnivariateSpline(colors, motor.positions) for motor in motors]
+        self.i_functions = [scipy.interpolate.InterpolatedUnivariateSpline(motor.positions, colors) for motor in motors]
 
     def get_motor_positions(self, color):
-        # take closest valid color
-        color = np.clip(color, self.colors.min(), self.colors.max())
         return [f(color) for f in self.functions]
 
     def get_color(self, motor_index, motor_position):
@@ -107,6 +105,32 @@ class Poly:
         guess = self.linear.get_color(motor_index, motor_position)
         idx = (np.abs(roots - guess)).argmin()
         return roots[idx]
+        
+        
+class Spline:
+    
+    def __init__(self, colors, units, motors):
+        '''
+        Linear interpolation using scipy.interpolate.InterpolatedUnivariateSpline.
+        '''
+        self.colors = colors
+        self.units = units
+        self.motors = motors
+        self.functions = [scipy.interpolate.UnivariateSpline(colors, motor.positions,  k=2, s=1000) for motor in motors]
+        self.i_functions = [scipy.interpolate.UnivariateSpline(motor.positions, colors,  k=2, s=1000) for motor in motors]
+
+    def get_motor_positions(self, color):
+        return [f(color) for f in self.functions]
+
+    def get_color(self, motor_index, motor_position):
+        motor = self.motors[motor_index]
+        if motor.positions.min() < motor_position < motor.positions.max():
+            pass
+        else:
+            # take closest valid motor position if outside of range
+            idx = (np.abs(motor.positions - motor_position)).argmin()
+            motor_position = motor.positions[idx]
+        return self.i_functions[motor_index](motor_position)
 
 
 ### curve class ###############################################################
