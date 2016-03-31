@@ -81,9 +81,7 @@ class Axis:
         self.units = destination_units
 
     def get_label(self, show_units=True, points=False, decimals=2):
-
         self.label = r'$\mathsf{'
-
         # label
         for part in self.label_seed:
             if self.units_kind is not None:
@@ -93,14 +91,11 @@ class Axis:
             else:
                 self.label += self.name.replace('_', '\,\,')
             self.label += r'='
-
         # remove the last equals sign
         self.label = self.label[:-1]
-
         if points:
             if self.points is not None:
                 self.label += r'=\,' + str(np.round(self.points, decimals=decimals))
-
         # units
         if show_units:
             if self.units_kind:
@@ -113,17 +108,19 @@ class Axis:
                     self.label += r'\right)'
             else:
                 pass
-
         self.label += r'}$'
-        
         return self.label
 
-    def min_max_step(self):
+    def max(self):
+        return self.points.max()
 
+    def min(self):
+        return self.points.min()
+
+    def min_max_step(self):
         _min = self.points.min()
         _max = self.points.max()
         _step = (_max-_min)/(len(self.points)-1)
-
         return _min, _max, _step
 
 

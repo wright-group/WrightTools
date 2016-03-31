@@ -731,15 +731,15 @@ def string2array(string, sep='\t'):
     l = string.split(' ')
     l = flatten_list([i.split('-') for i in l])  # annoyingly series of negative values get past previous filters
     for i, item in enumerate(l):
-        bad_chars = ['[', ']', '\t']
+        bad_chars = ['[', ']', '\t', '\n']
         for bad_char in bad_chars:
             item = item.replace(bad_char, '')
         l[i] = item
     for i in range(len(l))[::-1]:
-        if l[i] == '':
-            l.pop(i)
-        else:
+        try:
             l[i] = float(l[i])
+        except ValueError:
+            l.pop(i)
     # create and reshape array
     arr = np.array(l)
     arr.shape = shape
