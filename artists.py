@@ -1727,7 +1727,8 @@ class PDFAll2DSlices:
         for axis_name in axes:
             self.sideplot_dictionary[axis_name].append([data, channel_index, c])
         
-    def plot(self, channel=0, output_path=None):
+    def plot(self, channel=0, output_path=None, w1w2=True, w1_wigner=True,
+             w2_wigner=True):
         # get channel index
         if type(channel) in [int, float]:
             channel_index = int(channel)
@@ -1737,7 +1738,7 @@ class PDFAll2DSlices:
             print 'channel type not recognized in mpl_2D!'
         # create pdf
         with PdfPages(output_path) as pdf:
-            if True:
+            if w1w2:
                 # 2D Frequencies
                 self.chopped_datas = [d.chop('w2', 'wmw1') for d in self.datas]  # y, x
                 self._label_slide(pdf, '2D frequencies')
@@ -1761,7 +1762,7 @@ class PDFAll2DSlices:
                     _title(fig, self.name, constant_text)
                     pdf.savefig()
                     plt.close(fig)
-            if True:
+            if w1_wigner:
                 # w1 Wigners
                 self.chopped_datas = [d.chop('d2', 'wmw1') for d in self.datas]  # y, x
                 self._label_slide(pdf, 'w1 wigners')
@@ -1790,7 +1791,7 @@ class PDFAll2DSlices:
                     _title(fig, self.name, constant_text)
                     pdf.savefig()
                     plt.close(fig)
-            if True:
+            if w2_wigner:
                 # w2 Wigners
                 self.chopped_datas = [d.chop('d2', 'w2') for d in self.datas]  # y, x
                 self._label_slide(pdf, 'w2 wigners')
