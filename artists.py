@@ -763,7 +763,7 @@ colormaps['paried'] = plt.get_cmap('Paired')
 colormaps['prism'] = plt.get_cmap('prism')
 colormaps['rainbow'] = plt.get_cmap('rainbow')
 colormaps['seismic'] = plt.get_cmap('seismic')
-colormaps['signed'] = mplcolors.LinearSegmentedColormap.from_list('signed', signed)
+colormaps['signed'] = plt.get_cmap('seismic')
 colormaps['signed_old'] = mplcolors.LinearSegmentedColormap.from_list('signed', signed_old)
 colormaps['skyebar'] = mplcolors.LinearSegmentedColormap.from_list('skyebar', skyebar)
 colormaps['skyebar_d'] = mplcolors.LinearSegmentedColormap.from_list('skyebar dark', skyebar_d)
@@ -904,7 +904,7 @@ class mpl_2D:
         self._onplotdata.append((xi, yi, kwargs))
 
     def plot(self, channel=0,
-             contours=9, pixelated=True, lines=True, cmap='default', 
+             contours=9, pixelated=True, lines=True, cmap='automatic', 
              facecolor='w', dynamic_range=False, local=False, 
              contours_local=True, normalize_slices='both',  xbin= False, 
              ybin=False, xlim=None, ylim=None, autosave=False, 
@@ -1052,6 +1052,11 @@ class mpl_2D:
                         levels = np.linspace(channel.znull, channel.zmax, 200)
             # main plot -------------------------------------------------------
             # get colormap
+            if cmap == 'automatic':
+                if channel.signed:
+                    cmap = 'signed'
+                else:
+                    cmap = 'default'
             mycm = colormaps[cmap]
             mycm.set_bad([0.75, 0.75, 0.75], 1.)
             mycm.set_under(facecolor)
