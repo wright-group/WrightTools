@@ -334,7 +334,28 @@ class Data:
             setattr(self, obj.name, obj)
             
         self.shape = self.channels[0].values.shape
-
+        
+    def bring_to_front(self, channel):
+        '''
+        Bring a specific channel to the zero-indexed position in channels.
+        All other channels get pushed back but remain in order.
+        
+        Parameters
+        ----------
+        channel : int or str
+            Channel index or name.
+        '''
+        # get channel
+        if type(channel) == int:
+            channel_index = channel
+        elif type(channel) == str:
+            channel_index = self.channel_names.index(channel)
+        else:
+            print 'channel type', type(channel), 'not valid'
+        # bring to front
+        self.channels.insert(0, self.channels.pop(channel_index))
+        self._update()
+        
     def chop(self, *args, **kwargs):
         '''
         Divide the dataset into its lower-dimensionality components.
@@ -368,25 +389,19 @@ class Data:
         >>> data.chop('w1', 'w2', {'d2': [0, 'fs']})
         [data]
         '''
-
         # organize arguments recieved -----------------------------------------
-
         axes_args = []
         chopped_constants = {}
-
         for arg in args:
             if type(arg) in (str, int):
                 axes_args.append(arg)
             elif type(arg) in (dict, collections.OrderedDict):
                 chopped_constants = arg
-
         verbose = True
         for name, value in kwargs.items():
             if name == 'verbose':
                 verbose = value
-
         # interpret arguments recieved ----------------------------------------
-
         for i in range(len(axes_args)):
             arg = axes_args[i]
             if type(arg) == str:
@@ -396,9 +411,10 @@ class Data:
             else:
                 print 'argument {arg} not recognized in Data.chop!'.format(arg)
             axes_args[i] = arg
-
+        for arg in axes_args:
+            if not arg in self.axis_names:
+                raise Exception('axis {} not in data'.format(arg))
         # iterate! ------------------------------------------------------------
-
         # find iterated dimensions
         iterated_dimensions = []
         iterated_shape = [1]
@@ -407,14 +423,11 @@ class Data:
                 iterated_dimensions.append(name)
                 length = len(getattr(self, name).points)
                 iterated_shape.append(length)
-
         # make copies of channel objects for handing out
         channels_chopped = copy.deepcopy(self.channels)
-
         chopped_constants_everywhere = chopped_constants
         out = []
         for index in np.ndindex(tuple(iterated_shape)):
-
             # get chopped_constants correct for this iteration
             chopped_constants = chopped_constants_everywhere.copy()
             for i in range(len(index[1:])):
@@ -423,12 +436,9 @@ class Data:
                 axis_units = getattr(self, name).units
                 position = getattr(self, name).points[idx]
                 chopped_constants[name] = [position, axis_units]
-
             # re-order array: [all_chopped_constants, channels, all_chopped_axes]
-
             transpose_order = []
             constant_indicies = []
-
             # handle constants first
             constants = list(self.constants)  # copy
             for dim in chopped_constants.keys():
@@ -442,14 +452,12 @@ class Data:
                 obj = copy.copy(self.axes[idx])
                 obj.points = self.axes[idx].points[c_idx]
                 constants.append(obj)
-
             # now handle axes
             axes_chopped = []
             for dim in axes_args:
                 idx = [idx for idx in range(len(self.axes)) if self.axes[idx].name == dim][0]
                 transpose_order.append(idx)
                 axes_chopped.append(self.axes[idx])
-
             # ensure that everything is kosher
             if len(transpose_order) == len(self.channels[0].values.shape):
                 pass
@@ -463,7 +471,6 @@ class Data:
             else:
                 print 'chop failed: same dimension used twice'
                 return
-
             # chop
             for i in range(len(self.channels)):
                 values = self.channels[i].values
@@ -471,18 +478,14 @@ class Data:
                 for idx in constant_indicies:
                     values = values[idx]
                 channels_chopped[i].values = values
-
             # finish iteration
             data_out = Data(axes_chopped, copy.deepcopy(channels_chopped),
                             constants=constants,
                             name=self.name, source=self.source)
             out.append(data_out)
-
         # return --------------------------------------------------------------
-
         if verbose:
             print 'chopped data into %d piece(s)'%len(out), 'in', axes_args
-
         return out
 
     def clip(self, channel=0, *args, **kwargs):
@@ -673,35 +676,63 @@ class Data:
         # transpose out
         self.transpose(transpose_order, verbose=False)
 
+    def dOD(self, signal_channel, reference_channel, 
+            method='digital'):
+        r'''
+        For transient absorption,  convert zi signal from dI to dOD.
         
-    def dOD(self, signal_channel_index, reference_channel_index, 
-            method='boxcar',
-            verbose=True):
+        Parameters
+        ----------
+        signal_channel : int or str
+            Index or name of signal (dI) channel.
+        reference_channel : int or str
+            Index or name of reference (I) channel.
+        method : {'digital', 'boxcar'} (optional)
+            Shots processing method. Default is digital.
+            
+        Notes
+        -----
+        dOD is calculated as
+        
+        .. math::
+             -\log_{10}\left(\frac{I+dI}{I}\right)
+             
+        where I is the reference channel and dI is the signal channel.
         '''
-        for differential scans:  convert zi signal from dT to dOD
-        '''    
-    
-        T =  self.channels[reference_channel_index].values
-        dT = self.channels[signal_channel_index].values
-        
-        if method == 'boxcar':
+        # get signal channel
+        if type(signal_channel) == int:
+            signal_channel_index = signal_channel
+        elif type(signal_channel) == str:
+            signal_channel_index = self.channel_names.index(signal_channel)
+        else:
+            print 'channel type', type(signal_channel), 'not valid'
+        # get reference channel
+        if type(reference_channel) == int:
+            reference_channel_index = reference_channel
+        elif type(reference_channel) == str:
+            reference_channel_index = self.channel_names.index(reference_channel)
+        else:
+            print 'channel type', type(reference_channel), 'not valid'
+        # process
+        I =  self.channels[reference_channel_index].values.copy()
+        dI = self.channels[signal_channel_index].values.copy()
+        if method == 'digital':
+            out = -np.log10((I + dI) / I)
+        elif method == 'boxcar':
             print 'boxcar'
             # assume data collected with boxcar i.e.
             # sig = 1/2 dT
             # ref = T + 1/2 dT
-            dT = 2 * dT
-            out = -np.log10((T + dT) / T)
+            dI *= 2
+            out = -np.log10((I + dI) / I)
         else:
             print 'method not recognized in dOD, returning'
             return
-  
-        # reset znull, zmin, zmax ---------------------------------------------
-  
+        # finish
         self.channels[signal_channel_index].give_values(out)
-        self.channels[signal_channel_index].znull = 0.
-        self.channels[signal_channel_index].zmin = out.min()
-        self.channels[signal_channel_index].zmax = out.max()
         self.channels[signal_channel_index].signed = True
+        self.channels[signal_channel_index].znull = 0
+        self.channels[signal_channel_index]._update()
         
     def flip(self, axis):
         '''
@@ -713,23 +744,17 @@ class Data:
         axis : int or str
             The axis to flip.
         '''
-        
         # axis ----------------------------------------------------------------
-        
         if type(axis) == int:
             axis_index = axis
         elif type(axis) == str:
             axis_index =  self.axis_names.index(axis)
         else:
-            print 'axis type', type(axis), 'not valid'
-            
+            print 'axis type', type(axis), 'not valid'    
         axis = self.axes[axis_index]            
-            
         # flip ----------------------------------------------------------------
-            
         # axis
         axis.points = axis.points[::-1]
-            
         # data
         for channel in self.channels:
             values = channel.values            
@@ -742,6 +767,62 @@ class Data:
             # transpose out
             values = values.transpose(transpose_order)
             channel.values = values
+ 
+    def get_nadir(self, channel=0):
+        '''
+        Get the coordinates in units of the minimum in a channel.
+        
+        Parameters
+        ----------
+        channel : int or str (optional)
+            Channel. Default is 0.
+            
+        Returns
+        -------
+        list of numbers
+            Coordinates in units for each axis.
+        '''
+        # get channel
+        if type(channel) == int:
+            channel_index = channel
+        elif type(channel) == str:
+            channel_index = self.channel_names.index(channel)
+        else:
+            print 'channel type', type(channel), 'not valid'
+        channel = self.channels[channel_index]
+        # get indicies
+        arr = channel.values
+        idxs = np.unravel_index(arr.argmin(), arr.shape)
+        # finish
+        return [a.points[i] for a, i in zip(self.axes, idxs)]
+           
+    def get_zenith(self, channel=0):
+        '''
+        Get the coordinates in units of the maximum in a channel.
+        
+        Parameters
+        ----------
+        channel : int or str (optional)
+            Channel. Default is 0.
+            
+        Returns
+        -------
+        list of numbers
+            Coordinates in units for each axis.
+        '''
+        # get channel
+        if type(channel) == int:
+            channel_index = channel
+        elif type(channel) == str:
+            channel_index = self.channel_names.index(channel)
+        else:
+            print 'channel type', type(channel), 'not valid'
+        channel = self.channels[channel_index]
+        # get indicies
+        arr = channel.values
+        idxs = np.unravel_index(arr.argmax(), arr.shape)
+        # finish
+        return [a.points[i] for a, i in zip(self.axes, idxs)]
 
     def heal(self, channel=0, method='linear', fill_value=np.nan, 
              verbose=True):
