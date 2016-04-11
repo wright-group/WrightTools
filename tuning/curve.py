@@ -57,17 +57,15 @@ class Linear:
 
     def __init__(self, colors, units, motors):
         '''
-        Linear interpolation using scipy.interpolate.interp1d.
+        Linear interpolation using scipy.interpolate.InterpolatedUnivariateSpline.
         '''
         self.colors = colors
         self.units = units
         self.motors = motors
-        self.functions = [scipy.interpolate.interp1d(colors, motor.positions) for motor in motors]
-        self.i_functions = [scipy.interpolate.interp1d(motor.positions, colors) for motor in motors]
+        self.functions = [scipy.interpolate.InterpolatedUnivariateSpline(colors, motor.positions) for motor in motors]
+        self.i_functions = [scipy.interpolate.InterpolatedUnivariateSpline(motor.positions, colors) for motor in motors]
 
     def get_motor_positions(self, color):
-        # take closest valid color
-        color = np.clip(color, self.colors.min(), self.colors.max())
         return [f(color) for f in self.functions]
 
     def get_color(self, motor_index, motor_position):
@@ -107,6 +105,32 @@ class Poly:
         guess = self.linear.get_color(motor_index, motor_position)
         idx = (np.abs(roots - guess)).argmin()
         return roots[idx]
+        
+        
+class Spline:
+    
+    def __init__(self, colors, units, motors):
+        '''
+        Linear interpolation using scipy.interpolate.InterpolatedUnivariateSpline.
+        '''
+        self.colors = colors
+        self.units = units
+        self.motors = motors
+        self.functions = [scipy.interpolate.UnivariateSpline(colors, motor.positions,  k=2, s=1000) for motor in motors]
+        self.i_functions = [scipy.interpolate.UnivariateSpline(motor.positions, colors,  k=2, s=1000) for motor in motors]
+
+    def get_motor_positions(self, color):
+        return [f(color) for f in self.functions]
+
+    def get_color(self, motor_index, motor_position):
+        motor = self.motors[motor_index]
+        if motor.positions.min() < motor_position < motor.positions.max():
+            pass
+        else:
+            # take closest valid motor position if outside of range
+            idx = (np.abs(motor.positions - motor_position)).argmin()
+            motor_position = motor.positions[idx]
+        return self.i_functions[motor_index](motor_position)
 
 
 ### curve class ###############################################################
@@ -360,9 +384,9 @@ class Curve:
             setattr(self, obj.name, obj)
         self.interpolate()
 
-    def offset(self, motor, amount):
+    def offset_by(self, motor, amount):
         '''
-        Offset given motor by some ammount.
+        Offset a motor by some ammount.
 
         Parameters
         ----------
@@ -370,16 +394,53 @@ class Curve:
             The motor index or name.
         amount : number
             The offset.
+            
+        See Also
+        --------
+        offset_to
         '''
+        # get motor index
         if type(motor) in [float, int]:
             motor_index = motor
         elif type(motor) == str:
             motor_index = self.motor_names.index(motor)
         else:
-            print 'motor type not recognized in curve.offset'
+            print 'motor type not recognized in curve.offset_by'
         # offset
         self.motors[motor_index].positions += amount
         self.interpolate()
+
+    def offset_to(self, motor, destination, color, color_units='same'):
+        '''
+        Offset a motor such that it evaluates to `destination` at `color`.
+        
+        Parameters
+        ----------
+        motor : number or str
+            The motor index or name.
+        amount : number
+            The motor position at color after offseting.
+        color : number
+            The color at-which to set the motor to amount.
+        color_units : str (optional)
+            The color units. Default is same.
+        
+        See Also
+        --------
+        offset_by
+        '''
+        # get motor index
+        if type(motor) in [float, int]:
+            motor_index = motor
+        elif type(motor) == str:
+            motor_index = self.motor_names.index(motor)
+        else:
+            print 'motor type not recognized in curve.offset_to'
+        # get offset
+        current_positions = self.get_motor_positions(color, color_units, full=False)
+        offset = destination - current_positions[motor_index]
+        # apply using offset_by
+        self.offset_by(motor, offset)
 
     def plot(self, autosave=False, save_path=''):
         '''
