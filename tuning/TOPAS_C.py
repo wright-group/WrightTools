@@ -89,7 +89,7 @@ def _exp_value(y, x):
 
 
 def process_C2_motortune(opa_index, data_filepath, curves, save=True):
-    old_curve = wt_curve.from_TOPAS_crvs(curves, 'NON-NON-NON-Sig')
+    old_curve = wt_curve.from_TOPAS_crvs(curves, 'TOPAS-C', 'NON-NON-NON-Sig')
     # extract information from file
     headers = wt_kit.read_headers(data_filepath)
     wa_index = headers['name'].index('wa')
@@ -215,7 +215,7 @@ def process_C2_motortune(opa_index, data_filepath, curves, save=True):
 
 
 def process_D2_motortune(opa_index, data_filepath, curves, save=True):
-    old_curve = wt_curve.from_TOPAS_crvs(curves, 'NON-NON-NON-Sig')
+    old_curve = wt_curve.from_TOPAS_crvs(curves, 'TOPAS-C', 'NON-NON-NON-Sig')
     # extract information from file
     headers = wt_kit.read_headers(data_filepath)
     wa_index = headers['name'].index('wa')
@@ -324,7 +324,7 @@ def process_preamp_motortune(OPA_index, data_filepath, curves, save=True):
     # extract information from file
     headers = wt_kit.read_headers(data_filepath)
     arr = np.genfromtxt(data_filepath).T
-    old_curve = wt_curve.from_TOPAS_crvs(curves, 'NON-NON-NON-Sig')
+    old_curve = wt_curve.from_TOPAS_crvs(curves, 'TOPAS-C', 'NON-NON-NON-Sig')
     # get array data
     array_colors = arr[headers['name'].index('wa')]
     array_data = arr[headers['name'].index('array_signal')]
@@ -552,7 +552,7 @@ def process_preamp_motortune(OPA_index, data_filepath, curves, save=True):
 
 
 def process_SHS_motortune(OPA_index, data_filepath, curves, save=True):
-    old_curve = wt_curve.from_TOPAS_crvs(curves, 'NON-SH-NON-Sig')
+    old_curve = wt_curve.from_TOPAS_crvs(curves, 'TOPAS-C', 'NON-SH-NON-Sig')
     # extract information from headers
     headers = wt_kit.read_headers(data_filepath)
     m2_index = headers['name'].index('w%d_Mixer_2'%OPA_index)
@@ -674,7 +674,7 @@ def process_SHS_motortune(OPA_index, data_filepath, curves, save=True):
 
 
 def process_SFS_motortune(OPA_index, data_filepath, curves, save=True):
-    old_curve = wt_curve.from_TOPAS_crvs(curves, 'NON-NON-SF-Sig')
+    old_curve = wt_curve.from_TOPAS_crvs(curves, 'TOPAS-C', 'NON-NON-SF-Sig')
     # extract information from headers
     headers = wt_kit.read_headers(data_filepath)
     m2_index = headers['name'].index('w%d_Mixer_1'%OPA_index)

@@ -29,25 +29,38 @@ debug = False
 ### define ####################################################################
 
 
-TOPAS_motor_names = {0: ['Crystal_1', 'Delay_1', 'Crystal_2', 'Delay_2'],
-                     1: ['Mixer_1'],
-                     2: ['Mixer_2'],
-                     3: ['Mixer_3']}
+TOPAS_C_motor_names = {0: ['Crystal_1', 'Delay_1', 'Crystal_2', 'Delay_2'],
+                       1: ['Mixer_1'],
+                       2: ['Mixer_2'],
+                       3: ['Mixer_3']}
 
                                          # [num_between, motor_names]
-TOPAS_interactions = {'NON-NON-NON-Sig': [8 , TOPAS_motor_names[0]],
-                      'NON-NON-NON-Idl': [8 , TOPAS_motor_names[0]],
-                      'NON-NON-SH-Sig' : [11, TOPAS_motor_names[1]],
-                      'NON-SH-NON-Sig' : [11, TOPAS_motor_names[2]],
-                      'NON-NON-SH-Idl' : [11, TOPAS_motor_names[1]],
-                      'NON-NON-SF-Sig' : [11, TOPAS_motor_names[1]],
-                      'NON-NON-SF-Idl' : [11, TOPAS_motor_names[1]],
-                      'NON-SH-SH-Sig'  : [11, TOPAS_motor_names[2]],
-                      'SH-SH-NON-Sig'  : [11, TOPAS_motor_names[3]],
-                      'NON-SH-SH-Idl'  : [11, TOPAS_motor_names[2]],
-                      'SH-NON-SH-Idl'  : [11, TOPAS_motor_names[3]],
-                      'DF1-NON-NON-Sig': [10, TOPAS_motor_names[3]]}
-                       
+TOPAS_C_interactions = {'NON-NON-NON-Sig': [8 , TOPAS_C_motor_names[0]],
+                        'NON-NON-NON-Idl': [8 , TOPAS_C_motor_names[0]],
+                        'NON-NON-SH-Sig' : [11, TOPAS_C_motor_names[1]],
+                        'NON-SH-NON-Sig' : [11, TOPAS_C_motor_names[2]],
+                        'NON-NON-SH-Idl' : [11, TOPAS_C_motor_names[1]],
+                        'NON-NON-SF-Sig' : [11, TOPAS_C_motor_names[1]],
+                        'NON-NON-SF-Idl' : [11, TOPAS_C_motor_names[1]],
+                        'NON-SH-SH-Sig'  : [11, TOPAS_C_motor_names[2]],
+                        'SH-SH-NON-Sig'  : [11, TOPAS_C_motor_names[3]],
+                        'NON-SH-SH-Idl'  : [11, TOPAS_C_motor_names[2]],
+                        'SH-NON-SH-Idl'  : [11, TOPAS_C_motor_names[3]],
+                        'DF1-NON-NON-Sig': [10, TOPAS_C_motor_names[3]]}
+
+TOPAS_800_motor_names = {0: ['Crystal', 'Amplifier', 'Grating'],
+                         1: [''],
+                         2: [''],
+                         3: ['NDFG_Crystal', 'NDFG_Mirror', 'NDFG_Delay']}
+
+                                           # [num_between, motor_names]
+TOPAS_800_interactions = {'NON-NON-NON-Sig': [8, TOPAS_800_motor_names[0]],
+                          'NON-NON-NON-Idl': [8, TOPAS_800_motor_names[0]],
+                          'DF1-NON-NON-Sig': [7, TOPAS_800_motor_names[3]],
+                          'DF2-NON-NON-Sig': [7, TOPAS_800_motor_names[3]]}
+
+TOPAS_interation_by_kind = {'TOPAS-C': TOPAS_C_interactions,
+                            'TOPAS-800': TOPAS_800_interactions}
 
 
 ### interpolation classes #####################################################
@@ -551,8 +564,8 @@ class Curve:
         # save
         if self.kind == 'opa800':
             out_path = to_800_curve(self, save_directory)
-        elif self.kind == 'TOPAS-C':
-            out_path = to_TOPAS_crvs(self, save_directory, **kwargs)
+        elif self.kind in ['TOPAS-C', 'TOPAS-800']:
+            out_path = to_TOPAS_crvs(self, save_directory, self.kind, **kwargs)
         else:
             error_text = ' '.join(['kind', self.kind, 'does not know how to save!'])
             raise LookupError(error_text)
@@ -582,15 +595,24 @@ def from_800_curve(filepath):
     return curve
 
 
-def from_TOPAS_crvs(filepaths, interaction_string):
+def from_TOPAS_crvs(filepaths, kind, interaction_string):
     '''
     Parameters
     ----------
-    filepaths : list of str
-        base, mixer 1, mixer 2, mixer 3
+    filepaths : list of str [base, mixer 1, mixer 2, mixer 3]
+        Paths to all crv files for OPA. Filepaths may be None if not needed /
+        not applicable.
+    kind : {'TOPAS-C', 'TOPAS-800'}
+        The kind of TOPAS represented.
     interaction_string : str
-        For this curve.
+        Interaction string for this curve, in the style of Light Conversion - 
+        e.g. 'NON-SF-NON-Sig'.
+    
+    Returns
+    ------
+    WrightTools.tuning.curve.Curve object
     '''
+    TOPAS_interactions = TOPAS_interation_by_kind[kind]
     # setup to recursively import data
     interactions = interaction_string.split('-')
     interaction_strings = []  # most subservient tuning curve comes first
@@ -629,7 +651,7 @@ def from_TOPAS_crvs(filepaths, interaction_string):
             motors.append(motor)
             name = wt_kit.filename_parse(crv_path)[1]
         curve = Curve(colors, 'nm', motors, name, interaction_string,
-                      'TOPAS-C', method=Linear,
+                      kind, method=Linear,
                       subcurve=subcurve, source_colors=source_colors)
         subcurve = curve.copy()
     # finish
@@ -662,7 +684,8 @@ def to_800_curve(curve, save_directory):
     return out_path
 
 
-def to_TOPAS_crvs(curve, save_directory, **kwargs):
+def to_TOPAS_crvs(curve, save_directory, kind, **kwargs):
+    TOPAS_interactions = TOPAS_interation_by_kind[kind]
     # unpack
     curve = curve.copy()
     curve.convert('nm')
