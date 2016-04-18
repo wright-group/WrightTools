@@ -49,8 +49,28 @@ cmap = wt_artists.colormaps['default']
 ### processing methods ########################################################
 
 
-def process_motortune(filepath, channel_name, old_curve_filepath, autosave=True,
-                      cutoff_factor=50, output_points_count=25, cutoff=0.0):
+def process_motortune(filepath, channel_name, old_curve_filepath, 
+                      autosave=True, cutoff_factor=50, output_points_count=25, 
+                      cutoff=0.1):
+    '''
+    Process 1D motortune data.
+    
+    Parameters
+    ----------
+    filepath : str
+        Filepath to the data file.
+    channel_name : str
+        The channel within the data to use.
+    old_curve_filepath : str
+        Filepath to the .curve file used when the data was collected.
+    autosave : bool (optional)
+        Toggle autosave behavior. Defautl is True.    
+    
+    Returns
+    -------
+    WrightTools.curve.Curve
+        The new tuning curve.
+    '''
     channel_name = channel_name
     # make data object
     data = wt_data.from_PyCMDS(filepath, verbose=False)
@@ -109,7 +129,7 @@ def process_motortune(filepath, channel_name, old_curve_filepath, autosave=True,
     # plot curve
     if autosave:
         curve.save(save_directory=wt_kit.filename_parse(filepath)[0])
-
+    return curve
 
 def process_tunetest(filepath, channel, max_change=100, autosave=True):
     # recognize kind of scan

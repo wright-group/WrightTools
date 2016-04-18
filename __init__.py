@@ -2,14 +2,18 @@
 Import all subdirectories and modules.
 '''
 
+
 ### import ####################################################################
+
 
 import os as _os
 _wt_dir = _os.path.dirname(__file__)
 
 import ConfigParser as _ConfigParser
 
+
 ### version information #######################################################
+
 
 # get config
 _ini_path = _os.path.join(_wt_dir, 'main.ini')
@@ -32,12 +36,14 @@ except:
 # d - git sha key
 __version__ = _config.get('main', 'version') + '.' + _sha[:7]
 
+
 ## iterate ####################################################################
+
 
 __all__ = []
 for _path in _os.listdir(_wt_dir):
     _full_path = _os.path.join(_wt_dir, _path)
-    if _os.path.isdir(_full_path) and _path not in ['.git', 'examples', 'widgets']:
+    if _os.path.isdir(_full_path) and _path not in ['.git', 'examples', 'widgets', 'documentation']:
         __import__(_path, locals(), globals())
         __all__.append(_path)
     elif _path[-3:] == '.py' and _path not in ['__init__.py', 'gui.py']:

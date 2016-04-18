@@ -166,26 +166,25 @@ class FileSlicer:
 
 
 def get_box_path():
-    box_path = os.path.join(os.path.expanduser('~'), 'Box Sync', 'Wright Shared')
+    '''
+    LEGACY METHOD. Use ``get_path_matching(name)`` instead.
+    '''
+    box_path = get_path_matching('Box Sync')
+    return os.path.join(box_path, 'Wright Shared')
     
-    if not os.path.isdir(box_path):
-        #find root box directory given the current directory (given that current is within box)
-        folders = os.getcwd().split('\\')
-        found = False
-        i=0
-        while (found == False and i < range(len(folders))):
-            if folders[i] == 'Box Sync':
-                found = True
-            i+=1
-        if found:
-            box_path =  str(os.path.join(folders[0], r'\\', *folders[1:i]))
-            box_path = os.path.join(box_path, 'Wright Shared')
-        else:
-            print 'could not find the root directory'
-            return None    
-    
-    return box_path
 
+def get_path_matching(name):
+    # first try looking in the user folder
+    p = os.path.join(os.path.expanduser('~'), name)
+    # then try expanding upwards from cwd
+    if not os.path.isdir(p):
+        p = None
+        folders = os.getcwd().split(os.sep)
+        print name, folders
+        if name in folders:
+            p = os.path.join(folders[:folders.index(name)])
+    # TODO: something more robust to catch the rest of the cases?
+    return p
 
 def get_timestamp():
 
@@ -732,15 +731,15 @@ def string2array(string, sep='\t'):
     l = string.split(' ')
     l = flatten_list([i.split('-') for i in l])  # annoyingly series of negative values get past previous filters
     for i, item in enumerate(l):
-        bad_chars = ['[', ']', '\t']
+        bad_chars = ['[', ']', '\t', '\n']
         for bad_char in bad_chars:
             item = item.replace(bad_char, '')
         l[i] = item
     for i in range(len(l))[::-1]:
-        if l[i] == '':
-            l.pop(i)
-        else:
+        try:
             l[i] = float(l[i])
+        except ValueError:
+            l.pop(i)
     # create and reshape array
     arr = np.array(l)
     arr.shape = shape
