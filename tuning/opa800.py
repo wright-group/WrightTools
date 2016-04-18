@@ -50,7 +50,7 @@ cmap = wt_artists.colormaps['default']
 
 
 def process_motortune(filepath, channel_name, old_curve_filepath, autosave=True,
-                      cutoff_factor=50, output_points_count=25):
+                      cutoff_factor=50, output_points_count=25, cutoff=0.0):
     channel_name = channel_name
     # make data object
     data = wt_data.from_PyCMDS(filepath, verbose=False)
@@ -67,6 +67,13 @@ def process_motortune(filepath, channel_name, old_curve_filepath, autosave=True,
     tune_points = data.axes[1].points
     # process data
     data.level(channel_index, 0, -3)
+    # coerce points to zero
+    channel = data.channels[channel_index]
+    for i in range(channel.values.shape[-1]):
+        maximum = np.max(channel.values[:, i])
+        for j in range(channel.values.shape[0]):
+            if channel.values[j, i] < maximum * cutoff:
+                channel.values[j, i] = 0
     # get centers through expectation value
     motor_axis_name = data.axes[0].name
     function = wt_fit.ExpectationValue()
@@ -96,14 +103,15 @@ def process_motortune(filepath, channel_name, old_curve_filepath, autosave=True,
     artist = wt_artists.mpl_2D(data)
     artist.onplot(tune_points, offsets)
     artist.onplot(curve.colors, curve.motors[tuned_motor_index].positions-old_curve.motors[tuned_motor_index].positions, alpha=1)
-    artist.plot(channel_index, autosave=True,
+    artist.plot(channel_index, autosave=autosave,
                 contours=0,
                 fname=filepath.replace('.data', ''))
     # plot curve
-    curve.save(save_directory=wt_kit.filename_parse(filepath)[0])
+    if autosave:
+        curve.save(save_directory=wt_kit.filename_parse(filepath)[0])
 
 
-def process_tunetest(filepath, channel, autosave=True):
+def process_tunetest(filepath, channel, max_change=100, autosave=True):
     # recognize kind of scan
     start = filepath.index('[') + 1
     end = filepath.index(']')
@@ -111,7 +119,7 @@ def process_tunetest(filepath, channel, autosave=True):
     opa_name = dims[0].strip()
     print 'opa recognized as', opa_name
     # import array
-    headers = get_headers(filepath)
+    headers = wt_kit.read_headers(filepath)
     arr = np.genfromtxt(filepath).T
     opa_col = headers['name'].index(opa_name)
     mono_col = headers['name'].index('wm')
@@ -141,12 +149,13 @@ def process_tunetest(filepath, channel, autosave=True):
     plt.ylabel('$\Delta$ (wn)')
     filename = wt_kit.filename_parse(filepath)[1]
     plt.suptitle(filename)
-    # process motortune
-    m_chosen = np.zeros(len(tunepoints))
-    m_old = np.zeros(len(tunepoints))
+    # process tune test
+    function = wt_fit.ExpectationValue() 
+    w_chosen = np.zeros(len(tunepoints))
+    w_old = np.zeros(len(tunepoints))
     for i in range(len(tunepoints)):
-        ms = mono_points[:, i]
-        m_old[i] = np.average(ms)
+        ws = mono_points[:, i]
+        w_old[i] = np.average(ws)  # scan about old center
         # create masked amplitude array
         amplitude = detector_points.copy()[:, i]
         mask = np.zeros(len(amplitude), dtype=bool)
@@ -154,19 +163,16 @@ def process_tunetest(filepath, channel, autosave=True):
             if np.abs(amplitude[j]) < amplitude.max()/2.:
                 mask[j] = True
         amplitude = np.ma.masked_array(amplitude, mask=mask)
-        ms = np.ma.masked_array(ms, mask=mask)
+        ws = np.ma.masked_array(ws, mask=mask)
         # find best
-        if True:
-            m_chosen[i] = expectation_value(amplitude, ms)
-        else:
-            amplitude_guess = max(amplitude)
-            center_guess = m_old[i]
-            sigma_guess = 0.25
-            p0 = np.array([amplitude_guess, center_guess, sigma_guess])
-            outs = leastsq(gauss_residuals, p0, args=(amplitude, ms))[0]
-            m_chosen[i] = outs[1]
-    plt.plot(tunepoints, m_chosen-m_old, lw=5, c='k', alpha=0.5)
-    # generate tuning curve
+        w_chosen[i] = function.fit(amplitude, ws)[0]
+    # remove poor points
+    for i in range(len(tunepoints)):
+        if np.abs(w_chosen[i] - w_old[i]) > max_change:
+            w_chosen[i] = w_old[i]  # coerece to old point
+    # plot chosen points
+    plt.plot(tunepoints, w_chosen-w_old, lw=5, c='k', alpha=0.5)
+    # assemble tuning curve
     motors = []
     for name in ['Grating', 'BBO', 'Mixer']:
         motor_name = '_'.join([opa_name, name])
@@ -177,10 +183,10 @@ def process_tunetest(filepath, channel, autosave=True):
         motor = wt_curve.Motor(positions, name)
         motors.append(motor)
     curve_name = 'OPA' + opa_name[-1] + ' '
-    curve = wt_curve.Curve(m_chosen, 'wn', motors, curve_name, 'opa800', 
+    curve = wt_curve.Curve(w_chosen, 'wn', motors, curve_name, kind='opa800', 
                            interaction='DFG', method=wt_curve.Poly)
     # map points
-    curve.map_colors(25)
+    curve.map_colors(tunepoints)
     # save
     if autosave:
         out_dir = os.path.dirname(filepath)
