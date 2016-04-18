@@ -411,6 +411,10 @@ def make_cubehelix(gamma=1.0, s=0.5, r=-1.5, h=0.5,
     For more information see http://arxiv.org/abs/1108.5083 .
     '''
     # isoluminescent curve--helical color cycle
+    # isoluminescent curve--helical color cycle
+    rr = (.213/.30)**1#.5
+    rg = (.715/.99)**1#.5
+    rb = (.072/.11)**1#.5
     def get_color_function(p0, p1):
         def color(x):
             # Apply gamma factor to emphasise low or high intensity values
@@ -420,19 +424,24 @@ def make_cubehelix(gamma=1.0, s=0.5, r=-1.5, h=0.5,
             # to white diagonal in the plane of constant
             # perceived intensity.
             xg = darkest * x**gamma
-            lum = 1-xg  # starts at 1
+            lum = 1-xg # starts at 1
             if lum_rev:
                 lum = lum[::-1]
-            a = lum.copy()  # h * lum*(1-lum)/2.
+            #a = h*lum * (1-lum)/2.
+            #"""
+            a = lum.copy()#h * lum*(1-lum)/2.
             a[lum<0.5] = h * lum[lum<0.5]/2.
             a[lum>=0.5] = h * (1-lum[lum>=0.5])/2.
+            #"""
             phi = 2 * np.pi * (s / 3 + r * x)
             out = lum + a * (p0 * np.cos(phi) + p1 * np.sin(phi))
             return out
         return color
-    rgb_dict = {'red':   get_color_function(-0.14861, 1.78277),
-                'green': get_color_function(-0.29227, -0.90649),
-                'blue':  get_color_function(1.97294, 0.0)}
+    rgb_dict = {
+            'red': get_color_function(-0.14861*rr, 1.78277*rr),
+            'green': get_color_function(-0.29227*rg, -0.90649*rg),
+            'blue': get_color_function(1.97294*rb, 0.0),
+    }
     cbar = matplotlib.colors.LinearSegmentedColormap('cubehelix', rgb_dict)
     if plot:
         plot_colormap(cbar)
@@ -558,10 +567,16 @@ def plot_colormap(cmap):
     g = cmap._segmentdata['green'](x)
     b = cmap._segmentdata['blue'](x)
     k = .3*r + .59*g + .11*b
+    # truncate
+    r.clip(0, 1, out=r)
+    g.clip(0, 1, out=g)
+    b.clip(0, 1, out=b)
+    # plot
     plt.plot(x, r, 'r', linewidth=5, alpha=0.6)
     plt.plot(x, g, 'g', linewidth=5, alpha=0.6)
     plt.plot(x, b, 'b', linewidth=5, alpha=0.6)
     plt.plot(x, k, 'k:', linewidth=5, alpha=0.6)
+    ax.set_ylim(-.1, 1.1)
     # finish
     plt.grid()
     plt.xlabel('value', fontsize=17)
@@ -632,7 +647,7 @@ def subplots_adjust(fig=None, inches=1):
 ### color maps ################################################################
 
 
-cubehelix = make_cubehelix(gamma=0.5, s=0.25, r=-6/6., h=1.25, 
+cubehelix = make_cubehelix(gamma=0.5, s=0.25, r=-1., h=1.3, 
                            lum_rev=False, darkest=0.7)
 
 experimental = ['#FFFFFF',

@@ -318,21 +318,17 @@ class Data:
         Ensure that the ``axis_names``, ``constant_names``, ``channel_names``,
         and ``shape`` attributes are correct.
         '''
-        
         self.axis_names = [axis.name for axis in self.axes]
         self.constant_names = [axis.name for axis in self.constants]
         self.channel_names = [channel.name for channel in self.channels]
-        
         all_names = self.axis_names + self.channel_names + self.constants
         if len(all_names) == len(set(all_names)):
             pass
         else:
             print 'axis, constant, and channel names must all be unique - your data object is now broken!!!!'
             return
-        
         for obj in self.axes + self.channels + self.constants:
             setattr(self, obj.name, obj)
-            
         self.shape = self.channels[0].values.shape
         
     def bring_to_front(self, channel):
@@ -994,18 +990,21 @@ class Data:
         # loop through 'indices' and find axis whole label_seeds contain indi
         for i,indi in enumerate(indices):
             t_order = range(len(self.axes))
-            ni = [j for j in range(len(m_axes)) if indi in 
-                  m_axes[j].label_seed]
+            # find axes indices that have the correct label seed
+            # and also belong to the list of axes under consideration
+            #ni = [j for j in range(len(m_axes)) if indi in 
+            ni = [j for j in range(len(self.axes)) if indi in 
+                  self.axes[j].label_seed and self.axes[j] in m_axes]
+                  #m_axes[j].label_seed]
             if verbose: print ni
             # there should never be more than one axis that agrees
             if len(ni) > 1: 
                 raise ValueError()
             elif len(ni) > 0:
                 ni = ni[0]
-                axi = m_axes[ni]
+                axi = self.axes[ni]
                 mi = m[i]
                 # move index of interest to inside
-                if verbose: print t_order
                 t_order.pop(ni)
                 t_order.append(ni)
                 if verbose: print t_order
@@ -1015,12 +1014,13 @@ class Data:
                 Ei = abs_data.axes[0].points
                 Ai = interp1d(Ei, abs_data.channels[0].values,
                               bounds_error=bounds_error)
-                ai = Ai(axi.points)                
-                Mi = mi(ai) 
+                ai = Ai(axi.points)
+                Mi = mi(ai)
                 # apply Mi to channel ---------------------------------
                 self.channels[i].values /= Mi
                 # invert back out of the transpose
                 t_inv = [t_order.index(j) for j in range(len(t_order))]
+                if verbose: print t_inv
                 self.transpose(axes=t_inv, verbose=verbose)
             else:
                 print '{0} label_seed not found'.format(indi)
@@ -1879,61 +1879,48 @@ def from_KENT(filepaths, znull=None, name=None, ignore=['wm'], use_norm=False,
     '''
     filepaths may be string or list \n
     '''
-
     # do we have a list of files or just one file? ----------------------------
-    
     if type(filepaths) == list:
         file_example = filepaths[0]
     else:
         file_example = filepaths
         filepaths = [filepaths]
-    
     # define format of dat file -----------------------------------------------
-
+    # axes
     axes = collections.OrderedDict()
     axes['w1']   = Axis(None, 'wn', tolerance=frequency_tolerance,  file_idx = 0,  name = 'w1',  label_seed = ['1'])
     axes['w2']   = Axis(None, 'wn', tolerance=frequency_tolerance,  file_idx = 1,  name = 'w2',   label_seed = ['2'])
     axes['wm']   = Axis(None, 'wn', tolerance=frequency_tolerance,  file_idx = 2,  name = 'wm',   label_seed = ['m'])
     axes['d1']   = Axis(None, 'ps', tolerance=delay_tolerance,  file_idx = 3,  name = 'd1',   label_seed = ['1'])
     axes['d2']   = Axis(None, 'ps', tolerance=delay_tolerance,  file_idx = 4,  name = 'd2',   label_seed = ['2'])
-    
+    # channels
     channels = collections.OrderedDict()
     channels['signal'] = Channel(None, 'V',  file_idx = 5, name = 'signal',  label_seed = ['0'])
     channels['OPA2']   = Channel(None, 'V',  file_idx = 6, name = 'OPA2',  label_seed = ['1'])
     channels['OPA1']   = Channel(None, 'V',  file_idx = 7, name = 'OPA1',  label_seed = ['2'])
-            
-    # import full array -------------------------------------------------------
-            
+    # import full array -------------------------------------------------------   
     for i in range(len(filepaths)):
         dat = np.genfromtxt(filepaths[i]).T
         if verbose: print 'file imported:', dat.shape
         if i == 0:
             arr = dat
         else:      
-            arr = np.append(arr, dat, axis = 1)
-            
+            arr = np.append(arr, dat, axis = 1) 
     # recognize dimensionality of data ----------------------------------------
-        
     axes_discover = axes.copy()
     for key in ignore:
         if key in axes_discover:
             axes_discover.pop(key)  # remove dimensions that mess up discovery
-            
     scanned, constant = discover_dimensions(arr, axes_discover)
-    
     # get axes points ---------------------------------------------------------
-
     for axis in scanned:
-        
         #generate lists from data
         lis = sorted(arr[axis.file_idx])
         tol = axis.tolerance
-        
         # values are binned according to their averages now, so min and max 
         #  are better represented
         xstd = []
         xs = []
-        
         # check to see if unique values are sufficiently unique
         # deplete to list of values by finding points that are within 
         #  tolerance
@@ -1948,36 +1935,27 @@ def from_KENT(filepaths, znull=None, name=None, ignore=['wm'], use_norm=False,
             xs.append(xi_lis_average)
             xstdi = sum(np.abs(xi_lis - xi_lis_average)) / len(xi_lis)
             xstd.append(xstdi)
-        
         # create uniformly spaced x and y lists for gridding
         # infinitesimal offset used to properly interpolate on bounds; can
         #   be a problem, especially for stepping axis
         tol = sum(xstd) / len(xstd)
-        tol = max(tol, 0.3)
+        tol = max(tol, 1e-4)
         axis.points = np.linspace(min(xs)+tol, max(xs)-tol, num = len(xs))
-
     # grid data ---------------------------------------------------------------
     # May not need, but doesnt hurt to include
     if len(scanned) == 1:
         # 1D data
-    
         axis = scanned[0]
         axis.points = arr[axis.file_idx]
         scanned[0] = axis
-    
         for key in channels.keys():
             channel = channels[key]
             zi = arr[channel.file_idx]
             channel.give_values(zi)
-    
     else:
         # all other dimensionalities
-
         points = tuple(arr[axis.file_idx] for axis in scanned)
-        # beware, meshgrid gives wrong answer with default indexing
-        # this took me many hours to figure out... - blaise
         xi = tuple(np.meshgrid(*[axis.points for axis in scanned], indexing = 'ij'))
-    
         for key in channels.keys():
             channel = channels[key]
             zi = arr[channel.file_idx]
@@ -1986,61 +1964,43 @@ def from_KENT(filepaths, znull=None, name=None, ignore=['wm'], use_norm=False,
                          method='linear',fill_value=fill_value)
             channel.give_values(grid_i)
             if debug: print key
-            
     # create data object ------------------------------------------------------
-
     data = Data(scanned, channels.values(), constant, znull)
-    
-
     for axis in data.axes:
         axis.get_label()
     for axis in data.constants:
         axis.get_label()
-    
     # add extra stuff to data object ------------------------------------------
-
     data.source = filepaths
-    
     if not name:
         name = kit.filename_parse(file_example)[1]
     data.name = name
-
     # normalize the data ------------------------------------------------------
-    
     if use_norm:
-       
         # normalize the OPAs
         OPA1 = data.channels[2].values/data.axes[0].points
         OPA2 = data.channels[1].values/data.axes[1].points
-        
         # Signal normalization
         data_norm = data.channels[0].values*data.axes[0].points*data.axes[1].points/(OPA1*OPA2)
-
         data.channels[0].values = data_norm
         data.channels[0].zmax = data_norm.max()
         data.channels[0].zmin = data_norm.min()
-
     # return ------------------------------------------------------------------
-    
     if verbose:
         print 'data object succesfully created'
         print 'axis names:', data.axis_names
         print 'values shape:', channels.values()[0].values.shape
-        
     return data
        
        
-def from_NISE(measure_object, name = 'simulation', ignore_constants = ['A', 'p'],
-              flip_delays = True, verbose = True):
-    
+def from_NISE(measure_object, name='simulation', ignore_constants=['A', 'p'],
+              flip_delays=True, verbose=True):
     try:
         import NISE
     except:
         print 'NISE is required to import scans, returning'
         return
-    
     # axes --------------------------------------------------------------------
-        
     NISE_axes = measure_object.scan_obj.axis_objs
     axes = []
     for NISE_axis in NISE_axes:
@@ -2050,15 +2010,12 @@ def from_NISE(measure_object, name = 'simulation', ignore_constants = ['A', 'p']
         label_seed = NISE_axis.also
         axis = Axis(points, units, name = axis_name, label_seed = label_seed)
         axes.append(axis)
-        
     # constants ---------------------------------------------------------------
-        
     NISE_units = {'A': 'uJ per sq. cm',
                   's': 'FWHM',
                   'd': 'fs',
                   'w': 'wn',
                   'p': 'rad'}
-        
     scan_object = measure_object.scan_obj
     positions_array = scan_object.positions.T
     pulse_class = getattr(NISE.lib.pulse, scan_object.pulse_class_name)
@@ -2093,23 +2050,17 @@ def from_NISE(measure_object, name = 'simulation', ignore_constants = ['A', 'p']
                     axis = Axis(value, units, name = cname, label_seed = label_seed)
                     if key not in ignore_constants:
                         constants.append(axis)
-
     # channels ----------------------------------------------------------------
-
     zi = measure_object.pol
     channel = Channel(zi, 'au', label='amplitude', name='simulation')
     channels = [channel]
-    
     # data object -------------------------------------------------------------
-    
     if flip_delays:
         for lis in [axes, constants]:
             for axis in lis:
-                if axis.units_kind == 'time':
+                if axis.units_kind == 'delay':
                     axis.points *= -1.
-    
     data = Data(axes, channels, constants = constants, name = name, source = 'NISE')
-    
     return data
 
 
