@@ -1,0 +1,187 @@
+
+\section{Introduction}
+
+WrightTools is a python package for processing and viewing data. WrightTools is designed to be used in python scripts. For the purpose of this document, we will assume that WrightTools is imported with the alias \texttt{wt}: \texttt{import WrightTools as wt}.
+
+\todo[inline]{include overview of package structure}
+
+As a living software package with evolving capabilities, detailed documentation of WrightTools here is neither easy nor useful. For specific usage notes look to the \href{https://www.python.org/dev/peps/pep-0257/#what-is-a-docstring}{docstrings} in WrightTools itself. This document is meant to provide a coarse-grained description of the entire package. It also describes design philosophies and best-practices when using WrightTools.
+
+\pagebreak
+\section{Data}
+
+The \texttt{Data} class fills two important roles within WrightTools:
+\begin{enumerate}
+	\item \texttt{Data} defines a single format to represent the results almost any measurement or simulation.
+	\item \texttt{Data} provides a suite of methods for data manipulation.
+\end{enumerate}
+Almost every capability of WrightTools relies upon \texttt{Data} to some extent. \texttt{Data} can be thought of as the glue that holds the entire Wright group software stack together.
+
+\begin{figure}[h]\label{fig:data overview}
+	\begin{centering}
+		\includegraphics[scale=0.5]{"graphml/data overview"}
+		\caption{\texttt{Data} is the gateway to WrightTools.}
+	\end{centering}
+\end{figure}
+
+Figure \ref{fig:data overview} represents WrightTools accepting data from a variety of sources and formats. \texttt{Data} objects are typically not created directly through \texttt{Data.\_\_init\_\_} like most python classes. Instead, \texttt{Data} objects are created from files through a series of custom `\texttt{from\_file}' methods found in the \texttt{data.py} module. By creating separate methods, WrightTools can allow for easy \texttt{Data} creation from many different file formats. More details on \texttt{Data} creation can be found in Section \ref{section:instantiation}. Once created, regardless of origin, the \texttt{Data} object is ready to be used by other classes in WrightTools, such as artists and \texttt{Fitter}.
+
+
+
+
+
+\subsection{Structure \& Properties}
+
+\subsection{Instantiation}\label{section:instantiation}
+
+\subsection{Manipulation}
+
+chop, slice, join etc
+
+\subsection{Scaling \& Normalization}
+
+\subsubsection{dOD}
+
+Transient absorption data is most usefully viewed in $d$OD units, but it is naturally recorded in $dI$ and $I$. The \texttt{dOD} method of \texttt{Data} does the necessary transformation. Conveniently, absolute OD cancels out such that $dI$ and $I$ are all that is needed to calculate dOD.
+
+\begin{eqnarray}
+	d\mathrm{OD} &=& -\log_{10}\left(\frac{I+dI}{I_0}\right) +  \log_{10}\left(\frac{I}{I_0}\right)\\
+	&=& -\left(\log_{10}(I+d\mathrm{I})-\log_{10}(I_0)\right)+\left(\log_{10}(I)-\log_{10}(I_0)\right) \\
+	&=& \log_{10}(I)-\log_{10}(I+dI) \\
+	&=& -\log_{10}\left(\frac{I+dI}{I}\right)
+\end{eqnarray}
+
+Here $I_0$ is the probe intensity before the sample, $I$ is the probe intensity after the sample without pump, and $dI$ is the change in probe intensity caused by the pump.
+
+There are a few instrumental considerations when measuring $I$ and $dI$:
+\begin{enumerate}
+	\item Typically it is most convenient to measure $I$ as the average probe intensity for all shots (with and without pump). This is a good approximation as long as $dI<<I$.
+	\item $dI$ is defined as the total change in intensity. Boxcar averagers in active background subtraction mode return \textit{one half} of the total change. The \texttt{dOD} method has a \texttt{kwarg} `\texttt{method}' that can be used to appropriately take this factor of two into account. PyCMDS takes this factor into account in shots processing.
+\end{enumerate}
+
+
+
+
+
+
+\pagebreak
+\section{Artists}
+
+The artists module contains a variety of tools, all related to visualizing data. It contains two workhorse classes: \texttt{wt.artists.mpl\_2D} and \texttt{wt.artists.mpl\_1D}, which generate general visualizations of 2D and 1D slices of data objects. It also contains a series of specialized artists.
+
+\subsection{Colormaps}
+
+\begin{figure}
+	\begin{centering}
+		\includegraphics[width=5in]{colormaps.png}
+		\caption{WrightTools colormaps as of version 1.5.0.}
+	\end{centering}
+	\label{fig:colormaps}
+\end{figure}
+
+\begin{figure}
+	\begin{centering}
+		\includegraphics[width=5in]{colormap_components.png}
+		\caption{WrightTools default colormap RGB components.}
+	\end{centering}
+	\label{fig:colormap components}
+\end{figure}
+
+Cite A colour scheme for the display of astronomical intensity images - D.A. Green \cite{Nobody06}
+
+\pagebreak
+	\section{Fit} 
+	
+	The fit module provides tools for fitting data. It contains a series of \texttt{Function} objects, which handle the actual minimization routines given a dataset. These can be used outside of WrightTools. For example, given \texttt{xi} and \texttt{yi} as 1D arrays:
+	
+	\begin{minted}[ frame=lines, framesep=2mm, baselinestretch=1.2, fontsize=\footnotesize, linenos] {python}
+	function = wt.fit.Gaussian()  # create an instance of Gaussian class
+	center, width, amplitude, baseline = function.fit(yi, xi)  # do fit on your arrays
+	\end{minted}
+	
+	The fit module also contains a class made to send \texttt{data} through fitting operations: \texttt{wt.fit.Fitter}. Like in WrightTools artists, \texttt{Fitter} will take high dimensionality data and iterate over the dimensions higher than the ones being addressed.
+
+\pagebreak
+\section{Tuning}
+
+The tuning module provides tools for interacting with for optical parametric amplifier (OPA) tuning curves. It defines a main class, \texttt{wt.tuning.curve.Curve}, which is capable of representing tuning curves from multiple kinds of OPA. The tuning module also contains a series of modules and methods that accomplish certain specialized data processing tasks related to OPA tuning.
+
+\subsection{The Curve Class}
+
+The \texttt{Curve} class is made to contain OPA tuning curve data for any kind of OPA. By representing curves from different OPA hardware in the same format, WrightTools allows curves to share common code operations. Like the \texttt{wt.data.Data} class, \texttt{Curve} is a container for other objects: the \texttt{wt.tuning.curve.Motor} class. \texttt{Curve} objects are not meant to be instantiated directly. Instead they are returned by the `from' methods of the \texttt{wt.tuning.curve} module. 
+
+Curve objects are useful for visualizing and working with tuning curve data. 
+
+Curve objects also serve as a convenient backend for OPA hardware in PyCMDS. \texttt{curve.get\_motor\_positions} and \texttt{curve.get\_color} are made for this purpose.
+
+\subsection{TOPAS-C Motortune Processing}
+
+Traveling-wave Optical Parametric Amplifier of White-light Continuum (TOPAS-C) is an automated OPA made by Light Conversion. In TOPAS-C, four motors are used in the creation of signal and idler. These can be divided into subcategories of `preamp' and `poweramp', each containing two motors. After signal and idler are generated, additional motorized crystals, `mixers', can be used to upconvert or downconvert the base colors. This allows TOPAS-C to achieve a huge dynamic range of output colors, from ultraviolet to mid-infrared.z
+
+WrightTools contains a processing method for each parametric process used in the Wright group TOPAS-C. Each of these methods is described in this section.
+
+\subsubsection{Signal Preamp}
+
+In the TOPAS-C preamp white light is mixed non-colinearly with a small amount of pump to generate signal and idler. The signal output is angularly isolated and sent on to seed parametric output in a second crystal (the poweramp). 
+
+Two motors are used to control preamp output: Crystal 1 (C1) controls the angle of the mixing crystal and Delay 1 (D1) controls the delay between white light and pump in the mixing crystal. White light in TOPAS-C is intentionally chirped, so that D1 influences color by choosing a portion of the white light spectrum to overlap with pump. Since phase matching controlled by C1 angle also influences preamp output color, both motors influence color and intensity of preamp output. The measured dependence of output intensity and color on C1 and D1 positions is shown in Figure \ref{fig:TOPAS amplitude and center}.
+
+\begin{figure}
+	\begin{centering}
+		\includegraphics[width=7in]{TOPAS_tuning_examples/amplitude_and_center.png}
+		\caption{OPA output intensity and color as a function of C1 and D1. Measured on OPA1 (serial number 10743) 2016/01/13. Plotted pixels correspond directly to actual measured OPA outputs. The OPA output was measured using an array detector and fit to a single Gaussian lineshape. Grey pixels gave bad fits and were therefore filtered out. A small number of fits within the body of good data did fail and were filled in using bi-cubic interpolation. Data taken with PyCMDS MOTORTUNE module.}
+	\end{centering}
+	\label{fig:TOPAS amplitude and center}
+\end{figure}
+
+The correlation between motor position, color, and intensity present special challenges to tuning TOPAS-C preamp...
+
+To address this, WrightTools groups contours of constant color together and fits each contour to a Gaussian. This is shown in Figure \ref{fig:TOPAS contour fit}.
+
+\begin{figure}
+	\begin{centering}
+		\includegraphics[width=6in]{preamp_motortune.png}
+		\caption{}
+	\end{centering}
+	\label{fig:TOPAS contour fit}
+\end{figure}
+
+In the final step, WrightTools passes the resulting tune points through a univariate spline to ensure smoothness and attempt to extend the curve outwards. In principle a polynomial fit could be used, but in practice splines are more robust to poor behavior at the edges of the tuning curve, where polynomials may oscillate wildly (Runge's phenomenon).
+
+\begin{figure}
+	\begin{centering}
+		\includegraphics[width=6in]{preamp_motortune.png}
+		\caption{}
+	\end{centering}
+	\label{fig:TOPAS preamp motortune}
+\end{figure}
+
+
+\subsubsection{Signal Poweramp}
+
+\subsection{OPA800 Motortune Processing}
+
+OPA800 
+
+\subsubsection{Signal \& Idler}
+
+\begin{figure}
+	\begin{centering}
+		\includegraphics[width=5in]{OPA800_tuning_examples/signal_and_idler_motortune.png}
+		\caption{OPA800 (OPA2) signal and idler as measured by pyro. Data recorded 2015/10/15. Four quadrants are labeled with type and seed identification. Data taken with PyCMDS MOTORTUNE module.}
+	\end{centering}
+	\label{fig:opa800 signal and idler}
+\end{figure}
+
+\begin{figure}
+	\begin{centering}
+		\includegraphics[width=5in]{OPA800_tuning_examples/DFG_mixer_motortune.png}
+		\caption{OPA800 (OPA2) DFG as measured by pyro. Data recorded 2015/10/16. Data taken with PyCMDS MOTORTUNE module.}
+	\end{centering}
+	\label{fig:opa800 DFG}
+\end{figure}
+
+\pagebreak
+\section{Diagrams}
+
+The diagrams module provides specialized artists and tools for creating diagrams commonly used to describe CMDS experiments.

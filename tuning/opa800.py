@@ -130,7 +130,6 @@ def process_motortune(filepath, channel_name, old_curve_filepath,
     if autosave:
         curve.save(save_directory=wt_kit.filename_parse(filepath)[0])
     return curve
-    
 
 def process_tunetest(filepath, channel, max_change=100, autosave=True):
     # recognize kind of scan
