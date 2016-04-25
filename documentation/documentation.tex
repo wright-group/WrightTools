@@ -71,23 +71,21 @@ The artists module contains a variety of tools, all related to visualizing data.
 
 \subsection{Colormaps}
 
-\begin{figure}
+\begin{figure} \label{fig:colormaps}
 	\begin{centering}
 		\includegraphics[width=5in]{colormaps.png}
 		\caption{WrightTools colormaps as of version 1.5.0.}
 	\end{centering}
-	\label{fig:colormaps}
 \end{figure}
 
-\begin{figure}
+\begin{figure} \label{fig:colormap components}
 	\begin{centering}
 		\includegraphics[width=5in]{colormap_components.png}
 		\caption{WrightTools default colormap RGB components.}
 	\end{centering}
-	\label{fig:colormap components}
 \end{figure}
 
-Cite A colour scheme for the display of astronomical intensity images - D.A. Green \cite{Nobody06}
+Figure \ref{fig:colormap components} shows the RGB components of WrightTools' default colormap for single-signed data. This colormap is a custom implementation of the `cubehelix' color scheme developed by Green\cite{Green.2011.06}. The parameters were chosen to keep the colormap perceptual while closely matching the traditional Wright group colormap (\texttt{wt.artists.colormaps['wright']}). The colormap is slightly distorted in luminosity for aesthetic purposes.
 
 \pagebreak
 	\section{Fit} 
@@ -106,13 +104,29 @@ Cite A colour scheme for the display of astronomical intensity images - D.A. Gre
 
 The tuning module provides tools for interacting with for optical parametric amplifier (OPA) tuning curves. It defines a main class, \texttt{wt.tuning.curve.Curve}, which is capable of representing tuning curves from multiple kinds of OPA. The tuning module also contains a series of modules and methods that accomplish certain specialized data processing tasks related to OPA tuning.
 
-\subsection{The Curve Class}
+\subsection{OPA Tuning Curves}
 
-The \texttt{Curve} class is made to contain OPA tuning curve data for any kind of OPA. By representing curves from different OPA hardware in the same format, WrightTools allows curves to share common code operations. Like the \texttt{wt.data.Data} class, \texttt{Curve} is a container for other objects: the \texttt{wt.tuning.curve.Motor} class. \texttt{Curve} objects are not meant to be instantiated directly. Instead they are returned by the `from' methods of the \texttt{wt.tuning.curve} module. 
+OPA tuning curves are arrays of motor positions corresponding to parametric output colors. WrightTools offers an object-type to represent and manipulate OPA tuning curve arrays.
 
-Curve objects are useful for visualizing and working with tuning curve data. 
+\subsubsection{The Curve Class}
 
-Curve objects also serve as a convenient backend for OPA hardware in PyCMDS. \texttt{curve.get\_motor\_positions} and \texttt{curve.get\_color} are made for this purpose.
+The \texttt{Curve} class is made to contain OPA tuning curve data for any kind of OPA. By representing curves from different OPA hardware in the same format, WrightTools consolidates common tuning curve manipulations. \texttt{Curve} is a lot like the \texttt{wt.data.Data} class:
+
+\begin{enumerate}
+	\item \texttt{Curve} is a container for other objects - in this case instances of the \texttt{wt.tuning.curve.Motor} class. 
+	\item \texttt{Curve} objects are not meant to be instantiated directly. Instead they are returned by the `from' methods of the \texttt{wt.tuning.curve} module. 
+\end{enumerate}
+
+OPA tuning curves are often defined in `stages' where each stage accomplishes an additional parametric conversion on the light supplied by the previous stage. For example, a `base' OPA may supply pump and signal to a mixing crystal to be added together again to sum frequency signal. The sum frequency may then go on again to be doubled in another mixing process and so on. Each stage has its own tuning curve. To accommodate this structure \texttt{Curve} objects may be `nested' inside of themselves, such that each curve refers to its own attribute \texttt{curve.subcurve} to get the motor positions for the previous stage.
+
+Curve objects have some useful methods for visualizing and working with tuning curve arrays. \todo{discuss map axes, plot, save, offset}
+
+\todo[inline]{discuss interpolation}
+
+Curve objects also serve as a convenient backend for OPA hardware in PyCMDS...
+
+\texttt{curve.get\_motor\_positions} returns a numpy array with shape (motor count, color count)...
+
 
 \subsection{TOPAS-C Motortune Processing}
 
@@ -180,6 +194,8 @@ OPA800
 	\end{centering}
 	\label{fig:opa800 DFG}
 \end{figure}
+
+\subsection{CoSet}
 
 \pagebreak
 \section{Diagrams}
