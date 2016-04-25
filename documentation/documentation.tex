@@ -108,7 +108,7 @@ The tuning module provides tools for interacting with for optical parametric amp
 
 \subsection{The Curve Class}
 
-The \texttt{Curve} class is made to contain OPA tuning curve data for any kind of OPA. Like the \texttt{wt.data.Data} class, \texttt{Curve} is a container for other objects: the \texttt{wt.tuning.curve.Motor} class. \texttt{Curve} objects are not meant to be instantiated directly. Instead they are returned by the `from' methods of the \texttt{wt.tuning.curve} module. 
+The \texttt{Curve} class is made to contain OPA tuning curve data for any kind of OPA. By representing curves from different OPA hardware in the same format, WrightTools allows curves to share common code operations. Like the \texttt{wt.data.Data} class, \texttt{Curve} is a container for other objects: the \texttt{wt.tuning.curve.Motor} class. \texttt{Curve} objects are not meant to be instantiated directly. Instead they are returned by the `from' methods of the \texttt{wt.tuning.curve} module. 
 
 Curve objects are useful for visualizing and working with tuning curve data. 
 
