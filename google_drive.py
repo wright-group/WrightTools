@@ -1,7 +1,5 @@
 '''
 Interact with google drive using the pydrive package.
-
-MOSTLY BROKEN - DO NOT ATTEMPT TO USE AT THIS TIME
 '''
 
 # Darien Morrow - darienmorrow@gmail.com - dmorrow3@wisc.edu
@@ -32,10 +30,6 @@ if not os.path.isdir(creds_dir):
 mycreds_path = os.path.join(creds_dir, 'mycreds.txt')
 if not os.path.isfile(mycreds_path):
     open(mycreds_path, 'a').close()
-    
-client_secrets_path = os.path.join(creds_dir, 'client_secrets.json')
-if not os.path.isfile(client_secrets_path):
-    open(client_secrets_path, 'a').close()
 
 
 ### drive class ###############################################################
@@ -152,4 +146,7 @@ class Drive:
                 print 'file downloaded to {}'.format(f_path)
             # finish
             return f
+            
+    def list_folder(self, *args, **kwargs):
+        return self._list_folder(*args, **kwargs)
             
