@@ -528,7 +528,7 @@ def share_nans(arrs1):
     return arrs2
 
 
-def smooth_1D(arr, n = 10):
+def smooth_1D(arr, n=10):
     '''
     smooth 1D data by 'running average'\n
     int n smoothing factor (num points)
@@ -537,8 +537,34 @@ def smooth_1D(arr, n = 10):
         window = arr[i-n:i+n].copy()
         arr[i] = window.mean()
     return arr
-    
 
+
+class Spline:
+
+    def __call__(self, *args, **kwargs):
+        return self.true_spline(*args, **kwargs)
+
+    def __init__(self, xi, yi, k=2, s=1000, ignore_nans=True):
+        '''
+        Wrapper class for scipy.UnivariateSpline, made to be slightly less
+        finicky with things like decending xi arrays and nans.
+        '''
+        # import
+        from scipy.interpolate import UnivariateSpline
+        xi_internal = xi.copy()
+        yi_internal = yi.copy()
+        # nans
+        if ignore_nans:
+            l = [xi_internal, yi_internal]
+            xi_internal, yi_internal = remove_nans_1D(l)
+        # UnivariateSpline needs ascending xi
+        sort = np.argsort(xi_internal)
+        xi_internal = xi_internal[sort]
+        yi_internal = yi_internal[sort]
+        # create true spline
+        self.true_spline = UnivariateSpline(xi_internal, yi_internal, k=k, s=s)
+    
+    
 def unique(arr, tolerance=1e-6):
     '''
     Return unique elements in 1D array, within tolerance.

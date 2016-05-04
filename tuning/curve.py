@@ -573,7 +573,7 @@ class Curve:
         if self.kind == 'opa800':
             out_path = to_800_curve(self, save_directory)
         elif self.kind in ['TOPAS-C', 'TOPAS-800']:
-            if ['old_filepaths'] not in kwargs.keys():
+            if 'old_filepaths' not in kwargs.keys():
                 kwargs['old_filepaths'] = self.old_filepaths
             out_path = to_TOPAS_crvs(self, save_directory, self.kind, **kwargs)
         else:
