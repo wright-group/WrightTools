@@ -99,7 +99,7 @@ class Drive:
             Local directory to save content into. By default saves to cwd.
         overwrite : bool (optional)
             Toggle forcing file overwrites. Default is False.
-        verbose : bool (optional)
+        verbose : bool (optional)s
             Toggle talkback. Default is True.
         
         Returns
@@ -128,10 +128,12 @@ class Drive:
                 if not int(statinfo.st_size) == int(f['fileSize']):
                     remove = True
                 # modified since creation
-                modified_date_str = f['modifiedDate'].split('.')[0]
-                modified_stamp = time.mktime(datetime.datetime.strptime(modified_date_str, '%Y-%m-%dT%H:%M:%S').timetuple())
-                if statinfo.st_mtime < modified_stamp:
-                    remove = True
+                remote_stamp = f['modifiedDate'].split('.')[0]  # UTC
+                remote_stamp = time.mktime(datetime.datetime.strptime(remote_stamp, '%Y-%m-%dT%H:%M:%S').timetuple())
+                local_stamp = os.path.getmtime(f_path)  # local
+                local_stamp += time.timezone  # UTC
+                if local_stamp < remote_stamp:
+                    remove = True                
                 # overwrite toggle
                 if overwrite:
                     remove = True
