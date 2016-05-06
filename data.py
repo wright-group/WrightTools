@@ -1235,13 +1235,13 @@ class Data:
 
         xi = tuple(np.meshgrid(*[a.points for a in self.axes], indexing='ij'))
         for channel in self.channels:
-            
+
             # 'undo' gridding
             arr = np.zeros((len(self.axes)+1, channel.values.size))
             for i in range(len(self.axes)):
                 arr[i] = xi[i].flatten()
             arr[-1] = channel.values.flatten()
-            
+
             # do corrections
             corrections = list(corrections)
             corrections = corrections*(len(arr[0])/len(corrections))
@@ -1250,15 +1250,36 @@ class Data:
             # grid data
             tup = tuple([arr[i] for i in range(len(arr)-1)])
             # note that rescale is crucial in this operation
-            out = griddata(tup, arr[-1], new_xi, method=method, 
+            out = griddata(tup, arr[-1], new_xi, method=method,
                            fill_value=np.nan, rescale=True)
             channel.values = out
             channel._update()
 
         self.axes[offset_axis_index].points = new_offset_axis_points
-        
+
         # transpose out
         self.transpose(transpose_order, verbose=False)
+        self._update()
+
+    def remove_channel(self, channel):
+        '''
+        Remove channel from data.
+        
+        Parameters
+        ----------
+        channel : int (index) or str (name)
+            Channel to remove.
+        '''
+        # get channel
+        if type(channel) == int:
+            channel_index = channel
+        elif type(channel) == str:
+            channel_index = self.channel_names.index(channel)
+        else:
+            print 'channel type', type(channel), 'not valid'
+        # remove
+        self.channels.pop(channel_index)
+        # finish
         self._update()
         
     def revert(self):
