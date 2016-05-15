@@ -1060,15 +1060,12 @@ class mpl_2D:
                 levels = np.linspace(-limit + channel.znull, limit + channel.znull, 200)
             else:
                 if local:
-                    levels = np.linspace(-limit + channel.znull, limit + channel.znull, 200)
-                    #levels = np.linspace(channel.znull, np.nanmax(zi), 200)
+                    levels = np.linspace(channel.znull, np.nanmax(zi), 200)
                 else:
                     if channel.zmax < channel.znull:
-                        levels = np.linspace(-limit + channel.znull, limit + channel.znull, 200)
-                        #levels = np.linspace(channel.zmin, channel.znull, 200)
+                        levels = np.linspace(channel.zmin, channel.znull, 200)
                     else:
-                        levels = np.linspace(-limit + channel.znull, limit + channel.znull, 200)
-                        #levels = np.linspace(channel.znull, channel.zmax, 200)
+                        levels = np.linspace(channel.znull, channel.zmax, 200)
             # main plot -------------------------------------------------------
             # get colormap
             if cmap == 'automatic':

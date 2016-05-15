@@ -32,6 +32,13 @@ if not os.path.isfile(mycreds_path):
     open(mycreds_path, 'a').close()
 
 
+### helper methods ############################################################
+
+
+def id_to_url(driveid):
+    return 'https://drive.google.com/open?id=' + driveid
+
+
 ### drive class ###############################################################
 
 
@@ -77,12 +84,105 @@ class Drive:
         self.api = GoogleDrive(self.gauth)
         os.chdir(old_cwd)
         
-    def _list_folder(self, folder_id):
-        # adapted from https://github.com/googledrive/PyDrive/issues/37
-        # folder_id: GoogleDriveFile['id']
-        _q = {'q': "'{}' in parents and trashed=false".format(folder_id)}
-        raw_sub_contents = self.api.ListFile(_q).GetList()
-        return [i['id'] for i in raw_sub_contents]
+    def _list_folder(self, *args, **kwargs):
+        '''
+        Legacy. Please use self.list_folder instead!
+        - Blaise 2016.05.14
+        '''
+        return self._list_folder(*args, **kwargs)
+
+    def _upload_file(self, filepath, parentid, overwrite=False,
+                     delete_local=False, verbose=True):
+        self._authenticate()
+        title = filepath.split(os.path.sep)[-1]
+        # check if remote file already exists
+        q = {'q': "'{}' in parents and trashed=false".format(parentid)}
+        fs = self.api.ListFile(q).GetList()
+        f = None
+        for fi in fs:
+            # dont want to look at folders
+            if 'folder' in fi['mimeType']:
+                continue
+            if fi['title'] == title:
+                f = fi
+        if f is not None:
+            remove = False
+            statinfo = os.stat(filepath)
+            # filesize different
+            if not int(statinfo.st_size) == int(f['fileSize']):
+                remove = True
+            # modified since creation
+            remote_stamp = f['modifiedDate'].split('.')[0]  # UTC
+            remote_stamp = time.mktime(datetime.datetime.strptime(remote_stamp, '%Y-%m-%dT%H:%M:%S').timetuple())
+            local_stamp = os.path.getmtime(filepath)  # local
+            local_stamp += time.timezone  # UTC
+            if local_stamp > remote_stamp:
+                remove = True                
+            # overwrite toggle
+            if overwrite:
+                remove = True
+            # remove
+            if remove:
+                f['istrashed'] = 'true'
+                f.Upload()
+                f = None
+        # upload
+        if f is None:
+            f = self.api.CreateFile({'title': title, 
+                                     'parents': [{"id": parentid}]})
+            f.SetContentFile(filepath)
+            f.Upload()
+            f.content.close()
+            if verbose:
+                print 'file uploaded from {}'.format(filepath)
+        # delete local
+        if delete_local:
+            os.remove(filepath)
+        # finish
+        return f['id']
+
+    def create_folder(self, name, parentid):
+        """
+        Create a new folder in Google Drive.
+    
+        Attributes
+        ----------
+        name : string or list of string
+            Name of new folder to be created or list of new folders and
+            subfolders.
+        parentID : string
+            Google Drive ID of folder that is to be the parent of new folder.
+            
+        Returns
+        -------
+        string
+            The unique Google Drive ID of the bottom-most newly created folder. 
+        """
+        self._authenticate()
+        # clean inputs
+        if type(name) == str:
+            name = [name]
+        # create
+        parent = parentid
+        for n in name:
+            # check if folder with that name already exists
+            q = {'q': "'{}' in parents and trashed=false and mimeType contains \'folder\'".format(parent)}
+            fs = self.api.ListFile(q).GetList()
+            found = False
+            for f in fs:
+                if f['title'] == n:                    
+                    found = True
+                    parent = f['id']
+                    continue
+            if found:
+                continue
+            # if no folder was found, create one
+            f = self.api.CreateFile({'title': n,
+                                     "parents":  [{"id": parent}], 
+                                     "mimeType": "application/vnd.google-apps.folder"})
+            f.Upload()
+            parent = f['id']
+        return parent
 
     def download(self, fileid, directory='cwd', overwrite=False, verbose=True):
         '''
@@ -106,6 +206,7 @@ class Drive:
         -------
         pydrive.files.GoogleDriveFile
         '''
+        self._authenticate()
         # get directory
         if directory == 'cwd':
             directory = os.getcwd()
@@ -148,7 +249,63 @@ class Drive:
                 print 'file downloaded to {}'.format(f_path)
             # finish
             return f
-            
-    def list_folder(self, *args, **kwargs):
-        return self._list_folder(*args, **kwargs)
-            
+
+    def list_folder(self, folderid):
+        # adapted from https://github.com/googledrive/PyDrive/issues/37
+        # folder_id: GoogleDriveFile['id']
+        self._authenticate()
+        q = {'q': "'{}' in parents and trashed=false".format(folderid)}
+        raw_sub_contents = self.api.ListFile(q).GetList()
+        return [i['id'] for i in raw_sub_contents]       
+
+    def upload(self, path, parentid, overwrite=False, delete_local=False,
+               verbose=True):
+        '''
+        Upload local file(s) to Google Drive.        
+        
+        Parameters
+        ----------
+        path : str
+            Path to local file or folder.
+        parentid : str
+            Google Drive ID of remote folder.
+        overwrite : bool (optional)
+            Toggle forcing overwrite of remote files. Default is False.
+        delete_local : bool (optional)
+            Toggle deleting local files and folders once uploaded. Default is
+            False.
+        verbose : bool (optional)
+            Toggle talkback. Default is True.
+        
+        Returns
+        -------
+        driveid : str
+            Google Drive ID of folder or file uploaded
+        '''
+        self._authenticate()
+        if os.path.isfile(path):
+            return self._upload_file(path, parentid, overwrite=overwrite,
+                                     delete_local=delete_local,
+                                     verbose=verbose)
+        elif os.path.isdir(path):
+            top_path_length = len(path.split(os.path.sep))
+            for tup in os.walk(path, topdown=False):
+                self._authenticate()
+                folder_path, _, file_names = tup
+                print folder_path
+                # create folder on google drive
+                name = folder_path.split(os.path.sep)[top_path_length-1:]
+                folderid = self.create_folder(name, parentid)
+                # upload files
+                for file_name in file_names:
+                    p = os.path.join(folder_path, file_name)
+                    self._upload_file(p, folderid, overwrite=overwrite,
+                                      delete_local=delete_local,
+                                      verbose=verbose)
+                # remove folder
+                if delete_local:
+                    os.rmdir(folder_path)
+            # finish
+            return folderid
+        else:
+            raise Exception('path {} not valid in Drive.upload'.format())
