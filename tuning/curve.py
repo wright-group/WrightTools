@@ -747,6 +747,16 @@ def to_TOPAS_crvs(curve, save_directory, kind, **kwargs):
         # construct to_insert
         to_insert['NON-NON-NON-Sig'] = signal_arr
         to_insert['NON-NON-NON-Idl'] = idler_arr
+    elif interaction_string in ['DF1-NON-NON-Sig', 'DF2-NON-NON-Sig'] and curve.kind == 'TOPAS-800':  # TOPAS800 DFG (3 motor mier)
+        # create array from curve
+        arr = np.zeros([6, len(curve.colors)])
+        arr[0] = curve.source_colors.positions
+        arr[1] = curve.colors
+        arr[2] = 1
+        arr[3] = curve.motors[0].positions
+        arr[4] = curve.motors[1].positions
+        arr[5] = curve.motors[2].positions
+        to_insert[interaction_string] = arr
     else:  # all single-motor mixer processes
         # create array from curve
         arr = np.zeros([4, len(curve.colors)])
@@ -777,7 +787,7 @@ def to_TOPAS_crvs(curve, save_directory, kind, **kwargs):
             line = ''
             for value in row:
                 # the number of motors must be written as an integer for TOPAS
-                if value in [1, 4]:
+                if value in [1, 3, 4]:
                     value_as_string = str(int(value))
                 else:
                     value_as_string = str(np.round(value, decimals=6))
