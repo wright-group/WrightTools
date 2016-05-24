@@ -32,7 +32,10 @@ energy = {'kind': 'energy',
           'nm': ['x', 'x', r'nm'],
           'wn': ['1e7/x', '1e7/x', r'cm^{-1}'],
           'eV': ['1240./x', '1240./x', r'eV'],
-          'meV': ['1240000./x', '1240000./x', r'meV']}
+          'meV': ['1240000./x', '1240000./x', r'meV'],
+          'Hz': ['2.99792458e17/x', '2.99792458e17/x', r'Hz'],
+          'THz': ['2.99792458e5/x', '2.99792458e5/x', r'THz'],
+          'GHz': ['2.99792458e8/x', '2.99792458e8/x', r'GHz']}
           
 # fluence units (native: uJ per sq. cm)
 fluence = {'kind': 'fluence',
@@ -103,6 +106,9 @@ color_symbols['default'] = r'E'
 color_symbols['nm'] = r'\lambda'
 color_symbols['wn'] = r'\bar\nu'
 color_symbols['eV'] = r'\hslash\omega'
+color_symbols['Hz'] = r'f'
+color_symbols['THz'] = r'f'
+color_symbols['GHz'] = r'f'
 
 # delay
 delay_symbols = symbol_dict()

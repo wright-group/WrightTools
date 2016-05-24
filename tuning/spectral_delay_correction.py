@@ -81,8 +81,7 @@ def process_wigner(data_filepath, channel, control_name,
     outs.share_nans()
     centers = outs.channels[0].values
     # spline
-    x, y = wt_kit.remove_nans_1D([ws, centers])
-    spline = UnivariateSpline(x, y, k=2, s=1000)
+    spline = wt_kit.Spline(ws, centers, k=2, s=1000)
     corrections = spline(ws)
     # prepare for plot
     artist = wt_artists.mpl_2D(data)
@@ -156,6 +155,11 @@ def process_brute_force(data_filepath, opa_index, channel, color_units='nm',
         centers[centers<lower_cutoff] = np.nan
         centers[centers>upper_cutoff] = np.nan
         amplitudes = np.array([o[2] for o in outs])
+        if False:
+            # HACK - Blaise
+            print ws
+            amplitudes[:-20] = np.nan
+            #plt.plot(ws, amplitudes)
         amplitudes[amplitudes<amplitudes.max()*amplitude_cutoff_factor] = np.nan
         ws_internal, centers, amplitudes = wt_kit.remove_nans_1D([ws_internal, centers, amplitudes])    
         spline = UnivariateSpline(ws_internal, centers, k=2, s=10000)

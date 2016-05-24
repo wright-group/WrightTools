@@ -51,7 +51,7 @@ cmap = wt_artists.colormaps['default']
 
 def process_motortune(filepath, channel_name, old_curve_filepath, 
                       autosave=True, cutoff_factor=50, output_points_count=25, 
-                      cutoff=0.1):
+                      cutoff=0.05):
     '''
     Process 1D motortune data.
     
@@ -64,7 +64,7 @@ def process_motortune(filepath, channel_name, old_curve_filepath,
     old_curve_filepath : str
         Filepath to the .curve file used when the data was collected.
     autosave : bool (optional)
-        Toggle autosave behavior. Defautl is True.    
+        Toggle autosave behavior. Default is True.    
     
     Returns
     -------

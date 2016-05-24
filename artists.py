@@ -1056,6 +1056,7 @@ class mpl_2D:
                     limit = min(abs(channel.znull - channel.zmin), abs(channel.znull - channel.zmax))
                 else:
                     limit = max(abs(channel.znull - channel.zmin), abs(channel.znull - channel.zmax))
+                limit = 0.1
                 levels = np.linspace(-limit + channel.znull, limit + channel.znull, 200)
             else:
                 if local:
@@ -1641,7 +1642,7 @@ class PDFAll2DSlices:
         else:
             self.sideplot_limits = [0, 1.1]
             self.cmap = colormaps['default']
-        
+       
     def _fill_plot(self, xaxis, yaxis, zi, ax, cax, title, yticks, vmin=None,
                    vmax=None):
         xi = xaxis.points
@@ -1649,7 +1650,8 @@ class PDFAll2DSlices:
         X, Y, Z = pcolor_helper(xi, yi, zi)
         if vmax is None:
             vmax = np.nanmax(Z)
-        # vmin is never actually none...
+        if vmin is None:
+            vmin = np.nanmin(Z)
         if self.data_signed:
             extent = max(vmax, -vmin)
             vmin = -extent
@@ -1706,7 +1708,7 @@ class PDFAll2DSlices:
         # colorbar
         plt.colorbar(mappable=mappable, cax=cax)
         return [sp0, sp1]
-        
+    
     def _fill_row(self, data, channel_index, gs, row_index, global_limits):
         xaxis = data.axes[1]
         yaxis = data.axes[0]
@@ -1715,7 +1717,10 @@ class PDFAll2DSlices:
         ax0 = plt.subplot(gs[row_index, 0])
         cax = plt.subplot(gs[row_index, 1])
         zi = data.channels[channel_index].values
-        sps0 = self._fill_plot(xaxis, yaxis, zi, ax0, cax, title=data.name + ' local', yticks=True, vmin=vmin)
+        kwargs = {}
+        if not self.data_signed:
+            kwargs['vmin'] = vmin
+        sps0 = self._fill_plot(xaxis, yaxis, zi, ax0, cax, title=data.name + ' local', yticks=True, **kwargs)
         # global
         ax1 = plt.subplot(gs[row_index, 3])
         cax = plt.subplot(gs[row_index, 4])        
@@ -1764,11 +1769,11 @@ class PDFAll2DSlices:
                     for data_index in range(len(self.datas)):
                         data = self.chopped_datas[data_index][slice_index]
                         if self.data_signed:
-                            global_limits = [self.datas[data_index].signal_diff.zmin, 
-                                             self.datas[data_index].signal_diff.zmax]
+                            global_limits = [self.datas[data_index].channels[channel_index].zmin, 
+                                             self.datas[data_index].channels[channel_index].zmax]
                         else:
-                            global_limits = [self.datas[data_index].signal_diff.znull, 
-                                             self.datas[data_index].signal_diff.zmax]
+                            global_limits = [self.datas[data_index].channels[channel_index].znull, 
+                                             self.datas[data_index].channels[channel_index].zmax]
                         axs, spss = self._fill_row(data, channel_index, gs, data_index, global_limits)
                         if not data_index == len(self.datas)-1:
                             for ax in axs:
@@ -1788,11 +1793,11 @@ class PDFAll2DSlices:
                     for data_index in range(len(self.datas)):
                         data = self.chopped_datas[data_index][slice_index]
                         if self.data_signed:
-                            global_limits = [self.datas[data_index].signal_diff.zmin, 
-                                             self.datas[data_index].signal_diff.zmax]
+                            global_limits = [self.datas[data_index].channels[channel_index].zmin, 
+                                             self.datas[data_index].channels[channel_index].zmax]
                         else:
-                            global_limits = [self.datas[data_index].signal_diff.znull, 
-                                             self.datas[data_index].signal_diff.zmax]
+                            global_limits = [self.datas[data_index].channels[channel_index].znull, 
+                                             self.datas[data_index].channels[channel_index].zmax]
                         axs, spss = self._fill_row(data, channel_index, gs, data_index, global_limits)
                         if not data_index == len(self.datas)-1:
                             for ax in axs:
@@ -1817,11 +1822,11 @@ class PDFAll2DSlices:
                     for data_index in range(len(self.datas)):
                         data = self.chopped_datas[data_index][slice_index]
                         if self.data_signed:
-                            global_limits = [self.datas[data_index].signal_diff.zmin, 
-                                             self.datas[data_index].signal_diff.zmax]
+                            global_limits = [self.datas[data_index].channels[channel_index].zmin, 
+                                             self.datas[data_index].channels[channel_index].zmax]
                         else:
-                            global_limits = [self.datas[data_index].signal_diff.znull, 
-                                             self.datas[data_index].signal_diff.zmax]
+                            global_limits = [self.datas[data_index].channels[channel_index].znull, 
+                                             self.datas[data_index].channels[channel_index].zmax]
                         axs, spss = self._fill_row(data, channel_index, gs, data_index, global_limits)
                         if not data_index == len(self.datas)-1:
                             for ax in axs:
