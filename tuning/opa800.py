@@ -21,12 +21,6 @@ import glob
 
 import matplotlib
 import matplotlib.pyplot as plt
-import matplotlib.colors as mplcolors
-from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as NavigationToolbar
-from matplotlib.figure import Figure
-import matplotlib.gridspec as grd
-from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 import numpy as np
 from numpy import sin, cos
