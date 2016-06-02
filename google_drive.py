@@ -89,7 +89,7 @@ class Drive:
         Legacy. Please use self.list_folder instead!
         - Blaise 2016.05.14
         '''
-        return self._list_folder(*args, **kwargs)
+        return self.list_folder(*args, **kwargs)
 
     def _upload_file(self, filepath, parentid, overwrite=False,
                      delete_local=False, verbose=True):
@@ -188,8 +188,10 @@ class Drive:
         '''
         Recursively download from Google Drive into a local directory. By
         default, will not re-download if file passes following checks:
+        
         1. same size as remote file
-        2. local file modified after remote file
+        
+        2. local file last modified after remote file
         
         Parameters
         ----------

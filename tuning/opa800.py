@@ -40,6 +40,7 @@ from .. import kit as wt_kit
 from .. import units as wt_units
 cmap = wt_artists.colormaps['default']
 
+
 ### processing methods ########################################################
 
 

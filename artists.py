@@ -468,7 +468,7 @@ def make_colormap(seq, name='CustomMap', plot=False):
     if plot:
         plot_colormap(cmap)
     return cmap
-    
+
 
 def nm_to_rgb(nm):
     '''
@@ -551,7 +551,42 @@ def pcolor_helper(xi, yi, zi):
     return X, Y, zi
 
 
-def plot_colormap(cmap):
+def plot_colorbar(cax=None, cmap='default', ticks=None, label=None,
+                  tick_fontsize=14, label_fontsize=18):
+    '''
+    Easily add a colormap to an axis.
+    
+    Paramaters
+    ----------
+    cax : matplotlib axis (optional)
+        The axis to plot the colorbar on.
+    
+    Returns
+    -------
+    matplotlib.colorbar.ColorbarBase object
+    '''
+    # parse cax
+    if cax is None:
+        cax = plt.gca()
+    # parse cmap
+    if type(cmap) == str:
+        cmap = colormaps[cmap]
+    # parse ticks
+    if ticks is None:
+        ticks = np.linspace(0, 1, 5)
+    dummy_ticks = np.linspace(0, 1, len(ticks))
+    # make cbar
+    cbar = matplotlib.colorbar.ColorbarBase(ax=cax, cmap=cmap,
+                                            ticks=dummy_ticks)
+    # coerce properties
+    cbar.set_ticklabels(ticks)
+    cbar.ax.tick_params(labelsize=tick_fontsize) 
+    cbar.set_label(label, fontsize=label_fontsize)
+    # finish
+    return cbar
+
+
+def plot_colormap_components(cmap):
     plt.figure(figsize=[8, 4])
     gs = grd.GridSpec(2, 1, height_ratios=[1, 10], hspace=0.05)
     # colorbar
