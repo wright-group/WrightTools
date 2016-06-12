@@ -905,6 +905,7 @@ class mpl_1D:
                     os.mkdir(folder_name)
                     output_folder = folder_name
         # chew through image generation
+        outfiles = ['']*len(self.chopped)
         for i in range(len(self.chopped)):
             if fig and autosave:
                 plt.close(fig)
@@ -951,6 +952,9 @@ class mpl_1D:
                 plt.close()
                 if verbose:
                     print 'image saved at', fpath
+                outfiles[i] = fpath
+        if autosave:
+            return outfiles
 
 
 class mpl_2D:
@@ -1073,6 +1077,7 @@ class mpl_2D:
                     os.mkdir(folder_name)
                     output_folder = folder_name
         # chew through image generation
+        outfiles = ['']*len(self.chopped)
         for i in range(len(self.chopped)):
             # get data to plot ------------------------------------------------
             current_chop = self.chopped[i]
@@ -1316,8 +1321,9 @@ class mpl_2D:
                 plt.close()
                 if verbose:
                     print 'image saved at', fpath
-
-
+                outfiles[i] = fpath
+        if autosave:
+            return outfiles
 ### specific artists ##########################################################
 
 
