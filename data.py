@@ -1374,7 +1374,6 @@ class Data:
     def smooth(self, factors, channel=None, verbose=True):
         '''
         Smooth a channel using an n-dimenional `kaiser window <https://en.wikipedia.org/wiki/Kaiser_window>`_.
-
         Parameters
         ----------
         factors : int or list of int
@@ -2255,13 +2254,14 @@ def from_PyCMDS(filepath, name=None,
         if axis.identity[0] == 'D':
             # transpose so this axis is first
             transpose_order = range(len(axes))
-            transpose_order[0] = i
-            transpose_order[i] = 0
+            transpose_order.insert(0, transpose_order.pop(i))
             points = points.transpose(transpose_order)
             # subtract out centers
             centers = np.array(headers[axis.name + ' centers'])
             points -= centers
             # transpose out
+            transpose_order = range(len(axes))
+            transpose_order.insert(i, transpose_order.pop(0))
             points = points.transpose(transpose_order)
         points = points.flatten()
         points_dict[axis.name] = points
