@@ -173,7 +173,7 @@ on_diagonal.add_arrow([4, 1], 3, [2, 1], 'out')
 on_diagonal.add_arrow([4, 2], 0, [0, 1], 'bra', '-2')
 on_diagonal.add_arrow([4, 2], 1, [0, 1], 'ket', '2\'')
 on_diagonal.add_arrow([4, 2], 2, [1, 0], 'bra', '1')
-on_diagonal.add_arrow([4, 2], 3, [0, 1], 'out')
+on_diagonal.add_arrow([4, 2], 3, [1, 0], 'out')
 
 # pw6 alpha
 on_diagonal.add_arrow([5, 0], 0, [0, 1], 'ket', '2\'')

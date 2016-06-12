@@ -619,13 +619,10 @@ class Data:
             The channel to divide into. The result will be written into this
             channel. 
         divisor_channel : int or str
-            The channel in the divisor object to use as an integer.
+            The channel in the divisor object to use.
         '''
-
         divisor = divisor.copy()
-
-        # map points ----------------------------------------------------------
-
+        # map points
         for name in divisor.axis_names:
             if name in self.axis_names:
                 axis = getattr(self, name)
@@ -634,9 +631,7 @@ class Data:
                 divisor.map_axis(name, axis.points)
             else:
                 raise RuntimeError('all axes in divisor must be contained in self')
-
-        # divide --------------------------------------------------------------
-        
+        # divide
         # transpose so axes of divisor are last (in order)
         axis_indicies = [self.axis_names.index(name) for name in divisor.axis_names]
         axis_indicies.reverse()        
@@ -646,7 +641,6 @@ class Data:
             ri = range(len(self.axes))[-(i+1)]
             transpose_order[ri], transpose_order[ai] = transpose_order[ai], transpose_order[ri]
         self.transpose(transpose_order, verbose=False)
-        
         # get own channel
         if type(channel) == int:
             channel_index = channel
@@ -655,7 +649,6 @@ class Data:
         else:
             print 'channel type', type(channel), 'not valid'
         channel = self.channels[channel_index]
-        
         # get divisor channel
         if type(divisor_channel) == int:
             divisor_channel_index = divisor_channel
@@ -664,11 +657,9 @@ class Data:
         else:
             print 'divisor channel type', type(channel), 'not valid'
         divisor_channel = divisor.channels[divisor_channel_index]
-        
         # do division
         channel.values /= divisor_channel.values
         channel._update()
-        
         # transpose out
         self.transpose(transpose_order, verbose=False)
 
@@ -1383,7 +1374,6 @@ class Data:
     def smooth(self, factors, channel=None, verbose=True):
         '''
         Smooth a channel using an n-dimenional `kaiser window <https://en.wikipedia.org/wiki/Kaiser_window>`_.
-
         Parameters
         ----------
         factors : int or list of int
@@ -1395,7 +1385,6 @@ class Data:
         verbose : bool (optional)
             Toggle talkback. Default is True.
         '''
-
         # get factors ---------------------------------------------------------
 
         if type(factors) == list:
@@ -1404,9 +1393,7 @@ class Data:
             dummy = np.zeros(len(self.axes))
             dummy[::] = factors
             factors = list(dummy)
-
         # get channels --------------------------------------------------------
-
         if channel is None:
             channels = self.channels
         else:
@@ -1417,39 +1404,28 @@ class Data:
             else:
                 print 'channel type', type(channel), 'not valid'
             channels = [self.channels[channel_index]]
-
         # smooth --------------------------------------------------------------
-
         for channel in channels:
-
             values = channel.values
-
             for axis_index in range(len(factors)):
-
                 factor = factors[axis_index]
-
                 # transpose so the axis of interest is last
                 transpose_order = range(len(values.shape))
                 transpose_order = [len(values.shape)-1 if i == axis_index else i for i in transpose_order] # replace axis_index with zero
                 transpose_order[len(values.shape)-1] = axis_index
                 values = values.transpose(transpose_order)
-
                 # get kaiser window
                 beta = 5.0
                 w = np.kaiser(2*factor+1, beta)
-
                 # for all slices...
                 for index in np.ndindex(values[..., 0].shape):
                     current_slice = values[index]
-                    temp_slice = np.pad(current_slice, (factor, factor), mode='edge')
+                    temp_slice = np.pad(current_slice, int(factor), mode='edge')
                     values[index] = np.convolve(temp_slice, w/w.sum(), mode='valid')
-
                 # transpose out
                 values = values.transpose(transpose_order)
-
             # return array to channel object
             channel.values = values
-            
         if verbose:
             print 'smoothed data'
 
@@ -1579,6 +1555,63 @@ class Data:
                 new_data.shape = shape
 
         return outs
+        
+    def subtract(self, subtrahend, channel=0, subtrahend_channel=0):
+        '''
+        Subtract a given channel by another data object. Subtrahend smay be self.
+        All axes in divisor must be contained in self.
+        
+        Parameters
+        ----------
+        subtrahend : data
+            The data being subtracted by. Can be self.
+        channel : int or str
+            The channel to subtract into. The result will be written into this
+            channel. 
+        subtrahend_channel : int or str
+            The channel in the subtrahend object to use.
+        '''
+        subtrahend = subtrahend.copy()
+        # map points
+        for name in subtrahend.axis_names:
+            if name in self.axis_names:
+                axis = getattr(self, name)
+                subtrahend_axis = getattr(subtrahend, name)
+                subtrahend_axis.convert(axis.units)
+                subtrahend.map_axis(name, axis.points)
+            else:
+                raise RuntimeError('all axes in divisor must be contained in self')
+        # divide
+        # transpose so axes of divisor are last (in order)
+        axis_indicies = [self.axis_names.index(name) for name in subtrahend.axis_names]
+        axis_indicies.reverse()        
+        transpose_order = range(len(self.axes))
+        for i in range(len(axis_indicies)):
+            ai = axis_indicies[i]
+            ri = range(len(self.axes))[-(i+1)]
+            transpose_order[ri], transpose_order[ai] = transpose_order[ai], transpose_order[ri]
+        self.transpose(transpose_order, verbose=False)
+        # get own channel
+        if type(channel) == int:
+            channel_index = channel
+        elif type(channel) == str:
+            channel_index = self.channel_names.index(channel)
+        else:
+            print 'channel type', type(channel), 'not valid'
+        channel = self.channels[channel_index]
+        # get subtrahend channel
+        if type(subtrahend_channel) == int:
+            subtrahend_channel_index = subtrahend_channel
+        elif type(subtrahend_channel) == str:
+            subtrahend_channel_index = subtrahend.channel_names.index(subtrahend_channel)
+        else:
+            print 'divisor channel type', type(channel), 'not valid'
+        subtrahend_channel = subtrahend.channels[subtrahend_channel_index]
+        # do division
+        channel.values -= subtrahend_channel.values
+        channel._update()
+        # transpose out
+        self.transpose(transpose_order, verbose=False)
 
     def transpose(self, axes=None, verbose=True):
         '''
@@ -2221,13 +2254,14 @@ def from_PyCMDS(filepath, name=None,
         if axis.identity[0] == 'D':
             # transpose so this axis is first
             transpose_order = range(len(axes))
-            transpose_order[0] = i
-            transpose_order[i] = 0
+            transpose_order.insert(0, transpose_order.pop(i))
             points = points.transpose(transpose_order)
             # subtract out centers
             centers = np.array(headers[axis.name + ' centers'])
             points -= centers
             # transpose out
+            transpose_order = range(len(axes))
+            transpose_order.insert(i, transpose_order.pop(0))
             points = points.transpose(transpose_order)
         points = points.flatten()
         points_dict[axis.name] = points

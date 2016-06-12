@@ -27,22 +27,22 @@ import kit as wt_kit
 def get_baseline(values, deviations=3):
     '''
     Guess the baseline for a data set.
-    
+
     Returns the average of all points in ``values`` less than n ``deviations``
     away from zero.
-    
+
     Obviously, works best for data in which signal is relatively sparse so that
     noise dominates the standard deviation.
-    
+
     As a fallback, returns the minimum of ``values``.
-    
+
     Parameters
     ----------
     values : array-like
         The values to find the baseline of.
     deviations : integer (optional)
         The number of standard deviations away from zero to exclude.
-        
+
     Returns
     -------
     float
@@ -51,7 +51,7 @@ def get_baseline(values, deviations=3):
     values_internal = values.copy()
     std = np.std(values)
     values_internal[np.abs(values_internal) <= deviations*std] = np.nan
-    baseline = np.average(values_internal)    
+    baseline = np.average(values_internal)
     if np.isnan(baseline):
         baseline = np.nanmin(values)
     return baseline
@@ -80,18 +80,18 @@ class Function:
         out = scipy_optimize.leastsq(self.residuals, p0, args=args)
         if out[1] not in [1]:  # solution was not found
             return np.full(len(p0), np.nan)
-        return out[0]     
+        return out[0]
 
-    
+
 class ExpectationValue(Function):
-    
+
     def __init__(self):
         Function.__init__(self)
         self.dimensionality = 1
         self.params = ['value']
         self.limits = {}
         self.global_cutoff = None
-        
+
     def evaluate(self, p, xi):
         '''
         Returns 1 at expectation value, 0 elsewhere.
@@ -99,7 +99,7 @@ class ExpectationValue(Function):
         out = np.zeros(len(xi))
         out[np.argmin(np.abs(xi-p[0]))] = 1
         return out
-        
+
     def fit(self, *args, **kwargs):
         y, x = args
         y_internal = np.ma.copy(y)
@@ -115,7 +115,7 @@ class ExpectationValue(Function):
             elif np.isnan(y_internal[i]):
                 pass
             else:
-                sum_y += y_internal[i]    
+                sum_y += y_internal[i]
         # divide by sum
         for i in range(len(y_internal)):
             if np.ma.getmask(y_internal[i]) == True:
@@ -200,9 +200,132 @@ class Gaussian(Function):
         amp = max(values)
         p0 = [mean, width, amp, baseline]
         return p0
-        
+
+class TwoD_Gaussian(Function):
+
+    def __init__(self):
+        Function.__init__(self)
+        self.dimensionality = 2
+        self.params = ['amplitude', 'x0', 'y0', 'sigma_x', 'sigma_y', 'theta','baseline']
+        self.limits = {'sigma_x': [0, np.inf],'sigma_y':[0,np.inf]}
+
+    def _Format_input(self, values, x, y):
+        '''
+        This function makes sure the values and axis are in an ok format for fitting and free of nans
+
+        Parameters
+        ----------
+        arrs : list of 1D arrays
+            The arrays to remove nans from
+
+        Returns
+        -------
+        (v, xi, yi, OK)
+        v : 1D array
+            The values array, flattened if necessary, with any 'nan's removed
+        xi : 1D array
+            a flattend or meshgrided then flattened array of the x coordinate, nans removed
+        yi : 1D array
+            a flattend or meshgrided then flattened array of the y coordinate, nans removed
+        OK : boolean
+            True if the shapes of the inputs were compatable, False otherwise.
+
+        '''
+        v = values.copy()
+        xi = x.copy()
+        yi = y.copy()
+
+        if not len(v.shape) == 1 and v.shape == xi.shape and xi.shape == yi.shape:
+            v = v.flatten()
+            xi = xi.flatten()
+            yi = yi.flatten()
+        elif len(xi.shape) == 1 and len(yi.shape) == 1:
+            if v.shape == (xi.shape[0], yi.shape[0]):
+                xi, yi = np.meshgrid(xi,yi,indexing='ij')
+                v = v.flatten()
+                xi = xi.flatten()
+                yi = yi.flatten()
+            elif len(v.shape) == 1 and v.shape[0] == xi.shape[0]*yi.shape[0]:
+                xi, yi = np.meshgrid(xi,yi,indexing='ij')
+                xi = xi.flatten()
+                yi = yi.flatten()
+            elif v.shape == xi.shape:
+                pass
+            else:
+                return np.nan, np.nan, np.nan, False
+        else:
+            return np.nan, np.nan, np.nan, False
+
+        try:
+            v, xi, yi = wt_kit.remove_nans_1D([v, xi, yi])
+            return v, xi, yi, True
+        except:
+            return np.nan, np.nan, np.nan, False
+
+    def residuals(self, p, *args):
+            return args[0][0] - self.evaluate(p, args[0][1], args[0][2])
+
+    def evaluate(self, p, x, y):
+        # enforce limits
+        for i, name in zip(range(len(p)), self.params):
+            if name in self.limits.keys():
+                p[i] = np.clip(p[i], *self.limits[name])
+        # evaluate
+        amp, xo, yo, sigma_x, sigma_y, theta, baseline = p
+        a = (np.cos(theta)**2)/(2*sigma_x**2) + (np.sin(theta)**2)/(2*sigma_y**2)
+        b = -(np.sin(2*theta))/(4*sigma_x**2) + (np.sin(2*theta))/(4*sigma_y**2)
+        c = (np.sin(theta)**2)/(2*sigma_x**2) + (np.cos(theta)**2)/(2*sigma_y**2)
+        return amp*np.exp(-(a*((x-xo)**2) + 2*b*(x-xo)*(y-yo) + c*((y-yo)**2))) + baseline
+
+    def guess(self, v, x, y):
+        if len(v) == 0:
+            return [np.nan]*4
+        # Makes sure xi and yi are already the right size and shape
+        values, xi, yi, ok= self._Format_input(v, x, y)
+
+        if not ok:
+            print "xi, yi are not the correct size and/or shape"
+            return np.full(7, np.nan)
+
+        Use_visible_baseline = False
+        if Use_visible_baseline:
+            baseline = get_baseline(values)
+        else:
+            baseline = min(values.flatten())
+        values -= baseline
+        x0 = (min(xi)+max(xi))/2.0 #sum(np.multiply(xi, values))/sum(values)
+        y0 = (min(yi)+max(yi))/2.0 #sum(np.multiply(yi, values))/sum(values)
+        sigma_x = np.sqrt(abs(sum((xi-x0)**2*values)/sum(values)))
+        sigma_y = np.sqrt(abs(sum((yi-y0)**2*values)/sum(values)))
+        theta = 0.0
+        amp = max(values)
+        p0 = [amp, x0, y0, sigma_x, sigma_y, theta, baseline]
+        return p0
+
+    def fit(self, values, x, y, **kwargs):
+
+        if 'p0' in kwargs:
+            p0 = kwargs['p0']
+        else:
+            p0 = self.guess(values, x, y)
+
+        # Makes sure xi and yi are already the right size and shape & remove nans
+        v, xi, yi, ok= self._Format_input(values, x, y)
+
+        if not ok:
+            print "xi, yi are not the correct size and/or shape"
+            return np.full(7, np.nan)
+
+        # optimize
+        self.out = scipy_optimize.leastsq(self.residuals, p0, [v, xi, yi])
+
+        if self.out[1] not in [1]:  # solution was not found
+            return np.full(len(p0), np.nan)
+        return self.out[0]
+
+
 class Moments(Function):
-    
+
     def __init__(self):
         Function.__init__(self)
         self.dimensionality = 1
@@ -215,7 +338,7 @@ class Moments(Function):
         '''
         # TODO: fix this (how should it work?!)
         return np.full(xi.shape, np.nan)
-        
+
     def fit(self, *args, **kwargs):
         y, x = args
         y_internal = np.ma.copy(y)
@@ -245,7 +368,7 @@ class Moments(Function):
 
     def guess(self, values, xi):
         return [0]*6
-    
+
 
 ### fitter ####################################################################
 
