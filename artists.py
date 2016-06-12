@@ -468,7 +468,7 @@ def make_colormap(seq, name='CustomMap', plot=False):
     if plot:
         plot_colormap(cmap)
     return cmap
-    
+
 
 def nm_to_rgb(nm):
     '''
@@ -551,7 +551,42 @@ def pcolor_helper(xi, yi, zi):
     return X, Y, zi
 
 
-def plot_colormap(cmap):
+def plot_colorbar(cax=None, cmap='default', ticks=None, label=None,
+                  tick_fontsize=14, label_fontsize=18):
+    '''
+    Easily add a colormap to an axis.
+    
+    Paramaters
+    ----------
+    cax : matplotlib axis (optional)
+        The axis to plot the colorbar on.
+    
+    Returns
+    -------
+    matplotlib.colorbar.ColorbarBase object
+    '''
+    # parse cax
+    if cax is None:
+        cax = plt.gca()
+    # parse cmap
+    if type(cmap) == str:
+        cmap = colormaps[cmap]
+    # parse ticks
+    if ticks is None:
+        ticks = np.linspace(0, 1, 5)
+    dummy_ticks = np.linspace(0, 1, len(ticks))
+    # make cbar
+    cbar = matplotlib.colorbar.ColorbarBase(ax=cax, cmap=cmap,
+                                            ticks=dummy_ticks)
+    # coerce properties
+    cbar.set_ticklabels(ticks)
+    cbar.ax.tick_params(labelsize=tick_fontsize) 
+    cbar.set_label(label, fontsize=label_fontsize)
+    # finish
+    return cbar
+
+
+def plot_colormap_components(cmap):
     plt.figure(figsize=[8, 4])
     gs = grd.GridSpec(2, 1, height_ratios=[1, 10], hspace=0.05)
     # colorbar
@@ -642,6 +677,44 @@ def subplots_adjust(fig=None, inches=1):
     vert = inches/size[0]
     horz = inches/size[1]
     fig.subplots_adjust(vert, horz, 1-vert, 1-horz)
+
+
+def stitch_to_animation(images, outpath=None, duration=0.5, verbose=True):
+    '''
+    Stitch a series of images into an animation. Currently supports animated
+    gifs, other formats coming as needed.
+
+    Parameters
+    ----------
+    images : list of strings
+        Filepaths to the images to stitch together, in order of apperence.
+    outpath : string (optional)
+        Path of output, including extension. If None, bases output path on path
+        of first path in `images`. Default is None.
+    duration : number or list of numbers (optional)
+        Duration of (each) frame in seconds. Default is 0.5.
+    verbose : bool (optional)
+        Toggle talkback. Default is True.
+    '''
+    # import imageio
+    try:
+        import imageio
+    except ImportError:
+        raise ImportError('WrightTools.artists.stitch_to_animation requires imageio - https://imageio.github.io/')
+    # parse filename
+    if outpath is None:
+        outpath = os.path.splitext(images[0])[0] + '.gif'
+    # write
+    t = wt_kit.Timer(verbose=False)
+    with t, imageio.get_writer(outpath, mode='I', duration=duration) as writer:
+        for p in images:
+            image = imageio.imread(p)
+            writer.append_data(image)
+    # finish
+    if verbose:
+        interval = np.round(t.interval, 2)
+        print 'gif generated in {0} seconds - saved at {1}'.format(interval, outpath)
+    return outpath
 
 
 ### color maps ################################################################
@@ -1056,7 +1129,7 @@ class mpl_2D:
                     limit = min(abs(channel.znull - channel.zmin), abs(channel.znull - channel.zmax))
                 else:
                     limit = max(abs(channel.znull - channel.zmin), abs(channel.znull - channel.zmax))
-                limit = 0.1
+                
                 levels = np.linspace(-limit + channel.znull, limit + channel.znull, 200)
             else:
                 if local:

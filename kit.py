@@ -179,10 +179,11 @@ def get_path_matching(name):
     # then try expanding upwards from cwd
     if not os.path.isdir(p):
         p = None
-        folders = os.getcwd().split(os.sep)
-        print name, folders
+        drive, folders = os.path.splitdrive(os.getcwd())
+        folders = folders.split(os.sep)
+        folders.insert(0, os.sep)
         if name in folders:
-            p = os.path.join(folders[:folders.index(name)])
+            p = os.path.join(drive, *folders[:folders.index(name)+1])
     # TODO: something more robust to catch the rest of the cases?
     return p
 

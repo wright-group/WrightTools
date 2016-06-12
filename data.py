@@ -1374,7 +1374,6 @@ class Data:
     def smooth(self, factors, channel=None, verbose=True):
         '''
         Smooth a channel using an n-dimenional `kaiser window <https://en.wikipedia.org/wiki/Kaiser_window>`_.
-
         Parameters
         ----------
         factors : int or list of int
@@ -1386,7 +1385,6 @@ class Data:
         verbose : bool (optional)
             Toggle talkback. Default is True.
         '''
-
         # get factors ---------------------------------------------------------
 
         if type(factors) == list:
@@ -1395,9 +1393,7 @@ class Data:
             dummy = np.zeros(len(self.axes))
             dummy[::] = factors
             factors = list(dummy)
-
         # get channels --------------------------------------------------------
-
         if channel is None:
             channels = self.channels
         else:
@@ -1408,39 +1404,28 @@ class Data:
             else:
                 print 'channel type', type(channel), 'not valid'
             channels = [self.channels[channel_index]]
-
         # smooth --------------------------------------------------------------
-
         for channel in channels:
-
             values = channel.values
-
             for axis_index in range(len(factors)):
-
                 factor = factors[axis_index]
-
                 # transpose so the axis of interest is last
                 transpose_order = range(len(values.shape))
                 transpose_order = [len(values.shape)-1 if i == axis_index else i for i in transpose_order] # replace axis_index with zero
                 transpose_order[len(values.shape)-1] = axis_index
                 values = values.transpose(transpose_order)
-
                 # get kaiser window
                 beta = 5.0
                 w = np.kaiser(2*factor+1, beta)
-
                 # for all slices...
                 for index in np.ndindex(values[..., 0].shape):
                     current_slice = values[index]
-                    temp_slice = np.pad(current_slice, (factor, factor), mode='edge')
+                    temp_slice = np.pad(current_slice, int(factor), mode='edge')
                     values[index] = np.convolve(temp_slice, w/w.sum(), mode='valid')
-
                 # transpose out
                 values = values.transpose(transpose_order)
-
             # return array to channel object
             channel.values = values
-            
         if verbose:
             print 'smoothed data'
 
@@ -2269,13 +2254,14 @@ def from_PyCMDS(filepath, name=None,
         if axis.identity[0] == 'D':
             # transpose so this axis is first
             transpose_order = range(len(axes))
-            transpose_order[0] = i
-            transpose_order[i] = 0
+            transpose_order.insert(0, transpose_order.pop(i))
             points = points.transpose(transpose_order)
             # subtract out centers
             centers = np.array(headers[axis.name + ' centers'])
             points -= centers
             # transpose out
+            transpose_order = range(len(axes))
+            transpose_order.insert(i, transpose_order.pop(0))
             points = points.transpose(transpose_order)
         points = points.flatten()
         points_dict[axis.name] = points
