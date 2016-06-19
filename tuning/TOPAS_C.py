@@ -486,14 +486,14 @@ def process_preamp_motortune(OPA_index, data_filepath, curves, save=True):
                            method=wt_curve.Linear)
     curve.map_colors(setpoints)
     # preapre for plot
-    fig = plt.figure(figsize=[8, 6])
+    fig, gs = wt_artists.create_figure(width='single', cols=[1, 'cbar'])
     cmap = wt_artists.colormaps['default']
     cmap.set_bad([0.75]*3, 1.)
     cmap.set_under([0.75]*3, 1.)
     # plot amplitude data
+    ax = plt.subplot(gs[0, 0])
     X, Y, Z = wt_artists.pcolor_helper(c1_points, d1_points, amp_grid)
-    plt.pcolor(X, Y, Z, vmin=0, vmax=np.nanmax(Z), cmap=cmap)
-    plt.colorbar()
+    mappable = ax.pcolor(X, Y, Z, vmin=0, vmax=np.nanmax(Z), cmap=cmap)
     # plot and label contours of constant color
     CS = plt.contour(c1_points, d1_points, cen_grid, colors='grey', levels=setpoints)
     clabel_positions = np.zeros([len(preamp_chosen), 2])
@@ -519,13 +519,17 @@ def process_preamp_motortune(OPA_index, data_filepath, curves, save=True):
     yi = curve.motors[1].positions
     plt.plot(xi, yi, c='k', lw=5)
     # finish plot
-    plt.xlabel('c1')
-    plt.ylabel('d1')
+    plt.xlabel('C1 (deg)', fontsize=18)
+    plt.ylabel('D1 (mm)', fontsize=18)
     title = os.path.basename(data_filepath)
     plt.suptitle(title)
     plt.gca().patch.set_facecolor([0.75]*3)
     plt.xlim(xi.min()-0.25, xi.max()+0.25)
     plt.ylim(yi.min()-0.05, yi.max()+0.05)
+    # colorbar
+    cax = plt.subplot(gs[:, -1])
+    plt.colorbar(mappable=mappable, cax=cax)
+    cax.set_ylabel('intensity', fontsize=18)
     # plot at an index (for debugging purposes only)
     # TODO: remove this eventually...
     if False:
@@ -654,15 +658,16 @@ def process_SHS_motortune(OPA_index, data_filepath, curves, save=True):
     old_curve.map_colors(setpoints)
     final_deltas = curve.motors[0].positions - old_curve.motors[0].positions
     ax.plot(setpoints, final_deltas, c='k', lw=5)
-    ax.grid()    
+    ax.grid()
     ax.set_xlabel('setpoint (nm)', fontsize=16)
     ax.set_ylabel('$\mathsf{\Delta}$M2', fontsize=16)
     # colorbar
     cax = plt.subplot(gs[1, 1])
     plt.colorbar(mappable=mappable, cax=cax)
+    cax.set_ylabel('intensity', fontsize=18)
     # finish plot
     title = os.path.basename(data_filepath).replace('.data', '')[-19:]  # extract timestamp
-    plt.suptitle(title, fontsize=20)
+    #plt.suptitle(title, fontsize=20)
     # finish
     if save:
         directory = os.path.dirname(data_filepath)

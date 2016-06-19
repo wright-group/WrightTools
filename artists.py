@@ -552,7 +552,8 @@ def pcolor_helper(xi, yi, zi):
 
 
 def plot_colorbar(cax=None, cmap='default', ticks=None, label=None,
-                  tick_fontsize=14, label_fontsize=18):
+                  tick_fontsize=14, label_fontsize=18, orientation='vertical', 
+                  ticklocation='auto'):
     '''
     Easily add a colormap to an axis.
     
@@ -573,11 +574,13 @@ def plot_colorbar(cax=None, cmap='default', ticks=None, label=None,
         cmap = colormaps[cmap]
     # parse ticks
     if ticks is None:
-        ticks = np.linspace(0, 1, 5)
+        ticks = np.linspace(0, 1, 11)
     dummy_ticks = np.linspace(0, 1, len(ticks))
     # make cbar
     cbar = matplotlib.colorbar.ColorbarBase(ax=cax, cmap=cmap,
-                                            ticks=dummy_ticks)
+                                            ticks=dummy_ticks, 
+                                            orientation=orientation,
+                                            ticklocation=ticklocation)
     # coerce properties
     cbar.set_ticklabels(ticks)
     cbar.ax.tick_params(labelsize=tick_fontsize) 
@@ -679,7 +682,8 @@ def subplots_adjust(fig=None, inches=1):
     fig.subplots_adjust(vert, horz, 1-vert, 1-horz)
 
 
-def stitch_to_animation(images, outpath=None, duration=0.5, verbose=True):
+def stitch_to_animation(images, outpath=None, duration=0.5, palettesize=1024,
+                        verbose=True):
     '''
     Stitch a series of images into an animation. Currently supports animated
     gifs, other formats coming as needed.
@@ -693,6 +697,9 @@ def stitch_to_animation(images, outpath=None, duration=0.5, verbose=True):
         of first path in `images`. Default is None.
     duration : number or list of numbers (optional)
         Duration of (each) frame in seconds. Default is 0.5.
+    palettesize : int (optional)
+        The number of colors in the resulting animation. Input is rounded to
+        the nearest power of 2. Default is 1024.
     verbose : bool (optional)
         Toggle talkback. Default is True.
     '''
@@ -706,7 +713,8 @@ def stitch_to_animation(images, outpath=None, duration=0.5, verbose=True):
         outpath = os.path.splitext(images[0])[0] + '.gif'
     # write
     t = wt_kit.Timer(verbose=False)
-    with t, imageio.get_writer(outpath, mode='I', duration=duration) as writer:
+    with t, imageio.get_writer(outpath, mode='I', duration=duration,
+                               palettesize=palettesize) as writer:
         for p in images:
             image = imageio.imread(p)
             writer.append_data(image)
@@ -858,6 +866,10 @@ colormaps['skyebar_d'] = mplcolors.LinearSegmentedColormap.from_list('skyebar da
 colormaps['skyebar_i'] = mplcolors.LinearSegmentedColormap.from_list('skyebar inverted', skyebar_i)
 colormaps['spectral'] = plt.get_cmap('nipy_spectral')
 colormaps['wright'] = mplcolors.LinearSegmentedColormap.from_list('wright', wright)
+
+# enforce grey as 'bad' value for colormaps
+for cmap in colormaps.values():
+    cmap.set_bad([0.75]*3, 1)
 
 
 ### general purpose artists ###################################################
