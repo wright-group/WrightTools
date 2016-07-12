@@ -1,3 +1,38 @@
+\documentclass[11pt]{article}
+\setlength\parindent{0pt}
+\setlength{\parskip}{1em}
+\usepackage{amssymb, amsmath, graphics, epsfig, graphicx, epstopdf}
+\usepackage{xpatch}
+\usepackage[letterpaper, portrait, margin=1in]{geometry}
+\usepackage{setspace}
+
+%hyperref
+\usepackage[colorlinks=true, linkcolor=black, urlcolor=blue, citecolor=black, anchorcolor=black]{hyperref}
+\usepackage[all]{hypcap} % helps hyperref work properly
+
+%-todo
+\usepackage{color}
+\usepackage[colorinlistoftodos]{todonotes}
+
+%\usepackage{minted}
+
+%bibliography
+\usepackage[backend=biber, natbib=true, url=false, sorting=none, maxbibnames=99]{biblatex}
+\bibliography{database}
+\renewcommand{\thesection}{\arabic{section}}
+
+\begin{document}
+
+%title
+\begin{flushleft}
+	{\Huge \textbf{WrightTools documentation}}
+\end{flushleft}
+
+%table of contents
+{\let\newpage\relax\begin{spacing}{0.1}\tableofcontents\end{spacing}}
+\pagebreak
+\listoftodos
+\pagebreak
 
 \section{Introduction}
 
@@ -10,7 +45,7 @@ As a living software package with evolving capabilities, detailed documentation 
 \pagebreak
 \section{Data}
 
-The \texttt{Data} class fills two important roles within WrightTools:
+The \texttt{Data} class is an incredibly general class capable of representing any rectangular dataset. It fills two important roles within WrightTools:
 \begin{enumerate}
 	\item \texttt{Data} defines a single format to represent the results almost any measurement or simulation.
 	\item \texttt{Data} provides a suite of methods for data manipulation.
@@ -26,13 +61,86 @@ Almost every capability of WrightTools relies upon \texttt{Data} to some extent.
 
 Figure \ref{fig:data overview} represents WrightTools accepting data from a variety of sources and formats. \texttt{Data} objects are typically not created directly through \texttt{Data.\_\_init\_\_} like most python classes. Instead, \texttt{Data} objects are created from files through a series of custom `\texttt{from\_file}' methods found in the \texttt{data.py} module. By creating separate methods, WrightTools can allow for easy \texttt{Data} creation from many different file formats. More details on \texttt{Data} creation can be found in Section \ref{section:instantiation}. Once created, regardless of origin, the \texttt{Data} object is ready to be used by other classes in WrightTools, such as artists and \texttt{Fitter}.
 
-
-
-
-
 \subsection{Structure \& Properties}
 
+The heart of \texttt{Data} are the \href{https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html}{\texttt{numpy.ndarray}}s that contain the numbers themselves. Everything else is, in some sense, \textit{decoration}. The arrays are not attributes of \texttt{Data} itself, rather they are attributes of the closely related \texttt{wt.data.Axis} and \texttt{wt.data.Channel} classes. \texttt{Data} contains lists of \texttt{Axis}es and \texttt{Channel}s. To understand the basic structure of \texttt{Data}, then, one must first understand the structure of \texttt{Axis} and \texttt{Channel}.
+
+Axes are the \textit{coordinates} of points in a dataset. Since all datasets are rectangular, axes are always one-dimensional. \texttt{wt.data.Axis} is the class that contains these coordinates and their properties. Table \ref{tab:axis properties} highlights the most important attributes and methods of \texttt{Axis}.
+\begin{table}\label{tab:axis properties}	
+	\begin{center}
+		\begin{tabular}{r | l}
+			\texttt{points} & \texttt{numpy.ndarray} of axis coordinates \\ 
+			\texttt{name} & the `python-friendly' name \\ 
+			\texttt{units} & the current units of the axis \\ 
+			\texttt{convert} & method to convert axis units \\
+			\texttt{label\_seed} & list of subscript strings for label \\
+			\texttt{get\_label} & method to get formated label string
+		\end{tabular}
+	\end{center}
+	\caption{The most important attributes and methods of the \texttt{wt.data.Axis} class.}
+\end{table}
+Axes may be regular or differential.
+
+Channels are the values in a dataset. A \texttt{Data} instance may contain many channels, since each coordinate may have multiple recorded values e.g. signal, pyro1, and pyro2. \texttt{wt.data.Channel} is the class that contains these values and their properties. Table \ref{tab:channel properties} highlights the most important attributes and methods of \texttt{Channel}.
+\begin{table}\label{tab:channel properties}
+	\begin{center}
+		\begin{tabular}{r | l}
+			\texttt{values} & \texttt{numpy.ndarray} of dataset values \\ 
+			\texttt{name} & the `python-friendly' name \\
+			\texttt{invert} & method to invert values \\
+			\texttt{zmin} & maximum \\
+			\texttt{zmax} & minimum \\
+			\texttt{znull} & null value \\
+			\texttt{signed} & \texttt{bool} flag for signed data \\
+			\texttt{normalize} & method to enforce scaling such that znull to zmax spans 0-1 \\
+			\texttt{clip} & method to remove values outside of a certain range
+		\end{tabular}
+	\end{center}
+	\caption{The most important attributes and methods of the \texttt{wt.data.Channel} class.}
+\end{table}
+The \texttt{signed} flag of \texttt{Channel} changes how other parts of WrightTools interact with the dataset. For example, an artist may choose to use a different colorbar if a dataset is signed. Allowing the `null value' of a dataset to be non-zero is an important feature of WrightTools. When possible, developers should anticipate non-zero \texttt{znull}s. Also note that \texttt{Channel.values} may contain \texttt{NaN}s. When manipulating the \texttt{values} array directly, it is best practices to use \texttt{Channel.\_update()} to force the flags and attributes of the object to correspond to the new values.
+
+The \texttt{Data} object has two primary attributes: \texttt{axes}, a list of \texttt{Axis} objects, and \texttt{channels}, a list of \texttt{Channel} objects. \texttt{axes} contains exactly one \texttt{Axis} object for each dimension of the dataset. The order of \texttt{axes} matters, so that the nth member of \texttt{axes} contains the coordinates along the nth dimension of the dataset. The order of \texttt{channels} is arbitrary. It is typical for code in WrightTools to assume that the most important channel is first. In addition to members of lists, \texttt{Data} dynamically sets the \texttt{Axis} and \texttt{Channel} objects it contains as attributes of itself according to the names of those objects. This means that users have two choices when accessing axes and channels. For example, consider an axis \texttt{w1} located in dimension \texttt{0}. To access this axis' points, one may go via the list: \texttt{data.axes[0].points} or directly \texttt{data.w1.points}. A consequence of this feature is that \texttt{Axis} and \texttt{Channel} object names must be unique to the \texttt{Data} container. Beyond the two main lists, \texttt{Data} is primarily a long series of methods that operate on the dataset it contains. Table \ref{tab:data properties} highlights the `structural' attributes and methods of \texttt{Data}.
+\begin{table}\label{tab:data properties}
+	\begin{center}
+		\begin{tabular}{r | l}
+			\texttt{axes} & list of the contained \texttt{Axis} objects \\ 
+			\texttt{channels} & list of the contained \texttt{Channel} objects \\
+			\texttt{name} & the `python-friendly' name \\
+			\texttt{chop} & powerful method for accessing lower-dimensional slice(s) \\
+			\texttt{split} & method for splitting dataset at axis coordinate(s) \\
+			\texttt{transpose} & method to change order of dimensions in dataset \\
+			\texttt{copy} & method for getting deep copy \\
+			\texttt{flip} & method for flipping order of coordinates within an axis \\
+			\texttt{map\_axis} & method to map dataset onto new coordinates using interpolation \\
+			\texttt{remove\_channel} & method to remove a channel \\
+			\texttt{bring\_to\_front} & method to bring a channel to the front of \texttt{channels} \\
+		\end{tabular}
+	\end{center}
+	\caption{The most important attributes and methods of the \texttt{wt.data.Data} class.}
+\end{table}
+There are many other attributes and methods of \texttt{Data}, most of which will be talked about in specific context elsewhere in this document.
+
 \subsection{Instantiation}\label{section:instantiation}
+
+The creation of a \texttt{Data} object from a raw file or other source may be a very different process depending on the dataset's origin. It is not reasonable to handle all details for all datastreams directly in \texttt{wt.data.Data.\_\_init\_\_}. Instead, \texttt{Data} objects are typically created using a \texttt{wt.data.from\_X} method. These methods accept any relevant parameters and return an instantiated \texttt{Data} object. \texttt{wt.data.from\_X} methods have been written for all of the commonly-used file formats in the Wright Group.
+
+The details of importing from each source are unique, but there is a common theme:
+\begin{enumerate}
+	\item Recognize axes of scan
+	\item Grid raw data onto scan axes
+	\item Assemble \texttt{Data} instance
+\end{enumerate} 
+
+\subsubsection{Direct}
+
+Direct instantiation of \texttt{Data} is easy, if you start with your dataset as regular arrays in python. 
+
+\subsubsection{PyCMDS}
+
+PyCMDS was developed from the start to work well with WrightTools. One of the most important products of that design is the rich system of headers that PyCMDS \texttt{.data} files posses, making the step of scan axis recognition trivial...
+
+\subsubsection{COLORS and Kent}
 
 \subsection{Manipulation}
 
@@ -85,17 +193,17 @@ The artists module contains a variety of tools, all related to visualizing data.
 	\end{centering}
 \end{figure}
 
-Figure \ref{fig:colormap components} shows the RGB components of WrightTools' default colormap for single-signed data. This colormap is a custom implementation of the `cubehelix' color scheme developed by Green\cite{Green.2011.06}. The parameters were chosen to keep the colormap perceptual while closely matching the traditional Wright group colormap (\texttt{wt.artists.colormaps['wright']}). The colormap is slightly distorted in luminosity for aesthetic purposes.
+Figure \ref{fig:colormap components} shows the RGB components of WrightTools' default colormap for single-signed data. This colormap is a custom implementation of the `cubehelix' color scheme developed by \textcite{Green2011}. The parameters were chosen to keep the colormap perceptual while closely matching the traditional Wright group colormap (\texttt{wt.artists.colormaps['wright']}). The colormap is slightly distorted in luminosity for aesthetic purposes.
 
 \pagebreak
-	\section{Fit} 
+\section{Fit} 
 	
 	The fit module provides tools for fitting data. It contains a series of \texttt{Function} objects, which handle the actual minimization routines given a dataset. These can be used outside of WrightTools. For example, given \texttt{xi} and \texttt{yi} as 1D arrays:
 	
-	\begin{minted}[ frame=lines, framesep=2mm, baselinestretch=1.2, fontsize=\footnotesize, linenos] {python}
-	function = wt.fit.Gaussian()  # create an instance of Gaussian class
-	center, width, amplitude, baseline = function.fit(yi, xi)  # do fit on your arrays
-	\end{minted}
+	%\begin{minted}[ frame=lines, framesep=2mm, %baselinestretch=1.2, fontsize=\footnotesize, linenos] %{python}
+	%function = wt.fit.Gaussian()  # create an instance of %Gaussian class
+	%center, width, amplitude, baseline = function.fit(yi, xi)  %# do fit on your arrays
+	%\end{minted}
 	
 	The fit module also contains a class made to send \texttt{data} through fitting operations: \texttt{wt.fit.Fitter}. Like in WrightTools artists, \texttt{Fitter} will take high dimensionality data and iterate over the dimensions higher than the ones being addressed.
 
@@ -201,3 +309,7 @@ OPA800
 \section{Diagrams}
 
 The diagrams module provides specialized artists and tools for creating diagrams commonly used to describe CMDS experiments.
+
+\printbibliography
+
+\end{document}
