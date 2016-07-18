@@ -24,7 +24,7 @@ def process(shots, names, kinds):
 
 # Each Channel Averaged
 
-    chopped = ['signal','pyro2']
+    chopped = []
 
     channel_indicies = [i for i, x in enumerate(kinds) if x == 'channel']
     chopper_indicies = [len(kinds)-1]#[i for i, x in enumerate(kinds) if x == 'chopper']
