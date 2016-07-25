@@ -6,6 +6,8 @@ fitting tools
 ### import ####################################################################
 
 
+from __future__ import absolute_import, division, print_function, unicode_literals
+
 import os
 import collections
 
@@ -17,8 +19,8 @@ import matplotlib.pyplot as plt
 import scipy
 from scipy import optimize as scipy_optimize
 
-import data as wt_data
-import kit as wt_kit
+from . import data as wt_data
+from . import kit as wt_kit
 
 
 ### helper functions ##########################################################
@@ -284,7 +286,7 @@ class TwoD_Gaussian(Function):
         values, xi, yi, ok= self._Format_input(v, x, y)
 
         if not ok:
-            print "xi, yi are not the correct size and/or shape"
+            print("xi, yi are not the correct size and/or shape")
             return np.full(7, np.nan)
 
         Use_visible_baseline = False
@@ -313,7 +315,7 @@ class TwoD_Gaussian(Function):
         v, xi, yi, ok= self._Format_input(values, x, y)
 
         if not ok:
-            print "xi, yi are not the correct size and/or shape"
+            print("xi, yi are not the correct size and/or shape")
             return np.full(7, np.nan)
 
         # optimize
@@ -383,7 +385,7 @@ class Fitter:
         # will iterate over axes NOT fit
         self.not_fit_indicies = [self.data.axis_names.index(name) for name in self.data.axis_names if name not in self.axes]
         self.fit_shape = [self.data.axes[i].points.shape[0] for i in self.not_fit_indicies]
-        print 'fitter recieved data to make %d fits'%np.product(self.fit_shape)
+        print('fitter recieved data to make %d fits'%np.product(self.fit_shape))
 
     def run(self, channel=0, verbose=True):
         # get channel ---------------------------------------------------------
@@ -392,7 +394,7 @@ class Fitter:
         elif type(channel) == str:
             channel_index = self.data.channel_names.index(channel)
         else:
-            print 'channel type', type(channel), 'not valid'
+            print('channel type', type(channel), 'not valid')
         # transpose data ------------------------------------------------------
         # fitted axes will be LAST
         transpose_order = range(len(self.data.axes))
@@ -435,7 +437,7 @@ class Fitter:
                 model_data = self.function.evaluate(out, *axes_points)
                 self.model.channels[channel_index].values[idx] = model_data
         if verbose:
-            print 'fitter done in %f seconds'%timer.interval
+            print('fitter done in %f seconds'%timer.interval)
         # clean up ------------------------------------------------------------
         # model
         self.model.transpose(transpose_order, verbose=False)

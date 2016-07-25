@@ -6,6 +6,8 @@ a collection of small, general purpose objects and methods
 ### import ####################################################################
 
 
+from __future__ import absolute_import, division, print_function, unicode_literals
+
 import os
 import re
 import ast
@@ -18,7 +20,7 @@ from time import clock
 
 import numpy as np
 
-import units
+from . import units
 
 
 ### file processing ###########################################################
@@ -79,7 +81,7 @@ def find_name(fname, suffix):
                i = i + 1
                # prevent infinite loop if the code isn't perfect
                if i > 100:
-                   print 'didn\'t find a good name; index used up to 100!'
+                   print('didn\'t find a good name; index used up to 100!')
                    fname = False
                    good_name=True
         except IOError:
@@ -241,7 +243,7 @@ def plot_dats(folder=None, transpose=True):
 
     for _file in files:
 
-        print ' '
+        print(' ')
 
         try:
 
@@ -264,12 +266,12 @@ def plot_dats(folder=None, transpose=True):
                             autosave = True, output_folder = folder, fname = fname)
 
             else:
-                print 'error! - dimensionality of data ({}) not recognized'.format(len(dat_data.axes))
+                print('error! - dimensionality of data ({}) not recognized'.format(len(dat_data.axes)))
 
         except:
             import sys
-            print 'dat {} not recognized as plottible in plot_dats'.format(filename_parse(_file)[1])
-            print sys.exc_info()[0]
+            print('dat {} not recognized as plottible in plot_dats'.format(filename_parse(_file)[1]))
+            print(sys.exc_info()[0])
             pass
 
 
@@ -840,7 +842,7 @@ def update_progress(progress, carriage_return=False, length=50):
         text += '\r\n'
     sys.stdout.write(text)
     if progress == 100.:
-        print '\n'
+        print('\n')
     else:
         sys.stdout.flush()
 
@@ -860,4 +862,4 @@ class Timer:
         self.end = clock()
         self.interval = self.end - self.start
         if self.verbose:
-            print 'elapsed time: {0} sec'.format(self.interval)
+            print('elapsed time: {0} sec'.format(self.interval))

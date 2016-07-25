@@ -6,6 +6,8 @@ Calibration.
 ### import ####################################################################
 
 
+from __future__ import absolute_import, division, print_function, unicode_literals
+
 import os
 import copy
 import collections
@@ -18,9 +20,9 @@ import matplotlib
 import matplotlib.pyplot as plt
 matplotlib.rcParams['font.size'] = 14
 
-import units as wt_units
-import kit as wt_kit
-import artists as wt_artists
+from . import units as wt_units
+from . import kit as wt_kit
+from . import artists as wt_artists
 
 debug = False
 
@@ -134,13 +136,13 @@ class Calibration:
         headers['note'] = self.note
         file_path = wt_kit.write_headers(file_path, headers)
         X = np.vstack([self.points, self.values]).T
-        with open(file_path, 'a') as f: 
+        with open(file_path, 'a') as f:
             np.savetxt(f, X, fmt='%8.6f', delimiter='\t')
         if plot:
             image_path = file_path.replace('.calibration', '.png')
             self.plot(autosave=True, save_path=image_path)
         if verbose:
-            print 'calibration saved at {}'.format(file_path)
+            print('calibration saved at {}'.format(file_path))
     
     def sort(self):
         '''

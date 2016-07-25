@@ -1,6 +1,8 @@
 ### import ####################################################################
 
 
+from __future__ import absolute_import, division, print_function, unicode_literals
+
 import os
 import re
 import sys
@@ -10,8 +12,12 @@ import copy
 import inspect
 import itertools
 import subprocess
-import ConfigParser
 import glob
+
+try:
+    import configparser as _ConfigParser  # python 3
+except ImportError:
+    import ConfigParser as _ConfigParser  # python 2
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -28,7 +34,7 @@ from .. import units as wt_units
 from .. import kit as wt_kit
 from .. import fit as wt_fit
 from .. import data as wt_data
-import curve as wt_curve
+from . import curve as wt_curve
 
 
 ### define ####################################################################
@@ -98,7 +104,7 @@ def process_C2_motortune(opa_index, data_filepath, curves, save=True):
     outs = []
     function = wt_fit.Gaussian()
     file_slicer = wt_kit.FileSlicer(data_filepath)
-    print 'fitting wa traces'
+    print('fitting wa traces')
     while file_slicer.n < file_slicer.length:
         # get data from file
         lines = file_slicer.get(256)
@@ -224,7 +230,7 @@ def process_D2_motortune(opa_index, data_filepath, curves, save=True):
     outs = []
     function = wt_fit.Gaussian()
     file_slicer = wt_kit.FileSlicer(data_filepath)
-    print 'fitting wa traces'
+    print('fitting wa traces')
     while file_slicer.n < file_slicer.length:
         # get data from file
         lines = file_slicer.get(256)
@@ -237,7 +243,7 @@ def process_D2_motortune(opa_index, data_filepath, curves, save=True):
         mean = wt_units.converter(mean, 'wn', 'nm')
         outs.append([amplitude, mean, width])
         wt_kit.update_progress(100*file_slicer.n/float(file_slicer.length-256))
-    print file_slicer.n, file_slicer.length
+    print(file_slicer.n, file_slicer.length)
     outs = np.array(outs).T
     amp, cen, wid = outs
     # remove points with amplitudes that are ridiculous
@@ -251,7 +257,6 @@ def process_D2_motortune(opa_index, data_filepath, curves, save=True):
     wid[wid>500] = np.nan
     # finish removal
     amp, cen, wid = wt_kit.share_nans([amp, cen, wid])
-    print amp.shape
     # get axes
     ws = np.array(headers['w%d points'%opa_index])
     d2 = np.array(headers['w%d_Delay_2 points'%opa_index])
@@ -375,7 +380,7 @@ def process_preamp_motortune(OPA_index, data_filepath, curves, save=True):
     setpoints = np.linspace(1140, 1620, 25)
     within = 2
     fits_by_setpoint = []
-    print 'binning points'
+    print('binning points')
     for i in range(len(setpoints)):
         these_fits = []
         for j in range(points_count):
@@ -401,7 +406,7 @@ def process_preamp_motortune(OPA_index, data_filepath, curves, save=True):
             false_setpoints.append(setpoints[i])
     # fit each setpoint
     preamp_chosen = []
-    print 'fitting points'
+    print('fitting points')
     for i in range(len(setpoints)):
         c1s = np.zeros(len(fits_by_setpoint[i]))
         d1s = np.zeros(len(fits_by_setpoint[i]))
@@ -428,7 +433,7 @@ def process_preamp_motortune(OPA_index, data_filepath, curves, save=True):
             try: 
                 out_c1 = leastsq(_gauss_residuals, p0, args=(y, c1s))[0]
             except RuntimeWarning: 
-                print 'runtime'
+                print('runtime')
             # d1
             amplitude_guess = max(y)
             center_guess = old_curve.get_motor_positions(setpoints[i])[1]
@@ -437,7 +442,7 @@ def process_preamp_motortune(OPA_index, data_filepath, curves, save=True):
             try: 
                 out_d1 = leastsq(_gauss_residuals, p0, args=(y, d1s))[0]
             except RuntimeWarning: 
-                print 'runtime'
+                print('runtime')
             # write to preamp_chosen
             chosen[0] = setpoints[i]
             chosen[1] = out_c1[1]

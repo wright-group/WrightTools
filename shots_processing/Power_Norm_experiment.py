@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division, print_function, unicode_literals
+
 import numpy as np
 #import scipy.optimize as opt
 
@@ -63,7 +65,7 @@ def process(shots, names, kinds):
         out[-2] = fit[3][1]
         out[-1] = fit[3][2]
     except Exception as inst:
-        print type(inst)
+        print(type(inst))
     
     out_names.append('square')
     out_names.append('linear')

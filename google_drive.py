@@ -9,6 +9,8 @@ Interact with google drive using the pydrive package.
 ### import ####################################################################
 
 
+from __future__ import absolute_import, division, print_function, unicode_literals
+
 import os
 import time
 import datetime
@@ -134,7 +136,7 @@ class Drive:
             f.Upload()
             f.content.close()
             if verbose:
-                print 'file uploaded from {}'.format(filepath)
+                print('file uploaded from {}'.format(filepath))
         # delete local
         if delete_local:
             os.remove(filepath)
@@ -248,7 +250,7 @@ class Drive:
             # download
             f.GetContentFile(f_path)
             if verbose:
-                print 'file downloaded to {}'.format(f_path)
+                print('file downloaded to {}'.format(f_path))
             # finish
             return f
 
@@ -294,7 +296,7 @@ class Drive:
             for tup in os.walk(path, topdown=False):
                 self._authenticate()
                 folder_path, _, file_names = tup
-                print folder_path
+                print(folder_path)
                 # create folder on google drive
                 name = folder_path.split(os.path.sep)[top_path_length-1:]
                 folderid = self.create_folder(name, parentid)

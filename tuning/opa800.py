@@ -6,6 +6,8 @@ Methods for processing OPA 800 tuning data.
 ### imports ###################################################################
 
 
+from __future__ import absolute_import, division, print_function, unicode_literals
+
 import os
 import re
 import sys
@@ -16,8 +18,12 @@ import copy
 import inspect
 import collections
 import subprocess
-import ConfigParser
 import glob
+
+try:
+    import configparser as _ConfigParser  # python 3
+except ImportError:
+    import ConfigParser as _ConfigParser  # python 2'
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -32,7 +38,7 @@ from scipy.optimize import leastsq
 
 from pylab import *
 
-import curve as wt_curve
+from . import curve as wt_curve
 from .. import artists as wt_artists
 from .. import data as wt_data
 from .. import fit as wt_fit
@@ -74,7 +80,7 @@ def process_motortune(filepath, channel_name, old_curve_filepath,
     channel_index = data.channel_names.index(channel_name)
     # check if data is compatible
     if not len(data.axes) == 2:
-        print 'data must be 2 dimensional'
+        print('data must be 2 dimensional')
         return
     # transpose into prefered representation (motors, tune points)
     if len(data.axes[0].name) < len(data.axes[1].name):
@@ -132,7 +138,7 @@ def process_tunetest(filepath, channel, max_change=100, autosave=True):
     end = filepath.index(']')
     dims = filepath[start:end].split(',')
     opa_name = dims[0].strip()
-    print 'opa recognized as', opa_name
+    print('opa recognized as', opa_name)
     # import array
     headers = wt_kit.read_headers(filepath)
     arr = np.genfromtxt(filepath).T

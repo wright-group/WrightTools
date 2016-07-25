@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division, print_function, unicode_literals
+
 import numpy as np
 
 def process(shots, names, kinds):
@@ -46,8 +48,8 @@ def process(shots, names, kinds):
     c = np.mean(cl)
     d = np.mean(dl)
     if False:
-        print [len(l) for l in [al, bl, cl, dl]]
-        print a, b, c, d
+        print([len(l) for l in [al, bl, cl, dl]])
+        print(a, b, c, d)   
     out[0] = a-b+c-d
     out_names.append('signal_diff')
     # signal mean

@@ -6,6 +6,8 @@ Tools for visualizing data.
 ### import ####################################################################
 
 
+from __future__ import absolute_import, division, print_function, unicode_literals
+
 import os
 import datetime
 import collections
@@ -22,8 +24,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 matplotlib.rcParams['contour.negative_linestyle'] = 'solid'
 matplotlib.rcParams['font.size'] = 14
 
-import kit  # legacy...
-import kit as wt_kit
+from . import kit as wt_kit
 
 
 ### artist helpers ############################################################
@@ -355,7 +356,6 @@ def get_color_cycle(n, cmap='rainbow', rotations=3):
     vals = list(np.linspace(0, 1, per))
     vals = vals * rotations
     vals = vals[:n]
-    print vals
     out = cmap(vals)
     return out
 
@@ -393,7 +393,7 @@ def get_scaled_bounds(ax, position, distance=0.1, factor=200):
         va = 'bottom'
         ha = 'right'
     else:
-        print 'corner not recognized'
+        print('corner not recognized')
         v_scaled = h_scaled = 1.
         va = 'center'
         ha = 'center'
@@ -721,7 +721,7 @@ def stitch_to_animation(images, outpath=None, duration=0.5, palettesize=1024,
     # finish
     if verbose:
         interval = np.round(t.interval, 2)
-        print 'gif generated in {0} seconds - saved at {1}'.format(interval, outpath)
+        print('gif generated in {0} seconds - saved at {1}'.format(interval, outpath))
     return outpath
 
 
@@ -882,7 +882,7 @@ class mpl_1D:
         self.data = data
         self.chopped = self.data.chop(xaxis, at, verbose = False)
         if verbose:
-            print 'mpl_1D recieved data to make %d plots'%len(self.chopped)
+            print('mpl_1D recieved data to make %d plots'%len(self.chopped))
         # defaults
         self.font_size = 15
 
@@ -894,12 +894,12 @@ class mpl_1D:
         elif type(channel) == str:
             channel_index = self.chopped[0].channel_names.index(channel)
         else:
-            print 'channel type not recognized in mpl_1D!'
+            print('channel type not recognized in mpl_1D!')
         # prepare figure
         fig = None
         if len(self.chopped) > 10:
             if not autosave:
-                print 'too many images will be generated ({}): forcing autosave'.format(len(self.chopped))
+                print('too many images will be generated ({}): forcing autosave'.format(len(self.chopped)))
                 autosave = True
         # prepare output folders
         if autosave:
@@ -913,7 +913,7 @@ class mpl_1D:
                     else:
                         fname = self.data.name
                 else:
-                    folder_name = 'mpl_1D ' + kit.get_timestamp()
+                    folder_name = 'mpl_1D ' + wt_kit.get_timestamp()
                     os.mkdir(folder_name)
                     output_folder = folder_name
         # chew through image generation
@@ -962,7 +962,7 @@ class mpl_1D:
                 plt.savefig(fpath, transparent=True, dpi=300, pad_inches=1.)
                 plt.close()
                 if verbose:
-                    print 'image saved at', fpath
+                    print('image saved at', fpath)
 
 
 class mpl_2D:
@@ -972,7 +972,7 @@ class mpl_2D:
         self.data = data
         self.chopped = self.data.chop(yaxis, xaxis, at, verbose = False)
         if verbose:
-            print 'mpl_2D recieved data to make %d plots'%len(self.chopped)
+            print('mpl_2D recieved data to make %d plots'%len(self.chopped))
         # defaults
         self._xsideplot = False
         self._ysideplot = False
@@ -988,14 +988,14 @@ class mpl_2D:
                 self._xsideplot = True
                 self._xsideplotdata.append([data.axes[0].points, data.channels[0].values])
             else:
-                print 'given data ({0}), does not aggree with x ({1})'.format(data.axes[0].units_kind, self.chopped[0].axes[1].units_kind)
+                print('given data ({0}), does not aggree with x ({1})'.format(data.axes[0].units_kind, self.chopped[0].axes[1].units_kind))
         if y: 
             if self.chopped[0].axes[0].units_kind == data.axes[0].units_kind:
                 data.convert(self.chopped[0].axes[0].units)
                 self._ysideplot = True
                 self._ysideplotdata.append([data.axes[0].points, data.channels[0].values])
             else:
-                print 'given data ({0}), does not aggree with y ({1})'.format(data.axes[0].units_kind, self.chopped[0].axes[0].units_kind)
+                print('given data ({0}), does not aggree with y ({1})'.format(data.axes[0].units_kind, self.chopped[0].axes[0].units_kind))
 
     def onplot(self, xi, yi, c='k', lw=5, alpha=0.3, **kwargs):
         kwargs['c'] = c
@@ -1062,12 +1062,12 @@ class mpl_2D:
         elif type(channel) == str:
             channel_index = self.chopped[0].channel_names.index(channel)
         else:
-            print 'channel type not recognized in mpl_2D!'
+            print('channel type not recognized in mpl_2D!')
         # prepare figure
         fig = None
         if len(self.chopped) > 10:
             if not autosave:
-                print 'too many images will be generated: forcing autosave'
+                print('too many images will be generated: forcing autosave')
                 autosave = True
         # prepare output folder
         if autosave:
@@ -1081,7 +1081,7 @@ class mpl_2D:
                     else:
                         fname = self.data.name
                 else:
-                    folder_name = 'mpl_2D ' + kit.get_timestamp()
+                    folder_name = 'mpl_2D ' + wt_kit.get_timestamp()
                     os.mkdir(folder_name)
                     output_folder = folder_name
         # chew through image generation
@@ -1327,7 +1327,7 @@ class mpl_2D:
                 plt.savefig(fpath, facecolor='none', transparent=True, dpi=300, pad_inches=1.)
                 plt.close()
                 if verbose:
-                    print 'image saved at', fpath
+                    print('image saved at', fpath)
 
 
 ### specific artists ##########################################################
@@ -1399,7 +1399,7 @@ class absorbance:
             if derivative:
                 # compute second derivative
                 xi2, zi2= self._smooth(np.array([xi,zi]), n_smooth)
-                plotData = kit.diff(xi2, zi2, order = 2)
+                plotData = wt_kit.diff(xi2, zi2, order = 2)
                 # plot the data!
                 self.ax2.plot(plotData[0], plotData[1], lw = 2)
                 self.ax2.grid(b=True)
@@ -1418,9 +1418,8 @@ class absorbance:
 
         # title ---------------------------------------------------------------
 
-        if len(self.data) == 1: #only attempt this if we are plotting one data object
+        if len(self.data) == 1:  # only attempt this if we are plotting one data object
             title_text = self.data[0].name
-            print title_text
             plt.suptitle(title_text, fontsize = self.font_size)
 
         # finish --------------------------------------------------------------
@@ -1466,9 +1465,9 @@ class difference_2D():
         if minuend_counter == subrahend_counter:
             pass
         else:
-            print 'axes are not equivalent - difference_2D cannot initialize'
-            print '  minuhend axes -', self.minuend.axis_names
-            print '  subtrahend axes -', self.subtrahend.axis_names
+            print('axes are not equivalent - difference_2D cannot initialize')
+            print('  minuhend axes -', self.minuend.axis_names)
+            print('  subtrahend axes -', self.subtrahend.axis_names)
             raise RuntimeError('axes incompataible')
         # transpose subrahend to agree with minuend
         transpose_order = [self.minuend.axis_names.index(name) for name in self.subtrahend.axis_names]
@@ -1481,7 +1480,7 @@ class difference_2D():
         self.minuend_chopped = self.minuend.chop(yaxis, xaxis, at, verbose = False)
         self.subtrahend_chopped = self.subtrahend.chop(yaxis, xaxis, at, verbose = False)
         if verbose:
-            print 'difference_2D recieved data to make %d plots'%len(self.minuend_chopped)
+            print('difference_2D recieved data to make %d plots'%len(self.minuend_chopped))
         # defaults
         self.font_size = 18
 
@@ -1500,7 +1499,7 @@ class difference_2D():
         fig = None
         if len(self.minuend_chopped) > 10:
             if not autosave:
-                print 'too many images will be generated: forcing autosave'
+                print('too many images will be generated: forcing autosave')
                 autosave = True
         
         # prepare output folder
@@ -1516,7 +1515,7 @@ class difference_2D():
                     else:
                         fname = self.minuend.name
                 else:
-                    folder_name = 'difference_2D ' + kit.get_timestamp()
+                    folder_name = 'difference_2D ' + wt_kit.get_timestamp()
                     os.mkdir(folder_name)
                     output_folder = folder_name
 
@@ -1701,7 +1700,7 @@ class difference_2D():
                 plt.close()
 
                 if verbose:
-                    print 'image saved at', fpath
+                    print('image saved at', fpath)
         
         plt.ion()
 
@@ -1827,7 +1826,7 @@ class PDFAll2DSlices:
         elif type(channel) == str:
             channel_index = self.datas[0].channel_names.index(channel)
         else:
-            print 'channel type not recognized in mpl_2D!'
+            print('channel type not recognized in mpl_2D!')
         # add to sideplot_dictionary
         for axis_name in axes:
             self.sideplot_dictionary[axis_name].append([data, channel_index, c])
@@ -1840,7 +1839,7 @@ class PDFAll2DSlices:
         elif type(channel) == str:
             channel_index = self.datas[0].channel_names.index(channel)
         else:
-            print 'channel type not recognized in mpl_2D!'
+            print('channel type not recognized in mpl_2D!')
         # create pdf
         with PdfPages(output_path) as pdf:
             if w1w2:
@@ -1848,7 +1847,7 @@ class PDFAll2DSlices:
                 self.chopped_datas = [d.chop('w2', 'wmw1') for d in self.datas]  # y, x
                 self._label_slide(pdf, '2D frequencies')
                 for slice_index in range(len(self.chopped_datas[0])):  # for each chop...
-                    print '2D frequency', slice_index
+                    print('2D frequency', slice_index)
                     cols = [1, 'cbar', 0.25, 1, 'cbar']
                     fig, gs = create_figure(width='double', nrows=len(self.datas), cols=cols, hspace=0.5)
                     for data_index in range(len(self.datas)):
@@ -1872,7 +1871,7 @@ class PDFAll2DSlices:
                 self.chopped_datas = [d.chop('d2', 'wmw1') for d in self.datas]  # y, x
                 self._label_slide(pdf, 'w1 wigners')
                 for slice_index in range(len(self.chopped_datas[0])):  # for each chop...
-                    print 'w1 wigner', slice_index
+                    print('w1 wigner', slice_index)
                     cols = [1, 'cbar', 0.25, 1, 'cbar']
                     fig, gs = create_figure(width='double', nrows=len(self.datas), cols=cols, hspace=0.5)
                     for data_index in range(len(self.datas)):
@@ -1901,7 +1900,7 @@ class PDFAll2DSlices:
                 self.chopped_datas = [d.chop('d2', 'w2') for d in self.datas]  # y, x
                 self._label_slide(pdf, 'w2 wigners')
                 for slice_index in range(len(self.chopped_datas[0])):  # for each chop...
-                    print 'w2 wigner', slice_index
+                    print('w2 wigner', slice_index)
                     cols = [1, 'cbar', 0.25, 1, 'cbar']
                     fig, gs = create_figure(width='double', nrows=len(self.datas), cols=cols, hspace=0.5)
                     for data_index in range(len(self.datas)):
