@@ -6,6 +6,8 @@ OPA tuning curves.
 ### import ####################################################################
 
 
+from __future__ import absolute_import, division, print_function, unicode_literals
+
 import os
 import copy
 import collections
@@ -426,7 +428,7 @@ class Curve:
         elif type(motor) == str:
             motor_index = self.motor_names.index(motor)
         else:
-            print 'motor type not recognized in curve.offset_by'
+            print('motor type not recognized in curve.offset_by')
         # offset
         self.motors[motor_index].positions += amount
         self.interpolate()
@@ -456,7 +458,7 @@ class Curve:
         elif type(motor) == str:
             motor_index = self.motor_names.index(motor)
         else:
-            print 'motor type not recognized in curve.offset_to'
+            print('motor type not recognized in curve.offset_to')
         # get offset
         current_positions = self.get_motor_positions(color, color_units, full=False)
         offset = destination - current_positions[motor_index]
@@ -585,7 +587,7 @@ class Curve:
             self.plot(autosave=True, save_path=image_path)
         # finish
         if verbose:
-            print 'curve saved at', out_path
+            print('curve saved at', out_path)
         return out_path
 
 
