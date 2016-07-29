@@ -603,7 +603,7 @@ def from_800_curve(filepath):
     motors = [grating, bbo, mixer]
     path, name, suffix = wt_kit.filename_parse(filepath)
     curve = Curve(colors, 'wn', motors, name=name, interaction='DFG',
-                  kind='opa800', method=Poly)
+                  kind='opa800', method=Linear)
     return curve
 
 

@@ -243,12 +243,12 @@ class TwoD_Gaussian(Function):
             yi = yi.flatten()
         elif len(xi.shape) == 1 and len(yi.shape) == 1:
             if v.shape == (xi.shape[0], yi.shape[0]):
-                xi, yi = np.meshgrid(xi,yi)
+                xi, yi = np.meshgrid(xi,yi,indexing='ij')
                 v = v.flatten()
                 xi = xi.flatten()
                 yi = yi.flatten()
             elif len(v.shape) == 1 and v.shape[0] == xi.shape[0]*yi.shape[0]:
-                xi, yi = np.meshgrid(xi,yi)
+                xi, yi = np.meshgrid(xi,yi,indexing='ij')
                 xi = xi.flatten()
                 yi = yi.flatten()
             elif v.shape == xi.shape:
@@ -295,12 +295,12 @@ class TwoD_Gaussian(Function):
         else:
             baseline = min(values.flatten())
         values -= baseline
-        x0 = sum(np.multiply(xi, values))/sum(values)
-        y0 = sum(np.multiply(yi, values))/sum(values)
+        x0 = (min(xi)+max(xi))/2.0 #sum(np.multiply(xi, values))/sum(values)
+        y0 = (min(yi)+max(yi))/2.0 #sum(np.multiply(yi, values))/sum(values)
         sigma_x = np.sqrt(abs(sum((xi-x0)**2*values)/sum(values)))
         sigma_y = np.sqrt(abs(sum((yi-y0)**2*values)/sum(values)))
         theta = 0.0
-        amp = max(values.flatten())
+        amp = max(values)
         p0 = [amp, x0, y0, sigma_x, sigma_y, theta, baseline]
         return p0
 
