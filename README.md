@@ -1,11 +1,3 @@
 # WrightTools
 
-Dependencies 
-- matplotlib
-- numpy
-- scipy
-- os
-- sys
-- collections
-
-<hr>
+Please read documentation.pdf for more information about WrightTools.

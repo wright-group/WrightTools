@@ -343,15 +343,19 @@ def write_headers(filepath, dictionary):
     str
         Filepath of file.
     '''
+    if sys.version[0] == '2':
+        string_type = basestring  # recognize unicode and string types
+    else:
+        string_type = str  # newer versions of python don't have unicode type
     dictionary = copy.deepcopy(dictionary)
     header_items = []
     for key, value in dictionary.items():
         header_item = key + ':'
-        if type(value) == str:
+        if isinstance(value, string_type):
             header_item += '\t' + '\'' + value + '\''
         elif type(value) == list:
             for i in range(len(value)):
-                if type(value[i]) == str:
+                if isinstance(value, string_type):
                     value[i] = '\'' + value[i] + '\''
                 else:
                     value[i] = str(value[i])
