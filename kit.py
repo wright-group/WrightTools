@@ -13,6 +13,10 @@ import re
 import ast
 import sys
 import copy
+import time
+import pytz
+import dateutil
+import datetime
 import itertools
 import linecache
 import collections
@@ -189,12 +193,67 @@ def get_path_matching(name):
     # TODO: something more robust to catch the rest of the cases?
     return p
 
-def get_timestamp():
-
-    import time
-
-    return time.strftime('%Y.%m.%d %H_%M_%S')
-
+def get_timestamp(style='RFC3339', hms=True, frac=False, timezone='here',
+                  filename_compatible=False):
+    '''
+    Get the current time as a string.
+    
+    Parameters
+    ----------
+    style : {'RFC3339', 'legacy'} (optional)
+        The format of the returned string. legacy is the old WrightTools
+        format. Default is RFC3339.
+    hms : bool (optional)
+        Toggle inclusion of current time (hours:minutes:seconds) in returned
+        string. Default is True. Does not effect legacy timestamp.
+    frac : bool (optional)
+        Toggle inclusion of fractional seconds in returned string. Default is
+        False. Does not effect legacy timestamp. Only appears if hms is
+        present.
+    timezone : {'here', 'utc'}
+        Timezone. Default is here.
+    filename_compatible : bool
+        Remove special charachters. Default is False.
+    '''
+    if style == 'RFC3339':
+        # get current timezone
+        if timezone == 'here':
+            tz = dateutil.tz.tzlocal()
+        elif timezone == 'utc':
+            tz = pytz.utc
+        else:
+            raise Exception('timezone not recognized in kit.get_timestamp')
+        # get timezone offset
+        delta_obj = tz.utcoffset(datetime.datetime.now(tz))
+        delta_sec = delta_obj.total_seconds()
+        m, s = divmod(delta_sec, 60)
+        h, m = divmod(m, 60)
+        # create output
+        format_string = '%Y-%m-%d'
+        if hms:
+            format_string += 'T%H:%M:%S'
+            if frac:
+                format_string += '.%f'
+        out = datetime.datetime.now(tz).strftime(format_string)
+        if delta_sec == 0.:
+            out += 'Z'
+        else:
+            if delta_sec > 0:
+                sign = '+'
+            elif delta_sec < 0:
+                sign = '-'
+            def as_string(num):
+                return str(np.abs(int(num))).zfill(2)
+            out += sign + as_string(h) + ':' + as_string(m)
+    elif style == 'legacy':
+        out = time.strftime('%Y.%m.%d %H_%M_%S')
+    else:
+        raise Exception('format not recognized in kit.get_timestamp')
+    if filename_compatible:
+        illegal_characters = [':']
+        for char in illegal_characters:
+            out = out.replace(char, '')
+    return out
 
 def glob_handler(extension, folder=None, identifier=None):
     '''
