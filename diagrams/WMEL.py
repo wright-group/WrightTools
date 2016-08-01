@@ -172,7 +172,7 @@ class Artist:
         text = subplot.text(self.x_pos[number], -0.1, label, fontsize=font_size, horizontalalignment='center')
         return line, arrow_head, text
 
-    def plot(self, save_path=None, close=False):
+    def plot(self, save_path=None, close=False, pad_inches=1):
         # final manipulations
         for plot in self.subplots.flatten():
             # set limits
@@ -182,7 +182,7 @@ class Artist:
             plot.axis('off')
         # save
         if save_path:
-            plt.savefig(save_path, transparent=True, dpi=300)
+            plt.savefig(save_path, transparent=True, dpi=300, pad_inches=pad_inches)
         # close
         if close:
             plt.close()

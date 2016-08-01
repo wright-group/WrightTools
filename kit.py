@@ -455,7 +455,7 @@ def diff(xi, yi, order = 1):
     # call numpy.diff ---------------------------------------------------------
 
     yi_out_even = np.diff(yi_even, n = order)
-    yi_out_even = np.pad(yi_out_even, order, mode = 'edge')
+    yi_out_even = np.pad(yi_out_even, order, mode = str('edge'))
     yi_out_even = np.delete(yi_out_even, range(order))
 
     # put data back onto original xi points -----------------------------------
