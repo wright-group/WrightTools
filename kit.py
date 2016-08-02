@@ -15,6 +15,7 @@ import sys
 import copy
 import time
 import pytz
+import h5py
 import dateutil
 import datetime
 import itertools
@@ -334,6 +335,28 @@ def plot_dats(folder=None, transpose=True):
             pass
 
 
+def read_h5(filepath):
+    '''
+    Read from a `HDF5 <https://www.hdfgroup.org/HDF5/doc/H5.intro.html>`_
+    file, returning the data within as a python dictionary.
+    
+    Returns
+    -------
+    OrderedDict
+        Dictionary containing data from HDF5 file.    
+    
+    See Also
+    --------
+    kit.write_h5
+    '''
+    d = collections.OrderedDict()
+    h5f = h5py.File(filepath, mode='r')
+    for key in h5f.keys():
+        d[key] = np.array(h5f[key])
+    h5f.close()
+    return d
+
+
 def read_headers(filepath):
     '''
     Read 'Wright group formatted' headers from given path.
@@ -383,6 +406,53 @@ def read_headers(filepath):
         else:
             break  # all header lines are at the beginning
     return headers
+
+
+def write_h5(filepath, dictionary):
+    '''
+    Save a python dictionary into an `HDF5 <https://www.hdfgroup.org/HDF5/doc/H5.intro.html>`_
+    file.
+    
+    Right now it only works to store numpy arrays of numbers.
+    
+    Parameters
+    ----------
+    filepath : str
+        Filepath to HDF5 file to create. The .hdf5 extension will be appended
+        to the filename if it is not already there.
+    dictionary : python dictionary-like
+        The content to store to the HDF5 file.
+
+    Returns
+    -------
+    str
+        The full filepath to the created HDF5 file.
+        
+        
+    See Also
+    --------
+    kit.read_h5
+    '''
+    # get full filepath
+    if filepath[:-5] == '.hdf5':
+        filepath = filepath
+    else:
+        filepath += '.hdf5'
+    filepath = os.path.abspath(filepath)
+    # create h5f object        
+    h5f = h5py.File(filepath, 'w')    
+    # fill h5f object
+    for name, data in dictionary.items():
+        if type(data) == np.ndarray:
+            h5f.create_dataset(name, data=data, compression="gzip")
+        else:
+            # TODO: store it as a string
+            data = str(data)
+            dt = h5py.special_dtype(vlen=str)
+            h5f.create_dataset(name, data=data, dtype=dt)
+    # finish
+    h5f.close()
+    return filepath
 
 
 def write_headers(filepath, dictionary):
@@ -494,38 +564,28 @@ def closest_pair(arr, give='indicies'):
         raise KeyError('give not recognized in closest_pair')
 
 
-def diff(xi, yi, order = 1):
+def diff(xi, yi, order=1):
     '''
     numpy.diff is a convinient method but it only works for evenly spaced data \n
     this method does the same but for an arbitrary 1D data slice \n
     returns numpy array [xi, yi_out]. edge points are padded.
     '''
     import numpy as np
-
-    # grid data to be even ----------------------------------------------------
-
+    # grid data to be even
     # get function that describes data
     import scipy
-    f = scipy.interpolate.interp1d(xi, yi, kind = 'linear')
-
+    f = scipy.interpolate.interp1d(xi, yi, kind='linear')
     xi_even = np.linspace(min(xi), max(xi), len(xi))
     yi_even = f(xi_even)
-
-    # call numpy.diff ---------------------------------------------------------
-
-    yi_out_even = np.diff(yi_even, n = order)
-    yi_out_even = np.pad(yi_out_even, order, mode = 'edge')
+    # call numpy.diff
+    yi_out_even = np.diff(yi_even, n=order)
+    yi_out_even = np.pad(yi_out_even, order, mode=str('edge'))  # str() to prevent problem in numpy with python 2 vs 3
     yi_out_even = np.delete(yi_out_even, range(order))
-
-    # put data back onto original xi points -----------------------------------
-
+    # put data back onto original xi points
     xi_even += xi_even[1] - xi_even[0]  # offset by half step...
-
     fdiff = scipy.interpolate.interp1d(xi_even, yi_out_even,
-                                       kind = 'linear', bounds_error = False)
-
+                                       kind='linear', bounds_error=False)
     yi_out = fdiff(xi)
-
     return np.array([xi, yi_out])
 
 

@@ -1986,7 +1986,7 @@ def from_KENT(filepaths, znull=None, name=None, ignore=['wm'], use_norm=False,
             if debug:
                 print(key)
     # create data object ------------------------------------------------------
-    data = Data(scanned, channels.values(), constant, znull)
+    data = Data(list(scanned), list(channels.values()), list(constant), znull)
     for axis in data.axes:
         axis.get_label()
     for axis in data.constants:
@@ -2010,7 +2010,7 @@ def from_KENT(filepaths, znull=None, name=None, ignore=['wm'], use_norm=False,
     if verbose:
         print('data object succesfully created')
         print('axis names:', data.axis_names)
-        print('values shape:', channels.values()[0].values.shape)
+        print('values shape:', data.channels[0].values.shape)
     return data
        
        
@@ -2042,7 +2042,7 @@ def from_NISE(measure_object, name='simulation', ignore_constants=['A', 'p'],
     pulse_class = getattr(NISE.lib.pulse, scan_object.pulse_class_name)
     constants = []
     for idx in range(len(positions_array)):
-        key = pulse_class.cols.keys()[pulse_class.cols.values().index(idx)]
+        key = pulse_class.cols.keys()[list(pulse_class.cols.values()).index(idx)]
         axes_sametype = [NISE_axis for NISE_axis in NISE_axes if NISE_axis.pulse_var == key]
         # get values that were not scanned
         indicies_scanned = []
