@@ -201,9 +201,10 @@ def get_timestamp(style='RFC3339', hms=True, frac=False, timezone='here',
     
     Parameters
     ----------
-    style : {'RFC3339', 'legacy'} (optional)
+    style : {'RFC3339', 'short', 'legacy'} (optional)
         The format of the returned string. legacy is the old WrightTools
-        format. Default is RFC3339.
+        format. Default is RFC3339. All other arguments control RFC3339
+        behavior.
     hms : bool (optional)
         Toggle inclusion of current time (hours:minutes:seconds) in returned
         string. Default is True. Does not effect legacy timestamp.
@@ -236,16 +237,28 @@ def get_timestamp(style='RFC3339', hms=True, frac=False, timezone='here',
             if frac:
                 format_string += '.%f'
         out = datetime.datetime.now(tz).strftime(format_string)
-        if delta_sec == 0.:
-            out += 'Z'
-        else:
-            if delta_sec > 0:
-                sign = '+'
-            elif delta_sec < 0:
-                sign = '-'
-            def as_string(num):
-                return str(np.abs(int(num))).zfill(2)
-            out += sign + as_string(h) + ':' + as_string(m)
+        if hms:
+            # add timezone information
+            if delta_sec == 0.:
+                out += 'Z'
+            else:
+                if delta_sec > 0:
+                    sign = '+'
+                elif delta_sec < 0:
+                    sign = '-'
+                def as_string(num):
+                    return str(np.abs(int(num))).zfill(2)
+                out += sign + as_string(h) + ':' + as_string(m)
+    elif style == 'short':
+        if timezone == 'here':
+            tz = dateutil.tz.tzlocal()
+        elif timezone == 'utc':
+            tz = pytz.utc
+        now = datetime.datetime.now(tz)
+        ssm = (now - now.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds()
+        out = now.strftime('%Y-%m-%d')
+        out += ' ' 
+        out += str(int(ssm)).zfill(5)
     elif style == 'legacy':
         out = time.strftime('%Y.%m.%d %H_%M_%S')
     else:
@@ -434,7 +447,7 @@ def write_h5(filepath, dictionary):
     kit.read_h5
     '''
     # get full filepath
-    if filepath[:-5] == '.hdf5':
+    if filepath[-5:] == '.hdf5':
         filepath = filepath
     else:
         filepath += '.hdf5'

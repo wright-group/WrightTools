@@ -551,20 +551,43 @@ def pcolor_helper(xi, yi, zi):
     return X, Y, zi
 
 
-def plot_colorbar(cax=None, cmap='default', ticks=None, label=None,
-                  tick_fontsize=14, label_fontsize=18, orientation='vertical', 
-                  ticklocation='auto'):
+def plot_colorbar(cax=None, cmap='default', ticks=None, clim=None, vlim=None,
+                  label=None, tick_fontsize=14, label_fontsize=18,
+                  orientation='vertical', ticklocation='auto'):
     '''
     Easily add a colormap to an axis.
     
     Paramaters
     ----------
     cax : matplotlib axis (optional)
-        The axis to plot the colorbar on.
+        The axis to plot the colorbar on. Finds the current axis if none is
+        given.
+    cmap : string or LinearSegmentedColormap (optional)
+        The colormap to fill the colorbar with. Strings map as keys to the
+        WrightTools colormaps dictionary. Default is `default`.
+    ticks : 1D array-like (optional)
+        Ticks. Default is None.
+    clim : two element list (optional)
+        The true limits of the colorbar, in the same units as ticks. If None,
+        streaches the colorbar over the limits of ticks. Default is None.
+    vlim : two element list-like (optional)
+        The limits of the displayed colorbar, in the same units as ticks. If
+        None, displays over clim. Default is None.
+    label : str (optional)
+        Label. Default is None.
+    tick_fontsize : number (optional)
+        Fontsize. Default is 14.
+    label_fontsize : number (optional)
+        Label fontsize. Default is 18.
+    orientation : {'vertical', 'horizontal'} (optional)
+        Colorbar orientation. Default is vertical.
+    ticklocation : {'auto', 'left', 'right', 'top', 'bottom'} (optional)
+        Tick location. Default is auto.
     
     Returns
     -------
     matplotlib.colorbar.ColorbarBase object
+        The created colorbar.
     '''
     # parse cax
     if cax is None:
@@ -575,16 +598,23 @@ def plot_colorbar(cax=None, cmap='default', ticks=None, label=None,
     # parse ticks
     if ticks is None:
         ticks = np.linspace(0, 1, 11)
-    dummy_ticks = np.linspace(0, 1, len(ticks))
+    # parse clim
+    if clim is None:
+        clim = [min(ticks), max(ticks)]
+    # parse clim
+    if vlim is None:
+        vlim = clim
     # make cbar
+    norm = matplotlib.colors.Normalize(vmin=vlim[0], vmax=vlim[1])
     cbar = matplotlib.colorbar.ColorbarBase(ax=cax, cmap=cmap,
-                                            ticks=dummy_ticks, 
+                                            norm=norm,  ticks=ticks,
                                             orientation=orientation,
                                             ticklocation=ticklocation)
     # coerce properties
-    cbar.set_ticklabels(ticks)
-    cbar.ax.tick_params(labelsize=tick_fontsize) 
-    cbar.set_label(label, fontsize=label_fontsize)
+    cbar.set_clim(clim[0], clim[1])
+    cbar.ax.tick_params(labelsize=tick_fontsize)
+    if label:
+        cbar.set_label(label, fontsize=label_fontsize)
     # finish
     return cbar
 
@@ -619,6 +649,38 @@ def plot_colormap_components(cmap):
     plt.grid()
     plt.xlabel('value', fontsize=17)
     plt.ylabel('intensity', fontsize=17)
+
+
+def savefig(path, fig=None, close=True):
+    '''
+    Save a figure.
+    
+    Parameters
+    ----------
+    path : str
+        Path to save figure at.
+    fig : matplotlib.figure.Figure object (optional)
+        The figure to plot onto. If None, gets current figure. Default is None.
+    close : bool (optional)
+        Toggle closing of figure after saving. Default is True.
+    
+    Returns
+    -------
+    str
+        The full path where the figure was saved.
+    '''
+    # get fig
+    if fig is None:
+        fig = plt.gcf()
+    # get full path
+    path = os.path.abspath(path)
+    # save
+    plt.savefig(path, dpi=300, transparent=True, pad_inches=1)
+    # close
+    if close:
+        plt.close(fig)
+    # finish
+    return path
 
 
 def plot_margins(fig=None, inches=1., centers=True, edges=True):

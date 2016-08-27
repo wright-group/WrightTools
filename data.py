@@ -2042,7 +2042,7 @@ def from_NISE(measure_object, name='simulation', ignore_constants=['A', 'p'],
     pulse_class = getattr(NISE.lib.pulse, scan_object.pulse_class_name)
     constants = []
     for idx in range(len(positions_array)):
-        key = pulse_class.cols.keys()[list(pulse_class.cols.values()).index(idx)]
+        key = list(pulse_class.cols.keys())[list(pulse_class.cols.values()).index(idx)]
         axes_sametype = [NISE_axis for NISE_axis in NISE_axes if NISE_axis.pulse_var == key]
         # get values that were not scanned
         indicies_scanned = []
