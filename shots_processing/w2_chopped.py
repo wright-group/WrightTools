@@ -33,7 +33,7 @@ def process(shots, names, kinds):
     if len(chopper_indicies) == 1:
         chpr_idx = chopper_indicies[0]
     
-    mask = shots[chpr_idx]
+    mask = shots[chpr_idx].copy()
     for i in range(len(mask)):
         if mask[i]==0:
             mask[i] = -1
