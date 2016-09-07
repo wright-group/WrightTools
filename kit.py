@@ -497,7 +497,7 @@ def write_headers(filepath, dictionary):
             header_item += '\t' + '\'' + value + '\''
         elif type(value) == list:
             for i in range(len(value)):
-                if isinstance(value, string_type):
+                if isinstance(value[i], string_type):
                     value[i] = '\'' + value[i] + '\''
                 else:
                     value[i] = str(value[i])
