@@ -9,17 +9,12 @@ Central data object class and associated functions.
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import os
+import sys
 import ast
 import copy
 import time
 import collections
-
 import warnings
-# I hate how the warning module prints, so I overload the method
-def _my_warning(message, category=UserWarning, filename='', lineno=-1):
-    print('WARNING:', message)
-warnings.showwarning = _my_warning
-
 import pickle
 
 import numpy as np
@@ -31,7 +26,27 @@ from . import kit as wt_kit
 from . import units as wt_units
 from . import shots_processing
 
+
+
+
+
+### define ####################################################################
+
+
+
 debug = False
+
+# string types
+if sys.version[0] == '2':
+    string_type = basestring  # recognize unicode and string types
+else:
+    string_type = str  # newer versions of python don't have unicode type
+
+# I hate how the warning module prints, so I overload the method
+def _my_warning(message, category=UserWarning, filename='', lineno=-1):
+    print('WARNING:', message)
+warnings.showwarning = _my_warning
+
 
 
 ### data class ################################################################
@@ -345,7 +360,7 @@ class Data:
         # get channel
         if type(channel) == int:
             channel_index = channel
-        elif type(channel) == str:
+        elif isinstance(channel, string_type):
             channel_index = self.channel_names.index(channel)
         else:
             print('channel type', type(channel), 'not valid')
@@ -401,7 +416,7 @@ class Data:
         # interpret arguments recieved ----------------------------------------
         for i in range(len(axes_args)):
             arg = axes_args[i]
-            if type(arg) == str:
+            if isinstance(arg, string_type):
                 pass
             elif type(arg) == int:
                 arg = self.axis_names[arg]
@@ -497,7 +512,7 @@ class Data:
         # get channel
         if type(channel) == int:
             channel_index = channel
-        elif type(channel) == str:
+        elif isinstance(channel, string_type):
             channel_index = self.channel_names.index(channel)
         else:
             print('channel type', type(channel), 'not valid')
@@ -528,7 +543,7 @@ class Data:
         # get axis index ------------------------------------------------------
         if type(axis) == int:
             axis_index = axis
-        elif type(axis) == str:
+        elif isinstance(axis, string_type):
             axis_index = self.axis_names.index(axis)
         else:
             print('axis type', type(axis), 'not valid')
@@ -538,7 +553,7 @@ class Data:
                 methods = method
             else:
                 print('method argument incompatible in data.collapse')
-        elif type(method) == str:
+        elif isinstance(method, string_type):
             methods = [method for _ in self.channels]
         # collapse ------------------------------------------------------------
         for method, channel in zip(methods, self.channels):
@@ -636,7 +651,7 @@ class Data:
         # get own channel
         if type(channel) == int:
             channel_index = channel
-        elif type(channel) == str:
+        elif isinstance(channel, string_type):
             channel_index = self.channel_names.index(channel)
         else:
             print('channel type', type(channel), 'not valid')
@@ -644,7 +659,7 @@ class Data:
         # get divisor channel
         if type(divisor_channel) == int:
             divisor_channel_index = divisor_channel
-        elif type(divisor_channel) == str:
+        elif isinstance(divisor_channel, string_type):
             divisor_channel_index = divisor.channel_names.index(divisor_channel)
         else:
             print('divisor channel type', type(channel), 'not valid')
@@ -681,14 +696,14 @@ class Data:
         # get signal channel
         if type(signal_channel) == int:
             signal_channel_index = signal_channel
-        elif type(signal_channel) == str:
+        elif isinstance(signal_channel, string_type):
             signal_channel_index = self.channel_names.index(signal_channel)
         else:
             print('channel type', type(signal_channel), 'not valid')
         # get reference channel
         if type(reference_channel) == int:
             reference_channel_index = reference_channel
-        elif type(reference_channel) == str:
+        elif isinstance(reference_channel, string_type):
             reference_channel_index = self.channel_names.index(reference_channel)
         else:
             print('channel type', type(reference_channel), 'not valid')
@@ -725,7 +740,7 @@ class Data:
         # axis ----------------------------------------------------------------
         if type(axis) == int:
             axis_index = axis
-        elif type(axis) == str:
+        elif isinstance(axis, string_type):
             axis_index =  self.axis_names.index(axis)
         else:
             print('axis type', type(axis), 'not valid')
@@ -763,7 +778,7 @@ class Data:
         # get channel
         if type(channel) == int:
             channel_index = channel
-        elif type(channel) == str:
+        elif isinstance(channel, string_type):
             channel_index = self.channel_names.index(channel)
         else:
             print('channel type', type(channel), 'not valid')
@@ -791,7 +806,7 @@ class Data:
         # get channel
         if type(channel) == int:
             channel_index = channel
-        elif type(channel) == str:
+        elif isinstance(channel, string_type):
             channel_index = self.channel_names.index(channel)
         else:
             print('channel type', type(channel), 'not valid')
@@ -831,7 +846,7 @@ class Data:
             # channel
             if type(channel) == int:
                 channel_index = channel
-            elif type(channel) == str:
+            elif isinstance(channel, string_type):
                 channel_index = self.channel_names.index(channel)
             else:
                 print('channel type', type(channel), 'not valid')
@@ -876,7 +891,7 @@ class Data:
         # channel -------------------------------------------------------------        
         if type(channel) == int:
             channel_index = channel
-        elif type(channel) == str:
+        elif isinstance(channel, string_type):
             channel_index = self.channel_names.index(channel)
         else:
             print('channel type', type(channel), 'not valid')
@@ -884,7 +899,7 @@ class Data:
         # axis ----------------------------------------------------------------        
         if type(axis) == int:
             axis_index = axis
-        elif type(axis) == str:
+        elif isinstance(axis, string_type):
             axis_index = self.axis_names.index(axis)
         else:
             print('axis type', type(axis), 'not valid')
@@ -1032,7 +1047,7 @@ class Data:
         # get axis index ------------------------------------------------------
         if type(axis) == int:
             axis_index = axis
-        elif type(axis) == str:
+        elif isinstance(axis, string_type):
             axis_index =  self.axis_names.index(axis)
         else:
             print('axis type', type(axis), 'not valid')
@@ -1083,7 +1098,7 @@ class Data:
         # get channel
         if type(channel) == int:
             channel_index = channel
-        elif type(channel) == str:
+        elif isinstance(channel, string_type):
             channel_index = self.channel_names.index(channel)
         else:
             print('channel type', type(channel), 'not valid')
@@ -1133,7 +1148,7 @@ class Data:
 
         if type(along) == int:
             axis_index = along
-        elif type(along) == str:
+        elif isinstance(along, string_type):
             axis_index = self.axis_names.index(along)
         else:
             print('axis type', type(along), 'not valid')
@@ -1182,7 +1197,7 @@ class Data:
         # get offset axis index
         if type(offset_axis) == int:
             offset_axis_index = offset_axis
-        elif type(offset_axis) == str:
+        elif isinstance(offset_axis, string_type):
             offset_axis_index = self.axis_names.index(offset_axis)
         else:
             print('offset_axis type', type(offset_axis), 'not valid')
@@ -1246,7 +1261,7 @@ class Data:
         # get channel
         if type(channel) == int:
             channel_index = channel
-        elif type(channel) == str:
+        elif isinstance(channel, string_type):
             channel_index = self.channel_names.index(channel)
         else:
             print('channel type', type(channel), 'not valid')
@@ -1321,7 +1336,7 @@ class Data:
         # get channel
         if type(channel) == int:
             channel_index = channel
-        elif type(channel) == str:
+        elif isinstance(channel, string_type):
             channel_index = self.channel_names.index(channel)
         else:
             print('channel type', type(channel), 'not valid')
@@ -1381,7 +1396,7 @@ class Data:
         else:
             if type(channel) == int:
                 channel_index = channel
-            elif type(channel) == str:
+            elif isinstance(channel, string_type):
                 channel_index = self.channel_names.index(channel)
             else:
                 print('channel type', type(channel), 'not valid')
@@ -1449,7 +1464,7 @@ class Data:
         # axis ----------------------------------------------------------------
         if type(axis) == int:
             axis_index = axis
-        elif type(axis) == str:
+        elif isinstance(axis, string_type):
             axis_index = self.axis_names.index(axis)
         else:
             print('axis type', type(axis), 'not valid')
@@ -1561,7 +1576,7 @@ class Data:
         # get own channel
         if type(channel) == int:
             channel_index = channel
-        elif type(channel) == str:
+        elif isinstance(channel, string_type):
             channel_index = self.channel_names.index(channel)
         else:
             print('channel type', type(channel), 'not valid')
@@ -1569,7 +1584,7 @@ class Data:
         # get subtrahend channel
         if type(subtrahend_channel) == int:
             subtrahend_channel_index = subtrahend_channel
-        elif type(subtrahend_channel) == str:
+        elif isinstance(subtrahend_channel, string_type):
             subtrahend_channel_index = subtrahend.channel_names.index(subtrahend_channel)
         else:
             print('divisor channel type', type(channel), 'not valid')

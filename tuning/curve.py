@@ -685,7 +685,7 @@ def to_800_curve(curve, save_directory):
     out_arr[0] = colors
     out_arr[1:4] = np.array([motor.positions for motor in motors])
     # filename
-    timestamp = wt_kit.get_timestamp()
+    timestamp = wt_kit.get_timestamp(filename_compatible=True)
     out_name = curve.name.split('-')[0] + '- ' + timestamp
     out_path = os.path.join(save_directory, out_name + '.curve')
     # save
@@ -801,7 +801,7 @@ def to_TOPAS_crvs(curve, save_directory, kind, **kwargs):
             out_lines.insert(line_index-1, line)
         out_lines.insert(line_index-1, str(len(curve.colors))+'\n')  # number of points of new curve
     # filename
-    timestamp = wt_kit.get_timestamp()
+    timestamp = wt_kit.get_timestamp(filename_compatible=True)
     out_name = curve.name.split('-')[0] + '- ' + timestamp
     out_path = os.path.join(save_directory, out_name + '.crv')
     # save
