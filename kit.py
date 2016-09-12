@@ -387,7 +387,7 @@ def read_headers(filepath):
     headers = collections.OrderedDict()
     for line in open(filepath):
         if line[0] == '#':
-            split = line.split(':')
+            split = re.split('\: |\:\t', line)
             key = split[0][2:]
             item = split[1].split('\t')
             if split[1][0:3] == ' [[':  # case of multidimensional arrays
