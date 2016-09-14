@@ -390,8 +390,8 @@ def read_headers(filepath):
             split = re.split('\: |\:\t', line)
             key = split[0][2:]
             item = split[1].split('\t')
-            if split[1][0:3] == ' [[':  # case of multidimensional arrays
-                arr = string2array(split[1][1:])
+            if split[1][0:2] == '[[':  # case of multidimensional arrays
+                arr = string2array(split[1][:])
                 headers[key] = arr
             else:
                 if item[0] == '':
