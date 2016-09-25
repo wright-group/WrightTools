@@ -106,6 +106,7 @@ class Drive:
             if 'folder' in fi['mimeType']:
                 continue
             if fi['title'] == title:
+                print(title, 'found in upload file')
                 f = fi
         if f is not None:
             remove = False
@@ -125,8 +126,7 @@ class Drive:
                 remove = True
             # remove
             if remove:
-                f['istrashed'] = 'true'
-                f.Upload()
+                f.Trash()
                 f = None
         # upload
         if f is None:
