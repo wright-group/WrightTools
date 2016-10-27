@@ -6,11 +6,18 @@ a collection of small, general purpose objects and methods
 ### import ####################################################################
 
 
+from __future__ import absolute_import, division, print_function, unicode_literals
+
 import os
 import re
 import ast
 import sys
 import copy
+import time
+import pytz
+import h5py
+import dateutil
+import datetime
 import itertools
 import linecache
 import collections
@@ -18,7 +25,7 @@ from time import clock
 
 import numpy as np
 
-import units
+from . import units
 
 
 ### file processing ###########################################################
@@ -79,7 +86,7 @@ def find_name(fname, suffix):
                i = i + 1
                # prevent infinite loop if the code isn't perfect
                if i > 100:
-                   print 'didn\'t find a good name; index used up to 100!'
+                   print('didn\'t find a good name; index used up to 100!')
                    fname = False
                    good_name=True
         except IOError:
@@ -179,19 +186,88 @@ def get_path_matching(name):
     # then try expanding upwards from cwd
     if not os.path.isdir(p):
         p = None
-        folders = os.getcwd().split(os.sep)
-        print name, folders
+        drive, folders = os.path.splitdrive(os.getcwd())
+        folders = folders.split(os.sep)
+        folders.insert(0, os.sep)
         if name in folders:
-            p = os.path.join(folders[:folders.index(name)])
+            p = os.path.join(drive, *folders[:folders.index(name)+1])
     # TODO: something more robust to catch the rest of the cases?
     return p
 
-def get_timestamp():
-
-    import time
-
-    return time.strftime('%Y.%m.%d %H_%M_%S')
-
+def get_timestamp(style='RFC3339', hms=True, frac=False, timezone='here',
+                  filename_compatible=False):
+    '''
+    Get the current time as a string.
+    
+    Parameters
+    ----------
+    style : {'RFC3339', 'short', 'legacy'} (optional)
+        The format of the returned string. legacy is the old WrightTools
+        format. Default is RFC3339. All other arguments control RFC3339
+        behavior.
+    hms : bool (optional)
+        Toggle inclusion of current time (hours:minutes:seconds) in returned
+        string. Default is True. Does not effect legacy timestamp.
+    frac : bool (optional)
+        Toggle inclusion of fractional seconds in returned string. Default is
+        False. Does not effect legacy timestamp. Only appears if hms is
+        present.
+    timezone : {'here', 'utc'}
+        Timezone. Default is here.
+    filename_compatible : bool
+        Remove special charachters. Default is False.
+    '''
+    if style == 'RFC3339':
+        # get current timezone
+        if timezone == 'here':
+            tz = dateutil.tz.tzlocal()
+        elif timezone == 'utc':
+            tz = pytz.utc
+        else:
+            raise Exception('timezone not recognized in kit.get_timestamp')
+        # get timezone offset
+        delta_obj = tz.utcoffset(datetime.datetime.now(tz))
+        delta_sec = delta_obj.total_seconds()
+        m, s = divmod(delta_sec, 60)
+        h, m = divmod(m, 60)
+        # create output
+        format_string = '%Y-%m-%d'
+        if hms:
+            format_string += 'T%H:%M:%S'
+            if frac:
+                format_string += '.%f'
+        out = datetime.datetime.now(tz).strftime(format_string)
+        if hms:
+            # add timezone information
+            if delta_sec == 0.:
+                out += 'Z'
+            else:
+                if delta_sec > 0:
+                    sign = '+'
+                elif delta_sec < 0:
+                    sign = '-'
+                def as_string(num):
+                    return str(np.abs(int(num))).zfill(2)
+                out += sign + as_string(h) + ':' + as_string(m)
+    elif style == 'short':
+        if timezone == 'here':
+            tz = dateutil.tz.tzlocal()
+        elif timezone == 'utc':
+            tz = pytz.utc
+        now = datetime.datetime.now(tz)
+        ssm = (now - now.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds()
+        out = now.strftime('%Y-%m-%d')
+        out += ' ' 
+        out += str(int(ssm)).zfill(5)
+    elif style == 'legacy':
+        out = time.strftime('%Y.%m.%d %H_%M_%S')
+    else:
+        raise Exception('format not recognized in kit.get_timestamp')
+    if filename_compatible:
+        illegal_characters = [':']
+        for char in illegal_characters:
+            out = out.replace(char, '')
+    return out
 
 def glob_handler(extension, folder=None, identifier=None):
     '''
@@ -240,7 +316,7 @@ def plot_dats(folder=None, transpose=True):
 
     for _file in files:
 
-        print ' '
+        print(' ')
 
         try:
 
@@ -263,13 +339,35 @@ def plot_dats(folder=None, transpose=True):
                             autosave = True, output_folder = folder, fname = fname)
 
             else:
-                print 'error! - dimensionality of data ({}) not recognized'.format(len(dat_data.axes))
+                print('error! - dimensionality of data ({}) not recognized'.format(len(dat_data.axes)))
 
         except:
             import sys
-            print 'dat {} not recognized as plottible in plot_dats'.format(filename_parse(_file)[1])
-            print sys.exc_info()[0]
+            print('dat {} not recognized as plottible in plot_dats'.format(filename_parse(_file)[1]))
+            print(sys.exc_info()[0])
             pass
+
+
+def read_h5(filepath):
+    '''
+    Read from a `HDF5 <https://www.hdfgroup.org/HDF5/doc/H5.intro.html>`_
+    file, returning the data within as a python dictionary.
+    
+    Returns
+    -------
+    OrderedDict
+        Dictionary containing data from HDF5 file.    
+    
+    See Also
+    --------
+    kit.write_h5
+    '''
+    d = collections.OrderedDict()
+    h5f = h5py.File(filepath, mode='r')
+    for key in h5f.keys():
+        d[key] = np.array(h5f[key])
+    h5f.close()
+    return d
 
 
 def read_headers(filepath):
@@ -289,7 +387,7 @@ def read_headers(filepath):
     headers = collections.OrderedDict()
     for line in open(filepath):
         if line[0] == '#':
-            split = line.split(':')
+            split = re.split('\: |\:\t', line)
             key = split[0][2:]
             item = split[1].split('\t')
             if split[1][0:3] == ' [[':  # case of multidimensional arrays
@@ -323,6 +421,53 @@ def read_headers(filepath):
     return headers
 
 
+def write_h5(filepath, dictionary):
+    '''
+    Save a python dictionary into an `HDF5 <https://www.hdfgroup.org/HDF5/doc/H5.intro.html>`_
+    file.
+    
+    Right now it only works to store numpy arrays of numbers.
+    
+    Parameters
+    ----------
+    filepath : str
+        Filepath to HDF5 file to create. The .hdf5 extension will be appended
+        to the filename if it is not already there.
+    dictionary : python dictionary-like
+        The content to store to the HDF5 file.
+
+    Returns
+    -------
+    str
+        The full filepath to the created HDF5 file.
+        
+        
+    See Also
+    --------
+    kit.read_h5
+    '''
+    # get full filepath
+    if filepath[-5:] == '.hdf5':
+        filepath = filepath
+    else:
+        filepath += '.hdf5'
+    filepath = os.path.abspath(filepath)
+    # create h5f object        
+    h5f = h5py.File(filepath, 'w')    
+    # fill h5f object
+    for name, data in dictionary.items():
+        if type(data) == np.ndarray:
+            h5f.create_dataset(name, data=data, compression="gzip")
+        else:
+            # TODO: store it as a string
+            data = str(data)
+            dt = h5py.special_dtype(vlen=str)
+            h5f.create_dataset(name, data=data, dtype=dt)
+    # finish
+    h5f.close()
+    return filepath
+
+
 def write_headers(filepath, dictionary):
     '''
     Write 'Wright Group formatted' headers to given file. Headers written can
@@ -340,15 +485,19 @@ def write_headers(filepath, dictionary):
     str
         Filepath of file.
     '''
+    if sys.version[0] == '2':
+        string_type = basestring  # recognize unicode and string types
+    else:
+        string_type = str  # newer versions of python don't have unicode type
     dictionary = copy.deepcopy(dictionary)
     header_items = []
     for key, value in dictionary.items():
         header_item = key + ':'
-        if type(value) == str:
+        if isinstance(value, string_type):
             header_item += '\t' + '\'' + value + '\''
         elif type(value) == list:
             for i in range(len(value)):
-                if type(value[i]) == str:
+                if isinstance(value[i], string_type):
                     value[i] = '\'' + value[i] + '\''
                 else:
                     value[i] = str(value[i])
@@ -428,38 +577,28 @@ def closest_pair(arr, give='indicies'):
         raise KeyError('give not recognized in closest_pair')
 
 
-def diff(xi, yi, order = 1):
+def diff(xi, yi, order=1):
     '''
     numpy.diff is a convinient method but it only works for evenly spaced data \n
     this method does the same but for an arbitrary 1D data slice \n
     returns numpy array [xi, yi_out]. edge points are padded.
     '''
     import numpy as np
-
-    # grid data to be even ----------------------------------------------------
-
+    # grid data to be even
     # get function that describes data
     import scipy
-    f = scipy.interpolate.interp1d(xi, yi, kind = 'linear')
-
+    f = scipy.interpolate.interp1d(xi, yi, kind='linear')
     xi_even = np.linspace(min(xi), max(xi), len(xi))
     yi_even = f(xi_even)
-
-    # call numpy.diff ---------------------------------------------------------
-
-    yi_out_even = np.diff(yi_even, n = order)
-    yi_out_even = np.pad(yi_out_even, order, mode = 'edge')
+    # call numpy.diff
+    yi_out_even = np.diff(yi_even, n=order)
+    yi_out_even = np.pad(yi_out_even, order, mode=str('edge'))  # str() to prevent problem in numpy with python 2 vs 3
     yi_out_even = np.delete(yi_out_even, range(order))
-
-    # put data back onto original xi points -----------------------------------
-
+    # put data back onto original xi points
     xi_even += xi_even[1] - xi_even[0]  # offset by half step...
-
     fdiff = scipy.interpolate.interp1d(xi_even, yi_out_even,
-                                       kind = 'linear', bounds_error = False)
-
+                                       kind='linear', bounds_error=False)
     yi_out = fdiff(xi)
-
     return np.array([xi, yi_out])
 
 
@@ -839,7 +978,7 @@ def update_progress(progress, carriage_return=False, length=50):
         text += '\r\n'
     sys.stdout.write(text)
     if progress == 100.:
-        print '\n'
+        print('\n')
     else:
         sys.stdout.flush()
 
@@ -859,4 +998,4 @@ class Timer:
         self.end = clock()
         self.interval = self.end - self.start
         if self.verbose:
-            print 'elapsed time: {0} sec'.format(self.interval)
+            print('elapsed time: {0} sec'.format(self.interval))

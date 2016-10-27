@@ -173,7 +173,7 @@ on_diagonal.add_arrow([4, 1], 3, [2, 1], 'out')
 on_diagonal.add_arrow([4, 2], 0, [0, 1], 'bra', '-2')
 on_diagonal.add_arrow([4, 2], 1, [0, 1], 'ket', '2\'')
 on_diagonal.add_arrow([4, 2], 2, [1, 0], 'bra', '1')
-on_diagonal.add_arrow([4, 2], 3, [0, 1], 'out')
+on_diagonal.add_arrow([4, 2], 3, [1, 0], 'out')
 
 # pw6 alpha
 on_diagonal.add_arrow([5, 0], 0, [0, 1], 'ket', '2\'')
@@ -201,7 +201,7 @@ plt.close()
 tsf = WMEL.Artist(size = [1, 1],
                   energies = [0., 0.15, 0.25, 1.],
                   state_names = ['g', 'v', 'v+v\'', 'virt'],
-                  virtual = [3])
+                  virtual = [3.])
 # pw1 alpha
 tsf.add_arrow([0, 0], 0, [0, 1], 'ket', '1')
 tsf.add_arrow([0, 0], 1, [1, 2], 'ket', '2')

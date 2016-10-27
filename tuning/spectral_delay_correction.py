@@ -6,6 +6,8 @@ Tools for processing spectral delay correction data.
 ### import ####################################################################
 
 
+from __future__ import absolute_import, division, print_function, unicode_literals
+
 import os
 import re
 import sys
@@ -15,8 +17,12 @@ import copy
 import inspect
 import itertools
 import subprocess
-import ConfigParser
 import glob
+
+try:
+    import configparser as _ConfigParser  # python 3
+except ImportError:
+    import ConfigParser as _ConfigParser  # python 2
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -33,8 +39,8 @@ from .. import units as wt_units
 from .. import kit as wt_kit
 from .. import fit as wt_fit
 from .. import data as wt_data
-import curve as wt_curve
-import coset as wt_coset
+from . import curve as wt_curve
+from . import coset as wt_coset
 
 
 ### processing methods ########################################################
@@ -66,7 +72,7 @@ def process_wigner(data_filepath, channel, control_name,
     elif type(channel) in [str]:
         channel_index = data.channel_names.index(channel)
     else:
-        print 'channel type not recognized'
+        print('channel type not recognized')
         return
     # process
     function = wt_fit.Gaussian()
@@ -124,7 +130,7 @@ def process_brute_force(data_filepath, opa_index, channel, color_units='nm',
     elif type(channel) in [str]:
         channel_index = data.channel_names.index(channel)
     else:
-        print 'channel type not recognized'
+        print('channel type not recognized')
         return
     # pre-process data
     data.normalize(channel_index)
@@ -157,7 +163,7 @@ def process_brute_force(data_filepath, opa_index, channel, color_units='nm',
         amplitudes = np.array([o[2] for o in outs])
         if False:
             # HACK - Blaise
-            print ws
+            print(ws)
             amplitudes[:-20] = np.nan
             #plt.plot(ws, amplitudes)
         amplitudes[amplitudes<amplitudes.max()*amplitude_cutoff_factor] = np.nan

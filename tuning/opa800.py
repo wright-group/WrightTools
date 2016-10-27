@@ -6,6 +6,8 @@ Methods for processing OPA 800 tuning data.
 ### imports ###################################################################
 
 
+from __future__ import absolute_import, division, print_function, unicode_literals
+
 import os
 import re
 import sys
@@ -16,17 +18,15 @@ import copy
 import inspect
 import collections
 import subprocess
-import ConfigParser
 import glob
+
+try:
+    import configparser as _ConfigParser  # python 3
+except ImportError:
+    import ConfigParser as _ConfigParser  # python 2'
 
 import matplotlib
 import matplotlib.pyplot as plt
-import matplotlib.colors as mplcolors
-from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as NavigationToolbar
-from matplotlib.figure import Figure
-import matplotlib.gridspec as grd
-from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 import numpy as np
 from numpy import sin, cos
@@ -38,13 +38,14 @@ from scipy.optimize import leastsq
 
 from pylab import *
 
-import curve as wt_curve
+from . import curve as wt_curve
 from .. import artists as wt_artists
 from .. import data as wt_data
 from .. import fit as wt_fit
 from .. import kit as wt_kit
 from .. import units as wt_units
 cmap = wt_artists.colormaps['default']
+
 
 ### processing methods ########################################################
 
@@ -79,7 +80,7 @@ def process_motortune(filepath, channel_name, old_curve_filepath,
     channel_index = data.channel_names.index(channel_name)
     # check if data is compatible
     if not len(data.axes) == 2:
-        print 'data must be 2 dimensional'
+        print('data must be 2 dimensional')
         return
     # transpose into prefered representation (motors, tune points)
     if len(data.axes[0].name) < len(data.axes[1].name):
@@ -115,8 +116,7 @@ def process_motortune(filepath, channel_name, old_curve_filepath,
             motors.append(old_curve.motors[motor_index])
     curve = wt_curve.Curve(tune_points, 'wn', motors, 
                            name=old_curve.name.split('-')[0],
-                           kind='opa800', interaction='DFG', 
-                           method=wt_curve.Poly)
+                           kind='opa800', interaction='DFG')
     curve.map_colors(output_points_count)
     old_curve.map_colors(curve.colors)
     # plot data
@@ -137,7 +137,7 @@ def process_tunetest(filepath, channel, max_change=100, autosave=True):
     end = filepath.index(']')
     dims = filepath[start:end].split(',')
     opa_name = dims[0].strip()
-    print 'opa recognized as', opa_name
+    print('opa recognized as', opa_name)
     # import array
     headers = wt_kit.read_headers(filepath)
     arr = np.genfromtxt(filepath).T

@@ -6,6 +6,8 @@ OPA tuning curves.
 ### import ####################################################################
 
 
+from __future__ import absolute_import, division, print_function, unicode_literals
+
 import os
 import copy
 import collections
@@ -426,7 +428,7 @@ class Curve:
         elif type(motor) == str:
             motor_index = self.motor_names.index(motor)
         else:
-            print 'motor type not recognized in curve.offset_by'
+            print('motor type not recognized in curve.offset_by')
         # offset
         self.motors[motor_index].positions += amount
         self.interpolate()
@@ -456,7 +458,7 @@ class Curve:
         elif type(motor) == str:
             motor_index = self.motor_names.index(motor)
         else:
-            print 'motor type not recognized in curve.offset_to'
+            print('motor type not recognized in curve.offset_to')
         # get offset
         current_positions = self.get_motor_positions(color, color_units, full=False)
         offset = destination - current_positions[motor_index]
@@ -585,7 +587,7 @@ class Curve:
             self.plot(autosave=True, save_path=image_path)
         # finish
         if verbose:
-            print 'curve saved at', out_path
+            print('curve saved at', out_path)
         return out_path
 
 
@@ -601,7 +603,7 @@ def from_800_curve(filepath):
     motors = [grating, bbo, mixer]
     path, name, suffix = wt_kit.filename_parse(filepath)
     curve = Curve(colors, 'wn', motors, name=name, interaction='DFG',
-                  kind='opa800', method=Poly)
+                  kind='opa800', method=Linear)
     return curve
 
 
@@ -683,7 +685,7 @@ def to_800_curve(curve, save_directory):
     out_arr[0] = colors
     out_arr[1:4] = np.array([motor.positions for motor in motors])
     # filename
-    timestamp = wt_kit.get_timestamp()
+    timestamp = wt_kit.get_timestamp(filename_compatible=True)
     out_name = curve.name.split('-')[0] + '- ' + timestamp
     out_path = os.path.join(save_directory, out_name + '.curve')
     # save
@@ -799,7 +801,7 @@ def to_TOPAS_crvs(curve, save_directory, kind, **kwargs):
             out_lines.insert(line_index-1, line)
         out_lines.insert(line_index-1, str(len(curve.colors))+'\n')  # number of points of new curve
     # filename
-    timestamp = wt_kit.get_timestamp()
+    timestamp = wt_kit.get_timestamp(filename_compatible=True)
     out_name = curve.name.split('-')[0] + '- ' + timestamp
     out_path = os.path.join(save_directory, out_name + '.crv')
     # save

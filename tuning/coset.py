@@ -6,6 +6,8 @@ COSET
 ### import ####################################################################
 
 
+from __future__ import absolute_import, division, print_function, unicode_literals
+
 import os
 import copy
 import collections
@@ -199,7 +201,7 @@ class CoSet:
             image_path = file_path.replace('.coset', '.png')
             self.plot(autosave=True, save_path=image_path)
         if verbose:
-            print 'coset saved at {}'.format(file_path)
+            print('coset saved at {}'.format(file_path))
     
     def sort(self):
         '''

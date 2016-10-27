@@ -9,6 +9,8 @@ Interact with google drive using the pydrive package.
 ### import ####################################################################
 
 
+from __future__ import absolute_import, division, print_function, unicode_literals
+
 import os
 import time
 import datetime
@@ -89,7 +91,7 @@ class Drive:
         Legacy. Please use self.list_folder instead!
         - Blaise 2016.05.14
         '''
-        return self._list_folder(*args, **kwargs)
+        return self.list_folder(*args, **kwargs)
 
     def _upload_file(self, filepath, parentid, overwrite=False,
                      delete_local=False, verbose=True):
@@ -134,7 +136,7 @@ class Drive:
             f.Upload()
             f.content.close()
             if verbose:
-                print 'file uploaded from {}'.format(filepath)
+                print('file uploaded from {}'.format(filepath))
         # delete local
         if delete_local:
             os.remove(filepath)
@@ -188,8 +190,10 @@ class Drive:
         '''
         Recursively download from Google Drive into a local directory. By
         default, will not re-download if file passes following checks:
+        
         1. same size as remote file
-        2. local file modified after remote file
+        
+        2. local file last modified after remote file
         
         Parameters
         ----------
@@ -246,7 +250,7 @@ class Drive:
             # download
             f.GetContentFile(f_path)
             if verbose:
-                print 'file downloaded to {}'.format(f_path)
+                print('file downloaded to {}'.format(f_path))
             # finish
             return f
 
@@ -292,7 +296,7 @@ class Drive:
             for tup in os.walk(path, topdown=False):
                 self._authenticate()
                 folder_path, _, file_names = tup
-                print folder_path
+                print(folder_path)
                 # create folder on google drive
                 name = folder_path.split(os.path.sep)[top_path_length-1:]
                 folderid = self.create_folder(name, parentid)
