@@ -23,9 +23,23 @@ import linecache
 import collections
 from time import clock
 
+try:
+    import configparser as configparser  # python 3
+except ImportError:
+    import ConfigParser as configparser  # python 2
+
 import numpy as np
 
 from . import units
+
+
+### define ####################################################################
+
+
+if sys.version[0] == '2':
+    string_type = basestring  # recognize unicode and string types
+else:
+    string_type = str  # newer versions of python don't have unicode type
 
 
 ### file processing ###########################################################
@@ -194,17 +208,20 @@ def get_path_matching(name):
     # TODO: something more robust to catch the rest of the cases?
     return p
 
-def get_timestamp(style='RFC3339', hms=True, frac=False, timezone='here',
-                  filename_compatible=False):
+def get_timestamp(style='RFC3339', at=None, hms=True, frac=False,
+                  timezone='here', filename_compatible=False):
     '''
     Get the current time as a string.
     
     Parameters
     ----------
-    style : {'RFC3339', 'short', 'legacy'} (optional)
+    style : {'RFC3339', 'short', 'display', 'legacy'} (optional)
         The format of the returned string. legacy is the old WrightTools
         format. Default is RFC3339. All other arguments control RFC3339
         behavior.
+    at : local seconds since epoch (optional)
+        Time at-which to generate timestamp. If None, use current time. Default
+        is None. Use time.time() to get seconds.
     hms : bool (optional)
         Toggle inclusion of current time (hours:minutes:seconds) in returned
         string. Default is True. Does not effect legacy timestamp.
@@ -217,14 +234,20 @@ def get_timestamp(style='RFC3339', hms=True, frac=False, timezone='here',
     filename_compatible : bool
         Remove special charachters. Default is False.
     '''
+    # get timezone
+    if timezone == 'here':
+        tz = dateutil.tz.tzlocal()
+    elif timezone == 'utc':
+        tz = pytz.utc
+    else:
+        raise Exception('timezone not recognized in kit.get_timestamp')
+    # get now
+    if at == None:
+        now = datetime.datetime.now(tz)
+    else:
+        now = datetime.datetime.fromtimestamp(at, tz)
+    # generate string
     if style == 'RFC3339':
-        # get current timezone
-        if timezone == 'here':
-            tz = dateutil.tz.tzlocal()
-        elif timezone == 'utc':
-            tz = pytz.utc
-        else:
-            raise Exception('timezone not recognized in kit.get_timestamp')
         # get timezone offset
         delta_obj = tz.utcoffset(datetime.datetime.now(tz))
         delta_sec = delta_obj.total_seconds()
@@ -236,7 +259,7 @@ def get_timestamp(style='RFC3339', hms=True, frac=False, timezone='here',
             format_string += 'T%H:%M:%S'
             if frac:
                 format_string += '.%f'
-        out = datetime.datetime.now(tz).strftime(format_string)
+        out = now.strftime(format_string)
         if hms:
             # add timezone information
             if delta_sec == 0.:
@@ -250,17 +273,25 @@ def get_timestamp(style='RFC3339', hms=True, frac=False, timezone='here',
                     return str(np.abs(int(num))).zfill(2)
                 out += sign + as_string(h) + ':' + as_string(m)
     elif style == 'short':
-        if timezone == 'here':
-            tz = dateutil.tz.tzlocal()
-        elif timezone == 'utc':
-            tz = pytz.utc
-        now = datetime.datetime.now(tz)
         ssm = (now - now.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds()
         out = now.strftime('%Y-%m-%d')
         out += ' ' 
         out += str(int(ssm)).zfill(5)
+    elif style == 'display':
+        # get timezone offset
+        delta_obj = tz.utcoffset(datetime.datetime.now(tz))
+        delta_sec = delta_obj.total_seconds()
+        m, s = divmod(delta_sec, 60)
+        h, m = divmod(m, 60)
+        # create output
+        format_string = '%Y-%m-%d'
+        if hms:
+            format_string += ' %H:%M:%S'
+            if frac:
+                format_string += '.%f'
+        out = now.strftime(format_string)
     elif style == 'legacy':
-        out = time.strftime('%Y.%m.%d %H_%M_%S')
+        out = now.strftime('%Y.%m.%d %H_%M_%S')
     else:
         raise Exception('format not recognized in kit.get_timestamp')
     if filename_compatible:
@@ -298,6 +329,59 @@ def glob_handler(extension, folder=None, identifier=None):
 
     return filepaths
 
+
+class INI():
+    
+    def __init__(self, filepath):
+        '''
+        Handle communication with an INI file.
+        '''
+        self.filepath = filepath
+        if sys.version[0] == '3':
+            self.config = configparser.ConfigParser()
+        else:
+            self.config = configparser.SafeConfigParser()
+
+    def add_section(self, section):
+        self.config.read(self.filepath)
+        self.config.add_section(section)
+        with open(self.filepath, 'w') as f:
+            self.config.write(f)
+
+    def clear(self):
+        '''
+        Remove all contents from file. Use with extreme caution.
+        '''
+        with open(self.filepath, "w"):
+            pass
+        if sys.version[0] == '3':
+            self.config = configparser.ConfigParser()
+        else:
+            self.config = configparser.SafeConfigParser()
+    
+    def has_option(self, section, option):
+        self.config.read(self.filepath)
+        return self.config.has_option(section, option) 
+    
+    def has_section(self, section):
+        self.config.read(self.filepath)
+        return self.config.has_section(section)
+
+    def read(self, section, option):
+        self.config.read(self.filepath)
+        raw = self.config.get(section, option)
+        out = string2item(raw, sep=', ')
+        return out
+    
+    def write(self, section, option, value):
+        self.config.read(self.filepath)
+        string = item2string(value, sep=', ')
+        self.config.set(section, option, string)
+        with open(self.filepath, 'w') as f:
+            self.config.write(f)
+    
+    
+    
 
 def plot_dats(folder=None, transpose=True):
     '''
@@ -389,33 +473,7 @@ def read_headers(filepath):
         if line[0] == '#':
             split = re.split('\: |\:\t', line)
             key = split[0][2:]
-            item = split[1].split('\t')
-            if split[1][0:3] == ' [[':  # case of multidimensional arrays
-                arr = string2array(split[1][1:])
-                headers[key] = arr
-            else:
-                if item[0] == '':
-                    item = [item[1]]
-                item = [i.strip() for i in item]  # remove dumb things
-                item = [i if i is not '' else 'None' for i in item]  # handle empties
-                # handle lists
-                is_list = False
-                list_chars = ['[', ']']
-                for item_index, item_string in enumerate(item):
-                    if item_string == '[]':
-                        continue
-                    for char in item_string:
-                        if char in list_chars:
-                            is_list = True
-                    for char in list_chars:
-                        item_string = item[item_index]
-                        item[item_index] = item_string.replace(char, '')
-                # eval contents
-                item = [i.strip() for i in item]  # remove dumb things
-                item = [ast.literal_eval(i) for i in item]
-                if len(item) == 1 and not is_list:
-                    item = item[0]
-                headers[key] = item
+            headers[key] = string2item(split[1])
         else:
             break  # all header lines are at the beginning
     return headers
@@ -485,37 +543,18 @@ def write_headers(filepath, dictionary):
     str
         Filepath of file.
     '''
-    if sys.version[0] == '2':
-        string_type = basestring  # recognize unicode and string types
-    else:
-        string_type = str  # newer versions of python don't have unicode type
     dictionary = copy.deepcopy(dictionary)
-    header_items = []
-    for key, value in dictionary.items():
-        header_item = key + ':'
-        if isinstance(value, string_type):
-            header_item += '\t' + '\'' + value + '\''
-        elif type(value) == list:
-            for i in range(len(value)):
-                if isinstance(value[i], string_type):
-                    value[i] = '\'' + value[i] + '\''
-                else:
-                    value[i] = str(value[i])
-            header_item += ' [' + '\t'.join(value) + ']'
-        elif type(value).__module__ == np.__name__:  # anything from numpy
-            if hasattr(value, 'shape'):
-                string = array2string(value)
-                header_item += ' ' + string
-            else:
-                header_item += ' [' + '\t'.join([str(i) for i in value]) + ']'
-        else:
-            header_item += '\t' + str(value)
-        header_items.append(header_item)
     # write header
-    header_str = ''
-    for item in header_items:
-        header_str += item + '\n'
-    header_str = header_str[:-1]  # remove final newline charachter
+    for key, value in dictionary.items():
+        dictionary[key] = item2string(value)
+    lines = []
+    for key, value in dictionary.items():
+        if '\t' in value:
+            joiner = ''
+        else:
+            joiner = '\t'
+        lines.append(joiner.join([key+':', value]))
+    header_str = '\n'.join(lines)
     np.savetxt(filepath, [], header=header_str)
     # return
     return filepath
@@ -600,6 +639,18 @@ def diff(xi, yi, order=1):
                                        kind='linear', bounds_error=False)
     yi_out = fdiff(xi)
     return np.array([xi, yi_out])
+
+
+def fft(xi, yi):
+    # TODO: documentation
+    yi = np.fft.fft(yi)
+    d = (xi.max()-xi.min())/(xi.size-1)
+    xi = np.fft.fftfreq(yi.size, d=d)
+    # shift
+    xi = np.fft.fftshift(xi)
+    yi = np.fft.fftshift(yi)
+    return xi, yi
+
 
 
 def mono_resolution(grooves_per_mm, slit_width, focal_length, output_color, output_units='wn'):
@@ -817,6 +868,28 @@ def intersperse(lst, item):
     return result
 
 
+def item2string(item, sep='\t'):
+    # TODO: document
+    out = ''
+    if isinstance(item, string_type):
+        out += '\'' + item + '\''
+    elif type(item) == list:
+        for i in range(len(item)):
+            if isinstance(item[i], string_type):
+                item[i] = '\'' + item[i] + '\''
+            else:
+                item[i] = str(item[i])
+        out += ' [' + sep.join(item) + ']'
+    elif type(item).__module__ == np.__name__:  # anything from numpy
+        if hasattr(item, 'shape'):
+            out = ' ' + array2string(item, sep=sep)
+        else:
+            out += ' [' + sep.join([str(i) for i in item]) + ']'
+    else:
+        out = str(item)
+    return out
+
+
 identity_operators = ['=', '+', '-', '*', '/', 'F']
 def parse_identity(string):
     '''
@@ -910,6 +983,40 @@ def string2array(string, sep='\t'):
     arr.shape = shape
     # finish
     return arr
+
+
+def string2item(string, sep='\t'):
+    # TODO: document
+    if string[0] == '\'' and string[-1] == '\'':
+        out = string[1:-1]
+    else:
+        split = string.split(sep)
+        if split[0][0:2] == '[[':  # case of multidimensional arrays
+            out = string2array(split[1][:])
+        else:
+            split = [i.strip() for i in split]  # remove dumb things
+            split = [i if i is not '' else 'None' for i in split]  # handle empties
+            # handle lists
+            is_list = False
+            list_chars = ['[', ']']
+            for item_index, item_string in enumerate(split):
+                if item_string == '[]':
+                    continue
+                if item_string[0] == '\'' and item_string[-1] == '\'':  # this is a string
+                    continue
+                for char in item_string:
+                    if char in list_chars:
+                        is_list = True
+                for char in list_chars:
+                    item_string = split[item_index]
+                    split[item_index] = item_string.replace(char, '')
+            # eval contents
+            split = [i.strip() for i in split]  # remove dumb things
+            split = [ast.literal_eval(i) for i in split]
+            if len(split) == 1 and not is_list:
+                split = split[0]
+            out = split
+    return out
 
 
 unicode_dictionary = collections.OrderedDict()
