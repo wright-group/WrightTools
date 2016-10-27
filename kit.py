@@ -641,6 +641,18 @@ def diff(xi, yi, order=1):
     return np.array([xi, yi_out])
 
 
+def fft(xi, yi):
+    # TODO: documentation
+    yi = np.fft.fft(yi)
+    d = (xi.max()-xi.min())/(xi.size-1)
+    xi = np.fft.fftfreq(yi.size, d=d)
+    # shift
+    xi = np.fft.fftshift(xi)
+    yi = np.fft.fftshift(yi)
+    return xi, yi
+
+
+
 def mono_resolution(grooves_per_mm, slit_width, focal_length, output_color, output_units='wn'):
     '''
     slit width mm, focal_length mm, output_color nm

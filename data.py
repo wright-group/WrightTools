@@ -22,6 +22,7 @@ import numpy as np
 import scipy
 from scipy.interpolate import griddata, interp1d
 
+from . import exceptions as wt_exceptions
 from . import kit as wt_kit
 from . import units as wt_units
 from . import shots_processing
@@ -44,7 +45,7 @@ else:
 
 # I hate how the warning module prints, so I overload the method
 def _my_warning(message, category=UserWarning, filename='', lineno=-1):
-    print('WARNING:', message)
+    print(category.__name__+':', message)
 warnings.showwarning = _my_warning
 
 
@@ -56,14 +57,13 @@ class Axis:
 
     def __init__(self, points, units, symbol_type=None,
                  tolerance=None, file_idx=None,
-                 name='', label=None, label_seed=[''], **kwargs):
+                 name='', label_seed=[''], **kwargs):
         self.name = name
         self.tolerance = tolerance
         self.points = points
         self.units = units
         self.file_idx = file_idx
         self.label_seed = label_seed
-        self.label = label
         for key in kwargs.keys():
             setattr(self, key, kwargs[key])
         # get units kind
@@ -97,35 +97,40 @@ class Axis:
         self.units = destination_units
 
     def get_label(self, show_units=True, points=False, decimals=2):
-        self.label = r'$\mathsf{'
+        label = r'$\mathsf{'
         # label
         for part in self.label_seed:
             if self.units_kind is not None:
                 units_dictionary = getattr(wt_units, self.units_kind)
-                self.label += getattr(wt_units, self.symbol_type)[self.units]
-                self.label += r'_{' + str(part) + r'}'
+                label += getattr(wt_units, self.symbol_type)[self.units]
+                if part is not '':
+                    label += r'_{' + str(part) + r'}'
             else:
-                self.label += self.name.replace('_', '\,\,')
-            self.label += r'='
+                label += self.name.replace('_', '\,\,')
+            label += r'='
         # remove the last equals sign
-        self.label = self.label[:-1]
+        label = label[:-1]
         if points:
             if self.points is not None:
-                self.label += r'=\,' + str(np.round(self.points, decimals=decimals))
+                label += r'=\,' + str(np.round(self.points, decimals=decimals))
         # units
         if show_units:
             if self.units_kind:
                 units_dictionary = getattr(wt_units, self.units_kind)
-                self.label += r'\,'
+                label += r'\,'
                 if not points:
-                    self.label += r'\left('
-                self.label += units_dictionary[self.units][2]
+                    label += r'\left('
+                label += units_dictionary[self.units][2]
                 if not points:
-                    self.label += r'\right)'
+                    label += r'\right)'
             else:
                 pass
-        self.label += r'}$'
-        return self.label
+        label += r'}$'
+        return label
+        
+    @property
+    def label(self):
+        return self.get_label()
 
     def max(self):
         return self.points.max()
@@ -142,22 +147,17 @@ class Axis:
 
 class Channel:
 
-    def __init__(self, values, units,
+    def __init__(self, values, units=None,
                  file_idx=None,
                  znull=None, zmin=None, zmax=None, signed=None,
                  name='channel', label=None, label_seed=None):
-
-        # general import ------------------------------------------------------
-
+        # import
         self.name = name
         self.label = label
         self.label_seed = label_seed
-
         self.units = units
         self.file_idx = file_idx
-
-        # values --------------------------------------------------------------
-
+        # values
         if values is not None:
             self.give_values(values, znull, zmin, zmax, signed)
         else:
@@ -1654,6 +1654,61 @@ class Data:
 ### data creation methods #####################################################
 
 
+def from_Cary50(filepath, verbose=True):
+    '''
+    Create a data object from a Cary 50 UV VIS absorbance file.
+    
+    Parameters
+    ----------    
+    filepath : string
+        Path to Tensor27 output file (.dpt).
+    name : string (optional)
+        Name to give to the created data object. If None, filename is used.
+        Default is None.
+    verbose : boolean (optional)
+        Toggle talkback. Default is True.
+    
+    Returns
+    -------
+    data
+        New data object.
+    '''
+    # check filepath
+    if not os.path.isfile(filepath):
+        raise wt_exceptions.FileNotFound(path=filepath)
+    filesuffix = os.path.basename(filepath).split('.')[-1]
+    if filesuffix != 'csv':
+        wt_exceptions.WrongFileTypeWarning.warn(filepath, 'csv')
+    # import array
+    lines = []
+    with open(filepath, 'r') as f:
+        header = f.readline()
+        units = f.readline()
+        while True:
+            line = f.readline()
+            if line == '\n':
+                break
+            else:
+                clean = line[:-2]  # lines end with ',/n'
+                lines.append(np.fromstring(clean, sep=','))
+    header = header.split(',')
+    arr = np.array(lines).T
+    # chew through all scans
+    datas = []
+    indicies = np.arange(arr.shape[0]//2)*2
+    for i in indicies:
+        axis = Axis(arr[i], 'nm', name='wm')
+        signal = Channel(arr[i+1], name='absorbance', label='absorbance', signed=False)
+        data = Data([axis], [signal], source='Cary 50', name=header[i])
+        datas.append(data)
+    # finish
+    if verbose:
+        print('{0} data objects successfully created from Cary 50 file:'.format(len(indicies)))
+        for i, data in enumerate(datas):
+            print('  {0}: {1}'.format(i, data.name))
+    return datas
+
+
 def from_COLORS(filepaths, znull=None, name=None, cols=None, invert_d1=True,
                 color_steps_as='energy', ignore=['num', 'w3', 'wa', 'dref', 'm0', 'm1', 'm2', 'm3', 'm4', 'm5', 'm6'],
                 even=True, verbose=True):
@@ -1869,42 +1924,47 @@ def from_COLORS(filepaths, znull=None, name=None, cols=None, invert_d1=True,
         print('values shape:', data.channels[0].values.shape)
         
     return data
-    
-def from_JASCO(filepath, name = None, verbose = True):
-    
-    # check filepath ----------------------------------------------------------
-    
-    if os.path.isfile(filepath):
-        if verbose:
-            print('found the file!')
-    else:
-        print('Error: filepath does not yield a file')
-        return
 
-    # is the file suffix one that we expect?  warn if it is not!
+
+def from_JASCO(filepath, name=None, kind='absorbance', verbose=True):
+    '''
+    Create a data object from a JASCO UV-VIS NIR file.
+    
+    Parameters
+    ----------    
+    filepath : string
+        Path to JASCO output file (.txt).
+    name : string (optional)
+        Name to give to the created data object. If None, filename is used.
+        Default is None.
+    kind : {'absorbance', 'diffuse reflectance'} (optional)
+        Kind of data taken. Default is absorbance.
+    verbose : boolean (optional)
+        Toggle talkback. Default is True.
+    
+    Returns
+    -------
+    data
+        New data object.
+    '''
+    # check filepath
+    if not os.path.isfile(filepath):
+        raise wt_exceptions.FileNotFound(path=filepath)
     filesuffix = os.path.basename(filepath).split('.')[-1]
     if filesuffix != 'txt':
-        should_continue = raw_input('Filetype is not recognized and may not be supported.  Continue (y/n)?')
-        if should_continue == 'y':
-            pass
-        else:
-            print('Aborting')
-            return
-            
-    # import data -------------------------------------------------------------
-    
-    # now import file as a local var--18 lines are just txt and thus discarded
-    data = np.genfromtxt(filepath, skip_header=18).T
-    
+        wt_exceptions.WrongFileTypeWarning.warn(filepath, 'txt')
+    # import array    
+    arr = np.genfromtxt(filepath, skip_header=18).T    
     # name
     if not name:
-        name = filepath
-    
+        name = filepath    
     # construct data
-    x_axis = Axis(data[0], 'nm', name = 'wm')
-    signal = Channel(data[1], 'sig', file_idx = 1, signed = False)
-    data = Data([x_axis], [signal], source = 'JASCO', name = name)
-    
+    axis = Axis(arr[0], 'nm', name='wm')
+    signal = Channel(arr[1], kind, signed=False)
+    data = Data([axis], [signal], source='JASCO', name=name)
+    # finish
+    if verbose:
+        print(data)
     return data
 
 
@@ -2349,6 +2409,46 @@ def from_shimadzu(filepath, name=None, verbose=True):
     
     # return ------------------------------------------------------------------
 
+    return data
+
+
+def from_Tensor27(filepath, name=None, verbose=True):
+    '''
+    Create a data object from a Tensor27 FTIR file.
+    
+    Parameters
+    ----------    
+    filepath : string
+        Path to Tensor27 output file (.dpt).
+    name : string (optional)
+        Name to give to the created data object. If None, filename is used.
+        Default is None.
+    verbose : boolean (optional)
+        Toggle talkback. Default is True.
+    
+    Returns
+    -------
+    data
+        New data object.
+    '''
+    # check filepath
+    if not os.path.isfile(filepath):
+        raise wt_exceptions.FileNotFound(path=filepath)
+    filesuffix = os.path.basename(filepath).split('.')[-1]
+    if filesuffix != 'dpt':
+        wt_exceptions.WrongFileTypeWarning.warn(filepath, 'dpt')
+    # import array    
+    arr = np.genfromtxt(filepath, skip_header=0).T    
+    # name
+    if not name:
+        name = os.path.basename(filepath)
+    # construct data
+    axis = Axis(arr[0], 'wn', name='w')
+    signal = Channel(arr[1], name='absorbance', label='absorbance', signed=False)
+    data = Data([axis], [signal], source='Tensor 27', name=name)
+    # finish
+    if verbose:
+        print('data object successfully created from Tensor 27 file')
     return data
 
 
