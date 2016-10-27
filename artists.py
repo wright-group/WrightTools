@@ -30,16 +30,17 @@ from . import kit as wt_kit
 ### artist helpers ############################################################
 
 
-def _title(fig, title, subtitle='', margin=1):
-    fig.suptitle(title, fontsize=20)
+def _title(fig, title, subtitle='', margin=1, fontsize=20, subfontsize=18):
+    fig.suptitle(title, fontsize=fontsize)
     height = fig.get_figheight()  # inches
     distance = margin / 2.  # distance from top of plot, in inches
     ratio = 1 - distance/height
-    fig.text(0.5, ratio, subtitle, fontsize=18, ha='center', va='top')
+    fig.text(0.5, ratio, subtitle, fontsize=subfontsize, ha='center', va='top')
     
     
 def add_sideplot(ax, along, pad=0., grid=True, zero_line=True, 
-                 arrs_to_bin=None, normalize_bin=True, ymin=0, ymax=1.1):
+                 arrs_to_bin=None, normalize_bin=True, ymin=0, ymax=1.1, 
+                 height=0.75):
     '''
     Add a sideplot to an axis. Sideplots share their corresponding axis.
     
@@ -77,9 +78,9 @@ def add_sideplot(ax, along, pad=0., grid=True, zero_line=True,
         setattr(ax, 'wt_sideplot_divider', divider)
     # create sideplot axis
     if along == 'x':
-        axCorr = divider.append_axes('top', 0.75, pad=pad, sharex=ax)
+        axCorr = divider.append_axes('top', height, pad=pad, sharex=ax)
     elif along == 'y':
-        axCorr = divider.append_axes('right', 0.75, pad=pad, sharey=ax)
+        axCorr = divider.append_axes('right', height, pad=pad, sharey=ax)
     axCorr.autoscale(False)
     axCorr.set_adjustable('box-forced')
     # bin
@@ -1012,9 +1013,11 @@ class mpl_1D:
             plt.xticks(rotation=45)
             plt.xlim(xi.min(), xi.max())
             # title
-            title_text = self.data.name
-            constants_text = '\n' + get_constant_text(constants)
-            plt.suptitle(title_text + constants_text, fontsize=20)
+            title = self.data.name
+            constant_text = get_constant_text(constants)
+            if not constant_text == '':
+                title += '\n' + constants_text
+            plt.suptitle(title, fontsize=20)
             # save
             if autosave:
                 if fname:
@@ -1027,7 +1030,7 @@ class mpl_1D:
                 if verbose:
                     print('image saved at', fpath)
                 outfiles[i] = fpath
-                return outfiles
+        return outfiles
 
 
 class mpl_2D:
@@ -1146,7 +1149,7 @@ class mpl_2D:
                     else:
                         fname = self.data.name
                 else:
-                    folder_name = 'mpl_2D ' + wt_kit.get_timestamp()
+                    folder_name = 'mpl_2D ' + wt_kit.get_timestamp(style='short')
                     os.mkdir(folder_name)
                     output_folder = folder_name
         # chew through image generation
@@ -1167,7 +1170,7 @@ class mpl_2D:
                 pass
             elif normalize_slices == 'horizontal':
                 nmin = channel.znull
-                #normalize all x traces to a common value
+                # normalize all x traces to a common value
                 maxes = zi.max(axis=1)
                 numerator = (zi - nmin)
                 denominator = (maxes - nmin)
@@ -1323,7 +1326,9 @@ class mpl_2D:
                         min_index = np.argmin(abs(s_xi - min(xlim)))
                         max_index = np.argmin(abs(s_xi - max(xlim)))
                         s_zi_in_range = s_zi[min(min_index, max_index):max(min_index, max_index)]
-                        s_zi = s_zi - min(s_zi_in_range)
+                        if len(s_zi_in_range) == 0:
+                            continue
+                        #s_zi = s_zi - min(s_zi_in_range)
                         s_zi_in_range = s_zi[min(min_index, max_index):max(min_index, max_index)]
                         s_zi = s_zi / max(s_zi_in_range)
                         axCorrx.plot(s_xi, s_zi, lw = 2)
@@ -1360,7 +1365,9 @@ class mpl_2D:
                         min_index = np.argmin(abs(s_xi - min(xlim)))
                         max_index = np.argmin(abs(s_xi - max(xlim)))
                         s_zi_in_range = s_zi[min(min_index, max_index):max(min_index, max_index)]
-                        s_zi = s_zi - min(s_zi_in_range)
+                        if len(s_zi_in_range) == 0:
+                            continue                        
+                        #s_zi = s_zi - min(s_zi_in_range)
                         s_zi_in_range = s_zi[min(min_index, max_index):max(min_index, max_index)]
                         s_zi = s_zi / max(s_zi_in_range)
                         axCorry.plot(s_zi, s_xi, lw = 2)
@@ -1395,7 +1402,7 @@ class mpl_2D:
                 if verbose:
                     print('image saved at', fpath)
                 outfiles[i] = fpath
-                return outfiles
+        return outfiles
 
 
 ### specific artists ##########################################################

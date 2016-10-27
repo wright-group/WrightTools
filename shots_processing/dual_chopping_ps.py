@@ -46,9 +46,9 @@ def process(shots, names, kinds):
     c = np.mean(cl)
     d = np.mean(dl)
     if False:
-        print [len(l) for l in [al, bl, cl, dl]]
-        print a, b, c, d
-        print 'chopper indicies: ', chopper_indicies
+        print([len(l) for l in [al, bl, cl, dl]])
+        print(a, b, c, d)
+        print('chopper indicies: ', chopper_indicies)
     out[0] = a-b+c-d
     out_names.append('signal_diff')
     # signal mean
