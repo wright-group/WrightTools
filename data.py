@@ -2438,7 +2438,7 @@ def from_Tensor27(filepath, name=None, verbose=True):
     if filesuffix != 'dpt':
         wt_exceptions.WrongFileTypeWarning.warn(filepath, 'dpt')
     # import array    
-    arr = np.genfromtxt(filepath, skip_header=0).T    
+    arr = np.genfromtxt(filepath, skip_header=0).T
     # name
     if not name:
         name = os.path.basename(filepath)
@@ -2698,4 +2698,4 @@ def discover_dimensions(arr, dimension_cols, verbose = True):
         obj.points = axis[3]
         constant[key] = obj
         
-    return scanned.values(), constant.values()
+    return list(scanned.values()), list(constant.values())
