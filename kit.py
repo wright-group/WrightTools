@@ -180,7 +180,7 @@ class TimeStamp:
         if timezone == 'local':
             self.tz = dateutil.tz.tzlocal()
         elif timezone == 'utc':
-            self.tz = None
+            self.tz = pytz.utc
         elif type(timezone) in [int, float]:
             self.tz = dateutil.tz.tzoffset(None, timezone)
         else:
@@ -261,9 +261,10 @@ class TimeStamp:
 
 
 def timestamp_from_RFC3339(RFC3339):
-    datetime = dateutil.parser.parse(RFC3339)
-    timezone = datetime.tzinfo._offset.total_seconds()
-    timestamp = TimeStamp(at=datetime.timestamp(), timezone=timezone)
+    dt = dateutil.parser.parse(RFC3339)
+    timezone = dt.tzinfo._offset.total_seconds()
+    unix = (dt - datetime.datetime(1970, 1, 1, tzinfo=pytz.utc)).total_seconds()  # could use .timestamp() in 3.3 forwards
+    timestamp = TimeStamp(at=unix, timezone=timezone)
     return timestamp
 
 
