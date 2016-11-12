@@ -79,17 +79,7 @@ class Axis:
         self.get_label()
 
     def __repr__(self):
-        # when you inspect the object
-        outs = []
-        outs.append('WrightTools.data.Axis object at ' + str(id(self)))
-        outs.append('  name: ' + self.name)
-        outs.append('  range: {0} - {1} ({2})'.format(self.points.min(), self.points.max(), self.units))
-        outs.append('  number: ' + str(len(self.points)))
-        return '\n'.join(outs)
-
-    def __str__(self):
-        # when you print the object
-        return self.__repr__()
+        return 'WrightTools.data.Axis object \'{0}\' at {1}'.format(self.name, str(id(self)))
 
     def convert(self, destination_units):
         self.points = wt_units.converter(self.points, self.units,
@@ -127,7 +117,27 @@ class Axis:
                 pass
         label += r'}$'
         return label
-        
+    
+    @property
+    def info(self):
+        info = collections.OrderedDict()
+        info['name'] = self.name
+        info['id'] = id(self)
+        if self.is_constant:
+            info['point'] = self.points
+        else:
+            info['range'] = '{0} - {1} ({2})'.format(self.points.min(), self.points.max(), self.units)
+            info['number'] = len(self.points)
+        return info
+
+    def is_constant(self):
+        try:
+            len(self.points)
+        except TypeError:
+            return False
+        finally:
+            return True
+
     @property
     def label(self):
         return self.get_label()
@@ -165,21 +175,9 @@ class Channel:
             self.zmin = zmin
             self.zmax = zmax
             self.signed = signed
-
+            
     def __repr__(self):
-        # when you inspect the object
-        outs = []
-        outs.append('WrightTools.data.Channel object at ' + str(id(self)))
-        outs.append('  name: ' + self.name)
-        outs.append('  zmin: ' + str(self.zmin))
-        outs.append('  zmax: ' + str(self.zmax))
-        outs.append('  znull: ' + str(self.znull))
-        outs.append('  signed: ' + str(self.signed))
-        return '\n'.join(outs)
-
-    def __str__(self):
-        # when you print the object
-        return self.__repr__()
+        return 'WrightTools.data.Channel object \'{0}\' at {1}'.format(self.name, str(id(self)))
 
     def _update(self):
         self.zmin = np.nanmin(self.values)
@@ -263,6 +261,17 @@ class Channel:
             else:
                 self.signed = False
 
+    @property
+    def info(self):
+        info = collections.OrderedDict()
+        info['name'] = self.name
+        info['id'] = id(self)
+        info['zmin'] = self.zmin
+        info['zmax'] = self.zmax
+        info['znull'] = self.znull
+        info['signed'] = self.signed
+        return info
+
     def invert(self):
         self.values = - self.values
 
@@ -314,20 +323,9 @@ class Data:
         self._update()
         # reserve a copy of own self at this stage
         self._original = self.copy()
-        
+
     def __repr__(self):
-        # when you inspect the object
-        outs = []
-        outs.append('WrightTools.data.Data object at ' + str(id(self)))
-        outs.append('  name: ' + self.name)
-        outs.append('  axes: ' + str(self.axis_names))
-        outs.append('  shape: ' + str(self.shape))
-        outs.append('  version: ' + self.__version__)
-        return '\n'.join(outs)
-        
-    def __str__(self):
-        # when you print the object
-        return self.__repr__()
+        return 'WrightTools.data.Data object \'{0}\' at {1}'.format(self.name, str(id(self)))
         
     def _update(self):
         '''
@@ -870,6 +868,16 @@ class Data:
         # print
         if verbose:
             print('channel {0} healed in {1} seconds'.format(channel.name, np.around(timer.interval, decimals=3)))
+
+    @property
+    def info(self):
+        info = collections.OrderedDict()
+        info['name'] = self.name
+        info['id'] = id(self)
+        info['axes'] = self.axis_names
+        info['shape'] = self.shape
+        info['version'] = self.__version__
+        return info
 
     def level(self, channel, axis, npts, verbose=True):
         '''
@@ -2438,7 +2446,7 @@ def from_Tensor27(filepath, name=None, verbose=True):
     if filesuffix != 'dpt':
         wt_exceptions.WrongFileTypeWarning.warn(filepath, 'dpt')
     # import array    
-    arr = np.genfromtxt(filepath, skip_header=0).T    
+    arr = np.genfromtxt(filepath, skip_header=0).T
     # name
     if not name:
         name = os.path.basename(filepath)
@@ -2698,4 +2706,4 @@ def discover_dimensions(arr, dimension_cols, verbose = True):
         obj.points = axis[3]
         constant[key] = obj
         
-    return scanned.values(), constant.values()
+    return list(scanned.values()), list(constant.values())

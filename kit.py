@@ -16,6 +16,7 @@ import copy
 import time
 import pytz
 import h5py
+import warnings
 import dateutil
 import datetime
 import itertools
@@ -40,6 +41,231 @@ if sys.version[0] == '2':
     string_type = basestring  # recognize unicode and string types
 else:
     string_type = str  # newer versions of python don't have unicode type
+
+
+### time and date #############################################################
+
+
+def get_timestamp(style='RFC3339', at=None, hms=True, frac=False,
+                  timezone='here', filename_compatible=False):
+    '''
+    Get the current time as a string.
+    
+    LEGACY - please use TimeStamp objects.
+    
+    Parameters
+    ----------
+    style : {'RFC3339', 'short', 'display', 'legacy'} (optional)
+        The format of the returned string. legacy is the old WrightTools
+        format. Default is RFC3339. All other arguments control RFC3339
+        behavior.
+    at : local seconds since epoch (optional)
+        Time at-which to generate timestamp. If None, use current time. Default
+        is None. Use time.time() to get seconds.
+    hms : bool (optional)
+        Toggle inclusion of current time (hours:minutes:seconds) in returned
+        string. Default is True. Does not effect legacy timestamp.
+    frac : bool (optional)
+        Toggle inclusion of fractional seconds in returned string. Default is
+        False. Does not effect legacy timestamp. Only appears if hms is
+        present.
+    timezone : {'here', 'utc'}
+        Timezone. Default is here.
+    filename_compatible : bool
+        Remove special charachters. Default is False.
+    '''
+    warnings.warn('get_timestamp is depreciated---use TimeStamp objects', DeprecationWarning, stacklevel=2)
+    # get timezone
+    if timezone == 'here':
+        tz = dateutil.tz.tzlocal()
+    elif timezone == 'utc':
+        tz = pytz.utc
+    else:
+        raise Exception('timezone not recognized in kit.get_timestamp')
+    # get now
+    if at == None:
+        now = datetime.datetime.now(tz)
+    else:
+        now = datetime.datetime.fromtimestamp(at, tz)
+    # generate string
+    if style == 'RFC3339':
+        # get timezone offset
+        delta_obj = tz.utcoffset(datetime.datetime.now(tz))
+        delta_sec = delta_obj.total_seconds()
+        m, s = divmod(delta_sec, 60)
+        h, m = divmod(m, 60)
+        # create output
+        format_string = '%Y-%m-%d'
+        if hms:
+            format_string += 'T%H:%M:%S'
+            if frac:
+                format_string += '.%f'
+        out = now.strftime(format_string)
+        if hms:
+            # add timezone information
+            if delta_sec == 0.:
+                out += 'Z'
+            else:
+                if delta_sec > 0:
+                    sign = '+'
+                elif delta_sec < 0:
+                    sign = '-'
+                def as_string(num):
+                    return str(np.abs(int(num))).zfill(2)
+                out += sign + as_string(h) + ':' + as_string(m)
+    elif style == 'short':
+        ssm = (now - now.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds()
+        out = now.strftime('%Y-%m-%d')
+        out += ' ' 
+        out += str(int(ssm)).zfill(5)
+    elif style == 'display':
+        # get timezone offset
+        delta_obj = tz.utcoffset(datetime.datetime.now(tz))
+        delta_sec = delta_obj.total_seconds()
+        m, s = divmod(delta_sec, 60)
+        h, m = divmod(m, 60)
+        # create output
+        format_string = '%Y-%m-%d'
+        if hms:
+            format_string += ' %H:%M:%S'
+            if frac:
+                format_string += '.%f'
+        out = now.strftime(format_string)
+    elif style == 'legacy':
+        out = now.strftime('%Y.%m.%d %H_%M_%S')
+    else:
+        raise Exception('format not recognized in kit.get_timestamp')
+    if filename_compatible:
+        illegal_characters = [':']
+        for char in illegal_characters:
+            out = out.replace(char, '')
+    return out
+
+
+class TimeStamp:
+    
+    def __init__(self, at=None, timezone='local'):
+        '''
+        Class for representing a moment in time.
+        
+        Parameters
+        ----------
+        at : float (optional)
+            Seconds since epoch (unix time). If None, current time will be
+            used. Default is None.
+        timezone : string or integer (optional)
+            String (one in {'local', 'utc'} or seconds offset from UTC. Default
+            is local.
+            
+        Attributes
+        ----------
+        unix : float
+            Seconds since epoch (unix time).
+        date : string
+            Date.
+        hms : string
+            Hours, minutes, seconds.
+        human : string
+            Representation of the timestamp meant to be human readable.
+        legacy : string
+            Legacy WrightTools timestamp representation.
+        RFC3339 : string
+            `RFC3339 <https://www.ietf.org/rfc/rfc3339.txt>`_ representation (recommended for most applications).
+        RFC5322 : string
+            `RFC5322 <https://tools.ietf.org/html/rfc5322#section-3.3>`_ representation.
+        path : string
+            Representation of the timestamp meant for inclusion in filepaths.
+        '''
+        # get timezone
+        if timezone == 'local':
+            self.tz = dateutil.tz.tzlocal()
+        elif timezone == 'utc':
+            self.tz = pytz.utc
+        elif type(timezone) in [int, float]:
+            self.tz = dateutil.tz.tzoffset(None, timezone)
+        else:
+            raise KeyError
+        # get unix timestamp
+        if at is None:
+            self.unix = time.time()
+        else:
+            self.unix = at
+        # get now
+        if at == None:
+            self.datetime = datetime.datetime.now(self.tz)
+        else:
+            self.datetime = datetime.datetime.fromtimestamp(at, self.tz)
+
+    def __repr__(self):
+        return self.RFC3339
+        
+    def __str__(self):
+        return str(self.unix)
+        
+    @property
+    def date(self):
+        return self.datetime.strftime('%Y-%m-%d')
+
+    @property
+    def hms(self):
+        return self.datetime.strftime('%H:%M:%S')
+
+    @property
+    def human(self):
+        # get timezone offset
+        delta_sec = time.timezone
+        m, s = divmod(delta_sec, 60)
+        h, m = divmod(m, 60)
+        # create output
+        format_string = '%Y-%m-%d %H:%M:%S'
+        out = self.datetime.strftime(format_string)
+        return out
+    
+    @property
+    def legacy(self):
+        return self.datetime.strftime('%Y.%m.%d %H_%M_%S')
+
+    @property
+    def RFC3339(self):
+        # get timezone offset
+        delta_sec = time.timezone
+        m, s = divmod(delta_sec, 60)
+        h, m = divmod(m, 60)
+        # timestamp
+        format_string = '%Y-%m-%dT%H:%M:%S.%f'
+        out = self.datetime.strftime(format_string)
+        # timezone
+        if delta_sec == 0.:
+            out += 'Z'
+        else:
+            if delta_sec > 0:
+                sign = '+'
+            elif delta_sec < 0:
+                sign = '-'
+            def as_string(num):
+                return str(np.abs(int(num))).zfill(2)
+            out += sign + as_string(h) + ':' + as_string(m)
+        return out
+        
+    @property
+    def RFC5322(self):
+        return self.datetime.astimezone(tz=pytz.utc).strftime('%a, %d %b %Y %H:%M:%S GMT')
+    
+    @property
+    def path(self):
+        out = self.datetime.strftime('%Y-%m-%d')
+        out += ' ' 
+        ssm = (self.datetime - self.datetime.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds()
+        out += str(int(ssm)).zfill(5)
+        return out
+
+
+def timestamp_from_RFC3339(RFC3339):
+    dt = dateutil.parser.parse(RFC3339)
+    timezone = dt.tzinfo._offset.total_seconds()
+    unix = (dt - datetime.datetime(1970, 1, 1, tzinfo=pytz.utc)).total_seconds()  # could use .timestamp() in 3.3 forwards
+    timestamp = TimeStamp(at=unix, timezone=timezone)
+    return timestamp
 
 
 ### file processing ###########################################################
@@ -208,97 +434,6 @@ def get_path_matching(name):
     # TODO: something more robust to catch the rest of the cases?
     return p
 
-def get_timestamp(style='RFC3339', at=None, hms=True, frac=False,
-                  timezone='here', filename_compatible=False):
-    '''
-    Get the current time as a string.
-    
-    Parameters
-    ----------
-    style : {'RFC3339', 'short', 'display', 'legacy'} (optional)
-        The format of the returned string. legacy is the old WrightTools
-        format. Default is RFC3339. All other arguments control RFC3339
-        behavior.
-    at : local seconds since epoch (optional)
-        Time at-which to generate timestamp. If None, use current time. Default
-        is None. Use time.time() to get seconds.
-    hms : bool (optional)
-        Toggle inclusion of current time (hours:minutes:seconds) in returned
-        string. Default is True. Does not effect legacy timestamp.
-    frac : bool (optional)
-        Toggle inclusion of fractional seconds in returned string. Default is
-        False. Does not effect legacy timestamp. Only appears if hms is
-        present.
-    timezone : {'here', 'utc'}
-        Timezone. Default is here.
-    filename_compatible : bool
-        Remove special charachters. Default is False.
-    '''
-    # get timezone
-    if timezone == 'here':
-        tz = dateutil.tz.tzlocal()
-    elif timezone == 'utc':
-        tz = pytz.utc
-    else:
-        raise Exception('timezone not recognized in kit.get_timestamp')
-    # get now
-    if at == None:
-        now = datetime.datetime.now(tz)
-    else:
-        now = datetime.datetime.fromtimestamp(at, tz)
-    # generate string
-    if style == 'RFC3339':
-        # get timezone offset
-        delta_obj = tz.utcoffset(datetime.datetime.now(tz))
-        delta_sec = delta_obj.total_seconds()
-        m, s = divmod(delta_sec, 60)
-        h, m = divmod(m, 60)
-        # create output
-        format_string = '%Y-%m-%d'
-        if hms:
-            format_string += 'T%H:%M:%S'
-            if frac:
-                format_string += '.%f'
-        out = now.strftime(format_string)
-        if hms:
-            # add timezone information
-            if delta_sec == 0.:
-                out += 'Z'
-            else:
-                if delta_sec > 0:
-                    sign = '+'
-                elif delta_sec < 0:
-                    sign = '-'
-                def as_string(num):
-                    return str(np.abs(int(num))).zfill(2)
-                out += sign + as_string(h) + ':' + as_string(m)
-    elif style == 'short':
-        ssm = (now - now.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds()
-        out = now.strftime('%Y-%m-%d')
-        out += ' ' 
-        out += str(int(ssm)).zfill(5)
-    elif style == 'display':
-        # get timezone offset
-        delta_obj = tz.utcoffset(datetime.datetime.now(tz))
-        delta_sec = delta_obj.total_seconds()
-        m, s = divmod(delta_sec, 60)
-        h, m = divmod(m, 60)
-        # create output
-        format_string = '%Y-%m-%d'
-        if hms:
-            format_string += ' %H:%M:%S'
-            if frac:
-                format_string += '.%f'
-        out = now.strftime(format_string)
-    elif style == 'legacy':
-        out = now.strftime('%Y.%m.%d %H_%M_%S')
-    else:
-        raise Exception('format not recognized in kit.get_timestamp')
-    if filename_compatible:
-        illegal_characters = [':']
-        for char in illegal_characters:
-            out = out.replace(char, '')
-    return out
 
 def glob_handler(extension, folder=None, identifier=None):
     '''
@@ -372,6 +507,11 @@ class INI():
         raw = self.config.get(section, option)
         out = string2item(raw, sep=', ')
         return out
+    
+    @property
+    def sections(self):
+        self.config.read(self.filepath)
+        return self.config.sections()
     
     def write(self, section, option, value):
         self.config.read(self.filepath)

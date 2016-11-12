@@ -1016,7 +1016,7 @@ class mpl_1D:
             title = self.data.name
             constant_text = get_constant_text(constants)
             if not constant_text == '':
-                title += '\n' + constants_text
+                title += '\n' + constant_text
             plt.suptitle(title, fontsize=20)
             # save
             if autosave:
