@@ -232,7 +232,7 @@ class TimeStamp:
         m, s = divmod(delta_sec, 60)
         h, m = divmod(m, 60)
         # timestamp
-        format_string = '%Y-%m-%d %H:%M:%S.%f'
+        format_string = '%Y-%m-%dT%H:%M:%S.%f'
         out = self.datetime.strftime(format_string)
         # timezone
         if delta_sec == 0.:
@@ -507,6 +507,11 @@ class INI():
         raw = self.config.get(section, option)
         out = string2item(raw, sep=', ')
         return out
+    
+    @property
+    def sections(self):
+        self.config.read(self.filepath)
+        return self.config.sections()
     
     def write(self, section, option, value):
         self.config.read(self.filepath)
