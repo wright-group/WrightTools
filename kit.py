@@ -874,7 +874,7 @@ class Spline:
     def __call__(self, *args, **kwargs):
         return self.true_spline(*args, **kwargs)
 
-    def __init__(self, xi, yi, k=2, s=1000, ignore_nans=True):
+    def __init__(self, xi, yi, k=3, s=1000, ignore_nans=True):
         '''
         Wrapper class for scipy.UnivariateSpline, made to be slightly less
         finicky with things like decending xi arrays and nans.

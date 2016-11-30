@@ -131,8 +131,8 @@ class Spline:
         self.colors = colors
         self.units = units
         self.motors = motors
-        self.functions = [scipy.interpolate.UnivariateSpline(colors, motor.positions,  k=2, s=1000) for motor in motors]
-        self.i_functions = [scipy.interpolate.UnivariateSpline(motor.positions, colors,  k=2, s=1000) for motor in motors]
+        self.functions = [scipy.interpolate.UnivariateSpline(colors, motor.positions,  k=3, s=1000) for motor in motors]
+        self.i_functions = [scipy.interpolate.UnivariateSpline(motor.positions, colors,  k=3, s=1000) for motor in motors]
 
     def get_motor_positions(self, color):
         return [f(color) for f in self.functions]
@@ -465,7 +465,7 @@ class Curve:
         # apply using offset_by
         self.offset_by(motor, offset)
 
-    def plot(self, autosave=False, save_path=''):
+    def plot(self, autosave=False, save_path='', title=None):
         '''
         Plot the curve.
         '''
@@ -539,7 +539,10 @@ class Curve:
             yticks = ax.yaxis.get_major_ticks()
             yticks[0].label1.set_visible(False)
             yticks[-1].label1.set_visible(False)
-        plt.suptitle(self.name)
+        # title
+        if title is None:
+            title = self.name
+        plt.suptitle(title)
         # save
         if autosave:
             if save_path[-3:] != 'png':
@@ -584,7 +587,8 @@ class Curve:
         # plot
         if plot:
             image_path = os.path.splitext(out_path)[0] + '.png'
-            self.plot(autosave=True, save_path=image_path)
+            title = os.path.basename(os.path.splitext(out_path)[0])
+            self.plot(autosave=True, save_path=image_path, title=title)
         # finish
         if verbose:
             print('curve saved at', out_path)
@@ -595,15 +599,17 @@ class Curve:
 
 
 def from_800_curve(filepath):
+    headers = wt_kit.read_headers(filepath)
     arr = np.genfromtxt(filepath).T
     colors = arr[0]
     grating = Motor(arr[1], 'Grating')
     bbo = Motor(arr[2], 'BBO')
     mixer = Motor(arr[3], 'Mixer')
     motors = [grating, bbo, mixer]
+    interaction = headers['interaction']
     path, name, suffix = wt_kit.filename_parse(filepath)
-    curve = Curve(colors, 'wn', motors, name=name, interaction='DFG',
-                  kind='opa800', method=Linear)
+    curve = Curve(colors, 'wn', motors, name=name, interaction=interaction,
+                  kind='opa800', method=Spline)
     return curve
 
 
@@ -685,15 +691,18 @@ def to_800_curve(curve, save_directory):
     out_arr[0] = colors
     out_arr[1:4] = np.array([motor.positions for motor in motors])
     # filename
-    timestamp = wt_kit.get_timestamp(filename_compatible=True)
-    out_name = curve.name.split('-')[0] + '- ' + timestamp
+    timestamp = wt_kit.TimeStamp()
+    out_name = curve.name.split('-')[0] + '- ' + timestamp.path
     out_path = os.path.join(save_directory, out_name + '.curve')
     # save
-    header1 = 'file created:\t' + timestamp
-    header2 = 'Color (wn)\tGrating\tBBO\tMixer'
-    header = '\n'.join([header1, header2])
-    np.savetxt(out_path, out_arr.T, fmt=['%.2f','%.3f', '%.3f', '%.5f'],
-               delimiter='\t', header=header)
+    headers = collections.OrderedDict()
+    headers['file created'] = timestamp.RFC3339
+    headers['interaction'] = curve.interaction
+    headers['name'] = ['Color (wn)', 'Grating', 'BBO', 'Mixer']
+    wt_kit.write_headers(out_path, headers)
+    with open(out_path, 'a') as f:
+        np.savetxt(f, out_arr.T, fmt=['%.2f','%.5f', '%.5f', '%.5f'],
+                   delimiter='\t')
     return out_path
 
 
@@ -808,3 +817,6 @@ def to_TOPAS_crvs(curve, save_directory, kind, **kwargs):
     with open(out_path, 'w') as new_crv:
         new_crv.write(''.join(out_lines).rstrip())
     return out_path
+
+
+

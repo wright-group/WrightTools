@@ -9,6 +9,7 @@ fitting tools
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import os
+import warnings
 import collections
 
 import numpy as np
@@ -80,7 +81,7 @@ class Function:
         else:
             p0 = self.guess(*args)
         out = scipy_optimize.leastsq(self.residuals, p0, args=args)
-        if out[1] not in [1]:  # solution was not found
+        if out[1] not in [1, 2]:  # solution was not found
             return np.full(len(p0), np.nan)
         return out[0]
 
@@ -93,6 +94,7 @@ class ExpectationValue(Function):
         self.params = ['value']
         self.limits = {}
         self.global_cutoff = None
+        warnings.warn('ExpectationValue depreciated---use Moments', DeprecationWarning, stacklevel=2)
 
     def evaluate(self, p, xi):
         '''
@@ -185,7 +187,8 @@ class Gaussian(Function):
                 p[i] = np.clip(p[i], *self.limits[name])
         # evaluate
         m, w, amp, baseline = p
-        return amp*np.exp(-(xi-m)**2/(2*w**2)) + baseline
+        out = amp*np.exp(-(xi-m)**2/(2*w**2)) + baseline
+        return out
 
     def guess(self, values, xi):
         values, xi = wt_kit.remove_nans_1D([values, xi])
@@ -356,13 +359,13 @@ class Moments(Function):
         # integral
         outs = [np.trapz(y_internal, x_internal)]
         # first moment (expectation value)
-        outs.append(np.sum((x_internal*y_internal) / np.sum(y_internal)))
+        outs.append(np.nansum((x_internal*y_internal) / np.nansum(y_internal)))
         # second moment (central) (variance)
-        outs.append(np.sum((x_internal-outs[1])*y_internal) / np.sum(y_internal))
+        outs.append(np.nansum((x_internal-outs[1])*y_internal) / np.nansum(y_internal))
         sdev = np.sqrt(outs[2])
         # third and fourth moment (standardized)
         for n in range(3, 5):
-            mu = np.sum(((x_internal-outs[1])**n)*y_internal) / (np.sum(y_internal)*(sdev**n))
+            mu = np.nansum(((x_internal-outs[1])**n)*y_internal) / (np.nansum(y_internal)*(sdev**n))
             outs.append(mu)
         # finish
         outs.append(baseline)
