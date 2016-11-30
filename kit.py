@@ -493,6 +493,11 @@ class INI():
             self.config = configparser.ConfigParser()
         else:
             self.config = configparser.SafeConfigParser()
+            
+    @property
+    def dictionary(self):
+        self.config.read(self.filepath)
+        return self.config._sections
     
     def has_option(self, section, option):
         self.config.read(self.filepath)
