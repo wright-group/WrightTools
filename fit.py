@@ -336,6 +336,7 @@ class Moments(Function):
         self.dimensionality = 1
         self.params = ['integral', 'one', 'two', 'three', 'four', 'baseline']
         self.limits = {}
+        self.subtract_baseline = True
 
     def evaluate(self, p, xi):
         '''
@@ -353,13 +354,19 @@ class Moments(Function):
             y_internal = y_internal[::-1]
             x_internal = x_internal[::-1]
         # subtract baseline
-        baseline = get_baseline(y_internal)
-        y_internal -= baseline
+        if self.subtract_baseline:
+            baseline = get_baseline(y_internal)
+            y_internal -= baseline
+        else:
+            baseline = np.nan
         # calculate
         # integral
         outs = [np.trapz(y_internal, x_internal)]
         # first moment (expectation value)
-        outs.append(np.nansum((x_internal*y_internal) / np.nansum(y_internal)))
+        one = np.nansum((x_internal*y_internal) / np.nansum(y_internal))
+        print(one)
+        plt.plot(x_internal, y_internal)
+        outs.append(one)
         # second moment (central) (variance)
         outs.append(np.nansum((x_internal-outs[1])*y_internal) / np.nansum(y_internal))
         sdev = np.sqrt(outs[2])
@@ -400,11 +407,11 @@ class Fitter:
             print('channel type', type(channel), 'not valid')
         # transpose data ------------------------------------------------------
         # fitted axes will be LAST
-        transpose_order = range(len(self.data.axes))
+        transpose_order = list(range(len(self.data.axes)))
         self.axis_indicies.reverse()
         for i in range(len(self.axes)):
             ai = self.axis_indicies[i]
-            ri = range(len(self.data.axes))[-(i+1)]
+            ri = list(range(len(self.data.axes)))[-(i+1)]
             transpose_order[ri], transpose_order[ai] = transpose_order[ai], transpose_order[ri]
         self.axis_indicies.reverse()
         self.data.transpose(transpose_order, verbose=False)

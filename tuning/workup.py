@@ -82,6 +82,7 @@ def intensity(filepath, channel_name, old_curve_filepath, level=False,
     # get centers through expectation value
     motor_axis_name = data.axes[0].name
     function = wt_fit.Moments()
+    function.subtract_baseline = False
     fitter = wt_fit.Fitter(function, data, motor_axis_name, verbose=False)
     outs = fitter.run(channel_index, verbose=False)
     offsets = outs.one.values
