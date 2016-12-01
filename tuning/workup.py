@@ -56,22 +56,23 @@ cmap.set_under([0.75]*3)
 ### processing methods ########################################################
 
 
-def intensity(filepath, channel_name, old_curve_filepath, level=False,
-              autosave=True, cutoff_factor=0.1):
+def intensity(data, curve, channel_name, level=False, cutoff_factor=0.1,
+              autosave=True, save_directory=None):
+    '''    
+    Parameters
+    ----------
+    data : wt.data.Data objeect
+        should be in (setpoint, motor)
+
+    Returns
+    -------
+    curve
+        New curve object.
+    '''
     # TODO: documentation
-    channel_name = channel_name
-    # make data object
-    data = wt_data.from_PyCMDS(filepath, verbose=False)
+    data.transpose()
     channel_index = data.channel_names.index(channel_name)
-    # check if data is compatible
-    if not len(data.axes) == 2:
-        # TODO: raise error here
-        print('data must be 2 dimensional')
-        return
-    # transpose into prefered representation (motors, tune points)
-    if len(data.axes[0].name) < len(data.axes[1].name):
-        data.transpose(verbose=False)
-    tune_points = data.axes[1].points
+    tune_points = curve.colors
     # process data ------------------------------------------------------------
     if level:
         data.level(channel_index, 0, -3)
@@ -90,7 +91,7 @@ def intensity(filepath, channel_name, old_curve_filepath, level=False,
     spline = wt_kit.Spline(tune_points, offsets)
     offsets_splined = spline(tune_points)
     # make curve --------------------------------------------------------------
-    old_curve = wt_curve.from_800_curve(old_curve_filepath)
+    old_curve = curve.copy()
     motors = []
     for motor_index, motor_name in enumerate([m.name for m in old_curve.motors]):
         if motor_name == motor_axis_name.split('_')[-1]:
@@ -147,19 +148,31 @@ def intensity(filepath, channel_name, old_curve_filepath, level=False,
     wt_artists.plot_colorbar(cax=cax, cmap=cmap, label=label, ticks=ticks)
     # finish ------------------------------------------------------------------
     if autosave:
-        curve.save(save_directory=wt_kit.filename_parse(filepath)[0])
-        p = os.path.join(os.path.dirname(filepath), 'intensity.png')
+        if save_directory is None:
+            save_directory = os.getcwd()
+        curve.save(save_directory=save_directory, full=True)
+        p = os.path.join(save_directory, 'intensity.png')
         wt_artists.savefig(p, fig=fig)
     return curve
 
 
-def tune_test(filepath, channel_name, old_curve_filepath, level=False,
-              autosave=True, cutoff_factor=0.01):
-    # TODO: document
+def tune_test(data, curve, channel_name, level=False, cutoff_factor=0.01,
+              autosave=True, save_directory=None):
+    '''
+    
+    Parameters
+    ----------
+    data : wt.data.Data objeect
+        should be in (setpoint, detuning)
+
+    Returns
+    -------
+    curve
+        New curve object.
+    '''
     # make data object
-    data = wt_data.from_PyCMDS(filepath, verbose=False)
     data.bring_to_front(channel_name)
-    data.transpose()  # data should be in (detuning, setpoint)
+    data.transpose()
     # process data ------------------------------------------------------------
     # cutoff
     channel_index = data.channel_names.index(channel_name)
@@ -176,7 +189,7 @@ def tune_test(filepath, channel_name, old_curve_filepath, level=False,
     spline = wt_kit.Spline(xi, yi)
     offsets_splined = spline(xi)
     # make curve --------------------------------------------------------------
-    curve = wt_curve.from_800_curve(filepath=old_curve_filepath)
+    curve = curve.copy()
     points = curve.colors    
     curve.colors += offsets_splined
     curve.map_colors(points)
@@ -200,7 +213,7 @@ def tune_test(filepath, channel_name, old_curve_filepath, level=False,
     ax.grid()
     units_string = '$\mathsf{(' + wt_units.color_symbols[curve.units] + ')}$'
     ax.set_xlabel(' '.join(['setpoint', units_string]), fontsize=18)
-    ax.set_ylabel('$\mathsf{\Delta' + wt_units.color_symbols[curve.units] + '}$', fontsize=18)
+    ax.set_ylabel('$\mathsf{\Delta' + wt_units.color_symbols['wn'] + '}$', fontsize=18)
     # colorbar
     cax = plt.subplot(gs[:, -1])
     label = channel_name
@@ -208,7 +221,9 @@ def tune_test(filepath, channel_name, old_curve_filepath, level=False,
     wt_artists.plot_colorbar(cax=cax, cmap=cmap, label=label, ticks=ticks)
     # finish ------------------------------------------------------------------    
     if autosave:
-        curve.save(save_directory=wt_kit.filename_parse(filepath)[0])
-        p = os.path.join(os.path.dirname(filepath), 'tune test.png')
+        if save_directory is None:
+            save_directory = os.getcwd()
+        curve.save(save_directory=save_directory, full=True)
+        p = os.path.join(save_directory, 'tune test.png')
         wt_artists.savefig(p, fig=fig)
     return curve

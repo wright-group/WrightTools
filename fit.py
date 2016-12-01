@@ -364,8 +364,6 @@ class Moments(Function):
         outs = [np.trapz(y_internal, x_internal)]
         # first moment (expectation value)
         one = np.nansum((x_internal*y_internal) / np.nansum(y_internal))
-        print(one)
-        plt.plot(x_internal, y_internal)
         outs.append(one)
         # second moment (central) (variance)
         outs.append(np.nansum((x_internal-outs[1])*y_internal) / np.nansum(y_internal))

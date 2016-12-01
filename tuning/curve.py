@@ -10,6 +10,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import os
 import copy
+import shutil
 import collections
 
 import numpy as np
@@ -552,7 +553,7 @@ class Curve:
             plt.savefig(image_path, transparent=True, dpi=300)
             plt.close(fig)
 
-    def save(self, save_directory=None, plot=True, verbose=True, **kwargs):
+    def save(self, save_directory=None, plot=True, verbose=True, full=False):
         '''
         Save the curve.
 
@@ -565,6 +566,8 @@ class Curve:
             Toggle saving plot along with curve. Default is True.
         verbose : bool (optional)
             Toggle talkback. Default is True.
+        full : bool (optional)
+            Include all files (if curve is stored in multiple files)
 
         Returns
         -------
@@ -578,9 +581,9 @@ class Curve:
         if self.kind == 'opa800':
             out_path = to_800_curve(self, save_directory)
         elif self.kind in ['TOPAS-C', 'TOPAS-800']:
-            if 'old_filepaths' not in kwargs.keys():
-                kwargs['old_filepaths'] = self.old_filepaths
-            out_path = to_TOPAS_crvs(self, save_directory, self.kind, **kwargs)
+            kwargs = {}
+            kwargs['old_filepaths'] = self.old_filepaths
+            out_path = to_TOPAS_crvs(self, save_directory, self.kind, full=full, **kwargs)
         else:
             error_text = ' '.join(['kind', self.kind, 'does not know how to save!'])
             raise LookupError(error_text)
@@ -706,7 +709,7 @@ def to_800_curve(curve, save_directory):
     return out_path
 
 
-def to_TOPAS_crvs(curve, save_directory, kind, **kwargs):
+def to_TOPAS_crvs(curve, save_directory, kind, full, **kwargs):
     TOPAS_interactions = TOPAS_interation_by_kind[kind]
     # unpack
     curve = curve.copy()
@@ -716,7 +719,20 @@ def to_TOPAS_crvs(curve, save_directory, kind, **kwargs):
     # open appropriate crv
     interactions = interaction_string.split('-')
     curve_index = next((i for i, v in enumerate(interactions) if v != 'NON'), -1)
-    crv_path = old_filepaths[-(curve_index+1)]
+    curve_index += 1
+    curve_index = len(old_filepaths) - curve_index
+    crv_path = old_filepaths[curve_index]
+    if full:
+        # copy other curves over as well
+        for i, p in enumerate(old_filepaths):
+            print(i, p, curve_index)
+            if i == curve_index:
+                continue
+            if p is None:
+                continue
+            print(i, p)
+            d = os.path.join(save_directory, os.path.basename(p))
+            shutil.copy(p, d)
     with open(crv_path, 'r') as crv:
         crv_lines = crv.readlines()
     # collect information from file
@@ -763,7 +779,7 @@ def to_TOPAS_crvs(curve, save_directory, kind, **kwargs):
         arr = np.zeros([6, len(curve.colors)])
         arr[0] = curve.source_colors.positions
         arr[1] = curve.colors
-        arr[2] = 1
+        arr[2] = 3
         arr[3] = curve.motors[0].positions
         arr[4] = curve.motors[1].positions
         arr[5] = curve.motors[2].positions
@@ -801,7 +817,7 @@ def to_TOPAS_crvs(curve, save_directory, kind, **kwargs):
                 if value in [1, 3, 4]:
                     value_as_string = str(int(value))
                 else:
-                    value_as_string = str(np.round(value, decimals=6))
+                    value_as_string = '%f.6'%value
                     portion_before_decimal = value_as_string.split('.')[0]
                     portion_after_decimal = value_as_string.split('.')[1].ljust(6, '0')
                     value_as_string = portion_before_decimal + '.' + portion_after_decimal
@@ -810,7 +826,7 @@ def to_TOPAS_crvs(curve, save_directory, kind, **kwargs):
             out_lines.insert(line_index-1, line)
         out_lines.insert(line_index-1, str(len(curve.colors))+'\n')  # number of points of new curve
     # filename
-    timestamp = wt_kit.get_timestamp(filename_compatible=True)
+    timestamp = wt_kit.TimeStamp().path
     out_name = curve.name.split('-')[0] + '- ' + timestamp
     out_path = os.path.join(save_directory, out_name + '.crv')
     # save
