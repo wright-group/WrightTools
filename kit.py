@@ -493,6 +493,11 @@ class INI():
             self.config = configparser.ConfigParser()
         else:
             self.config = configparser.SafeConfigParser()
+            
+    @property
+    def dictionary(self):
+        self.config.read(self.filepath)
+        return self.config._sections
     
     def has_option(self, section, option):
         self.config.read(self.filepath)
@@ -874,7 +879,7 @@ class Spline:
     def __call__(self, *args, **kwargs):
         return self.true_spline(*args, **kwargs)
 
-    def __init__(self, xi, yi, k=2, s=1000, ignore_nans=True):
+    def __init__(self, xi, yi, k=3, s=1000, ignore_nans=True):
         '''
         Wrapper class for scipy.UnivariateSpline, made to be slightly less
         finicky with things like decending xi arrays and nans.
@@ -1099,12 +1104,12 @@ def string2array(string, sep='\t'):
     for i in range(1, dimensionality+1)[::-1]:
         to_match = '['*(i-1)
         count_positive = string.count(to_match + ' ')
-        cout_negative = string.count(to_match + '-')
-        shape.append(count_positive + cout_negative)
+        count_negative = string.count(to_match + '-')
+        shape.append(count_positive + count_negative)
     shape[-1] = size / shape[-2]
     for i in range(1, dimensionality-1)[::-1]:
         shape[i] = shape[i] / shape[i-1]
-    shape = tuple(shape)
+    shape = tuple([int(s) for s in shape])
     # import list of floats
     l = string.split(' ')
     l = flatten_list([i.split('-') for i in l])  # annoyingly series of negative values get past previous filters
@@ -1132,7 +1137,7 @@ def string2item(string, sep='\t'):
     else:
         split = string.split(sep)
         if split[0][0:2] == '[[':  # case of multidimensional arrays
-            out = string2array(split[1][:])
+            out = string2array(sep.join(split))
         else:
             split = [i.strip() for i in split]  # remove dumb things
             split = [i if i is not '' else 'None' for i in split]  # handle empties

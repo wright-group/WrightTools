@@ -21,6 +21,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 import matplotlib.gridspec as grd
 import matplotlib.colors as mplcolors
 from matplotlib.backends.backend_pdf import PdfPages
+from matplotlib.ticker import FormatStrFormatter
 matplotlib.rcParams['contour.negative_linestyle'] = 'solid'
 matplotlib.rcParams['font.size'] = 14
 
@@ -553,7 +554,7 @@ def pcolor_helper(xi, yi, zi):
 
 
 def plot_colorbar(cax=None, cmap='default', ticks=None, clim=None, vlim=None,
-                  label=None, tick_fontsize=14, label_fontsize=18,
+                  label=None, tick_fontsize=14, label_fontsize=18, decimals=3,
                   orientation='vertical', ticklocation='auto'):
     '''
     Easily add a colormap to an axis.
@@ -580,6 +581,8 @@ def plot_colorbar(cax=None, cmap='default', ticks=None, clim=None, vlim=None,
         Fontsize. Default is 14.
     label_fontsize : number (optional)
         Label fontsize. Default is 18.
+    decimals : integer (optional)
+        Number of decimals to appear in tick labels. Default is 3.
     orientation : {'vertical', 'horizontal'} (optional)
         Colorbar orientation. Default is vertical.
     ticklocation : {'auto', 'left', 'right', 'top', 'bottom'} (optional)
@@ -606,11 +609,13 @@ def plot_colorbar(cax=None, cmap='default', ticks=None, clim=None, vlim=None,
     if vlim is None:
         vlim = clim
     # make cbar
+    format = '%.{0}f'.format(decimals)
     norm = matplotlib.colors.Normalize(vmin=vlim[0], vmax=vlim[1])
     cbar = matplotlib.colorbar.ColorbarBase(ax=cax, cmap=cmap,
                                             norm=norm,  ticks=ticks,
                                             orientation=orientation,
-                                            ticklocation=ticklocation)
+                                            ticklocation=ticklocation,
+                                            format=format)
     # coerce properties
     cbar.set_clim(clim[0], clim[1])
     cbar.ax.tick_params(labelsize=tick_fontsize)

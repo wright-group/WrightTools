@@ -10,6 +10,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import os
 import copy
+import shutil
 import collections
 
 import numpy as np
@@ -131,8 +132,8 @@ class Spline:
         self.colors = colors
         self.units = units
         self.motors = motors
-        self.functions = [scipy.interpolate.UnivariateSpline(colors, motor.positions,  k=2, s=1000) for motor in motors]
-        self.i_functions = [scipy.interpolate.UnivariateSpline(motor.positions, colors,  k=2, s=1000) for motor in motors]
+        self.functions = [scipy.interpolate.UnivariateSpline(colors, motor.positions,  k=3, s=1000) for motor in motors]
+        self.i_functions = [scipy.interpolate.UnivariateSpline(motor.positions, colors,  k=3, s=1000) for motor in motors]
 
     def get_motor_positions(self, color):
         return [f(color) for f in self.functions]
@@ -465,7 +466,7 @@ class Curve:
         # apply using offset_by
         self.offset_by(motor, offset)
 
-    def plot(self, autosave=False, save_path=''):
+    def plot(self, autosave=False, save_path='', title=None):
         '''
         Plot the curve.
         '''
@@ -539,7 +540,10 @@ class Curve:
             yticks = ax.yaxis.get_major_ticks()
             yticks[0].label1.set_visible(False)
             yticks[-1].label1.set_visible(False)
-        plt.suptitle(self.name)
+        # title
+        if title is None:
+            title = self.name
+        plt.suptitle(title)
         # save
         if autosave:
             if save_path[-3:] != 'png':
@@ -549,7 +553,7 @@ class Curve:
             plt.savefig(image_path, transparent=True, dpi=300)
             plt.close(fig)
 
-    def save(self, save_directory=None, plot=True, verbose=True, **kwargs):
+    def save(self, save_directory=None, plot=True, verbose=True, full=False):
         '''
         Save the curve.
 
@@ -562,6 +566,8 @@ class Curve:
             Toggle saving plot along with curve. Default is True.
         verbose : bool (optional)
             Toggle talkback. Default is True.
+        full : bool (optional)
+            Include all files (if curve is stored in multiple files)
 
         Returns
         -------
@@ -575,16 +581,17 @@ class Curve:
         if self.kind == 'opa800':
             out_path = to_800_curve(self, save_directory)
         elif self.kind in ['TOPAS-C', 'TOPAS-800']:
-            if 'old_filepaths' not in kwargs.keys():
-                kwargs['old_filepaths'] = self.old_filepaths
-            out_path = to_TOPAS_crvs(self, save_directory, self.kind, **kwargs)
+            kwargs = {}
+            kwargs['old_filepaths'] = self.old_filepaths
+            out_path = to_TOPAS_crvs(self, save_directory, self.kind, full=full, **kwargs)
         else:
             error_text = ' '.join(['kind', self.kind, 'does not know how to save!'])
             raise LookupError(error_text)
         # plot
         if plot:
             image_path = os.path.splitext(out_path)[0] + '.png'
-            self.plot(autosave=True, save_path=image_path)
+            title = os.path.basename(os.path.splitext(out_path)[0])
+            self.plot(autosave=True, save_path=image_path, title=title)
         # finish
         if verbose:
             print('curve saved at', out_path)
@@ -595,15 +602,17 @@ class Curve:
 
 
 def from_800_curve(filepath):
+    headers = wt_kit.read_headers(filepath)
     arr = np.genfromtxt(filepath).T
     colors = arr[0]
     grating = Motor(arr[1], 'Grating')
     bbo = Motor(arr[2], 'BBO')
     mixer = Motor(arr[3], 'Mixer')
     motors = [grating, bbo, mixer]
+    interaction = headers['interaction']
     path, name, suffix = wt_kit.filename_parse(filepath)
-    curve = Curve(colors, 'wn', motors, name=name, interaction='DFG',
-                  kind='opa800', method=Linear)
+    curve = Curve(colors, 'wn', motors, name=name, interaction=interaction,
+                  kind='opa800', method=Spline)
     return curve
 
 
@@ -685,19 +694,22 @@ def to_800_curve(curve, save_directory):
     out_arr[0] = colors
     out_arr[1:4] = np.array([motor.positions for motor in motors])
     # filename
-    timestamp = wt_kit.get_timestamp(filename_compatible=True)
-    out_name = curve.name.split('-')[0] + '- ' + timestamp
+    timestamp = wt_kit.TimeStamp()
+    out_name = curve.name.split('-')[0] + '- ' + timestamp.path
     out_path = os.path.join(save_directory, out_name + '.curve')
     # save
-    header1 = 'file created:\t' + timestamp
-    header2 = 'Color (wn)\tGrating\tBBO\tMixer'
-    header = '\n'.join([header1, header2])
-    np.savetxt(out_path, out_arr.T, fmt=['%.2f','%.3f', '%.3f', '%.5f'],
-               delimiter='\t', header=header)
+    headers = collections.OrderedDict()
+    headers['file created'] = timestamp.RFC3339
+    headers['interaction'] = curve.interaction
+    headers['name'] = ['Color (wn)', 'Grating', 'BBO', 'Mixer']
+    wt_kit.write_headers(out_path, headers)
+    with open(out_path, 'a') as f:
+        np.savetxt(f, out_arr.T, fmt=['%.2f','%.5f', '%.5f', '%.5f'],
+                   delimiter='\t')
     return out_path
 
 
-def to_TOPAS_crvs(curve, save_directory, kind, **kwargs):
+def to_TOPAS_crvs(curve, save_directory, kind, full, **kwargs):
     TOPAS_interactions = TOPAS_interation_by_kind[kind]
     # unpack
     curve = curve.copy()
@@ -707,7 +719,20 @@ def to_TOPAS_crvs(curve, save_directory, kind, **kwargs):
     # open appropriate crv
     interactions = interaction_string.split('-')
     curve_index = next((i for i, v in enumerate(interactions) if v != 'NON'), -1)
-    crv_path = old_filepaths[-(curve_index+1)]
+    curve_index += 1
+    curve_index = len(old_filepaths) - curve_index
+    crv_path = old_filepaths[curve_index]
+    if full:
+        # copy other curves over as well
+        for i, p in enumerate(old_filepaths):
+            print(i, p, curve_index)
+            if i == curve_index:
+                continue
+            if p is None:
+                continue
+            print(i, p)
+            d = os.path.join(save_directory, os.path.basename(p))
+            shutil.copy(p, d)
     with open(crv_path, 'r') as crv:
         crv_lines = crv.readlines()
     # collect information from file
@@ -754,7 +779,7 @@ def to_TOPAS_crvs(curve, save_directory, kind, **kwargs):
         arr = np.zeros([6, len(curve.colors)])
         arr[0] = curve.source_colors.positions
         arr[1] = curve.colors
-        arr[2] = 1
+        arr[2] = 3
         arr[3] = curve.motors[0].positions
         arr[4] = curve.motors[1].positions
         arr[5] = curve.motors[2].positions
@@ -792,7 +817,7 @@ def to_TOPAS_crvs(curve, save_directory, kind, **kwargs):
                 if value in [1, 3, 4]:
                     value_as_string = str(int(value))
                 else:
-                    value_as_string = str(np.round(value, decimals=6))
+                    value_as_string = '%f.6'%value
                     portion_before_decimal = value_as_string.split('.')[0]
                     portion_after_decimal = value_as_string.split('.')[1].ljust(6, '0')
                     value_as_string = portion_before_decimal + '.' + portion_after_decimal
@@ -801,10 +826,13 @@ def to_TOPAS_crvs(curve, save_directory, kind, **kwargs):
             out_lines.insert(line_index-1, line)
         out_lines.insert(line_index-1, str(len(curve.colors))+'\n')  # number of points of new curve
     # filename
-    timestamp = wt_kit.get_timestamp(filename_compatible=True)
+    timestamp = wt_kit.TimeStamp().path
     out_name = curve.name.split('-')[0] + '- ' + timestamp
     out_path = os.path.join(save_directory, out_name + '.crv')
     # save
     with open(out_path, 'w') as new_crv:
         new_crv.write(''.join(out_lines).rstrip())
     return out_path
+
+
+

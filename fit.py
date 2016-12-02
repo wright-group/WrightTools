@@ -9,6 +9,7 @@ fitting tools
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import os
+import warnings
 import collections
 
 import numpy as np
@@ -80,7 +81,7 @@ class Function:
         else:
             p0 = self.guess(*args)
         out = scipy_optimize.leastsq(self.residuals, p0, args=args)
-        if out[1] not in [1]:  # solution was not found
+        if out[1] not in [1, 2]:  # solution was not found
             return np.full(len(p0), np.nan)
         return out[0]
 
@@ -93,6 +94,7 @@ class ExpectationValue(Function):
         self.params = ['value']
         self.limits = {}
         self.global_cutoff = None
+        warnings.warn('ExpectationValue depreciated---use Moments', DeprecationWarning, stacklevel=2)
 
     def evaluate(self, p, xi):
         '''
@@ -185,7 +187,8 @@ class Gaussian(Function):
                 p[i] = np.clip(p[i], *self.limits[name])
         # evaluate
         m, w, amp, baseline = p
-        return amp*np.exp(-(xi-m)**2/(2*w**2)) + baseline
+        out = amp*np.exp(-(xi-m)**2/(2*w**2)) + baseline
+        return out
 
     def guess(self, values, xi):
         values, xi = wt_kit.remove_nans_1D([values, xi])
@@ -333,6 +336,7 @@ class Moments(Function):
         self.dimensionality = 1
         self.params = ['integral', 'one', 'two', 'three', 'four', 'baseline']
         self.limits = {}
+        self.subtract_baseline = True
 
     def evaluate(self, p, xi):
         '''
@@ -350,19 +354,23 @@ class Moments(Function):
             y_internal = y_internal[::-1]
             x_internal = x_internal[::-1]
         # subtract baseline
-        baseline = get_baseline(y_internal)
-        y_internal -= baseline
+        if self.subtract_baseline:
+            baseline = get_baseline(y_internal)
+            y_internal -= baseline
+        else:
+            baseline = np.nan
         # calculate
         # integral
         outs = [np.trapz(y_internal, x_internal)]
         # first moment (expectation value)
-        outs.append(np.sum((x_internal*y_internal) / np.sum(y_internal)))
+        one = np.nansum((x_internal*y_internal) / np.nansum(y_internal))
+        outs.append(one)
         # second moment (central) (variance)
-        outs.append(np.sum((x_internal-outs[1])*y_internal) / np.sum(y_internal))
+        outs.append(np.nansum((x_internal-outs[1])*y_internal) / np.nansum(y_internal))
         sdev = np.sqrt(outs[2])
         # third and fourth moment (standardized)
         for n in range(3, 5):
-            mu = np.sum(((x_internal-outs[1])**n)*y_internal) / (np.sum(y_internal)*(sdev**n))
+            mu = np.nansum(((x_internal-outs[1])**n)*y_internal) / (np.nansum(y_internal)*(sdev**n))
             outs.append(mu)
         # finish
         outs.append(baseline)
@@ -397,11 +405,11 @@ class Fitter:
             print('channel type', type(channel), 'not valid')
         # transpose data ------------------------------------------------------
         # fitted axes will be LAST
-        transpose_order = range(len(self.data.axes))
+        transpose_order = list(range(len(self.data.axes)))
         self.axis_indicies.reverse()
         for i in range(len(self.axes)):
             ai = self.axis_indicies[i]
-            ri = range(len(self.data.axes))[-(i+1)]
+            ri = list(range(len(self.data.axes)))[-(i+1)]
             transpose_order[ri], transpose_order[ai] = transpose_order[ai], transpose_order[ri]
         self.axis_indicies.reverse()
         self.data.transpose(transpose_order, verbose=False)
