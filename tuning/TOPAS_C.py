@@ -213,7 +213,7 @@ def process_C2_motortune(opa_index, data_filepath, curves, save=True):
     # finish
     if save:
         directory = os.path.dirname(data_filepath)
-        path = curve.save(save_directory=directory, old_filepaths=curves)
+        path = curve.save(save_directory=directory)
         image_path = data_filepath.replace('.data', '.png')
         plt.savefig(image_path, dpi=300, transparent=True)
         plt.close(fig)
@@ -318,7 +318,7 @@ def process_D2_motortune(opa_index, data_filepath, curves, save=True):
     # finish
     if save:
         directory = os.path.dirname(data_filepath)
-        path = curve.save(save_directory=directory, old_filepaths=curves)
+        path = curve.save(save_directory=directory)
         image_path = data_filepath.replace('.data', '.png')
         plt.savefig(image_path, dpi=300, transparent=True)
         plt.close(fig)
@@ -486,9 +486,9 @@ def process_preamp_motortune(OPA_index, data_filepath, curves, save=True):
         motors.append(wt_curve.Motor([pc[i] for pc in preamp_chosen], name))
     for i in range(2, 4):
         motors.append(old_curve_copy.motors[i])
-    curve = wt_curve.Curve(colors, 'nm', motors, old_curve.name, 
-                           old_curve.interaction, 'TOPAS-C', 
-                           method=wt_curve.Linear)
+    curve = old_curve.copy()
+    curve.colors = colors
+    curve.motors = motors
     curve.map_colors(setpoints)
     # preapre for plot
     fig, gs = wt_artists.create_figure(width='single', cols=[1, 'cbar'])
@@ -551,7 +551,7 @@ def process_preamp_motortune(OPA_index, data_filepath, curves, save=True):
     # write files
     if save:
         directory = os.path.dirname(data_filepath)
-        path = curve.save(save_directory=directory, old_filepaths=curves)
+        path = curve.save(save_directory=directory)
         image_path = data_filepath.replace('.data', '.png')
         # TODO: figure out how to get transparent background >:-(
         plt.savefig(image_path, dpi=300, transparent=False)
@@ -567,6 +567,7 @@ def process_SHS_motortune(OPA_index, data_filepath, curves, save=True):
     m2_index = headers['name'].index('w%d_Mixer_2'%OPA_index)
     wm_index = headers['name'].index('wm')
     zi_index = headers['kind'].index('channel')  # the first channel
+    zi_index += 1  # TODO: remove
     ws = headers['w%d points'%OPA_index]
     ws_len = len(ws)
     wm_len = len(headers['wm points'])
@@ -676,7 +677,7 @@ def process_SHS_motortune(OPA_index, data_filepath, curves, save=True):
     # finish
     if save:
         directory = os.path.dirname(data_filepath)
-        path = curve.save(save_directory=directory, old_filepaths=curves)
+        path = curve.save(save_directory=directory)
         image_path = data_filepath.replace('.data', '.png')
         plt.savefig(image_path, dpi=300, transparent=True)
         plt.close(fig)

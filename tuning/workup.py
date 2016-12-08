@@ -181,7 +181,7 @@ def tune_test(data, curve, channel_name, level=False, cutoff_factor=0.01,
     channel.values[channel.values<cutoff] = np.nan
     # fit
     function = wt_fit.Moments()
-    fitter = wt_fit.Fitter(function, data, 'wm')
+    fitter = wt_fit.Fitter(function, data, data.axes[0].name)
     outs = fitter.run()
     # spline
     xi = outs.axes[0].points
