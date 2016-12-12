@@ -155,7 +155,7 @@ class Calibration:
             xi = np.linspace(self.points[1].min(), self.points[1].max(), 101)
             yi = np.array([self.get_value([kwargs['color'], x]) for x in xi])
             i = np.argmin(np.abs(yi-value))
-            out = [{'color': kwargs['color'], 'degree': xi[i]}]            
+            out = [{'color': kwargs['color'], 'angle': xi[i]}]            
         return out
             
     def get_value(self, positions, units='same'):
@@ -243,7 +243,7 @@ class Calibration:
             ax = plt.subplot(gs[0, 0])
             ax.patch.set_facecolor([0.75]*3)
             levels = np.linspace(self.values.min(), self.values.max(), 200)
-            ax.tricontourf(*self.points, self.values, cmap=cmap, levels=levels)
+            ax.tricontourf(self.points[0], self.points[1], self.values, cmap=cmap, levels=levels)
             ax.scatter(self.points[0], self.points[1], c='k', s=3, marker='o')
             ax.set_xlim(self.points[0].min(), self.points[0].max())
             ax.set_ylim(self.points[1].min(), self.points[1].max())
@@ -310,7 +310,7 @@ class Calibration:
         file_path = wt_kit.write_headers(file_path, headers)
         X = np.vstack([self.points, self.values]).T
         with open(file_path, 'ab') as f:
-            np.savetxt(f, X, fmt='%6e', delimiter='\t')
+            np.savetxt(f, X, fmt=str('%6e'), delimiter='\t')
         # plot
         if plot:
             save_directory = save_directory

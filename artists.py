@@ -29,6 +29,16 @@ matplotlib.rcParams['font.size'] = 14
 from . import kit as wt_kit
 
 
+### define ####################################################################
+
+
+# string types
+if sys.version[0] == '2':
+    string_type = basestring  # recognize unicode and string types
+else:
+    string_type = str  # newer versions of python don't have unicode type
+
+
 ### artist helpers ############################################################
 
 
@@ -598,7 +608,7 @@ def plot_colorbar(cax=None, cmap='default', ticks=None, clim=None, vlim=None,
     if cax is None:
         cax = plt.gca()
     # parse cmap
-    if type(cmap) == str:
+    if isinstance(cmap, string_type):
         cmap = colormaps[cmap]
     # parse ticks
     if ticks is None:

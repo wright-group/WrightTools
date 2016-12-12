@@ -28,11 +28,7 @@ from . import units as wt_units
 from . import shots_processing
 
 
-
-
-
 ### define ####################################################################
-
 
 
 debug = False
@@ -47,7 +43,6 @@ else:
 def _my_warning(message, category=UserWarning, filename='', lineno=-1):
     print(category.__name__+':', message)
 warnings.showwarning = _my_warning
-
 
 
 ### data class ################################################################
