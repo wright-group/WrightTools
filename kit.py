@@ -883,6 +883,32 @@ class Spline:
         '''
         Wrapper class for scipy.UnivariateSpline, made to be slightly less
         finicky with things like decending xi arrays and nans.
+        
+        Parameters
+        ----------
+        xi : 1D array
+            x points.
+        yi : 1D array
+            y points.
+        k : integer (optional)
+            Degree of smoothing. Must be between 1 and 5 (inclusive). Default
+            is 3.
+        s : integer (optional)
+            Positive smoothing factor used to choose the number of knots.
+            Number of knots will be increased until the smoothing condition is
+            satisfied::
+            
+                sum((w[i] * (y[i]-spl(x[i])))**2, axis=0) <= s
+                
+            If 0, spline will interpolate through all data points. Default is
+            1000.
+        ignore_nans : boolean (optional)
+            Toggle removle of nans. Default is True.
+            
+        
+        Note
+        ----
+        Use k=1 and s=0 for a linear interplation.
         '''
         # import
         from scipy.interpolate import UnivariateSpline

@@ -19,7 +19,8 @@ import numpy as np
 
 # angle units (native: rad)
 angle = {'kind': 'angle',
-         'rad': ['x', 'x', r'rad']}
+         'rad': ['x', 'x', r'rad'],
+         'deg': ['x/57.2958', '57.2958*x', r'deg']}
          
 # delay units (native: fs)
 fs_per_mm = 3336.

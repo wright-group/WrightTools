@@ -78,8 +78,8 @@ class Linear:
         self.colors = colors
         self.units = units
         self.motors = motors
-        self.functions = [scipy.interpolate.InterpolatedUnivariateSpline(colors, motor.positions) for motor in motors]
-        self.i_functions = [scipy.interpolate.InterpolatedUnivariateSpline(motor.positions, colors) for motor in motors]
+        self.functions = [wt_kit.Spline(colors, motor.positions, k=1, s=0) for motor in motors]
+        self.i_functions = [wt_kit.Spline(motor.positions, colors, k=1, s=0) for motor in motors]
 
     def get_motor_positions(self, color):
         return [f(color) for f in self.functions]

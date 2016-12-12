@@ -190,9 +190,12 @@ def tune_test(data, curve, channel_name, level=False, cutoff_factor=0.01,
     offsets_splined = spline(xi)
     # make curve --------------------------------------------------------------
     curve = curve.copy()
-    points = curve.colors    
+    curve_native_units = curve.units
+    curve.convert('wn')
+    points = curve.colors.copy()
     curve.colors += offsets_splined
-    curve.map_colors(points)
+    curve.map_colors(points, units='wn')
+    curve.convert(curve_native_units)
     # plot --------------------------------------------------------------------
     fig, gs = wt_artists.create_figure(default_aspect=0.5)
     # heatmap
