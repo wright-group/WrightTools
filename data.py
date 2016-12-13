@@ -28,11 +28,7 @@ from . import units as wt_units
 from . import shots_processing
 
 
-
-
-
 ### define ####################################################################
-
 
 
 debug = False
@@ -47,7 +43,6 @@ else:
 def _my_warning(message, category=UserWarning, filename='', lineno=-1):
     print(category.__name__+':', message)
 warnings.showwarning = _my_warning
-
 
 
 ### data class ################################################################
@@ -299,7 +294,7 @@ class Data:
         '''
         Central class for data in the Wright Group.
         
-        Attributes
+        Parameters
         ----------
         channels : list
             A list of Channel objects. Channels are also inherited as 
@@ -1425,8 +1420,8 @@ class Data:
                 # for all slices...
                 for index in np.ndindex(values[..., 0].shape):
                     current_slice = values[index]
-                    temp_slice = np.pad(current_slice, int(factor), mode='edge')
-                    values[index] = np.convolve(temp_slice, w/w.sum(), mode='valid')
+                    temp_slice = np.pad(current_slice, int(factor), mode=str('edge'))
+                    values[index] = np.convolve(temp_slice, w/w.sum(), mode=str('valid'))
                 # transpose out
                 values = values.transpose(transpose_order)
             # return array to channel object

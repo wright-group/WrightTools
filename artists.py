@@ -9,6 +9,7 @@ Tools for visualizing data.
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import os
+import sys
 import datetime
 import collections
 
@@ -26,6 +27,16 @@ matplotlib.rcParams['contour.negative_linestyle'] = 'solid'
 matplotlib.rcParams['font.size'] = 14
 
 from . import kit as wt_kit
+
+
+### define ####################################################################
+
+
+# string types
+if sys.version[0] == '2':
+    string_type = basestring  # recognize unicode and string types
+else:
+    string_type = str  # newer versions of python don't have unicode type
 
 
 ### artist helpers ############################################################
@@ -597,7 +608,7 @@ def plot_colorbar(cax=None, cmap='default', ticks=None, clim=None, vlim=None,
     if cax is None:
         cax = plt.gca()
     # parse cmap
-    if type(cmap) == str:
+    if isinstance(cmap, string_type):
         cmap = colormaps[cmap]
     # parse ticks
     if ticks is None:
@@ -681,7 +692,8 @@ def savefig(path, fig=None, close=True):
     # get full path
     path = os.path.abspath(path)
     # save
-    plt.savefig(path, dpi=300, transparent=True, pad_inches=1)
+    plt.savefig(path, dpi=300, transparent=False, pad_inches=1,
+                facecolor='none')
     # close
     if close:
         plt.close(fig)
@@ -750,7 +762,7 @@ def subplots_adjust(fig=None, inches=1):
     fig.subplots_adjust(vert, horz, 1-vert, 1-horz)
 
 
-def stitch_to_animation(images, outpath=None, duration=0.5, palettesize=1024,
+def stitch_to_animation(images, outpath=None, duration=0.5, palettesize=256,
                         verbose=True):
     '''
     Stitch a series of images into an animation. Currently supports animated
@@ -780,12 +792,16 @@ def stitch_to_animation(images, outpath=None, duration=0.5, palettesize=1024,
     if outpath is None:
         outpath = os.path.splitext(images[0])[0] + '.gif'
     # write
-    t = wt_kit.Timer(verbose=False)
-    with t, imageio.get_writer(outpath, mode='I', duration=duration,
-                               palettesize=palettesize) as writer:
-        for p in images:
-            image = imageio.imread(p)
-            writer.append_data(image)
+    try:
+        t = wt_kit.Timer(verbose=False)
+        with t, imageio.get_writer(outpath, mode='I', duration=duration,
+                                   palettesize=palettesize) as writer:
+            for p in images:
+                image = imageio.imread(p)
+                writer.append_data(image)
+    except:
+        print('Error: {0}'.format(sys.exc_info()[0]))
+        return None
     # finish
     if verbose:
         interval = np.round(t.interval, 2)
