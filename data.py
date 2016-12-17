@@ -635,10 +635,10 @@ class Data:
         # transpose so axes of divisor are last (in order)
         axis_indicies = [self.axis_names.index(name) for name in divisor.axis_names]
         axis_indicies.reverse()        
-        transpose_order = range(len(self.axes))
+        transpose_order = list(range(len(self.axes)))
         for i in range(len(axis_indicies)):
             ai = axis_indicies[i]
-            ri = range(len(self.axes))[-(i+1)]
+            ri = list(range(len(self.axes)))[-(i+1)]
             transpose_order[ri], transpose_order[ai] = transpose_order[ai], transpose_order[ri]
         self.transpose(transpose_order, verbose=False)
         # get own channel
