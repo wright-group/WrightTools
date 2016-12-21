@@ -196,7 +196,7 @@ class CoSet:
         headers['offset units'] = self.offset_units
         file_path = wt_kit.write_headers(file_path, headers)
         X = np.vstack([self.control_points, self.offset_points]).T
-        with open(file_path, 'a') as f: 
+        with open(file_path, 'ab') as f: 
             np.savetxt(f, X, fmt=str('%8.6f'), delimiter='\t')
         if plot:
             image_path = file_path.replace('.coset', '.png')
