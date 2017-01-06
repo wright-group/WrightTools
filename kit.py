@@ -912,8 +912,8 @@ class Spline:
         '''
         # import
         from scipy.interpolate import UnivariateSpline
-        xi_internal = xi.copy()
-        yi_internal = yi.copy()
+        xi_internal = np.array(xi).copy()
+        yi_internal = np.array(yi).copy()
         # nans
         if ignore_nans:
             l = [xi_internal, yi_internal]
