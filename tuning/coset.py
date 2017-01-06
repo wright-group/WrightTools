@@ -6,6 +6,8 @@ COSET
 ### import ####################################################################
 
 
+from __future__ import absolute_import, division, print_function, unicode_literals
+
 import os
 import copy
 import collections
@@ -184,7 +186,8 @@ class CoSet:
     def save(self, save_directory=None, plot=True, verbose=True):
         if save_directory is None:
             save_directory = os.getcwd()
-        file_name = ' - '.join([self.name, wt_kit.get_timestamp()]) + '.coset'
+        time_stamp = wt_kit.TimeStamp()
+        file_name = ' - '.join([self.name, time_stamp.path]) + '.coset'
         file_path = os.path.join(save_directory, file_name)
         headers = collections.OrderedDict()
         headers['control'] = self.control_name
@@ -193,13 +196,13 @@ class CoSet:
         headers['offset units'] = self.offset_units
         file_path = wt_kit.write_headers(file_path, headers)
         X = np.vstack([self.control_points, self.offset_points]).T
-        with open(file_path, 'a') as f: 
-            np.savetxt(f, X, fmt='%8.6f', delimiter='\t')
+        with open(file_path, 'ab') as f: 
+            np.savetxt(f, X, fmt=str('%8.6f'), delimiter='\t')
         if plot:
             image_path = file_path.replace('.coset', '.png')
             self.plot(autosave=True, save_path=image_path)
         if verbose:
-            print 'coset saved at {}'.format(file_path)
+            print('coset saved at {}'.format(file_path))
     
     def sort(self):
         '''

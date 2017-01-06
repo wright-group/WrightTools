@@ -201,7 +201,7 @@ plt.close()
 tsf = WMEL.Artist(size = [1, 1],
                   energies = [0., 0.15, 0.25, 1.],
                   state_names = ['g', 'v', 'v+v\'', 'virt'],
-                  virtual = [3])
+                  virtual = [3.])
 # pw1 alpha
 tsf.add_arrow([0, 0], 0, [0, 1], 'ket', '1')
 tsf.add_arrow([0, 0], 1, [1, 2], 'ket', '2')

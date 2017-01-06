@@ -6,6 +6,8 @@ unit and label handling in WrightTools
 ### import ####################################################################
 
 
+from __future__ import absolute_import, division, print_function, unicode_literals
+
 import numpy as np
 
 
@@ -17,7 +19,8 @@ import numpy as np
 
 # angle units (native: rad)
 angle = {'kind': 'angle',
-         'rad': ['x', 'x', r'rad']}
+         'rad': ['x', 'x', r'rad'],
+         'deg': ['x/57.2958', '57.2958*x', r'deg']}
          
 # delay units (native: fs)
 fs_per_mm = 3336.
@@ -88,7 +91,7 @@ def converter(val, current_unit, destination_unit):
     if current_unit is None and destination_unit is None:
         pass
     else:
-        print 'conversion {0} to {1} not valid: returning input'.format(current_unit, destination_unit)
+        print('conversion {0} to {1} not valid: returning input'.format(current_unit, destination_unit))
     return val
 
 

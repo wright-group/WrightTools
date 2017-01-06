@@ -1,11 +1,5 @@
 # WrightTools
 
-Dependencies 
-- matplotlib
-- numpy
-- scipy
-- os
-- sys
-- collections
+Central package for Wright group data processing and presentation.
 
-<hr>
+Please see WrightTools.pdf for more information.

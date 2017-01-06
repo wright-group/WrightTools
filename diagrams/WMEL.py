@@ -53,7 +53,7 @@ class Subplot:
             direction = -1
             y_poss = [self.energies[between[0]], self.energies[between[1]] + head_size]
         else:
-            print 'between invalid!'
+            print('between invalid!')
             return
         # add line
         length = abs(y_poss[0] - y_poss[1])
@@ -149,7 +149,7 @@ class Artist:
             direction = -1
             y_poss = [self.energies[between[0]], self.energies[between[1]] + head_size]
         else:
-            print 'between invalid!'
+            print('between invalid!')
             return
         subplot = self.subplots[row][column]
         # add line
@@ -172,7 +172,7 @@ class Artist:
         text = subplot.text(self.x_pos[number], -0.1, label, fontsize=font_size, horizontalalignment='center')
         return line, arrow_head, text
 
-    def plot(self, save_path=None, close=False):
+    def plot(self, save_path=None, close=False, bbox_inches='tight', pad_inches=1):
         # final manipulations
         for plot in self.subplots.flatten():
             # set limits
@@ -182,7 +182,7 @@ class Artist:
             plot.axis('off')
         # save
         if save_path:
-            plt.savefig(save_path, transparent=True, dpi=300)
+            plt.savefig(save_path, transparent=True, dpi=300, bbox_inches=bbox_inches, pad_inches=pad_inches)
         # close
         if close:
             plt.close()

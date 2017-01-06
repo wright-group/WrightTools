@@ -6,19 +6,266 @@ a collection of small, general purpose objects and methods
 ### import ####################################################################
 
 
+from __future__ import absolute_import, division, print_function, unicode_literals
+
 import os
 import re
 import ast
 import sys
 import copy
+import time
+import pytz
+import h5py
+import warnings
+import dateutil
+import datetime
 import itertools
 import linecache
 import collections
 from time import clock
 
+try:
+    import configparser as configparser  # python 3
+except ImportError:
+    import ConfigParser as configparser  # python 2
+
 import numpy as np
 
-import units
+from . import units
+
+
+### define ####################################################################
+
+
+if sys.version[0] == '2':
+    string_type = basestring  # recognize unicode and string types
+else:
+    string_type = str  # newer versions of python don't have unicode type
+
+
+### time and date #############################################################
+
+
+def get_timestamp(style='RFC3339', at=None, hms=True, frac=False,
+                  timezone='here', filename_compatible=False):
+    '''
+    Get the current time as a string.
+    
+    LEGACY - please use TimeStamp objects.
+    
+    Parameters
+    ----------
+    style : {'RFC3339', 'short', 'display', 'legacy'} (optional)
+        The format of the returned string. legacy is the old WrightTools
+        format. Default is RFC3339. All other arguments control RFC3339
+        behavior.
+    at : local seconds since epoch (optional)
+        Time at-which to generate timestamp. If None, use current time. Default
+        is None. Use time.time() to get seconds.
+    hms : bool (optional)
+        Toggle inclusion of current time (hours:minutes:seconds) in returned
+        string. Default is True. Does not effect legacy timestamp.
+    frac : bool (optional)
+        Toggle inclusion of fractional seconds in returned string. Default is
+        False. Does not effect legacy timestamp. Only appears if hms is
+        present.
+    timezone : {'here', 'utc'}
+        Timezone. Default is here.
+    filename_compatible : bool
+        Remove special charachters. Default is False.
+    '''
+    warnings.warn('get_timestamp is depreciated---use TimeStamp objects', DeprecationWarning, stacklevel=2)
+    # get timezone
+    if timezone == 'here':
+        tz = dateutil.tz.tzlocal()
+    elif timezone == 'utc':
+        tz = pytz.utc
+    else:
+        raise Exception('timezone not recognized in kit.get_timestamp')
+    # get now
+    if at == None:
+        now = datetime.datetime.now(tz)
+    else:
+        now = datetime.datetime.fromtimestamp(at, tz)
+    # generate string
+    if style == 'RFC3339':
+        # get timezone offset
+        delta_obj = tz.utcoffset(datetime.datetime.now(tz))
+        delta_sec = delta_obj.total_seconds()
+        m, s = divmod(delta_sec, 60)
+        h, m = divmod(m, 60)
+        # create output
+        format_string = '%Y-%m-%d'
+        if hms:
+            format_string += 'T%H:%M:%S'
+            if frac:
+                format_string += '.%f'
+        out = now.strftime(format_string)
+        if hms:
+            # add timezone information
+            if delta_sec == 0.:
+                out += 'Z'
+            else:
+                if delta_sec > 0:
+                    sign = '+'
+                elif delta_sec < 0:
+                    sign = '-'
+                def as_string(num):
+                    return str(np.abs(int(num))).zfill(2)
+                out += sign + as_string(h) + ':' + as_string(m)
+    elif style == 'short':
+        ssm = (now - now.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds()
+        out = now.strftime('%Y-%m-%d')
+        out += ' ' 
+        out += str(int(ssm)).zfill(5)
+    elif style == 'display':
+        # get timezone offset
+        delta_obj = tz.utcoffset(datetime.datetime.now(tz))
+        delta_sec = delta_obj.total_seconds()
+        m, s = divmod(delta_sec, 60)
+        h, m = divmod(m, 60)
+        # create output
+        format_string = '%Y-%m-%d'
+        if hms:
+            format_string += ' %H:%M:%S'
+            if frac:
+                format_string += '.%f'
+        out = now.strftime(format_string)
+    elif style == 'legacy':
+        out = now.strftime('%Y.%m.%d %H_%M_%S')
+    else:
+        raise Exception('format not recognized in kit.get_timestamp')
+    if filename_compatible:
+        illegal_characters = [':']
+        for char in illegal_characters:
+            out = out.replace(char, '')
+    return out
+
+
+class TimeStamp:
+    
+    def __init__(self, at=None, timezone='local'):
+        '''
+        Class for representing a moment in time.
+        
+        Parameters
+        ----------
+        at : float (optional)
+            Seconds since epoch (unix time). If None, current time will be
+            used. Default is None.
+        timezone : string or integer (optional)
+            String (one in {'local', 'utc'} or seconds offset from UTC. Default
+            is local.
+            
+        Attributes
+        ----------
+        unix : float
+            Seconds since epoch (unix time).
+        date : string
+            Date.
+        hms : string
+            Hours, minutes, seconds.
+        human : string
+            Representation of the timestamp meant to be human readable.
+        legacy : string
+            Legacy WrightTools timestamp representation.
+        RFC3339 : string
+            `RFC3339 <https://www.ietf.org/rfc/rfc3339.txt>`_ representation (recommended for most applications).
+        RFC5322 : string
+            `RFC5322 <https://tools.ietf.org/html/rfc5322#section-3.3>`_ representation.
+        path : string
+            Representation of the timestamp meant for inclusion in filepaths.
+        '''
+        # get timezone
+        if timezone == 'local':
+            self.tz = dateutil.tz.tzlocal()
+        elif timezone == 'utc':
+            self.tz = pytz.utc
+        elif type(timezone) in [int, float]:
+            self.tz = dateutil.tz.tzoffset(None, timezone)
+        else:
+            raise KeyError
+        # get unix timestamp
+        if at is None:
+            self.unix = time.time()
+        else:
+            self.unix = at
+        # get now
+        if at == None:
+            self.datetime = datetime.datetime.now(self.tz)
+        else:
+            self.datetime = datetime.datetime.fromtimestamp(at, self.tz)
+
+    def __repr__(self):
+        return self.RFC3339
+        
+    def __str__(self):
+        return str(self.unix)
+        
+    @property
+    def date(self):
+        return self.datetime.strftime('%Y-%m-%d')
+
+    @property
+    def hms(self):
+        return self.datetime.strftime('%H:%M:%S')
+
+    @property
+    def human(self):
+        # get timezone offset
+        delta_sec = time.timezone
+        m, s = divmod(delta_sec, 60)
+        h, m = divmod(m, 60)
+        # create output
+        format_string = '%Y-%m-%d %H:%M:%S'
+        out = self.datetime.strftime(format_string)
+        return out
+    
+    @property
+    def legacy(self):
+        return self.datetime.strftime('%Y.%m.%d %H_%M_%S')
+
+    @property
+    def RFC3339(self):
+        # get timezone offset
+        delta_sec = time.timezone
+        m, s = divmod(delta_sec, 60)
+        h, m = divmod(m, 60)
+        # timestamp
+        format_string = '%Y-%m-%dT%H:%M:%S.%f'
+        out = self.datetime.strftime(format_string)
+        # timezone
+        if delta_sec == 0.:
+            out += 'Z'
+        else:
+            if delta_sec > 0:
+                sign = '+'
+            elif delta_sec < 0:
+                sign = '-'
+            def as_string(num):
+                return str(np.abs(int(num))).zfill(2)
+            out += sign + as_string(h) + ':' + as_string(m)
+        return out
+        
+    @property
+    def RFC5322(self):
+        return self.datetime.astimezone(tz=pytz.utc).strftime('%a, %d %b %Y %H:%M:%S GMT')
+    
+    @property
+    def path(self):
+        out = self.datetime.strftime('%Y-%m-%d')
+        out += ' ' 
+        ssm = (self.datetime - self.datetime.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds()
+        out += str(int(ssm)).zfill(5)
+        return out
+
+
+def timestamp_from_RFC3339(RFC3339):
+    dt = dateutil.parser.parse(RFC3339)
+    timezone = dt.tzinfo._offset.total_seconds()
+    unix = (dt - datetime.datetime(1970, 1, 1, tzinfo=pytz.utc)).total_seconds()  # could use .timestamp() in 3.3 forwards
+    timestamp = TimeStamp(at=unix, timezone=timezone)
+    return timestamp
 
 
 ### file processing ###########################################################
@@ -79,7 +326,7 @@ def find_name(fname, suffix):
                i = i + 1
                # prevent infinite loop if the code isn't perfect
                if i > 100:
-                   print 'didn\'t find a good name; index used up to 100!'
+                   print('didn\'t find a good name; index used up to 100!')
                    fname = False
                    good_name=True
         except IOError:
@@ -187,12 +434,6 @@ def get_path_matching(name):
     # TODO: something more robust to catch the rest of the cases?
     return p
 
-def get_timestamp():
-
-    import time
-
-    return time.strftime('%Y.%m.%d %H_%M_%S')
-
 
 def glob_handler(extension, folder=None, identifier=None):
     '''
@@ -224,6 +465,69 @@ def glob_handler(extension, folder=None, identifier=None):
     return filepaths
 
 
+class INI():
+    
+    def __init__(self, filepath):
+        '''
+        Handle communication with an INI file.
+        '''
+        self.filepath = filepath
+        if sys.version[0] == '3':
+            self.config = configparser.ConfigParser()
+        else:
+            self.config = configparser.SafeConfigParser()
+
+    def add_section(self, section):
+        self.config.read(self.filepath)
+        self.config.add_section(section)
+        with open(self.filepath, 'w') as f:
+            self.config.write(f)
+
+    def clear(self):
+        '''
+        Remove all contents from file. Use with extreme caution.
+        '''
+        with open(self.filepath, "w"):
+            pass
+        if sys.version[0] == '3':
+            self.config = configparser.ConfigParser()
+        else:
+            self.config = configparser.SafeConfigParser()
+            
+    @property
+    def dictionary(self):
+        self.config.read(self.filepath)
+        return self.config._sections
+    
+    def has_option(self, section, option):
+        self.config.read(self.filepath)
+        return self.config.has_option(section, option) 
+    
+    def has_section(self, section):
+        self.config.read(self.filepath)
+        return self.config.has_section(section)
+
+    def read(self, section, option):
+        self.config.read(self.filepath)
+        raw = self.config.get(section, option)
+        out = string2item(raw, sep=', ')
+        return out
+    
+    @property
+    def sections(self):
+        self.config.read(self.filepath)
+        return self.config.sections()
+    
+    def write(self, section, option, value):
+        self.config.read(self.filepath)
+        string = item2string(value, sep=', ')
+        self.config.set(section, option, string)
+        with open(self.filepath, 'w') as f:
+            self.config.write(f)
+    
+    
+    
+
 def plot_dats(folder=None, transpose=True):
     '''
     Convinience function to plot raw data from COLORS
@@ -241,7 +545,7 @@ def plot_dats(folder=None, transpose=True):
 
     for _file in files:
 
-        print ' '
+        print(' ')
 
         try:
 
@@ -264,13 +568,35 @@ def plot_dats(folder=None, transpose=True):
                             autosave = True, output_folder = folder, fname = fname)
 
             else:
-                print 'error! - dimensionality of data ({}) not recognized'.format(len(dat_data.axes))
+                print('error! - dimensionality of data ({}) not recognized'.format(len(dat_data.axes)))
 
         except:
             import sys
-            print 'dat {} not recognized as plottible in plot_dats'.format(filename_parse(_file)[1])
-            print sys.exc_info()[0]
+            print('dat {} not recognized as plottible in plot_dats'.format(filename_parse(_file)[1]))
+            print(sys.exc_info()[0])
             pass
+
+
+def read_h5(filepath):
+    '''
+    Read from a `HDF5 <https://www.hdfgroup.org/HDF5/doc/H5.intro.html>`_
+    file, returning the data within as a python dictionary.
+    
+    Returns
+    -------
+    OrderedDict
+        Dictionary containing data from HDF5 file.    
+    
+    See Also
+    --------
+    kit.write_h5
+    '''
+    d = collections.OrderedDict()
+    h5f = h5py.File(filepath, mode='r')
+    for key in h5f.keys():
+        d[key] = np.array(h5f[key])
+    h5f.close()
+    return d
 
 
 def read_headers(filepath):
@@ -290,38 +616,59 @@ def read_headers(filepath):
     headers = collections.OrderedDict()
     for line in open(filepath):
         if line[0] == '#':
-            split = line.split(':')
+            split = re.split('\: |\:\t', line)
             key = split[0][2:]
-            item = split[1].split('\t')
-            if split[1][0:3] == ' [[':  # case of multidimensional arrays
-                arr = string2array(split[1][1:])
-                headers[key] = arr
-            else:
-                if item[0] == '':
-                    item = [item[1]]
-                item = [i.strip() for i in item]  # remove dumb things
-                item = [i if i is not '' else 'None' for i in item]  # handle empties
-                # handle lists
-                is_list = False
-                list_chars = ['[', ']']
-                for item_index, item_string in enumerate(item):
-                    if item_string == '[]':
-                        continue
-                    for char in item_string:
-                        if char in list_chars:
-                            is_list = True
-                    for char in list_chars:
-                        item_string = item[item_index]
-                        item[item_index] = item_string.replace(char, '')
-                # eval contents
-                item = [i.strip() for i in item]  # remove dumb things
-                item = [ast.literal_eval(i) for i in item]
-                if len(item) == 1 and not is_list:
-                    item = item[0]
-                headers[key] = item
+            headers[key] = string2item(split[1])
         else:
             break  # all header lines are at the beginning
     return headers
+
+
+def write_h5(filepath, dictionary):
+    '''
+    Save a python dictionary into an `HDF5 <https://www.hdfgroup.org/HDF5/doc/H5.intro.html>`_
+    file.
+    
+    Right now it only works to store numpy arrays of numbers.
+    
+    Parameters
+    ----------
+    filepath : str
+        Filepath to HDF5 file to create. The .hdf5 extension will be appended
+        to the filename if it is not already there.
+    dictionary : python dictionary-like
+        The content to store to the HDF5 file.
+
+    Returns
+    -------
+    str
+        The full filepath to the created HDF5 file.
+        
+        
+    See Also
+    --------
+    kit.read_h5
+    '''
+    # get full filepath
+    if filepath[-5:] == '.hdf5':
+        filepath = filepath
+    else:
+        filepath += '.hdf5'
+    filepath = os.path.abspath(filepath)
+    # create h5f object        
+    h5f = h5py.File(filepath, 'w')    
+    # fill h5f object
+    for name, data in dictionary.items():
+        if type(data) == np.ndarray:
+            h5f.create_dataset(name, data=data, compression="gzip")
+        else:
+            # TODO: store it as a string
+            data = str(data)
+            dt = h5py.special_dtype(vlen=str)
+            h5f.create_dataset(name, data=data, dtype=dt)
+    # finish
+    h5f.close()
+    return filepath
 
 
 def write_headers(filepath, dictionary):
@@ -342,32 +689,17 @@ def write_headers(filepath, dictionary):
         Filepath of file.
     '''
     dictionary = copy.deepcopy(dictionary)
-    header_items = []
-    for key, value in dictionary.items():
-        header_item = key + ':'
-        if type(value) == str:
-            header_item += '\t' + '\'' + value + '\''
-        elif type(value) == list:
-            for i in range(len(value)):
-                if type(value[i]) == str:
-                    value[i] = '\'' + value[i] + '\''
-                else:
-                    value[i] = str(value[i])
-            header_item += ' [' + '\t'.join(value) + ']'
-        elif type(value).__module__ == np.__name__:  # anything from numpy
-            if hasattr(value, 'shape'):
-                string = array2string(value)
-                header_item += ' ' + string
-            else:
-                header_item += ' [' + '\t'.join([str(i) for i in value]) + ']'
-        else:
-            header_item += '\t' + str(value)
-        header_items.append(header_item)
     # write header
-    header_str = ''
-    for item in header_items:
-        header_str += item + '\n'
-    header_str = header_str[:-1]  # remove final newline charachter
+    for key, value in dictionary.items():
+        dictionary[key] = item2string(value)
+    lines = []
+    for key, value in dictionary.items():
+        if '\t' in value:
+            joiner = ''
+        else:
+            joiner = '\t'
+        lines.append(joiner.join([key+':', value]))
+    header_str = '\n'.join(lines)
     np.savetxt(filepath, [], header=header_str)
     # return
     return filepath
@@ -429,39 +761,41 @@ def closest_pair(arr, give='indicies'):
         raise KeyError('give not recognized in closest_pair')
 
 
-def diff(xi, yi, order = 1):
+def diff(xi, yi, order=1):
     '''
     numpy.diff is a convinient method but it only works for evenly spaced data \n
     this method does the same but for an arbitrary 1D data slice \n
     returns numpy array [xi, yi_out]. edge points are padded.
     '''
     import numpy as np
-
-    # grid data to be even ----------------------------------------------------
-
+    # grid data to be even
     # get function that describes data
     import scipy
-    f = scipy.interpolate.interp1d(xi, yi, kind = 'linear')
-
+    f = scipy.interpolate.interp1d(xi, yi, kind='linear')
     xi_even = np.linspace(min(xi), max(xi), len(xi))
     yi_even = f(xi_even)
-
-    # call numpy.diff ---------------------------------------------------------
-
-    yi_out_even = np.diff(yi_even, n = order)
-    yi_out_even = np.pad(yi_out_even, order, mode = 'edge')
+    # call numpy.diff
+    yi_out_even = np.diff(yi_even, n=order)
+    yi_out_even = np.pad(yi_out_even, order, mode=str('edge'))  # str() to prevent problem in numpy with python 2 vs 3
     yi_out_even = np.delete(yi_out_even, range(order))
-
-    # put data back onto original xi points -----------------------------------
-
+    # put data back onto original xi points
     xi_even += xi_even[1] - xi_even[0]  # offset by half step...
-
     fdiff = scipy.interpolate.interp1d(xi_even, yi_out_even,
-                                       kind = 'linear', bounds_error = False)
-
+                                       kind='linear', bounds_error=False)
     yi_out = fdiff(xi)
-
     return np.array([xi, yi_out])
+
+
+def fft(xi, yi):
+    # TODO: documentation
+    yi = np.fft.fft(yi)
+    d = (xi.max()-xi.min())/(xi.size-1)
+    xi = np.fft.fftfreq(yi.size, d=d)
+    # shift
+    xi = np.fft.fftshift(xi)
+    yi = np.fft.fftshift(yi)
+    return xi, yi
+
 
 
 def mono_resolution(grooves_per_mm, slit_width, focal_length, output_color, output_units='wn'):
@@ -545,10 +879,36 @@ class Spline:
     def __call__(self, *args, **kwargs):
         return self.true_spline(*args, **kwargs)
 
-    def __init__(self, xi, yi, k=2, s=1000, ignore_nans=True):
+    def __init__(self, xi, yi, k=3, s=1000, ignore_nans=True):
         '''
         Wrapper class for scipy.UnivariateSpline, made to be slightly less
         finicky with things like decending xi arrays and nans.
+        
+        Parameters
+        ----------
+        xi : 1D array
+            x points.
+        yi : 1D array
+            y points.
+        k : integer (optional)
+            Degree of smoothing. Must be between 1 and 5 (inclusive). Default
+            is 3.
+        s : integer (optional)
+            Positive smoothing factor used to choose the number of knots.
+            Number of knots will be increased until the smoothing condition is
+            satisfied::
+            
+                sum((w[i] * (y[i]-spl(x[i])))**2, axis=0) <= s
+                
+            If 0, spline will interpolate through all data points. Default is
+            1000.
+        ignore_nans : boolean (optional)
+            Toggle removle of nans. Default is True.
+            
+        
+        Note
+        ----
+        Use k=1 and s=0 for a linear interplation.
         '''
         # import
         from scipy.interpolate import UnivariateSpline
@@ -679,6 +1039,28 @@ def intersperse(lst, item):
     return result
 
 
+def item2string(item, sep='\t'):
+    # TODO: document
+    out = ''
+    if isinstance(item, string_type):
+        out += '\'' + item + '\''
+    elif type(item) == list:
+        for i in range(len(item)):
+            if isinstance(item[i], string_type):
+                item[i] = '\'' + item[i] + '\''
+            else:
+                item[i] = str(item[i])
+        out += ' [' + sep.join(item) + ']'
+    elif type(item).__module__ == np.__name__:  # anything from numpy
+        if hasattr(item, 'shape'):
+            out = ' ' + array2string(item, sep=sep)
+        else:
+            out += ' [' + sep.join([str(i) for i in item]) + ']'
+    else:
+        out = str(item)
+    return out
+
+
 identity_operators = ['=', '+', '-', '*', '/', 'F']
 def parse_identity(string):
     '''
@@ -748,12 +1130,12 @@ def string2array(string, sep='\t'):
     for i in range(1, dimensionality+1)[::-1]:
         to_match = '['*(i-1)
         count_positive = string.count(to_match + ' ')
-        cout_negative = string.count(to_match + '-')
-        shape.append(count_positive + cout_negative)
+        count_negative = string.count(to_match + '-')
+        shape.append(count_positive + count_negative)
     shape[-1] = size / shape[-2]
     for i in range(1, dimensionality-1)[::-1]:
         shape[i] = shape[i] / shape[i-1]
-    shape = tuple(shape)
+    shape = tuple([int(s) for s in shape])
     # import list of floats
     l = string.split(' ')
     l = flatten_list([i.split('-') for i in l])  # annoyingly series of negative values get past previous filters
@@ -772,6 +1154,40 @@ def string2array(string, sep='\t'):
     arr.shape = shape
     # finish
     return arr
+
+
+def string2item(string, sep='\t'):
+    # TODO: document
+    if string[0] == '\'' and string[-1] == '\'':
+        out = string[1:-1]
+    else:
+        split = string.split(sep)
+        if split[0][0:2] == '[[':  # case of multidimensional arrays
+            out = string2array(sep.join(split))
+        else:
+            split = [i.strip() for i in split]  # remove dumb things
+            split = [i if i is not '' else 'None' for i in split]  # handle empties
+            # handle lists
+            is_list = False
+            list_chars = ['[', ']']
+            for item_index, item_string in enumerate(split):
+                if item_string == '[]':
+                    continue
+                if item_string[0] == '\'' and item_string[-1] == '\'':  # this is a string
+                    continue
+                for char in item_string:
+                    if char in list_chars:
+                        is_list = True
+                for char in list_chars:
+                    item_string = split[item_index]
+                    split[item_index] = item_string.replace(char, '')
+            # eval contents
+            split = [i.strip() for i in split]  # remove dumb things
+            split = [ast.literal_eval(i) for i in split]
+            if len(split) == 1 and not is_list:
+                split = split[0]
+            out = split
+    return out
 
 
 unicode_dictionary = collections.OrderedDict()
@@ -840,7 +1256,7 @@ def update_progress(progress, carriage_return=False, length=50):
         text += '\r\n'
     sys.stdout.write(text)
     if progress == 100.:
-        print '\n'
+        print('\n')
     else:
         sys.stdout.flush()
 
@@ -860,4 +1276,4 @@ class Timer:
         self.end = clock()
         self.interval = self.end - self.start
         if self.verbose:
-            print 'elapsed time: {0} sec'.format(self.interval)
+            print('elapsed time: {0} sec'.format(self.interval))

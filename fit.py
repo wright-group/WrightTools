@@ -6,7 +6,10 @@ fitting tools
 ### import ####################################################################
 
 
+from __future__ import absolute_import, division, print_function, unicode_literals
+
 import os
+import warnings
 import collections
 
 import numpy as np
@@ -17,8 +20,8 @@ import matplotlib.pyplot as plt
 import scipy
 from scipy import optimize as scipy_optimize
 
-import data as wt_data
-import kit as wt_kit
+from . import data as wt_data
+from . import kit as wt_kit
 
 
 ### helper functions ##########################################################
@@ -78,7 +81,7 @@ class Function:
         else:
             p0 = self.guess(*args)
         out = scipy_optimize.leastsq(self.residuals, p0, args=args)
-        if out[1] not in [1]:  # solution was not found
+        if out[1] not in [1, 2]:  # solution was not found
             return np.full(len(p0), np.nan)
         return out[0]
 
@@ -91,6 +94,7 @@ class ExpectationValue(Function):
         self.params = ['value']
         self.limits = {}
         self.global_cutoff = None
+        warnings.warn('ExpectationValue depreciated---use Moments', DeprecationWarning, stacklevel=2)
 
     def evaluate(self, p, xi):
         '''
@@ -183,7 +187,8 @@ class Gaussian(Function):
                 p[i] = np.clip(p[i], *self.limits[name])
         # evaluate
         m, w, amp, baseline = p
-        return amp*np.exp(-(xi-m)**2/(2*w**2)) + baseline
+        out = amp*np.exp(-(xi-m)**2/(2*w**2)) + baseline
+        return out
 
     def guess(self, values, xi):
         values, xi = wt_kit.remove_nans_1D([values, xi])
@@ -284,7 +289,7 @@ class TwoD_Gaussian(Function):
         values, xi, yi, ok= self._Format_input(v, x, y)
 
         if not ok:
-            print "xi, yi are not the correct size and/or shape"
+            print("xi, yi are not the correct size and/or shape")
             return np.full(7, np.nan)
 
         Use_visible_baseline = False
@@ -313,7 +318,7 @@ class TwoD_Gaussian(Function):
         v, xi, yi, ok= self._Format_input(values, x, y)
 
         if not ok:
-            print "xi, yi are not the correct size and/or shape"
+            print("xi, yi are not the correct size and/or shape")
             return np.full(7, np.nan)
 
         # optimize
@@ -331,6 +336,7 @@ class Moments(Function):
         self.dimensionality = 1
         self.params = ['integral', 'one', 'two', 'three', 'four', 'baseline']
         self.limits = {}
+        self.subtract_baseline = True
 
     def evaluate(self, p, xi):
         '''
@@ -348,19 +354,23 @@ class Moments(Function):
             y_internal = y_internal[::-1]
             x_internal = x_internal[::-1]
         # subtract baseline
-        baseline = get_baseline(y_internal)
-        y_internal -= baseline
+        if self.subtract_baseline:
+            baseline = get_baseline(y_internal)
+            y_internal -= baseline
+        else:
+            baseline = np.nan
         # calculate
         # integral
         outs = [np.trapz(y_internal, x_internal)]
         # first moment (expectation value)
-        outs.append(np.sum((x_internal*y_internal) / np.sum(y_internal)))
+        one = np.nansum((x_internal*y_internal) / np.nansum(y_internal))
+        outs.append(one)
         # second moment (central) (variance)
-        outs.append(np.sum((x_internal-outs[1])*y_internal) / np.sum(y_internal))
+        outs.append(np.nansum((x_internal-outs[1])*y_internal) / np.nansum(y_internal))
         sdev = np.sqrt(outs[2])
         # third and fourth moment (standardized)
         for n in range(3, 5):
-            mu = np.sum(((x_internal-outs[1])**n)*y_internal) / (np.sum(y_internal)*(sdev**n))
+            mu = np.nansum(((x_internal-outs[1])**n)*y_internal) / (np.nansum(y_internal)*(sdev**n))
             outs.append(mu)
         # finish
         outs.append(baseline)
@@ -383,7 +393,7 @@ class Fitter:
         # will iterate over axes NOT fit
         self.not_fit_indicies = [self.data.axis_names.index(name) for name in self.data.axis_names if name not in self.axes]
         self.fit_shape = [self.data.axes[i].points.shape[0] for i in self.not_fit_indicies]
-        print 'fitter recieved data to make %d fits'%np.product(self.fit_shape)
+        print('fitter recieved data to make %d fits'%np.product(self.fit_shape))
 
     def run(self, channel=0, verbose=True):
         # get channel ---------------------------------------------------------
@@ -392,14 +402,14 @@ class Fitter:
         elif type(channel) == str:
             channel_index = self.data.channel_names.index(channel)
         else:
-            print 'channel type', type(channel), 'not valid'
+            print('channel type', type(channel), 'not valid')
         # transpose data ------------------------------------------------------
         # fitted axes will be LAST
-        transpose_order = range(len(self.data.axes))
+        transpose_order = list(range(len(self.data.axes)))
         self.axis_indicies.reverse()
         for i in range(len(self.axes)):
             ai = self.axis_indicies[i]
-            ri = range(len(self.data.axes))[-(i+1)]
+            ri = list(range(len(self.data.axes)))[-(i+1)]
             transpose_order[ri], transpose_order[ai] = transpose_order[ai], transpose_order[ri]
         self.axis_indicies.reverse()
         self.data.transpose(transpose_order, verbose=False)
@@ -435,7 +445,7 @@ class Fitter:
                 model_data = self.function.evaluate(out, *axes_points)
                 self.model.channels[channel_index].values[idx] = model_data
         if verbose:
-            print 'fitter done in %f seconds'%timer.interval
+            print('fitter done in %f seconds'%timer.interval)
         # clean up ------------------------------------------------------------
         # model
         self.model.transpose(transpose_order, verbose=False)

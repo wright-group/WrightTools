@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division, print_function, unicode_literals
+
 import numpy as np
 #import scipy.optimize as opt
 
@@ -31,10 +33,10 @@ def process(shots, names, kinds):
     if len(chopper_indicies) == 1:
         chpr_idx = chopper_indicies[0]
     
-    mask = shots[chpr_idx]
+    mask = shots[chpr_idx].copy()
     for i in range(len(mask)):
-        if mask[i]<0:
-            mask[i] = 0
+        if mask[i]==0:
+            mask[i] = -1
 
     out = np.full(len(channel_indicies)*2+2+3+4, np.nan)
     out_index = 0
@@ -44,8 +46,8 @@ def process(shots, names, kinds):
             out[out_index] = np.mean(shots[i]*shots[chopper_indicies[0]])*2.
             out_names.append(names[i] + '_cmean')
             out_index += 1
-            baseline = [shots[i][k] for k in range(len(shots[i])) if not mask[k]]
-            real = [shots[i][k] for k in range(len(shots[i])) if mask[k]]
+            baseline = [shots[i][k] for k in range(len(shots[i])) if mask[k]==-1]
+            real = [shots[i][k] for k in range(len(shots[i])) if mask[k]==1]
             out[out_index] = np.sqrt(np.power(np.std(baseline),2)+np.power(np.std(real),2))
             out_names.append(names[i] + '_cstd')
             out_index += 1
