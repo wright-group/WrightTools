@@ -151,6 +151,9 @@ def process_C2_motortune(opa_index, data_filepath, curves, save=True):
         if len(xi) == 0:
             ps.append(None)
             continue
+        if yi.min() > 0 or yi.max() < 0:
+            ps.append(None)
+            continue
         p = np.ma.polyfit(yi, xi, 2)
         ps.append(p)
     chosen_ws = []
@@ -478,7 +481,7 @@ def process_preamp_motortune(OPA_index, data_filepath, curves, save=True):
             false_points[i][1] = c1_spline(false_setpoints[i])
             false_points[i][2] = d1_spline(false_setpoints[i])
     # create new curve
-    colors = [pc[0] for pc in preamp_chosen]
+    colors = np.array([pc[0] for pc in preamp_chosen])
     motors = []
     old_curve_copy = old_curve.copy()
     old_curve_copy.map_colors(colors)
