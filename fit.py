@@ -464,10 +464,10 @@ class Fitter:
         self.outs._update()
         return self.outs
 
-### LinearSpectraDeconvoluter #################################################
+### MultiPeakFitter #################################################
 
 
-class LinearSpectraDeconvoluter:
+class MultiPeakFitter:
     """
     Written by Darien Morrow. darienmorrow@gmail.com & dmorrow3@wisc.edu
     
