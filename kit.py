@@ -762,28 +762,35 @@ def closest_pair(arr, give='indicies'):
 
 
 def diff(xi, yi, order=1):
-    '''
-    numpy.diff is a convinient method but it only works for evenly spaced data \n
-    this method does the same but for an arbitrary 1D data slice \n
-    returns numpy array [xi, yi_out]. edge points are padded.
-    '''
-    import numpy as np
-    # grid data to be even
-    # get function that describes data
-    import scipy
-    f = scipy.interpolate.interp1d(xi, yi, kind='linear')
-    xi_even = np.linspace(min(xi), max(xi), len(xi))
-    yi_even = f(xi_even)
-    # call numpy.diff
-    yi_out_even = np.diff(yi_even, n=order)
-    yi_out_even = np.pad(yi_out_even, order, mode=str('edge'))  # str() to prevent problem in numpy with python 2 vs 3
-    yi_out_even = np.delete(yi_out_even, range(order))
-    # put data back onto original xi points
-    xi_even += xi_even[1] - xi_even[0]  # offset by half step...
-    fdiff = scipy.interpolate.interp1d(xi_even, yi_out_even,
-                                       kind='linear', bounds_error=False)
-    yi_out = fdiff(xi)
-    return np.array([xi, yi_out])
+    """
+    Take the numerical derivative of a 1D array. Output is mapped onto the
+    original coordinates  using linear interpolation.
+
+    Parameters
+    ----------
+    xi : 1D array-like
+        Coordinates.
+    yi : 1D array-like
+        Values.
+    order : positive integer (optional)
+        Order of differentiation.
+
+    Returns
+    -------
+    1D numpy array
+        Numerical derivative. Has the same shape as the input arrays.
+    """
+    xi = np.array(xi).copy()
+    yi = np.array(yi).copy()
+    arg = np.argsort(xi)
+    xi = xi[arg]
+    yi = yi[arg]
+    midpoints = (xi[1:] + xi[:-1]) / 2
+    for _ in range(order):
+        d = np.diff(yi)
+        d /= np.diff(xi)
+        yi = np.interp(xi, midpoints, d)
+    return yi[arg]
 
 
 def fft(xi, yi):
@@ -912,8 +919,8 @@ class Spline:
         '''
         # import
         from scipy.interpolate import UnivariateSpline
-        xi_internal = xi.copy()
-        yi_internal = yi.copy()
+        xi_internal = np.array(xi).copy()
+        yi_internal = np.array(yi).copy()
         # nans
         if ignore_nans:
             l = [xi_internal, yi_internal]

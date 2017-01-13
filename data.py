@@ -1439,7 +1439,8 @@ class Data:
         axis : int or str
             The axis to split along.
         positions : number-type or 1D array-type
-            The position(s) to split at, in units.
+            The position(s) to split at, in units. If a non-exact position is
+            given, the closest valid axis position will be used.
         units : str (optional)
             The units of the given positions. Default is same, which assumes
             input units are identical to axis units.
@@ -1477,6 +1478,10 @@ class Data:
         if type(positions) in [int, float]:
             positions = [positions]
         positions = np.array(positions)
+        # positions should be in the data units
+        if not units == 'same':
+            positions = wt_units.converter(positions, units, axis.units)    
+        # get indicies of split
         indicies = []
         for position in positions:
             idx = np.argmin(abs(axis.points - position))
