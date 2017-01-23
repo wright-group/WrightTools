@@ -187,7 +187,7 @@ class Gaussian(Function):
                 p[i] = np.clip(p[i], *self.limits[name])
         # evaluate
         m, w, amp, baseline = p
-        out = amp*np.exp(-(xi-m)**2/(2*w**2)) + baseline
+        out = amp*np.exp(-(xi-m)**2/(2*(w**2))) + baseline
         return out
 
     def guess(self, values, xi):
@@ -416,12 +416,14 @@ class Fitter:
         # create output objects -----------------------------------------------
         # model
         self.model = self.data.copy()
-        self.model.name = self.data.name + ' model'
+        if self.data.name:
+            self.model.name = self.data.name + ' model'
         # outs
         self.outs = self.data.copy()
         for a in self.axes:
             self.outs.collapse(a, method='integrate')
-        self.outs.name = self.data.name + ' outs'
+        if self.data.name:
+            self.outs.name = self.data.name + ' outs'
         self.outs.channels.pop(channel_index)
         params_channels = []
         for param in self.function.params:

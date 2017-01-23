@@ -209,9 +209,8 @@ class Channel:
 
     def give_values(self, values, znull=None, zmin=None, zmax=None,
                     signed=None):
-
         self.values = values
-
+        # znull
         if znull is not None:
             self.znull = znull
         elif hasattr(self, 'znull'):
@@ -221,7 +220,7 @@ class Channel:
                 self.znull = np.nanmin(self.values)
         else:
             self.znull = np.nanmin(self.values)
-
+        # zmin
         if zmin is not None:
             self.zmin = zmin
         elif hasattr(self, 'zmin'):
@@ -231,7 +230,7 @@ class Channel:
                 self.zmin = np.nanmin(self.values)
         else:
             self.zmin = np.nanmin(self.values)
-
+        # zmax
         if zmax is not None:
             self.zmax = zmax
         elif hasattr(self, 'zmax'):
@@ -241,7 +240,7 @@ class Channel:
                 self.zmax = np.nanmax(self.values)
         else:
             self.zmax = np.nanmax(self.values)
-
+        # signed
         if signed is not None:
             self.signed = signed
         elif hasattr(self, 'signed'):
@@ -285,6 +284,10 @@ class Channel:
     def normalize(self):
         self.values /= np.nanmax(self.values)
         self._update()
+        
+    @ property
+    def zmag(self):
+        return max((self.zmax-self.znull, self.znull-self.zmin))
 
 
 class Data:
@@ -1208,13 +1211,13 @@ class Data:
         # new points
         new_points = [a.points for a in self.axes]
         old_offset_axis_points = self.axes[offset_axis_index].points
-        spacing = (old_offset_axis_points.max()-old_offset_axis_points.min())/float(len(old_offset_axis_points))      
+        spacing = abs((old_offset_axis_points.max()-old_offset_axis_points.min())/float(len(old_offset_axis_points)))    
         if mode == 'old':
             new_offset_axis_points = old_offset_axis_points
         elif mode == 'valid':
             _max = old_offset_axis_points.max() + corrections.min()
             _min = old_offset_axis_points.min() + corrections.max()
-            n = np.ceil((_max-_min)/spacing)
+            n = int(abs(np.ceil((_max-_min)/spacing)))
             new_offset_axis_points = np.linspace(_min, _max, n)
         elif mode == 'full':
             _max = old_offset_axis_points.max() + corrections.max()
@@ -1235,9 +1238,9 @@ class Data:
 
             # do corrections
             corrections = list(corrections)
-            corrections = corrections*(len(arr[0])/len(corrections))
+            corrections = corrections*int((len(arr[0])/len(corrections)))
             arr[offset_axis_index] += corrections
-
+            
             # grid data
             tup = tuple([arr[i] for i in range(len(arr)-1)])
             # note that rescale is crucial in this operation
@@ -2381,6 +2384,26 @@ def from_PyCMDS(filepath, name=None,
         print('data object succesfully created')
         print('  axes:', data.axis_names)
         print('  shape:', data.shape)
+    return data
+
+
+def from_scope(filepath, name=None, verbose=True):
+    # check filepath
+    if os.path.isfile(filepath):
+        if verbose:
+            print('found the file!')
+    else:
+        raise wt_exceptions.FileNotFound('{0}'.format(filepath))
+    # import
+    skip_header = 14
+    skip_footer = 1
+    arr = np.genfromtxt(filepath, skip_header=skip_header,
+                        skip_footer=skip_footer, delimiter = '\t').T
+    # construct data
+    a = Axis(arr[0], 'nm', name = 'wm')
+    c = Channel(arr[1], name='intensity', signed=False)
+    data = Data([a], [c], source='scope', name=name)
+    # finish
     return data
 
 
