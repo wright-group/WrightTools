@@ -285,6 +285,81 @@ class Channel:
         self.values /= np.nanmax(self.values)
         self._update()
         
+    def trim(self, neighborhood, method='ztest', factor=3, replace='nan',
+             verbose=True):
+        """
+        Parameters
+        ----------
+        neighborhood : list of integers
+            Size of the neighborhood in each dimension. Length of the list must
+            be equal to the dimensionality of the channel.
+        method : {'ztest'} (optional)
+            Statistical test used to detect outliers.
+            
+            ztest
+                Compare point deviation from neighborhood mean to neighborhood
+                standard deviation.
+            
+        factor : number (optional)
+            Tolerance factor.  Default is 3.
+        replace : {'nan', 'mean', 'mask', number} (optional)
+            Behavior of outlier replacement. Default is nan.
+            
+            nan
+                Outliers are replaced by numpy nans.
+            
+            mean
+                Outliers are replaced by the mean of its neighborhood.
+            
+            mask
+                Array is masked at outliers.
+                
+            number
+                Array becomes given number.
+
+        Returns
+        -------
+        list of tuples
+            Indicies of trimmed outliers.
+            
+        See Also
+        --------
+        clip
+            Remove pixels outside of a certain range.
+        """
+        outliers = []
+        means = []
+        # find outliers
+        for idx in np.ndindex(self.values.shape):
+            slices = []
+            for i, di, size in zip(idx, neighborhood, self.values.shape):
+                start = max(0, i-di)
+                stop = min(size, i+di+1)
+                slices.append(slice(start, stop, 1))  
+            neighbors = self.values[slices]
+            mean = np.nanmean(neighbors)
+            limit = np.nanstd(neighbors)*factor
+            if np.abs(self.values[idx]-mean) > limit:
+                outliers.append(idx)
+                means.append(mean)
+        # finish
+        i = tuple(zip(*outliers))
+        if replace == 'nan':
+            self.values[i] = np.nan
+        elif replace == 'mean':
+            self.values[i] = means
+        elif replace == 'mask':
+            self.values = np.ma.array(self.values)
+            self.values[i] = np.ma.masked
+        elif type(replace) in [int, float]:
+            self.values[i] = replace
+        else:
+            raise Exception('replace argument not recognized')
+        self._update()
+        if verbose:
+            print('%i outliers removed'%len(outliers))
+        return outliers
+
     @ property
     def zmag(self):
         return max((self.zmax-self.znull, self.znull-self.zmin))
@@ -608,6 +683,10 @@ class Data:
             A deep copy of the data object.
         '''
         return copy.deepcopy(self)
+        
+    @property
+    def dimensionality(self):
+        return len(self.axes)
         
     def divide(self, divisor, channel=0, divisor_channel=0):
         '''
@@ -1606,6 +1685,35 @@ class Data:
         # transpose out
         self.transpose(transpose_order, verbose=False)
 
+    def trim(self, channel, **kwargs):
+        '''
+        Wrapper method for ``Channel.trim``.
+
+        Parameters
+        ----------
+        channel : int or str
+            The channel index (or name) to trim.
+        '''
+        # channel
+        if type(channel) in [int, float]:
+            channel = self.channels[channel]
+        elif isinstance(channel, string_type):
+            index = self.channel_names.index(channel)
+            channel = self.channels[index]
+        # neighborhood
+        inputs = {}
+        neighborhood = [0]*self.dimensionality
+        for key, value in kwargs.items():
+            if key in self.axis_names:
+                index = self.axis_names.index(key)
+                neighborhood[index] = value
+            elif key in ['method', 'factor', 'replace', 'verbose']:
+                inputs[key] = value
+            else:
+                raise KeyError('Keyword arguments to trim must be either an axis name or one of {method, factor, replace, verbose}')
+        # call trim
+        return channel.trim(neighborhood=neighborhood, **inputs)
+        
     def transpose(self, axes=None, verbose=True):
         '''
         Transpose the dataset.
@@ -2595,7 +2703,8 @@ def join(datas, method='first', verbose=True):
             percent_nan = np.around(100.*(np.isnan(channel.values).sum()/float(channel.values.size)), decimals=2)
             print('    {0} : {1} to {2} ({3}% NaN)'.format(channel.name, channel.zmin, channel.zmax, percent_nan))
     return out
-    
+
+
 ### other ######################################################################
 
 

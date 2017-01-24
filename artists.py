@@ -1234,7 +1234,7 @@ class mpl_2D:
                     if dynamic_range:
                         limit = min(abs(channel.znull - channel.zmin), abs(channel.znull - channel.zmax))
                     else:
-                        limit = max(abs(channel.znull - channel.zmin), abs(channel.znull - channel.zmax))
+                        limit = channel.zmag
                 if np.isnan(limit):
                     limit = 1.
                 if limit is np.ma.masked:
