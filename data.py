@@ -288,13 +288,16 @@ class Channel:
     def trim(self, neighborhood, method='ztest', factor=3, replace='nan',
              verbose=True):
         """
+        Remove outliers from the dataset by comparing each point to its
+        neighbors using a statistical test.        
+        
         Parameters
         ----------
         neighborhood : list of integers
             Size of the neighborhood in each dimension. Length of the list must
             be equal to the dimensionality of the channel.
         method : {'ztest'} (optional)
-            Statistical test used to detect outliers.
+            Statistical test used to detect outliers. Default is ztest.
             
             ztest
                 Compare point deviation from neighborhood mean to neighborhood
@@ -342,7 +345,7 @@ class Channel:
             if np.abs(self.values[idx]-mean) > limit:
                 outliers.append(idx)
                 means.append(mean)
-        # finish
+        # replace outliers
         i = tuple(zip(*outliers))
         if replace == 'nan':
             self.values[i] = np.nan
@@ -354,7 +357,8 @@ class Channel:
         elif type(replace) in [int, float]:
             self.values[i] = replace
         else:
-            raise Exception('replace argument not recognized')
+            raise KeyError('replace must be one of {nan, mean, mask} or some number')
+        # finish
         self._update()
         if verbose:
             print('%i outliers removed'%len(outliers))
