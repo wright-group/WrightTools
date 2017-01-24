@@ -31,7 +31,8 @@ except ImportError:
 
 import numpy as np
 
-from . import units
+from . import units  # legacy
+from . import units as wt_units
 
 
 ### define ####################################################################
@@ -815,6 +816,29 @@ def mono_resolution(grooves_per_mm, slit_width, focal_length, output_color, outp
     return abs(units.converter(upper, 'nm', output_units) - 
                units.converter(lower, 'nm', output_units))
 
+
+def nm_width(center, width, units='wn'):
+    '''
+    Given a center and width, in energy units, get back a width in nm.
+
+    Parameters
+    ----------
+    center : number
+        Center (in energy units).
+    width : number
+        Width (in energy units).
+    units : string (optional)
+        Input units. Default is wn.
+
+    Returns
+    -------
+    number
+        Width in nm.
+    '''
+    red = wt_units.converter(center-width/2., units, 'nm')
+    blue = wt_units.converter(center+width/2., units, 'nm')
+    return red - blue
+    
 
 def remove_nans_1D(arrs):
     '''

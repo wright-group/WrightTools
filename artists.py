@@ -1227,11 +1227,18 @@ class mpl_2D:
             subplot_main.patch.set_facecolor(facecolor)
             # levels ----------------------------------------------------------
             if channel.signed:
-                if dynamic_range:
-                    limit = min(abs(channel.znull - channel.zmin), abs(channel.znull - channel.zmax))
+                if local:
+                    print('signed local')
+                    limit = max(abs(channel.znull - np.nanmin(zi)), abs(channel.znull - np.nanmax(zi)))
                 else:
-                    limit = max(abs(channel.znull - channel.zmin), abs(channel.znull - channel.zmax))
-                
+                    if dynamic_range:
+                        limit = min(abs(channel.znull - channel.zmin), abs(channel.znull - channel.zmax))
+                    else:
+                        limit = channel.zmag
+                if np.isnan(limit):
+                    limit = 1.
+                if limit is np.ma.masked:
+                    limit = 1.
                 levels = np.linspace(-limit + channel.znull, limit + channel.znull, 200)
             else:
                 if local:
