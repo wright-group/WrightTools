@@ -11,6 +11,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import os
 import warnings
 import collections
+from collections import OrderedDict
 
 import numpy as np
 
@@ -22,6 +23,7 @@ from scipy import optimize as scipy_optimize
 
 from . import data as wt_data
 from . import kit as wt_kit
+from . import artists as wt_artists
 
 
 ### helper functions ##########################################################
@@ -464,7 +466,328 @@ class Fitter:
         self.outs._update()
         return self.outs
 
+### MultiPeakFitter #################################################
 
+
+class MultiPeakFitter:
+    """
+    Written by Darien Morrow. darienmorrow@gmail.com & dmorrow3@wisc.edu
+    
+    Class which allows easy fitting and representation of aborbance data. 
+    Currently only offers Gaussian and Lorentzian functions.
+    Functions are paramaterized by FWHM, height, and center.
+    Requires the use of WrightTools.Data objects.
+    
+    fittype = 2 may be used to fit a spectrum to maximize smoothness of model remainder. 
+    fittype = 0 may be used to fit a spectrum to minimize amplitude of model remainder.
+    """
+
+    def __init__(self, data, channel=0, name='', fittype=2, intensity_label='OD'):
+        """
+        Parameters
+        ----------
+        data : WrightTools.Data object
+        channel : int
+            channel of data object which has the z values to fit
+        name : str
+        fittype : int
+            specifies order of differentiation to fit to---currently 0, 1, 2 are available
+        intensity_label : str
+        """
+        self.data = data
+        self.name = name
+        self.fittype = fittype
+        self.intensity_label = intensity_label
+        # assertions
+        if not data.axes[0].units_kind == 'energy':
+            raise Exception('Yo, your axes is/are not of the correct kind. Hand me some energy.') 
+        if len(data.axes) > 1:
+            raise Exception('Yo, your data must be 1D. Try again homey.')
+        # get channel
+        if type(channel) == int:
+            self.channel_index = channel
+        elif type(channel) == str:
+            self.channel_index = self.data.channel_names.index(channel)
+        else:
+            print('channel type', type(channel), 'not valid')
+        # get diff of data
+        self.zi = self.data.channels[self.channel_index].values
+        self.diff = wt_kit.diff(self.data.axes[0].points, self.zi, order=self.fittype)
+
+    def build_funcs(self, x, params, kinds, diff_order=0):
+        """
+        Builds a new 1D function of many 1D function of various kinds.        
+        
+        Parameters
+        ----------
+        x : array
+            1D array containing points over which to return new function
+        params : array
+            1D array of ordered parameters for new functions---length 3n
+        kinds : list
+            List of kinds of functions to add---length n
+        diff_order : int
+            Specifies order of differentiated function to return
+            
+        Returns
+        -------
+        z : array
+        """
+        # instantiate array
+        z = np.zeros(x.size)
+        # loop through kinds and add functions to array
+        for i, kind in enumerate(kinds):
+            z += self.function(x, kind, params[i*3+0], params[i*3+1], params[i*3+2], diff_order=diff_order)
+        return z
+    
+    def convert(self,destination_units):
+        """
+        Exposes wt.data.convert() method to convert units of data object.
+        
+        Parameters
+        ----------
+        destination_units : str
+        """
+        self.data.convert(destination_units)
+
+    def encode_params(self, names, kinds, params ):
+        """
+        Helper method to encode parameters of fit into an ordered dict of dicts.    
+        
+        Parameters
+        ----------
+        names : list
+            list of strings of length n
+        kinds : list
+            list of strings of length n
+        params : array
+            1D array of floats of length 3n
+        
+        Returns
+        -------
+        dic : ordered dict of dicts        
+        """
+        dic = OrderedDict()      
+        for i in range(len(names)):
+            dic[names[i]] = {'kind': kinds[i], 'FWHM': params[i*3+0], 'intensity': params[i*3+1], 'x0': params[i*3+2]}
+        return dic
+
+    def extract_params(self, dic):   
+        """
+        Takes dictionary of fit parameters and returns tuple of extracted parameters
+        that function method can work with.        
+        
+        Parameters
+        ----------
+        dic : ordered dictionary of dicts
+            Must contain keys: 'FWHM', 'intensity', 'x0', and 'kind'.
+            
+        Returns
+        -------
+        names, kinds, p0 : tuple
+            names : list
+            kinds : list
+            p0 : array
+        """
+        p0 = np.zeros(len(dic)*3) # assumes each individual function is a 3 parameter function.
+        names = []        
+        kinds = []
+        i = 0
+        for key, value in dic.items():
+            names.append(key)            
+            p0[i] = value['FWHM']
+            p0[i+1] = value['intensity']
+            p0[i+2] = value['x0']
+            i += 3
+            kinds.append(value['kind'])
+        return names, kinds, p0
+
+    def fit(self, verbose=True):
+        """
+        Fitting method that takes data and guesses (class attributes) and instantiates/updates
+        fit_results, diff_model, and remainder (class attributes),
+        
+        Parameters
+        ----------
+        verbose : bool
+            toggle talkback
+            
+        Instantiated attributes
+        -----------------------
+        fit_results : ordered dict of dict
+        diff_model : array
+            array offerring the final results of the fit in the native space of the fit
+        remainder : array
+            array offering the remainder (actual - fit) in the native space of the spectra
+        """
+        # generate arrays for fitting
+        zi_diff = wt_kit.diff(self.data.axes[0].points, self.data.channels[self.channel_index].values, order=self.fittype)
+        names, kinds, p0 = self.extract_params(self.guesses)
+        # define error function
+        def error(p, x, z):
+            return z - self.build_funcs(x, p, kinds, diff_order=self.fittype)
+        # perform fit
+        timer = wt_kit.Timer(verbose=False)
+        with timer:
+            out = scipy_optimize.leastsq(error, p0, args=(self.data.axes[0].points, zi_diff)) 
+            # write results in dictionary
+            self.fit_results = self.encode_params(names, kinds, out[0] )  
+        if verbose:
+            print('fitting done in %f seconds'%timer.interval)
+        # generate model
+        self.diff_model = self.build_funcs(self.data.axes[0].points, out[0], kinds, diff_order=self.fittype)
+        self.remainder = self.data.channels[self.channel_index].values - self.build_funcs(self.data.axes[0].points, out[0], kinds, diff_order=0)
+ 
+     
+    def function(self, x, kind, FWHM, intensity, x0, diff_order=0):
+        """
+        Returns a peaked distribution over array x.
+        
+        The peaked distributions are characterized by their FWHM, height, and center.
+        The distributions are not normalized to the same value given the same parameters!        
+        Analytic derivatives are provided for sake of computational speed & accuracy.        
+        
+        Parameters
+        ----------
+        x : array  
+            array of values to return function over
+        kind : str
+            Kind of function to return. Includes 'lorentzian' and 'gaussian'          
+        FWHM : float
+            Full width at half maximum of returned function
+        intensity : float
+            Center intensity of returned function
+        x0 : float
+            x value of center of returned function
+        diff_order : int
+            order of differentiation to return. diff_order = 0 returns merely the function.
+        """
+        # TODO for order > 2, offer numerical derivatives.
+        if kind=='lorentzian':
+            if diff_order == 0:
+                return intensity*(0.5*FWHM)**2/((x-x0)**2+(.5*FWHM)**2)
+            elif diff_order == 1:
+                return intensity*(0.5*FWHM)**2*(-1)*(((x-x0)**2+(0.5*FWHM)**2))**-2*(2*(x-x0))
+            elif diff_order == 2:
+                return intensity*(0.5*FWHM)**2*(2*((((x-x0)**2+(0.5*FWHM)**2))**-3)*(2*(x-x0))**2  + (-2)*(((x-x0)**2+(0.5*FWHM)**2))**-2)
+            else:
+                print('analytic derivative not pre-calculated')
+        elif kind=='gaussian':
+            sigma = FWHM/2.35482            
+            if diff_order == 0:
+                return intensity*np.exp(-0.5*((x-x0)/sigma)**2)
+            elif diff_order == 1:
+                return intensity*np.exp(-0.5*((x-x0)/sigma)**2)*(-(x-x0)/(sigma**2))
+            elif diff_order == 2:
+                return intensity*np.exp(-0.5*((x-x0)/sigma)**2)*(((x-x0)**2/(sigma**4)) - sigma**-2)
+            else:
+                print('analytic derivative not pre-calculated')
+        else:
+            raise Exception('kind not recognized!')
+
+    def guess(self, guesses):
+        """
+        Creates guess library for use in fitting.        
+        
+        Parameters
+        ----------
+        guesses : ordered dict of dicts
+            In order to play nicely with the function creation method, the internal
+            dict, at minimum, should have entries specifying 'kind', 'FWHM', 'intensity', and 'x0'.
+            The contents of guesses are used in the fit method.
+        """
+        if isinstance(guesses, OrderedDict) != True:
+            raise Exception('guesses must be an OrderedDict')
+        self.guesses = guesses
+
+
+    def intensity_label_change(self, intensity_label):
+        """
+        Helper method for changing label present in plot method.
+        
+        Parameters
+        ----------
+        intensity_label : str
+        """
+        self.intensity_label = intensity_label
+
+    def plot(self,):
+        """
+        Plot fit results.
+        """
+        # get results
+        names, kinds, params =  self.extract_params(self.fit_results)
+        num_funcs = len(kinds)
+        # get color map for trace colors
+        cm = wt_artists.colormaps['default'] 
+        # create figure
+        fig, gs = wt_artists.create_figure(width='single', cols=[1], nrows=2, default_aspect=.5)
+        # as-taken
+        ax = plt.subplot(gs[0, 0])
+        ax.set_title(self.name+' fittype = '+str(self.fittype), fontsize=20)
+        xi = self.data.axes[0].points
+        ax.plot(xi, self.zi, color='k', linewidth=2)
+        plt.setp(ax.get_xticklabels(), visible=False)
+        ax.set_ylim(0, self.zi.max()+.005)
+        ax.set_xlim(xi.min(), xi.max())
+        ax.set_ylabel(self.intensity_label, fontsize=18)
+        ax.grid()
+        # fit results
+        ax.plot(xi, self.remainder, color='k', linestyle='--', linewidth=2)
+        for i, kind in enumerate(kinds):
+            ax.plot(xi, self.function(xi, kind, params[i*3+0], params[i*3+1], params[i*3+2], diff_order=0), color=cm((i+1)/num_funcs), linewidth=2)
+            ax.axvline(x=params[i*3+2], color=cm((i+1)/num_funcs), linewidth=1)
+        # diff
+        ax = plt.subplot(gs[1, 0])
+        # as-taken
+        ax.plot(xi, self.diff, color='k', linewidth=2)
+        ax.set_xlim(xi.min(), xi.max())
+        ax.grid()
+        label = r'$\mathsf{\frac{d^%i \mathrm{OD}}{d (\hslash \omega)^%i}}$'%(self.fittype, self.fittype)
+        ax.set_ylabel(label, fontsize=18)
+        plt.setp(ax.get_yticklabels(), visible=False)
+        ax.set_ylabel(label, fontsize=18)
+        ax.set_xlabel(self.data.axes[0].get_label())
+        # fit results
+        ax.plot(xi, self.diff_model, color='b', linewidth=2)
+        for i, kind in enumerate(kinds):
+            ax.axvline(x=params[i*3+2], color=cm((i+1)/num_funcs), linewidth=1)
+
+    def save(self, path=os.getcwd(), fit_params=True, figure=True, verbose=True):
+        """
+        Saves results and representation of fits. Saved files are timestamped.
+        
+        Parameters
+        ----------
+        path : str
+            file path to save to
+        fit_params : bool
+            toggle to save fit parameters
+        figure : bool
+            toggle to save figure
+        verbose : bool
+            toggle talkback
+        """
+        # instantiate timestamp object
+        timestamp = wt_kit.TimeStamp()
+        if fit_params:
+            params_path = os.path.join(path,' '.join((self.name, timestamp.path,'fit_params.txt')))
+            headers = collections.OrderedDict()
+            headers['transition names'] = list(self.fit_results.keys())
+            for state, d in self.fit_results.items():
+                for prop, value in d.items():
+                    headers[' '.join([state, prop])] = value
+            write = wt_kit.write_headers(params_path, headers)
+            if verbose:
+                print('Parameters saved to:', write)   
+        if figure:
+            fig = self.plot()
+            fig_path = os.path.join(path,' '.join((self.name, timestamp.path,'fits.png')))
+            write = wt_artists.savefig(fig_path, fig=fig, close=True)
+            if verbose:
+                print('Figure saved to:', write)
+
+    
 ### testing ###################################################################
 
 
