@@ -281,8 +281,24 @@ class Channel:
         '''
         return np.nanmin(self.values)
         
-    def normalize(self):
-        self.values /= np.nanmax(self.values)
+    def normalize(self, axis=None):
+        # process axis argument
+        if axis is not None:
+            if hasattr(axis, '__contains__'):  # list, tuple or similar
+                axis = tuple((int(i) for i in axis))
+            else:  # presumably a simple number
+                axis = int(axis)
+        # subtract off znull
+        self.values -= self.znull
+        self.znull = 0.
+        # create dummy array
+        dummy = self.values.copy()
+        dummy[np.isnan(dummy)] = 0  # nans are propagated in np.amax
+        if self.signed:
+            dummy = np.absolute(dummy)
+        # divide through by max
+        self.values /= np.amax(dummy, axis=axis, keepdims=True)
+        # finish
         self._update()
         
     def trim(self, neighborhood, method='ztest', factor=3, replace='nan',
@@ -402,7 +418,7 @@ class Data:
         self._original = self.copy()
 
     def __repr__(self):
-        return 'WrightTools.data.Data object \'{0}\' at {1}'.format(self.name, str(id(self)))
+        return 'WrightTools.data.Data object \'{0}\' {1} at {2}'.format(self.name, str(self.axis_names), str(id(self)))
         
     def _update(self):
         '''
@@ -1175,7 +1191,7 @@ class Data:
         axis.points = points
         self._update()
 
-    def normalize(self, channel=0):
+    def normalize(self, channel=0, axis=None):
         '''
         Normalize data in given channel so that null=0 and zmax=1.
 
@@ -1183,8 +1199,11 @@ class Data:
         ----------
         channel : str or int (optional)
             Channel to normalize. Default is 0.
+        axis : str, int, or 1D list-like of str and int or None
+            Axis/axes to normalize against. If None, normalizes by the entire
+            dataset. Default is None.
         '''
-        # get channel
+        # process channel
         if type(channel) == int:
             channel_index = channel
         elif isinstance(channel, string_type):
@@ -1192,8 +1211,18 @@ class Data:
         else:
             print('channel type', type(channel), 'not valid')
         channel = self.channels[channel_index]
+        # process axes
+        def process(i):
+            if isinstance(channel, string_type):
+                return self.axis_names.index(i)
+            else:
+                return int(i)
+        if axis is not None:
+            if not hasattr(axis, '__contains__'):  # NOT list, tuple or similar
+                axis = [axis]
+            axis = [process(i) for i in axis]
         # call normalize on channel
-        channel.normalize()
+        channel.normalize(axis=axis)
 
     def offset(self, points, offsets, along, offset_axis,
                units='same', offset_units='same', mode='valid',
