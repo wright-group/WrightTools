@@ -187,7 +187,7 @@ def create_figure(width='single', nrows=1, cols=[1, 'cbar'], margin=1.,
 
     Parameters
     ----------
-    width : {'single', 'double'} or float (optional)
+    width : {'single', 'double', 'dissertation'} or float (optional)
         The total width of the generated figure. Can be given in inches
         directly, or can be specified using keys. Default is 'single' (6.5
         inches).
@@ -249,6 +249,8 @@ def create_figure(width='single', nrows=1, cols=[1, 'cbar'], margin=1.,
         figure_width = 14.
     elif width == 'single':
         figure_width = 6.5
+    elif width == 'dissertation':
+        figure_width = 13.
     else:
         figure_width = float(width)
     # check if aspect constraints are valid

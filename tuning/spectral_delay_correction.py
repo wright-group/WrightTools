@@ -48,7 +48,7 @@ from . import coset as wt_coset
 
 def process_wigner(data_filepath, channel, control_name,
                    offset_name, coset_name, color_units='nm',
-                   delay_units='fs', autosave=True):
+                   delay_units='fs', autosave=True, s=1000):
     '''
     Create a coset file from a measured wigner.
     
@@ -84,10 +84,12 @@ def process_wigner(data_filepath, channel, control_name,
     outs.amplitude.clip(outs.amplitude.max()*0.1, outs.amplitude.max())
     outs.amplitude.values[0] = np.nan
     outs.amplitude.values[-1] = np.nan
+    outs.width.clip(0, 500)
+    outs.mean.clip(-1000, 1000)
     outs.share_nans()
     centers = outs.channels[0].values
     # spline
-    spline = wt_kit.Spline(ws, centers, k=2, s=1000)
+    spline = wt_kit.Spline(ws, centers, k=2, s=s)
     corrections = spline(ws)
     # prepare for plot
     artist = wt_artists.mpl_2D(data)
