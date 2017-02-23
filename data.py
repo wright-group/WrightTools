@@ -39,11 +39,6 @@ if sys.version[0] == '2':
 else:
     string_type = str  # newer versions of python don't have unicode type
 
-# I hate how the warning module prints, so I overload the method
-def _my_warning(message, category=UserWarning, filename='', lineno=-1):
-    print(category.__name__+':', message)
-warnings.showwarning = _my_warning
-
 
 ### data class ################################################################
 
