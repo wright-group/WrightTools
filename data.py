@@ -25,7 +25,6 @@ from scipy.interpolate import griddata, interp1d
 from . import exceptions as wt_exceptions
 from . import kit as wt_kit
 from . import units as wt_units
-from . import shots_processing
 
 
 ### define ####################################################################
@@ -2359,37 +2358,6 @@ def from_PyCMDS(filepath, name=None,
         data_name = headers['data origin']
     # array
     arr = np.genfromtxt(filepath).T
-    # process shots
-    suffix = wt_kit.filename_parse(filepath)[2]
-    if suffix == 'shots':
-        aquisitions = arr.reshape([len(arr), headers['shots'], -1], order='F')
-        aquisitions = aquisitions.transpose(2, 0, 1)
-        # aquisitions has shape (pixels, cols, shots)
-        daq_indicies = [i for i, kind in enumerate(headers['kind']) if kind in ['channel', 'chopper']]
-        daq_names = [headers['name'][i] for i in daq_indicies]
-        daq_kinds = [headers['kind'][i] for i in daq_indicies]
-        passed_indicies = [i for i, kind in enumerate(headers['kind']) if kind not in ['channel', 'chopper']]
-        passed_indicies.pop(-1)
-        # test process to get dimensions
-        processing_module = getattr(shots_processing, shots_processing_module)
-        test_outs, test_names = processing_module.process(aquisitions[0, daq_indicies], daq_names, daq_kinds)
-        arr = np.full([len(passed_indicies) + len(test_names), len(aquisitions)], np.nan)       
-        for i in range(len(aquisitions)):
-            idx = 0
-            for j in passed_indicies:
-                arr[idx, i] = aquisitions[i, j, 0]
-                idx += 1
-            outs, names = processing_module.process(aquisitions[i, daq_indicies], daq_names, daq_kinds)
-            for out in outs:
-                arr[idx, i] = out
-                idx += 1
-        # TODO: actual handling for signed data somehow
-        # for now assume false
-        headers['channel signed'] = [False for _ in names]
-        headers['kind'] = [headers['kind'][i] for i in passed_indicies] + ['channel' for _ in outs]
-        headers['units'] = [headers['units'][i] for i in passed_indicies] + ['V' for _ in outs]
-        headers['label'] = [headers['label'][i] for i in passed_indicies] + ['' for _ in outs]
-        headers['name'] = [headers['name'][i] for i in passed_indicies] + names
     # get axes
     axes = []
     for name, identity, units in zip(headers['axis names'], 
