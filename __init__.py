@@ -10,8 +10,8 @@ if not _os.path.isdir(_temp_dir):
 
 
 # MAJOR.MINOR.PATCH (semantic versioning)
-# major version changes may break backwords compatibility
-__version__ = '2.8.1'  
+# major version changes may break backwards compatibility
+__version__ = '2.8.2'  
 
 
 ### import ####################################################################

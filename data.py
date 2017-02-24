@@ -453,7 +453,7 @@ class Data:
         self.channels.insert(0, self.channels.pop(channel_index))
         self._update()
         
-    def chop(self, *args, **kwargs):
+    def chop(self, *args, at={}, verbose=True):
         '''
         Divide the dataset into its lower-dimensionality components.
 
@@ -463,11 +463,10 @@ class Data:
             Axes of the returned data objects. Strings refer to the names of
             axes in this object, integers refer to their index.
         at : dict
-            One dictionary may be supplied as a non-keyword argument. The
-            dictionaries keys are axis names. The values are lists:
+            Dictonary. Keys are axis names, values are lists
             ``[position, input units]``.
         verbose : bool, optional
-            Keyword argument. Toggle talkback.
+            Toggle talkback. Default is True.
 
         Returns
         -------
@@ -483,21 +482,12 @@ class Data:
 
         Examples
         --------
-        >>> data.chop('w1', 'w2', {'d2': [0, 'fs']})
+        >>> data.chop('w1', 'w2', at={'d2': [0, 'fs']})
         [data]
         '''
         # organize arguments recieved -----------------------------------------
-        axes_args = []
-        chopped_constants = {}
-        for arg in args:
-            if type(arg) in (str, int):
-                axes_args.append(arg)
-            elif type(arg) in (dict, collections.OrderedDict):
-                chopped_constants = arg
-        verbose = True
-        for name, value in kwargs.items():
-            if name == 'verbose':
-                verbose = value
+        axes_args = list(args)
+        chopped_constants = at
         # interpret arguments recieved ----------------------------------------
         for i in range(len(axes_args)):
             arg = axes_args[i]
@@ -506,12 +496,14 @@ class Data:
             elif type(arg) == int:
                 arg = self.axis_names[arg]
             else:
-                print('argument {arg} not recognized in Data.chop!'.format(arg))
+                message = 'argument {arg} not recognized in Data.chop'.format(arg)
+                raise TypeError(message)
             axes_args[i] = arg
         for arg in axes_args:
             if not arg in self.axis_names:
                 raise Exception('axis {} not in data'.format(arg))
         # iterate! ------------------------------------------------------------
+        print(axes_args, chopped_constants)
         # find iterated dimensions
         iterated_dimensions = []
         iterated_shape = [1]
