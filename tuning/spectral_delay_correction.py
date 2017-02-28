@@ -77,11 +77,12 @@ def process_wigner(data_filepath, channel, control_name,
     # process
     function = wt_fit.Gaussian()
     fitter = wt_fit.Fitter(function, data, data.axes[0].name)
-    outs = fitter.run()
+    outs = fitter.run(channel_index)
     # clean
     # remove the edges because they are badly behaved...
     # should probably do something more sophisticated...
     outs.amplitude.clip(outs.amplitude.max()*0.1, outs.amplitude.max())
+    #outs.amplitude.clip(outs.amplitude.max()*0.04, outs.amplitude.max())
     outs.amplitude.values[0] = np.nan
     outs.amplitude.values[-1] = np.nan
     outs.width.clip(0, 500)

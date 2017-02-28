@@ -453,7 +453,7 @@ class Data:
         self.channels.insert(0, self.channels.pop(channel_index))
         self._update()
         
-    def chop(self, *args, at={}, verbose=True):
+    def chop(self, *args, **kwargs):
         '''
         Divide the dataset into its lower-dimensionality components.
 
@@ -487,6 +487,9 @@ class Data:
         '''
         # organize arguments recieved -----------------------------------------
         axes_args = list(args)
+        keys = ['at', 'verbose']
+        defaults = [{}, True]
+        at, verbose = [kwargs.pop(k) if k in kwargs.keys() else d for k, d in zip(keys, defaults)]
         chopped_constants = at
         # interpret arguments recieved ----------------------------------------
         for i in range(len(axes_args)):
@@ -958,6 +961,7 @@ class Data:
         info['name'] = self.name
         info['id'] = id(self)
         info['axes'] = self.axis_names
+        info['channels'] = self.channel_names
         info['shape'] = self.shape
         info['version'] = self.__version__
         return info

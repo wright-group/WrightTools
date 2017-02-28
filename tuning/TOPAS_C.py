@@ -570,7 +570,6 @@ def process_SHS_motortune(OPA_index, data_filepath, curves, save=True):
     m2_index = headers['name'].index('w%d_Mixer_2'%OPA_index)
     wm_index = headers['name'].index('wm')
     zi_index = headers['kind'].index('channel')  # the first channel
-    zi_index += 1  # TODO: remove
     ws = headers['w%d points'%OPA_index]
     ws_len = len(ws)
     wm_len = len(headers['wm points'])
