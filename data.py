@@ -25,7 +25,6 @@ from scipy.interpolate import griddata, interp1d
 from . import exceptions as wt_exceptions
 from . import kit as wt_kit
 from . import units as wt_units
-from . import shots_processing
 
 
 ### define ####################################################################
@@ -464,11 +463,10 @@ class Data:
             Axes of the returned data objects. Strings refer to the names of
             axes in this object, integers refer to their index.
         at : dict
-            One dictionary may be supplied as a non-keyword argument. The
-            dictionaries keys are axis names. The values are lists:
+            Dictonary. Keys are axis names, values are lists
             ``[position, input units]``.
         verbose : bool, optional
-            Keyword argument. Toggle talkback.
+            Toggle talkback. Default is True.
 
         Returns
         -------
@@ -484,21 +482,15 @@ class Data:
 
         Examples
         --------
-        >>> data.chop('w1', 'w2', {'d2': [0, 'fs']})
+        >>> data.chop('w1', 'w2', at={'d2': [0, 'fs']})
         [data]
         '''
         # organize arguments recieved -----------------------------------------
-        axes_args = []
-        chopped_constants = {}
-        for arg in args:
-            if type(arg) in (str, int):
-                axes_args.append(arg)
-            elif type(arg) in (dict, collections.OrderedDict):
-                chopped_constants = arg
-        verbose = True
-        for name, value in kwargs.items():
-            if name == 'verbose':
-                verbose = value
+        axes_args = list(args)
+        keys = ['at', 'verbose']
+        defaults = [{}, True]
+        at, verbose = [kwargs.pop(k) if k in kwargs.keys() else d for k, d in zip(keys, defaults)]
+        chopped_constants = at
         # interpret arguments recieved ----------------------------------------
         for i in range(len(axes_args)):
             arg = axes_args[i]
@@ -507,12 +499,14 @@ class Data:
             elif type(arg) == int:
                 arg = self.axis_names[arg]
             else:
-                print('argument {arg} not recognized in Data.chop!'.format(arg))
+                message = 'argument {arg} not recognized in Data.chop'.format(arg)
+                raise TypeError(message)
             axes_args[i] = arg
         for arg in axes_args:
             if not arg in self.axis_names:
                 raise Exception('axis {} not in data'.format(arg))
         # iterate! ------------------------------------------------------------
+        print(axes_args, chopped_constants)
         # find iterated dimensions
         iterated_dimensions = []
         iterated_shape = [1]
@@ -967,6 +961,7 @@ class Data:
         info['name'] = self.name
         info['id'] = id(self)
         info['axes'] = self.axis_names
+        info['channels'] = self.channel_names
         info['shape'] = self.shape
         info['version'] = self.__version__
         return info
@@ -2359,37 +2354,6 @@ def from_PyCMDS(filepath, name=None,
         data_name = headers['data origin']
     # array
     arr = np.genfromtxt(filepath).T
-    # process shots
-    suffix = wt_kit.filename_parse(filepath)[2]
-    if suffix == 'shots':
-        aquisitions = arr.reshape([len(arr), headers['shots'], -1], order='F')
-        aquisitions = aquisitions.transpose(2, 0, 1)
-        # aquisitions has shape (pixels, cols, shots)
-        daq_indicies = [i for i, kind in enumerate(headers['kind']) if kind in ['channel', 'chopper']]
-        daq_names = [headers['name'][i] for i in daq_indicies]
-        daq_kinds = [headers['kind'][i] for i in daq_indicies]
-        passed_indicies = [i for i, kind in enumerate(headers['kind']) if kind not in ['channel', 'chopper']]
-        passed_indicies.pop(-1)
-        # test process to get dimensions
-        processing_module = getattr(shots_processing, shots_processing_module)
-        test_outs, test_names = processing_module.process(aquisitions[0, daq_indicies], daq_names, daq_kinds)
-        arr = np.full([len(passed_indicies) + len(test_names), len(aquisitions)], np.nan)       
-        for i in range(len(aquisitions)):
-            idx = 0
-            for j in passed_indicies:
-                arr[idx, i] = aquisitions[i, j, 0]
-                idx += 1
-            outs, names = processing_module.process(aquisitions[i, daq_indicies], daq_names, daq_kinds)
-            for out in outs:
-                arr[idx, i] = out
-                idx += 1
-        # TODO: actual handling for signed data somehow
-        # for now assume false
-        headers['channel signed'] = [False for _ in names]
-        headers['kind'] = [headers['kind'][i] for i in passed_indicies] + ['channel' for _ in outs]
-        headers['units'] = [headers['units'][i] for i in passed_indicies] + ['V' for _ in outs]
-        headers['label'] = [headers['label'][i] for i in passed_indicies] + ['' for _ in outs]
-        headers['name'] = [headers['name'][i] for i in passed_indicies] + names
     # get axes
     axes = []
     for name, identity, units in zip(headers['axis names'], 

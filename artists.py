@@ -966,7 +966,7 @@ class mpl_1D:
     def __init__(self, data, xaxis = 0, at = {}, verbose = True):
         # import data
         self.data = data
-        self.chopped = self.data.chop(xaxis, at, verbose = False)
+        self.chopped = self.data.chop(xaxis, at=at, verbose = False)
         if verbose:
             print('mpl_1D recieved data to make %d plots'%len(self.chopped))
         # defaults
@@ -1061,7 +1061,7 @@ class mpl_2D:
     def __init__(self, data, xaxis = 1, yaxis = 0, at = {}, verbose = True):
         # import data
         self.data = data
-        self.chopped = self.data.chop(yaxis, xaxis, at, verbose = False)
+        self.chopped = self.data.chop(yaxis, xaxis, at=at, verbose=False)
         if verbose:
             print('mpl_2D recieved data to make %d plots'%len(self.chopped))
         # defaults
@@ -1582,8 +1582,8 @@ class difference_2D():
             self.subtrahend.axes[i].convert(self.minuend.axes[i].units)
             self.subtrahend.map_axis(i, self.minuend.axes[i].points)
         # chop
-        self.minuend_chopped = self.minuend.chop(yaxis, xaxis, at, verbose = False)
-        self.subtrahend_chopped = self.subtrahend.chop(yaxis, xaxis, at, verbose = False)
+        self.minuend_chopped = self.minuend.chop(yaxis, xaxis, at=at, verbose = False)
+        self.subtrahend_chopped = self.subtrahend.chop(yaxis, xaxis, at=at, verbose = False)
         if verbose:
             print('difference_2D recieved data to make %d plots'%len(self.minuend_chopped))
         # defaults
