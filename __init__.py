@@ -11,7 +11,7 @@ if not _os.path.isdir(_temp_dir):
 
 # MAJOR.MINOR.PATCH (semantic versioning)
 # major version changes may break backwards compatibility
-__version__ = '2.8.3'  
+__version__ = '2.9.0'  
 
 
 ### import ####################################################################
@@ -26,3 +26,9 @@ from . import google_drive
 from . import kit
 from . import tuning
 from . import units
+
+
+### rcparams ##################################################################
+
+
+artists.apply_rcparams('fast')
