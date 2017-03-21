@@ -855,6 +855,8 @@ def set_fig_labels(fig=None, xlabel=None, ylabel=None, xticks=None, yticks=None,
         elif ax.is_last_row():
             # bottom row
             set_ax_labels(ax=ax, xlabel=xlabel, xticks=xticks, yticks=False)
+        else:
+            set_ax_labels(ax=ax, xticks=False, yticks=False)
     # title
     if title is not None:
         fig.suptitle(title, fontsize=title_fontsize)
