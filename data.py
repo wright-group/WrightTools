@@ -1805,7 +1805,7 @@ def from_Cary50(filepath, verbose=True):
         units = f.readline()
         while True:
             line = f.readline()
-            if line == '\n':
+            if line == '\n' or line == '':
                 break
             else:
                 clean = line[:-2]  # lines end with ',/n'
