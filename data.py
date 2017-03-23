@@ -1837,7 +1837,7 @@ def from_Cary50(filepath, verbose=True):
     arr = np.array(lines).T
     # chew through all scans
     datas = []
-    indicies = np.arange(arr.shape[0]//2)*2
+    indicies = np.arange(len(header)//2)*2
     for i in indicies:
         axis = Axis(arr[i], 'nm', name='wm')
         signal = Channel(arr[i+1], name='absorbance', label='absorbance', signed=False)
