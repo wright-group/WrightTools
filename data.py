@@ -25,7 +25,6 @@ from scipy.interpolate import griddata, interp1d
 from . import exceptions as wt_exceptions
 from . import kit as wt_kit
 from . import units as wt_units
-from . import shots_processing
 
 
 ### define ####################################################################
@@ -38,11 +37,6 @@ if sys.version[0] == '2':
     string_type = basestring  # recognize unicode and string types
 else:
     string_type = str  # newer versions of python don't have unicode type
-
-# I hate how the warning module prints, so I overload the method
-def _my_warning(message, category=UserWarning, filename='', lineno=-1):
-    print(category.__name__+':', message)
-warnings.showwarning = _my_warning
 
 
 ### data class ################################################################
@@ -281,20 +275,39 @@ class Channel:
         '''
         return np.nanmin(self.values)
         
-    def normalize(self):
-        self.values /= np.nanmax(self.values)
+    def normalize(self, axis=None):
+        # process axis argument
+        if axis is not None:
+            if hasattr(axis, '__contains__'):  # list, tuple or similar
+                axis = tuple((int(i) for i in axis))
+            else:  # presumably a simple number
+                axis = int(axis)
+        # subtract off znull
+        self.values -= self.znull
+        self.znull = 0.
+        # create dummy array
+        dummy = self.values.copy()
+        dummy[np.isnan(dummy)] = 0  # nans are propagated in np.amax
+        if self.signed:
+            dummy = np.absolute(dummy)
+        # divide through by max
+        self.values /= np.amax(dummy, axis=axis, keepdims=True)
+        # finish
         self._update()
         
     def trim(self, neighborhood, method='ztest', factor=3, replace='nan',
              verbose=True):
         """
+        Remove outliers from the dataset by comparing each point to its
+        neighbors using a statistical test.        
+        
         Parameters
         ----------
         neighborhood : list of integers
             Size of the neighborhood in each dimension. Length of the list must
             be equal to the dimensionality of the channel.
         method : {'ztest'} (optional)
-            Statistical test used to detect outliers.
+            Statistical test used to detect outliers. Default is ztest.
             
             ztest
                 Compare point deviation from neighborhood mean to neighborhood
@@ -342,7 +355,7 @@ class Channel:
             if np.abs(self.values[idx]-mean) > limit:
                 outliers.append(idx)
                 means.append(mean)
-        # finish
+        # replace outliers
         i = tuple(zip(*outliers))
         if replace == 'nan':
             self.values[i] = np.nan
@@ -354,7 +367,8 @@ class Channel:
         elif type(replace) in [int, float]:
             self.values[i] = replace
         else:
-            raise Exception('replace argument not recognized')
+            raise KeyError('replace must be one of {nan, mean, mask} or some number')
+        # finish
         self._update()
         if verbose:
             print('%i outliers removed'%len(outliers))
@@ -398,7 +412,7 @@ class Data:
         self._original = self.copy()
 
     def __repr__(self):
-        return 'WrightTools.data.Data object \'{0}\' at {1}'.format(self.name, str(id(self)))
+        return 'WrightTools.data.Data object \'{0}\' {1} at {2}'.format(self.name, str(self.axis_names), str(id(self)))
         
     def _update(self):
         '''
@@ -449,11 +463,10 @@ class Data:
             Axes of the returned data objects. Strings refer to the names of
             axes in this object, integers refer to their index.
         at : dict
-            One dictionary may be supplied as a non-keyword argument. The
-            dictionaries keys are axis names. The values are lists:
+            Dictonary. Keys are axis names, values are lists
             ``[position, input units]``.
         verbose : bool, optional
-            Keyword argument. Toggle talkback.
+            Toggle talkback. Default is True.
 
         Returns
         -------
@@ -469,21 +482,15 @@ class Data:
 
         Examples
         --------
-        >>> data.chop('w1', 'w2', {'d2': [0, 'fs']})
+        >>> data.chop('w1', 'w2', at={'d2': [0, 'fs']})
         [data]
         '''
         # organize arguments recieved -----------------------------------------
-        axes_args = []
-        chopped_constants = {}
-        for arg in args:
-            if type(arg) in (str, int):
-                axes_args.append(arg)
-            elif type(arg) in (dict, collections.OrderedDict):
-                chopped_constants = arg
-        verbose = True
-        for name, value in kwargs.items():
-            if name == 'verbose':
-                verbose = value
+        axes_args = list(args)
+        keys = ['at', 'verbose']
+        defaults = [{}, True]
+        at, verbose = [kwargs.pop(k) if k in kwargs.keys() else d for k, d in zip(keys, defaults)]
+        chopped_constants = at
         # interpret arguments recieved ----------------------------------------
         for i in range(len(axes_args)):
             arg = axes_args[i]
@@ -492,12 +499,14 @@ class Data:
             elif type(arg) == int:
                 arg = self.axis_names[arg]
             else:
-                print('argument {arg} not recognized in Data.chop!'.format(arg))
+                message = 'argument {arg} not recognized in Data.chop'.format(arg)
+                raise TypeError(message)
             axes_args[i] = arg
         for arg in axes_args:
             if not arg in self.axis_names:
                 raise Exception('axis {} not in data'.format(arg))
         # iterate! ------------------------------------------------------------
+        print(axes_args, chopped_constants)
         # find iterated dimensions
         iterated_dimensions = []
         iterated_shape = [1]
@@ -952,6 +961,7 @@ class Data:
         info['name'] = self.name
         info['id'] = id(self)
         info['axes'] = self.axis_names
+        info['channels'] = self.channel_names
         info['shape'] = self.shape
         info['version'] = self.__version__
         return info
@@ -1171,7 +1181,7 @@ class Data:
         axis.points = points
         self._update()
 
-    def normalize(self, channel=0):
+    def normalize(self, channel=0, axis=None):
         '''
         Normalize data in given channel so that null=0 and zmax=1.
 
@@ -1179,8 +1189,11 @@ class Data:
         ----------
         channel : str or int (optional)
             Channel to normalize. Default is 0.
+        axis : str, int, or 1D list-like of str and int or None
+            Axis/axes to normalize against. If None, normalizes by the entire
+            dataset. Default is None.
         '''
-        # get channel
+        # process channel
         if type(channel) == int:
             channel_index = channel
         elif isinstance(channel, string_type):
@@ -1188,8 +1201,18 @@ class Data:
         else:
             print('channel type', type(channel), 'not valid')
         channel = self.channels[channel_index]
+        # process axes
+        def process(i):
+            if isinstance(channel, string_type):
+                return self.axis_names.index(i)
+            else:
+                return int(i)
+        if axis is not None:
+            if not hasattr(axis, '__contains__'):  # NOT list, tuple or similar
+                axis = [axis]
+            axis = [process(i) for i in axis]
         # call normalize on channel
-        channel.normalize()
+        channel.normalize(axis=axis)
 
     def offset(self, points, offsets, along, offset_axis,
                units='same', offset_units='same', mode='valid',
@@ -2331,37 +2354,6 @@ def from_PyCMDS(filepath, name=None,
         data_name = headers['data origin']
     # array
     arr = np.genfromtxt(filepath).T
-    # process shots
-    suffix = wt_kit.filename_parse(filepath)[2]
-    if suffix == 'shots':
-        aquisitions = arr.reshape([len(arr), headers['shots'], -1], order='F')
-        aquisitions = aquisitions.transpose(2, 0, 1)
-        # aquisitions has shape (pixels, cols, shots)
-        daq_indicies = [i for i, kind in enumerate(headers['kind']) if kind in ['channel', 'chopper']]
-        daq_names = [headers['name'][i] for i in daq_indicies]
-        daq_kinds = [headers['kind'][i] for i in daq_indicies]
-        passed_indicies = [i for i, kind in enumerate(headers['kind']) if kind not in ['channel', 'chopper']]
-        passed_indicies.pop(-1)
-        # test process to get dimensions
-        processing_module = getattr(shots_processing, shots_processing_module)
-        test_outs, test_names = processing_module.process(aquisitions[0, daq_indicies], daq_names, daq_kinds)
-        arr = np.full([len(passed_indicies) + len(test_names), len(aquisitions)], np.nan)       
-        for i in range(len(aquisitions)):
-            idx = 0
-            for j in passed_indicies:
-                arr[idx, i] = aquisitions[i, j, 0]
-                idx += 1
-            outs, names = processing_module.process(aquisitions[i, daq_indicies], daq_names, daq_kinds)
-            for out in outs:
-                arr[idx, i] = out
-                idx += 1
-        # TODO: actual handling for signed data somehow
-        # for now assume false
-        headers['channel signed'] = [False for _ in names]
-        headers['kind'] = [headers['kind'][i] for i in passed_indicies] + ['channel' for _ in outs]
-        headers['units'] = [headers['units'][i] for i in passed_indicies] + ['V' for _ in outs]
-        headers['label'] = [headers['label'][i] for i in passed_indicies] + ['' for _ in outs]
-        headers['name'] = [headers['name'][i] for i in passed_indicies] + names
     # get axes
     axes = []
     for name, identity, units in zip(headers['axis names'], 
