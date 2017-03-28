@@ -83,7 +83,7 @@ def add_sideplot(ax, along, pad=0., grid=True, zero_line=True,
     '''
     # divider should only be created once
     if hasattr(ax, 'WrightTools_sideplot_divider'):
-        divider = ax.wt_sideplot_divider
+        divider = ax.WrightTools_sideplot_divider
     else:
         divider = make_axes_locatable(ax)
         setattr(ax, 'WrightTools_sideplot_divider', divider)
@@ -137,8 +137,6 @@ def apply_rcparams(kind='fast'):
         matplotlib.rcParams['text.usetex'] = False
         matplotlib.rcParams['mathtext.fontset'] = 'cm'
         matplotlib.rcParams['font.family'] = 'sans-serif'
-        matplotlib.rcParams['font.serif'] = 'serif'
-        matplotlib.rcParams['font.sans-serif'] = 'sans-serif'
         matplotlib.rcParams['font.size'] = 14
         matplotlib.rcParams['legend.edgecolor'] = 'grey'
         matplotlib.rcParams['contour.negative_linestyle'] = 'solid'
@@ -1179,7 +1177,7 @@ class mpl_1D:
         # get channel index
         if type(channel) in [int, float]:
             channel_index = int(channel)
-        elif type(channel) == str:
+        elif isinstance(channel, string_type):
             channel_index = self.chopped[0].channel_names.index(channel)
         else:
             print('channel type not recognized in mpl_1D!')
@@ -1352,7 +1350,7 @@ class mpl_2D:
         # get channel index
         if type(channel) in [int, float]:
             channel_index = int(channel)
-        elif type(channel) == str:
+        elif isinstance(channel, string_type):
             channel_index = self.chopped[0].channel_names.index(channel)
         else:
             print('channel type not recognized in mpl_2D!')
