@@ -233,6 +233,7 @@ class Curve:
         '''
         self.colors = wt_units.converter(self.colors, self.units, units)
         self.units = units
+        self.interpolate()  # how did it ever work if this wasn't here?  - Blaise 2017-03-22
 
     def copy(self):
         '''

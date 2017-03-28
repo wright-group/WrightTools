@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 
 class Subplot:
     
-    def __init__(self, ax, energies, interactions, title=''):
+    def __init__(self, ax, energies, interactions, title='', state_linestyles=None):
         '''
         Subplot.
         
@@ -29,9 +29,11 @@ class Subplot:
         self.ax = ax
         self.interactions = interactions
         # plot energies
+        if state_linestyles is None:
+            state_linestyles = ['-'] * interactions
         self.energies = energies
-        for energy in self.energies:
-            self.ax.axhline(energy, color='k', linewidth=2, ls='-')
+        for energy, linestyle in zip(self.energies, state_linestyles):
+            self.ax.axhline(energy, color='k', linewidth=2, ls=linestyle)
         # set limits
         self.ax.set_xlim(-0.1, 1.1)
         self.ax.set_ylim(-0.1, 1.1)
@@ -73,9 +75,7 @@ class Subplot:
                                    fc=color, ec=color, linestyle='solid', linewidth=0)
         # add text
         text = self.ax.text(x_pos, -0.2, label, fontsize=font_size, horizontalalignment='center')
-        # plot energies
-        for energy in self.energies:
-            self.ax.axhline(energy, color='k', linewidth=2, ls='-')
+
 
 ### artist ####################################################################
 
