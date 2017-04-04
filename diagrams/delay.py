@@ -1,11 +1,70 @@
-'''
-this is something brute force I made to have some diagrams of 2D delay space \n
-perhaps something better should be made eventually \n
-- Blaise 2015.09.07
-'''
+### import ####################################################################
+
 
 import numpy as np
+
+import matplotlib
 import matplotlib.pyplot as plt
+
+
+### define ####################################################################
+
+
+### label sectors #############################################################
+
+
+def label_sectors(labels=['I', 'II', 'IV', 'VI', 'V', 'III'], ax=None,
+                  cs=None, c_zlevel=2, c_alpha=0.5):
+    '''
+    Label the six time-orderings in a three-pulse experiment.
+    
+    Parameters
+    ----------
+    labels : list of strings
+        Labels to place within sectors, starting in the upper left and
+        proceeding clockwise. Default is ['I', 'II', 'IV', 'VI', 'V', 'III'].
+    ax : matplotlib axis object (optional)
+        Axis to label. If None, uses current axis. Default is None.
+    cs : list of matplotlib colors (optional)
+        Color to label sectors. If None, sectors are not colored. Default is
+        None.
+    c_zlevel : number (optional)
+        Matplotlib zlevel of color. Default is 2.
+    c_alpha : number between 0 and 1.
+        Transparency of color. Default is 0.5
+    '''
+    if ax is None:
+        ax = plt.gca()
+    # label
+    factors = [[0.25, 0.75],
+               [2/3, 5/6],
+               [5/6, 2/3],
+               [0.75, 0.25],
+               [1/3, 1/6],
+               [1/6, 1/3]]
+    transform = ax.transAxes
+    for label, factor in zip(labels, factors):
+        ax.text(*factor, label, fontsize=30, va='center', ha='center', transform=transform)
+    # colors
+    if cs is None:
+        cs = ['none']*6
+    xbound = ax.get_xbound()
+    ybound = ax.get_ybound()
+    factors = []
+    factors.append([[xbound[0], 0], [0, 0], [ybound[1], ybound[1]]])
+    factors.append([[0, xbound[1]], [0, ybound[1]], [ybound[1], ybound[1]]])
+    factors.append([[0, xbound[1]], [0, 0], [0, ybound[1]]])
+    factors.append([[0, xbound[1]], [ybound[0], ybound[0]], [0, 0]])
+    factors.append([[xbound[0], 0], [ybound[0], ybound[0]], [ybound[0], 0]])
+    factors.append([[xbound[0], 0], [ybound[0], 0], [0, 0]])
+    for color, factor in zip(cs, factors):
+        poly = ax.fill_between(*factor, facecolor=color, edgecolor='none', alpha=c_alpha)
+        poly.set_zorder(c_zlevel)
+
+
+
+### testing ###################################################################
+
 
 if __name__ == '__main__':
     

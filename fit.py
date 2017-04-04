@@ -179,7 +179,7 @@ class Gaussian(Function):
     def __init__(self):
         Function.__init__(self)
         self.dimensionality = 1
-        self.params = ['mean','width','amplitude','baseline']
+        self.params = ['mean', 'width', 'amplitude', 'baseline']
         self.limits = {'width': [0, np.inf]}
 
     def evaluate(self, p, xi):

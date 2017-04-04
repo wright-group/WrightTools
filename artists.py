@@ -154,7 +154,7 @@ def apply_rcparams(kind='fast'):
 
 
 def corner_text(text, distance=0.075, ax=None, corner='UL', factor=200, bbox=True,
-                fontsize=None, background_alpha=0.75, edgecolor=None):
+                fontsize=18, background_alpha=1, edgecolor=None):
     """
     Place some text in the corner of the figure.
     
@@ -173,10 +173,9 @@ def corner_text(text, distance=0.075, ax=None, corner='UL', factor=200, bbox=Tru
     bbox : boolean (optional)
         Toggle bounding box. Default is True.
     fontsize : number (optional)
-        Text fontsize. If None, uses the matplotlib default. Default is None.
+        Text fontsize. If None, uses the matplotlib default. Default is 18.
     background_alpha : number (optional)
-        Transparency of background bounding box. Default is 0.75. Set to one
-        to make box opaque.
+        Opacity of background bounding box. Default is 1.
     edgecolor : string (optional)
         Frame edgecolor. Default is None (inherits from legend.edgecolor
         rcparam).
@@ -213,7 +212,7 @@ def corner_text(text, distance=0.075, ax=None, corner='UL', factor=200, bbox=Tru
     return out
 
 
-def create_figure(width='single', nrows=1, cols=[1, 'cbar'], margin=1.,
+def create_figure(width='single', nrows=1, cols=[1], margin=1.,
                   hspace=0.25, wspace=0.25, cbar_width=0.25, aspects=[],
                   default_aspect=1):
     '''
@@ -237,7 +236,7 @@ def create_figure(width='single', nrows=1, cols=[1, 'cbar'], margin=1.,
     cols : list (optional)
         A list of numbers, defining the number and width-ratios of the
         figure columns. May also contain the special string 'cbar', defining
-        a column as a colorbar-containing column. Default is [1, 'cbar'].
+        a column as a colorbar-containing column. Default is [1].
     margin : float (optional)
         Margin in inches. Margin is applied evenly around the figure, starting
         from the subplot boundaries (so that ticks and labels appear in the
@@ -350,7 +349,7 @@ def create_figure(width='single', nrows=1, cols=[1, 'cbar'], margin=1.,
     return fig, gs
 
 
-def diagonal_line(xi, yi, ax=None, c='k', ls=':', lw=1):
+def diagonal_line(xi, yi, ax=None, c='k', ls=':', lw=1, zorder=3):
     '''
     Plot a diagonal line.
     
@@ -368,6 +367,8 @@ def diagonal_line(xi, yi, ax=None, c='k', ls=':', lw=1):
         Line style. Default is : (dotted).
     lw : float (optional)
         Line width. Default is 1.
+    zorder : number (optional)
+        Matplotlib zorder. Default is 3.
     
     Returns
     -------
@@ -380,7 +381,7 @@ def diagonal_line(xi, yi, ax=None, c='k', ls=':', lw=1):
     # make plot
     diag_min = max(min(xi), min(yi))
     diag_max = min(max(xi), max(yi))
-    line = ax.plot([diag_min, diag_max], [diag_min, diag_max], c=c, ls=ls, lw=lw)
+    line = ax.plot([diag_min, diag_max], [diag_min, diag_max], c=c, ls=ls, lw=lw, zorder=zorder)
     return line
 
 
@@ -1153,9 +1154,14 @@ colormaps['skyebar_i'] = mplcolors.LinearSegmentedColormap.from_list('skyebar in
 colormaps['spectral'] = plt.get_cmap('nipy_spectral')
 colormaps['wright'] = mplcolors.LinearSegmentedColormap.from_list('wright', wright)
 
+
 # enforce grey as 'bad' value for colormaps
 for cmap in colormaps.values():
     cmap.set_bad([0.75]*3, 1)
+
+
+# a nice set of line colors
+overline_colors = ['m', 'c', 'orange', 'lightgreen']
 
 
 ### general purpose artists ###################################################
