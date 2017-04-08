@@ -1146,7 +1146,7 @@ colormaps['paried'] = plt.get_cmap('Paired')
 colormaps['prism'] = plt.get_cmap('prism')
 colormaps['rainbow'] = plt.get_cmap('rainbow')
 colormaps['seismic'] = plt.get_cmap('seismic')
-colormaps['signed'] = plt.get_cmap('seismic')
+colormaps['signed'] = plt.get_cmap('bwr')
 colormaps['signed_old'] = mplcolors.LinearSegmentedColormap.from_list('signed', signed_old)
 colormaps['skyebar'] = mplcolors.LinearSegmentedColormap.from_list('skyebar', skyebar)
 colormaps['skyebar_d'] = mplcolors.LinearSegmentedColormap.from_list('skyebar dark', skyebar_d)
@@ -1161,7 +1161,7 @@ for cmap in colormaps.values():
 
 
 # a nice set of line colors
-overline_colors = ['m', 'c', 'orange', 'lightgreen']
+overline_colors = ['yellow', 'fuchsia', 'cyan', 'lime', 'yellow']
 
 
 ### general purpose artists ###################################################
