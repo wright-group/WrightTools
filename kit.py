@@ -578,6 +578,28 @@ def plot_dats(folder=None, transpose=True):
             pass
 
 
+def read_data_column(path, name):
+    """
+    Read a named column of a PyCMDS data file as a single array.
+    
+    Parameters
+    ----------
+    path : string
+        Path of PyCMDS data file.
+    name : string
+        Name of column to read.
+    
+    Returns
+    -------
+    1D numpy.ndarray
+        The column of the data file, as an array.
+    """
+    headers = read_headers(path)
+    index = headers['name'].index(name)
+    arr = np.genfromtxt(path).T
+    return arr[index]
+
+
 def read_h5(filepath):
     '''
     Read from a `HDF5 <https://www.hdfgroup.org/HDF5/doc/H5.intro.html>`_
