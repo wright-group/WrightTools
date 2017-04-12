@@ -50,5 +50,5 @@ from . import units
 
 ### rcparams ##################################################################
 
-if int(_sys.version.split('.')[0]) > 2 and int(_matplotlib.version.split('.')[0] > 1):
+if int(_sys.version.split('.')[0]) > 2 and int(_matplotlib.__version__.split('.')[0]) > 1:
     artists.apply_rcparams('fast')
