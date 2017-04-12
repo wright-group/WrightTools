@@ -22,9 +22,8 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 import matplotlib.gridspec as grd
 import matplotlib.colors as mplcolors
 from matplotlib.backends.backend_pdf import PdfPages
+import matplotlib.patheffects as PathEffects
 from matplotlib.ticker import FormatStrFormatter
-matplotlib.rcParams['contour.negative_linestyle'] = 'solid'
-matplotlib.rcParams['font.size'] = 14
 
 from . import kit as wt_kit
 
@@ -83,11 +82,11 @@ def add_sideplot(ax, along, pad=0., grid=True, zero_line=True,
         AxesSubplot object
     '''
     # divider should only be created once
-    if hasattr(ax, 'wt_sideplot_divider'):
-        divider = ax.wt_sideplot_divider
+    if hasattr(ax, 'WrightTools_sideplot_divider'):
+        divider = ax.WrightTools_sideplot_divider
     else:
         divider = make_axes_locatable(ax)
-        setattr(ax, 'wt_sideplot_divider', divider)
+        setattr(ax, 'WrightTools_sideplot_divider', divider)
     # create sideplot axis
     if along == 'x':
         axCorr = divider.append_axes('top', height, pad=pad, sharex=ax)
@@ -124,9 +123,39 @@ def add_sideplot(ax, along, pad=0., grid=True, zero_line=True,
     return axCorr
 
 
-def corner_text(text, distance=0.075, ax=None, corner='UL', factor=200, 
-                fontsize=None, background_alpha=0.75):
+def apply_rcparams(kind='fast'):
     '''
+    Quickly apply rcparams.
+    
+    Parameters
+    ----------
+    
+    '''
+    if kind == 'default':
+        matplotlib.rcdefaults()
+    elif kind == 'fast':
+        matplotlib.rcParams['text.usetex'] = False
+        matplotlib.rcParams['mathtext.fontset'] = 'cm'
+        matplotlib.rcParams['font.family'] = 'sans-serif'
+        matplotlib.rcParams['font.size'] = 14
+        matplotlib.rcParams['legend.edgecolor'] = 'grey'
+        matplotlib.rcParams['contour.negative_linestyle'] = 'solid'
+    elif kind == 'publication':
+        matplotlib.rcParams['text.usetex'] = True
+        matplotlib.rcParams['text.latex.unicode'] = True
+        matplotlib.rcParams['text.latex.preamble'] = '\\usepackage[cm]{sfmath}'
+        matplotlib.rcParams['mathtext.fontset'] = 'cm'
+        matplotlib.rcParams['font.family'] = 'sans-serif'
+        matplotlib.rcParams['font.serif'] = 'cm'
+        matplotlib.rcParams['font.sans-serif'] = 'cm'
+        matplotlib.rcParams['font.size'] = 14
+        matplotlib.rcParams['legend.edgecolor'] = 'grey'
+        matplotlib.rcParams['contour.negative_linestyle'] = 'solid'
+
+
+def corner_text(text, distance=0.075, ax=None, corner='UL', factor=200, bbox=True,
+                fontsize=18, background_alpha=1, edgecolor=None):
+    """
     Place some text in the corner of the figure.
     
     Parameters
@@ -141,29 +170,40 @@ def corner_text(text, distance=0.075, ax=None, corner='UL', factor=200,
         The corner to label. Upper left, Lower left etc. Default is UL.
     factor : number (optional)
         Scaling factor. Default is 200.
+    bbox : boolean (optional)
+        Toggle bounding box. Default is True.
     fontsize : number (optional)
-        Text fontsize. If None, uses the matplotlib default. Default is None.
+        Text fontsize. If None, uses the matplotlib default. Default is 18.
     background_alpha : number (optional)
-        Transparency of background bounding box. Default is 0.75. Set to one
-        to make box opaque.
+        Opacity of background bounding box. Default is 1.
+    edgecolor : string (optional)
+        Frame edgecolor. Default is None (inherits from legend.edgecolor
+        rcparam).
     
     Returns
     -------
     text
         The matplotlib text object.
-    '''
+    """
     # get axis
     if ax is None:
         ax = plt.gca()
     [h_scaled, v_scaled], [va, ha] = get_scaled_bounds(ax, corner, distance, factor)
+    # get edgecolor
+    if edgecolor is None:
+        edgecolor = matplotlib.rcParams['legend.edgecolor']
     # apply text
-    props = dict(boxstyle='square', facecolor='white', alpha=background_alpha)
+    props = dict(boxstyle='square', facecolor='white', alpha=background_alpha,
+                 edgecolor=edgecolor)
     args = [v_scaled, h_scaled, text]
     kwargs = {}
     kwargs['fontsize'] = fontsize
     kwargs['verticalalignment'] = va
     kwargs['horizontalalignment'] = ha
-    kwargs['bbox'] = props
+    if bbox:
+        kwargs['bbox'] = props
+    else:
+        kwargs['path_effects'] = [PathEffects.withStroke(linewidth=3, foreground="w")]
     kwargs['transform'] = ax.transAxes
     if 'zlabel' in ax.properties().keys():  # axis is 3D projection
         out = ax.text2D(*args, **kwargs)
@@ -172,7 +212,7 @@ def corner_text(text, distance=0.075, ax=None, corner='UL', factor=200,
     return out
 
 
-def create_figure(width='single', nrows=1, cols=[1, 'cbar'], margin=1.,
+def create_figure(width='single', nrows=1, cols=[1], margin=1.,
                   hspace=0.25, wspace=0.25, cbar_width=0.25, aspects=[],
                   default_aspect=1):
     '''
@@ -196,7 +236,7 @@ def create_figure(width='single', nrows=1, cols=[1, 'cbar'], margin=1.,
     cols : list (optional)
         A list of numbers, defining the number and width-ratios of the
         figure columns. May also contain the special string 'cbar', defining
-        a column as a colorbar-containing column. Default is [1, 'cbar'].
+        a column as a colorbar-containing column. Default is [1].
     margin : float (optional)
         Margin in inches. Margin is applied evenly around the figure, starting
         from the subplot boundaries (so that ticks and labels appear in the
@@ -309,7 +349,7 @@ def create_figure(width='single', nrows=1, cols=[1, 'cbar'], margin=1.,
     return fig, gs
 
 
-def diagonal_line(xi, yi, ax=None, c='k', ls=':', lw=1):
+def diagonal_line(xi, yi, ax=None, c='k', ls=':', lw=1, zorder=3):
     '''
     Plot a diagonal line.
     
@@ -327,6 +367,8 @@ def diagonal_line(xi, yi, ax=None, c='k', ls=':', lw=1):
         Line style. Default is : (dotted).
     lw : float (optional)
         Line width. Default is 1.
+    zorder : number (optional)
+        Matplotlib zorder. Default is 3.
     
     Returns
     -------
@@ -339,7 +381,7 @@ def diagonal_line(xi, yi, ax=None, c='k', ls=':', lw=1):
     # make plot
     diag_min = max(min(xi), min(yi))
     diag_max = min(max(xi), max(yi))
-    line = ax.plot([diag_min, diag_max], [diag_min, diag_max], c=c, ls=ls, lw=lw)
+    line = ax.plot([diag_min, diag_max], [diag_min, diag_max], c=c, ls=ls, lw=lw, zorder=zorder)
     return line
 
 
@@ -490,11 +532,8 @@ def nm_to_rgb(nm):
     returns list [r, g, b] (zero to one scale) for given input in nm \n
     original code - http://www.physics.sfasu.edu/astro/color/spectra.html
     '''
-
     w = int(nm)
-
     # color -------------------------------------------------------------------
-
     if w >= 380 and w < 440:
         R = -(w - 440.) / (440. - 350.)
         G = 0.0
@@ -523,9 +562,7 @@ def nm_to_rgb(nm):
         R = 0.0
         G = 0.0
         B = 0.0
-
     # intensity correction ----------------------------------------------------
-
     if w >= 380 and w < 420:
         SSS = 0.3 + 0.7*(w - 350) / (420 - 350)
     elif w >= 420 and w <= 700:
@@ -535,7 +572,6 @@ def nm_to_rgb(nm):
     else:
         SSS = 0.0
     SSS *= 255
-
     return [float(int(SSS*R)/256.),
             float(int(SSS*G)/256.),
             float(int(SSS*B)/256.)]
@@ -670,7 +706,7 @@ def plot_colormap_components(cmap):
     plt.ylabel('intensity', fontsize=17)
 
 
-def savefig(path, fig=None, close=True):
+def savefig(path, fig=None, close=True, dpi=300):
     '''
     Save a figure.
     
@@ -694,13 +730,178 @@ def savefig(path, fig=None, close=True):
     # get full path
     path = os.path.abspath(path)
     # save
-    plt.savefig(path, dpi=300, transparent=False, pad_inches=1,
+    plt.savefig(path, dpi=dpi, transparent=False, pad_inches=1,
                 facecolor='none')
     # close
     if close:
         plt.close(fig)
     # finish
     return path
+
+
+def set_ax_labels(ax=None, xlabel=None, ylabel=None, xticks=None, yticks=None,
+                  label_fontsize=18):
+    """
+    Set all axis labels properties easily.
+    
+    Parameters
+    ----------
+    ax : matplotlib AxesSubplot object (optional)
+        Axis to set. If None, uses current axis. Default is None.
+    xlabel : None or string (optional)
+        x axis label. Default is None.
+    ylabel : None or string (optional)
+        y axis label. Default is None.
+    xticks : None or False or list of numbers
+        xticks. If False, ticks are hidden. Default is None.
+    yticks : None or False or list of numbers
+        yticks. If False, ticks are hidden. Default is None.
+    label_fontsize : number
+        Fontsize of label. Default is 18.
+
+    See also
+    --------
+    set_fig_labels
+    """
+    # get ax
+    if ax is None:
+        ax = plt.gca()
+    # x
+    if xlabel is not None:
+        ax.set_xlabel(xlabel, fontsize=label_fontsize)
+    if xticks is not None:
+        if xticks is not False:
+            ax.set_xticks(xticks)
+        else:
+            plt.setp(ax.get_xticklabels(), visible=False)       
+            ax.tick_params(axis='x', which='both', length=0)
+    # y
+    if ylabel is not None:
+        ax.set_ylabel(ylabel, fontsize=label_fontsize)
+    if yticks is not None:
+        if yticks is not False:
+            ax.set_yticks(yticks)
+        else:
+            plt.setp(ax.get_yticklabels(), visible=False)
+            ax.tick_params(axis='y', which='both', length=0)
+
+
+def set_ax_spines(ax=None, c='k', lw=3, zorder=10):
+    """
+    Easily the properties of all four axis spines.
+    
+    Parameters
+    ----------
+    ax : matplotlib AxesSubplot object (optional)
+        Axis to set. If None, uses current axis. Default is None.
+    c : any matplotlib color argument (optional)
+        Spine color. Default is k.
+    lw : number (optional)
+        Spine linewidth. Default is 3.
+    zorder : number (optional)
+        Spine zorder. Default is 10.
+    """
+    # get ax
+    if ax is None:
+        ax = plt.gca()
+    # apply
+    for key in ['bottom', 'top', 'right', 'left']:
+        ax.spines[key].set_color(c)
+        ax.spines[key].set_linewidth(lw)
+        ax.spines[key].zorder = zorder
+
+
+def set_fig_labels(fig=None, xlabel=None, ylabel=None, xticks=None, yticks=None,
+                   title=None, label_fontsize=18, title_fontsize=20):
+    """
+    Set all axis labels of a figure simultaniously. Only plots ticks and labels
+    for edge axes.
+    
+    Parameters
+    ----------
+    fig : matplotlib.figure.Figure object (optional)
+        Figure to set labels of. If None, uses current figure. Default is None.
+    xlabel : None or string (optional)
+        x axis label. Default is None.
+    ylabel : None or string (optional)
+        y axis label. Default is None.
+    xticks : None or False or list of numbers (optional)
+        xticks. If False, ticks are hidden. Default is None.
+    yticks : None or False or list of numbers (optional)
+        yticks. If False, ticks are hidden. Default is None.
+    title : None or string (optional)
+        Title of figure. Default is None.
+    label_fontsize : number
+        Fontsize of label. Default is 18.
+    title_fontsize : number
+        Fontsize of title. Default is 20.    
+         
+    See also
+    --------
+    set_ax_labels
+    """
+    # get fig
+    if fig is None:
+        fig = plt.gcf()
+    # axes
+    for ax in fig.axes:
+        if ax.is_first_col() and ax.is_last_row():
+            # lower left corner
+            set_ax_labels(ax=ax, xlabel=xlabel, ylabel=ylabel, xticks=xticks, yticks=yticks)
+        elif ax.is_first_col():
+            # lefthand column
+            set_ax_labels(ax=ax, ylabel=ylabel, xticks=False, yticks=yticks)
+        elif ax.is_last_row():
+            # bottom row
+            set_ax_labels(ax=ax, xlabel=xlabel, xticks=xticks, yticks=False)
+        else:
+            set_ax_labels(ax=ax, xticks=False, yticks=False)
+    # title
+    if title is not None:
+        fig.suptitle(title, fontsize=title_fontsize)
+
+
+def plot_gridlines(ax=None, c='grey', lw=1, diagonal=False, zorder=2):
+    """
+    Plot dotted gridlines onto an axis.
+    
+    Parameters
+    ----------
+    ax : matplotlib AxesSubplot object (optional)
+        Axis to add gridlines to. If None, uses current axis. Default is None.
+    c : matplotlib color argument (optional)
+        Gridline color. Default is grey.
+    lw : number (optional)
+        Gridline linewidth. Default is 1.
+    diagonal : boolean (optional)
+        Toggle inclusion of diagonal gridline. Default is False.
+    zorder : number (optional)
+        zorder of plotted grid. Default is 2.
+    """
+    # get ax
+    if ax is None:
+        ax = plt.gca()
+    # get dashes
+    ls = ':'
+    dashes = (lw/2, lw)
+    # grid
+    ax.grid(True)
+    lines = ax.xaxis.get_gridlines() + ax.yaxis.get_gridlines()
+    for l in lines.copy():
+        l = l
+        l.set_linestyle(':')
+        l.set_color(c)
+        l.set_linewidth(lw)
+        l.set_zorder(zorder)
+        l.set_dashes(dashes)
+        ax.add_line(l)
+    # diagonal
+    if diagonal:
+        min_xi, max_xi = ax.get_xlim()
+        min_yi, max_yi = ax.get_ylim()
+        diag_min = max(min_xi, min_yi)
+        diag_max = min(max_xi, max_yi)
+        ax.plot([diag_min, diag_max], [diag_min, diag_max], c=c, ls=':', lw=lw, zorder=zorder, dashes=dashes)
 
 
 def plot_margins(fig=None, inches=1., centers=True, edges=True):
@@ -945,7 +1146,7 @@ colormaps['paried'] = plt.get_cmap('Paired')
 colormaps['prism'] = plt.get_cmap('prism')
 colormaps['rainbow'] = plt.get_cmap('rainbow')
 colormaps['seismic'] = plt.get_cmap('seismic')
-colormaps['signed'] = plt.get_cmap('seismic')
+colormaps['signed'] = plt.get_cmap('bwr')
 colormaps['signed_old'] = mplcolors.LinearSegmentedColormap.from_list('signed', signed_old)
 colormaps['skyebar'] = mplcolors.LinearSegmentedColormap.from_list('skyebar', skyebar)
 colormaps['skyebar_d'] = mplcolors.LinearSegmentedColormap.from_list('skyebar dark', skyebar_d)
@@ -953,9 +1154,14 @@ colormaps['skyebar_i'] = mplcolors.LinearSegmentedColormap.from_list('skyebar in
 colormaps['spectral'] = plt.get_cmap('nipy_spectral')
 colormaps['wright'] = mplcolors.LinearSegmentedColormap.from_list('wright', wright)
 
+
 # enforce grey as 'bad' value for colormaps
 for cmap in colormaps.values():
     cmap.set_bad([0.75]*3, 1)
+
+
+# a nice set of line colors
+overline_colors = ['yellow', 'fuchsia', 'cyan', 'lime', 'yellow']
 
 
 ### general purpose artists ###################################################
@@ -977,7 +1183,7 @@ class mpl_1D:
         # get channel index
         if type(channel) in [int, float]:
             channel_index = int(channel)
-        elif type(channel) == str:
+        elif isinstance(channel, string_type):
             channel_index = self.chopped[0].channel_names.index(channel)
         else:
             print('channel type not recognized in mpl_1D!')
@@ -1150,7 +1356,7 @@ class mpl_2D:
         # get channel index
         if type(channel) in [int, float]:
             channel_index = int(channel)
-        elif type(channel) == str:
+        elif isinstance(channel, string_type):
             channel_index = self.chopped[0].channel_names.index(channel)
         else:
             print('channel type not recognized in mpl_2D!')
