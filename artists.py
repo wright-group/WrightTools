@@ -143,7 +143,7 @@ def apply_rcparams(kind='fast'):
     elif kind == 'publication':
         matplotlib.rcParams['text.usetex'] = True
         matplotlib.rcParams['text.latex.unicode'] = True
-        matplotlib.rcParams['text.latex.preamble'] = r'\usepackage[cm]{sfmath}'
+        matplotlib.rcParams['text.latex.preamble'] = '\\usepackage[cm]{sfmath}'
         matplotlib.rcParams['mathtext.fontset'] = 'cm'
         matplotlib.rcParams['font.family'] = 'sans-serif'
         matplotlib.rcParams['font.serif'] = 'cm'
