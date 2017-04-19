@@ -95,6 +95,25 @@ def converter(val, current_unit, destination_unit):
     return val
 
 
+def kind(units):
+    """
+    Find the kind of given units.
+    
+    Parameters
+    ----------
+    units : string
+        The units of interest
+        
+    Returns
+    -------
+    string
+        The kind of the given units. If no match is found, returns None.
+    """
+    for d in unit_dicts:
+        if units in d.keys():
+            return str(d['kind'])
+
+
 ### symbol ####################################################################
 
 
