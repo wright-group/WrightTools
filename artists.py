@@ -457,52 +457,58 @@ def get_scaled_bounds(ax, position, distance=0.1, factor=200):
     return [h_scaled, v_scaled], [va, ha]
 
 
-def make_cubehelix(gamma=1.0, s=0.5, r=-1.5, h=0.5,
-                   lum_rev=False, darkest=0.8, plot=False):
-    '''
-    Define cubehelix type colorbars. \n
-    gamma intensity factor, s start color, 
-    r rotations, h 'hue' saturation factor \n
-    Returns white to black LinearSegmentedColormap. \n
-    Written by Dan \n
-    For more information see http://arxiv.org/abs/1108.5083 .
-    '''
-    # isoluminescent curve--helical color cycle
-    # isoluminescent curve--helical color cycle
-    rr = (.213/.30)**1#.5
-    rg = (.715/.99)**1#.5
-    rb = (.072/.11)**1#.5
+def make_cubehelix(gamma=0.5, s=0.25, r=-1, h=1.3, reverse=False, darkest=0.7):
+    """
+    Define cubehelix type colorbars. For more information see http://arxiv.org/abs/1108.5083 .
+    
+    Parameters
+    ----------
+    gamma : number (optional)
+        Intensity factor. Default is 0.5
+    s : number (optional)
+        Start color factor. Default is 0.25
+    r : number (optional)
+        Number and direction of rotations. Default is -1
+    h : number (option)
+        Hue factor. Default is 1.3
+    reverse : boolean (optional)
+        Toggle reversal of output colormap. By default (Reverse = False),
+        colormap goes from light to dark.
+    darkest : number (optional)
+        Default is 0.7
+    
+    Returns
+    -------
+    matplotlib.colors.LinearSegmentedColormap
+    
+    See Also
+    --------
+    plot_colormap_components
+        Displays RGB components of colormaps.
+    """
+    rr = (.213/.30)
+    rg = (.715/.99)
+    rb = (.072/.11)
     def get_color_function(p0, p1):
         def color(x):
-            # Apply gamma factor to emphasise low or high intensity values
-            #xg = x ** gamma
-
-            # Calculate amplitude and angle of deviation from the black
-            # to white diagonal in the plane of constant
-            # perceived intensity.
+            # Calculate amplitude and angle of deviation from the black to
+            # white diagonal in the plane of constant perceived intensity.
             xg = darkest * x**gamma
-            lum = 1-xg # starts at 1
-            if lum_rev:
+            lum = 1-xg  # starts at 1
+            if reverse:
                 lum = lum[::-1]
-            #a = h*lum * (1-lum)/2.
-            #"""
-            a = lum.copy()#h * lum*(1-lum)/2.
+            a = lum.copy()
             a[lum<0.5] = h * lum[lum<0.5]/2.
             a[lum>=0.5] = h * (1-lum[lum>=0.5])/2.
-            #"""
             phi = 2 * np.pi * (s / 3 + r * x)
             out = lum + a * (p0 * np.cos(phi) + p1 * np.sin(phi))
             return out
         return color
-    rgb_dict = {
-            'red': get_color_function(-0.14861*rr, 1.78277*rr),
-            'green': get_color_function(-0.29227*rg, -0.90649*rg),
-            'blue': get_color_function(1.97294*rb, 0.0),
-    }
-    cbar = matplotlib.colors.LinearSegmentedColormap('cubehelix', rgb_dict)
-    if plot:
-        plot_colormap(cbar)
-    return cbar
+    rgb_dict = {'red': get_color_function(-0.14861*rr, 1.78277*rr),
+                'green': get_color_function(-0.29227*rg, -0.90649*rg),
+                'blue': get_color_function(1.97294*rb, 0.0)}
+    cmap = matplotlib.colors.LinearSegmentedColormap('cubehelix', rgb_dict)
+    return cmap
     
 
 def make_colormap(seq, name='CustomMap', plot=False):
@@ -675,6 +681,9 @@ def plot_colorbar(cax=None, cmap='default', ticks=None, clim=None, vlim=None,
 
 
 def plot_colormap_components(cmap):
+    """
+    Plot the components of a given colormap.
+    """
     plt.figure(figsize=[8, 4])
     gs = grd.GridSpec(2, 1, height_ratios=[1, 10], hspace=0.05)
     # colorbar
@@ -881,6 +890,9 @@ def plot_gridlines(ax=None, c='grey', lw=1, diagonal=False, zorder=2):
     # get ax
     if ax is None:
         ax = plt.gca()
+    # matplotlib 1.0...
+    if int(matplotlib.__version__.split('.')[0]) < 2:
+        ax.grid(a=True)
     # get dashes
     ls = ':'
     dashes = (lw/2, lw)
@@ -1015,8 +1027,7 @@ def stitch_to_animation(images, outpath=None, duration=0.5, palettesize=256,
 ### color maps ################################################################
 
 
-cubehelix = make_cubehelix(gamma=0.5, s=0.25, r=-1., h=1.3, 
-                           lum_rev=False, darkest=0.7)
+cubehelix = make_cubehelix()
 
 experimental = ['#FFFFFF',
                 '#0000FF',

@@ -1,6 +1,6 @@
-'''
-Central data object class and associated functions.
-'''
+"""
+Central data class and associated.
+"""
 
 
 ### import ####################################################################
@@ -967,7 +967,7 @@ class Data:
         return info
 
     def level(self, channel, axis, npts, verbose=True):
-        '''
+        """
         For a channel, subtract the average value of several points at the edge
         of a given axis.
 
@@ -982,7 +982,7 @@ class Data:
             take leading points and negative numbers take trailing points.
         verbose : bool (optional)
             Toggle talkback. Default is True.
-        '''
+        """
         # channel -------------------------------------------------------------        
         if type(channel) == int:
             channel_index = channel
@@ -1023,8 +1023,8 @@ class Data:
         # return
         channel.values = values
         channel.znull = 0.
-        channel.zmax = values.max()
-        channel.zmin = values.min()
+        channel.zmax = np.nanmax(values)
+        channel.zmin = np.nanmin(values)
         # print
         if verbose:
             axis = self.axes[axis_index]
@@ -2592,7 +2592,7 @@ def join(datas, method='first', verbose=True):
     ----------
     datas : list of data
         The list of data objects to join together.
-    method : {'first', 'sum', 'max', 'min'} (optional)
+    method : {'first', 'sum', 'max', 'min', 'mean'} (optional)
         The method for how overlapping points get treated. Default is first,
         meaning that the data object that appears first in data will take
         precedence.
@@ -2673,6 +2673,8 @@ def join(datas, method='first', verbose=True):
             zis = np.nanmax(full, axis=0)
         elif method == 'min':
             zis = np.nanmin(full, axis=0)
+        elif method == 'mean':
+            zis = np.nanmean(full, axis=0)
         else:
             print('method', method, 'not recognized in join')
             return

@@ -399,7 +399,7 @@ class Curve:
         # map source colors, subcurves
         if self.subcurve:
             new_source_colors = np.array(self.source_color_interpolator.get_motor_positions(new_colors)).squeeze()
-            self.subcurve.map_colors(new_source_colors)
+            self.subcurve.map_colors(new_source_colors, units=self.units)
             self.source_colors.positions = new_source_colors
         # finish
         self.colors = new_colors

@@ -197,6 +197,7 @@ def tune_test(data, curve, channel_name, level=False, cutoff_factor=0.01,
     curve.map_colors(points, units='wn')
     curve.convert(curve_native_units)
     # plot --------------------------------------------------------------------
+    data.axes[1].convert(curve_native_units)
     fig, gs = wt_artists.create_figure(default_aspect=0.5)
     # heatmap
     ax = plt.subplot(gs[0, 0])
