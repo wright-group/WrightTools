@@ -232,6 +232,9 @@ class Curve:
             The destination units.
         '''
         self.colors = wt_units.converter(self.colors, self.units, units)
+        if self.subcurve:
+            positions = self.source_colors.positions
+            self.source_colors.positions = wt_units.converter(positions, self.units, units)
         self.units = units
         self.interpolate()  # how did it ever work if this wasn't here?  - Blaise 2017-03-22
 
@@ -389,7 +392,7 @@ class Curve:
         new_colors = wt_units.converter(new_colors, units, self.units)
         new_colors.sort()
         # ensure that motor interpolators agree with current motor positions
-        self.interpolate(interpolate_subcurve=False)
+        self.interpolate(interpolate_subcurve=True)
         # map own motors
         new_motors = []
         for motor_index, motor in enumerate(self.motors):
@@ -407,7 +410,7 @@ class Curve:
         self.motor_names = [m.name for m in self.motors]
         for obj in self.motors:
             setattr(self, obj.name, obj)
-        self.interpolate(interpolate_subcurve=False)
+        self.interpolate(interpolate_subcurve=True)
 
     def offset_by(self, motor, amount):
         '''

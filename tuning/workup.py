@@ -108,7 +108,7 @@ def intensity(data, curve, channel_name, level=False, cutoff_factor=0.1,
                            kind=kind, interaction=interaction)
     curve.map_colors(old_curve.colors)
     # plot --------------------------------------------------------------------
-    fig, gs = wt_artists.create_figure(nrows=2, default_aspect=0.5)
+    fig, gs = wt_artists.create_figure(nrows=2, default_aspect=0.5, cols=[1, 'cbar'])
     # curves
     ax = plt.subplot(gs[0, 0])
     xi = old_curve.colors
@@ -158,7 +158,7 @@ def intensity(data, curve, channel_name, level=False, cutoff_factor=0.1,
 
 def tune_test(data, curve, channel_name, level=False, cutoff_factor=0.01,
               autosave=True, save_directory=None):
-    '''
+    """
     
     Parameters
     ----------
@@ -169,7 +169,7 @@ def tune_test(data, curve, channel_name, level=False, cutoff_factor=0.01,
     -------
     curve
         New curve object.
-    '''
+    """
     # make data object
     data.bring_to_front(channel_name)
     data.transpose()
@@ -187,18 +187,20 @@ def tune_test(data, curve, channel_name, level=False, cutoff_factor=0.01,
     xi = outs.axes[0].points
     yi = outs.one.values
     spline = wt_kit.Spline(xi, yi)
-    offsets_splined = spline(xi)
+    offsets_splined = spline(xi)  # wn
     # make curve --------------------------------------------------------------
     curve = curve.copy()
+    print(curve.source_colors.positions)
     curve_native_units = curve.units
     curve.convert('wn')
     points = curve.colors.copy()
     curve.colors += offsets_splined
     curve.map_colors(points, units='wn')
     curve.convert(curve_native_units)
+    print(curve.source_colors.positions)
     # plot --------------------------------------------------------------------
     data.axes[1].convert(curve_native_units)
-    fig, gs = wt_artists.create_figure(default_aspect=0.5)
+    fig, gs = wt_artists.create_figure(default_aspect=0.5, cols=[1, 'cbar'])
     # heatmap
     ax = plt.subplot(gs[0, 0])
     xi = data.axes[1].points
@@ -209,6 +211,7 @@ def tune_test(data, curve, channel_name, level=False, cutoff_factor=0.01,
     ax.set_xlim(xi.min(), xi.max())
     ax.set_ylim(yi.min(), yi.max())
     # lines
+    outs.convert(curve_native_units)
     xi = outs.axes[0].points
     yi = outs.one.values
     ax.plot(xi, yi, c='grey', lw=5, alpha=0.5)
@@ -216,8 +219,8 @@ def tune_test(data, curve, channel_name, level=False, cutoff_factor=0.01,
     ax.axhline(c='k', lw=1)
     ax.grid()
     units_string = '$\mathsf{(' + wt_units.color_symbols[curve.units] + ')}$'
-    ax.set_xlabel(' '.join(['setpoint', units_string]), fontsize=18)
-    ax.set_ylabel('$\mathsf{\Delta' + wt_units.color_symbols['wn'] + '}$', fontsize=18)
+    ax.set_xlabel(r' '.join(['setpoint', units_string]), fontsize=18)
+    ax.set_ylabel(r'$\mathsf{\Delta' + wt_units.color_symbols['wn'] + '}$', fontsize=18)
     # colorbar
     cax = plt.subplot(gs[:, -1])
     label = channel_name
