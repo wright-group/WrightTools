@@ -190,14 +190,12 @@ def tune_test(data, curve, channel_name, level=False, cutoff_factor=0.01,
     offsets_splined = spline(xi)  # wn
     # make curve --------------------------------------------------------------
     curve = curve.copy()
-    print(curve.source_colors.positions)
     curve_native_units = curve.units
     curve.convert('wn')
     points = curve.colors.copy()
     curve.colors += offsets_splined
     curve.map_colors(points, units='wn')
     curve.convert(curve_native_units)
-    print(curve.source_colors.positions)
     # plot --------------------------------------------------------------------
     data.axes[1].convert(curve_native_units)
     fig, gs = wt_artists.create_figure(default_aspect=0.5, cols=[1, 'cbar'])
@@ -229,7 +227,7 @@ def tune_test(data, curve, channel_name, level=False, cutoff_factor=0.01,
     # finish ------------------------------------------------------------------    
     if autosave:
         if save_directory is None:
-            save_directory = os.getcwd()
+            save_directory = os.path.dirname(data.source)
         curve.save(save_directory=save_directory, full=True)
         p = os.path.join(save_directory, 'tune test.png')
         wt_artists.savefig(p, fig=fig)
