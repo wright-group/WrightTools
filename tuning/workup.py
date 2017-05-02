@@ -162,8 +162,22 @@ def tune_test(data, curve, channel_name, level=False, cutoff_factor=0.01,
     
     Parameters
     ----------
-    data : wt.data.Data objeect
+    data : wt.data.Data object
         should be in (setpoint, detuning)
+    curve : wt.curve object
+        tuning curve used to do tune_test
+    channel_nam : str
+        name of the signal chanel to evalute
+    level : bool (optional)
+        does nothing, default is False
+    cutoff_factor : float (optoinal)
+        minimum value for datapoint/max(datapoints) for point to be included
+        in the fitting procedure, default is 0.01
+    autosave : bool (optional)
+        saves output curve if True, default is True
+    save_directory : str
+        directory to save new curve, default is None which uses the data source
+        directory
 
     Returns
     -------
@@ -180,9 +194,19 @@ def tune_test(data, curve, channel_name, level=False, cutoff_factor=0.01,
     cutoff = np.nanmax(channel.values)*cutoff_factor
     channel.values[channel.values<cutoff] = np.nan
     # fit
+    # TODO: evaluate suggested edits to fit section
     function = wt_fit.Moments()
     fitter = wt_fit.Fitter(function, data, data.axes[0].name)
-    outs = fitter.run()
+    outs = fitter.run() #moment_outs = fitter.run()
+    # gauss_function = wt_fit.Gaussian()
+    # g_fitter - wt_fit.Fitter(gauss_function,data,data.axes[0].name)
+    # gauss_outs = g_fitter.run
+    # outs = []
+    # for i in range len(gauss_outs):
+        # if guass_outs[i][0] == np.nan:
+            # out.append(moment_outs[i])
+        # else:
+            # out.append(guass_outs[i][0])
     # spline
     xi = outs.axes[0].points
     yi = outs.one.values
