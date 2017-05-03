@@ -17,6 +17,7 @@ import numpy as np
 from numpy import r_
 
 import matplotlib
+from matplotlib.axes import Axes, SubplotBase, subplot_class_factory
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import matplotlib.gridspec as grd
@@ -37,6 +38,94 @@ if sys.version[0] == '2':
 else:
     string_type = str  # newer versions of python don't have unicode type
 
+
+### classes ###################################################################
+
+
+class Axes(matplotlib.axes.Axes):
+    
+    def contourf(self, *args, **kwargs):
+        contours = matplotlib.axes.Axes.contourf(self, *args, **kwargs)  # why can't I use super?
+        # from http://stackoverflow.com/a/32911283/2860501                                        
+        for c in contours.collections:
+            c.set_edgecolor('face')
+        return contours
+    
+    def plot_data(self, data):
+        print('plot data is experimental and should not be used right now')
+        if data.dimensionality == 2:
+            xi = data.axes[0].points
+            yi = data.axes[1].points
+            zi = data.channels[0].values
+            X, Y, Z = pcolor_helper(xi, yi, zi)
+            self.pcolor(X, Y, Z, cmap=colormaps['default'])
+            self.set_xlim(xi.min(), xi.max())
+            self.set_ylim(yi.min(), yi.max())
+
+
+class Figure(matplotlib.figure.Figure):
+    
+    def add_subplot(self, *args, **kwargs):
+        # projection
+        if 'projection' not in kwargs.keys():
+            projection = 'wright'
+        else:
+            projection = kwargs['projection']
+        # must be arguments
+        if not len(args):
+            return
+        # int args must be correct
+        if len(args) == 1 and isinstance(args[0], int):
+            args = tuple([int(c) for c in str(args[0])])
+            if len(args) != 3:
+                raise ValueError("Integer subplot specification must " +
+                                 "be a three digit number.  " +
+                                 "Not {n:d}".format(n=len(args)))
+        # subplotbase args
+        if isinstance(args[0], SubplotBase):
+            a = args[0]
+            if a.get_figure() is not self:
+                msg = ("The Subplot must have been created in the present"
+                       " figure")
+                raise ValueError(msg)
+            # make a key for the subplot (which includes the axes object id
+            # in the hash)
+            key = self._make_key(*args, **kwargs)
+        else:
+            projection_class, kwargs, key = matplotlib.figure.process_projection_requirements(
+                self, *args, **kwargs)
+            # try to find the axes with this key in the stack
+            ax = self._axstack.get(key)
+            if ax is not None:
+                if isinstance(ax, projection_class):
+                    # the axes already existed, so set it as active & return
+                    self.sca(ax)
+                    return ax
+                else:
+                    # Undocumented convenience behavior:
+                    # subplot(111); subplot(111, projection='polar')
+                    # will replace the first with the second.
+                    # Without this, add_subplot would be simpler and
+                    # more similar to add_axes.
+                    self._axstack.remove(ax)
+            if projection == 'wright':
+                a = subplot_class_factory(Axes)(self, *args, **kwargs)
+            else:
+                a = subplot_class_factory(projection_class)(self, *args, **kwargs)
+        self._axstack.add(key, a)
+        self.sca(a)
+        a._remove_method = self.__remove_ax
+        self.stale = True
+        a.stale_callback = matplotlib.figure._stale_figure_callback
+        # finish
+        return a
+
+
+class GridSpec(matplotlib.gridspec.GridSpec):
+
+    def __init__(self, *args, **kwargs):
+        super(self.__class__, self).__init__(*args, **kwargs)
+    
 
 ### artist helpers ############################################################
 
@@ -337,13 +426,13 @@ def create_figure(width='single', nrows=1, cols=[1], margin=1.,
     figure_height += (nrows-1) * hspace
     figure_height += 2*margin
     # make figure
-    fig = plt.figure(figsize=[figure_width, figure_height])
+    fig = plt.figure(figsize=[figure_width, figure_height], FigureClass=Figure)
     # get hspace, wspace in relative units
     hspace = in_to_mpl(hspace, figure_height-2*margin, nrows)
     wspace = in_to_mpl(wspace, figure_width-2*margin, len(cols))
     # make gridpsec
-    gs = grd.GridSpec(nrows, len(cols), hspace=hspace, wspace=wspace,
-                      width_ratios=width_ratios, height_ratios=height_ratios)
+    gs = GridSpec(nrows, len(cols), hspace=hspace, wspace=wspace,
+                  width_ratios=width_ratios, height_ratios=height_ratios)
     # finish
     subplots_adjust(fig, inches=margin)
     return fig, gs
