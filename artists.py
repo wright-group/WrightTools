@@ -51,6 +51,13 @@ class Axes(matplotlib.axes.Axes):
             c.set_edgecolor('face')
         return contours
     
+    def legend(self, *args, **kwargs):
+        if 'fancybox' not in kwargs.keys():
+            kwargs['fancybox'] = False
+        if 'framealpha' not in kwargs.keys():
+            kwargs['framealpha'] = 1.
+        super().legend(*args, **kwargs)
+    
     def plot_data(self, data):
         print('plot data is experimental and should not be used right now')
         if data.dimensionality == 2:
