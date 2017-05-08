@@ -51,6 +51,10 @@ class Axes(matplotlib.axes.Axes):
             c.set_edgecolor('face')
         return contours
     
+    def grid(self, *args, **kwargs):
+        # TODO:
+        super().grid()
+    
     def legend(self, *args, **kwargs):
         if 'fancybox' not in kwargs.keys():
             kwargs['fancybox'] = False
@@ -58,16 +62,129 @@ class Axes(matplotlib.axes.Axes):
             kwargs['framealpha'] = 1.
         super().legend(*args, **kwargs)
     
-    def plot_data(self, data):
-        print('plot data is experimental and should not be used right now')
-        if data.dimensionality == 2:
-            xi = data.axes[0].points
-            yi = data.axes[1].points
-            zi = data.channels[0].values
-            X, Y, Z = pcolor_helper(xi, yi, zi)
-            self.pcolor(X, Y, Z, cmap=colormaps['default'])
+    def plot_data(self, data, channel=0, xaxis=0, yaxis=1, dimensionality=None,
+                  interpolate=False, cmap=None, xlabel=True, ylabel=True,
+                  zmin=None, zmax=None):
+        """
+        Plot directly from a data object.
+        
+        Parameters
+        ----------
+        data : WrightTools.data.Data object
+            The data object to plot.
+        channel : int or str (optional)
+            The channel to plot. Default is 0.
+        xaxis : int or str (optional)
+            X axis. Default is 0.
+        yaxis : int or str (optional)
+            Y axis. Default is 0.
+        dimensionality : {1, 2} (optional)
+            Dimensionality of plot. Default is None (inherited from data
+            object).
+        interpolate : boolean (optional)
+            Toggle interpolation. Default is False.
+        cmap : str (optional)
+            A key to the colormaps dictionary found in artists module. Default
+            is None (inherits from channel).
+        xlabel : boolean (optional)
+            Toggle xlabel. Default is True.
+        ylabel : boolean (optional)
+            Toggle ylabel. Default is True.
+        zmin : number (optional)
+            Zmin. Default is None (inherited from channel).
+        zmax : number (optional)
+            Zmax. Default is None (inherited from channel).
+        """
+        print('plot data is experimental---please do not rely on it!')
+        # TODO: should I store a reference to data (or list of refs?)
+        # prepare -------------------------------------------------------------
+        # get dimensionality
+        if dimensionality is None:
+            if data.dimensionality == 2:
+                dimensionality = 2
+            else:
+                dimensionality = 1
+        # get channel
+        if type(channel) == int:
+            channel_index = channel
+        elif isinstance(channel, string_type):
+            channel_index = data.channel_names.index(channel)
+        else:
+            print('channel type', type(channel), 'not valid')
+        channel = data.channels[channel_index]
+        # get xaxis
+        if type(xaxis) == int:
+            xaxis_index = xaxis
+        elif isinstance(xaxis, string_type):
+            xaxis_index = data.axis_names.index(xaxis)
+        else:
+            print('xaxis type', type(xaxis), 'not valid')
+        xaxis = data.axes[xaxis_index]
+        # get yaxis
+        if dimensionality == 2:
+            if type(yaxis) == int:
+                yaxis_index = yaxis
+            elif isinstance(yaxis, string_type):
+                yaxis_index = data.axis_names.index(yaxis)
+            else:
+                print('yaxis type', type(yaxis), 'not valid')
+            yaxis = data.axes[yaxis_index]
+        # get zmin
+        if zmin is None:
+            zmin = channel.zmin
+        # get zmax
+        if zmax is None:
+            zmax = channel.zmax
+        # 1D ------------------------------------------------------------------
+        if dimensionality == 1:
+            # get list of all datas
+            datas = data.chop(xaxis_index, verbose=False)
+            for data in datas:
+                # get arrays
+                xi = xaxis.points
+                yi = data.channels[channel_index].values
+                # plot
+                if interpolate:
+                    self.plot(xi, yi)
+                else:
+                    self.scatter(xi, yi)
+            # decoration
+            self.set_xlim(xi.min(), xi.max())
+            self.set_ylim(zmin, zmax)
+        # 2D ------------------------------------------------------------------
+        if dimensionality == 2:
+            # get colormap
+            if cmap is None:
+                if channel.signed:
+                    cmap = colormaps['signed']
+                else:
+                    cmap = colormaps['default']
+            else:
+                cmap = colormaps[cmap]
+            # get arrays
+            xi = xaxis.points
+            yi = yaxis.points
+            zi = channel.values.T
+            # plot
+            if interpolate:
+                # contourf
+                levels = np.linspace(zmin, zmax, 256)
+                self.contourf(xi, yi, zi, levels=levels, cmap=cmap)
+            else:
+                # pcolor
+                X, Y, Z = pcolor_helper(xi, yi, zi)
+                self.pcolor(X, Y, Z, vmin=zmin, vmax=zmax, cmap=cmap)
+            # decoration
             self.set_xlim(xi.min(), xi.max())
             self.set_ylim(yi.min(), yi.max())
+        # decoration ----------------------------------------------------------
+        if xlabel:
+            self.set_xlabel(xaxis.label, fontsize=18)
+        if ylabel:
+            if dimensionality == 1:
+                self.set_ylabel(channel.label, fontsize=18)
+            if dimensionality == 2:
+                self.set_ylabel(yaxis.label, fontsize=18)
 
 
 class Figure(matplotlib.figure.Figure):
@@ -966,7 +1083,8 @@ def set_fig_labels(fig=None, xlabel=None, ylabel=None, xticks=None, yticks=None,
         fig.suptitle(title, fontsize=title_fontsize)
 
 
-def plot_gridlines(ax=None, c='grey', lw=1, diagonal=False, zorder=2):
+def plot_gridlines(ax=None, c='grey', lw=1, diagonal=False, zorder=2,
+                   makegrid=True):
     """
     Plot dotted gridlines onto an axis.
     
@@ -986,14 +1104,11 @@ def plot_gridlines(ax=None, c='grey', lw=1, diagonal=False, zorder=2):
     # get ax
     if ax is None:
         ax = plt.gca()
-    # matplotlib 1.0...
-    if int(matplotlib.__version__.split('.')[0]) < 2:
-        ax.grid(a=True)
     # get dashes
     ls = ':'
     dashes = (lw/2, lw)
     # grid
-    ax.grid(True)
+    #ax.grid(True)
     lines = ax.xaxis.get_gridlines() + ax.yaxis.get_gridlines()
     for l in lines.copy():
         l = l
