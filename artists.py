@@ -51,10 +51,6 @@ class Axes(matplotlib.axes.Axes):
             c.set_edgecolor('face')
         return contours
     
-    def grid(self, *args, **kwargs):
-        # TODO:
-        super().grid()
-    
     def legend(self, *args, **kwargs):
         if 'fancybox' not in kwargs.keys():
             kwargs['fancybox'] = False
@@ -1383,7 +1379,7 @@ for cmap in colormaps.values():
 
 
 # a nice set of line colors
-overline_colors = ['yellow', 'fuchsia', 'cyan', 'lime', 'yellow']
+overline_colors = ['#CCFF00', '#FE4EDA',  '#FF6600', '#00FFBF', '#00B7EB']
 
 
 ### general purpose artists ###################################################
