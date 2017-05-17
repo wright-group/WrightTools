@@ -234,9 +234,10 @@ class Figure(matplotlib.figure.Figure):
                 a = subplot_class_factory(projection_class)(self, *args, **kwargs)
         self._axstack.add(key, a)
         self.sca(a)
-        a._remove_method = self.__remove_ax
-        self.stale = True
-        a.stale_callback = matplotlib.figure._stale_figure_callback
+        if int(matplotlib.__version__.split('.')[0]) > 1:
+            a._remove_method = self.__remove_ax
+            self.stale = True
+            a.stale_callback = matplotlib.figure._stale_figure_callback
         # finish
         return a
 
@@ -1519,7 +1520,7 @@ class mpl_2D:
         self._onplotdata.append((xi, yi, kwargs))
 
     def plot(self, channel=0,
-             contours=9, pixelated=True, lines=True, cmap='automatic', 
+             contours=0, pixelated=True, lines=True, cmap='automatic', 
              facecolor='w', dynamic_range=False, local=False, 
              contours_local=True, normalize_slices='both',  xbin= False, 
              ybin=False, xlim=None, ylim=None, autosave=False, 
