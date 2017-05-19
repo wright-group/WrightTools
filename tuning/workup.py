@@ -108,7 +108,7 @@ def intensity(data, curve, channel_name, level=False, cutoff_factor=0.1,
                            kind=kind, interaction=interaction)
     curve.map_colors(old_curve.colors)
     # plot --------------------------------------------------------------------
-    fig, gs = wt_artists.create_figure(nrows=2, default_aspect=0.5)
+    fig, gs = wt_artists.create_figure(nrows=2, default_aspect=0.5, cols=[1, 'cbar'])
     # curves
     ax = plt.subplot(gs[0, 0])
     xi = old_curve.colors
@@ -158,18 +158,32 @@ def intensity(data, curve, channel_name, level=False, cutoff_factor=0.1,
 
 def tune_test(data, curve, channel_name, level=False, cutoff_factor=0.01,
               autosave=True, save_directory=None):
-    '''
+    """
     
     Parameters
     ----------
-    data : wt.data.Data objeect
+    data : wt.data.Data object
         should be in (setpoint, detuning)
+    curve : wt.curve object
+        tuning curve used to do tune_test
+    channel_nam : str
+        name of the signal chanel to evalute
+    level : bool (optional)
+        does nothing, default is False
+    cutoff_factor : float (optoinal)
+        minimum value for datapoint/max(datapoints) for point to be included
+        in the fitting procedure, default is 0.01
+    autosave : bool (optional)
+        saves output curve if True, default is True
+    save_directory : str
+        directory to save new curve, default is None which uses the data source
+        directory
 
     Returns
     -------
     curve
         New curve object.
-    '''
+    """
     # make data object
     data.bring_to_front(channel_name)
     data.transpose()
@@ -180,14 +194,24 @@ def tune_test(data, curve, channel_name, level=False, cutoff_factor=0.01,
     cutoff = np.nanmax(channel.values)*cutoff_factor
     channel.values[channel.values<cutoff] = np.nan
     # fit
+    # TODO: evaluate suggested edits to fit section
     function = wt_fit.Moments()
     fitter = wt_fit.Fitter(function, data, data.axes[0].name)
-    outs = fitter.run()
+    outs = fitter.run() #moment_outs = fitter.run()
+    # gauss_function = wt_fit.Gaussian()
+    # g_fitter - wt_fit.Fitter(gauss_function,data,data.axes[0].name)
+    # gauss_outs = g_fitter.run
+    # outs = []
+    # for i in range len(gauss_outs):
+        # if guass_outs[i][0] == np.nan:
+            # out.append(moment_outs[i])
+        # else:
+            # out.append(guass_outs[i][0])
     # spline
     xi = outs.axes[0].points
     yi = outs.one.values
     spline = wt_kit.Spline(xi, yi)
-    offsets_splined = spline(xi)
+    offsets_splined = spline(xi)  # wn
     # make curve --------------------------------------------------------------
     curve = curve.copy()
     curve_native_units = curve.units
@@ -198,7 +222,7 @@ def tune_test(data, curve, channel_name, level=False, cutoff_factor=0.01,
     curve.convert(curve_native_units)
     # plot --------------------------------------------------------------------
     data.axes[1].convert(curve_native_units)
-    fig, gs = wt_artists.create_figure(default_aspect=0.5)
+    fig, gs = wt_artists.create_figure(default_aspect=0.5, cols=[1, 'cbar'])
     # heatmap
     ax = plt.subplot(gs[0, 0])
     xi = data.axes[1].points
@@ -209,6 +233,7 @@ def tune_test(data, curve, channel_name, level=False, cutoff_factor=0.01,
     ax.set_xlim(xi.min(), xi.max())
     ax.set_ylim(yi.min(), yi.max())
     # lines
+    outs.convert(curve_native_units)
     xi = outs.axes[0].points
     yi = outs.one.values
     ax.plot(xi, yi, c='grey', lw=5, alpha=0.5)
@@ -216,8 +241,8 @@ def tune_test(data, curve, channel_name, level=False, cutoff_factor=0.01,
     ax.axhline(c='k', lw=1)
     ax.grid()
     units_string = '$\mathsf{(' + wt_units.color_symbols[curve.units] + ')}$'
-    ax.set_xlabel(' '.join(['setpoint', units_string]), fontsize=18)
-    ax.set_ylabel('$\mathsf{\Delta' + wt_units.color_symbols['wn'] + '}$', fontsize=18)
+    ax.set_xlabel(r' '.join(['setpoint', units_string]), fontsize=18)
+    ax.set_ylabel(r'$\mathsf{\Delta' + wt_units.color_symbols['wn'] + '}$', fontsize=18)
     # colorbar
     cax = plt.subplot(gs[:, -1])
     label = channel_name
@@ -226,7 +251,7 @@ def tune_test(data, curve, channel_name, level=False, cutoff_factor=0.01,
     # finish ------------------------------------------------------------------    
     if autosave:
         if save_directory is None:
-            save_directory = os.getcwd()
+            save_directory = os.path.dirname(data.source)
         curve.save(save_directory=save_directory, full=True)
         p = os.path.join(save_directory, 'tune test.png')
         wt_artists.savefig(p, fig=fig)

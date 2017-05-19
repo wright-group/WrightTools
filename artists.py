@@ -17,6 +17,7 @@ import numpy as np
 from numpy import r_
 
 import matplotlib
+from matplotlib.axes import Axes, SubplotBase, subplot_class_factory
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import matplotlib.gridspec as grd
@@ -37,6 +38,215 @@ if sys.version[0] == '2':
 else:
     string_type = str  # newer versions of python don't have unicode type
 
+
+### classes ###################################################################
+
+
+class Axes(matplotlib.axes.Axes):
+    
+    def contourf(self, *args, **kwargs):
+        contours = matplotlib.axes.Axes.contourf(self, *args, **kwargs)  # why can't I use super?
+        # from http://stackoverflow.com/a/32911283/2860501                                        
+        for c in contours.collections:
+            c.set_edgecolor('face')
+        return contours
+    
+    def legend(self, *args, **kwargs):
+        if 'fancybox' not in kwargs.keys():
+            kwargs['fancybox'] = False
+        if 'framealpha' not in kwargs.keys():
+            kwargs['framealpha'] = 1.
+        super().legend(*args, **kwargs)
+    
+    def plot_data(self, data, channel=0, xaxis=0, yaxis=1, dimensionality=None,
+                  interpolate=False, cmap=None, xlabel=True, ylabel=True,
+                  zmin=None, zmax=None):
+        """
+        Plot directly from a data object.
+        
+        Parameters
+        ----------
+        data : WrightTools.data.Data object
+            The data object to plot.
+        channel : int or str (optional)
+            The channel to plot. Default is 0.
+        xaxis : int or str (optional)
+            X axis. Default is 0.
+        yaxis : int or str (optional)
+            Y axis. Default is 0.
+        dimensionality : {1, 2} (optional)
+            Dimensionality of plot. Default is None (inherited from data
+            object).
+        interpolate : boolean (optional)
+            Toggle interpolation. Default is False.
+        cmap : str (optional)
+            A key to the colormaps dictionary found in artists module. Default
+            is None (inherits from channel).
+        xlabel : boolean (optional)
+            Toggle xlabel. Default is True.
+        ylabel : boolean (optional)
+            Toggle ylabel. Default is True.
+        zmin : number (optional)
+            Zmin. Default is None (inherited from channel).
+        zmax : number (optional)
+            Zmax. Default is None (inherited from channel).
+        """
+        print('plot data is experimental---please do not rely on it!')
+        # TODO: should I store a reference to data (or list of refs?)
+        # prepare -------------------------------------------------------------
+        # get dimensionality
+        if dimensionality is None:
+            if data.dimensionality == 2:
+                dimensionality = 2
+            else:
+                dimensionality = 1
+        # get channel
+        if type(channel) == int:
+            channel_index = channel
+        elif isinstance(channel, string_type):
+            channel_index = data.channel_names.index(channel)
+        else:
+            print('channel type', type(channel), 'not valid')
+        channel = data.channels[channel_index]
+        # get xaxis
+        if type(xaxis) == int:
+            xaxis_index = xaxis
+        elif isinstance(xaxis, string_type):
+            xaxis_index = data.axis_names.index(xaxis)
+        else:
+            print('xaxis type', type(xaxis), 'not valid')
+        xaxis = data.axes[xaxis_index]
+        # get yaxis
+        if dimensionality == 2:
+            if type(yaxis) == int:
+                yaxis_index = yaxis
+            elif isinstance(yaxis, string_type):
+                yaxis_index = data.axis_names.index(yaxis)
+            else:
+                print('yaxis type', type(yaxis), 'not valid')
+            yaxis = data.axes[yaxis_index]
+        # get zmin
+        if zmin is None:
+            zmin = channel.zmin
+        # get zmax
+        if zmax is None:
+            zmax = channel.zmax
+        # 1D ------------------------------------------------------------------
+        if dimensionality == 1:
+            # get list of all datas
+            datas = data.chop(xaxis_index, verbose=False)
+            for data in datas:
+                # get arrays
+                xi = xaxis.points
+                yi = data.channels[channel_index].values
+                # plot
+                if interpolate:
+                    self.plot(xi, yi)
+                else:
+                    self.scatter(xi, yi)
+            # decoration
+            self.set_xlim(xi.min(), xi.max())
+            self.set_ylim(zmin, zmax)
+        # 2D ------------------------------------------------------------------
+        if dimensionality == 2:
+            # get colormap
+            if cmap is None:
+                if channel.signed:
+                    cmap = colormaps['signed']
+                else:
+                    cmap = colormaps['default']
+            else:
+                cmap = colormaps[cmap]
+            # get arrays
+            xi = xaxis.points
+            yi = yaxis.points
+            zi = channel.values.T
+            # plot
+            if interpolate:
+                # contourf
+                levels = np.linspace(zmin, zmax, 256)
+                self.contourf(xi, yi, zi, levels=levels, cmap=cmap)
+            else:
+                # pcolor
+                X, Y, Z = pcolor_helper(xi, yi, zi)
+                self.pcolor(X, Y, Z, vmin=zmin, vmax=zmax, cmap=cmap)
+            # decoration
+            self.set_xlim(xi.min(), xi.max())
+            self.set_ylim(yi.min(), yi.max())
+        # decoration ----------------------------------------------------------
+        if xlabel:
+            self.set_xlabel(xaxis.label, fontsize=18)
+        if ylabel:
+            if dimensionality == 1:
+                self.set_ylabel(channel.label, fontsize=18)
+            if dimensionality == 2:
+                self.set_ylabel(yaxis.label, fontsize=18)
+
+
+class Figure(matplotlib.figure.Figure):
+    
+    def add_subplot(self, *args, **kwargs):
+        # projection
+        if 'projection' not in kwargs.keys():
+            projection = 'wright'
+        else:
+            projection = kwargs['projection']
+        # must be arguments
+        if not len(args):
+            return
+        # int args must be correct
+        if len(args) == 1 and isinstance(args[0], int):
+            args = tuple([int(c) for c in str(args[0])])
+            if len(args) != 3:
+                raise ValueError("Integer subplot specification must " +
+                                 "be a three digit number.  " +
+                                 "Not {n:d}".format(n=len(args)))
+        # subplotbase args
+        if isinstance(args[0], SubplotBase):
+            a = args[0]
+            if a.get_figure() is not self:
+                msg = ("The Subplot must have been created in the present"
+                       " figure")
+                raise ValueError(msg)
+            # make a key for the subplot (which includes the axes object id
+            # in the hash)
+            key = self._make_key(*args, **kwargs)
+        else:
+            projection_class, kwargs, key = matplotlib.figure.process_projection_requirements(
+                self, *args, **kwargs)
+            # try to find the axes with this key in the stack
+            ax = self._axstack.get(key)
+            if ax is not None:
+                if isinstance(ax, projection_class):
+                    # the axes already existed, so set it as active & return
+                    self.sca(ax)
+                    return ax
+                else:
+                    # Undocumented convenience behavior:
+                    # subplot(111); subplot(111, projection='polar')
+                    # will replace the first with the second.
+                    # Without this, add_subplot would be simpler and
+                    # more similar to add_axes.
+                    self._axstack.remove(ax)
+            if projection == 'wright':
+                a = subplot_class_factory(Axes)(self, *args, **kwargs)
+            else:
+                a = subplot_class_factory(projection_class)(self, *args, **kwargs)
+        self._axstack.add(key, a)
+        self.sca(a)
+        if int(matplotlib.__version__.split('.')[0]) > 1:
+            a._remove_method = self.__remove_ax
+            self.stale = True
+            a.stale_callback = matplotlib.figure._stale_figure_callback
+        # finish
+        return a
+
+
+class GridSpec(matplotlib.gridspec.GridSpec):
+
+    def __init__(self, *args, **kwargs):
+        super(self.__class__, self).__init__(*args, **kwargs)
+    
 
 ### artist helpers ############################################################
 
@@ -337,13 +547,13 @@ def create_figure(width='single', nrows=1, cols=[1], margin=1.,
     figure_height += (nrows-1) * hspace
     figure_height += 2*margin
     # make figure
-    fig = plt.figure(figsize=[figure_width, figure_height])
+    fig = plt.figure(figsize=[figure_width, figure_height], FigureClass=Figure)
     # get hspace, wspace in relative units
     hspace = in_to_mpl(hspace, figure_height-2*margin, nrows)
     wspace = in_to_mpl(wspace, figure_width-2*margin, len(cols))
     # make gridpsec
-    gs = grd.GridSpec(nrows, len(cols), hspace=hspace, wspace=wspace,
-                      width_ratios=width_ratios, height_ratios=height_ratios)
+    gs = GridSpec(nrows, len(cols), hspace=hspace, wspace=wspace,
+                  width_ratios=width_ratios, height_ratios=height_ratios)
     # finish
     subplots_adjust(fig, inches=margin)
     return fig, gs
@@ -870,7 +1080,8 @@ def set_fig_labels(fig=None, xlabel=None, ylabel=None, xticks=None, yticks=None,
         fig.suptitle(title, fontsize=title_fontsize)
 
 
-def plot_gridlines(ax=None, c='grey', lw=1, diagonal=False, zorder=2):
+def plot_gridlines(ax=None, c='grey', lw=1, diagonal=False, zorder=2,
+                   makegrid=True):
     """
     Plot dotted gridlines onto an axis.
     
@@ -890,14 +1101,11 @@ def plot_gridlines(ax=None, c='grey', lw=1, diagonal=False, zorder=2):
     # get ax
     if ax is None:
         ax = plt.gca()
-    # matplotlib 1.0...
-    if int(matplotlib.__version__.split('.')[0]) < 2:
-        ax.grid(a=True)
     # get dashes
     ls = ':'
     dashes = (lw/2, lw)
     # grid
-    ax.grid(True)
+    #ax.grid(True)
     lines = ax.xaxis.get_gridlines() + ax.yaxis.get_gridlines()
     for l in lines.copy():
         l = l
@@ -1172,7 +1380,7 @@ for cmap in colormaps.values():
 
 
 # a nice set of line colors
-overline_colors = ['yellow', 'fuchsia', 'cyan', 'lime', 'yellow']
+overline_colors = ['#CCFF00', '#FE4EDA',  '#FF6600', '#00FFBF', '#00B7EB']
 
 
 ### general purpose artists ###################################################
@@ -1312,7 +1520,7 @@ class mpl_2D:
         self._onplotdata.append((xi, yi, kwargs))
 
     def plot(self, channel=0,
-             contours=9, pixelated=True, lines=True, cmap='automatic', 
+             contours=0, pixelated=True, lines=True, cmap='automatic', 
              facecolor='w', dynamic_range=False, local=False, 
              contours_local=True, normalize_slices='both',  xbin= False, 
              ybin=False, xlim=None, ylim=None, autosave=False, 

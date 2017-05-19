@@ -816,14 +816,34 @@ def diff(xi, yi, order=1):
     return yi[arg]
 
 
-def fft(xi, yi):
-    # TODO: documentation
-    yi = np.fft.fft(yi)
+def fft(xi, yi, axis=0):
+    """
+    Take the 1D FFT of an N-dimensional array and return "sensible" arrays which are shifted properly.
+    
+    Parameters
+    ----------
+    xi : numpy.ndarray  
+        1D array over which the points to be FFT'ed are defined 
+    yi : numpy.ndarray  
+        ND array with values to FFT
+    axis : int
+        axis of yi to perform FFT over
+    
+    Returns
+    -------
+    xi : 1D numpy.ndarray
+        1D array. Conjugate to input xi. 
+        Example: if input xi is in the time domain, output xi is in frequency domain.
+    yi : ND numpy.ndarray
+        FFT. Has the same shape as the input array (yi).
+    
+    """
+    yi = np.fft.fft(yi, axis=axis)
     d = (xi.max()-xi.min())/(xi.size-1)
-    xi = np.fft.fftfreq(yi.size, d=d)
+    xi = np.fft.fftfreq(xi.size, d=d)
     # shift
     xi = np.fft.fftshift(xi)
-    yi = np.fft.fftshift(yi)
+    yi = np.fft.fftshift(yi, axes=axis)
     return xi, yi
 
 
