@@ -56,7 +56,7 @@ class Axes(matplotlib.axes.Axes):
             kwargs['fancybox'] = False
         if 'framealpha' not in kwargs.keys():
             kwargs['framealpha'] = 1.
-        super().legend(*args, **kwargs)
+        return super().legend(*args, **kwargs)
     
     def plot_data(self, data, channel=0, xaxis=0, yaxis=1, dimensionality=None,
                   interpolate=False, cmap=None, xlabel=True, ylabel=True,
@@ -1101,6 +1101,7 @@ def plot_gridlines(ax=None, c='grey', lw=1, diagonal=False, zorder=2,
     # get ax
     if ax is None:
         ax = plt.gca()
+    ax.grid()
     # get dashes
     ls = ':'
     dashes = (lw/2, lw)
