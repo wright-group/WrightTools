@@ -584,6 +584,8 @@ class Curve:
         # save
         if self.kind == 'opa800':
             out_path = to_800_curve(self, save_directory)
+        elif self.kind == 'poynting':
+            out_path = to_poynting_curve(self, save_directory)
         elif self.kind in ['TOPAS-C', 'TOPAS-800']:
             kwargs = {}
             kwargs['old_filepaths'] = self.old_filepaths
@@ -619,6 +621,18 @@ def from_800_curve(filepath):
                   kind='opa800', method=Spline)
     return curve
 
+def from_poynting_curve(filepath):
+    headers = wt_kit.read_headers(filepath)
+    arr = np.genfromtxt(filepath).T
+    colors = arr[0]
+    phi = Motor(arr[1], 'phi')
+    theta = Motor(arr[2], 'theta')
+    motors = [phi,theta]
+    interaction = headers['interaction']
+    path, name, suffix = wt_kit.filename_parse(filepath)
+    curve = Curve(colors, 'wn', motors, name=name, interaction=interaction,
+                  kind='poynting', method=Spline)
+    return curve
 
 def from_TOPAS_crvs(filepaths, kind, interaction_string):
     '''
@@ -709,6 +723,32 @@ def to_800_curve(curve, save_directory):
     wt_kit.write_headers(out_path, headers)
     with open(out_path, 'a') as f:
         np.savetxt(f, out_arr.T, fmt=['%.2f','%.5f', '%.5f', '%.5f'],
+                   delimiter='\t')
+    return out_path
+
+
+def to_poynting_curve(curve, save_directory):
+    # ensure curve is in wn
+    curve = curve.copy()
+    curve.convert('wn')
+    # array
+    colors = curve.colors
+    motors = curve.motors
+    out_arr = np.zeros([4, len(colors)])
+    out_arr[0] = colors
+    out_arr[1:4] = np.array([motor.positions for motor in motors])
+    # filename
+    timestamp = wt_kit.TimeStamp()
+    out_name = curve.name.split('-')[0] + '- ' + timestamp.path
+    out_path = os.path.join(save_directory, out_name + '.curve')
+    # save
+    headers = collections.OrderedDict()
+    headers['file created'] = timestamp.RFC3339
+    headers['interaction'] = curve.interaction
+    headers['name'] = ['Color (wn)', 'phi', 'theta']
+    wt_kit.write_headers(out_path, headers)
+    with open(out_path, 'a') as f:
+        np.savetxt(f, out_arr.T, fmt=['%.2f','%.0f', '%.0f'],
                    delimiter='\t')
     return out_path
 
