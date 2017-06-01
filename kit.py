@@ -500,6 +500,9 @@ class INI():
         self.config.read(self.filepath)
         return self.config._sections
     
+    def get_options(self, section):
+        return list(self.dictionary[section].keys())
+
     def has_option(self, section, option):
         self.config.read(self.filepath)
         return self.config.has_option(section, option) 
