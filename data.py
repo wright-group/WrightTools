@@ -172,6 +172,9 @@ class Channel:
         self.zmin = np.nanmin(self.values)
         self.zmax = np.nanmax(self.values)
 
+    def _pupdate(self,*args,**kwargs):
+        return self._update(*args,**kwargs)
+
     def clip(self, zmin=None, zmax=None, replace='nan'):
         '''
         clip (limit) the values in a channel \n
@@ -431,6 +434,9 @@ class Data:
         for obj in self.axes + self.channels + self.constants:
             setattr(self, obj.name, obj)
         self.shape = self.channels[0].values.shape
+
+    def _pupdate(self,*args,**kwargs):
+        return self._update(*args,**kwargs)
 
     def bring_to_front(self, channel):
         '''
