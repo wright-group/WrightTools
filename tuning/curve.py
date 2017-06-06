@@ -621,18 +621,32 @@ def from_800_curve(filepath):
                   kind='opa800', method=Spline)
     return curve
 
-def from_poynting_curve(filepath):
+
+def from_poynting_curve(filepath, subcurve=None):
+    print('FROM POYNTING CURVE', filepath, subcurve)
+    # read from file
     headers = wt_kit.read_headers(filepath)
     arr = np.genfromtxt(filepath).T
+    names = headers['name']
+    # colors
     colors = arr[0]
-    phi = Motor(arr[1], 'phi')
-    theta = Motor(arr[2], 'theta')
-    motors = [phi,theta]
-    interaction = headers['interaction']
-    path, name, suffix = wt_kit.filename_parse(filepath)
-    curve = Curve(colors, 'wn', motors, name=name, interaction=interaction,
-                  kind='poynting', method=Spline)
+    # motors
+    motors = []
+    for i in range(1, len(headers['name'])):
+        motors.append(Motor(arr[i], names[i]))
+    # kwargs
+    kwargs = {}
+    kwargs['interaction'] = headers['interaction']
+    kwargs['kind'] = 'poynting'
+    kwargs['method'] = Linear
+    kwargs['name'] = wt_kit.filename_parse(filepath)[1]
+    if subcurve is not None:
+        kwargs['subcurve'] = subcurve
+        kwargs['source_colors'] = Motor(colors, 'wn')
+    # finish
+    curve = Curve(colors, 'wn', motors, **kwargs)
     return curve
+
 
 def from_TOPAS_crvs(filepaths, kind, interaction_string):
     '''
