@@ -300,7 +300,7 @@ class Curve:
         return subcurve_motor_names + [m.name for m in self.motors]
 
     def get_motor_positions(self, color, units='same', full=True):
-        '''
+        """
         Get the motor positions for a destination color.
 
         Parameters
@@ -315,7 +315,7 @@ class Curve:
         np.ndarray 
             The motor positions. If color is an array the output shape will
             be (motors, colors).
-        '''
+        """
         # get color in units
         if units == 'same':
             pass
@@ -323,7 +323,7 @@ class Curve:
             color = wt_units.converter(color, units, self.units)
         # color must be array
         def is_numeric(obj):
-            attrs = ['__add__', '__sub__', '__mul__', '__div__', '__pow__']
+            attrs = ['__add__', '__sub__', '__mul__', '__pow__']
             return all([hasattr(obj, attr) for attr in attrs] + [not hasattr(obj, '__len__')])
         if is_numeric(color):
             color = np.array([color])
@@ -331,8 +331,8 @@ class Curve:
         if full and self.subcurve:
             out = []
             for c in color:
-                source_color = self.source_color_interpolator.get_motor_positions(c)
-                source_motor_positions = np.array(self.subcurve.get_motor_positions(source_color, full=True)).squeeze()
+                source_color = np.array(self.source_color_interpolator.get_motor_positions(c))
+                source_motor_positions = np.array(self.subcurve.get_motor_positions(source_color, units=self.units, full=True)).squeeze()
                 own_motor_positions = np.array(self.interpolator.get_motor_positions(c)).flatten()
                 out.append(np.hstack((source_motor_positions, own_motor_positions)))
             out = np.array(out)
@@ -735,7 +735,7 @@ def to_800_curve(curve, save_directory):
     headers['interaction'] = curve.interaction
     headers['name'] = ['Color (wn)', 'Grating', 'BBO', 'Mixer']
     wt_kit.write_headers(out_path, headers)
-    with open(out_path, 'a') as f:
+    with open(out_path, 'ab') as f:
         np.savetxt(f, out_arr.T, fmt=['%.2f','%.5f', '%.5f', '%.5f'],
                    delimiter='\t')
     return out_path
@@ -748,9 +748,9 @@ def to_poynting_curve(curve, save_directory):
     # array
     colors = curve.colors
     motors = curve.motors
-    out_arr = np.zeros([4, len(colors)])
+    out_arr = np.zeros([3, len(colors)])
     out_arr[0] = colors
-    out_arr[1:4] = np.array([motor.positions for motor in motors])
+    out_arr[1:3] = np.array([motor.positions for motor in motors])
     # filename
     timestamp = wt_kit.TimeStamp()
     out_name = curve.name.split('-')[0] + '- ' + timestamp.path
@@ -761,9 +761,12 @@ def to_poynting_curve(curve, save_directory):
     headers['interaction'] = curve.interaction
     headers['name'] = ['Color (wn)', 'phi', 'theta']
     wt_kit.write_headers(out_path, headers)
-    with open(out_path, 'a') as f:
+    with open(out_path, 'ab') as f:
         np.savetxt(f, out_arr.T, fmt=['%.2f','%.0f', '%.0f'],
                    delimiter='\t')
+    # save subcurve
+    if curve.subcurve:
+        curve.subcurve.save(save_directory=save_directory)
     return out_path
 
 
