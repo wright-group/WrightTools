@@ -276,22 +276,15 @@ def filename_parse(fstr):
     """
     parses a filepath string into it's path, name, and suffix
     """
-    split = fstr.split('\\')
-    if len(split) == 1:
-        file_path = None
-    else:
-        file_path = '\\'.join(split[0:-1])
-    split2 = split[-1].split('.')
-    # try and guess whether a suffix is there or not
-    # my current guess is based on the length of the final split string
-    # suffix is either 3 or 4 characters
-    if len(split2[-1]) in [3, 4, 5]:
-        file_name = '.'.join(split2[0:-1])
-        file_suffix = split2[-1]
-    else:
-        file_name = split[-1]
+    folder,filename = os.path.split(fstr) 
+    
+    split = filename.split('.', maxsplit=1)
+    file_name = split[0]
+    if len(split)==1:
         file_suffix = None
-    return file_path, file_name, file_suffix
+    else:
+        file_suffix = split[1]
+    return folder, file_name, file_suffix
 
 
 def file_len(fname):
