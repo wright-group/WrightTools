@@ -312,4 +312,4 @@ class Drive:
             # finish
             return folderid
         else:
-            raise Exception('path {} not valid in Drive.upload'.format())
+            raise Exception('path {0} not valid in Drive.upload'.format(path))

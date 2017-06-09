@@ -278,7 +278,7 @@ def filename_parse(fstr):
     """
     folder,filename = os.path.split(fstr) 
     
-    split = filename.split('.', maxsplit=1)
+    split = filename.split('.', 1)
     file_name = split[0]
     if len(split)==1:
         file_suffix = None
