@@ -54,9 +54,9 @@ def get_baseline(values, deviations=3):
         Baseline guess.
     '''
     values_internal = values.copy()
-    std = np.std(values)
-    values_internal[np.abs(values_internal) <= deviations*std] = np.nan
-    baseline = np.average(values_internal)
+    std = np.nanstd(values)
+    values_internal[np.abs(values_internal) >= deviations*std] = np.nan
+    baseline = np.nanmean(values_internal)
     if np.isnan(baseline):
         baseline = np.nanmin(values)
     return baseline
