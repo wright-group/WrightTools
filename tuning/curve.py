@@ -759,7 +759,7 @@ def to_poynting_curve(curve, save_directory):
     headers = collections.OrderedDict()
     headers['file created'] = timestamp.RFC3339
     headers['interaction'] = curve.interaction
-    headers['name'] = ['Color (wn)', 'phi', 'theta']
+    headers['name'] = ['Color (wn)', 'Phi', 'Theta']
     wt_kit.write_headers(out_path, headers)
     with open(out_path, 'ab') as f:
         np.savetxt(f, out_arr.T, fmt=['%.2f','%.0f', '%.0f'],
