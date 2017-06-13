@@ -62,7 +62,7 @@ TOPAS_800_interactions = {'NON-NON-NON-Sig': [8, TOPAS_800_motor_names[0]],
                           'DF1-NON-NON-Sig': [7, TOPAS_800_motor_names[3]],
                           'DF2-NON-NON-Sig': [7, TOPAS_800_motor_names[3]]}
 
-TOPAS_interation_by_kind = {'TOPAS-C': TOPAS_C_interactions,
+TOPAS_interaction_by_kind = {'TOPAS-C': TOPAS_C_interactions,
                             'TOPAS-800': TOPAS_800_interactions}
 
 
@@ -665,7 +665,7 @@ def from_TOPAS_crvs(filepaths, kind, interaction_string):
     ------
     WrightTools.tuning.curve.Curve object
     '''
-    TOPAS_interactions = TOPAS_interation_by_kind[kind]
+    TOPAS_interactions = TOPAS_interaction_by_kind[kind]
     # setup to recursively import data
     interactions = interaction_string.split('-')
     interaction_strings = []  # most subservient tuning curve comes first
@@ -771,7 +771,7 @@ def to_poynting_curve(curve, save_directory):
 
 
 def to_TOPAS_crvs(curve, save_directory, kind, full, **kwargs):
-    TOPAS_interactions = TOPAS_interation_by_kind[kind]
+    TOPAS_interactions = TOPAS_interaction_by_kind[kind]
     # unpack
     curve = curve.copy()
     curve.convert('nm')
