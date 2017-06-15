@@ -1810,9 +1810,6 @@ def from_Cary50(filepath, verbose=True):
     ----------
     filepath : string
         Path to Tensor27 output file (.dpt).
-    name : string (optional)
-        Name to give to the created data object. If None, filename is used.
-        Default is None.
     verbose : boolean (optional)
         Toggle talkback. Default is True.
 
@@ -1856,6 +1853,61 @@ def from_Cary50(filepath, verbose=True):
             print('  {0}: {1}'.format(i, data.name))
     return datas
 
+def from_rRaman(filepath, name=None, verbose=True):
+    '''
+    Create a data object from Brunold rRaman files.
+
+    Parameters
+    ----------
+    filepath : string
+        Path to .txt file.
+    name : string (optional)
+        Name to give to the created data object. If None, filename is used.
+        Default is None.
+    verbose : boolean (optional)
+        Toggle talkback. Default is True.
+
+    Returns
+    -------
+    data
+        New data object.
+    '''
+    if type(filepath)==type(list) or type(filepath)==type(np.array([])):
+        return [from_rRaman(f) for f in filepath]
+    
+    if not os.path.isfile(filepath):
+        raise wt_exceptions.FileNotFound(path=filepath)
+    filesuffix = os.path.basename(filepath).split('.')[-1]
+    if filesuffix != 'txt':
+        wt_exceptions.WrongFileTypeWarning.warn(filepath, 'txt')
+    # import array
+    lines = []
+    with open(filepath, 'r') as f:
+        while True:
+            line = f.readline()
+            if line == '\n' or line == '':
+                break
+            else:
+                clean = line[:-2]  # lines end with ',/n'
+                lines.append(np.fromstring(clean, sep=' '))
+
+    arr = np.array(lines).T
+    # chew through all scans
+    indicies = np.arange(1)
+    for i in indicies:
+        axis = Axis(arr[i], 'wn', name='wm')
+        signal = Channel(arr[i+1], name='counts', label='counts', signed=False)
+        if name:
+            data = Data([axis], [signal], source='Brunold rRaman', name=name)
+        else:
+            name = filepath.split('//')[-1].split('.')[0]
+            data = Data([axis], [signal], source='Brunold rRaman', name=name)
+    # finish
+    if verbose:
+        print('{0} data objects successfully created from file:'.format(len(indicies)))
+        for i, data in enumerate(datas):
+            print('  {0}: {1}'.format(i, data.name))
+    return data
 
 def from_COLORS(filepaths, znull=None, name=None, cols=None, invert_d1=True,
                 color_steps_as='energy', ignore=['num', 'w3', 'wa', 'dref', 'm0', 'm1', 'm2', 'm3', 'm4', 'm5', 'm6'],
@@ -2225,7 +2277,8 @@ def from_KENT(filepaths, znull=None, name=None, ignore=['wm'], use_norm=False,
         OPA1 = data.channels[2].values/data.axes[0].points
         OPA2 = data.channels[1].values/data.axes[1].points
         # Signal normalization
-        data_norm = data.channels[0].values*data.axes[0].points*data.axes[1].points/(OPA1*OPA2)
+        #data_norm = data.channels[0].values*data.axes[0].points*data.axes[1].points/(OPA1*OPA2)
+        data_norm = data.channels[0].values/(OPA1*OPA2) #I think this is correct.
         data.channels[0].values = data_norm
         data.channels[0].zmax = data_norm.max()
         data.channels[0].zmin = data_norm.min()

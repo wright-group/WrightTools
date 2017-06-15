@@ -793,12 +793,13 @@ def nm_to_rgb(nm):
             float(int(SSS*B)/256.)]
 
 
-def pcolor_helper(xi, yi, zi):
+def pcolor_helper(xi, yi, zi, transform= None):
     '''
     accepts xi, yi, zi as the normal rectangular arrays
     that would be given to contorf etc \n
     returns list [X, Y, Z] appropriate for feeding directly
     into matplotlib.pyplot.pcolor so that the pixels are centered correctly. \n
+    transform takes a function that accepts a 
     '''
 
     x_points = np.zeros(len(xi)+1)
@@ -814,9 +815,12 @@ def pcolor_helper(xi, yi, zi):
                 points[j] = np.average([axis[j], axis[j-1]])
 
     X, Y = np.meshgrid(x_points, y_points)
-
-    return X, Y, zi
-
+    if type(transform)==type(None):
+        return X, Y, zi
+    else:
+        for (x,y), value in np.ndenumerate(X):
+            X[x][y],Y[x][y] = transform((X[x][y],Y[x][y]))
+        return X,Y,zi
 
 def plot_colorbar(cax=None, cmap='default', ticks=None, clim=None, vlim=None,
                   label=None, tick_fontsize=14, label_fontsize=18, decimals=3,
@@ -1720,7 +1724,7 @@ class mpl_2D:
                             if yaxis.units == constant.units:
                                 plt.axhline(constant.points, color='k', linewidth=4, alpha=0.25)
             # grid ------------------------------------------------------------
-            plt.grid(b = True)
+            #plt.grid(b = True)
             if xaxis.units == yaxis.units:
                 # add diagonal line
                 if xlim:
@@ -2478,12 +2482,66 @@ class DOVE_plot(mpl_2D):
         self._ysideplotdata = []
         self._onplotdata = []
 
+    def get_lims(self,transform=None):
+        '''
+        Find plot limits using transform.
+        
+        Assumes that the corners of the axes are also the most extreme points
+        of the transformed axes.
+        
+        Parameters
+        ----------
+        axis1 : axis
+            The x[0] axis
+        axis2 : axis
+            The x[1] axis
+        transform: callable (optoinal)
+            The transform function, accepts a tuple, ouptus transformed tuple
+        
+        Returns
+        ----------
+        xlim : tuple of floats
+            (min_x, max_x)
+        ylim : tuple of floats
+            (min_y, max_y)
+        '''
+        if not type(transform)==type(None):
+            x_corners = []
+            y_corners = []
+            for idx1 in [-1,1]:
+                for idx2 in [-1,1]:
+                    x,y = transform((self.xaxis.points[idx1],self.yaxis.points[idx2]))
+                    x_corners.append(x)
+                    y_corners.append(y)
+            xlim = (min(x_corners),max(x_corners))
+            ylim = (min(y_corners),max(y_corners))
+        else:
+            xlim = (self.xaxis.points.min(),self.xaxis.points.max())
+            ylim = (self.yaxis.points.min(),self.yaxis.points.max())
+        return xlim,ylim
+
+    def sort_points(self,x,y,z):
+        '''
+        passes input arguemnts right now, better implementation to come later.
+        '''
+        #final_shape = x.shape
+        #list_len = len(x.flatten())
+        #tup_array = np.array([(x.flatten()[i],y.flatten()[i],z.flatten()[i]) for i in range(list_len)],
+        #                      dtype = np.dtype([('x',float),('y',float),('z',float)]))
+        #sorted_tuples = np.array(tup_array)[np.argsort(tup_array,order=('x','y'))]
+        #new_x = np.array([sorted_tuples[i][0] for i in range(list_len)]).reshape(final_shape)
+        #new_y = np.array([sorted_tuples[i][1] for i in range(list_len)]).reshape(final_shape)
+        #new_z = np.array([sorted_tuples[i][2] for i in range(list_len)]).reshape(final_shape)
+        #return new_x,new_y,new_z
+        return x,y,z
+
     def plot(self, channel=0,
              contours=0, pixelated=True, lines=True, cmap='automatic',
              facecolor='w', dynamic_range=False, local=False,
              contours_local=True, normalize_slices='both',  xbin= False,
              ybin=False, xlim=None, ylim=None, autosave=False,
-             output_folder=None, fname=None, verbose=True):
+             output_folder=None, fname=None, verbose=True,
+             transform=lambda x: (x[0],x[1]-x[0])):
         '''
         Draw the plot(s).
 
@@ -2567,8 +2625,8 @@ class DOVE_plot(mpl_2D):
             axes = current_chop.axes
             channels = current_chop.channels
             constants = current_chop.constants
-            xaxis = axes[1]
-            yaxis = axes[0]
+            self.xaxis = axes[1]
+            self.yaxis = axes[0]
             channel = channels[channel_index]
             zi = channel.values
             zi = np.ma.masked_invalid(zi)
@@ -2599,9 +2657,19 @@ class DOVE_plot(mpl_2D):
             # create figure ---------------------------------------------------
             if fig and autosave:
                 plt.close(fig)
-            if xaxis.units == yaxis.units:
-                xr = xaxis.points.max() - xaxis.points.min()
-                yr = yaxis.points.max() - yaxis.points.min() + xr
+            find_xlim = type(xlim) == type(None)
+            find_ylim = type(ylim) == type(None)
+            if find_ylim or find_xlim:
+                if find_ylim and find_xlim:
+                    xlim,ylim = self.get_lims(transform)
+                elif find_ylim:
+                    toss,ylim = self.get_lims(transform)
+                else:
+                    xlim,toss = self.get_lims(transform)
+                
+            if self.xaxis.units == self.yaxis.units:
+                xr = xlim[1]-xlim[0]
+                yr = ylim[1] - ylim[0]
                 aspect = np.abs(yr/xr)
                 if 3 < aspect or aspect < 1/3.:
                     # TODO: raise warning here
@@ -2645,52 +2713,54 @@ class DOVE_plot(mpl_2D):
             mycm.set_bad([0.75, 0.75, 0.75], 1.)
             mycm.set_under(facecolor)
             # fill in main data environment
-            # always plot pcolormesh
-            w2, w1, Z = pcolor_helper(xaxis.points, yaxis.points, zi)
-            X = w2
-            Y = w1-w2
-            cax = plt.pcolormesh(X, Y, Z, cmap=mycm,
+            # plot pcolormesh if pixelated
+            if pixelated:
+                X, Y, Z = pcolor_helper(self.xaxis.points, self.yaxis.points, zi,transform=transform)
+                #if not type(transform)==type(None):
+                #    X,Y,Z = self.sort_points(X,Y,Z)
+                cax = plt.pcolormesh(X, Y, Z, cmap=mycm,
                                  vmin=levels.min(), vmax=levels.max())
-            plt.xlim(xaxis.points.min(), xaxis.points.max())
-            plt.ylim(yaxis.points.min()-xaxis.points.max(), yaxis.points.max()-xaxis.points.min())
+            plt.xlim(xlim[0], xlim[1])
+            plt.ylim(ylim[0], ylim[1])
 
-            if xlim==None:
-                xlim =[xaxis.points.min(), xaxis.points.max()]
-            if ylim==None:
-                ylim = [yaxis.points.min()-xaxis.points.max(), yaxis.points.max()-xaxis.points.min()]
             # overlap with contourf if not pixelated
-            # not implemented in DOVE_plot
-            '''
+            
             if not pixelated:
-                cax = subplot_main.contourf(xaxis.points, yaxis.points, zi,
+                X, Y = np.meshgrid(self.xaxis.points, self.yaxis.points)
+                if not type(transform)==type(None):
+                    for (x,y), value in np.ndenumerate(X):
+                        X[x][y],Y[x][y] = transform((X[x][y],Y[x][y]))
+                #if not type(transform)==type(None):
+                #    X,Y,Z = self.sort_points(X,Y,zi)
+                cax = subplot_main.contourf(X, Y, zi,
                                             levels, cmap=mycm)
             plt.xticks(rotation=45, fontsize=14)
             plt.yticks(fontsize=14)
-            plt.xlabel(xaxis.get_label(), fontsize=18)
-            plt.ylabel(yaxis.get_label(), fontsize=17)
-            '''
+            plt.xlabel(self.xaxis.get_label(), fontsize=18)
+            plt.ylabel(self.yaxis.get_label(), fontsize=17)
+            
             # delay space deliniation lines -----------------------------------
             if lines:
-                if xaxis.units_kind == 'delay':
+                if self.xaxis.units_kind == 'delay':
                     plt.axvline(0, lw=2, c='k')
-                if yaxis.units_kind == 'delay':
+                if self.yaxis.units_kind == 'delay':
                     plt.axhline(0, lw=2, c='k')
-                if xaxis.units_kind == 'delay' and xaxis.units == yaxis.units:
-                    diagonal_line(xaxis.points, yaxis.points, c='k', lw=2, ls='-')
+                if self.xaxis.units_kind == 'delay' and self.xaxis.units == self.yaxis.units:
+                    diagonal_line(self.xaxis.points,self.yaxis.points, c='k', lw=2, ls='-')
             # variable marker lines -------------------------------------------
             if lines:
                 for constant in constants:
                         if constant.units_kind == 'energy':
                             #x axis
-                            if xaxis.units == constant.units:
+                            if self.xaxis.units == constant.units:
                                 plt.axvline(constant.points, color='k', linewidth=4, alpha=0.25)
                             #y axis
-                            if yaxis.units == constant.units:
+                            if self.yaxis.units == constant.units:
                                 plt.axhline(constant.points, color='k', linewidth=4, alpha=0.25)
             # grid ------------------------------------------------------------
             plt.grid(b = True)
-            diag_min = max(xaxis.points.min(), yaxis.points.min()-xaxis.points.max())
-            diag_max = min(xaxis.points.max(), yaxis.points.max()-xaxis.points.min())
+            diag_min = max(self.xaxis.points.min(), self.yaxis.points.min()-self.xaxis.points.max())
+            diag_max = min(self.xaxis.points.max(), self.yaxis.points.max()-self.xaxis.points.min())
             plt.plot([diag_min, diag_max],[diag_min, diag_max],'k:')
             # contour lines ---------------------------------------------------
             if contours:
@@ -2700,17 +2770,17 @@ class DOVE_plot(mpl_2D):
                     contours_levels = np.linspace(channel.znull-1e-10, np.nanmax(zi)+1e-10, contours+2)
                 else:
                     contours_levels = contours
-                subplot_main.contour(xaxis.points, yaxis.points, zi,
+                subplot_main.contour(self.xaxis.points, self.yaxis.points, zi,
                                      contours_levels, colors = 'k')
             # finish main subplot ---------------------------------------------
             if not xlim == None:
                 subplot_main.set_xlim(xlim[0], xlim[1])
             else:
-                subplot_main.set_xlim(xaxis.points[0], xaxis.points[-1])
+                subplot_main.set_xlim(self.xaxis.points[0], self.xaxis.points[-1])
             if not ylim == None:
                 subplot_main.set_ylim(ylim[0], ylim[1])
             else:
-                subplot_main.set_ylim(yaxis.points[0], yaxis.points[-1])
+                subplot_main.set_ylim(self.yaxis.points[0], self.yaxis.points[-1])
             # sideplots -------------------------------------------------------
             divider = make_axes_locatable(subplot_main)
             if xbin or self._xsideplot:
@@ -2726,13 +2796,13 @@ class DOVE_plot(mpl_2D):
                     axCorrx.set_ylim([0,1.1])
                 # bin
                 if xbin:
-                    x_ax_int = np.nansum(zi, axis=0) - channel.znull * len(yaxis.points)
+                    x_ax_int = np.nansum(zi, axis=0) - channel.znull * len(self.yaxis.points)
                     x_ax_int[x_ax_int==0] = np.nan
                     # normalize (min is a pixel)
                     xmax = max(np.abs(x_ax_int))
                     x_ax_int = x_ax_int / xmax
-                    axCorrx.plot(xaxis.points,x_ax_int, lw = 2)
-                    axCorrx.set_xlim([xaxis.points.min(), xaxis.points.max()])
+                    axCorrx.plot(self.xaxis.points,x_ax_int, lw = 2)
+                    axCorrx.set_xlim([self.xaxis.points.min(), self.xaxis.points.max()])
                 # data
                 if self._xsideplot:
                     for s_xi, s_zi in self._xsideplotdata:
@@ -2750,7 +2820,7 @@ class DOVE_plot(mpl_2D):
                 if lines:
                     for constant in constants:
                         if constant.units_kind == 'energy':
-                            if xaxis.units == constant.units:
+                            if self.xaxis.units == constant.units:
                                 axCorrx.axvline(constant.points, color = 'k', linewidth = 4, alpha = 0.25)
             if ybin or self._ysideplot:
                 axCorry = divider.append_axes('right', 0.75, pad=0.0, sharey=subplot_main)
@@ -2765,13 +2835,13 @@ class DOVE_plot(mpl_2D):
                     axCorry.set_xlim([0,1.1])
                 # bin
                 if ybin:
-                    y_ax_int = np.nansum(zi, axis=1) - channel.znull * len(xaxis.points)
+                    y_ax_int = np.nansum(zi, axis=1) - channel.znull * len(self.xaxis.points)
                     y_ax_int[y_ax_int==0] = np.nan
                     # normalize (min is a pixel)
                     ymax = max(np.abs(y_ax_int))
                     y_ax_int = y_ax_int / ymax
-                    axCorry.plot(y_ax_int, yaxis.points, lw = 2)
-                    axCorry.set_ylim([yaxis.points.min(), yaxis.points.max()])
+                    axCorry.plot(y_ax_int, self.yaxis.points, lw = 2)
+                    axCorry.set_ylim([self.yaxis.points.min(), self.yaxis.points.max()])
                 # data
                 if self._ysideplot:
                     for s_xi, s_zi in self._ysideplotdata:
@@ -2789,7 +2859,7 @@ class DOVE_plot(mpl_2D):
                 if lines:
                     for constant in constants:
                         if constant.units_kind == 'energy':
-                            if yaxis.units == constant.units:
+                            if self.yaxis.units == constant.units:
                                 axCorry.axvline(constant.points, color = 'k', linewidth = 4, alpha = 0.25)
             # onplot ----------------------------------------------------------
             for xi, yi, kwargs in self._onplotdata:
