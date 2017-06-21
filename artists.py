@@ -1904,7 +1904,10 @@ class mpl_2D:
             # colorbar --------------------------------------------------------
             subplot_cb = plt.subplot(gs[1])
             cbar_ticks = np.linspace(levels.min(), levels.max(), 11)
-            cbar = plt.colorbar(cax, cax=subplot_cb, cmap=mycm, ticks=cbar_ticks, format='%.3f')
+            if cbar_ticks.max()==1.0:
+                cbar = plt.colorbar(cax, cax=subplot_cb, cmap=mycm, ticks=cbar_ticks, format='%.1f')
+            else:
+                cbar = plt.colorbar(cax, cax=subplot_cb, cmap=mycm, ticks=cbar_ticks, format='%.3f')
             cbar.set_label(channel.name, fontsize=18)
             cbar.ax.tick_params(labelsize=14)
             # title -----------------------------------------------------------
