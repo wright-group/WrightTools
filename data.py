@@ -279,6 +279,9 @@ class Channel:
         return np.nanmin(self.values)
 
     def normalize(self, axis=None):
+        '''
+        Normalizes a Channel, setting z-null to 0 and the max to 1.
+        '''
         # process axis argument
         if axis is not None:
             if hasattr(axis, '__contains__'):  # list, tuple or similar
@@ -1743,6 +1746,24 @@ class Data:
         # call trim
         return channel.trim(neighborhood=neighborhood, **inputs)
 
+    def transform(self,transform=None):
+        '''
+        Transforms the dataset using arbitrary coordinates, then regirds the data
+        
+        Parameters
+        ----------
+        transform: str
+            The tranformation to perform. Str must use axis names. Only handles
+            two axes at a time.
+        '''
+        #TODO: interpret strings into a function
+        #TODO: use tranform string to make new axis lables
+        #TODO: Expand to larger than 2D tranforms (dream feature)
+        # use np.griddata
+        # find code used to deal with constants
+        # possibly use to plot vs constants?
+        print('not yet implemented.')
+
     def transpose(self, axes=None, verbose=True):
         '''
         Transpose the dataset.
@@ -1872,7 +1893,7 @@ def from_rRaman(filepath, name=None, verbose=True):
     data
         New data object.
     '''
-    if type(filepath)==type(list) or type(filepath)==type(np.array([])):
+    if type(filepath)==type([]) or type(filepath)==type(np.array([])):
         return [from_rRaman(f) for f in filepath]
     
     if not os.path.isfile(filepath):
