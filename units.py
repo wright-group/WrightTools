@@ -80,7 +80,10 @@ def converter(val, current_unit, destination_unit):
     x = val
     for dic in unit_dicts:
         if current_unit in dic.keys() and destination_unit in dic.keys():
-            native = eval(dic[current_unit][0])
+            try:
+                native = eval(dic[current_unit][0])
+            except ZeroDivisionError:
+                native = np.inf
             x = native
             try:
                 out = eval(dic[destination_unit][1])
