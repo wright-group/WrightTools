@@ -20,7 +20,7 @@ if not _os.path.isdir(_temp_dir):
 
 # MAJOR.MINOR.PATCH (semantic versioning)
 # major version changes may break backwards compatibility
-__version__ = '2.11.0'
+__version__ = '2.12.0'
 
 # add git branch, if appropriate
 _directory = _os.path.dirname(__file__)
