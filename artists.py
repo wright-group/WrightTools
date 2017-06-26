@@ -1916,12 +1916,17 @@ class mpl_2D:
             _title(fig, title_text, constants_text)
             # save figure -----------------------------------------------------
             if autosave:
-                if fname:
-                    file_name = fname + ' ' + str(i).zfill(3)
+                if fname.endswith('.pdf'):
+                    file_name = fname.split('.')[0] + ' ' + str(i).zfill(3) + '.pdf'
+                    fpath = os.path.join(output_folder, file_name)
+                    plt.savefig(fpath)
                 else:
-                    file_name = str(i).zfill(3)
-                fpath = os.path.join(output_folder, file_name + '.png')
-                plt.savefig(fpath, facecolor='none', transparent=True, dpi=300, pad_inches=1.)
+                    if fname:
+                        file_name = fname + ' ' + str(i).zfill(3)
+                    else:
+                        file_name = str(i).zfill(3)
+                    fpath = os.path.join(output_folder, file_name + '.png')
+                    plt.savefig(fpath, facecolor='none', transparent=True, dpi=300, pad_inches=1.)
                 plt.close()
                 if verbose:
                     print('image saved at', fpath)
