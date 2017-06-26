@@ -898,7 +898,7 @@ def remove_nans_1D(arrs):
     for arr in arrs:
         bad = np.array(np.where(np.isnan(arr))).flatten()
         bads = np.hstack((bad, bads))
-    if len(arrs.shape)==1:
+    if hasattr(arrs, 'shape') and len(arrs.shape)==1:
         goods = [i for i in np.arange(arrs.shape[0]) if i not in bads]
     else:
         goods = [i for i in np.arange(len(arrs[0])) if i not in bads]
