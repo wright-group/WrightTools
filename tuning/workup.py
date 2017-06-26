@@ -185,6 +185,7 @@ def tune_test(data, curve, channel_name, level=False, cutoff_factor=0.01,
         New curve object.
     """
     # make data object
+    data = data.copy()
     data.bring_to_front(channel_name)
     data.transpose()
     # process data ------------------------------------------------------------
@@ -194,22 +195,12 @@ def tune_test(data, curve, channel_name, level=False, cutoff_factor=0.01,
     cutoff = np.nanmax(channel.values)*cutoff_factor
     channel.values[channel.values<cutoff] = np.nan
     # fit
-    # TODO: evaluate suggested edits to fit section
-    function = wt_fit.Moments()
-    fitter = wt_fit.Fitter(function, data, data.axes[0].name)
-    outs = fitter.run() #moment_outs = fitter.run()
-    # gauss_function = wt_fit.Gaussian()
-    # g_fitter - wt_fit.Fitter(gauss_function,data,data.axes[0].name)
-    # gauss_outs = g_fitter.run
-    # outs = []
-    # for i in range len(gauss_outs):
-        # if guass_outs[i][0] == np.nan:
-            # out.append(moment_outs[i])
-        # else:
-            # out.append(guass_outs[i][0])
+    gauss_function = wt_fit.Gaussian()
+    g_fitter = wt_fit.Fitter(gauss_function,data,data.axes[0].name)
+    outs = g_fitter.run()
     # spline
     xi = outs.axes[0].points
-    yi = outs.one.values
+    yi = outs.mean.values
     spline = wt_kit.Spline(xi, yi)
     offsets_splined = spline(xi)  # wn
     # make curve --------------------------------------------------------------
@@ -235,7 +226,7 @@ def tune_test(data, curve, channel_name, level=False, cutoff_factor=0.01,
     # lines
     outs.convert(curve_native_units)
     xi = outs.axes[0].points
-    yi = outs.one.values
+    yi = outs.mean.values
     ax.plot(xi, yi, c='grey', lw=5, alpha=0.5)
     ax.plot(xi, offsets_splined, c='k', lw=5, alpha=0.5)
     ax.axhline(c='k', lw=1)
@@ -256,3 +247,51 @@ def tune_test(data, curve, channel_name, level=False, cutoff_factor=0.01,
         p = os.path.join(save_directory, 'tune test.png')
         wt_artists.savefig(p, fig=fig)
     return curve
+
+
+def panda(data, curve, channel_name, level=False, cutoff_factor=0.01,
+              autosave=True, save_directory=None):
+    """
+    
+    Parameters
+    ----------
+    data : wt.data.Data object
+        should be in (setpoint, detuning)
+    curve : wt.curve object
+        tuning curve used to do tune_test
+    channel_nam : str
+        name of the signal chanel to evalute
+    level : bool (optional)
+        does nothing, default is False
+    cutoff_factor : float (optoinal)
+        minimum value for datapoint/max(datapoints) for point to be included
+        in the fitting procedure, default is 0.01
+    autosave : bool (optional)
+        saves output curve if True, default is True
+    save_directory : str
+        directory to save new curve, default is None which uses the data source
+        directory
+
+    Returns
+    -------
+    curve
+        New curve object.
+    """
+    # make data object
+    data.bring_to_front(channel_name)
+    data.transpose()
+    # process data ------------------------------------------------------------
+    # cutoff
+    channel_index = data.channel_names.index(channel_name)
+    channel = data.channels[channel_index]
+    cutoff = np.nanmax(channel.values)*cutoff_factor
+    channel.values[channel.values<cutoff] = np.nan
+    # fit
+    # TODO: evaluate suggested edits to fit section
+    function = wt_fit.Moments()
+    fitter = wt_fit.Fitter(function, data, data.axes[0].name)
+    outs = fitter.run()
+    gauss_function = wt_fit.Gaussian()
+    g_fitter = wt_fit.Fitter(gauss_function,data,data.axes[0].name)
+    gauss_outs = g_fitter.run()
+    return gauss_outs

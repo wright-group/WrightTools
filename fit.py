@@ -58,7 +58,9 @@ def get_baseline(values, deviations=3):
     values_internal[np.abs(values_internal) >= deviations*std] = np.nan
     baseline = np.nanmean(values_internal)
     if np.isnan(baseline):
-        baseline = np.nanmin(values)
+        baseline = np.nanmin(values)        
+    
+    #return np.nanmin(values) # TODO Fix baseline
     return baseline
 
 
@@ -67,7 +69,7 @@ def get_baseline(values, deviations=3):
 
 class Function:
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         pass
 
     def residuals(self, p, *args):
@@ -333,12 +335,12 @@ class TwoD_Gaussian(Function):
 
 class Moments(Function):
 
-    def __init__(self):
+    def __init__(self, subtract_baseline = False):
         Function.__init__(self)
         self.dimensionality = 1
         self.params = ['integral', 'one', 'two', 'three', 'four', 'baseline']
         self.limits = {}
-        self.subtract_baseline = True
+        self.subtract_baseline = subtract_baseline
 
     def evaluate(self, p, xi):
         '''

@@ -1425,7 +1425,7 @@ class mpl_1D:
                     else:
                         fname = self.data.name
                 else:
-                    folder_name = 'mpl_1D ' + wt_kit.get_timestamp()
+                    folder_name = 'mpl_1D ' + wt_kit.TimeStamp().path
                     os.mkdir(folder_name)
                     output_folder = folder_name
         # chew through image generation
