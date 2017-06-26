@@ -24,6 +24,8 @@ import linecache
 import collections
 from time import clock
 
+from scipy import ndimage
+
 try:
     import configparser as configparser  # python 3
 except ImportError:
@@ -1024,6 +1026,34 @@ def unique(arr, tolerance=1e-6):
         xi_lis_average = sum(lis) / len(lis)
         unique.append(xi_lis_average)
     return np.array(unique)
+
+
+def zoom2D(xi, yi, zi, xi_zoom=3., yi_zoom=3., order=3, mode='constant'):
+    """
+    Zoom a 2D array, with axes.
+    
+    Parameters
+    ----------
+    xi : 1D array
+        x axis points.
+    yi : 1D array
+        y axis points.
+    zi : 2D array
+        array values. Shape of (x, y).
+    xi_zoom : float (optional)
+        Zoom factor along x axis. Default is 3.
+    yi_zoom : float (optional)
+        Zoom factor along y axis. Default is 3.
+    order : int (optional)
+        The order of the spline interpolation, between 0 and 5. Default is 3.
+    mode : {'constant', 'nearest', 'reflect', or 'wrap'}
+        Points outside the boundaries of the input are filled according to the
+        given mode. Default is constant.
+    """
+    xi = ndimage.interpolation.zoom(xi, xi_zoom, order='nearest', mode=mode)
+    yi = ndimage.interpolation.zoom(yi, yi_zoom, order='nearest', mode=mode)
+    zi = ndimage.interpolation.zoom(zi, (xi_zoom, yi_zoom), order=order, mode=mode)
+    return xi, yi, zi
 
 
 ### uncategorized #############################################################
