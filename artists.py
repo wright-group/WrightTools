@@ -286,7 +286,7 @@ def _title(fig, title, subtitle='', margin=1, fontsize=20, subfontsize=18):
 
 def add_sideplot(ax, along, pad=0., grid=True, zero_line=True,
                  arrs_to_bin=None, normalize_bin=True, ymin=0, ymax=1.1,
-                 height=0.75):
+                 height=0.75, c='C0'):
     '''
     Add a sideplot to an axis. Sideplots share their corresponding axis.
 
@@ -310,6 +310,8 @@ def add_sideplot(ax, along, pad=0., grid=True, zero_line=True,
         Bin minimum extent. Default is 0.
     ymax : number (optional)
         Bin maximum extent. Default is 1.1
+    c : string (optional)
+        Line color. Default is C0.
 
     Returns
     -------
@@ -336,12 +338,12 @@ def add_sideplot(ax, along, pad=0., grid=True, zero_line=True,
             b = np.nansum(zi, axis=0) * len(yi)
             if normalize_bin:
                 b /= np.nanmax(b)
-            axCorr.plot(xi, b, c='b', lw=2)
+            axCorr.plot(xi, b, c=c, lw=2)
         elif along == 'y':
             b = np.nansum(zi, axis=1) * len(xi)
             if normalize_bin:
                 b /= np.nanmax(b)
-            axCorr.plot(b, yi, c='b', lw=2)
+            axCorr.plot(b, yi, c=c, lw=2)
     # beautify
     if along == 'x':
         axCorr.set_ylim(ymin, ymax)
