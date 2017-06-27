@@ -160,7 +160,11 @@ class Drive:
         string
             The unique Google Drive ID of the bottom-most newly created folder. 
         """
+        import time
+        t = time.time()
         self._authenticate()
+        print(time.time()-t, "Authenticate")
+        t = time.time()
         # clean inputs
         if type(name) == str:
             name = [name]
@@ -184,6 +188,8 @@ class Drive:
                                      "mimeType": "application/vnd.google-apps.folder"})
             f.Upload()
             parent = f['id']
+            print(time.time()-t, "created", n)
+            t = time.time()
         return parent
 
     def download(self, fileid, directory='cwd', overwrite=False, verbose=True):

@@ -1876,11 +1876,12 @@ def from_Cary50(filepath, verbose=True):
 
 def from_rRaman(filepath, name=None, verbose=True):
     '''
-    Create a data object from Brunold rRaman files.
+    Create a data object from plaintext tab deliminated file with one energy
+    and one intensity value.
 
     Parameters
     ----------
-    filepath : string
+    filepath : string, list of strings, or array of strings
         Path to .txt file.
     name : string (optional)
         Name to give to the created data object. If None, filename is used.
@@ -1891,15 +1892,14 @@ def from_rRaman(filepath, name=None, verbose=True):
     Returns
     -------
     data
-        New data object.
+        New data object(s).
     '''
     if type(filepath)==type([]) or type(filepath)==type(np.array([])):
         return [from_rRaman(f) for f in filepath]
     
     if not os.path.isfile(filepath):
         raise wt_exceptions.FileNotFound(path=filepath)
-    filesuffix = os.path.basename(filepath).split('.')[-1]
-    if filesuffix != 'txt':
+    if not filepath.endswith('txt'):
         wt_exceptions.WrongFileTypeWarning.warn(filepath, 'txt')
     # import array
     lines = []
