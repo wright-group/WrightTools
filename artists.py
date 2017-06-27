@@ -43,6 +43,46 @@ else:
 
 
 class Axes(matplotlib.axes.Axes):
+    transposed = False
+    is_sideplot = False
+
+    def add_sideplot(self, along, pad=0, height=0.75, ymin=0, ymax=1.1):
+        """
+        Add a side axis.
+        
+        Parameters
+        ----------
+        along : {'x', 'y'}
+            Axis to add along.
+        pad : float (optional)
+            Side axis pad. Default is 0.
+        height : float (optional)
+            Side axis height. Default is 0.
+        """
+        # divider should only be created once
+        if hasattr(self, 'divider'):
+            divider = self.divider
+        else:
+            divider = make_axes_locatable(self)
+            setattr(self, 'divider', divider)
+        # create
+        if along == 'x':
+            ax = self.sidex = divider.append_axes('top', height, pad=pad, sharex=self)
+        elif along == 'y':
+            ax = self.sidey = divider.append_axes('right', height, pad=pad, sharey=self)
+            ax.transposed = True
+        # beautify
+        if along == 'x':
+            ax.set_ylim(ymin, ymax)
+        elif along == 'y':
+            ax.set_xlim(ymin, ymax)
+        ax.autoscale(enable=False)
+        ax.set_adjustable('box-forced')
+        ax.is_sideplot = True
+        plt.setp(ax.get_xticklabels(), visible=False)
+        plt.setp(ax.get_yticklabels(), visible=False)
+        ax.tick_params(axis='both', which='both', length=0)
+        return ax
 
     def contourf(self, *args, **kwargs):
         contours = matplotlib.axes.Axes.contourf(self, *args, **kwargs)  # why can't I use super?
@@ -58,9 +98,8 @@ class Axes(matplotlib.axes.Axes):
             kwargs['framealpha'] = 1.
         return super().legend(*args, **kwargs)
 
-    def plot_data(self, data, channel=0, xaxis=0, yaxis=1, dimensionality=None,
-                  interpolate=False, cmap=None, xlabel=True, ylabel=True,
-                  zmin=None, zmax=None):
+    def plot_data(self, data, channel=0, interpolate=False, coloring=None,
+                  xlabel=True, ylabel=True, zmin=None, zmax=None):
         """
         Plot directly from a data object.
 
@@ -70,13 +109,6 @@ class Axes(matplotlib.axes.Axes):
             The data object to plot.
         channel : int or str (optional)
             The channel to plot. Default is 0.
-        xaxis : int or str (optional)
-            X axis. Default is 0.
-        yaxis : int or str (optional)
-            Y axis. Default is 0.
-        dimensionality : {1, 2} (optional)
-            Dimensionality of plot. Default is None (inherited from data
-            object).
         interpolate : boolean (optional)
             Toggle interpolation. Default is False.
         cmap : str (optional)
@@ -91,15 +123,9 @@ class Axes(matplotlib.axes.Axes):
         zmax : number (optional)
             Zmax. Default is None (inherited from channel).
         """
-        print('plot data is experimental---please do not rely on it!')
         # TODO: should I store a reference to data (or list of refs?)
         # prepare -------------------------------------------------------------
         # get dimensionality
-        if dimensionality is None:
-            if data.dimensionality == 2:
-                dimensionality = 2
-            else:
-                dimensionality = 1
         # get channel
         if type(channel) == int:
             channel_index = channel
@@ -108,23 +134,8 @@ class Axes(matplotlib.axes.Axes):
         else:
             print('channel type', type(channel), 'not valid')
         channel = data.channels[channel_index]
-        # get xaxis
-        if type(xaxis) == int:
-            xaxis_index = xaxis
-        elif isinstance(xaxis, string_type):
-            xaxis_index = data.axis_names.index(xaxis)
-        else:
-            print('xaxis type', type(xaxis), 'not valid')
-        xaxis = data.axes[xaxis_index]
-        # get yaxis
-        if dimensionality == 2:
-            if type(yaxis) == int:
-                yaxis_index = yaxis
-            elif isinstance(yaxis, string_type):
-                yaxis_index = data.axis_names.index(yaxis)
-            else:
-                print('yaxis type', type(yaxis), 'not valid')
-            yaxis = data.axes[yaxis_index]
+        # get axes
+        xaxis = data.axes[0]
         # get zmin
         if zmin is None:
             zmin = channel.zmin
@@ -132,31 +143,42 @@ class Axes(matplotlib.axes.Axes):
         if zmax is None:
             zmax = channel.zmax
         # 1D ------------------------------------------------------------------
-        if dimensionality == 1:
+        if data.dimensionality == 1:
             # get list of all datas
-            datas = data.chop(xaxis_index, verbose=False)
-            for data in datas:
-                # get arrays
-                xi = xaxis.points
-                yi = data.channels[channel_index].values
-                # plot
-                if interpolate:
-                    self.plot(xi, yi)
-                else:
-                    self.scatter(xi, yi)
+            # get color
+            if coloring is None:
+                c = self._get_lines.get_next_color()
+            else:
+                c = coloring
+            # get arrays
+            xi = xaxis.points
+            yi = data.channels[channel_index].values
+            # plot
+            if interpolate:
+                self.plot(xi, yi, c=c)
+            else:
+                self.scatter(xi, yi, c=c)
             # decoration
-            self.set_xlim(xi.min(), xi.max())
-            self.set_ylim(zmin, zmax)
+            if self.get_adjustable() == 'datalim':
+                self.set_xlim(xi.min(), xi.max())
+                self.set_ylim(zmin, zmax)
+            # transposed catcher
+            if self.transposed:
+                for line in self.lines:
+                    xdata, ydata = line.get_xdata(), line.get_ydata()
+                    line.set_xdata(ydata)
+                    line.set_ydata(xdata)
         # 2D ------------------------------------------------------------------
-        if dimensionality == 2:
+        elif data.dimensionality == 2:
+            yaxis = data.axes[1]
             # get colormap
-            if cmap is None:
+            if coloring is None:
                 if channel.signed:
                     cmap = colormaps['signed']
                 else:
                     cmap = colormaps['default']
             else:
-                cmap = colormaps[cmap]
+                cmap = colormaps[coloring]
             # get arrays
             xi = xaxis.points
             yi = yaxis.points
@@ -173,13 +195,16 @@ class Axes(matplotlib.axes.Axes):
             # decoration
             self.set_xlim(xi.min(), xi.max())
             self.set_ylim(yi.min(), yi.max())
+        # ND ------------------------------------------------------------------
+        else:
+            pass
         # decoration ----------------------------------------------------------
-        if xlabel:
+        if xlabel and not self.is_sideplot:
             self.set_xlabel(xaxis.label, fontsize=18)
-        if ylabel:
-            if dimensionality == 1:
+        if ylabel and not self.is_sideplot:
+            if data.dimensionality == 1:
                 self.set_ylabel(channel.label, fontsize=18)
-            if dimensionality == 2:
+            if data.dimensionality == 2:
                 self.set_ylabel(yaxis.label, fontsize=18)
 
 
