@@ -58,8 +58,8 @@ def get_baseline(values, deviations=3):
     values_internal[np.abs(values_internal) >= deviations*std] = np.nan
     baseline = np.nanmean(values_internal)
     if np.isnan(baseline):
-        baseline = np.nanmin(values)        
-    
+        baseline = np.nanmin(values)
+
     #return np.nanmin(values) # TODO Fix baseline
     return baseline
 
@@ -468,19 +468,20 @@ class Fitter:
         self.outs._update()
         return self.outs
 
+
 ### MultiPeakFitter #################################################
 
 
 class MultiPeakFitter:
     """
     Written by Darien Morrow. darienmorrow@gmail.com & dmorrow3@wisc.edu
-    
-    Class which allows easy fitting and representation of aborbance data. 
+
+    Class which allows easy fitting and representation of aborbance data.
     Currently only offers Gaussian and Lorentzian functions.
     Functions are paramaterized by FWHM, height, and center.
     Requires the use of WrightTools.Data objects.
-    
-    fittype = 2 may be used to fit a spectrum to maximize smoothness of model remainder. 
+
+    fittype = 2 may be used to fit a spectrum to maximize smoothness of model remainder.
     fittype = 0 may be used to fit a spectrum to minimize amplitude of model remainder.
     """
 
@@ -502,7 +503,7 @@ class MultiPeakFitter:
         self.intensity_label = intensity_label
         # assertions
         if not data.axes[0].units_kind == 'energy':
-            raise Exception('Yo, your axes is/are not of the correct kind. Hand me some energy.') 
+            raise Exception('Yo, your axes is/are not of the correct kind. Hand me some energy.')
         if len(data.axes) > 1:
             raise Exception('Yo, your data must be 1D. Try again homey.')
         # get channel
@@ -518,8 +519,8 @@ class MultiPeakFitter:
 
     def build_funcs(self, x, params, kinds, diff_order=0):
         """
-        Builds a new 1D function of many 1D function of various kinds.        
-        
+        Builds a new 1D function of many 1D function of various kinds.
+
         Parameters
         ----------
         x : array
@@ -530,7 +531,7 @@ class MultiPeakFitter:
             List of kinds of functions to add---length n
         diff_order : int
             Specifies order of differentiated function to return
-            
+
         Returns
         -------
         z : array
@@ -541,11 +542,11 @@ class MultiPeakFitter:
         for i, kind in enumerate(kinds):
             z += self.function(x, kind, params[i*3+0], params[i*3+1], params[i*3+2], diff_order=diff_order)
         return z
-    
+
     def convert(self,destination_units):
         """
         Exposes wt.data.convert() method to convert units of data object.
-        
+
         Parameters
         ----------
         destination_units : str
@@ -554,8 +555,8 @@ class MultiPeakFitter:
 
     def encode_params(self, names, kinds, params ):
         """
-        Helper method to encode parameters of fit into an ordered dict of dicts.    
-        
+        Helper method to encode parameters of fit into an ordered dict of dicts.
+
         Parameters
         ----------
         names : list
@@ -564,26 +565,26 @@ class MultiPeakFitter:
             list of strings of length n
         params : array
             1D array of floats of length 3n
-        
+
         Returns
         -------
-        dic : ordered dict of dicts        
+        dic : ordered dict of dicts
         """
-        dic = OrderedDict()      
+        dic = OrderedDict()
         for i in range(len(names)):
             dic[names[i]] = {'kind': kinds[i], 'FWHM': params[i*3+0], 'intensity': params[i*3+1], 'x0': params[i*3+2]}
         return dic
 
-    def extract_params(self, dic):   
+    def extract_params(self, dic):
         """
         Takes dictionary of fit parameters and returns tuple of extracted parameters
-        that function method can work with.        
-        
+        that function method can work with.
+
         Parameters
         ----------
         dic : ordered dictionary of dicts
             Must contain keys: 'FWHM', 'intensity', 'x0', and 'kind'.
-            
+
         Returns
         -------
         names, kinds, p0 : tuple
@@ -592,11 +593,11 @@ class MultiPeakFitter:
             p0 : array
         """
         p0 = np.zeros(len(dic)*3) # assumes each individual function is a 3 parameter function.
-        names = []        
+        names = []
         kinds = []
         i = 0
         for key, value in dic.items():
-            names.append(key)            
+            names.append(key)
             p0[i] = value['FWHM']
             p0[i+1] = value['intensity']
             p0[i+2] = value['x0']
@@ -608,12 +609,12 @@ class MultiPeakFitter:
         """
         Fitting method that takes data and guesses (class attributes) and instantiates/updates
         fit_results, diff_model, and remainder (class attributes),
-        
+
         Parameters
         ----------
         verbose : bool
             toggle talkback
-            
+
         Instantiated attributes
         -----------------------
         fit_results : ordered dict of dict
@@ -631,30 +632,30 @@ class MultiPeakFitter:
         # perform fit
         timer = wt_kit.Timer(verbose=False)
         with timer:
-            out = scipy_optimize.leastsq(error, p0, args=(self.data.axes[0].points, zi_diff)) 
+            out = scipy_optimize.leastsq(error, p0, args=(self.data.axes[0].points, zi_diff))
             # write results in dictionary
-            self.fit_results = self.encode_params(names, kinds, out[0] )  
+            self.fit_results = self.encode_params(names, kinds, out[0] )
         if verbose:
             print('fitting done in %f seconds'%timer.interval)
         # generate model
         self.diff_model = self.build_funcs(self.data.axes[0].points, out[0], kinds, diff_order=self.fittype)
         self.remainder = self.data.channels[self.channel_index].values - self.build_funcs(self.data.axes[0].points, out[0], kinds, diff_order=0)
- 
-     
+
+
     def function(self, x, kind, FWHM, intensity, x0, diff_order=0):
         """
         Returns a peaked distribution over array x.
-        
+
         The peaked distributions are characterized by their FWHM, height, and center.
-        The distributions are not normalized to the same value given the same parameters!        
-        Analytic derivatives are provided for sake of computational speed & accuracy.        
-        
+        The distributions are not normalized to the same value given the same parameters!
+        Analytic derivatives are provided for sake of computational speed & accuracy.
+
         Parameters
         ----------
-        x : array  
+        x : array
             array of values to return function over
         kind : str
-            Kind of function to return. Includes 'lorentzian' and 'gaussian'          
+            Kind of function to return. Includes 'lorentzian' and 'gaussian'
         FWHM : float
             Full width at half maximum of returned function
         intensity : float
@@ -675,7 +676,7 @@ class MultiPeakFitter:
             else:
                 print('analytic derivative not pre-calculated')
         elif kind=='gaussian':
-            sigma = FWHM/2.35482            
+            sigma = FWHM/2.35482
             if diff_order == 0:
                 return intensity*np.exp(-0.5*((x-x0)/sigma)**2)
             elif diff_order == 1:
@@ -689,8 +690,8 @@ class MultiPeakFitter:
 
     def guess(self, guesses):
         """
-        Creates guess library for use in fitting.        
-        
+        Creates guess library for use in fitting.
+
         Parameters
         ----------
         guesses : ordered dict of dicts
@@ -706,7 +707,7 @@ class MultiPeakFitter:
     def intensity_label_change(self, intensity_label):
         """
         Helper method for changing label present in plot method.
-        
+
         Parameters
         ----------
         intensity_label : str
@@ -721,7 +722,7 @@ class MultiPeakFitter:
         names, kinds, params =  self.extract_params(self.fit_results)
         num_funcs = len(kinds)
         # get color map for trace colors
-        cm = wt_artists.colormaps['default'] 
+        cm = wt_artists.colormaps['default']
         # create figure
         fig, gs = wt_artists.create_figure(width='single', cols=[1], nrows=2, default_aspect=.5)
         # as-taken
@@ -758,7 +759,7 @@ class MultiPeakFitter:
     def save(self, path=os.getcwd(), fit_params=True, figure=True, verbose=True):
         """
         Saves results and representation of fits. Saved files are timestamped.
-        
+
         Parameters
         ----------
         path : str
@@ -781,7 +782,7 @@ class MultiPeakFitter:
                     headers[' '.join([state, prop])] = value
             write = wt_kit.write_headers(params_path, headers)
             if verbose:
-                print('Parameters saved to:', write)   
+                print('Parameters saved to:', write)
         if figure:
             fig = self.plot()
             fig_path = os.path.join(path,' '.join((self.name, timestamp.path,'fits.png')))
@@ -789,7 +790,67 @@ class MultiPeakFitter:
             if verbose:
                 print('Figure saved to:', write)
 
-    
+
+
+
+def leastsqfitter(p0, datax, datay, function, verbose=False, cov_verbose=False):
+    """
+    Convenience method for using scipy.optmize.leastsq().
+    Returns fit parameters and their errors.
+
+    Parameters
+    ----------
+    p0 : list
+        list of guess parameters to pass to function
+    datax : array
+        array of independent values
+    datay : array
+        array of dependent values
+    function : function
+        function object to fit data to. Must be of the callable form function(p, x)
+    verbose : bool
+        toggles printing of fit time, fit params, and fit param errors
+    cov_verbose : bool
+        toggles printing of covarience matrix
+
+    Returns
+    -------
+    pfit_leastsq : list
+        list of fit parameters. s.t. the error between datay and function(p, datax) is minimized
+    perr_leastsq : list
+        list of fit parameter errors (1 std)
+    """
+
+    timer = wt_kit.Timer(verbose=False)
+    with timer:
+        # define error function
+        errfunc = lambda p, x, y:  y - function(p, x)
+        # run optimization
+        pfit_leastsq, pcov, infodict, errmsg, success = scipy_optimize.leastsq(errfunc, p0, args=(datax, datay), full_output=1, epsfcn=0.0001)
+        # calculate covarience matrix
+        # original idea https://stackoverflow.com/a/21844726
+        if (len(datay) > len(p0)) and pcov is not None:
+            s_sq = (errfunc(pfit_leastsq, datax, datay)**2).sum()/(len(datay)-len(p0))
+            pcov = pcov * s_sq
+            if cov_verbose:
+                print(pcov)
+        else:
+            pcov = np.inf
+        # calculate and write errors
+        error = []
+        for i in range(len(pfit_leastsq)):
+            try:
+              error.append(np.absolute(pcov[i][i])**0.5)
+            except:
+              error.append( 0.00 )
+        perr_leastsq = np.array(error)
+    # exit
+    if verbose:
+        print('fit params:       ', pfit_leastsq)
+        print('fit params error: ', perr_leastsq)
+        print('fitting done in %f seconds'%timer.interval)
+    return pfit_leastsq, perr_leastsq
+
 ### testing ###################################################################
 
 
