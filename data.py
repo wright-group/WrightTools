@@ -1874,7 +1874,7 @@ def from_Cary50(filepath, verbose=True):
             print('  {0}: {1}'.format(i, data.name))
     return datas
 
-def from_rRaman(filepath, name=None, verbose=True):
+def from_text(filepath, name=None, verbose=True):
     '''
     Create a data object from plaintext tab deliminated file with one energy
     and one intensity value.
@@ -1899,8 +1899,8 @@ def from_rRaman(filepath, name=None, verbose=True):
     
     if not os.path.isfile(filepath):
         raise wt_exceptions.FileNotFound(path=filepath)
-    if not filepath.endswith('txt'):
-        wt_exceptions.WrongFileTypeWarning.warn(filepath, 'txt')
+    if not filepath.endswith('txt') and not filepath.endswith('dpt'):
+        wt_exceptions.WrongFileTypeWarning.warn(filepath, 'txt or dpt')
     # import array
     lines = []
     with open(filepath, 'r') as f:
@@ -1917,7 +1917,7 @@ def from_rRaman(filepath, name=None, verbose=True):
     indicies = np.arange(1)
     for i in indicies:
         axis = Axis(arr[i], 'wn', name='wm')
-        signal = Channel(arr[i+1], name='counts', label='counts', signed=False)
+        signal = Channel(arr[i+1], name='signal', label='counts', signed=False)
         if name:
             data = Data([axis], [signal], source='Brunold rRaman', name=name)
         else:
@@ -1929,6 +1929,10 @@ def from_rRaman(filepath, name=None, verbose=True):
         for i, data in enumerate(datas):
             print('  {0}: {1}'.format(i, data.name))
     return data
+
+def from_rRaman(*args,**kwargs):
+    return from_text(*args,**kwargs)
+
 
 def from_COLORS(filepaths, znull=None, name=None, cols=None, invert_d1=True,
                 color_steps_as='energy', ignore=['num', 'w3', 'wa', 'dref', 'm0', 'm1', 'm2', 'm3', 'm4', 'm5', 'm6'],
