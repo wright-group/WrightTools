@@ -66,4 +66,5 @@ docs/_build/
 target/
 
 # Google Drive
-*desktop.ini
+*desktop.inibuild/
+dist/
