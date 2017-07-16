@@ -10,7 +10,6 @@ here = path.abspath(path.dirname(__file__))
 with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
-
 setup(
     name='WrightTools',
     packages=find_packages(),
@@ -26,7 +25,7 @@ setup(
     classifiers=['Development Status :: 5 - Production/Stable',
                  'Intended Audience :: Science/Research',
                  'License :: OSI Approved :: MIT License',
-                 'Natural Language :: English'
+                 'Natural Language :: English',
                  'Programming Language :: Python :: 2',
                  'Programming Language :: Python :: 2.7',
                  'Programming Language :: Python :: 3',
