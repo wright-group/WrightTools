@@ -17,4 +17,5 @@ setup(
     license='MIT',
     author_email='blaise@untzag.com',
     url='https://github.com/wright-group/WrightTools',
+    download_url='https://github.com/wright-group/WrightTools/archive/2.13.0.tar.gz'
 )
