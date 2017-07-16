@@ -23,7 +23,7 @@ if not _os.path.isdir(_temp_dir):
 __version__ = '2.12.0'
 
 # add git branch, if appropriate
-_directory = _os.path.dirname(__file__)
+_directory = _os.path.dirname(_os.path.dirname(__file__))
 _p = _os.path.join(_directory, '.git', 'HEAD')
 if _os.path.isfile(_p):
     with open(_p) as _f:
