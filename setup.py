@@ -18,3 +18,4 @@ setup(
     author_email='blaise@untzag.com',
     url='https://github.com/wright-group/WrightTools',
 )
+
