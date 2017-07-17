@@ -53,7 +53,7 @@ class Subplot:
                             ls=linestyle, zorder=5)
 
         # add state names
-        if type(state_names) == list:
+        if isinstance(state_names, list):
             for i in range(len(self.energies)):
                 if label_side == 'left':
                     ax.text(-state_text_buffer, energies[i], state_names[i],
@@ -80,7 +80,7 @@ class Subplot:
 
         Parameters
         ----------
-        index : integer 
+        index : integer
             The interaction, or start and stop interaction for the arrow.
         between : 2-element iterable of integers
             The inital and final state of the arrow
@@ -205,7 +205,8 @@ class Artist:
         plot = self.subplots[diagram[1]][diagram[0]]
         plot.cla()
 
-    def add_arrow(self, diagram, number, between, kind, label='', head_length=0.075, font_size=7, color='k'):
+    def add_arrow(self, diagram, number, between, kind, label='',
+                  head_length=0.075, font_size=7, color='k'):
         '''
         kind one in [ket, bra, out] \n
         returns [line, arrow_head, text]
