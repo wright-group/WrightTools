@@ -21,7 +21,7 @@ import numpy as np
 angle = {'kind': 'angle',
          'rad': ['x', 'x', r'rad'],
          'deg': ['x/57.2958', '57.2958*x', r'deg']}
-         
+
 # delay units (native: fs)
 fs_per_mm = 3336.
 delay = {'kind': 'delay',
@@ -39,11 +39,11 @@ energy = {'kind': 'energy',
           'Hz': ['2.99792458e17/x', '2.99792458e17/x', r'Hz'],
           'THz': ['2.99792458e5/x', '2.99792458e5/x', r'THz'],
           'GHz': ['2.99792458e8/x', '2.99792458e8/x', r'GHz']}
-          
+
 # fluence units (native: uJ per sq. cm)
 fluence = {'kind': 'fluence',
            'uJ per sq. cm': ['x', 'x', r'\frac{\mu J}{cm^{2}}']}
-           
+
 # optical density units (native: od)
 od = {'kind': 'od',
       'mOD': ['1e3*x', 'x/1e3', r'mOD'],
@@ -51,7 +51,8 @@ od = {'kind': 'od',
 
 # position units (native: mm)
 position = {'kind': 'position',
-            'nm_p': ['x/1e6', '1e6/x', r'nm'],  # can't have same name as energy nm
+            # can't have same name as energy nm
+            'nm_p': ['x/1e6', '1e6/x', r'nm'],
             'um': ['x/1000.', '1000/x.', r'um'],
             'mm': ['x', 'x', r'mm'],
             'cm': ['10.*x', 'x/10.', r'cm'],
@@ -60,7 +61,7 @@ position = {'kind': 'position',
 # pulse width units (native: FWHM)
 pulse_width = {'kind': 'pulse_width',
                'FWHM': ['x', 'x', r'FWHM']}
-               
+
 # time units (native: s)
 time = {'kind': 'time',
         'fs_t': ['x/1e15', 'x*1e15', r'fs'],
@@ -94,19 +95,20 @@ def converter(val, current_unit, destination_unit):
     if current_unit is None and destination_unit is None:
         pass
     else:
-        print('conversion {0} to {1} not valid: returning input'.format(current_unit, destination_unit))
+        print('conversion {0} to {1} not valid: returning input'.format(
+            current_unit, destination_unit))
     return val
 
 
 def kind(units):
     """
     Find the kind of given units.
-    
+
     Parameters
     ----------
     units : string
         The units of interest
-        
+
     Returns
     -------
     string
@@ -124,6 +126,7 @@ class symbol_dict(dict):
     # subclass dictionary to get at __missing__ method
     def __missing__(self, key):
         return self['default']
+
 
 # color
 color_symbols = symbol_dict()

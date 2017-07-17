@@ -49,7 +49,7 @@ class Axes(matplotlib.axes.Axes):
     def add_sideplot(self, along, pad=0, height=0.75, ymin=0, ymax=1.1):
         """
         Add a side axis.
-        
+
         Parameters
         ----------
         along : {'x', 'y'}
@@ -280,7 +280,7 @@ def _title(fig, title, subtitle='', margin=1, fontsize=20, subfontsize=18):
     fig.suptitle(title, fontsize=fontsize)
     height = fig.get_figheight()  # inches
     distance = margin / 2.  # distance from top of plot, in inches
-    ratio = 1 - distance/height
+    ratio = 1 - distance / height
     fig.text(0.5, ratio, subtitle, fontsize=subfontsize, ha='center', va='top')
 
 
@@ -535,14 +535,16 @@ def create_figure(width='single', nrows=1, cols=[1], margin=1.,
     if not len(rows_in_aspects) == len(set(rows_in_aspects)):
         raise Exception('can only specify aspect for one plot in each row')
     # get width avalible to subplots (not including colorbars)
-    total_subplot_width = figure_width - 2*margin
-    total_subplot_width -= (len(cols)-1) * wspace  # whitespace in width
+    total_subplot_width = figure_width - 2 * margin
+    total_subplot_width -= (len(cols) - 1) * wspace  # whitespace in width
     total_subplot_width -= cols.count('cbar') * cbar_width  # colorbar width
     # converters
+
     def in_to_mpl(inches, total, n):
-        return (inches*n)/(total-inches*n+inches)
+        return (inches * n) / (total - inches * n + inches)
+
     def mpl_to_in(mpl, total, n):
-        return (total/(n+mpl*(n-1)))*mpl
+        return (total / (n + mpl * (n - 1))) * mpl
     # calculate column widths, width_ratio
     subplot_ratios = np.array([i for i in cols if not i == 'cbar'], dtype=np.float)
     subplot_ratios /= sum(subplot_ratios)
@@ -571,13 +573,13 @@ def create_figure(width='single', nrows=1, cols=[1], margin=1.,
             subplot_heights.append(subplot_widths[0] * default_aspect)
     height_ratios = subplot_heights
     figure_height = sum(subplot_heights)
-    figure_height += (nrows-1) * hspace
-    figure_height += 2*margin
+    figure_height += (nrows - 1) * hspace
+    figure_height += 2 * margin
     # make figure
     fig = plt.figure(figsize=[figure_width, figure_height], FigureClass=Figure)
     # get hspace, wspace in relative units
-    hspace = in_to_mpl(hspace, figure_height-2*margin, nrows)
-    wspace = in_to_mpl(wspace, figure_width-2*margin, len(cols))
+    hspace = in_to_mpl(hspace, figure_height - 2 * margin, nrows)
+    wspace = in_to_mpl(wspace, figure_width - 2 * margin, len(cols))
     # make gridpsec
     gs = GridSpec(nrows, len(cols), hspace=hspace, wspace=wspace,
                   width_ratios=width_ratios, height_ratios=height_ratios)
@@ -655,7 +657,7 @@ def get_color_cycle(n, cmap='rainbow', rotations=3):
 
 
 def get_constant_text(constants):
-    string_list = [constant.get_label(show_units = True, points = True) for constant in constants]
+    string_list = [constant.get_label(show_units=True, points=True) for constant in constants]
     text = '    '.join(string_list)
     return text
 
@@ -663,27 +665,27 @@ def get_constant_text(constants):
 def get_scaled_bounds(ax, position, distance=0.1, factor=200):
     # get bounds
     x0, y0, width, height = ax.bbox.bounds
-    width_scaled = width/factor
-    height_scaled = height/factor
+    width_scaled = width / factor
+    height_scaled = height / factor
     # get scaled postions
     if position == 'UL':
-        v_scaled = distance/width_scaled
-        h_scaled = 1-(distance/height_scaled)
+        v_scaled = distance / width_scaled
+        h_scaled = 1 - (distance / height_scaled)
         va = 'top'
         ha = 'left'
     elif position == 'LL':
-        v_scaled = distance/width_scaled
-        h_scaled = distance/height_scaled
+        v_scaled = distance / width_scaled
+        h_scaled = distance / height_scaled
         va = 'bottom'
         ha = 'left'
     elif position == 'UR':
-        v_scaled = 1-(distance/width_scaled)
-        h_scaled = 1-(distance/height_scaled)
+        v_scaled = 1 - (distance / width_scaled)
+        h_scaled = 1 - (distance / height_scaled)
         va = 'top'
         ha = 'right'
     elif position == 'LR':
-        v_scaled = 1-(distance/width_scaled)
-        h_scaled = distance/height_scaled
+        v_scaled = 1 - (distance / width_scaled)
+        h_scaled = distance / height_scaled
         va = 'bottom'
         ha = 'right'
     else:
@@ -723,27 +725,28 @@ def make_cubehelix(gamma=0.5, s=0.25, r=-1, h=1.3, reverse=False, darkest=0.7):
     plot_colormap_components
         Displays RGB components of colormaps.
     """
-    rr = (.213/.30)
-    rg = (.715/.99)
-    rb = (.072/.11)
+    rr = (.213 / .30)
+    rg = (.715 / .99)
+    rb = (.072 / .11)
+
     def get_color_function(p0, p1):
         def color(x):
             # Calculate amplitude and angle of deviation from the black to
             # white diagonal in the plane of constant perceived intensity.
             xg = darkest * x**gamma
-            lum = 1-xg  # starts at 1
+            lum = 1 - xg  # starts at 1
             if reverse:
                 lum = lum[::-1]
             a = lum.copy()
-            a[lum<0.5] = h * lum[lum<0.5]/2.
-            a[lum>=0.5] = h * (1-lum[lum>=0.5])/2.
+            a[lum < 0.5] = h * lum[lum < 0.5] / 2.
+            a[lum >= 0.5] = h * (1 - lum[lum >= 0.5]) / 2.
             phi = 2 * np.pi * (s / 3 + r * x)
             out = lum + a * (p0 * np.cos(phi) + p1 * np.sin(phi))
             return out
         return color
-    rgb_dict = {'red': get_color_function(-0.14861*rr, 1.78277*rr),
-                'green': get_color_function(-0.29227*rg, -0.90649*rg),
-                'blue': get_color_function(1.97294*rb, 0.0)}
+    rgb_dict = {'red': get_color_function(-0.14861 * rr, 1.78277 * rr),
+                'green': get_color_function(-0.29227 * rg, -0.90649 * rg),
+                'blue': get_color_function(1.97294 * rb, 0.0)}
     cmap = matplotlib.colors.LinearSegmentedColormap('cubehelix', rgb_dict)
     return cmap
 
@@ -807,20 +810,20 @@ def nm_to_rgb(nm):
         B = 0.0
     # intensity correction ----------------------------------------------------
     if w >= 380 and w < 420:
-        SSS = 0.3 + 0.7*(w - 350) / (420 - 350)
+        SSS = 0.3 + 0.7 * (w - 350) / (420 - 350)
     elif w >= 420 and w <= 700:
         SSS = 1.0
     elif w > 700 and w <= 780:
-        SSS = 0.3 + 0.7*(780 - w) / (780 - 700)
+        SSS = 0.3 + 0.7 * (780 - w) / (780 - 700)
     else:
         SSS = 0.0
     SSS *= 255
-    return [float(int(SSS*R)/256.),
-            float(int(SSS*G)/256.),
-            float(int(SSS*B)/256.)]
+    return [float(int(SSS * R) / 256.),
+            float(int(SSS * G) / 256.),
+            float(int(SSS * B) / 256.)]
 
 
-def pcolor_helper(xi, yi, zi, transform= None):
+def pcolor_helper(xi, yi, zi, transform=None):
     '''
     accepts xi, yi, zi as the normal rectangular arrays
     that would be given to contorf etc \n
@@ -829,25 +832,26 @@ def pcolor_helper(xi, yi, zi, transform= None):
     transform takes a function that accepts a 
     '''
 
-    x_points = np.zeros(len(xi)+1)
-    y_points = np.zeros(len(yi)+1)
+    x_points = np.zeros(len(xi) + 1)
+    y_points = np.zeros(len(yi) + 1)
 
     for points, axis in [[x_points, xi], [y_points, yi]]:
         for j in range(len(points)):
             if j == 0:  # first point
                 points[j] = axis[0] - (axis[1] - axis[0])
-            elif j == len(points)-1:  # last point
+            elif j == len(points) - 1:  # last point
                 points[j] = axis[-1] + (axis[-1] - axis[-2])
             else:
-                points[j] = np.average([axis[j], axis[j-1]])
+                points[j] = np.average([axis[j], axis[j - 1]])
 
     X, Y = np.meshgrid(x_points, y_points)
-    if type(transform)==type(None):
+    if type(transform) == type(None):
         return X, Y, zi
     else:
-        for (x,y), value in np.ndenumerate(X):
-            X[x][y],Y[x][y] = transform((X[x][y],Y[x][y]))
-        return X,Y,zi
+        for (x, y), value in np.ndenumerate(X):
+            X[x][y], Y[x][y] = transform((X[x][y], Y[x][y]))
+        return X, Y, zi
+
 
 def plot_colorbar(cax=None, cmap='default', ticks=None, clim=None, vlim=None,
                   label=None, tick_fontsize=14, label_fontsize=18, decimals=3,
@@ -939,7 +943,7 @@ def plot_colormap_components(cmap):
     r = cmap._segmentdata['red'](x)
     g = cmap._segmentdata['green'](x)
     b = cmap._segmentdata['blue'](x)
-    k = .3*r + .59*g + .11*b
+    k = .3 * r + .59 * g + .11 * b
     # truncate
     r.clip(0, 1, out=r)
     g.clip(0, 1, out=g)
@@ -1135,9 +1139,9 @@ def plot_gridlines(ax=None, c='grey', lw=1, diagonal=False, zorder=2,
     ax.grid()
     # get dashes
     ls = ':'
-    dashes = (lw/2, lw)
+    dashes = (lw / 2, lw)
     # grid
-    #ax.grid(True)
+    # ax.grid(True)
     lines = ax.xaxis.get_gridlines() + ax.yaxis.get_gridlines()
     for l in lines.copy():
         l = l
@@ -1153,7 +1157,8 @@ def plot_gridlines(ax=None, c='grey', lw=1, diagonal=False, zorder=2,
         min_yi, max_yi = ax.get_ylim()
         diag_min = max(min_xi, min_yi)
         diag_max = min(max_xi, max_yi)
-        ax.plot([diag_min, diag_max], [diag_min, diag_max], c=c, ls=':', lw=lw, zorder=zorder, dashes=dashes)
+        ax.plot([diag_min, diag_max], [diag_min, diag_max], c=c,
+                ls=':', lw=lw, zorder=zorder, dashes=dashes)
 
 
 def plot_margins(fig=None, inches=1., centers=True, edges=True):
@@ -1177,21 +1182,30 @@ def plot_margins(fig=None, inches=1., centers=True, edges=True):
     if fig is None:
         fig = plt.gcf()
     size = fig.get_size_inches()  # [H, V]
-    trans_vert = inches/size[0]
-    left = matplotlib.lines.Line2D([trans_vert, trans_vert], [0, 1], transform=fig.transFigure, figure=fig)
-    right = matplotlib.lines.Line2D([1-trans_vert, 1-trans_vert], [0, 1], transform=fig.transFigure, figure=fig)
-    trans_horz = inches/size[1]
-    bottom = matplotlib.lines.Line2D([0, 1], [trans_horz, trans_horz], transform=fig.transFigure, figure=fig)
-    top = matplotlib.lines.Line2D([0, 1], [1-trans_horz, 1-trans_horz], transform=fig.transFigure, figure=fig)
+    trans_vert = inches / size[0]
+    left = matplotlib.lines.Line2D([trans_vert, trans_vert], [0, 1],
+                                   transform=fig.transFigure, figure=fig)
+    right = matplotlib.lines.Line2D([1 - trans_vert, 1 - trans_vert],
+                                    [0, 1], transform=fig.transFigure, figure=fig)
+    trans_horz = inches / size[1]
+    bottom = matplotlib.lines.Line2D(
+        [0, 1], [trans_horz, trans_horz], transform=fig.transFigure, figure=fig)
+    top = matplotlib.lines.Line2D([0, 1], [1 - trans_horz, 1 - trans_horz],
+                                  transform=fig.transFigure, figure=fig)
     fig.lines.extend([left, right, bottom, top])
     if centers:
-        vert = matplotlib.lines.Line2D([0.5, 0.5], [0, 1], transform=fig.transFigure, figure=fig, c='r')
-        horiz = matplotlib.lines.Line2D([0, 1], [0.5, 0.5], transform=fig.transFigure, figure=fig, c='r')
+        vert = matplotlib.lines.Line2D(
+            [0.5, 0.5], [0, 1], transform=fig.transFigure, figure=fig, c='r')
+        horiz = matplotlib.lines.Line2D(
+            [0, 1], [0.5, 0.5], transform=fig.transFigure, figure=fig, c='r')
         fig.lines.extend([vert, horiz])
     if edges:
-        left = matplotlib.lines.Line2D([0, 0], [0, 1], transform=fig.transFigure, figure=fig, c='k')
-        right = matplotlib.lines.Line2D([1, 1], [0, 1], transform=fig.transFigure, figure=fig, c='k')
-        bottom = matplotlib.lines.Line2D([0, 1], [0, 0], transform=fig.transFigure, figure=fig, c='k')
+        left = matplotlib.lines.Line2D(
+            [0, 0], [0, 1], transform=fig.transFigure, figure=fig, c='k')
+        right = matplotlib.lines.Line2D(
+            [1, 1], [0, 1], transform=fig.transFigure, figure=fig, c='k')
+        bottom = matplotlib.lines.Line2D(
+            [0, 1], [0, 0], transform=fig.transFigure, figure=fig, c='k')
         top = matplotlib.lines.Line2D([0, 1], [1, 1], transform=fig.transFigure, figure=fig, c='k')
         fig.lines.extend([left, right, bottom, top])
 
@@ -1212,9 +1226,9 @@ def subplots_adjust(fig=None, inches=1):
     if fig is None:
         fig = plt.gcf()
     size = fig.get_size_inches()
-    vert = inches/size[0]
-    horz = inches/size[1]
-    fig.subplots_adjust(vert, horz, 1-vert, 1-horz)
+    vert = inches / size[0]
+    horz = inches / size[1]
+    fig.subplots_adjust(vert, horz, 1 - vert, 1 - horz)
 
 
 def stitch_to_animation(images, outpath=None, duration=0.5, palettesize=256,
@@ -1242,7 +1256,8 @@ def stitch_to_animation(images, outpath=None, duration=0.5, palettesize=256,
     try:
         import imageio
     except ImportError:
-        raise ImportError('WrightTools.artists.stitch_to_animation requires imageio - https://imageio.github.io/')
+        raise ImportError(
+            'WrightTools.artists.stitch_to_animation requires imageio - https://imageio.github.io/')
     # parse filename
     if outpath is None:
         outpath = os.path.splitext(images[0])[0] + '.gif'
@@ -1292,29 +1307,29 @@ invisible = ['#FFFFFF',  # white
 # http://dx.doi.org/10.1109/VISUAL.2002.1183788
 c = mplcolors.ColorConverter().to_rgb
 isoluminant = make_colormap([
-    c(r_[1.000,1.000,1.000]), c(r_[0.847,0.057,0.057]), 1/6.,
-    c(r_[0.847,0.057,0.057]), c(r_[0.527,0.527,0.000]), 2/6.,
-    c(r_[0.527,0.527,0.000]), c(r_[0.000,0.592,0.000]), 3/6.,
-    c(r_[0.000,0.592,0.000]), c(r_[0.000,0.559,0.559]), 4/6.,
-    c(r_[0.000,0.559,0.559]), c(r_[0.316,0.316,0.991]), 5/6.,
-    c(r_[0.316,0.316,0.991]), c(r_[0.718,0.000,0.718])],
+    c(r_[1.000, 1.000, 1.000]), c(r_[0.847, 0.057, 0.057]), 1 / 6.,
+    c(r_[0.847, 0.057, 0.057]), c(r_[0.527, 0.527, 0.000]), 2 / 6.,
+    c(r_[0.527, 0.527, 0.000]), c(r_[0.000, 0.592, 0.000]), 3 / 6.,
+    c(r_[0.000, 0.592, 0.000]), c(r_[0.000, 0.559, 0.559]), 4 / 6.,
+    c(r_[0.000, 0.559, 0.559]), c(r_[0.316, 0.316, 0.991]), 5 / 6.,
+    c(r_[0.316, 0.316, 0.991]), c(r_[0.718, 0.000, 0.718])],
     name='isoluminant')
 
 isoluminant2 = make_colormap([
-    c(r_[1.000,1.000,1.000]), c(r_[0.718,0.000,0.718]), 1/6.,
-    c(r_[0.718,0.000,0.718]), c(r_[0.316,0.316,0.991]), 2/6.,
-    c(r_[0.316,0.316,0.991]), c(r_[0.000,0.559,0.559]), 3/6.,
-    c(r_[0.000,0.559,0.559]), c(r_[0.000,0.592,0.000]), 4/6.,
-    c(r_[0.000,0.592,0.000]), c(r_[0.527,0.527,0.000]), 5/6.,
-    c(r_[0.527,0.527,0.000]), c(r_[0.847,0.057,0.057])],
+    c(r_[1.000, 1.000, 1.000]), c(r_[0.718, 0.000, 0.718]), 1 / 6.,
+    c(r_[0.718, 0.000, 0.718]), c(r_[0.316, 0.316, 0.991]), 2 / 6.,
+    c(r_[0.316, 0.316, 0.991]), c(r_[0.000, 0.559, 0.559]), 3 / 6.,
+    c(r_[0.000, 0.559, 0.559]), c(r_[0.000, 0.592, 0.000]), 4 / 6.,
+    c(r_[0.000, 0.592, 0.000]), c(r_[0.527, 0.527, 0.000]), 5 / 6.,
+    c(r_[0.527, 0.527, 0.000]), c(r_[0.847, 0.057, 0.057])],
     name='isoluminant2')
 
 isoluminant3 = make_colormap([
-    c(r_[1.000,1.000,1.000]), c(r_[0.316,0.316,0.991]), 1/5.,
-    c(r_[0.316,0.316,0.991]), c(r_[0.000,0.559,0.559]), 2/5.,
-    c(r_[0.000,0.559,0.559]), c(r_[0.000,0.592,0.000]), 3/5.,
-    c(r_[0.000,0.592,0.000]), c(r_[0.527,0.527,0.000]), 4/5.,
-    c(r_[0.527,0.527,0.000]), c(r_[0.847,0.057,0.057])],
+    c(r_[1.000, 1.000, 1.000]), c(r_[0.316, 0.316, 0.991]), 1 / 5.,
+    c(r_[0.316, 0.316, 0.991]), c(r_[0.000, 0.559, 0.559]), 2 / 5.,
+    c(r_[0.000, 0.559, 0.559]), c(r_[0.000, 0.592, 0.000]), 3 / 5.,
+    c(r_[0.000, 0.592, 0.000]), c(r_[0.527, 0.527, 0.000]), 4 / 5.,
+    c(r_[0.527, 0.527, 0.000]), c(r_[0.847, 0.057, 0.057])],
     name='isoluminant3')
 
 signed = ['#0000FF',  # blue
@@ -1382,7 +1397,8 @@ colormaps = collections.OrderedDict()
 colormaps['CMRmap'] = plt.get_cmap('CMRmap_r')
 colormaps['cubehelix'] = plt.get_cmap('cubehelix_r')
 colormaps['default'] = cubehelix
-colormaps['experimental'] = mplcolors.LinearSegmentedColormap.from_list('experimental', experimental)
+colormaps['experimental'] = mplcolors.LinearSegmentedColormap.from_list(
+    'experimental', experimental)
 colormaps['flag'] = plt.get_cmap('flag')
 colormaps['earth'] = plt.get_cmap('gist_earth')
 colormaps['gnuplot2'] = plt.get_cmap('gnuplot2_r')
@@ -1408,7 +1424,7 @@ colormaps['wright'] = mplcolors.LinearSegmentedColormap.from_list('wright', wrig
 
 # enforce grey as 'bad' value for colormaps
 for cmap in colormaps.values():
-    cmap.set_bad([0.75]*3, 1)
+    cmap.set_bad([0.75] * 3, 1)
 
 
 # a nice set of line colors
@@ -1420,12 +1436,12 @@ overline_colors = ['#CCFF00', '#FE4EDA',  '#FF6600', '#00FFBF', '#00B7EB']
 
 class mpl_1D:
 
-    def __init__(self, data, xaxis = 0, at = {}, verbose = True):
+    def __init__(self, data, xaxis=0, at={}, verbose=True):
         # import data
         self.data = data
-        self.chopped = self.data.chop(xaxis, at=at, verbose = False)
+        self.chopped = self.data.chop(xaxis, at=at, verbose=False)
         if verbose:
-            print('mpl_1D recieved data to make %d plots'%len(self.chopped))
+            print('mpl_1D recieved data to make %d plots' % len(self.chopped))
         # defaults
         self.font_size = 15
 
@@ -1460,7 +1476,7 @@ class mpl_1D:
                     os.mkdir(folder_name)
                     output_folder = folder_name
         # chew through image generation
-        outfiles = ['']*len(self.chopped)
+        outfiles = [''] * len(self.chopped)
         for i in range(len(self.chopped)):
             if fig and autosave:
                 plt.close(fig)
@@ -1479,9 +1495,9 @@ class mpl_1D:
             # variable marker lines
             if lines:
                 for constant in constants:
-                        if constant.units_kind == 'energy':
-                            if axis.units == constant.units:
-                                plt.axvline(constant.points, color='k', linewidth=4, alpha=0.25)
+                    if constant.units_kind == 'energy':
+                        if axis.units == constant.units:
+                            plt.axvline(constant.points, color='k', linewidth=4, alpha=0.25)
             # limits
             if local:
                 pass
@@ -1515,12 +1531,12 @@ class mpl_1D:
 
 class mpl_2D:
 
-    def __init__(self, data, xaxis = 1, yaxis = 0, at = {}, verbose = True):
+    def __init__(self, data, xaxis=1, yaxis=0, at={}, verbose=True):
         # import data
         self.data = data
         self.chopped = self.data.chop(yaxis, xaxis, at=at, verbose=False)
         if verbose:
-            print('mpl_2D recieved data to make %d plots'%len(self.chopped))
+            print('mpl_2D recieved data to make %d plots' % len(self.chopped))
         # defaults
         self._xsideplot = False
         self._ysideplot = False
@@ -1528,13 +1544,13 @@ class mpl_2D:
         self._ysideplotdata = []
         self._onplotdata = []
 
-    def get_lims(self,transform=None):
+    def get_lims(self, transform=None):
         '''
         Find plot limits using transform.
-        
+
         Assumes that the corners of the axes are also the most extreme points
         of the transformed axes.
-        
+
         Parameters
         ----------
         axis1 : axis
@@ -1543,7 +1559,7 @@ class mpl_2D:
             The x[1] axis
         transform: callable (optoinal)
             The transform function, accepts a tuple, ouptus transformed tuple
-        
+
         Returns
         ----------
         xlim : tuple of floats
@@ -1551,20 +1567,20 @@ class mpl_2D:
         ylim : tuple of floats
             (min_y, max_y)
         '''
-        if not type(transform)==type(None):
+        if not type(transform) == type(None):
             x_corners = []
             y_corners = []
-            for idx1 in [-1,1]:
-                for idx2 in [-1,1]:
-                    x,y = transform((self.xaxis.points[idx1],self.yaxis.points[idx2]))
+            for idx1 in [-1, 1]:
+                for idx2 in [-1, 1]:
+                    x, y = transform((self.xaxis.points[idx1], self.yaxis.points[idx2]))
                     x_corners.append(x)
                     y_corners.append(y)
-            xlim = (min(x_corners),max(x_corners))
-            ylim = (min(y_corners),max(y_corners))
+            xlim = (min(x_corners), max(x_corners))
+            ylim = (min(y_corners), max(y_corners))
         else:
-            xlim = (self.xaxis.points.min(),self.xaxis.points.max())
-            ylim = (self.yaxis.points.min(),self.yaxis.points.max())
-        return xlim,ylim
+            xlim = (self.xaxis.points.min(), self.xaxis.points.max())
+            ylim = (self.yaxis.points.min(), self.yaxis.points.max())
+        return xlim, ylim
 
     def sideplot(self, data, x=True, y=True):
         data = data.copy()
@@ -1574,14 +1590,16 @@ class mpl_2D:
                 self._xsideplot = True
                 self._xsideplotdata.append([data.axes[0].points, data.channels[0].values])
             else:
-                print('given data ({0}), does not aggree with x ({1})'.format(data.axes[0].units_kind, self.chopped[0].axes[1].units_kind))
+                print('given data ({0}), does not aggree with x ({1})'.format(
+                    data.axes[0].units_kind, self.chopped[0].axes[1].units_kind))
         if y:
             if self.chopped[0].axes[0].units_kind == data.axes[0].units_kind:
                 data.convert(self.chopped[0].axes[0].units)
                 self._ysideplot = True
                 self._ysideplotdata.append([data.axes[0].points, data.channels[0].values])
             else:
-                print('given data ({0}), does not aggree with y ({1})'.format(data.axes[0].units_kind, self.chopped[0].axes[0].units_kind))
+                print('given data ({0}), does not aggree with y ({1})'.format(
+                    data.axes[0].units_kind, self.chopped[0].axes[0].units_kind))
 
     def onplot(self, xi, yi, c='k', lw=5, alpha=0.3, **kwargs):
         kwargs['c'] = c
@@ -1592,7 +1610,7 @@ class mpl_2D:
     def plot(self, channel=0,
              contours=0, pixelated=True, lines=True, cmap='automatic',
              facecolor='w', dynamic_range=False, local=False,
-             contours_local=True, normalize_slices='both',  xbin= False,
+             contours_local=True, normalize_slices='both',  xbin=False,
              ybin=False, xlim=None, ylim=None, autosave=False,
              output_folder=None, fname=None, verbose=True,
              transform=None, contour_thickness=None):
@@ -1672,7 +1690,7 @@ class mpl_2D:
                     os.mkdir(folder_name)
                     output_folder = folder_name
         # chew through image generation
-        outfiles = ['']*len(self.chopped)
+        outfiles = [''] * len(self.chopped)
         for i in range(len(self.chopped)):
             # get data to plot ------------------------------------------------
             current_chop = self.chopped[i]
@@ -1694,7 +1712,7 @@ class mpl_2D:
                 numerator = (zi - nmin)
                 denominator = (maxes - nmin)
                 for j in range(zi.shape[0]):
-                    zi[j] = numerator[j]/denominator[j]
+                    zi[j] = numerator[j] / denominator[j]
                 channel.zmax = zi.max()
                 channel.zmin = zi.min()
                 channel.znull = 0
@@ -1704,44 +1722,47 @@ class mpl_2D:
                 numerator = (zi - nmin)
                 denominator = (maxes - nmin)
                 for j in range(zi.shape[1]):
-                    zi[:,j] = numerator[:,j] / denominator[j]
+                    zi[:, j] = numerator[:, j] / denominator[j]
                 channel.zmax = zi.max()
                 channel.zmin = zi.min()
                 channel.znull = 0
             # create figure ---------------------------------------------------
             if fig and autosave:
                 plt.close(fig)
-                
+
             find_xlim = type(xlim) == type(None)
             find_ylim = type(ylim) == type(None)
             if find_ylim or find_xlim:
                 if find_ylim and find_xlim:
-                    xlim,ylim = self.get_lims(transform)
+                    xlim, ylim = self.get_lims(transform)
                 elif find_ylim:
-                    toss,ylim = self.get_lims(transform)
+                    toss, ylim = self.get_lims(transform)
                 else:
-                    xlim,toss = self.get_lims(transform)
-            
+                    xlim, toss = self.get_lims(transform)
+
             if self.xaxis.units == self.yaxis.units:
                 xr = xlim[1] - xlim[0]
                 yr = ylim[1] - ylim[0]
-                aspect = np.abs(yr/xr)
-                if 3 < aspect or aspect < 1/3.:
+                aspect = np.abs(yr / xr)
+                if 3 < aspect or aspect < 1 / 3.:
                     # TODO: raise warning here
-                    aspect = np.clip(aspect, 1/3., 3.)
+                    aspect = np.clip(aspect, 1 / 3., 3.)
             else:
                 aspect = 1
-            fig, gs = create_figure(width='single', nrows=1, cols=[1, 'cbar'], aspects=[[[0, 0], aspect]])
+            fig, gs = create_figure(width='single', nrows=1, cols=[
+                                    1, 'cbar'], aspects=[[[0, 0], aspect]])
             subplot_main = plt.subplot(gs[0])
             subplot_main.patch.set_facecolor(facecolor)
             # levels ----------------------------------------------------------
             if channel.signed:
                 if local:
                     print('signed local')
-                    limit = max(abs(channel.znull - np.nanmin(zi)), abs(channel.znull - np.nanmax(zi)))
+                    limit = max(abs(channel.znull - np.nanmin(zi)),
+                                abs(channel.znull - np.nanmax(zi)))
                 else:
                     if dynamic_range:
-                        limit = min(abs(channel.znull - channel.zmin), abs(channel.znull - channel.zmax))
+                        limit = min(abs(channel.znull - channel.zmin),
+                                    abs(channel.znull - channel.zmax))
                     else:
                         limit = channel.zmag
                 if np.isnan(limit):
@@ -1770,22 +1791,23 @@ class mpl_2D:
             # fill in main data environment
             # always plot pcolormesh
             if pixelated:
-                X, Y, Z = pcolor_helper(self.xaxis.points, self.yaxis.points, zi,transform=transform)
+                X, Y, Z = pcolor_helper(self.xaxis.points, self.yaxis.points,
+                                        zi, transform=transform)
                 cax = plt.pcolormesh(X, Y, Z, cmap=mycm,
-                                 vmin=levels.min(), vmax=levels.max())
+                                     vmin=levels.min(), vmax=levels.max())
             plt.xlim(self.xaxis.points.min(), self.xaxis.points.max())
             plt.ylim(self.yaxis.points.min(), self.yaxis.points.max())
-            # overlap with contourf if not pixelated            
+            # overlap with contourf if not pixelated
             if not pixelated:
                 X, Y = np.meshgrid(self.xaxis.points, self.yaxis.points)
-                if not type(transform)==type(None):
-                    for (x,y), value in np.ndenumerate(X):
-                        X[x][y],Y[x][y] = transform((X[x][y],Y[x][y]))
-                #if not type(transform)==type(None):
+                if not type(transform) == type(None):
+                    for (x, y), value in np.ndenumerate(X):
+                        X[x][y], Y[x][y] = transform((X[x][y], Y[x][y]))
+                # if not type(transform)==type(None):
                 #    X,Y,Z = self.sort_points(X,Y,zi)
                 cax = subplot_main.contourf(X, Y, zi,
                                             levels, cmap=mycm)
-                
+
             plt.xticks(rotation=45, fontsize=14)
             plt.yticks(fontsize=14)
             plt.xlabel(self.xaxis.get_label(), fontsize=18)
@@ -1801,15 +1823,15 @@ class mpl_2D:
             # variable marker lines -------------------------------------------
             if lines:
                 for constant in constants:
-                        if constant.units_kind == 'energy':
-                            #x axis
-                            if self.xaxis.units == constant.units:
-                                plt.axvline(constant.points, color='k', linewidth=4, alpha=0.25)
-                            #y axis
-                            if self.yaxis.units == constant.units:
-                                plt.axhline(constant.points, color='k', linewidth=4, alpha=0.25)
+                    if constant.units_kind == 'energy':
+                        # x axis
+                        if self.xaxis.units == constant.units:
+                            plt.axvline(constant.points, color='k', linewidth=4, alpha=0.25)
+                        # y axis
+                        if self.yaxis.units == constant.units:
+                            plt.axhline(constant.points, color='k', linewidth=4, alpha=0.25)
             # grid ------------------------------------------------------------
-            plt.grid(b = True)
+            plt.grid(b=True)
             if self.xaxis.units == self.yaxis.units:
                 # add diagonal line
                 if xlim:
@@ -1822,19 +1844,20 @@ class mpl_2D:
                     y = self.yaxis.points
                 diag_min = max(min(x), min(y))
                 diag_max = min(max(x), max(y))
-                plt.plot([diag_min, diag_max],[diag_min, diag_max],'k:')
+                plt.plot([diag_min, diag_max], [diag_min, diag_max], 'k:')
             # contour lines ---------------------------------------------------
             if contours:
                 if contours_local:
                     # force top and bottom contour to be just outside of data range
                     # add two contours
-                    contours_levels = np.linspace(channel.znull-1e-10, np.nanmax(zi)+1e-10, contours+2)
+                    contours_levels = np.linspace(
+                        channel.znull - 1e-10, np.nanmax(zi) + 1e-10, contours + 2)
                 else:
                     contours_levels = contours
-                if contour_thickness==None:
-                    subplot_main.contour(X,Y,zi,contours_levels,colors = 'k')
+                if contour_thickness == None:
+                    subplot_main.contour(X, Y, zi, contours_levels, colors='k')
                 else:
-                    subplot_main.contour(X,Y,zi,contours_levels,colors = 'k',
+                    subplot_main.contour(X, Y, zi, contours_levels, colors='k',
                                          linewidths=contour_thickness)
             # finish main subplot ---------------------------------------------
             if xlim:
@@ -1853,24 +1876,24 @@ class mpl_2D:
                 axCorrx.set_adjustable('box-forced')
                 plt.setp(axCorrx.get_xticklabels(), visible=False)
                 plt.setp(axCorrx.get_yticklabels(), visible=False)
-                plt.grid(b = True)
+                plt.grid(b=True)
                 if channel.signed:
-                    axCorrx.set_ylim([-1.1,1.1])
+                    axCorrx.set_ylim([-1.1, 1.1])
                 else:
-                    axCorrx.set_ylim([0,1.1])
+                    axCorrx.set_ylim([0, 1.1])
                 # bin
                 if xbin:
                     x_ax_int = np.nansum(zi, axis=0) - channel.znull * len(self.yaxis.points)
-                    x_ax_int[x_ax_int==0] = np.nan
+                    x_ax_int[x_ax_int == 0] = np.nan
                     # normalize (min is a pixel)
                     xmax = max(np.abs(x_ax_int))
                     x_ax_int = x_ax_int / xmax
-                    axCorrx.plot(self.xaxis.points,x_ax_int, lw = 2)
+                    axCorrx.plot(self.xaxis.points, x_ax_int, lw=2)
                     axCorrx.set_xlim([self.xaxis.points.min(), self.xaxis.points.max()])
                 # data
                 if self._xsideplot:
                     for s_xi, s_zi in self._xsideplotdata:
-                        xlim =  axCorrx.get_xlim()
+                        xlim = axCorrx.get_xlim()
                         min_index = np.argmin(abs(s_xi - min(xlim)))
                         max_index = np.argmin(abs(s_xi - max(xlim)))
                         s_zi_in_range = s_zi[min(min_index, max_index):max(min_index, max_index)]
@@ -1879,37 +1902,38 @@ class mpl_2D:
                         #s_zi = s_zi - min(s_zi_in_range)
                         s_zi_in_range = s_zi[min(min_index, max_index):max(min_index, max_index)]
                         s_zi = s_zi / max(s_zi_in_range)
-                        axCorrx.plot(s_xi, s_zi, lw = 2)
+                        axCorrx.plot(s_xi, s_zi, lw=2)
                 # line
                 if lines:
                     for constant in constants:
                         if constant.units_kind == 'energy':
                             if self.xaxis.units == constant.units:
-                                axCorrx.axvline(constant.points, color = 'k', linewidth = 4, alpha = 0.25)
+                                axCorrx.axvline(constant.points, color='k',
+                                                linewidth=4, alpha=0.25)
             if ybin or self._ysideplot:
                 axCorry = divider.append_axes('right', 0.75, pad=0.0, sharey=subplot_main)
                 axCorry.autoscale(False)
                 axCorry.set_adjustable('box-forced')
                 plt.setp(axCorry.get_xticklabels(), visible=False)
                 plt.setp(axCorry.get_yticklabels(), visible=False)
-                plt.grid(b = True)
+                plt.grid(b=True)
                 if channel.signed:
-                    axCorry.set_xlim([-1.1,1.1])
+                    axCorry.set_xlim([-1.1, 1.1])
                 else:
-                    axCorry.set_xlim([0,1.1])
+                    axCorry.set_xlim([0, 1.1])
                 # bin
                 if ybin:
                     y_ax_int = np.nansum(zi, axis=1) - channel.znull * len(self.xaxis.points)
-                    y_ax_int[y_ax_int==0] = np.nan
+                    y_ax_int[y_ax_int == 0] = np.nan
                     # normalize (min is a pixel)
                     ymax = max(np.abs(y_ax_int))
                     y_ax_int = y_ax_int / ymax
-                    axCorry.plot(y_ax_int, self.yaxis.points, lw = 2)
+                    axCorry.plot(y_ax_int, self.yaxis.points, lw=2)
                     axCorry.set_ylim([self.yaxis.points.min(), self.yaxis.points.max()])
                 # data
                 if self._ysideplot:
                     for s_xi, s_zi in self._ysideplotdata:
-                        xlim =  axCorry.get_ylim()
+                        xlim = axCorry.get_ylim()
                         min_index = np.argmin(abs(s_xi - min(xlim)))
                         max_index = np.argmin(abs(s_xi - max(xlim)))
                         s_zi_in_range = s_zi[min(min_index, max_index):max(min_index, max_index)]
@@ -1918,23 +1942,26 @@ class mpl_2D:
                         #s_zi = s_zi - min(s_zi_in_range)
                         s_zi_in_range = s_zi[min(min_index, max_index):max(min_index, max_index)]
                         s_zi = s_zi / max(s_zi_in_range)
-                        axCorry.plot(s_zi, s_xi, lw = 2)
+                        axCorry.plot(s_zi, s_xi, lw=2)
                 # line
                 if lines:
                     for constant in constants:
                         if constant.units_kind == 'energy':
                             if self.yaxis.units == constant.units:
-                                axCorry.axvline(constant.points, color = 'k', linewidth = 4, alpha = 0.25)
+                                axCorry.axvline(constant.points, color='k',
+                                                linewidth=4, alpha=0.25)
             # onplot ----------------------------------------------------------
             for xi, yi, kwargs in self._onplotdata:
                 subplot_main.plot(xi, yi, **kwargs)
             # colorbar --------------------------------------------------------
             subplot_cb = plt.subplot(gs[1])
             cbar_ticks = np.linspace(levels.min(), levels.max(), 11)
-            if cbar_ticks.max()==1.0:
-                cbar = plt.colorbar(cax, cax=subplot_cb, cmap=mycm, ticks=cbar_ticks, format='%.1f')
+            if cbar_ticks.max() == 1.0:
+                cbar = plt.colorbar(cax, cax=subplot_cb, cmap=mycm,
+                                    ticks=cbar_ticks, format='%.1f')
             else:
-                cbar = plt.colorbar(cax, cax=subplot_cb, cmap=mycm, ticks=cbar_ticks, format='%.3f')
+                cbar = plt.colorbar(cax, cax=subplot_cb, cmap=mycm,
+                                    ticks=cbar_ticks, format='%.3f')
             cbar.set_label(channel.name, fontsize=18)
             cbar.ax.tick_params(labelsize=14)
             # title -----------------------------------------------------------
@@ -1973,8 +2000,8 @@ class absorbance:
 
         self.data = data
 
-    def plot(self, channel_index = 0, xlim = None, ylim = None,
-             yticks = True, derivative = True, n_smooth = 10,):
+    def plot(self, channel_index=0, xlim=None, ylim=None,
+             yticks=True, derivative=True, n_smooth=10,):
 
         # prepare plot environment --------------------------------------------
 
@@ -1983,12 +2010,13 @@ class absorbance:
         if derivative:
             aspects = [[[0, 0], 0.35], [[1, 0], 0.35]]
             hspace = 0.1
-            fig, gs = create_figure(width='single', cols=[1], hspace=hspace, nrows=2, aspects=aspects)
+            fig, gs = create_figure(width='single', cols=[
+                                    1], hspace=hspace, nrows=2, aspects=aspects)
             self.ax1 = plt.subplot(gs[0])
             plt.ylabel('OD', fontsize=18)
             plt.grid()
             plt.setp(self.ax1.get_xticklabels(), visible=False)
-            self.ax2 = plt.subplot(gs[1], sharex = self.ax1)
+            self.ax2 = plt.subplot(gs[1], sharex=self.ax1)
             plt.grid()
             plt.ylabel('2nd der.', fontsize=18)
         else:
@@ -2015,24 +2043,24 @@ class absorbance:
                 min_index = np.argmin(abs(xi - min(xlim)))
                 max_index = np.argmin(abs(xi - max(xlim)))
 
-                zi_truncated = zi[min(min_index,max_index):max(min_index, max_index)]
+                zi_truncated = zi[min(min_index, max_index):max(min_index, max_index)]
                 zi -= zi_truncated.min()
 
-                zi_truncated = zi[min(min_index,max_index):max(min_index, max_index)]
+                zi_truncated = zi[min(min_index, max_index):max(min_index, max_index)]
                 zi /= zi_truncated.max()
 
             # plot absorbance -------------------------------------------------
 
-            self.ax1.plot(xi, zi, lw = 2)
+            self.ax1.plot(xi, zi, lw=2)
 
             # now plot 2nd derivative -----------------------------------------
 
             if derivative:
                 # compute second derivative
-                xi2, zi2= self._smooth(np.array([xi,zi]), n_smooth)
-                plotData = wt_kit.diff(xi2, zi2, order = 2)
+                xi2, zi2 = self._smooth(np.array([xi, zi]), n_smooth)
+                plotData = wt_kit.diff(xi2, zi2, order=2)
                 # plot the data!
-                self.ax2.plot(plotData[0], plotData[1], lw = 2)
+                self.ax2.plot(plotData[0], plotData[1], lw=2)
                 self.ax2.grid(b=True)
                 plt.xlabel(data.axes[0].get_label(), fontsize=18)
 
@@ -2042,16 +2070,17 @@ class absorbance:
 
         # ticks ---------------------------------------------------------------
 
-        if not yticks: self.ax1.get_yaxis().set_ticks([])
+        if not yticks:
+            self.ax1.get_yaxis().set_ticks([])
         if derivative:
             self.ax2.get_yaxis().set_ticks([])
-            self.ax2.axhline(0, color = 'k', ls = ':')
+            self.ax2.axhline(0, color='k', ls=':')
 
         # title ---------------------------------------------------------------
 
         if len(self.data) == 1:  # only attempt this if we are plotting one data object
             title_text = self.data[0].name
-            plt.suptitle(title_text, fontsize = self.font_size)
+            plt.suptitle(title_text, fontsize=self.font_size)
 
         # finish --------------------------------------------------------------
 
@@ -2061,7 +2090,7 @@ class absorbance:
                 min_index = np.argmin(abs(xi - min(xlim)))
                 max_index = np.argmin(abs(xi - max(xlim)))
                 zi_truncated = zi[min_index:max_index]
-                extra = (zi_truncated.max() - zi_truncated.min())*0.1
+                extra = (zi_truncated.max() - zi_truncated.min()) * 0.1
                 axis.set_ylim(zi_truncated.min() - extra, zi_truncated.max() + extra)
 
         if ylim:
@@ -2072,11 +2101,11 @@ class absorbance:
         data is an array of type [xlis,ylis] \n
         smooth to prevent 2nd derivative from being noisy
         '''
-        for i in range(n, len(dat1[1])-n):
+        for i in range(n, len(dat1[1]) - n):
             # change the x value to the average
-            window = dat1[1][i-n:i+n].copy()
+            window = dat1[1][i - n:i + n].copy()
             dat1[1][i] = window.mean()
-        return dat1[:][:,n:-n]
+        return dat1[:][:, n:-n]
 
 
 class difference_2D():
@@ -2101,26 +2130,27 @@ class difference_2D():
             print('  subtrahend axes -', self.subtrahend.axis_names)
             raise RuntimeError('axes incompataible')
         # transpose subrahend to agree with minuend
-        transpose_order = [self.minuend.axis_names.index(name) for name in self.subtrahend.axis_names]
+        transpose_order = [self.minuend.axis_names.index(
+            name) for name in self.subtrahend.axis_names]
         self.subtrahend.transpose(transpose_order, verbose=False)
         # map subtrahend axes onto minuend axes
         for i in range(len(self.minuend.axes)):
             self.subtrahend.axes[i].convert(self.minuend.axes[i].units)
             self.subtrahend.map_axis(i, self.minuend.axes[i].points)
         # chop
-        self.minuend_chopped = self.minuend.chop(yaxis, xaxis, at=at, verbose = False)
-        self.subtrahend_chopped = self.subtrahend.chop(yaxis, xaxis, at=at, verbose = False)
+        self.minuend_chopped = self.minuend.chop(yaxis, xaxis, at=at, verbose=False)
+        self.subtrahend_chopped = self.subtrahend.chop(yaxis, xaxis, at=at, verbose=False)
         if verbose:
-            print('difference_2D recieved data to make %d plots'%len(self.minuend_chopped))
+            print('difference_2D recieved data to make %d plots' % len(self.minuend_chopped))
         # defaults
         self.font_size = 18
 
     def plot(self, channel_index=0,
-         contours=9, pixelated=True, cmap='default', facecolor='grey',
-         dynamic_range = False, local = False, contours_local = True,
-         xlim=None, ylim=None,
-         autosave=False, output_folder=None, fname=None,
-         verbose=True):
+             contours=9, pixelated=True, cmap='default', facecolor='grey',
+             dynamic_range=False, local=False, contours_local=True,
+             xlim=None, ylim=None,
+             autosave=False, output_folder=None, fname=None,
+             verbose=True):
         '''
         set contours to zero to turn off
 
@@ -2187,7 +2217,7 @@ class difference_2D():
 
             # main plot -------------------------------------------------------
 
-            #get colormap
+            # get colormap
             mycm = colormaps[cmap]
             mycm.set_bad(facecolor)
             mycm.set_under(facecolor)
@@ -2210,7 +2240,7 @@ class difference_2D():
 
                 plt.subplot(gs[j])
 
-                #fill in main data environment
+                # fill in main data environment
                 if pixelated:
                     xi, yi, zi = pcolor_helper(xaxis.points, yaxis.points, zi)
                     cax = plt.pcolormesh(xi, yi, zi, cmap=mycm,
@@ -2221,13 +2251,13 @@ class difference_2D():
                     cax = subplot_main.contourf(xaxis.points, yaxis.points, zi,
                                                 levels, cmap=mycm)
 
-                plt.xticks(rotation = 45)
+                plt.xticks(rotation=45)
                 #plt.xlabel(xaxis.get_label(), fontsize = self.font_size)
                 #plt.ylabel(yaxis.get_label(), fontsize = self.font_size)
 
                 # grid --------------------------------------------------------
 
-                plt.grid(b = True)
+                plt.grid(b=True)
 
                 if xaxis.units == yaxis.units:
                     # add diagonal line
@@ -2242,7 +2272,7 @@ class difference_2D():
 
                     diag_min = max(min(x), min(y))
                     diag_max = min(max(x), max(y))
-                    plt.plot([diag_min, diag_max],[diag_min, diag_max],'k:')
+                    plt.plot([diag_min, diag_max], [diag_min, diag_max], 'k:')
 
                 # contour lines -----------------------------------------------
 
@@ -2250,11 +2280,12 @@ class difference_2D():
                     if contours_local:
                         # force top and bottom contour to be just outside of data range
                         # add two contours
-                        contours_levels = np.linspace(channel.znull-1e-10, np.nanmax(zi)+1e-10, contours+2)
+                        contours_levels = np.linspace(
+                            channel.znull - 1e-10, np.nanmax(zi) + 1e-10, contours + 2)
                     else:
                         contours_levels = contours
                     plt.contour(xaxis.points, yaxis.points, zi,
-                                contours_levels, colors = 'k')
+                                contours_levels, colors='k')
 
                 # finish main subplot -----------------------------------------
 
@@ -2267,7 +2298,6 @@ class difference_2D():
                 else:
                     subplot_main.set_ylim(yaxis.points[0], yaxis.points[-1])
 
-
             # colorbar --------------------------------------------------------
 
             subplot_cb = plt.subplot(gs[2])
@@ -2276,12 +2306,13 @@ class difference_2D():
 
             # difference ------------------------------------------------------
 
-            #get colormap
+            # get colormap
             mycm = colormaps['seismic']
             mycm.set_bad(facecolor)
             mycm.set_under(facecolor)
 
-            dzi = self.minuend_chopped[i].channels[0].values - self.subtrahend_chopped[i].channels[0].values
+            dzi = self.minuend_chopped[i].channels[0].values - \
+                self.subtrahend_chopped[i].channels[0].values
 
             dax = plt.subplot(gs[4])
             plt.subplot(dax)
@@ -2306,15 +2337,15 @@ class difference_2D():
 
             constants_text = '\n' + get_constant_text(constants)
 
-            plt.suptitle(title_text + constants_text, fontsize = self.font_size)
+            plt.suptitle(title_text + constants_text, fontsize=self.font_size)
 
-            plt.figtext(0.03, 0.5, yaxis.get_label(), fontsize = self.font_size, rotation = 90)
-            plt.figtext(0.5, 0.01, xaxis.get_label(), fontsize = self.font_size, horizontalalignment = 'center')
+            plt.figtext(0.03, 0.5, yaxis.get_label(), fontsize=self.font_size, rotation=90)
+            plt.figtext(0.5, 0.01, xaxis.get_label(),
+                        fontsize=self.font_size, horizontalalignment='center')
 
             # cleanup ---------------------------------------------------------
 
-
-            fig.subplots_adjust(left=0.075, right=1-0.075, top=0.90, bottom=0.15)
+            fig.subplots_adjust(left=0.075, right=1 - 0.075, top=0.90, bottom=0.15)
 
             plt.setp(plt.subplot(gs[1]).get_yticklabels(), visible=False)
             plt.setp(plt.subplot(gs[4]).get_yticklabels(), visible=False)
@@ -2327,7 +2358,7 @@ class difference_2D():
                 else:
                     file_name = str(i).zfill(3)
                 fpath = os.path.join(output_folder, file_name + '.png')
-                plt.savefig(fpath, facecolor = 'none')
+                plt.savefig(fpath, facecolor='none')
                 plt.close()
 
                 if verbose:
@@ -2382,7 +2413,7 @@ class PDFAll2DSlices:
         # x sideplot
         sp = add_sideplot(ax, 'x')
         b = np.nansum(zi, axis=0) * len(yaxis.points)
-        b[b==0] = np.nan
+        b[b == 0] = np.nan
         b /= np.nanmax(b)
         sp.plot(xi, b, lw=2, c='b')
         sp.set_xlim([xi.min(), xi.max()])
@@ -2391,8 +2422,8 @@ class PDFAll2DSlices:
             data.convert(xaxis.units, verbose=False)
             sp_xi = data.axes[0].points
             sp_zi = data.channels[channel_index].values
-            sp_zi[sp_xi<xi.min()] = 0
-            sp_zi[sp_xi>xi.max()] = 0
+            sp_zi[sp_xi < xi.min()] = 0
+            sp_zi[sp_xi > xi.max()] = 0
             sp_zi /= np.nanmax(sp_zi)
             sp.plot(sp_xi, sp_zi, lw=2, c=c)
         sp.grid()
@@ -2403,7 +2434,7 @@ class PDFAll2DSlices:
         # y sideplot
         sp = add_sideplot(ax, 'y')
         b = np.nansum(zi, axis=1) * len(xaxis.points)
-        b[b==0] = np.nan
+        b[b == 0] = np.nan
         b /= np.nanmax(b)
         sp.plot(b, yi, lw=2, c='b')
         sp.set_xlim(self.sideplot_limits)
@@ -2412,8 +2443,8 @@ class PDFAll2DSlices:
             data.convert(xaxis.units, verbose=False)
             sp_xi = data.axes[0].points
             sp_zi = data.channels[channel_index].values
-            sp_zi[sp_xi<xi.min()] = 0
-            sp_zi[sp_xi>xi.max()] = 0
+            sp_zi[sp_xi < xi.min()] = 0
+            sp_zi[sp_xi > xi.max()] = 0
             sp_zi /= np.nanmax(sp_zi)
             sp.plot(sp_zi, sp_xi, lw=2, c=c)
         sp.grid()
@@ -2435,12 +2466,14 @@ class PDFAll2DSlices:
         kwargs = {}
         if not self.data_signed:
             kwargs['vmin'] = vmin
-        sps0 = self._fill_plot(xaxis, yaxis, zi, ax0, cax, title=data.name + ' local', yticks=True, **kwargs)
+        sps0 = self._fill_plot(xaxis, yaxis, zi, ax0, cax,
+                               title=data.name + ' local', yticks=True, **kwargs)
         # global
         ax1 = plt.subplot(gs[row_index, 3])
         cax = plt.subplot(gs[row_index, 4])
         zi = data.channels[channel_index].values
-        sps1 = self._fill_plot(xaxis, yaxis, zi, ax1, cax, title=data.name + ' global', vmin=vmin, vmax=vmax, yticks=False)
+        sps1 = self._fill_plot(xaxis, yaxis, zi, ax1, cax, title=data.name +
+                               ' global', vmin=vmin, vmax=vmax, yticks=False)
         return [[ax0, ax1], [sps0, sps1]]
 
     def _label_slide(self, pdf, text):
@@ -2480,7 +2513,8 @@ class PDFAll2DSlices:
                 for slice_index in range(len(self.chopped_datas[0])):  # for each chop...
                     print('2D frequency', slice_index)
                     cols = [1, 'cbar', 0.25, 1, 'cbar']
-                    fig, gs = create_figure(width='double', nrows=len(self.datas), cols=cols, hspace=0.5)
+                    fig, gs = create_figure(width='double', nrows=len(
+                        self.datas), cols=cols, hspace=0.5)
                     for data_index in range(len(self.datas)):
                         data = self.chopped_datas[data_index][slice_index]
                         if self.data_signed:
@@ -2489,8 +2523,9 @@ class PDFAll2DSlices:
                         else:
                             global_limits = [self.datas[data_index].channels[channel_index].znull,
                                              self.datas[data_index].channels[channel_index].zmax]
-                        axs, spss = self._fill_row(data, channel_index, gs, data_index, global_limits)
-                        if not data_index == len(self.datas)-1:
+                        axs, spss = self._fill_row(
+                            data, channel_index, gs, data_index, global_limits)
+                        if not data_index == len(self.datas) - 1:
                             for ax in axs:
                                 plt.setp(ax.get_xticklabels(), visible=False)
                     constant_text = get_constant_text(data.constants)
@@ -2504,7 +2539,8 @@ class PDFAll2DSlices:
                 for slice_index in range(len(self.chopped_datas[0])):  # for each chop...
                     print('w1 wigner', slice_index)
                     cols = [1, 'cbar', 0.25, 1, 'cbar']
-                    fig, gs = create_figure(width='double', nrows=len(self.datas), cols=cols, hspace=0.5)
+                    fig, gs = create_figure(width='double', nrows=len(
+                        self.datas), cols=cols, hspace=0.5)
                     for data_index in range(len(self.datas)):
                         data = self.chopped_datas[data_index][slice_index]
                         if self.data_signed:
@@ -2513,8 +2549,9 @@ class PDFAll2DSlices:
                         else:
                             global_limits = [self.datas[data_index].channels[channel_index].znull,
                                              self.datas[data_index].channels[channel_index].zmax]
-                        axs, spss = self._fill_row(data, channel_index, gs, data_index, global_limits)
-                        if not data_index == len(self.datas)-1:
+                        axs, spss = self._fill_row(
+                            data, channel_index, gs, data_index, global_limits)
+                        if not data_index == len(self.datas) - 1:
                             for ax in axs:
                                 plt.setp(ax.get_xticklabels(), visible=False)
                         for ax, sps in zip(axs, spss):
@@ -2533,7 +2570,8 @@ class PDFAll2DSlices:
                 for slice_index in range(len(self.chopped_datas[0])):  # for each chop...
                     print('w2 wigner', slice_index)
                     cols = [1, 'cbar', 0.25, 1, 'cbar']
-                    fig, gs = create_figure(width='double', nrows=len(self.datas), cols=cols, hspace=0.5)
+                    fig, gs = create_figure(width='double', nrows=len(
+                        self.datas), cols=cols, hspace=0.5)
                     for data_index in range(len(self.datas)):
                         data = self.chopped_datas[data_index][slice_index]
                         if self.data_signed:
@@ -2542,8 +2580,9 @@ class PDFAll2DSlices:
                         else:
                             global_limits = [self.datas[data_index].channels[channel_index].znull,
                                              self.datas[data_index].channels[channel_index].zmax]
-                        axs, spss = self._fill_row(data, channel_index, gs, data_index, global_limits)
-                        if not data_index == len(self.datas)-1:
+                        axs, spss = self._fill_row(
+                            data, channel_index, gs, data_index, global_limits)
+                        if not data_index == len(self.datas) - 1:
                             for ax in axs:
                                 plt.setp(ax.get_xticklabels(), visible=False)
                         for ax, sps in zip(axs, spss):
