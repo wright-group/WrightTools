@@ -153,7 +153,7 @@ class CoSet:
             object are not changed.
         '''
         # get new points in input units
-        if type(points) == int:
+        if isinstance(points, int):
             limits = self.get_limits(self.control_units)
             new_points = np.linspace(limits[0], limits[1], points)
         else:
@@ -161,8 +161,7 @@ class CoSet:
         # convert new points to local units
         if units == 'same':
             units = self.control_units
-        new_points = wt_units.converter(new_points, units, self.control_units)
-        new_points.sort()
+        new_points = sorted(wt_units.converter(new_points, units, self.control_units))
         new_offsets = self.get_offset(new_points)
         # finish
         self.control_points = new_points

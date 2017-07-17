@@ -87,7 +87,7 @@ def get_timestamp(style='RFC3339', at=None, hms=True, frac=False,
     else:
         raise Exception('timezone not recognized in kit.get_timestamp')
     # get now
-    if at == None:
+    if at is None:
         now = datetime.datetime.now(tz)
     else:
         now = datetime.datetime.fromtimestamp(at, tz)
@@ -196,7 +196,7 @@ class TimeStamp:
         else:
             self.unix = at
         # get now
-        if at == None:
+        if at is None:
             self.datetime = datetime.datetime.now(self.tz)
         else:
             self.datetime = datetime.datetime.fromtimestamp(at, self.tz)
@@ -296,7 +296,7 @@ def filename_parse(fstr):
 
 def file_len(fname):
     '''
-    Cheaply get the number of lines in a file. File is not entirely loaded 
+    Cheaply get the number of lines in a file. File is not entirely loaded
     into memory.
     '''
     # adapted from http://stackoverflow.com/questions/845058
@@ -341,7 +341,7 @@ class FileSlicer:
     def __init__(self, path, skip_headers=True, header_charachter='#'):
         '''
         Access groups of lines from a file quickly, without loading the entire
-        file into memory. Lines are accesed from Useful especially in cases where 
+        file into memory. Lines are accesed from Useful especially in cases where
 
         Mostly a convinient wrapper around the standard library 'linecache'
         module.
@@ -573,7 +573,7 @@ def plot_dats(folder=None, transpose=True):
             else:
                 print('error! - dimensionality of data ({}) not recognized'.format(len(dat_data.axes)))
 
-        except:
+        except BaseException:
             import sys
             print('dat {} not recognized as plottible in plot_dats'.format(
                 filename_parse(_file)[1]))
@@ -611,7 +611,7 @@ def read_h5(filepath):
     Returns
     -------
     OrderedDict
-        Dictionary containing data from HDF5 file.    
+        Dictionary containing data from HDF5 file.
 
     See Also
     --------
@@ -685,7 +685,7 @@ def write_h5(filepath, dictionary):
     h5f = h5py.File(filepath, 'w')
     # fill h5f object
     for name, data in dictionary.items():
-        if type(data) == np.ndarray:
+        if isinstance(data, np.ndarray):
             h5f.create_dataset(name, data=data, compression="gzip")
         else:
             # TODO: store it as a string
@@ -825,9 +825,9 @@ def fft(xi, yi, axis=0):
 
     Parameters
     ----------
-    xi : numpy.ndarray  
-        1D array over which the points to be FFT'ed are defined 
-    yi : numpy.ndarray  
+    xi : numpy.ndarray
+        1D array over which the points to be FFT'ed are defined
+    yi : numpy.ndarray
         ND array with values to FFT
     axis : int
         axis of yi to perform FFT over
@@ -835,7 +835,7 @@ def fft(xi, yi, axis=0):
     Returns
     -------
     xi : 1D numpy.ndarray
-        1D array. Conjugate to input xi. 
+        1D array. Conjugate to input xi.
         Example: if input xi is in the time domain, output xi is in frequency domain.
     yi : ND numpy.ndarray
         FFT. Has the same shape as the input array (yi).
@@ -915,8 +915,8 @@ def remove_nans_1D(arrs):
 def share_nans(arrs1):
     # Written by DJM. darienmorrow@gmail.com. January 15, 2016.
     '''
-    Takes a list of nD arrays and returns a new list of nD arrays. 
-    The new list is in the same order as the old list. 
+    Takes a list of nD arrays and returns a new list of nD arrays.
+    The new list is in the same order as the old list.
     If one indexed element in an old array is nan then every element for that
     index in all new arrays in the list is then nan.
 
@@ -1020,8 +1020,7 @@ def unique(arr, tolerance=1e-6):
     array
         The sorted unique values.
     '''
-    arr = list(arr.flatten())
-    arr.sort()
+    arr = sorted(arr.flatten())
     unique = []
     while len(arr) > 0:
         current = arr[0]
@@ -1054,7 +1053,7 @@ def zoom2D(xi, yi, zi, xi_zoom=3., yi_zoom=3., order=3, mode='nearest',
     mode : {'constant', 'nearest', 'reflect', or 'wrap'}
         Points outside the boundaries of the input are filled according to the
         given mode. Default is constant.
-    cval : Value used for 
+    cval : Value used for
     """
     xi = ndimage.interpolation.zoom(xi, xi_zoom, order=order, mode='nearest')
     yi = ndimage.interpolation.zoom(yi, yi_zoom, order=order, mode='nearest')
@@ -1128,7 +1127,7 @@ def get_methods(the_class, class_only=False, instance_only=False,
                 include = False
             else:
                 include = (bound_to == the_class and not instance_only) or (
-                    bound_to == None and not class_only)
+                    bound_to is None and not class_only)
         else:
             include = False
         return include
@@ -1153,7 +1152,7 @@ def item2string(item, sep='\t'):
     out = ''
     if isinstance(item, string_type):
         out += '\'' + item + '\''
-    elif type(item) == list:
+    elif isinstance(item, list):
         for i in range(len(item)):
             if isinstance(item[i], string_type):
                 item[i] = '\'' + item[i] + '\''

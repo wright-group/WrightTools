@@ -58,7 +58,7 @@ cmap.set_under([0.75] * 3)
 
 def intensity(data, curve, channel_name, level=False, cutoff_factor=0.1,
               autosave=True, save_directory=None):
-    '''    
+    '''
     Parameters
     ----------
     data : wt.data.Data objeect

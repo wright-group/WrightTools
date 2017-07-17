@@ -185,7 +185,7 @@ class Calibration:
             object are not changed.
         '''
         # get new points in input units
-        if type(points) == int:
+        if isinstance(points, int):
             limits = self.get_limits(self.units)
             new_points = np.linspace(limits[0], limits[1], points)
         else:
@@ -193,8 +193,7 @@ class Calibration:
         # convert new points to local units
         if units == 'same':
             units = self.control_units
-        new_points = wt_units.converter(new_points, units, self.control_units)
-        new_points.sort()
+        new_points = sorted(wt_units.converter(new_points, units, self.control_units))
         new_values = self.get_offset(new_points)
         # finish
         self.points = new_points
@@ -218,7 +217,7 @@ class Calibration:
         Returns
         -------
         output
-            Save path if autosave is True, fig object if autosave is False.        
+            Save path if autosave is True, fig object if autosave is False.
 
         Note
         ----
