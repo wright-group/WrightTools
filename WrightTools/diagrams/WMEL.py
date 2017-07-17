@@ -12,13 +12,13 @@ import matplotlib.pyplot as plt
 
 
 class Subplot:
-    
+
     def __init__(self, ax, energies, number_of_interactions=4, title='',
-                 title_font_size=16,state_names=None, virtual=[None],
+                 title_font_size=16, state_names=None, virtual=[None],
                  state_font_size=8, state_text_buffer=0.5, label_side='left'):
         '''
         Subplot.
-        
+
         Parameters
         ----------
         ax : matplotlib axis
@@ -45,23 +45,25 @@ class Subplot:
 
         # Plot Energy Levels
         for i in range(len(self.energies)):
-            if i in virtual: linestyle = '--'
-            else: linestyle = '-'
+            if i in virtual:
+                linestyle = '--'
+            else:
+                linestyle = '-'
             self.ax.axhline(self.energies[i], color='k', linewidth=2,
-                            ls=linestyle, zorder=5)     
-        
+                            ls=linestyle, zorder=5)
+
         # add state names
-        if type(state_names)==list:
+        if type(state_names) == list:
             for i in range(len(self.energies)):
                 if label_side == 'left':
                     ax.text(-state_text_buffer, energies[i], state_names[i],
-                            fontsize = state_font_size, verticalalignment ='center',
-                            horizontalalignment ='center')
+                            fontsize=state_font_size, verticalalignment='center',
+                            horizontalalignment='center')
                 elif label_side == 'right':
-                    ax.text(1+state_text_buffer, energies[i], state_names[i],
-                            fontsize = state_font_size, verticalalignment ='center',
-                            horizontalalignment ='center')
-        # calculate interaction_positons 
+                    ax.text(1 + state_text_buffer, energies[i], state_names[i],
+                            fontsize=state_font_size, verticalalignment='center',
+                            horizontalalignment='center')
+        # calculate interaction_positons
         self.x_pos = np.linspace(0, 1, number_of_interactions)
         # set limits
         self.ax.set_xlim(-0.1, 1.1)
@@ -71,11 +73,11 @@ class Subplot:
         # title
         self.ax.set_title(title, fontsize=title_font_size)
 
-    def add_arrow(self, index, between, kind, label = '', head_length = 0.075,
-                  head_aspect = 2, font_size = 7, color = 'k'):
+    def add_arrow(self, index, between, kind, label='', head_length=0.075,
+                  head_aspect=2, font_size=7, color='k'):
         '''
         Add an arrow to the WMEL diagram.
-        
+
         Parameters
         ----------
         index : integer 
@@ -92,7 +94,7 @@ class Subplot:
             Label font size. Default is 14.
         color : matplotlib color (optional)
             Arrow color. Default is black.
-        
+
         Returns
         -------
         [line,arrow_head,text]
@@ -100,9 +102,9 @@ class Subplot:
         if hasattr(index, 'index'):
             x_pos = list(index)
         else:
-            x_pos = [index]*2
+            x_pos = [index] * 2
         x_pos = [np.linspace(0, 1, self.interactions)[i] for i in x_pos]
-        
+
         # calculate arrow length
         arrow_length = self.energies[between[1]] - self.energies[between[0]]
         arrow_end = self.energies[between[1]]
@@ -114,30 +116,32 @@ class Subplot:
             y_poss = [self.energies[between[0]], self.energies[between[1]] + head_length]
         else:
             raise ValueError('between invalid!')
-        
+
         length = abs(y_poss[0] - y_poss[1])
         if kind == 'ket':
-            line = self.ax.plot(x_pos, y_poss, linestyle = '-', color = color,
-                                linewidth = 2,zorder=9)
+            line = self.ax.plot(x_pos, y_poss, linestyle='-', color=color,
+                                linewidth=2, zorder=9)
         elif kind == 'bra':
-            line = self.ax.plot(x_pos, y_poss, linestyle = '--', color = color,
-                                linewidth = 2,zorder=9)
+            line = self.ax.plot(x_pos, y_poss, linestyle='--', color=color,
+                                linewidth=2, zorder=9)
         elif kind == 'out':
             yi = np.linspace(y_poss[0], y_poss[1], 100)
-            xi = np.sin((yi - y_poss[0])*int((1/length)*20)*2*np.pi*length)/40 + x_pos[0]
-            line = self.ax.plot(xi, yi, linestyle = '-', color = color,
-                                linewidth = 2, solid_capstyle='butt',zorder=9)
+            xi = np.sin((yi - y_poss[0]) * int((1 / length) * 20)
+                        * 2 * np.pi * length) / 40 + x_pos[0]
+            line = self.ax.plot(xi, yi, linestyle='-', color=color,
+                                linewidth=2, solid_capstyle='butt', zorder=9)
         else:
             raise ValueError('kind is not \'ket\', \'out\', or \'bra\'.')
         # add arrow head
-        arrow_head = self.ax.arrow(x_pos[1], arrow_end - head_length * direction, 
-                                   0, 0.0001*direction,
-                                   head_width=head_length*head_aspect, 
+        arrow_head = self.ax.arrow(x_pos[1], arrow_end - head_length * direction,
+                                   0, 0.0001 * direction,
+                                   head_width=head_length * head_aspect,
                                    head_length=head_length,
                                    fc=color, ec=color, linestyle='solid',
                                    linewidth=0, zorder=10)
         # add text
-        text = self.ax.text(np.mean(x_pos), -0.1, label, fontsize=font_size, horizontalalignment='center')
+        text = self.ax.text(np.mean(x_pos), -0.1, label, fontsize=font_size,
+                            horizontalalignment='center')
         return line, arrow_head, text
 
 
@@ -153,7 +157,7 @@ class Artist:
         virtual a list of indicies
         '''
         # create figure
-        figsize = [int(size[0]*((number_of_interactions+1.)/6.)), size[1]*2.5]
+        figsize = [int(size[0] * ((number_of_interactions + 1.) / 6.)), size[1] * 2.5]
         fig, (subplots) = plt.subplots(size[1], size[0], figsize=figsize)
         self.fig = fig
         # wrap subplots if need be
@@ -168,35 +172,40 @@ class Artist:
         self.energies = energies
         for plot in self.subplots.flatten():
             for i in range(len(self.energies)):
-                if i in virtual: linestyle = '--'
-                else: linestyle = '-'
-                plot.axhline(energies[i], color = 'k', linewidth = 2, linestyle = linestyle)      
+                if i in virtual:
+                    linestyle = '--'
+                else:
+                    linestyle = '-'
+                plot.axhline(energies[i], color='k', linewidth=2, linestyle=linestyle)
         # add state names to leftmost plots
         if state_names:
             for i in range(size[1]):
                 plot = self.subplots[i][0]
                 for i in range(len(self.energies)):
-                    plot.text(-state_text_buffer, energies[i], state_names[i], fontsize = state_font_size, verticalalignment ='center', horizontalalignment ='center')
-        # calculate interaction_positons 
+                    plot.text(-state_text_buffer, energies[i], state_names[i], fontsize=state_font_size,
+                              verticalalignment='center', horizontalalignment='center')
+        # calculate interaction_positons
         self.x_pos = np.linspace(0, 1, number_of_interactions)
         # plot cleans up a bunch - call it now as well as later
         self.plot()
-    
+
     def label_rows(self, labels, font_size=15, text_buffer=1.5):
         for i in range(len(self.subplots)):
             plot = self.subplots[i][-1]
-            plot.text(text_buffer, 0.5, labels[i], fontsize = font_size, verticalalignment ='center', horizontalalignment ='center')        
+            plot.text(text_buffer, 0.5, labels[i], fontsize=font_size,
+                      verticalalignment='center', horizontalalignment='center')
 
     def label_columns(self, labels, font_size=15, text_buffer=1.15):
         for i in range(len(labels)):
             plot = self.subplots[0][i]
-            plot.text(0.5, text_buffer, labels[i], fontsize = font_size, verticalalignment ='center', horizontalalignment ='center')        
-    
+            plot.text(0.5, text_buffer, labels[i], fontsize=font_size,
+                      verticalalignment='center', horizontalalignment='center')
+
     def clear_diagram(self, diagram):
         plot = self.subplots[diagram[1]][diagram[0]]
         plot.cla()
-        
-    def add_arrow(self, diagram, number, between, kind, label = '', head_length = 0.075, font_size = 7, color = 'k'):
+
+    def add_arrow(self, diagram, number, between, kind, label='', head_length=0.075, font_size=7, color='k'):
         '''
         kind one in [ket, bra, out] \n
         returns [line, arrow_head, text]
@@ -219,21 +228,24 @@ class Artist:
         # add line
         length = abs(y_poss[0] - y_poss[1])
         if kind == 'ket':
-            line = subplot.plot([x_pos, x_pos], y_poss, linestyle = '-', color = color, linewidth = 2)
+            line = subplot.plot([x_pos, x_pos], y_poss, linestyle='-', color=color, linewidth=2)
         elif kind == 'bra':
-            line = subplot.plot([x_pos, x_pos], y_poss, linestyle = '--', color = color, linewidth = 2)
+            line = subplot.plot([x_pos, x_pos], y_poss, linestyle='--', color=color, linewidth=2)
         elif kind == 'out':
             yi = np.linspace(y_poss[0], y_poss[1], 100)
-            xi = np.sin((yi - y_poss[0])*int((1/length)*20)*2*np.pi*length)/40 + x_pos
-            line = subplot.plot(xi, yi, linestyle = '-', color = color, linewidth = 2, solid_capstyle='butt')
+            xi = np.sin((yi - y_poss[0]) * int((1 / length) * 20)
+                        * 2 * np.pi * length) / 40 + x_pos
+            line = subplot.plot(xi, yi, linestyle='-', color=color,
+                                linewidth=2, solid_capstyle='butt')
         # add arrow head
-        arrow_head = subplot.arrow(self.x_pos[number], arrow_end - head_length * direction, 
-                                   0, 0.0001*direction,
-                                   head_width=head_length*2, 
+        arrow_head = subplot.arrow(self.x_pos[number], arrow_end - head_length * direction,
+                                   0, 0.0001 * direction,
+                                   head_width=head_length * 2,
                                    head_length=head_length,
                                    fc=color, ec=color, linestyle='solid', linewidth=0)
         # add text
-        text = subplot.text(self.x_pos[number], -0.1, label, fontsize=font_size, horizontalalignment='center')
+        text = subplot.text(self.x_pos[number], -0.1, label,
+                            fontsize=font_size, horizontalalignment='center')
         return line, arrow_head, text
 
     def plot(self, save_path=None, close=False, bbox_inches='tight', pad_inches=1):
@@ -246,7 +258,8 @@ class Artist:
             plot.axis('off')
         # save
         if save_path:
-            plt.savefig(save_path, transparent=True, dpi=300, bbox_inches=bbox_inches, pad_inches=pad_inches)
+            plt.savefig(save_path, transparent=True, dpi=300,
+                        bbox_inches=bbox_inches, pad_inches=pad_inches)
         # close
         if close:
             plt.close()
@@ -259,22 +272,22 @@ if __name__ == '__main__':
     # testing code
 
     plt.close('all')
-    
-    diagram = Artist(size = [6, 3],
-                     energies = [0., 0.4, 0.6, 1.],
-                     state_names = ['g', 'a', 'b', 'a+b'])
-                     
+
+    diagram = Artist(size=[6, 3],
+                     energies=[0., 0.4, 0.6, 1.],
+                     state_names=['g', 'a', 'b', 'a+b'])
+
     diagram.label_rows([r'$\mathrm{\alpha}$', r'$\mathrm{\beta}$', r'$\mathrm{\gamma}$'])
     diagram.label_columns(['I', 'II', 'III', 'IV', 'V', 'VI'])
-    
-    #pw1 alpha
+
+    # pw1 alpha
     diagram.add_arrow([0, 0], 0, [0, 2], 'ket', '1')
     diagram.add_arrow([0, 0], 1, [0, 1], 'bra', '-2')
     diagram.add_arrow([0, 0], 2, [1, 0], 'bra', '2\'')
     diagram.add_arrow([0, 0], 3, [3, 0], 'out')
-    
+
     diagram.add_arrow([1, 0], 3, [2, 0], 'out')
-    
+
     diagram.clear_diagram([2, 1])
-    
+
     diagram.plot('WMEL_out.png')
