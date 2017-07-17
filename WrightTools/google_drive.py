@@ -45,7 +45,7 @@ def id_to_url(driveid):
 
 
 class Drive:
-    
+
     def __init__(self):
         # import pydrive
         import pydrive
@@ -85,7 +85,7 @@ class Drive:
         self.gauth.SaveCredentialsFile(self.mycreds_path)
         self.api = GoogleDrive(self.gauth)
         os.chdir(old_cwd)
-        
+
     def _list_folder(self, *args, **kwargs):
         '''
         Legacy. Please use self.list_folder instead!
@@ -116,11 +116,12 @@ class Drive:
                 remove = True
             # modified since creation
             remote_stamp = f['modifiedDate'].split('.')[0]  # UTC
-            remote_stamp = time.mktime(datetime.datetime.strptime(remote_stamp, '%Y-%m-%dT%H:%M:%S').timetuple())
+            remote_stamp = time.mktime(datetime.datetime.strptime(
+                remote_stamp, '%Y-%m-%dT%H:%M:%S').timetuple())
             local_stamp = os.path.getmtime(filepath)  # local
             local_stamp += time.timezone  # UTC
             if local_stamp > remote_stamp:
-                remove = True                
+                remove = True
             # overwrite toggle
             if overwrite:
                 remove = True
@@ -130,7 +131,7 @@ class Drive:
                 f = None
         # upload
         if f is None:
-            f = self.api.CreateFile({'title': title, 
+            f = self.api.CreateFile({'title': title,
                                      'parents': [{"id": parentid}]})
             f.SetContentFile(filepath)
             f.Upload()
@@ -146,7 +147,7 @@ class Drive:
     def create_folder(self, name, parentid):
         """
         Create a new folder in Google Drive.
-    
+
         Attributes
         ----------
         name : string or list of string
@@ -154,7 +155,7 @@ class Drive:
             subfolders.
         parentID : string
             Google Drive ID of folder that is to be the parent of new folder.
-            
+
         Returns
         -------
         string
@@ -163,7 +164,7 @@ class Drive:
         import time
         t = time.time()
         self._authenticate()
-        print(time.time()-t, "Authenticate")
+        print(time.time() - t, "Authenticate")
         t = time.time()
         # clean inputs
         if type(name) == str:
@@ -172,11 +173,12 @@ class Drive:
         parent = parentid
         for n in name:
             # check if folder with that name already exists
-            q = {'q': "'{}' in parents and trashed=false and mimeType contains \'folder\'".format(parent)}
+            q = {
+                'q': "'{}' in parents and trashed=false and mimeType contains \'folder\'".format(parent)}
             fs = self.api.ListFile(q).GetList()
             found = False
             for f in fs:
-                if f['title'] == n:                    
+                if f['title'] == n:
                     found = True
                     parent = f['id']
                     continue
@@ -184,11 +186,11 @@ class Drive:
                 continue
             # if no folder was found, create one
             f = self.api.CreateFile({'title': n,
-                                     "parents":  [{"id": parent}], 
+                                     "parents":  [{"id": parent}],
                                      "mimeType": "application/vnd.google-apps.folder"})
             f.Upload()
             parent = f['id']
-            print(time.time()-t, "created", n)
+            print(time.time() - t, "created", n)
             t = time.time()
         return parent
 
@@ -196,11 +198,11 @@ class Drive:
         '''
         Recursively download from Google Drive into a local directory. By
         default, will not re-download if file passes following checks:
-        
+
         1. same size as remote file
-        
+
         2. local file last modified after remote file
-        
+
         Parameters
         ----------
         fileid : str
@@ -211,7 +213,7 @@ class Drive:
             Toggle forcing file overwrites. Default is False.
         verbose : bool (optional)s
             Toggle talkback. Default is True.
-        
+
         Returns
         -------
         pydrive.files.GoogleDriveFile
@@ -240,11 +242,12 @@ class Drive:
                     remove = True
                 # modified since creation
                 remote_stamp = f['modifiedDate'].split('.')[0]  # UTC
-                remote_stamp = time.mktime(datetime.datetime.strptime(remote_stamp, '%Y-%m-%dT%H:%M:%S').timetuple())
+                remote_stamp = time.mktime(datetime.datetime.strptime(
+                    remote_stamp, '%Y-%m-%dT%H:%M:%S').timetuple())
                 local_stamp = os.path.getmtime(f_path)  # local
                 local_stamp += time.timezone  # UTC
                 if local_stamp < remote_stamp:
-                    remove = True                
+                    remove = True
                 # overwrite toggle
                 if overwrite:
                     remove = True
@@ -266,13 +269,13 @@ class Drive:
         self._authenticate()
         q = {'q': "'{}' in parents and trashed=false".format(folderid)}
         raw_sub_contents = self.api.ListFile(q).GetList()
-        return [i['id'] for i in raw_sub_contents]       
+        return [i['id'] for i in raw_sub_contents]
 
     def upload(self, path, parentid, overwrite=False, delete_local=False,
                verbose=True):
         '''
         Upload local file(s) to Google Drive.        
-        
+
         Parameters
         ----------
         path : str
@@ -286,7 +289,7 @@ class Drive:
             False.
         verbose : bool (optional)
             Toggle talkback. Default is True.
-        
+
         Returns
         -------
         driveid : str
@@ -304,7 +307,7 @@ class Drive:
                 folder_path, _, file_names = tup
                 print(folder_path)
                 # create folder on google drive
-                name = folder_path.split(os.path.sep)[top_path_length-1:]
+                name = folder_path.split(os.path.sep)[top_path_length - 1:]
                 folderid = self.create_folder(name, parentid)
                 # upload files
                 for file_name in file_names:

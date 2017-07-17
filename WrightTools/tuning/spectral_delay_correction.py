@@ -29,7 +29,7 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as grd
 
 import numpy as np
-                
+
 import scipy
 from scipy.optimize import leastsq
 from scipy.interpolate import griddata, interp1d, interp2d, UnivariateSpline
@@ -51,7 +51,7 @@ def process_wigner(data_filepath, channel, control_name,
                    delay_units='fs', autosave=True, s=1000):
     '''
     Create a coset file from a measured wigner.
-    
+
     Parameters
     ----------
     data_filepath : str
@@ -81,7 +81,7 @@ def process_wigner(data_filepath, channel, control_name,
     # clean
     # remove the edges because they are badly behaved...
     # should probably do something more sophisticated...
-    outs.amplitude.clip(outs.amplitude.max()*0.1, outs.amplitude.max())
+    outs.amplitude.clip(outs.amplitude.max() * 0.1, outs.amplitude.max())
     #outs.amplitude.clip(outs.amplitude.max()*0.04, outs.amplitude.max())
     outs.amplitude.values[0] = np.nan
     outs.amplitude.values[-1] = np.nan
@@ -150,6 +150,7 @@ def process_brute_force(data_filepath, opa_index, channel, color_units='nm',
         d.collapse(1, method='sum')
     # choose corrections
     function = wt_fit.Gaussian()
+
     def fitit(d):
         xi = d.axes[0].points
         yi = d.channels[channel_index].values
@@ -158,25 +159,29 @@ def process_brute_force(data_filepath, opa_index, channel, color_units='nm',
     y_outs = [fitit(d) for d in y_bins]
     x_centers = [o[0] for o in x_outs]
     y_centers = [o[0] for o in y_outs]
+
     def get_corrections(ws, outs, lower_cutoff, upper_cutoff):
         ws_internal = ws.copy()
         centers = np.array([o[0] for o in outs])
-        centers[centers<lower_cutoff] = np.nan
-        centers[centers>upper_cutoff] = np.nan
+        centers[centers < lower_cutoff] = np.nan
+        centers[centers > upper_cutoff] = np.nan
         amplitudes = np.array([o[2] for o in outs])
         if False:
             # HACK - Blaise
             print(ws)
             amplitudes[:-20] = np.nan
             #plt.plot(ws, amplitudes)
-        amplitudes[amplitudes<amplitudes.max()*amplitude_cutoff_factor] = np.nan
-        ws_internal, centers, amplitudes = wt_kit.remove_nans_1D([ws_internal, centers, amplitudes])    
+        amplitudes[amplitudes < amplitudes.max() * amplitude_cutoff_factor] = np.nan
+        ws_internal, centers, amplitudes = wt_kit.remove_nans_1D(
+            [ws_internal, centers, amplitudes])
         spline = UnivariateSpline(ws_internal, centers, k=2, s=10000)
         return spline(ws)
-    x_corrections = get_corrections(ws, x_outs, datas[0].axes[1].points.min(), datas[0].axes[1].points.max())
-    y_corrections = get_corrections(ws, y_outs, datas[0].axes[0].points.min(), datas[0].axes[0].points.max())    
+    x_corrections = get_corrections(
+        ws, x_outs, datas[0].axes[1].points.min(), datas[0].axes[1].points.max())
+    y_corrections = get_corrections(
+        ws, y_outs, datas[0].axes[0].points.min(), datas[0].axes[0].points.max())
     # plot data
-    aspect = (datas[0].d2.max()-datas[0].d2.min())/(datas[0].d1.max()-datas[0].d1.min())
+    aspect = (datas[0].d2.max() - datas[0].d2.min()) / (datas[0].d1.max() - datas[0].d1.min())
     cmap = wt_artists.colormaps['default']
     if plot:
         for i, d in enumerate(datas):
@@ -208,7 +213,7 @@ def process_brute_force(data_filepath, opa_index, channel, color_units='nm',
             sax.axvline(x_centers[i], lw=4, c='grey')
             sax.axvline(x_corrections[i], lw=4, c='k')
             x_max_amp = max([o[2] for o in x_outs])
-            sax.set_ylim(0, x_max_amp*1.1)
+            sax.set_ylim(0, x_max_amp * 1.1)
             sax.grid()
             # y side plot
             sax = wt_artists.add_sideplot(ax, 'y')
@@ -220,7 +225,7 @@ def process_brute_force(data_filepath, opa_index, channel, color_units='nm',
             sax.axhline(y_centers[i], lw=4, c='grey')
             sax.axhline(y_corrections[i], lw=4, c='k')
             y_max_amp = max([o[2] for o in y_outs])
-            sax.set_xlim(0, y_max_amp*1.1)
+            sax.set_xlim(0, y_max_amp * 1.1)
             sax.grid()
             # colorbar
             cax = plt.subplot(gs[1])
@@ -228,26 +233,31 @@ def process_brute_force(data_filepath, opa_index, channel, color_units='nm',
             # title
             wt_artists._title(fig, str(ws[i]))
             # save
-            figure_path = os.path.join(os.path.dirname(data_filepath), str(i).zfill(3)+'.png')
+            figure_path = os.path.join(os.path.dirname(data_filepath), str(i).zfill(3) + '.png')
             plt.savefig(figure_path, dpi=300, transparent=True, pad_inches=1)
             plt.close(fig)
     # plot corrections array
+
     def plot_corrections(centers, corrections, title, name):
         fig, gs = wt_artists.create_figure(cols=[1])
         ax = plt.subplot(gs[0])
         ax.plot(ws, centers, lw=4, c='grey')
         ax.plot(ws, corrections, lw=4, c='k')
         wt_artists._title(fig, title)
-        figure_path = os.path.join(os.path.dirname(data_filepath), name+'.png')
+        figure_path = os.path.join(os.path.dirname(data_filepath), name + '.png')
         plt.savefig(figure_path, dpi=300, transparent=True, pad_inches=1)
         plt.close(fig)
     if plot:
-        plot_corrections(x_centers, x_corrections, datas[0].axes[1].get_label(), '_'.join([datas[0].axes[1].name, 'w{}'.format(opa_index)]))
-        plot_corrections(y_centers, y_corrections, datas[0].axes[0].get_label(), '_'.join([datas[0].axes[0].name, 'w{}'.format(opa_index)]))
+        plot_corrections(x_centers, x_corrections, datas[0].axes[1].get_label(
+        ), '_'.join([datas[0].axes[1].name, 'w{}'.format(opa_index)]))
+        plot_corrections(y_centers, y_corrections, datas[0].axes[0].get_label(
+        ), '_'.join([datas[0].axes[0].name, 'w{}'.format(opa_index)]))
     # construct coset objects
     # TODO: generalize
-    x_coset = wt_coset.CoSet('OPA2 TOPAS-C', color_units, ws, 'D1 SMC100', delay_units, x_corrections, name='_'.join(['w{}'.format(opa_index), datas[0].axes[1].name]))
-    y_coset = wt_coset.CoSet('OPA2 TOPAS-C', color_units, ws, 'D2 SMC100', delay_units, y_corrections, name='_'.join(['w{}'.format(opa_index), datas[0].axes[0].name]))
+    x_coset = wt_coset.CoSet('OPA2 TOPAS-C', color_units, ws, 'D1 SMC100', delay_units,
+                             x_corrections, name='_'.join(['w{}'.format(opa_index), datas[0].axes[1].name]))
+    y_coset = wt_coset.CoSet('OPA2 TOPAS-C', color_units, ws, 'D2 SMC100', delay_units,
+                             y_corrections, name='_'.join(['w{}'.format(opa_index), datas[0].axes[0].name]))
     # save coset files
     if autosave:
         save_directory = os.path.dirname(data_filepath)
