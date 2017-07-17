@@ -133,9 +133,9 @@ class Spline:
         self.units = units
         self.motors = motors
         self.functions = [scipy.interpolate.UnivariateSpline(
-            colors, motor.positions,  k=3, s=1000) for motor in motors]
+            colors, motor.positions, k=3, s=1000) for motor in motors]
         self.i_functions = [scipy.interpolate.UnivariateSpline(
-            motor.positions, colors,  k=3, s=1000) for motor in motors]
+            motor.positions, colors, k=3, s=1000) for motor in motors]
 
     def get_motor_positions(self, color):
         return [f(color) for f in self.functions]
@@ -315,7 +315,7 @@ class Curve:
 
         Returns
         -------
-        np.ndarray 
+        np.ndarray
             The motor positions. If color is an array the output shape will
             be (motors, colors).
         """
@@ -388,7 +388,7 @@ class Curve:
             object are not changed by map_colors.
         '''
         # get new colors in input units
-        if type(colors) == int:
+        if isinstance(colors, int):
             limits = self.get_limits(units)
             new_colors = np.linspace(limits[0], limits[1], colors)
         else:
@@ -396,8 +396,7 @@ class Curve:
         # convert new colors to local units
         if units == 'same':
             units = self.units
-        new_colors = wt_units.converter(new_colors, units, self.units)
-        new_colors.sort()
+        new_colors = sorted(wt_units.converter(new_colors, units, self.units))
         # ensure that motor interpolators agree with current motor positions
         self.interpolate(interpolate_subcurve=True)
         # map own motors
@@ -438,7 +437,7 @@ class Curve:
         # get motor index
         if type(motor) in [float, int]:
             motor_index = motor
-        elif type(motor) == str:
+        elif isinstance(motor, str):
             motor_index = self.motor_names.index(motor)
         else:
             print('motor type not recognized in curve.offset_by')
@@ -468,7 +467,7 @@ class Curve:
         # get motor index
         if type(motor) in [float, int]:
             motor_index = motor
-        elif type(motor) == str:
+        elif isinstance(motor, str):
             motor_index = self.motor_names.index(motor)
         else:
             print('motor type not recognized in curve.offset_to')
@@ -666,7 +665,7 @@ def from_TOPAS_crvs(filepaths, kind, interaction_string):
     kind : {'TOPAS-C', 'TOPAS-800'}
         The kind of TOPAS represented.
     interaction_string : str
-        Interaction string for this curve, in the style of Light Conversion - 
+        Interaction string for this curve, in the style of Light Conversion -
         e.g. 'NON-SF-NON-Sig'.
 
     Returns

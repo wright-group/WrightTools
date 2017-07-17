@@ -110,7 +110,7 @@ def process_wigner(data_filepath, channel, control_name,
         plt.close()
     # construct, save coset
     coset = wt_coset.CoSet(control_name, color_units, ws, offset_name,
-                           delay_units,  corrections, coset_name)
+                           delay_units, corrections, coset_name)
     if autosave:
         coset.save(save_directory=os.path.dirname(data_filepath))
     return coset
