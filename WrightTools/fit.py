@@ -271,7 +271,7 @@ class TwoD_Gaussian(Function):
         try:
             v, xi, yi = wt_kit.remove_nans_1D([v, xi, yi])
             return v, xi, yi, True
-        except:
+        except BaseException:
             return np.nan, np.nan, np.nan, False
 
     def residuals(self, p, *args):
@@ -287,7 +287,8 @@ class TwoD_Gaussian(Function):
         a = (np.cos(theta)**2) / (2 * sigma_x**2) + (np.sin(theta)**2) / (2 * sigma_y**2)
         b = -(np.sin(2 * theta)) / (4 * sigma_x**2) + (np.sin(2 * theta)) / (4 * sigma_y**2)
         c = (np.sin(theta)**2) / (2 * sigma_x**2) + (np.cos(theta)**2) / (2 * sigma_y**2)
-        return amp * np.exp(-(a * ((x - xo)**2) + 2 * b * (x - xo) * (y - yo) + c * ((y - yo)**2))) + baseline
+        return amp * np.exp(-(a * ((x - xo)**2) + 2 * b * (x - xo) *
+                              (y - yo) + c * ((y - yo)**2))) + baseline
 
     def guess(self, v, x, y):
         if len(v) == 0:
@@ -406,9 +407,9 @@ class Fitter:
 
     def run(self, channel=0, verbose=True):
         # get channel ---------------------------------------------------------
-        if type(channel) == int:
+        if isinstance(channel, int):
             channel_index = channel
-        elif type(channel) == str:
+        elif isinstance(channel, str):
             channel_index = self.data.channel_names.index(channel)
         else:
             print('channel type', type(channel), 'not valid')
@@ -513,9 +514,9 @@ class MultiPeakFitter:
         if len(data.axes) > 1:
             raise Exception('Yo, your data must be 1D. Try again homey.')
         # get channel
-        if type(channel) == int:
+        if isinstance(channel, int):
             self.channel_index = channel
-        elif type(channel) == str:
+        elif isinstance(channel, str):
             self.channel_index = self.data.channel_names.index(channel)
         else:
             print('channel type', type(channel), 'not valid')
@@ -681,9 +682,11 @@ class MultiPeakFitter:
             if diff_order == 0:
                 return intensity * (0.5 * FWHM)**2 / ((x - x0)**2 + (.5 * FWHM)**2)
             elif diff_order == 1:
-                return intensity * (0.5 * FWHM)**2 * (-1) * (((x - x0)**2 + (0.5 * FWHM)**2))**-2 * (2 * (x - x0))
+                return intensity * (0.5 * FWHM)**2 * (-1) * \
+                    (((x - x0)**2 + (0.5 * FWHM)**2))**-2 * (2 * (x - x0))
             elif diff_order == 2:
-                return intensity * (0.5 * FWHM)**2 * (2 * ((((x - x0)**2 + (0.5 * FWHM)**2))**-3) * (2 * (x - x0))**2 + (-2) * (((x - x0)**2 + (0.5 * FWHM)**2))**-2)
+                return intensity * (0.5 * FWHM)**2 * (2 * ((((x - x0)**2 + (0.5 * FWHM)**2))**-3)
+                                                      * (2 * (x - x0))**2 + (-2) * (((x - x0)**2 + (0.5 * FWHM)**2))**-2)
             else:
                 print('analytic derivative not pre-calculated')
         elif kind == 'gaussian':
@@ -693,7 +696,8 @@ class MultiPeakFitter:
             elif diff_order == 1:
                 return intensity * np.exp(-0.5 * ((x - x0) / sigma)**2) * (-(x - x0) / (sigma**2))
             elif diff_order == 2:
-                return intensity * np.exp(-0.5 * ((x - x0) / sigma)**2) * (((x - x0)**2 / (sigma**4)) - sigma**-2)
+                return intensity * np.exp(-0.5 * ((x - x0) / sigma)**2) * \
+                    (((x - x0)**2 / (sigma**4)) - sigma**-2)
             else:
                 print('analytic derivative not pre-calculated')
         else:
@@ -853,7 +857,7 @@ def leastsqfitter(p0, datax, datay, function, verbose=False, cov_verbose=False):
         for i in range(len(pfit_leastsq)):
             try:
                 error.append(np.absolute(pcov[i][i])**0.5)
-            except:
+            except BaseException:
                 error.append(0.00)
         perr_leastsq = np.array(error)
     # exit

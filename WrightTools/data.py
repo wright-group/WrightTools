@@ -419,7 +419,8 @@ class Data:
         self._original = self.copy()
 
     def __repr__(self):
-        return 'WrightTools.data.Data object \'{0}\' {1} at {2}'.format(self.name, str(self.axis_names), str(id(self)))
+        return 'WrightTools.data.Data object \'{0}\' {1} at {2}'.format(
+            self.name, str(self.axis_names), str(id(self)))
 
     def _update(self):
         '''
@@ -453,7 +454,7 @@ class Data:
             Channel index or name.
         '''
         # get channel
-        if type(channel) == int:
+        if isinstance(channel, int):
             channel_index = channel
         elif isinstance(channel, string_type):
             channel_index = self.channel_names.index(channel)
@@ -506,7 +507,7 @@ class Data:
             arg = axes_args[i]
             if isinstance(arg, string_type):
                 pass
-            elif type(arg) == int:
+            elif isinstance(arg, int):
                 arg = self.axis_names[arg]
             else:
                 message = 'argument {arg} not recognized in Data.chop'.format(arg)
@@ -600,7 +601,7 @@ class Data:
             The channel to call clip on.
         '''
         # get channel
-        if type(channel) == int:
+        if isinstance(channel, int):
             channel_index = channel
         elif isinstance(channel, string_type):
             channel_index = self.channel_names.index(channel)
@@ -631,14 +632,14 @@ class Data:
             Split the dataset while maintaining its dimensionality.
         '''
         # get axis index ------------------------------------------------------
-        if type(axis) == int:
+        if isinstance(axis, int):
             axis_index = axis
         elif isinstance(axis, string_type):
             axis_index = self.axis_names.index(axis)
         else:
             print('axis type', type(axis), 'not valid')
         # methods -------------------------------------------------------------
-        if type(method) == list:
+        if isinstance(method, list):
             if len(method) == len(self.channels):
                 methods = method
             else:
@@ -744,7 +745,7 @@ class Data:
             transpose_order[ri], transpose_order[ai] = transpose_order[ai], transpose_order[ri]
         self.transpose(transpose_order, verbose=False)
         # get own channel
-        if type(channel) == int:
+        if isinstance(channel, int):
             channel_index = channel
         elif isinstance(channel, string_type):
             channel_index = self.channel_names.index(channel)
@@ -752,7 +753,7 @@ class Data:
             print('channel type', type(channel), 'not valid')
         channel = self.channels[channel_index]
         # get divisor channel
-        if type(divisor_channel) == int:
+        if isinstance(divisor_channel, int):
             divisor_channel_index = divisor_channel
         elif isinstance(divisor_channel, string_type):
             divisor_channel_index = divisor.channel_names.index(divisor_channel)
@@ -789,14 +790,14 @@ class Data:
         where I is the reference channel and dI is the signal channel.
         '''
         # get signal channel
-        if type(signal_channel) == int:
+        if isinstance(signal_channel, int):
             signal_channel_index = signal_channel
         elif isinstance(signal_channel, string_type):
             signal_channel_index = self.channel_names.index(signal_channel)
         else:
             print('channel type', type(signal_channel), 'not valid')
         # get reference channel
-        if type(reference_channel) == int:
+        if isinstance(reference_channel, int):
             reference_channel_index = reference_channel
         elif isinstance(reference_channel, string_type):
             reference_channel_index = self.channel_names.index(reference_channel)
@@ -833,7 +834,7 @@ class Data:
             The axis to flip.
         '''
         # axis ----------------------------------------------------------------
-        if type(axis) == int:
+        if isinstance(axis, int):
             axis_index = axis
         elif isinstance(axis, string_type):
             axis_index = self.axis_names.index(axis)
@@ -873,7 +874,7 @@ class Data:
             Coordinates in units for each axis.
         '''
         # get channel
-        if type(channel) == int:
+        if isinstance(channel, int):
             channel_index = channel
         elif isinstance(channel, string_type):
             channel_index = self.channel_names.index(channel)
@@ -901,7 +902,7 @@ class Data:
             Coordinates in units for each axis.
         '''
         # get channel
-        if type(channel) == int:
+        if isinstance(channel, int):
             channel_index = channel
         elif isinstance(channel, string_type):
             channel_index = self.channel_names.index(channel)
@@ -941,7 +942,7 @@ class Data:
         timer = wt_kit.Timer(verbose=False)
         with timer:
             # channel
-            if type(channel) == int:
+            if isinstance(channel, int):
                 channel_index = channel
             elif isinstance(channel, string_type):
                 channel_index = self.channel_names.index(channel)
@@ -998,7 +999,7 @@ class Data:
             Toggle talkback. Default is True.
         """
         # channel -------------------------------------------------------------
-        if type(channel) == int:
+        if isinstance(channel, int):
             channel_index = channel
         elif isinstance(channel, string_type):
             channel_index = self.channel_names.index(channel)
@@ -1006,7 +1007,7 @@ class Data:
             print('channel type', type(channel), 'not valid')
         channel = self.channels[channel_index]
         # axis ----------------------------------------------------------------
-        if type(axis) == int:
+        if isinstance(axis, int):
             axis_index = axis
         elif isinstance(axis, string_type):
             axis_index = self.axis_names.index(axis)
@@ -1158,7 +1159,7 @@ class Data:
             Toggle talkback. Default is True.
         '''
         # get axis index ------------------------------------------------------
-        if type(axis) == int:
+        if isinstance(axis, int):
             axis_index = axis
         elif isinstance(axis, string_type):
             axis_index = self.axis_names.index(axis)
@@ -1212,7 +1213,7 @@ class Data:
             dataset. Default is None.
         '''
         # process channel
-        if type(channel) == int:
+        if isinstance(channel, int):
             channel_index = channel
         elif isinstance(channel, string_type):
             channel_index = self.channel_names.index(channel)
@@ -1273,7 +1274,7 @@ class Data:
 
         # axis ----------------------------------------------------------------
 
-        if type(along) == int:
+        if isinstance(along, int):
             axis_index = along
         elif isinstance(along, string_type):
             axis_index = self.axis_names.index(along)
@@ -1323,7 +1324,7 @@ class Data:
         self.transpose(transpose_order, verbose=False)
 
         # get offset axis index
-        if type(offset_axis) == int:
+        if isinstance(offset_axis, int):
             offset_axis_index = offset_axis
         elif isinstance(offset_axis, string_type):
             offset_axis_index = self.axis_names.index(offset_axis)
@@ -1388,7 +1389,7 @@ class Data:
             Channel to remove.
         '''
         # get channel
-        if type(channel) == int:
+        if isinstance(channel, int):
             channel_index = channel
         elif isinstance(channel, string_type):
             channel_index = self.channel_names.index(channel)
@@ -1463,7 +1464,7 @@ class Data:
             Toggle talkback. Default is True.
         '''
         # get channel
-        if type(channel) == int:
+        if isinstance(channel, int):
             channel_index = channel
         elif isinstance(channel, string_type):
             channel_index = self.channel_names.index(channel)
@@ -1513,7 +1514,7 @@ class Data:
         '''
         # get factors ---------------------------------------------------------
 
-        if type(factors) == list:
+        if isinstance(factors, list):
             pass
         else:
             dummy = np.zeros(len(self.axes))
@@ -1523,7 +1524,7 @@ class Data:
         if channel is None:
             channels = self.channels
         else:
-            if type(channel) == int:
+            if isinstance(channel, int):
                 channel_index = channel
             elif isinstance(channel, string_type):
                 channel_index = self.channel_names.index(channel)
@@ -1594,7 +1595,7 @@ class Data:
             Collapse the dataset along one axis.
         '''
         # axis ----------------------------------------------------------------
-        if type(axis) == int:
+        if isinstance(axis, int):
             axis_index = axis
         elif isinstance(axis, string_type):
             axis_index = self.axis_names.index(axis)
@@ -1712,7 +1713,7 @@ class Data:
             transpose_order[ri], transpose_order[ai] = transpose_order[ai], transpose_order[ri]
         self.transpose(transpose_order, verbose=False)
         # get own channel
-        if type(channel) == int:
+        if isinstance(channel, int):
             channel_index = channel
         elif isinstance(channel, string_type):
             channel_index = self.channel_names.index(channel)
@@ -1720,7 +1721,7 @@ class Data:
             print('channel type', type(channel), 'not valid')
         channel = self.channels[channel_index]
         # get subtrahend channel
-        if type(subtrahend_channel) == int:
+        if isinstance(subtrahend_channel, int):
             subtrahend_channel_index = subtrahend_channel
         elif isinstance(subtrahend_channel, string_type):
             subtrahend_channel_index = subtrahend.channel_names.index(subtrahend_channel)
@@ -1912,7 +1913,7 @@ def from_text(filepath, name=None, verbose=True):
     data
         New data object(s).
     '''
-    if type(filepath) == type([]) or type(filepath) == type(np.array([])):
+    if isinstance(filepath, type([])) or isinstance(filepath, type(np.array([]))):
         return [from_rRaman(f) for f in filepath]
 
     if not os.path.isfile(filepath):
@@ -1963,7 +1964,7 @@ def from_COLORS(filepaths, znull=None, name=None, cols=None, invert_d1=True,
 
     # do we have a list of files or just one file? ----------------------------
 
-    if type(filepaths) == list:
+    if isinstance(filepaths, list):
         file_example = filepaths[0]
     else:
         file_example = filepaths
@@ -1986,60 +1987,60 @@ def from_COLORS(filepaths, znull=None, name=None, cols=None, invert_d1=True,
 
     if cols == 'v2':
         axes = collections.OrderedDict()
-        axes['num'] = Axis(None, None, tolerance=0.5,  file_idx=0,
-                           name='num',  label_seed=['num'])
-        axes['w1'] = Axis(None, 'nm', tolerance=0.5,  file_idx=1,  name='w1',   label_seed=['1'])
-        axes['w2'] = Axis(None, 'nm', tolerance=0.5,  file_idx=3,  name='w2',   label_seed=['2'])
-        axes['w3'] = Axis(None, 'nm', tolerance=5.0,  file_idx=5,  name='w3',   label_seed=['3'])
-        axes['wm'] = Axis(None, 'nm', tolerance=1.0,  file_idx=7,  name='wm',   label_seed=['m'])
-        axes['wa'] = Axis(None, 'nm', tolerance=1.0,  file_idx=8,  name='wm',   label_seed=['a'])
+        axes['num'] = Axis(None, None, tolerance=0.5, file_idx=0,
+                           name='num', label_seed=['num'])
+        axes['w1'] = Axis(None, 'nm', tolerance=0.5, file_idx=1, name='w1', label_seed=['1'])
+        axes['w2'] = Axis(None, 'nm', tolerance=0.5, file_idx=3, name='w2', label_seed=['2'])
+        axes['w3'] = Axis(None, 'nm', tolerance=5.0, file_idx=5, name='w3', label_seed=['3'])
+        axes['wm'] = Axis(None, 'nm', tolerance=1.0, file_idx=7, name='wm', label_seed=['m'])
+        axes['wa'] = Axis(None, 'nm', tolerance=1.0, file_idx=8, name='wm', label_seed=['a'])
         axes['dref'] = Axis(None, 'fs', tolerance=25.0, file_idx=10,
                             name='dref', label_seed=['ref'])
-        axes['d1'] = Axis(None, 'fs', tolerance=4.0,  file_idx=12,
-                          name='d1',   label_seed=['22\''])
-        axes['d2'] = Axis(None, 'fs', tolerance=4.0,  file_idx=14, name='d2',   label_seed=['21'])
-        axes['m0'] = Axis(None, None, tolerance=10.0, file_idx=22, name='m0',   label_seed=['0'])
-        axes['m1'] = Axis(None, None, tolerance=10.0, file_idx=23, name='m1',   label_seed=['1'])
-        axes['m2'] = Axis(None, None, tolerance=10.0, file_idx=24, name='m2',   label_seed=['2'])
-        axes['m3'] = Axis(None, None, tolerance=10.0, file_idx=25, name='m3',   label_seed=['3'])
-        axes['m4'] = Axis(None, None, tolerance=15.0, file_idx=26, name='m4',   label_seed=['4'])
-        axes['m5'] = Axis(None, None, tolerance=15.0, file_idx=27, name='m5',   label_seed=['5'])
-        axes['m6'] = Axis(None, None, tolerance=15.0, file_idx=28, name='m6',   label_seed=['6'])
+        axes['d1'] = Axis(None, 'fs', tolerance=4.0, file_idx=12,
+                          name='d1', label_seed=['22\''])
+        axes['d2'] = Axis(None, 'fs', tolerance=4.0, file_idx=14, name='d2', label_seed=['21'])
+        axes['m0'] = Axis(None, None, tolerance=10.0, file_idx=22, name='m0', label_seed=['0'])
+        axes['m1'] = Axis(None, None, tolerance=10.0, file_idx=23, name='m1', label_seed=['1'])
+        axes['m2'] = Axis(None, None, tolerance=10.0, file_idx=24, name='m2', label_seed=['2'])
+        axes['m3'] = Axis(None, None, tolerance=10.0, file_idx=25, name='m3', label_seed=['3'])
+        axes['m4'] = Axis(None, None, tolerance=15.0, file_idx=26, name='m4', label_seed=['4'])
+        axes['m5'] = Axis(None, None, tolerance=15.0, file_idx=27, name='m5', label_seed=['5'])
+        axes['m6'] = Axis(None, None, tolerance=15.0, file_idx=28, name='m6', label_seed=['6'])
         channels = collections.OrderedDict()
-        channels['ai0'] = Channel(None, 'V',  file_idx=16, name='ai0',  label_seed=['0'])
-        channels['ai1'] = Channel(None, 'V',  file_idx=17, name='ai1',  label_seed=['1'])
-        channels['ai2'] = Channel(None, 'V',  file_idx=18, name='ai2',  label_seed=['2'])
-        channels['ai3'] = Channel(None, 'V',  file_idx=19, name='ai3',  label_seed=['3'])
-        channels['ai4'] = Channel(None, 'V',  file_idx=20, name='ai4',  label_seed=['4'])
+        channels['ai0'] = Channel(None, 'V', file_idx=16, name='ai0', label_seed=['0'])
+        channels['ai1'] = Channel(None, 'V', file_idx=17, name='ai1', label_seed=['1'])
+        channels['ai2'] = Channel(None, 'V', file_idx=18, name='ai2', label_seed=['2'])
+        channels['ai3'] = Channel(None, 'V', file_idx=19, name='ai3', label_seed=['3'])
+        channels['ai4'] = Channel(None, 'V', file_idx=20, name='ai4', label_seed=['4'])
         channels['mc'] = Channel(None, None, file_idx=21, name='array', label_seed=['a'])
     elif cols == 'v1':
         axes = collections.OrderedDict()
-        axes['num'] = Axis(None, None, tolerance=0.5,  file_idx=0,
-                           name='num',  label_seed=['num'])
-        axes['w1'] = Axis(None, 'nm', tolerance=0.5,  file_idx=1,  name='w1',   label_seed=['1'])
-        axes['w2'] = Axis(None, 'nm', tolerance=0.5,  file_idx=3,  name='w2',   label_seed=['2'])
-        axes['wm'] = Axis(None, 'nm', tolerance=0.5,  file_idx=5,  name='wm',   label_seed=['m'])
-        axes['d1'] = Axis(None, 'fs', tolerance=3.0,  file_idx=6,  name='d1',   label_seed=['1'])
-        axes['d2'] = Axis(None, 'fs', tolerance=3.0,  file_idx=7,  name='d2',   label_seed=['2'])
+        axes['num'] = Axis(None, None, tolerance=0.5, file_idx=0,
+                           name='num', label_seed=['num'])
+        axes['w1'] = Axis(None, 'nm', tolerance=0.5, file_idx=1, name='w1', label_seed=['1'])
+        axes['w2'] = Axis(None, 'nm', tolerance=0.5, file_idx=3, name='w2', label_seed=['2'])
+        axes['wm'] = Axis(None, 'nm', tolerance=0.5, file_idx=5, name='wm', label_seed=['m'])
+        axes['d1'] = Axis(None, 'fs', tolerance=3.0, file_idx=6, name='d1', label_seed=['1'])
+        axes['d2'] = Axis(None, 'fs', tolerance=3.0, file_idx=7, name='d2', label_seed=['2'])
         channels = collections.OrderedDict()
-        channels['ai0'] = Channel(None, 'V',  file_idx=8,  name='ai0',  label_seed=['0'])
-        channels['ai1'] = Channel(None, 'V',  file_idx=9,  name='ai1',  label_seed=['1'])
-        channels['ai2'] = Channel(None, 'V',  file_idx=10, name='ai2',  label_seed=['2'])
-        channels['ai3'] = Channel(None, 'V',  file_idx=11, name='ai3',  label_seed=['3'])
+        channels['ai0'] = Channel(None, 'V', file_idx=8, name='ai0', label_seed=['0'])
+        channels['ai1'] = Channel(None, 'V', file_idx=9, name='ai1', label_seed=['1'])
+        channels['ai2'] = Channel(None, 'V', file_idx=10, name='ai2', label_seed=['2'])
+        channels['ai3'] = Channel(None, 'V', file_idx=11, name='ai3', label_seed=['3'])
     elif cols == 'v0':
         axes = collections.OrderedDict()
-        axes['num'] = Axis(None, None, tolerance=0.5,  file_idx=0,
-                           name='num',  label_seed=['num'])
-        axes['w1'] = Axis(None, 'nm', tolerance=0.5,  file_idx=1,  name='w1',   label_seed=['1'])
-        axes['w2'] = Axis(None, 'nm', tolerance=0.5,  file_idx=3,  name='w2',   label_seed=['2'])
-        axes['wm'] = Axis(None, 'nm', tolerance=0.5,  file_idx=5,  name='wm',   label_seed=['m'])
-        axes['d1'] = Axis(None, 'fs', tolerance=3.0,  file_idx=6,  name='d1',   label_seed=['1'])
-        axes['d2'] = Axis(None, 'fs', tolerance=3.0,  file_idx=8,  name='d2',   label_seed=['2'])
+        axes['num'] = Axis(None, None, tolerance=0.5, file_idx=0,
+                           name='num', label_seed=['num'])
+        axes['w1'] = Axis(None, 'nm', tolerance=0.5, file_idx=1, name='w1', label_seed=['1'])
+        axes['w2'] = Axis(None, 'nm', tolerance=0.5, file_idx=3, name='w2', label_seed=['2'])
+        axes['wm'] = Axis(None, 'nm', tolerance=0.5, file_idx=5, name='wm', label_seed=['m'])
+        axes['d1'] = Axis(None, 'fs', tolerance=3.0, file_idx=6, name='d1', label_seed=['1'])
+        axes['d2'] = Axis(None, 'fs', tolerance=3.0, file_idx=8, name='d2', label_seed=['2'])
         channels = collections.OrderedDict()
-        channels['ai0'] = Channel(None, 'V',  file_idx=10, name='ai0',  label_seed=['0'])
-        channels['ai1'] = Channel(None, 'V',  file_idx=11, name='ai1',  label_seed=['1'])
-        channels['ai2'] = Channel(None, 'V',  file_idx=12, name='ai2',  label_seed=['2'])
-        channels['ai3'] = Channel(None, 'V',  file_idx=13, name='ai3',  label_seed=['3'])
+        channels['ai0'] = Channel(None, 'V', file_idx=10, name='ai0', label_seed=['0'])
+        channels['ai1'] = Channel(None, 'V', file_idx=11, name='ai1', label_seed=['1'])
+        channels['ai2'] = Channel(None, 'V', file_idx=12, name='ai2', label_seed=['2'])
+        channels['ai3'] = Channel(None, 'V', file_idx=13, name='ai3', label_seed=['3'])
 
     # import full array -------------------------------------------------------
 
@@ -2149,7 +2150,7 @@ def from_COLORS(filepaths, znull=None, name=None, cols=None, invert_d1=True,
     if color_steps_as == 'energy':
         try:
             data.convert('wn', verbose=False)
-        except:
+        except BaseException:
             pass
 
     for axis in data.axes:
@@ -2223,7 +2224,7 @@ def from_KENT(filepaths, znull=None, name=None, ignore=['wm'], use_norm=False,
     filepaths may be string or list \n
     '''
     # do we have a list of files or just one file? ----------------------------
-    if type(filepaths) == list:
+    if isinstance(filepaths, list):
         file_example = filepaths[0]
     else:
         file_example = filepaths
@@ -2232,20 +2233,20 @@ def from_KENT(filepaths, znull=None, name=None, ignore=['wm'], use_norm=False,
     # axes
     axes = collections.OrderedDict()
     axes['w1'] = Axis(None, 'wn', tolerance=frequency_tolerance,
-                      file_idx=0,  name='w1',  label_seed=['1'])
+                      file_idx=0, name='w1', label_seed=['1'])
     axes['w2'] = Axis(None, 'wn', tolerance=frequency_tolerance,
-                      file_idx=1,  name='w2',   label_seed=['2'])
+                      file_idx=1, name='w2', label_seed=['2'])
     axes['wm'] = Axis(None, 'wn', tolerance=frequency_tolerance,
-                      file_idx=2,  name='wm',   label_seed=['m'])
+                      file_idx=2, name='wm', label_seed=['m'])
     axes['d1'] = Axis(None, 'ps', tolerance=delay_tolerance,
-                      file_idx=3,  name='d1',   label_seed=['1'])
+                      file_idx=3, name='d1', label_seed=['1'])
     axes['d2'] = Axis(None, 'ps', tolerance=delay_tolerance,
-                      file_idx=4,  name='d2',   label_seed=['2'])
+                      file_idx=4, name='d2', label_seed=['2'])
     # channels
     channels = collections.OrderedDict()
-    channels['signal'] = Channel(None, 'V',  file_idx=5, name='signal',  label_seed=['0'])
-    channels['OPA2'] = Channel(None, 'V',  file_idx=6, name='OPA2',  label_seed=['1'])
-    channels['OPA1'] = Channel(None, 'V',  file_idx=7, name='OPA1',  label_seed=['2'])
+    channels['signal'] = Channel(None, 'V', file_idx=5, name='signal', label_seed=['0'])
+    channels['OPA2'] = Channel(None, 'V', file_idx=6, name='OPA2', label_seed=['1'])
+    channels['OPA1'] = Channel(None, 'V', file_idx=7, name='OPA1', label_seed=['2'])
     # import full array -------------------------------------------------------
     for i in range(len(filepaths)):
         dat = np.genfromtxt(filepaths[i]).T
@@ -2348,7 +2349,7 @@ def from_NISE(measure_object, name='simulation', ignore_constants=['A', 'p'],
               flip_delays=True, verbose=True):
     try:
         import NISE
-    except:
+    except BaseException:
         print('NISE is required to import scans, returning')
         return
     # axes --------------------------------------------------------------------
@@ -2424,7 +2425,7 @@ def from_pickle(filepath, verbose=True):
             pass
         else:
             print('pickled data is from different major version - consider remaking:')
-            print('  current:',  __version__)
+            print('  current:', __version__)
             print('  pickle:', data.__version__)
     else:
         print('this pickle was made before November 2015 - you MUST remake your data object')

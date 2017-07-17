@@ -69,10 +69,10 @@ time = {'kind': 'time',
         'ns_t': ['x/1e9', 'x*1e9', r'ns'],
         'us_t': ['x/1e6', 'x*1e6', r'us'],
         'ms_t': ['x/1000.', 'x*1000.', r'ms'],
-        's_t':  ['x', 'x', r's'],
-        'm_t':  ['x*60.', 'x/60.', r'm'],
-        'h_t':  ['x*3600.', 'x/3600.', r'h'],
-        'd_t':  ['x*86400.', 'x/86400.', r'd']}
+        's_t': ['x', 'x', r's'],
+        'm_t': ['x*60.', 'x/60.', r'm'],
+        'h_t': ['x*3600.', 'x/3600.', r'h'],
+        'd_t': ['x*86400.', 'x/86400.', r'd']}
 
 unit_dicts = [angle, delay, energy, time, position, pulse_width, fluence, od]
 

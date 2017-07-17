@@ -159,7 +159,7 @@ class Drive:
         Returns
         -------
         string
-            The unique Google Drive ID of the bottom-most newly created folder. 
+            The unique Google Drive ID of the bottom-most newly created folder.
         """
         import time
         t = time.time()
@@ -167,7 +167,7 @@ class Drive:
         print(time.time() - t, "Authenticate")
         t = time.time()
         # clean inputs
-        if type(name) == str:
+        if isinstance(name, str):
             name = [name]
         # create
         parent = parentid
@@ -186,7 +186,7 @@ class Drive:
                 continue
             # if no folder was found, create one
             f = self.api.CreateFile({'title': n,
-                                     "parents":  [{"id": parent}],
+                                     "parents": [{"id": parent}],
                                      "mimeType": "application/vnd.google-apps.folder"})
             f.Upload()
             parent = f['id']
@@ -274,7 +274,7 @@ class Drive:
     def upload(self, path, parentid, overwrite=False, delete_local=False,
                verbose=True):
         '''
-        Upload local file(s) to Google Drive.        
+        Upload local file(s) to Google Drive.
 
         Parameters
         ----------

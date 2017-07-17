@@ -127,7 +127,7 @@ class Axes(matplotlib.axes.Axes):
         # prepare -------------------------------------------------------------
         # get dimensionality
         # get channel
-        if type(channel) == int:
+        if isinstance(channel, int):
             channel_index = channel
         elif isinstance(channel, string_type):
             channel_index = data.channel_names.index(channel)
@@ -829,7 +829,7 @@ def pcolor_helper(xi, yi, zi, transform=None):
     that would be given to contorf etc \n
     returns list [X, Y, Z] appropriate for feeding directly
     into matplotlib.pyplot.pcolor so that the pixels are centered correctly. \n
-    transform takes a function that accepts a 
+    transform takes a function that accepts a
     '''
 
     x_points = np.zeros(len(xi) + 1)
@@ -845,7 +845,7 @@ def pcolor_helper(xi, yi, zi, transform=None):
                 points[j] = np.average([axis[j], axis[j - 1]])
 
     X, Y = np.meshgrid(x_points, y_points)
-    if type(transform) == type(None):
+    if isinstance(transform, type(None)):
         return X, Y, zi
     else:
         for (x, y), value in np.ndenumerate(X):
@@ -912,7 +912,7 @@ def plot_colorbar(cax=None, cmap='default', ticks=None, clim=None, vlim=None,
     format = '%.{0}f'.format(decimals)
     norm = matplotlib.colors.Normalize(vmin=vlim[0], vmax=vlim[1])
     cbar = matplotlib.colorbar.ColorbarBase(ax=cax, cmap=cmap,
-                                            norm=norm,  ticks=ticks,
+                                            norm=norm, ticks=ticks,
                                             orientation=orientation,
                                             ticklocation=ticklocation,
                                             format=format)
@@ -1269,7 +1269,7 @@ def stitch_to_animation(images, outpath=None, duration=0.5, palettesize=256,
             for p in images:
                 image = imageio.imread(p)
                 writer.append_data(image)
-    except:
+    except BaseException:
         print('Error: {0}'.format(sys.exc_info()[0]))
         return None
     # finish
@@ -1428,7 +1428,7 @@ for cmap in colormaps.values():
 
 
 # a nice set of line colors
-overline_colors = ['#CCFF00', '#FE4EDA',  '#FF6600', '#00FFBF', '#00B7EB']
+overline_colors = ['#CCFF00', '#FE4EDA', '#FF6600', '#00FFBF', '#00B7EB']
 
 
 ### general purpose artists ###################################################
@@ -1567,7 +1567,7 @@ class mpl_2D:
         ylim : tuple of floats
             (min_y, max_y)
         '''
-        if not type(transform) == type(None):
+        if not isinstance(transform, type(None)):
             x_corners = []
             y_corners = []
             for idx1 in [-1, 1]:
@@ -1610,7 +1610,7 @@ class mpl_2D:
     def plot(self, channel=0,
              contours=0, pixelated=True, lines=True, cmap='automatic',
              facecolor='w', dynamic_range=False, local=False,
-             contours_local=True, normalize_slices='both',  xbin=False,
+             contours_local=True, normalize_slices='both', xbin=False,
              ybin=False, xlim=None, ylim=None, autosave=False,
              output_folder=None, fname=None, verbose=True,
              transform=None, contour_thickness=None):
@@ -1730,8 +1730,8 @@ class mpl_2D:
             if fig and autosave:
                 plt.close(fig)
 
-            find_xlim = type(xlim) == type(None)
-            find_ylim = type(ylim) == type(None)
+            find_xlim = isinstance(xlim, type(None))
+            find_ylim = isinstance(ylim, type(None))
             if find_ylim or find_xlim:
                 if find_ylim and find_xlim:
                     xlim, ylim = self.get_lims(transform)
@@ -1800,7 +1800,7 @@ class mpl_2D:
             # overlap with contourf if not pixelated
             if not pixelated:
                 X, Y = np.meshgrid(self.xaxis.points, self.yaxis.points)
-                if not type(transform) == type(None):
+                if not isinstance(transform, type(None)):
                     for (x, y), value in np.ndenumerate(X):
                         X[x][y], Y[x][y] = transform((X[x][y], Y[x][y]))
                 # if not type(transform)==type(None):
@@ -1854,7 +1854,7 @@ class mpl_2D:
                         channel.znull - 1e-10, np.nanmax(zi) + 1e-10, contours + 2)
                 else:
                     contours_levels = contours
-                if contour_thickness == None:
+                if contour_thickness is None:
                     subplot_main.contour(X, Y, zi, contours_levels, colors='k')
                 else:
                     subplot_main.contour(X, Y, zi, contours_levels, colors='k',
@@ -1995,7 +1995,7 @@ class absorbance:
 
     def __init__(self, data):
 
-        if not type(data) == list:
+        if not isinstance(data, list):
             data = [data]
 
         self.data = data
@@ -2487,7 +2487,7 @@ class PDFAll2DSlices:
         # get channel index
         if type(channel) in [int, float]:
             channel_index = int(channel)
-        elif type(channel) == str:
+        elif isinstance(channel, str):
             channel_index = self.datas[0].channel_names.index(channel)
         else:
             print('channel type not recognized in mpl_2D!')
@@ -2500,7 +2500,7 @@ class PDFAll2DSlices:
         # get channel index
         if type(channel) in [int, float]:
             channel_index = int(channel)
-        elif type(channel) == str:
+        elif isinstance(channel, str):
             channel_index = self.datas[0].channel_names.index(channel)
         else:
             print('channel type not recognized in mpl_2D!')
