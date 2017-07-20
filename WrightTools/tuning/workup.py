@@ -138,7 +138,8 @@ def intensity(data, curve, channel_name, level=False, cutoff_factor=0.1,
     ax.plot(xi, yi, c='k', lw=5, alpha=0.5)
     units_string = '$\mathsf{(' + wt_units.color_symbols[curve.units] + ')}$'
     ax.set_xlabel(' '.join(['setpoint', units_string]), fontsize=18)
-    ax.set_ylabel(' '.join(['$\mathsf{\Delta}$', curve.motor_names[tuned_motor_index]]), fontsize=18)
+    ax.set_ylabel(
+        ' '.join(['$\mathsf{\Delta}$', curve.motor_names[tuned_motor_index]]), fontsize=18)
     # colorbar
     cax = plt.subplot(gs[1, -1])
     label = channel_name
@@ -157,7 +158,7 @@ def intensity(data, curve, channel_name, level=False, cutoff_factor=0.1,
 def tune_test(data, curve, channel_name, level=False, cutoff_factor=0.01,
               autosave=True, save_directory=None):
     """
-    
+
     Parameters
     ----------
     data : wt.data.Data object
@@ -190,11 +191,11 @@ def tune_test(data, curve, channel_name, level=False, cutoff_factor=0.01,
     # cutoff
     channel_index = data.channel_names.index(channel_name)
     channel = data.channels[channel_index]
-    cutoff = np.nanmax(channel.values)*cutoff_factor
-    channel.values[channel.values<cutoff] = np.nan
+    cutoff = np.nanmax(channel.values) * cutoff_factor
+    channel.values[channel.values < cutoff] = np.nan
     # fit
     gauss_function = wt_fit.Gaussian()
-    g_fitter = wt_fit.Fitter(gauss_function,data,data.axes[0].name)
+    g_fitter = wt_fit.Fitter(gauss_function, data, data.axes[0].name)
     outs = g_fitter.run()
     # spline
     xi = outs.axes[0].points
