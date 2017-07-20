@@ -31,10 +31,10 @@ debug = False
 
 
 class CoSet:
-    
+
     def __add__(self, coset):
         # HOW THIS WORKS
-        #   
+        #
         # TODO: proper checks and warnings...
         # copy
         other_copy = coset.__copy__()
@@ -48,7 +48,7 @@ class CoSet:
         min_limit = max(other_limits[0], self_limits[0])
         max_limit = min(other_limits[1], self_limits[1])
         num_points = max(other_copy.control_points.size, self_copy.control_points.size)
-        new_control_points = np.linspace(min_limit, max_limit, num_points)        
+        new_control_points = np.linspace(min_limit, max_limit, num_points)
         # coerce to new control points
         other_copy.map_control_points(new_control_points)
         self_copy.map_control_points(new_control_points)
@@ -79,28 +79,28 @@ class CoSet:
         outs.append('  control: ' + self.control_name)
         outs.append('  offset: ' + self.offset_name)
         return '\n'.join(outs)
-    
+
     def coerce_offsets(self):
         '''
         Coerce the offsets to lie exactly along the interpolation
         positions. Can be thought of as 'smoothing' the coset.
         '''
         self.map_control_points(self.control_points, units='same')
-        
+
     def convert_control_units(self, units):
         self.control_points = wt_units.converter(self.control_points, self.control_units, units)
         self.sort()
         self.control_units = units
         self.interpolate()
-        
+
     def convert_offset_units(self, units):
         self.offset_points = wt_units.converter(self.offset_points, self.offset_units, units)
         self.offset_units = units
         self.interpolate()
-    
+
     def copy(self):
         return self.__copy__()
-        
+
     def get_limits(self, units='same'):
         '''
         Get the edges of the coset object.
@@ -120,12 +120,13 @@ class CoSet:
         else:
             units_points = wt_units.converter(self.control_points, self.control_units, units)
             return [units_points.min(), units_points.max()]
-            
+
     def get_offset(self, control_position, input_units='same',
                    output_units='same'):
         # get control position in own units
         if not input_units == 'same':
-            control_position = wt_units.converter(control_position, self.control_units, input_units)
+            control_position = wt_units.converter(
+                control_position, self.control_units, input_units)
         # get offset in own units using spline
         offset = self.spline(control_position)
         # convert offset to output units
@@ -133,10 +134,11 @@ class CoSet:
             offset = wt_units.converter(offset, self.offset_units, output_units)
         # finish
         return offset
-        
+
     def interpolate(self):
-        self.spline = scipy.interpolate.InterpolatedUnivariateSpline(self.control_points, self.offset_points)
-        
+        self.spline = scipy.interpolate.InterpolatedUnivariateSpline(
+            self.control_points, self.offset_points)
+
     def map_control_points(self, points, units='same'):
         '''
         Map the offset points onto new control points using interpolation.
@@ -151,7 +153,7 @@ class CoSet:
             object are not changed.
         '''
         # get new points in input units
-        if type(points) == int:
+        if isinstance(points, int):
             limits = self.get_limits(self.control_units)
             new_points = np.linspace(limits[0], limits[1], points)
         else:
@@ -159,13 +161,12 @@ class CoSet:
         # convert new points to local units
         if units == 'same':
             units = self.control_units
-        new_points = wt_units.converter(new_points, units, self.control_units)
-        new_points.sort()
+        new_points = sorted(wt_units.converter(new_points, units, self.control_units))
         new_offsets = self.get_offset(new_points)
         # finish
         self.control_points = new_points
         self.offset_points = new_offsets
-        
+
     def plot(self, autosave=False, save_path=''):
         fig, gs = wt_artists.create_figure(cols=[1])
         ax = plt.subplot(gs[0])
@@ -182,7 +183,7 @@ class CoSet:
         if autosave:
             plt.savefig(save_path, dpi=300, transparent=True, pad_inches=1)
             plt.close(fig)
-        
+
     def save(self, save_directory=None, plot=True, verbose=True):
         if save_directory is None:
             save_directory = os.getcwd()
@@ -196,14 +197,14 @@ class CoSet:
         headers['offset units'] = self.offset_units
         file_path = wt_kit.write_headers(file_path, headers)
         X = np.vstack([self.control_points, self.offset_points]).T
-        with open(file_path, 'ab') as f: 
+        with open(file_path, 'ab') as f:
             np.savetxt(f, X, fmt=str('%8.6f'), delimiter='\t')
         if plot:
             image_path = file_path.replace('.coset', '.png')
             self.plot(autosave=True, save_path=image_path)
         if verbose:
             print('coset saved at {}'.format(file_path))
-    
+
     def sort(self):
         '''
         Control points must be ascending.
@@ -214,7 +215,7 @@ class CoSet:
 
 
 ### coset load method #########################################################
-        
+
 
 def from_file(path):
     # get raw information from file
