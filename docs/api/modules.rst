@@ -1,5 +1,5 @@
-WrightTools
-===========
+WrightTools API
+===============
 
 .. toctree::
    :maxdepth: 4
