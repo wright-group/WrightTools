@@ -34,7 +34,7 @@ sys.path.insert(0, os.path.abspath('../WrightTools'))
 # ones.
 extensions = ['sphinx.ext.autodoc',
     'sphinx.ext.doctest',
-    'sphinx.ext.autosummary',
+#    'sphinx.ext.autosummary',
     'sphinx.ext.intersphinx',
     'sphinx.ext.todo',
     'sphinx.ext.coverage',
@@ -195,5 +195,6 @@ texinfo_documents = [
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3', None),
     'scipy': ('https://docs.scipy.org/doc/scipy/reference', None),
-    'matplotlib': ('http://matplotlib.org', None)
+    'matplotlib': ('http://matplotlib.org', None),
+    'numpy': ('https://docs.scipy.org/doc/numpy/', None)
 }
