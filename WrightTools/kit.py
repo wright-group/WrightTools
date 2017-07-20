@@ -754,11 +754,10 @@ def closest_pair(arr, give='indicies'):
         List containing lists of two tuples: indicies the nearest pair in the
         array.
 
-    Examples
-    --------
-    >>> arr = np.array([0, 1, 2, 3, 3, 4, 5, 6, 1])
-    >>> closest_pair(arr)
-    [[(1,), (8,)], [(3,), (4,)]]
+        >>> arr = np.array([0, 1, 2, 3, 3, 4, 5, 6, 1])
+        >>> closest_pair(arr)
+        [[(1,), (8,)], [(3,), (4,)]]
+
     '''
     idxs = [idx for idx in np.ndindex(arr.shape)]
     outs = []
@@ -980,9 +979,7 @@ class Spline:
             Toggle removle of nans. Default is True.
             
         
-        Note
-        ----
-        Use k=1 and s=0 for a linear interplation.
+        .. note:: Use k=1 and s=0 for a linear interplation.
         '''
         # import
         from scipy.interpolate import UnivariateSpline
@@ -1084,11 +1081,10 @@ def flatten_list(l):
     
     Adapted from http://stackoverflow.com/questions/2158395
     
-    Example
-    -------
-    >>> l = [[[1, 2, 3], [4, 5]], 6]
-    >>> wt.kit.flatten_list(l)
-    [1, 2, 3, 4, 5, 6]
+        >>> l = [[[1, 2, 3], [4, 5]], 6]
+        >>> wt.kit.flatten_list(l)
+        [1, 2, 3, 4, 5, 6]
+
     '''
     listIsNested = True
     while listIsNested:  # outer loop

@@ -143,6 +143,7 @@ class Calibration:
     def get_positions(self, value, **kwargs):
         '''
         Returns
+        -------
         list of dictionaries
             All valid coordinates, defined for all axes. List may be empty.
         '''
@@ -220,9 +221,7 @@ class Calibration:
         output
             Save path if autosave is True, fig object if autosave is False.        
         
-        Note
-        ----
-        Only works for one and two-dimensional calibrations at this time.
+        .. note:: Only works for one and two-dimensional calibrations at this time.
         '''
         if self.dimensionality == 1:
             fig, gs = wt_artists.create_figure(cols=[1])

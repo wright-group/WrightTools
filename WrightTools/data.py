@@ -489,10 +489,9 @@ class Data:
         split
             Split the dataset while maintaining its dimensionality.
 
-        Examples
-        --------
-        >>> data.chop('w1', 'w2', at={'d2': [0, 'fs']})
-        [data]
+            >>> data.chop('w1', 'w2', at={'d2': [0, 'fs']})
+            [data]
+
         '''
         # organize arguments recieved -----------------------------------------
         axes_args = list(args)
@@ -929,10 +928,10 @@ class Data:
         verbose : bool (optional)
             Toggle talkback. Default is True.
 
-        Notes
-        -----
-        Healing may take several minutes for large datasets. Interpolation
-        time goes as nearest, linear, then cubic.
+
+        .. note:: Healing may take several minutes for large datasets. Interpolation time goes as nearest, linear, then cubic.
+
+
         '''
         timer = wt_kit.Timer(verbose=False)
         with timer:
@@ -1047,8 +1046,12 @@ class Data:
           indices=None, m=None,
           bounds_error=True, verbose=True):
         '''
+        placeholder docstring because the existing one needs numpydoc formatting and is causing errors
+        '''
+        docsatring = '''
         normalize channel by absorptive effects given by absorption data object
             'abs_data'
+
         indices can be used to override default assignments for normalization
         m can be used to override default assignments for functional forms
          --> better to just add to the dictionary, though!
@@ -1062,6 +1065,7 @@ class Data:
             --requires unique, integer (0<x<10) numbering for index
                 identification
         '''
+        #TODO: numpydoc format docstring
         # exp_name: [i], [m_i]
         exp_types = {
             'TG': [['1','2'],
@@ -1254,11 +1258,10 @@ class Data:
         verbose : bool (optional)
             Toggle talkback. Default is True.
 
-        Examples
-        --------
-        >>> points  # an array of w1 points
-        >>> offsets  # an array of d1 corrections
-        >>> data.offset(points, offsets, 'w1', 'd1')
+            >>> points  # an array of w1 points
+            >>> offsets  # an array of d1 corrections
+            >>> data.offset(points, offsets, 'w1', 'd1')
+
         '''
 
         # axis ----------------------------------------------------------------
@@ -1488,6 +1491,7 @@ class Data:
     def smooth(self, factors, channel=None, verbose=True):
         '''
         Smooth a channel using an n-dimenional `kaiser window <https://en.wikipedia.org/wiki/Kaiser_window>`_.
+
         Parameters
         ----------
         factors : int or list of int

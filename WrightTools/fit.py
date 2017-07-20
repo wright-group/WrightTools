@@ -615,8 +615,8 @@ class MultiPeakFitter:
         verbose : bool
             toggle talkback
 
-        Instantiated attributes
-        -----------------------
+        Attributes
+        ----------
         fit_results : ordered dict of dict
         diff_model : array
             array offerring the final results of the fit in the native space of the fit
