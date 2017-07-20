@@ -1,13 +1,15 @@
-Contributing to WrightTools
-===========================
+.. _contributing:
+
+Contributing
+============
 
 Thank you so much for contributing to WrightTools!
 We really appreciate your help.
 
 If you have any questions at all, please either `open an issue on GitHub <https://github.com/wright-group/WrightTools/issues>`_ or email a WrightTools maintainer. The current maintainers can always be found in `CONTRIBUTORS <https://github.com/wright-group/WrightTools/blob/master/CONTRIBUTORS>`_.
 
-Preparing to edit WrightTools
------------------------------
+Preparing
+---------
 
 #. fork the `WrightTools repository <https://github.com/wright-group/WrightTools>`_ (if you have push access to the main repository you can skip this step)
 #. clone WrightTools to your machine: ``$ git clone <your fork>``

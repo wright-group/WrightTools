@@ -1,20 +1,28 @@
-.. WrightTools documentation master file, created by
-   sphinx-quickstart on Tue Jul 18 13:01:20 2017.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+WrightTools
+===========
 
-Welcome to WrightTools's documentation!
-=======================================
+Tools for loading, processing, and plotting multidimensional spectroscopy data.
+
+Contents
+--------
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
 
+   install
+   quickstart
+   data
+   fit
+   artists
+   tuning
+   diagrams
+   contributing 
+   modules
 
-
-Indices and tables
-==================
+Index
+-----
 
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+

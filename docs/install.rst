@@ -1,6 +1,7 @@
-=======
-Install
-=======
+.. _install:
+
+Installation
+============
 
 conda-forge
 -----------
@@ -17,6 +18,12 @@ If you don't have Python yet, start by `installing Anaconda`_
     conda config --add channels conda-forge
     conda install wrighttools
 
+To upgrade:
+
+.. code-block:: bash
+
+    conda update wrighttools
+
 pip
 ---
 
@@ -27,18 +34,7 @@ pip_ is Python's official package manager. `WrightTools is hosted on PyPI`_.
 
     pip install wrighttools
 
-Upgrade
-=======
-
-conda
------
-
-.. code-block:: bash
-
-    conda update wrighttools
-
-pip
----
+To upgrade:
 
 .. code-block:: bash
 
