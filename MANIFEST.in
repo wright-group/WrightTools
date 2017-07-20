@@ -1,3 +1,4 @@
 include CONTRIBUTORS
+recursive-include datasets *
 include LICENSE
 include README.md
