@@ -31,8 +31,8 @@ debug = False
 
 
 cmap = wt_artists.colormaps['default']
-cmap.set_bad([0.75]*3, 1.)
-cmap.set_under([0.75]*3)
+cmap.set_bad([0.75] * 3, 1.)
+cmap.set_under([0.75] * 3)
 
 
 def get_label(name, units):
@@ -41,7 +41,7 @@ def get_label(name, units):
     for dic in wt_units.unit_dicts:
         if units in dic.keys():
             units_kind = dic['kind']
-    
+
     # units string
     d = getattr(wt_units, units_kind)
     units_string = r'$\mathsf{('
@@ -61,7 +61,7 @@ class Calibration:
                  note=''):
         '''
         Container for unstructured calibration data.
-        
+
         Parameters
         ----------
         points : list of lists
@@ -107,7 +107,7 @@ class Calibration:
     def append(self, points, values, units='same'):
         '''
         Add new data to the calibration.
-        
+
         Parameters
         ----------
         points : list of lists
@@ -119,17 +119,17 @@ class Calibration:
         '''
         points = np.array(points)
         values = np.array(values)
-        if not units == 'same':        
+        if not units == 'same':
             for i, p in enumerate(points):
                 points[i] = wt_units.converter(p, units[i], self.axis_units[i])
         self.points = np.hstack([self.points, points])
         self.values = np.hstack([self.values, values])
         self._interpolate()
-        
+
     def convert(self, axis_units):
         '''
         Convert axes to new units.
-        
+
         Parameters
         ----------
         axis_units : list of string
@@ -154,14 +154,14 @@ class Calibration:
             # TODO: unhack...
             xi = np.linspace(self.points[1].min(), self.points[1].max(), 101)
             yi = np.array([self.get_value([kwargs['color'], x]) for x in xi])
-            i = np.argmin(np.abs(yi-value))
-            out = [{'color': kwargs['color'], 'angle': xi[i]}]            
+            i = np.argmin(np.abs(yi - value))
+            out = [{'color': kwargs['color'], 'angle': xi[i]}]
         return out
-            
+
     def get_value(self, positions, units='same'):
         '''
         Get the value at some particular coordinate using linear interpolation.
-        
+
         Parameters
         ----------
         positions : list of numbers
@@ -170,7 +170,7 @@ class Calibration:
             Units of positions. Default is 'same'.
         '''
         return self.interpolator(*positions)
-        
+
     def map_points(self, points, units='same'):
         '''
         Map the points onto new points using interpolation.
@@ -185,7 +185,7 @@ class Calibration:
             object are not changed.
         '''
         # get new points in input units
-        if type(points) == int:
+        if isinstance(points, int):
             limits = self.get_limits(self.units)
             new_points = np.linspace(limits[0], limits[1], points)
         else:
@@ -193,17 +193,16 @@ class Calibration:
         # convert new points to local units
         if units == 'same':
             units = self.control_units
-        new_points = wt_units.converter(new_points, units, self.control_units)
-        new_points.sort()
+        new_points = sorted(wt_units.converter(new_points, units, self.control_units))
         new_values = self.get_offset(new_points)
         # finish
         self.points = new_points
         self.values = new_values
-        
+
     def plot(self, autosave=False, save_directory=None, file_name=None):
         '''
         Plot the calibration.
-        
+
         Parameters
         ----------
         autosave : boolean (optional)
@@ -214,12 +213,12 @@ class Calibration:
         file_name : string (optional)
             Name for output image. If None (default), uses own name and a
             timestamp.
-        
+
         Returns
         -------
         output
-            Save path if autosave is True, fig object if autosave is False.        
-        
+            Save path if autosave is True, fig object if autosave is False.
+
         Note
         ----
         Only works for one and two-dimensional calibrations at this time.
@@ -241,7 +240,7 @@ class Calibration:
         elif self.dimensionality == 2:
             fig, gs = wt_artists.create_figure(cols=[1, 'cbar'])
             ax = plt.subplot(gs[0, 0])
-            ax.patch.set_facecolor([0.75]*3)
+            ax.patch.set_facecolor([0.75] * 3)
             levels = np.linspace(self.values.min(), self.values.max(), 200)
             ax.tricontourf(self.points[0], self.points[1], self.values, cmap=cmap, levels=levels)
             ax.scatter(self.points[0], self.points[1], c='k', s=3, marker='o')
@@ -269,12 +268,12 @@ class Calibration:
             wt_artists.savefig(save_path, fig=fig)
             return save_path
         return fig
-    
+
     def save(self, save_directory=None, file_name=None, plot=True,
              verbose=True):
         '''
         Save the calibration.
-        
+
         Parameters
         ----------
         save_directory : string or None (optional)
@@ -287,7 +286,7 @@ class Calibration:
             Toggle saving a plot of the calibration as well. Default is True.
         verbose : boolean (optional)
             Toggle talkback. Default is True.
-        
+
         Returns
         -------
         string
@@ -298,7 +297,7 @@ class Calibration:
         if save_directory is None:
             save_directory = os.getcwd()
         if file_name is None:
-            file_name = ' - '.join([self.name, time_stamp.path]) + '.calibration' 
+            file_name = ' - '.join([self.name, time_stamp.path]) + '.calibration'
         file_path = os.path.join(save_directory, file_name)
         # write to file
         headers = collections.OrderedDict()
@@ -323,7 +322,7 @@ class Calibration:
 
 
 ### load method ###############################################################
-        
+
 
 def from_file(path):
     # get raw information from file
