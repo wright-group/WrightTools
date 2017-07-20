@@ -855,7 +855,7 @@ def plot_colorbar(cax=None, cmap='default', ticks=None, clim=None, vlim=None,
     '''
     Easily add a colormap to an axis.
 
-    Paramaters
+    Parameters
     ----------
     cax : matplotlib axis (optional)
         The axis to plot the colorbar on. Finds the current axis if none is

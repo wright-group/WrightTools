@@ -697,8 +697,8 @@ def write_headers(filepath, dictionary):
     Write 'Wright Group formatted' headers to given file. Headers written can
     be read again using read_headers.
 
-    Paramters
-    ---------
+    Parameters
+    ----------
     filepath : str
         Path of file. File must not exist.
     dictionary : dict or OrderedDict
