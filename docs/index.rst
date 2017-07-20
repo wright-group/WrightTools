@@ -17,7 +17,7 @@ Contents
    tuning
    diagrams
    contributing 
-   modules
+   api/modules
 
 Index
 -----
