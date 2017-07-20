@@ -1101,13 +1101,13 @@ def set_fig_labels(fig=None, xlabel=None, ylabel=None, xticks=None, yticks=None,
     for ax in fig.axes:
         if ax.is_first_col() and ax.is_last_row():
             # lower left corner
-            set_ax_labels(ax=ax, xlabel=xlabel, ylabel=ylabel, xticks=xticks, yticks=yticks)
+            set_ax_labels(ax=ax, xlabel=xlabel, ylabel=ylabel, xticks=xticks, yticks=yticks, label_fontsize=label_fontsize)
         elif ax.is_first_col():
             # lefthand column
-            set_ax_labels(ax=ax, ylabel=ylabel, xticks=False, yticks=yticks)
+            set_ax_labels(ax=ax, ylabel=ylabel, xticks=False, yticks=yticks, label_fontsize=label_fontsize)
         elif ax.is_last_row():
             # bottom row
-            set_ax_labels(ax=ax, xlabel=xlabel, xticks=xticks, yticks=False)
+            set_ax_labels(ax=ax, xlabel=xlabel, xticks=xticks, yticks=False, label_fontsize=label_fontsize)
         else:
             set_ax_labels(ax=ax, xticks=False, yticks=False)
     # title
