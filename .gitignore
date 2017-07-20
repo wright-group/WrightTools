@@ -5,7 +5,10 @@ __pycache__/
 # C extensions
 *.so
 
-Images
+# vim swap files
+*.sw?
+
+# Images
 *.jpg
 *.gif
 *.png
