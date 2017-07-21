@@ -19,6 +19,7 @@
 #
 import os
 import sys
+import sphinx_gallery
 sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('../WrightTools'))
 
@@ -41,8 +42,10 @@ extensions = ['sphinx.ext.autodoc',
     'sphinx.ext.mathjax',
     'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
-    #'sphinx.ext.napoleon']
-    'numpydoc']
+    'matplotlib.sphinxext.plot_directive',
+    'sphinx.ext.napoleon',
+    #'numpydoc',
+    'sphinx_gallery.gen_gallery']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -188,6 +191,16 @@ texinfo_documents = [
      'Miscellaneous'),
 ]
 
+
+# -- gallery --------------------------------------------------------------
+
+
+sphinx_gallery_conf = {
+    'examples_dirs': '../examples',
+    'filename_pattern': '/*.py',
+    'gallery_dirs': 'auto_examples',
+    'download_section_examples': False,
+	'backreferences_dir': os.path.join('gen_modules', 'backreferences')}
 
 
 # -----------------------------------------------------------------------------
