@@ -43,9 +43,14 @@ extensions = ['sphinx.ext.autodoc',
     'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
     'matplotlib.sphinxext.plot_directive',
+    'sphinx_gallery.gen_gallery',
     'sphinx.ext.napoleon',
-    #'numpydoc',
-    'sphinx_gallery.gen_gallery']
+#    'numpydoc'
+    ]
+
+numpydoc_use_plots = True
+numpydoc_show_inherited_class_members = False
+numpydoc_class_members_toctree = False
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -201,6 +206,37 @@ sphinx_gallery_conf = {
     'gallery_dirs': 'auto_examples',
     'download_section_examples': False,
 	'backreferences_dir': os.path.join('gen_modules', 'backreferences')}
+
+# -----------------------------------------------------------------------------
+# Plots
+# -----------------------------------------------------------------------------
+plot_pre_code = """
+import numpy as np
+np.random.seed(0)
+"""
+plot_include_source = True
+plot_formats = [('png', 100), 'pdf']
+
+import math
+phi = (math.sqrt(5) + 1)/2
+
+plot_rcparams = {
+    'font.size': 8,
+    'axes.titlesize': 8,
+    'axes.labelsize': 8,
+    'xtick.labelsize': 8,
+    'ytick.labelsize': 8,
+    'legend.fontsize': 8,
+    'figure.figsize': (3*phi, 3),
+    'figure.subplot.bottom': 0.2,
+    'figure.subplot.left': 0.2,
+    'figure.subplot.right': 0.9,
+    'figure.subplot.top': 0.85,
+    'figure.subplot.wspace': 0.4,
+    'text.usetex': False,
+}
+
+
 
 
 # -----------------------------------------------------------------------------

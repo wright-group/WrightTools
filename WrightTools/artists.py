@@ -122,6 +122,14 @@ class Axes(matplotlib.axes.Axes):
             Zmin. Default is None (inherited from channel).
         zmax : number (optional)
             Zmax. Default is None (inherited from channel).
+
+
+        .. plot::
+
+           >>> import matplotlib
+           >>> from matplotlib import pyplot as plt
+           >>> plt.plot(range(10))
+
         """
         # TODO: should I store a reference to data (or list of refs?)
         # prepare -------------------------------------------------------------
