@@ -18,6 +18,7 @@ Contents
    diagrams
    contributing 
    api/modules
+   auto_examples/index
 
 Index
 -----
