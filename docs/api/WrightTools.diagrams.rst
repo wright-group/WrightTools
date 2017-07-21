@@ -6,9 +6,6 @@ WrightTools\.diagrams package
     :undoc-members:
     :show-inheritance:
 
-Submodules
-----------
-
 .. toctree::
 
    WrightTools.diagrams.WMEL
