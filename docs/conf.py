@@ -20,6 +20,8 @@
 import os
 import sys
 import sphinx_gallery
+import math
+
 sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('../WrightTools'))
 
@@ -34,19 +36,19 @@ sys.path.insert(0, os.path.abspath('../WrightTools'))
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = ['sphinx.ext.autodoc',
-    'sphinx.ext.doctest',
-    'sphinx.ext.autosummary',
-    'sphinx.ext.intersphinx',
-    'sphinx.ext.todo',
-    'sphinx.ext.coverage',
-    'sphinx.ext.mathjax',
-    'sphinx.ext.ifconfig',
-    'sphinx.ext.viewcode',
-    'matplotlib.sphinxext.plot_directive',
-    'sphinx_gallery.gen_gallery',
-    'sphinx.ext.napoleon',
-#    'numpydoc'
-    ]
+              'sphinx.ext.doctest',
+              'sphinx.ext.autosummary',
+              'sphinx.ext.intersphinx',
+              'sphinx.ext.todo',
+              'sphinx.ext.coverage',
+              'sphinx.ext.mathjax',
+              'sphinx.ext.ifconfig',
+              'sphinx.ext.viewcode',
+              'matplotlib.sphinxext.plot_directive',
+              'sphinx_gallery.gen_gallery',
+              'sphinx.ext.napoleon',
+              #    'numpydoc'
+              ]
 
 numpydoc_use_plots = True
 numpydoc_show_inherited_class_members = False
@@ -112,11 +114,11 @@ html_theme = 'sphinx_rtd_theme'
 
 # HTML context adapted from http://docs.readthedocs.io/en/latest/vcs.html
 html_context = {
-    "display_github": True, # Integrate GitHub
-    "github_user": "wright-group", # Username
-    "github_repo": "WrightTools", # Repo name
-    "github_version": "documentation", # Version
-    "conf_py_path": "/docs/", # Path in the checkout to the docs root
+    "display_github": True,  # Integrate GitHub
+    "github_user": "wright-group",  # Username
+    "github_repo": "WrightTools",  # Repo name
+    "github_version": "documentation",  # Version
+    "conf_py_path": "/docs/",  # Path in the checkout to the docs root
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
@@ -205,7 +207,7 @@ sphinx_gallery_conf = {
     'filename_pattern': '/*.py',
     'gallery_dirs': 'auto_examples',
     'download_section_examples': False,
-	'backreferences_dir': os.path.join('gen_modules', 'backreferences')}
+    'backreferences_dir': os.path.join('gen_modules', 'backreferences')}
 
 # -----------------------------------------------------------------------------
 # Plots
@@ -217,8 +219,7 @@ np.random.seed(0)
 plot_include_source = True
 plot_formats = [('png', 100), 'pdf']
 
-import math
-phi = (math.sqrt(5) + 1)/2
+phi = (math.sqrt(5) + 1) / 2
 
 plot_rcparams = {
     'font.size': 8,
@@ -227,7 +228,7 @@ plot_rcparams = {
     'xtick.labelsize': 8,
     'ytick.labelsize': 8,
     'legend.fontsize': 8,
-    'figure.figsize': (3*phi, 3),
+    'figure.figsize': (3 * phi, 3),
     'figure.subplot.bottom': 0.2,
     'figure.subplot.left': 0.2,
     'figure.subplot.right': 0.9,
@@ -235,8 +236,6 @@ plot_rcparams = {
     'figure.subplot.wspace': 0.4,
     'text.usetex': False,
 }
-
-
 
 
 # -----------------------------------------------------------------------------
