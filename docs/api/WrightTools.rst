@@ -1,86 +1,31 @@
 WrightTools package
 ===================
 
+.. automodule:: WrightTools
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 Subpackages
 -----------
 
 .. toctree::
 
+    WrightTools.datasets
     WrightTools.diagrams
     WrightTools.tuning
 
 Submodules
 ----------
 
-WrightTools\.artists module
----------------------------
+.. toctree::
 
-.. automodule:: WrightTools.artists
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   WrightTools.artists
+   WrightTools.calibration
+   WrightTools.data
+   WrightTools.exceptions
+   WrightTools.fit
+   WrightTools.google_drive
+   WrightTools.kit
+   WrightTools.units
 
-WrightTools\.calibration module
--------------------------------
-
-.. automodule:: WrightTools.calibration
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-WrightTools\.data module
-------------------------
-
-.. automodule:: WrightTools.data
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-WrightTools\.exceptions module
-------------------------------
-
-.. automodule:: WrightTools.exceptions
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-WrightTools\.fit module
------------------------
-
-.. automodule:: WrightTools.fit
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-WrightTools\.google\_drive module
----------------------------------
-
-.. automodule:: WrightTools.google_drive
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-WrightTools\.kit module
------------------------
-
-.. automodule:: WrightTools.kit
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-WrightTools\.units module
--------------------------
-
-.. automodule:: WrightTools.units
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: WrightTools
-    :members:
-    :undoc-members:
-    :show-inheritance:
