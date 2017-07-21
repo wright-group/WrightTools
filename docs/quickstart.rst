@@ -1,4 +1,4 @@
-.. _quickstart
+.. quickstart_
 
 Quick Start
 ===========
