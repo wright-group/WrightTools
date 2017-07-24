@@ -1,6 +1,6 @@
-'''
+"""
 fitting tools
-'''
+"""
 
 
 ### import ####################################################################
@@ -30,7 +30,7 @@ from . import artists as wt_artists
 
 
 def get_baseline(values, deviations=3):
-    '''
+    """
     Guess the baseline for a data set.
 
     Returns the average of all points in ``values`` less than n ``deviations``
@@ -52,7 +52,7 @@ def get_baseline(values, deviations=3):
     -------
     float
         Baseline guess.
-    '''
+    """
     values_internal = values.copy()
     std = np.nanstd(values)
     values_internal[np.abs(values_internal) >= deviations * std] = np.nan
@@ -102,9 +102,9 @@ class ExpectationValue(Function):
                       DeprecationWarning, stacklevel=2)
 
     def evaluate(self, p, xi):
-        '''
+        """
         Returns 1 at expectation value, 0 elsewhere.
-        '''
+        """
         out = np.zeros(len(xi))
         out[np.argmin(np.abs(xi - p[0]))] = 1
         return out
@@ -222,7 +222,7 @@ class TwoD_Gaussian(Function):
         self.limits = {'sigma_x': [0, np.inf], 'sigma_y': [0, np.inf]}
 
     def _Format_input(self, values, x, y):
-        '''
+        """
         This function makes sure the values and axis are in an ok format for fitting and free of nans
 
         Parameters
@@ -242,7 +242,7 @@ class TwoD_Gaussian(Function):
         OK : boolean
             True if the shapes of the inputs were compatable, False otherwise.
 
-        '''
+        """
         v = values.copy()
         xi = x.copy()
         yi = y.copy()
@@ -347,9 +347,9 @@ class Moments(Function):
         self.subtract_baseline = subtract_baseline
 
     def evaluate(self, p, xi):
-        '''
+        """
         Currently just returns nans.
-        '''
+        """
         # TODO: fix this (how should it work?!)
         return np.full(xi.shape, np.nan)
 

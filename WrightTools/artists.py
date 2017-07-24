@@ -1,6 +1,6 @@
-'''
+"""
 Tools for visualizing data.
-'''
+"""
 
 
 ### import ####################################################################
@@ -295,7 +295,7 @@ def _title(fig, title, subtitle='', margin=1, fontsize=20, subfontsize=18):
 def add_sideplot(ax, along, pad=0., grid=True, zero_line=True,
                  arrs_to_bin=None, normalize_bin=True, ymin=0, ymax=1.1,
                  height=0.75, c='C0'):
-    '''
+    """
     Add a sideplot to an axis. Sideplots share their corresponding axis.
 
     Parameters
@@ -325,7 +325,7 @@ def add_sideplot(ax, along, pad=0., grid=True, zero_line=True,
     -------
     axCorr
         AxesSubplot object
-    '''
+    """
     # divider should only be created once
     if hasattr(ax, 'WrightTools_sideplot_divider'):
         divider = ax.WrightTools_sideplot_divider
@@ -369,13 +369,13 @@ def add_sideplot(ax, along, pad=0., grid=True, zero_line=True,
 
 
 def apply_rcparams(kind='fast'):
-    '''
+    """
     Quickly apply rcparams.
 
     Parameters
     ----------
 
-    '''
+    """
     if kind == 'default':
         matplotlib.rcdefaults()
     elif kind == 'fast':
@@ -460,7 +460,7 @@ def corner_text(text, distance=0.075, ax=None, corner='UL', factor=200, bbox=Tru
 def create_figure(width='single', nrows=1, cols=[1], margin=1.,
                   hspace=0.25, wspace=0.25, cbar_width=0.25, aspects=[],
                   default_aspect=1):
-    '''
+    """
     Re-parameterization of matplotlib figure creation tools, exposing variables
     convinient for the Wright Group.
 
@@ -528,7 +528,7 @@ def create_figure(width='single', nrows=1, cols=[1], margin=1.,
         debug and design purposes.
     wt.artsits.subplots_adjust
         Enforce margins for figure generated elsewhere.
-    '''
+    """
     # get width
     if width == 'double':
         figure_width = 14.
@@ -597,7 +597,7 @@ def create_figure(width='single', nrows=1, cols=[1], margin=1.,
 
 
 def diagonal_line(xi, yi, ax=None, c='k', ls=':', lw=1, zorder=3):
-    '''
+    """
     Plot a diagonal line.
 
     Parameters
@@ -621,7 +621,7 @@ def diagonal_line(xi, yi, ax=None, c='k', ls=':', lw=1, zorder=3):
     -------
     matplotlib.lines.Line2D object
         The plotted line.
-    '''
+    """
     # get axis
     if ax is None:
         ax = plt.gca()
@@ -633,7 +633,7 @@ def diagonal_line(xi, yi, ax=None, c='k', ls=':', lw=1, zorder=3):
 
 
 def get_color_cycle(n, cmap='rainbow', rotations=3):
-    '''
+    """
     Get a list of RGBA colors. Useful for plotting lots of elements, keeping
     the color of each unique.
 
@@ -651,7 +651,7 @@ def get_color_cycle(n, cmap='rainbow', rotations=3):
     -------
     list
         List of RGBA lists.
-    '''
+    """
     cmap = colormaps[cmap]
     if np.mod(n, rotations) == 0:
         per = np.floor_divide(n, rotations)
@@ -760,12 +760,12 @@ def make_cubehelix(gamma=0.5, s=0.25, r=-1, h=1.3, reverse=False, darkest=0.7):
 
 
 def make_colormap(seq, name='CustomMap', plot=False):
-    '''
+    """
     Return a LinearSegmentedColormap
     seq: a sequence of floats and RGB-tuples. The floats should be increasing
     and in the interval (0,1). \n
     from http://nbviewer.ipython.org/gist/anonymous/a4fa0adb08f9e9ea4f94#
-    '''
+    """
     seq = [(None,) * 3, 0.0] + list(seq) + [1.0, (None,) * 3]
     cdict = {'red': [], 'green': [], 'blue': []}
     for i, item in enumerate(seq):
@@ -782,10 +782,10 @@ def make_colormap(seq, name='CustomMap', plot=False):
 
 
 def nm_to_rgb(nm):
-    '''
+    """
     returns list [r, g, b] (zero to one scale) for given input in nm \n
     original code - http://www.physics.sfasu.edu/astro/color/spectra.html
-    '''
+    """
     w = int(nm)
     # color -------------------------------------------------------------------
     if w >= 380 and w < 440:
@@ -832,13 +832,13 @@ def nm_to_rgb(nm):
 
 
 def pcolor_helper(xi, yi, zi, transform=None):
-    '''
+    """
     accepts xi, yi, zi as the normal rectangular arrays
     that would be given to contorf etc \n
     returns list [X, Y, Z] appropriate for feeding directly
     into matplotlib.pyplot.pcolor so that the pixels are centered correctly. \n
     transform takes a function that accepts a
-    '''
+    """
 
     x_points = np.zeros(len(xi) + 1)
     y_points = np.zeros(len(yi) + 1)
@@ -864,7 +864,7 @@ def pcolor_helper(xi, yi, zi, transform=None):
 def plot_colorbar(cax=None, cmap='default', ticks=None, clim=None, vlim=None,
                   label=None, tick_fontsize=14, label_fontsize=18, decimals=3,
                   orientation='vertical', ticklocation='auto'):
-    '''
+    """
     Easily add a colormap to an axis.
 
     Parameters
@@ -900,7 +900,7 @@ def plot_colorbar(cax=None, cmap='default', ticks=None, clim=None, vlim=None,
     -------
     matplotlib.colorbar.ColorbarBase object
         The created colorbar.
-    '''
+    """
     # parse cax
     if cax is None:
         cax = plt.gca()
@@ -969,7 +969,7 @@ def plot_colormap_components(cmap):
 
 
 def savefig(path, fig=None, close=True, dpi=300):
-    '''
+    """
     Save a figure.
 
     Parameters
@@ -985,7 +985,7 @@ def savefig(path, fig=None, close=True, dpi=300):
     -------
     str
         The full path where the figure was saved.
-    '''
+    """
     # get fig
     if fig is None:
         fig = plt.gcf()
@@ -1170,7 +1170,7 @@ def plot_gridlines(ax=None, c='grey', lw=1, diagonal=False, zorder=2,
 
 
 def plot_margins(fig=None, inches=1., centers=True, edges=True):
-    '''
+    """
     Add lines onto a figure indicating the margins, centers, and edges. Useful
     for ensuring your figure design scripts work as intended, and for laying
     out figures.
@@ -1186,7 +1186,7 @@ def plot_margins(fig=None, inches=1., centers=True, edges=True):
         True.
     edges : bool (optional)
         Toggle for plotting lines indicating the figure edges. Default is True.
-    '''
+    """
     if fig is None:
         fig = plt.gcf()
     size = fig.get_size_inches()  # [H, V]
@@ -1219,7 +1219,7 @@ def plot_margins(fig=None, inches=1., centers=True, edges=True):
 
 
 def subplots_adjust(fig=None, inches=1):
-    '''
+    """
     Enforce margin to be equal around figure, starting at subplots.
 
     You probably should be using wt.artists.create_figure instead.
@@ -1230,7 +1230,7 @@ def subplots_adjust(fig=None, inches=1):
         Visualize margins, for debugging / layout.
     wt.artists.create_figure
         Convinience method for creating well-behaved figures.
-    '''
+    """
     if fig is None:
         fig = plt.gcf()
     size = fig.get_size_inches()
@@ -1241,7 +1241,7 @@ def subplots_adjust(fig=None, inches=1):
 
 def stitch_to_animation(images, outpath=None, duration=0.5, palettesize=256,
                         verbose=True):
-    '''
+    """
     Stitch a series of images into an animation. Currently supports animated
     gifs, other formats coming as needed.
 
@@ -1259,7 +1259,7 @@ def stitch_to_animation(images, outpath=None, duration=0.5, palettesize=256,
         the nearest power of 2. Default is 1024.
     verbose : bool (optional)
         Toggle talkback. Default is True.
-    '''
+    """
     # import imageio
     try:
         import imageio
@@ -1553,7 +1553,7 @@ class mpl_2D:
         self._onplotdata = []
 
     def get_lims(self, transform=None):
-        '''
+        """
         Find plot limits using transform.
 
         Assumes that the corners of the axes are also the most extreme points
@@ -1574,7 +1574,7 @@ class mpl_2D:
             (min_x, max_x)
         ylim : tuple of floats
             (min_y, max_y)
-        '''
+        """
         if not isinstance(transform, type(None)):
             x_corners = []
             y_corners = []
@@ -1622,7 +1622,7 @@ class mpl_2D:
              ybin=False, xlim=None, ylim=None, autosave=False,
              output_folder=None, fname=None, verbose=True,
              transform=None, contour_thickness=None):
-        '''
+        """
         Draw the plot(s).
 
         Parameters
@@ -1668,7 +1668,7 @@ class mpl_2D:
             File name.
         verbose : bool (optional)
             Toggle talkback. Default is True.
-        '''
+        """
         # get channel index
         if type(channel) in [int, float]:
             channel_index = int(channel)
@@ -2105,10 +2105,10 @@ class absorbance:
             self.ax1.set_ylim(ylim)
 
     def _smooth(self, dat1, n=20, window_type='default'):
-        '''
+        """
         data is an array of type [xlis,ylis] \n
         smooth to prevent 2nd derivative from being noisy
-        '''
+        """
         for i in range(n, len(dat1[1]) - n):
             # change the x value to the average
             window = dat1[1][i - n:i + n].copy()
@@ -2120,11 +2120,11 @@ class difference_2D():
 
     def __init__(self, minuend, subtrahend, xaxis=1, yaxis=0, at={},
                  verbose=True):
-        '''
+        """
         plot the difference between exactly two datasets in 2D \n
         both data objects must have the same axes with the same name \n
         axes do not need to be in the same order or have the same points \n
-        '''
+        """
         self.minuend = minuend.copy()
         self.subtrahend = subtrahend.copy()
         # check if axes are valid - same axis names in both data objects
@@ -2159,12 +2159,12 @@ class difference_2D():
              xlim=None, ylim=None,
              autosave=False, output_folder=None, fname=None,
              verbose=True):
-        '''
+        """
         set contours to zero to turn off
 
         dynamic_range forces the colorbar to use all of its colors (only matters
         for signed data)
-        '''
+        """
         fig = None
         if len(self.minuend_chopped) > 10:
             if not autosave:
@@ -2205,7 +2205,7 @@ class difference_2D():
 
             # levels ----------------------------------------------------------
 
-            '''
+            """
             if channel.signed:
 
                 if dynamic_range:
@@ -2220,7 +2220,7 @@ class difference_2D():
                     levels = np.linspace(channel.znull, zi.max(), 200)
                 else:
                     levels = np.linspace(channel.znull, channel.zmax, 200)
-            '''
+            """
             levels = np.linspace(0, 1, 200)
 
             # main plot -------------------------------------------------------
@@ -2381,10 +2381,10 @@ class difference_2D():
 class PDFAll2DSlices:
 
     def __init__(self, datas, name='', data_signed=False):
-        '''
+        """
         I'm working on this. Expect nothing.
         - Blaise 2016.03.28
-        '''
+        """
         self.datas = datas
         self.name = name
 

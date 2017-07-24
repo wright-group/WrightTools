@@ -1,6 +1,6 @@
-'''
+"""
 Methods for processing OPA 800 tuning data.
-'''
+"""
 
 
 ### import ####################################################################
@@ -56,7 +56,7 @@ cmap.set_under([0.75] * 3)
 
 def intensity(data, curve, channel_name, level=False, cutoff_factor=0.1,
               autosave=True, save_directory=None):
-    '''
+    """
     Parameters
     ----------
     data : wt.data.Data objeect
@@ -66,7 +66,7 @@ def intensity(data, curve, channel_name, level=False, cutoff_factor=0.1,
     -------
     curve
         New curve object.
-    '''
+    """
     # TODO: documentation
     data.transpose()
     channel_index = data.channel_names.index(channel_name)

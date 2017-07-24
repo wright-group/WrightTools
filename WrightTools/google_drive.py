@@ -1,6 +1,6 @@
-'''
+"""
 Interact with google drive using the pydrive package.
-'''
+"""
 
 # Darien Morrow - darienmorrow@gmail.com - dmorrow3@wisc.edu
 # Blaise Thompson - blaise@untzag.com
@@ -87,10 +87,10 @@ class Drive:
         os.chdir(old_cwd)
 
     def _list_folder(self, *args, **kwargs):
-        '''
+        """
         Legacy. Please use self.list_folder instead!
         - Blaise 2016.05.14
-        '''
+        """
         return self.list_folder(*args, **kwargs)
 
     def _upload_file(self, filepath, parentid, overwrite=False,
@@ -195,7 +195,7 @@ class Drive:
         return parent
 
     def download(self, fileid, directory='cwd', overwrite=False, verbose=True):
-        '''
+        """
         Recursively download from Google Drive into a local directory. By
         default, will not re-download if file passes following checks:
 
@@ -217,7 +217,7 @@ class Drive:
         Returns
         -------
         pydrive.files.GoogleDriveFile
-        '''
+        """
         self._authenticate()
         # get directory
         if directory == 'cwd':
@@ -273,7 +273,7 @@ class Drive:
 
     def upload(self, path, parentid, overwrite=False, delete_local=False,
                verbose=True):
-        '''
+        """
         Upload local file(s) to Google Drive.
 
         Parameters
@@ -294,7 +294,7 @@ class Drive:
         -------
         driveid : str
             Google Drive ID of folder or file uploaded
-        '''
+        """
         self._authenticate()
         if os.path.isfile(path):
             return self._upload_file(path, parentid, overwrite=overwrite,
