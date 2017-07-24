@@ -6,9 +6,6 @@ WrightTools\.tuning package
     :undoc-members:
     :show-inheritance:
 
-Submodules
-----------
-
 .. toctree::
 
    WrightTools.tuning.TOPAS_C
