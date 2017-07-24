@@ -15,8 +15,7 @@ import matplotlib.pyplot as plt
 
 def label_sectors(labels=['I', 'II', 'IV', 'VI', 'V', 'III'], ax=None,
                   cs=None, c_zlevel=2, c_alpha=0.5):
-    """
-    Label the six time-orderings in a three-pulse experiment.
+    """ Label the six time-orderings in a three-pulse experiment.
 
     Parameters
     ----------

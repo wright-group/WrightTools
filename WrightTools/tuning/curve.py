@@ -72,9 +72,7 @@ TOPAS_interaction_by_kind = {'TOPAS-C': TOPAS_C_interactions,
 class Linear:
 
     def __init__(self, colors, units, motors):
-        """
-        Linear interpolation using scipy.interpolate.InterpolatedUnivariateSpline.
-        """
+        """ Linear interpolation using scipy.interpolate.InterpolatedUnivariateSpline.  """
         self.colors = colors
         self.units = units
         self.motors = motors
@@ -126,9 +124,7 @@ class Poly:
 class Spline:
 
     def __init__(self, colors, units, motors):
-        """
-        Linear interpolation using scipy.interpolate.InterpolatedUnivariateSpline.
-        """
+        """ Linear interpolation using scipy.interpolate.InterpolatedUnivariateSpline.  """
         self.colors = colors
         self.units = units
         self.motors = motors
@@ -157,9 +153,7 @@ class Spline:
 class Motor:
 
     def __init__(self, positions, name):
-        """
-        Container class for motor arrays.
-        """
+        """ Container class for motor arrays.  """
         self.positions = positions
         self.name = name
 
@@ -169,8 +163,7 @@ class Curve:
     def __init__(self, colors, units, motors, name, interaction,
                  kind, method=Linear,
                  subcurve=None, source_colors=None):
-        """
-        Central object-type for all OPA tuning curves.
+        """ Central object-type for all OPA tuning curves.
 
         Parameters
         ----------
@@ -219,15 +212,14 @@ class Curve:
         return '\n'.join(outs)
 
     def coerce_motors(self):
-        """
-        Coerce the motor positions to lie exactly along the interpolation
-        positions. Can be thought of as 'smoothing' the curve.
+        """ Coerce the motor positions to lie exactly along the interpolation positions. 
+        
+        Can be thought of as 'smoothing' the curve.
         """
         self.map_colors(self.colors, units='same')
 
     def convert(self, units):
-        """
-        Convert the colors.
+        """ Convert the colors.
 
         Parameters
         ----------
@@ -242,8 +234,7 @@ class Curve:
         self.interpolate()  # how did it ever work if this wasn't here?  - Blaise 2017-03-22
 
     def copy(self):
-        """
-        Copy the object.
+        """ Copy the object.
 
         Returns
         -------
@@ -253,8 +244,7 @@ class Curve:
         return copy.deepcopy(self)
 
     def get_color(self, motor_positions, units='same'):
-        """
-        Get the color given a set of motor positions.
+        """ Get the color given a set of motor positions.
 
         Parameters
         ----------
@@ -276,8 +266,7 @@ class Curve:
         return colors[0]
 
     def get_limits(self, units='same'):
-        """
-        Get the edges of the curve.
+        """ Get the edges of the curve.
 
         Parameters
         ----------
@@ -303,8 +292,7 @@ class Curve:
         return subcurve_motor_names + [m.name for m in self.motors]
 
     def get_motor_positions(self, color, units='same', full=True):
-        """
-        Get the motor positions for a destination color.
+        """ Get the motor positions for a destination color.
 
         Parameters
         ----------
@@ -365,18 +353,14 @@ class Curve:
         return np.array([self.source_color_interpolator.get_motor_positions(c) for c in color])
 
     def interpolate(self, interpolate_subcurve=True):
-        """
-        Generate the interploator object.
-        """
+        """ Generate the interploator object.  """
         self.interpolator = self.method(self.colors, self.units, self.motors)
         if self.subcurve and interpolate_subcurve:
             self.source_color_interpolator = self.method(
                 self.colors, self.units, [self.source_colors])
 
     def map_colors(self, colors, units='same'):
-        """
-        Map the curve onto new tune points using the curve's own interpolation
-        method
+        """ Map the curve onto new tune points using the curve's own interpolation method
 
         Parameters
         ----------
@@ -420,8 +404,7 @@ class Curve:
         self.interpolate(interpolate_subcurve=True)
 
     def offset_by(self, motor, amount):
-        """
-        Offset a motor by some ammount.
+        """ Offset a motor by some ammount.
 
         Parameters
         ----------
@@ -446,8 +429,7 @@ class Curve:
         self.interpolate()
 
     def offset_to(self, motor, destination, color, color_units='same'):
-        """
-        Offset a motor such that it evaluates to `destination` at `color`.
+        """ Offset a motor such that it evaluates to `destination` at `color`.
 
         Parameters
         ----------
@@ -478,9 +460,7 @@ class Curve:
         self.offset_by(motor, offset)
 
     def plot(self, autosave=False, save_path='', title=None):
-        """
-        Plot the curve.
-        """
+        """ Plot the curve.  """
         # count number of subcurves
         subcurve_count = 0
         total_motor_count = len(self.motors)
@@ -565,8 +545,7 @@ class Curve:
             plt.close(fig)
 
     def save(self, save_directory=None, plot=True, verbose=True, full=False):
-        """
-        Save the curve.
+        """ Save the curve.
 
         Parameters
         ----------
@@ -656,7 +635,8 @@ def from_poynting_curve(filepath, subcurve=None):
 
 
 def from_TOPAS_crvs(filepaths, kind, interaction_string):
-    """
+    """ Create a curve object from a TOPAS crv file
+
     Parameters
     ----------
     filepaths : list of str [base, mixer 1, mixer 2, mixer 3]

@@ -101,8 +101,7 @@ def converter(val, current_unit, destination_unit):
 
 
 def kind(units):
-    """
-    Find the kind of given units.
+    """ Find the kind of given units.
 
     Parameters
     ----------

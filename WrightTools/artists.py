@@ -1,5 +1,4 @@
-"""
-Tools for visualizing data.
+""" Tools for visualizing data.
 """
 
 
@@ -47,8 +46,7 @@ class Axes(matplotlib.axes.Axes):
     is_sideplot = False
 
     def add_sideplot(self, along, pad=0, height=0.75, ymin=0, ymax=1.1):
-        """
-        Add a side axis.
+        """ Add a side axis.
 
         Parameters
         ----------
@@ -100,8 +98,7 @@ class Axes(matplotlib.axes.Axes):
 
     def plot_data(self, data, channel=0, interpolate=False, coloring=None,
                   xlabel=True, ylabel=True, zmin=None, zmax=None):
-        """
-        Plot directly from a data object.
+        """ Plot directly from a data object.
 
         Parameters
         ----------
@@ -295,8 +292,7 @@ def _title(fig, title, subtitle='', margin=1, fontsize=20, subfontsize=18):
 def add_sideplot(ax, along, pad=0., grid=True, zero_line=True,
                  arrs_to_bin=None, normalize_bin=True, ymin=0, ymax=1.1,
                  height=0.75, c='C0'):
-    """
-    Add a sideplot to an axis. Sideplots share their corresponding axis.
+    """ Add a sideplot to an axis. Sideplots share their corresponding axis.
 
     Parameters
     ----------
@@ -369,8 +365,7 @@ def add_sideplot(ax, along, pad=0., grid=True, zero_line=True,
 
 
 def apply_rcparams(kind='fast'):
-    """
-    Quickly apply rcparams.
+    """ Quickly apply rcparams.
 
     Parameters
     ----------
@@ -400,8 +395,7 @@ def apply_rcparams(kind='fast'):
 
 def corner_text(text, distance=0.075, ax=None, corner='UL', factor=200, bbox=True,
                 fontsize=18, background_alpha=1, edgecolor=None):
-    """
-    Place some text in the corner of the figure.
+    """ Place some text in the corner of the figure.
 
     Parameters
     ----------
@@ -460,8 +454,7 @@ def corner_text(text, distance=0.075, ax=None, corner='UL', factor=200, bbox=Tru
 def create_figure(width='single', nrows=1, cols=[1], margin=1.,
                   hspace=0.25, wspace=0.25, cbar_width=0.25, aspects=[],
                   default_aspect=1):
-    """
-    Re-parameterization of matplotlib figure creation tools, exposing variables
+    """ Re-parameterization of matplotlib figure creation tools, exposing variables
     convinient for the Wright Group.
 
     Figures are defined primarily by their width. Height is defined by the
@@ -597,8 +590,7 @@ def create_figure(width='single', nrows=1, cols=[1], margin=1.,
 
 
 def diagonal_line(xi, yi, ax=None, c='k', ls=':', lw=1, zorder=3):
-    """
-    Plot a diagonal line.
+    """ Plot a diagonal line.
 
     Parameters
     ----------
@@ -633,8 +625,7 @@ def diagonal_line(xi, yi, ax=None, c='k', ls=':', lw=1, zorder=3):
 
 
 def get_color_cycle(n, cmap='rainbow', rotations=3):
-    """
-    Get a list of RGBA colors. Useful for plotting lots of elements, keeping
+    """ Get a list of RGBA colors. Useful for plotting lots of elements, keeping
     the color of each unique.
 
     Parameters
@@ -705,8 +696,7 @@ def get_scaled_bounds(ax, position, distance=0.1, factor=200):
 
 
 def make_cubehelix(gamma=0.5, s=0.25, r=-1, h=1.3, reverse=False, darkest=0.7):
-    """
-    Define cubehelix type colorbars. For more information see http://arxiv.org/abs/1108.5083 .
+    """ Define cubehelix type colorbars. For more information see http://arxiv.org/abs/1108.5083.
 
     Parameters
     ----------
@@ -760,8 +750,8 @@ def make_cubehelix(gamma=0.5, s=0.25, r=-1, h=1.3, reverse=False, darkest=0.7):
 
 
 def make_colormap(seq, name='CustomMap', plot=False):
-    """
-    Return a LinearSegmentedColormap
+    """ Return a LinearSegmentedColormap
+
     seq: a sequence of floats and RGB-tuples. The floats should be increasing
     and in the interval (0,1). \n
     from http://nbviewer.ipython.org/gist/anonymous/a4fa0adb08f9e9ea4f94#
@@ -782,8 +772,8 @@ def make_colormap(seq, name='CustomMap', plot=False):
 
 
 def nm_to_rgb(nm):
-    """
-    returns list [r, g, b] (zero to one scale) for given input in nm \n
+    """ returns list [r, g, b] (zero to one scale) for given input in nm
+
     original code - http://www.physics.sfasu.edu/astro/color/spectra.html
     """
     w = int(nm)
@@ -833,10 +823,13 @@ def nm_to_rgb(nm):
 
 def pcolor_helper(xi, yi, zi, transform=None):
     """
+
     accepts xi, yi, zi as the normal rectangular arrays
-    that would be given to contorf etc \n
+    that would be given to contorf etc
+
     returns list [X, Y, Z] appropriate for feeding directly
-    into matplotlib.pyplot.pcolor so that the pixels are centered correctly. \n
+    into matplotlib.pyplot.pcolor so that the pixels are centered correctly.
+
     transform takes a function that accepts a
     """
 
@@ -864,8 +857,7 @@ def pcolor_helper(xi, yi, zi, transform=None):
 def plot_colorbar(cax=None, cmap='default', ticks=None, clim=None, vlim=None,
                   label=None, tick_fontsize=14, label_fontsize=18, decimals=3,
                   orientation='vertical', ticklocation='auto'):
-    """
-    Easily add a colormap to an axis.
+    """ Easily add a colormap to an axis.
 
     Parameters
     ----------
@@ -934,9 +926,8 @@ def plot_colorbar(cax=None, cmap='default', ticks=None, clim=None, vlim=None,
 
 
 def plot_colormap_components(cmap):
-    """
-    Plot the components of a given colormap.
-    """
+    """ Plot the components of a given colormap.  """
+
     plt.figure(figsize=[8, 4])
     gs = grd.GridSpec(2, 1, height_ratios=[1, 10], hspace=0.05)
     # colorbar
@@ -969,8 +960,7 @@ def plot_colormap_components(cmap):
 
 
 def savefig(path, fig=None, close=True, dpi=300):
-    """
-    Save a figure.
+    """ Save a figure.
 
     Parameters
     ----------
@@ -1003,8 +993,7 @@ def savefig(path, fig=None, close=True, dpi=300):
 
 def set_ax_labels(ax=None, xlabel=None, ylabel=None, xticks=None, yticks=None,
                   label_fontsize=18):
-    """
-    Set all axis labels properties easily.
+    """ Set all axis labels properties easily.
 
     Parameters
     ----------
@@ -1049,8 +1038,7 @@ def set_ax_labels(ax=None, xlabel=None, ylabel=None, xticks=None, yticks=None,
 
 
 def set_ax_spines(ax=None, c='k', lw=3, zorder=10):
-    """
-    Easily the properties of all four axis spines.
+    """ Easily the properties of all four axis spines.
 
     Parameters
     ----------
@@ -1075,9 +1063,9 @@ def set_ax_spines(ax=None, c='k', lw=3, zorder=10):
 
 def set_fig_labels(fig=None, xlabel=None, ylabel=None, xticks=None, yticks=None,
                    title=None, label_fontsize=18, title_fontsize=20):
-    """
-    Set all axis labels of a figure simultaniously. Only plots ticks and labels
-    for edge axes.
+    """ Set all axis labels of a figure simultaniously. 
+    
+    Only plots ticks and labels for edge axes.
 
     Parameters
     ----------
@@ -1125,8 +1113,7 @@ def set_fig_labels(fig=None, xlabel=None, ylabel=None, xticks=None, yticks=None,
 
 def plot_gridlines(ax=None, c='grey', lw=1, diagonal=False, zorder=2,
                    makegrid=True):
-    """
-    Plot dotted gridlines onto an axis.
+    """ Plot dotted gridlines onto an axis.
 
     Parameters
     ----------
@@ -1170,9 +1157,9 @@ def plot_gridlines(ax=None, c='grey', lw=1, diagonal=False, zorder=2,
 
 
 def plot_margins(fig=None, inches=1., centers=True, edges=True):
-    """
-    Add lines onto a figure indicating the margins, centers, and edges. Useful
-    for ensuring your figure design scripts work as intended, and for laying
+    """ Add lines onto a figure indicating the margins, centers, and edges. 
+
+    Useful for ensuring your figure design scripts work as intended, and for laying
     out figures.
 
     Parameters
@@ -1219,10 +1206,11 @@ def plot_margins(fig=None, inches=1., centers=True, edges=True):
 
 
 def subplots_adjust(fig=None, inches=1):
-    """
-    Enforce margin to be equal around figure, starting at subplots.
+    """ Enforce margin to be equal around figure, starting at subplots.
 
-    You probably should be using wt.artists.create_figure instead.
+    .. note::
+        
+        You probably should be using wt.artists.create_figure instead.
 
     See also
     --------
@@ -1241,9 +1229,9 @@ def subplots_adjust(fig=None, inches=1):
 
 def stitch_to_animation(images, outpath=None, duration=0.5, palettesize=256,
                         verbose=True):
-    """
-    Stitch a series of images into an animation. Currently supports animated
-    gifs, other formats coming as needed.
+    """ Stitch a series of images into an animation.
+    
+    Currently supports animated gifs, other formats coming as needed.
 
     Parameters
     ----------
@@ -1553,8 +1541,7 @@ class mpl_2D:
         self._onplotdata = []
 
     def get_lims(self, transform=None):
-        """
-        Find plot limits using transform.
+        """ Find plot limits using transform.
 
         Assumes that the corners of the axes are also the most extreme points
         of the transformed axes.
@@ -1622,8 +1609,7 @@ class mpl_2D:
              ybin=False, xlim=None, ylim=None, autosave=False,
              output_folder=None, fname=None, verbose=True,
              transform=None, contour_thickness=None):
-        """
-        Draw the plot(s).
+        """ Draw the plot(s).
 
         Parameters
         ----------
@@ -2120,10 +2106,10 @@ class difference_2D():
 
     def __init__(self, minuend, subtrahend, xaxis=1, yaxis=0, at={},
                  verbose=True):
-        """
-        plot the difference between exactly two datasets in 2D \n
-        both data objects must have the same axes with the same name \n
-        axes do not need to be in the same order or have the same points \n
+        """ plot the difference between exactly two datasets in 2D 
+
+        both data objects must have the same axes with the same name 
+        axes do not need to be in the same order or have the same points
         """
         self.minuend = minuend.copy()
         self.subtrahend = subtrahend.copy()
@@ -2159,8 +2145,7 @@ class difference_2D():
              xlim=None, ylim=None,
              autosave=False, output_folder=None, fname=None,
              verbose=True):
-        """
-        set contours to zero to turn off
+        """ set contours to zero to turn off
 
         dynamic_range forces the colorbar to use all of its colors (only matters
         for signed data)

@@ -145,8 +145,7 @@ class Drive:
         return f['id']
 
     def create_folder(self, name, parentid):
-        """
-        Create a new folder in Google Drive.
+        """ Create a new folder in Google Drive.
 
         Attributes
         ----------
@@ -195,9 +194,9 @@ class Drive:
         return parent
 
     def download(self, fileid, directory='cwd', overwrite=False, verbose=True):
-        """
-        Recursively download from Google Drive into a local directory. By
-        default, will not re-download if file passes following checks:
+        """ Recursively download from Google Drive into a local directory. 
+
+        By default, will not re-download if file passes following checks:
 
         1. same size as remote file
 
@@ -273,8 +272,7 @@ class Drive:
 
     def upload(self, path, parentid, overwrite=False, delete_local=False,
                verbose=True):
-        """
-        Upload local file(s) to Google Drive.
+        """ Upload local file(s) to Google Drive.
 
         Parameters
         ----------
