@@ -16,7 +16,7 @@ class Subplot:
     def __init__(self, ax, energies, number_of_interactions=4, title='',
                  title_font_size=16, state_names=None, virtual=[None],
                  state_font_size=8, state_text_buffer=0.5, label_side='left'):
-        '''
+        """
         Subplot.
 
         Parameters
@@ -37,7 +37,7 @@ class Subplot:
             font size for the state lables
         state_text_buffer: numtype (optional)
             space between the energy level bars and the state labels
-        '''
+        """
         self.ax = ax
         self.energies = energies
         self.interactions = number_of_interactions
@@ -75,7 +75,7 @@ class Subplot:
 
     def add_arrow(self, index, between, kind, label='', head_length=0.075,
                   head_aspect=2, font_size=7, color='k'):
-        '''
+        """
         Add an arrow to the WMEL diagram.
 
         Parameters
@@ -98,7 +98,7 @@ class Subplot:
         Returns
         -------
         [line,arrow_head,text]
-        '''
+        """
         if hasattr(index, 'index'):
             x_pos = list(index)
         else:
@@ -153,9 +153,9 @@ class Artist:
     def __init__(self, size, energies, state_names=None,
                  number_of_interactions=4, virtual=[None],
                  state_font_size=8, state_text_buffer=0.5):
-        '''
+        """
         virtual a list of indicies
-        '''
+        """
         # create figure
         figsize = [int(size[0] * ((number_of_interactions + 1.) / 6.)), size[1] * 2.5]
         fig, (subplots) = plt.subplots(size[1], size[0], figsize=figsize)
@@ -207,10 +207,10 @@ class Artist:
 
     def add_arrow(self, diagram, number, between, kind, label='',
                   head_length=0.075, font_size=7, color='k'):
-        '''
+        """
         kind one in [ket, bra, out] \n
         returns [line, arrow_head, text]
-        '''
+        """
         column, row = diagram
         x_pos = self.x_pos[number]
         # calculate arrow length

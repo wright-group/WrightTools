@@ -1,6 +1,6 @@
-'''
+"""
 Tools for processing spectral delay correction data.
-'''
+"""
 
 
 ### import ####################################################################
@@ -49,7 +49,7 @@ from . import coset as wt_coset
 def process_wigner(data_filepath, channel, control_name,
                    offset_name, coset_name, color_units='nm',
                    delay_units='fs', autosave=True, s=1000):
-    '''
+    """
     Create a coset file from a measured wigner.
 
     Parameters
@@ -58,7 +58,7 @@ def process_wigner(data_filepath, channel, control_name,
         Filepath to data file.
     channel : int or str
         The channel to process.
-    '''
+    """
     # get data
     data = wt_data.from_PyCMDS(data_filepath, verbose=False)
     if data.axes[0].units_kind == 'energy':
@@ -119,10 +119,10 @@ def process_wigner(data_filepath, channel, control_name,
 def process_brute_force(data_filepath, opa_index, channel, color_units='nm',
                         delay_units='fs', amplitude_cutoff_factor=0.5,
                         plot=True, autosave=True):
-    '''
+    """
     This method is a good idea, but it isn't ready for prime time yet.
     - Blaise 2016.03.18
-    '''
+    """
     # get data
     data = wt_data.from_PyCMDS(data_filepath, verbose=False)
     # check if data is valid for this operation

@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 
 def label_sectors(labels=['I', 'II', 'IV', 'VI', 'V', 'III'], ax=None,
                   cs=None, c_zlevel=2, c_alpha=0.5):
-    '''
+    """
     Label the six time-orderings in a three-pulse experiment.
 
     Parameters
@@ -32,7 +32,7 @@ def label_sectors(labels=['I', 'II', 'IV', 'VI', 'V', 'III'], ax=None,
         Matplotlib zlevel of color. Default is 2.
     c_alpha : number between 0 and 1.
         Transparency of color. Default is 0.5
-    '''
+    """
     if ax is None:
         ax = plt.gca()
     # label
