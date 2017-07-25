@@ -12,6 +12,7 @@ __pycache__/
 *.jpg
 *.gif
 *.png
+!logo/logo.png
 *.svg
 *.ico
 
