@@ -268,21 +268,15 @@ class Channel:
         self.values = - self.values
 
     def max(self):
-        """
-        Maximum, ignorning nans.
-        """
+        """ Maximum, ignorning nans.  """
         return np.nanmax(self.values)
 
     def min(self):
-        """
-        Minimum, ignoring nans.
-        """
+        """ Minimum, ignoring nans.  """
         return np.nanmin(self.values)
 
     def normalize(self, axis=None):
-        """
-        Normalizes a Channel, setting z-null to 0 and the max to 1.
-        """
+        """ Normalizes a Channel, setting z-null to 0 and the max to 1.  """
         # process axis argument
         if axis is not None:
             if hasattr(axis, '__contains__'):  # list, tuple or similar
@@ -304,8 +298,9 @@ class Channel:
 
     def trim(self, neighborhood, method='ztest', factor=3, replace='nan',
              verbose=True):
-        """
-        Remove outliers from the dataset by comparing each point to its
+        """ Remove outliers from the dataset 
+        
+        Identifies outliers by comparing each point to its
         neighbors using a statistical test.
 
         Parameters
@@ -390,8 +385,7 @@ class Data:
 
     def __init__(self, axes, channels, constants=[],
                  name='', source=None):
-        """
-        Central class for data in the Wright Group.
+        """ Central class for data in the Wright Group.
 
         Parameters
         ----------
@@ -444,8 +438,8 @@ class Data:
         return self._update(*args, **kwargs)
 
     def bring_to_front(self, channel):
-        """
-        Bring a specific channel to the zero-indexed position in channels.
+        """ Bring a specific channel to the zero-indexed position in channels.
+
         All other channels get pushed back but remain in order.
 
         Parameters
@@ -465,8 +459,7 @@ class Data:
         self._update()
 
     def chop(self, *args, **kwargs):
-        """
-        Divide the dataset into its lower-dimensionality components.
+        """ Divide the dataset into its lower-dimensionality components.
 
         Parameters
         ----------
@@ -591,8 +584,7 @@ class Data:
         return out
 
     def clip(self, channel=0, *args, **kwargs):
-        """
-        Wrapper method for Channel.clip. \n
+        """ Wrapper method for ``Channel.clip``.
 
         Parameters
         ----------
@@ -1739,8 +1731,7 @@ class Data:
         self.transpose(transpose_order, verbose=False)
 
     def trim(self, channel, **kwargs):
-        """
-        Wrapper method for ``Channel.trim``.
+        """ Wrapper method for ``Channel.trim``.
 
         Parameters
         ----------
@@ -1769,8 +1760,7 @@ class Data:
         return channel.trim(neighborhood=neighborhood, **inputs)
 
     def transform(self, transform=None):
-        """
-        Transforms the dataset using arbitrary coordinates, then regirds the data
+        """ Transforms the dataset using arbitrary coordinates, then regrids the data
 
         Parameters
         ----------
@@ -1787,8 +1777,7 @@ class Data:
         print('not yet implemented.')
 
     def transpose(self, axes=None, verbose=True):
-        """
-        Transpose the dataset.
+        """ Transpose the dataset.
 
         Parameters
         ----------
@@ -1811,9 +1800,9 @@ class Data:
         self.shape = self.channels[0].values.shape
 
     def zoom(self, factor, order=1, verbose=True):
-        """
-        Zoom the data array using spline interpolation of the requested
-        order. The number of points along each axis is increased by factor.
+        """ Zoom the data array using spline interpolation of the requested order. 
+        
+        The number of points along each axis is increased by factor.
         See `scipy.ndimage.interpolation.zoom <http://docs.scipy.org/doc/scipy/reference/generated/scipy.ndimage.interpolation.zoom.html>`_
         for more info.
 
@@ -1846,8 +1835,7 @@ class Data:
 
 
 def from_Cary50(filepath, verbose=True):
-    """
-    Create a data object from a Cary 50 UV VIS absorbance file.
+    """ Create a data object from a Cary 50 UV VIS absorbance file.
 
     Parameters
     ----------
@@ -1898,9 +1886,9 @@ def from_Cary50(filepath, verbose=True):
 
 
 def from_text(filepath, name=None, verbose=True):
-    """
-    Create a data object from plaintext tab deliminated file with one energy
-    and one intensity value.
+    """ Create a data object from plaintext tab deliminated file 
+    
+    Expects one energy and one intensity value.
 
     Parameters
     ----------
@@ -2181,8 +2169,7 @@ def from_COLORS(filepaths, znull=None, name=None, cols=None, invert_d1=True,
 
 
 def from_JASCO(filepath, name=None, kind='absorbance', verbose=True):
-    """
-    Create a data object from a JASCO UV-VIS NIR file.
+    """ Create a data object from a JASCO UV-VIS NIR file.
 
     Parameters
     ----------
@@ -2441,8 +2428,7 @@ def from_pickle(filepath, verbose=True):
 
 def from_PyCMDS(filepath, name=None,
                 shots_processing_module='mean_and_std', verbose=True):
-    """
-    Create a data object from a single PyCMDS output file.
+    """ Create a data object from a single PyCMDS output file.
 
     Parameters
     ----------
@@ -2664,8 +2650,7 @@ def from_shimadzu(filepath, name=None, verbose=True):
 
 
 def from_Tensor27(filepath, name=None, verbose=True):
-    """
-    Create a data object from a Tensor27 FTIR file.
+    """ Create a data object from a Tensor27 FTIR file.
 
     Parameters
     ----------
@@ -2704,9 +2689,9 @@ def from_Tensor27(filepath, name=None, verbose=True):
 
 
 def join(datas, method='first', verbose=True):
-    """
-    Join a list of data objects together. For now datas must have identical
-    dimensionalities (order and identity).
+    """ Join a list of data objects together. 
+    
+    For now datas must have identical dimensionalities (order and identity).
 
     Parameters
     ----------

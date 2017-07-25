@@ -81,9 +81,9 @@ class CoSet:
         return '\n'.join(outs)
 
     def coerce_offsets(self):
-        """
-        Coerce the offsets to lie exactly along the interpolation
-        positions. Can be thought of as 'smoothing' the coset.
+        """ Coerce the offsets to lie exactly along the interpolation positions. 
+        
+        Can be thought of as 'smoothing' the coset.
         """
         self.map_control_points(self.control_points, units='same')
 
@@ -102,8 +102,7 @@ class CoSet:
         return self.__copy__()
 
     def get_limits(self, units='same'):
-        """
-        Get the edges of the coset object.
+        """ Get the edges of the coset object.
 
         Parameters
         ----------
@@ -140,8 +139,7 @@ class CoSet:
             self.control_points, self.offset_points)
 
     def map_control_points(self, points, units='same'):
-        """
-        Map the offset points onto new control points using interpolation.
+        """ Map the offset points onto new control points using interpolation.
 
         Parameters
         ----------
@@ -206,9 +204,7 @@ class CoSet:
             print('coset saved at {}'.format(file_path))
 
     def sort(self):
-        """
-        Control points must be ascending.
-        """
+        """ Control points must be ascending.  """
         idxs = np.argsort(self.control_points)
         self.control_points = self.control_points[idxs]
         self.offset_points = self.offset_points[idxs]
