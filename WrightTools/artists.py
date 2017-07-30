@@ -85,15 +85,29 @@ class Axes(matplotlib.axes.Axes):
         return ax
 
     def contourf(self, *args, **kwargs):
-        kwargs['antialiased'] = True
+        # I'm overloading contourf in an attempt to fix aliasing problems when saving vector graphics
+        # see https://stackoverflow.com/questions/15822159
+        # also see https://stackoverflow.com/a/32911283
+        # set_edgecolor('face') does indeed remove all of the aliasing problems
+        # unfortunately, it also seems to distort the plot in a subtle but important way
+        # it shifts the entire colorbar down w.r.t. the data (by one contour? not clear)
+        # so for now, I am trying to fix the problem by adding contour just below contourf
+        # this does not perfectly get rid of the aliasing, but it doesn't distort the data
+        # which is more important
+        # I anticipate that this method will be tinkered with in the future
+        # so I've left the things I have tried and abandoned as comments---good luck!
+        # ---Blaise 2017-07-30
+        kwargs['antialiased'] = False
         kwargs['extend'] = 'both'
-        contours = matplotlib.axes.Axes.contourf(self, *args, **kwargs)  # why can't I use super
+        contours = matplotlib.axes.Axes.contourf(self, *args, **kwargs)  # why can't I use super?
         # fill lines
         zorder = contours.collections[0].zorder - 0.1
-        matplotlib.axes.Axes.contour(self, *args[:3], len(contours.levels), cmap=contours.cmap, zorder=zorder)
-        # rasterize
+        matplotlib.axes.Axes.contour(self, *args[:3], len(contours.levels), cmap=contours.cmap,
+                                     zorder=zorder)
+        # PathCollection modifications
         for c in contours.collections:
-            c.set_rasterized(True)
+            pass
+            #c.set_rasterized(True)
             #c.set_edgecolor('face')
         return contours
 
