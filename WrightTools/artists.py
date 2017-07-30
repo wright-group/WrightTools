@@ -85,10 +85,16 @@ class Axes(matplotlib.axes.Axes):
         return ax
 
     def contourf(self, *args, **kwargs):
-        contours = matplotlib.axes.Axes.contourf(self, *args, **kwargs)  # why can't I use super?
+        kwargs['antialiased'] = True
+        kwargs['extend'] = 'both'
+        contours = matplotlib.axes.Axes.contourf(self, *args, **kwargs)  # why can't I use super
+        # fill lines
+        #zorder = contours.collections[0].zorder + 0.5
+        #matplotlib.axes.Axes.contour(self, *args[:3], levels=contours.levels, cmap=contours.cmap, zorder=zorder)
         # rasterize
         for c in contours.collections:
             c.set_rasterized(True)
+            c.set_edgecolor('face')
         return contours
 
     def legend(self, *args, **kwargs):
