@@ -86,9 +86,9 @@ class Axes(matplotlib.axes.Axes):
 
     def contourf(self, *args, **kwargs):
         contours = matplotlib.axes.Axes.contourf(self, *args, **kwargs)  # why can't I use super?
-        # from http://stackoverflow.com/a/32911283/2860501
+        # rasterize
         for c in contours.collections:
-            c.set_edgecolor('face')
+            c.set_rasterized(True)
         return contours
 
     def legend(self, *args, **kwargs):
