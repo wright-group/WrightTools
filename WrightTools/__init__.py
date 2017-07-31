@@ -1,13 +1,10 @@
-# --- create temp folder if none exists 
-
-
 import sys as _sys
 import os as _os
 
 import matplotlib as _matplotlib
 
 
-# --- temp directory 
+# --- temp directory ------------------------------------------------------------------------------
 
 
 _temp_dir = _os.path.join(_os.path.dirname(__file__), 'temp')
@@ -15,7 +12,7 @@ if not _os.path.isdir(_temp_dir):
     _os.mkdir(_temp_dir)
 
 
-# --- version 
+# --- version -------------------------------------------------------------------------------------
 
 
 # MAJOR.MINOR.PATCH (semantic versioning)
@@ -34,7 +31,7 @@ else:
     __branch__ = None
 
 
-# --- import 
+# --- import --------------------------------------------------------------------------------------
 
 
 from . import artists
@@ -48,7 +45,7 @@ from . import tuning
 from . import units
 
 
-# --- rcparams 
+# --- rcparams ------------------------------------------------------------------------------------
 
 if int(_sys.version.split('.')[0]) > 2 and int(_matplotlib.__version__.split('.')[0]) > 1:
     artists.apply_rcparams('fast')
