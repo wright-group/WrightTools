@@ -1,4 +1,4 @@
-### import ####################################################################
+# --- import ---
 
 
 from __future__ import absolute_import, division, print_function, unicode_literals
@@ -37,13 +37,13 @@ from .. import data as wt_data
 from . import curve as wt_curve
 
 
-### define ####################################################################
+# --- define ---
 
 
 spitfire_output = 800.  # nm
 
 
-### helper methods ############################################################
+# --- helper methods ---
 
 
 def _gauss_residuals(p, y, x):
@@ -91,7 +91,7 @@ def _exp_value(y, x):
     return value
 
 
-### processing methods ########################################################
+# --- processing methods ---
 
 
 def process_C2_motortune(opa_index, data_filepath, curves, save=True):

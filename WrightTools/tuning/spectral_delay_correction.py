@@ -3,7 +3,7 @@ Tools for processing spectral delay correction data.
 """
 
 
-### import ####################################################################
+# --- import ---
 
 
 from __future__ import absolute_import, division, print_function, unicode_literals
@@ -43,7 +43,7 @@ from . import curve as wt_curve
 from . import coset as wt_coset
 
 
-### processing methods ########################################################
+# --- processing methods ---
 
 
 def process_wigner(data_filepath, channel, control_name,

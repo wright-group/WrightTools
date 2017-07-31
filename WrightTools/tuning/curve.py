@@ -3,7 +3,7 @@ OPA tuning curves.
 """
 
 
-### import ####################################################################
+# --- import ---
 
 
 from __future__ import absolute_import, division, print_function, unicode_literals
@@ -29,7 +29,7 @@ from .. import kit as wt_kit
 debug = False
 
 
-### define ####################################################################
+# --- define ---
 
 
 TOPAS_C_motor_names = {0: ['Crystal_1', 'Delay_1', 'Crystal_2', 'Delay_2'],
@@ -66,7 +66,7 @@ TOPAS_interaction_by_kind = {'TOPAS-C': TOPAS_C_interactions,
                              'TOPAS-800': TOPAS_800_interactions}
 
 
-### interpolation classes #####################################################
+# --- interpolation classes ---
 
 
 class Linear:
@@ -147,7 +147,7 @@ class Spline:
         return self.i_functions[motor_index](motor_position)
 
 
-### curve class ###############################################################
+# --- curve class ---
 
 
 class Motor:
@@ -590,7 +590,7 @@ class Curve:
         return out_path
 
 
-### curve import methods ######################################################
+# --- curve import methods ---
 
 
 def from_800_curve(filepath):
@@ -699,7 +699,7 @@ def from_TOPAS_crvs(filepaths, kind, interaction_string):
     return curve
 
 
-### curve writing methods #####################################################
+# --- curve writing methods ---
 
 
 def to_800_curve(curve, save_directory):

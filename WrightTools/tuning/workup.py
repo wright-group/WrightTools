@@ -3,7 +3,7 @@ Methods for processing OPA 800 tuning data.
 """
 
 
-### import ####################################################################
+# --- import ---
 
 
 from __future__ import absolute_import, division, print_function, unicode_literals
@@ -44,14 +44,14 @@ from .. import kit as wt_kit
 from .. import units as wt_units
 
 
-### define ####################################################################
+# --- define ---
 
 
 cmap = wt_artists.colormaps['default']
 cmap.set_bad([0.75] * 3, 1.)
 cmap.set_under([0.75] * 3)
 
-### processing methods ########################################################
+# --- processing methods ---
 
 
 def intensity(data, curve, channel_name, level=False, cutoff_factor=0.1,

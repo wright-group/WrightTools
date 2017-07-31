@@ -2,7 +2,7 @@
 """
 
 
-### import ####################################################################
+# --- import ---
 
 
 from __future__ import absolute_import, division, print_function, unicode_literals
@@ -28,7 +28,7 @@ from matplotlib.ticker import FormatStrFormatter
 from . import kit as wt_kit
 
 
-### define ####################################################################
+# --- define ---
 
 
 # string types
@@ -38,7 +38,7 @@ else:
     string_type = str  # newer versions of python don't have unicode type
 
 
-### classes ###################################################################
+# --- classes ---
 
 
 class Axes(matplotlib.axes.Axes):
@@ -298,7 +298,7 @@ class GridSpec(matplotlib.gridspec.GridSpec):
         super(self.__class__, self).__init__(*args, **kwargs)
 
 
-### artist helpers ############################################################
+# --- artist helpers ---
 
 
 def _title(fig, title, subtitle='', margin=1, fontsize=20, subfontsize=18):
@@ -1295,7 +1295,7 @@ def stitch_to_animation(images, outpath=None, duration=0.5, palettesize=256,
     return outpath
 
 
-### color maps ################################################################
+# --- color maps ---
 
 
 cubehelix = make_cubehelix()
@@ -1447,7 +1447,7 @@ for cmap in colormaps.values():
 overline_colors = ['#CCFF00', '#FE4EDA', '#FF6600', '#00FFBF', '#00B7EB']
 
 
-### general purpose artists ###################################################
+# --- general purpose artists ---
 
 
 class mpl_1D:
@@ -2002,7 +2002,7 @@ class mpl_2D:
         return outfiles
 
 
-### specific artists ##########################################################
+# --- specific artists ---
 
 
 class absorbance:
@@ -2380,7 +2380,7 @@ class difference_2D():
         plt.ion()
 
 
-### artists in progress #######################################################
+# --- artists in progress ---
 
 
 class PDFAll2DSlices:

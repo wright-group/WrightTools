@@ -3,7 +3,7 @@ Central data class and associated.
 """
 
 
-### import ####################################################################
+# --- import ---
 
 
 from __future__ import absolute_import, division, print_function, unicode_literals
@@ -27,7 +27,7 @@ from . import kit as wt_kit
 from . import units as wt_units
 
 
-### define ####################################################################
+# --- define ---
 
 
 debug = False
@@ -39,7 +39,7 @@ else:
     string_type = str  # newer versions of python don't have unicode type
 
 
-### data class ################################################################
+# --- data class ---
 
 
 class Axis:
@@ -1831,7 +1831,7 @@ class Data:
             print('data zoomed to new shape:', self.channels[0].values.shape)
 
 
-### data creation methods #####################################################
+# --- data creation methods ---
 
 
 def from_Cary50(filepath, verbose=True):
@@ -2807,7 +2807,7 @@ def join(datas, method='first', verbose=True):
     return out
 
 
-### other ######################################################################
+# --- other ---
 
 
 def discover_dimensions(arr, dimension_cols, verbose=True):

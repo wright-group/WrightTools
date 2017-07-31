@@ -3,7 +3,7 @@ Calibration.
 """
 
 
-### import ####################################################################
+# --- import ---
 
 
 from __future__ import absolute_import, division, print_function, unicode_literals
@@ -27,7 +27,7 @@ from . import artists as wt_artists
 debug = False
 
 
-### define ####################################################################
+# --- define ---
 
 
 cmap = wt_artists.colormaps['default']
@@ -52,7 +52,7 @@ def get_label(name, units):
     return out
 
 
-### calibration class #########################################################
+# --- calibration class ---
 
 
 class Calibration:
@@ -313,7 +313,7 @@ class Calibration:
         return file_path
 
 
-### load method ###############################################################
+# --- load method ---
 
 
 def from_file(path):

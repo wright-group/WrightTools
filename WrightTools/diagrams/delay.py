@@ -1,4 +1,4 @@
-### import ####################################################################
+# --- import ---
 
 
 import numpy as np
@@ -7,10 +7,10 @@ import matplotlib
 import matplotlib.pyplot as plt
 
 
-### define ####################################################################
+# --- define ---
 
 
-### label sectors #############################################################
+# --- label sectors ---
 
 
 def label_sectors(labels=['I', 'II', 'IV', 'VI', 'V', 'III'], ax=None,
@@ -61,7 +61,7 @@ def label_sectors(labels=['I', 'II', 'IV', 'VI', 'V', 'III'], ax=None,
         poly.set_zorder(c_zlevel)
 
 
-### testing ###################################################################
+# --- testing ---
 
 
 if __name__ == '__main__':

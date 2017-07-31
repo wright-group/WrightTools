@@ -3,7 +3,7 @@ fitting tools
 """
 
 
-### import ####################################################################
+# --- import ---
 
 
 from __future__ import absolute_import, division, print_function, unicode_literals
@@ -26,7 +26,7 @@ from . import kit as wt_kit
 from . import artists as wt_artists
 
 
-### helper functions ##########################################################
+# --- helper functions ---
 
 
 def get_baseline(values, deviations=3):
@@ -63,7 +63,7 @@ def get_baseline(values, deviations=3):
     return baseline
 
 
-### functions objects #########################################################
+# --- functions objects ---
 
 
 class Function:
@@ -383,7 +383,7 @@ class Moments(Function):
         return [0] * 6
 
 
-### fitter ####################################################################
+# --- fitter ---
 
 
 class Fitter:
@@ -470,7 +470,7 @@ class Fitter:
         return self.outs
 
 
-### MultiPeakFitter #################################################
+# --- MultiPeakFitter ---
 
 
 class MultiPeakFitter:
@@ -850,7 +850,7 @@ def leastsqfitter(p0, datax, datay, function, verbose=False, cov_verbose=False):
         print('fitting done in %f seconds' % timer.interval)
     return pfit_leastsq, perr_leastsq
 
-### testing ###################################################################
+# --- testing ---
 
 
 if __name__ == '__main__':
