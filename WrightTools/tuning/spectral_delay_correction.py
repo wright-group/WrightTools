@@ -253,10 +253,22 @@ def process_brute_force(data_filepath, opa_index, channel, color_units='nm',
         ), '_'.join([datas[0].axes[0].name, 'w{}'.format(opa_index)]))
     # construct coset objects
     # TODO: generalize
-    x_coset = wt_coset.CoSet('OPA2 TOPAS-C', color_units, ws, 'D1 SMC100', delay_units,
-                             x_corrections, name='_'.join(['w{}'.format(opa_index), datas[0].axes[1].name]))
-    y_coset = wt_coset.CoSet('OPA2 TOPAS-C', color_units, ws, 'D2 SMC100', delay_units,
-                             y_corrections, name='_'.join(['w{}'.format(opa_index), datas[0].axes[0].name]))
+    x_coset = wt_coset.CoSet('OPA2 TOPAS-C',
+                             color_units,
+                             ws,
+                             'D1 SMC100',
+                             delay_units,
+                             x_corrections,
+                             name='_'.join(['w{}'.format(opa_index),
+                                            datas[0].axes[1].name]))
+    y_coset = wt_coset.CoSet('OPA2 TOPAS-C',
+                             color_units,
+                             ws,
+                             'D2 SMC100',
+                             delay_units,
+                             y_corrections,
+                             name='_'.join(['w{}'.format(opa_index),
+                                            datas[0].axes[0].name]))
     # save coset files
     if autosave:
         save_directory = os.path.dirname(data_filepath)

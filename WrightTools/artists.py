@@ -105,8 +105,8 @@ class Axes(matplotlib.axes.Axes):
         # PathCollection modifications
         for c in contours.collections:
             pass
-            #c.set_rasterized(True)
-            #c.set_edgecolor('face')
+            # c.set_rasterized(True)
+            # c.set_edgecolor('face')
         return contours
 
     def legend(self, *args, **kwargs):
@@ -773,7 +773,7 @@ def make_colormap(seq, name='CustomMap', plot=False):
     """ Return a LinearSegmentedColormap
 
     seq: a sequence of floats and RGB-tuples. The floats should be increasing
-    and in the interval (0,1). 
+    and in the interval (0,1).
     from http://nbviewer.ipython.org/gist/anonymous/a4fa0adb08f9e9ea4f94
     """
     seq = [(None,) * 3, 0.0] + list(seq) + [1.0, (None,) * 3]
@@ -1083,8 +1083,8 @@ def set_ax_spines(ax=None, c='k', lw=3, zorder=10):
 
 def set_fig_labels(fig=None, xlabel=None, ylabel=None, xticks=None, yticks=None,
                    title=None, label_fontsize=18, title_fontsize=20):
-    """ Set all axis labels of a figure simultaniously. 
-    
+    """ Set all axis labels of a figure simultaniously.
+
     Only plots ticks and labels for edge axes.
 
     Parameters
@@ -1117,13 +1117,29 @@ def set_fig_labels(fig=None, xlabel=None, ylabel=None, xticks=None, yticks=None,
     for ax in fig.axes:
         if ax.is_first_col() and ax.is_last_row():
             # lower left corner
-            set_ax_labels(ax=ax, xlabel=xlabel, ylabel=ylabel, xticks=xticks, yticks=yticks, label_fontsize=label_fontsize)
+            set_ax_labels(
+                ax=ax,
+                xlabel=xlabel,
+                ylabel=ylabel,
+                xticks=xticks,
+                yticks=yticks,
+                label_fontsize=label_fontsize)
         elif ax.is_first_col():
             # lefthand column
-            set_ax_labels(ax=ax, ylabel=ylabel, xticks=False, yticks=yticks, label_fontsize=label_fontsize)
+            set_ax_labels(
+                ax=ax,
+                ylabel=ylabel,
+                xticks=False,
+                yticks=yticks,
+                label_fontsize=label_fontsize)
         elif ax.is_last_row():
             # bottom row
-            set_ax_labels(ax=ax, xlabel=xlabel, xticks=xticks, yticks=False, label_fontsize=label_fontsize)
+            set_ax_labels(
+                ax=ax,
+                xlabel=xlabel,
+                xticks=xticks,
+                yticks=False,
+                label_fontsize=label_fontsize)
         else:
             set_ax_labels(ax=ax, xticks=False, yticks=False)
     # title
@@ -1177,7 +1193,7 @@ def plot_gridlines(ax=None, c='grey', lw=1, diagonal=False, zorder=2,
 
 
 def plot_margins(fig=None, inches=1., centers=True, edges=True):
-    """ Add lines onto a figure indicating the margins, centers, and edges. 
+    """ Add lines onto a figure indicating the margins, centers, and edges.
 
     Useful for ensuring your figure design scripts work as intended, and for laying
     out figures.
@@ -1229,7 +1245,7 @@ def subplots_adjust(fig=None, inches=1):
     """ Enforce margin to be equal around figure, starting at subplots.
 
     .. note::
-        
+
         You probably should be using wt.artists.create_figure instead.
 
     See also
@@ -1250,7 +1266,7 @@ def subplots_adjust(fig=None, inches=1):
 def stitch_to_animation(images, outpath=None, duration=0.5, palettesize=256,
                         verbose=True):
     """ Stitch a series of images into an animation.
-    
+
     Currently supports animated gifs, other formats coming as needed.
 
     Parameters
@@ -2112,7 +2128,7 @@ class absorbance:
 
     def _smooth(self, dat1, n=20, window_type='default'):
         """
-        data is an array of type [xlis,ylis] 
+        data is an array of type [xlis,ylis]
         smooth to prevent 2nd derivative from being noisy
         """
         for i in range(n, len(dat1[1]) - n):
@@ -2126,9 +2142,9 @@ class difference_2D():
 
     def __init__(self, minuend, subtrahend, xaxis=1, yaxis=0, at={},
                  verbose=True):
-        """ plot the difference between exactly two datasets in 2D 
+        """ plot the difference between exactly two datasets in 2D
 
-        both data objects must have the same axes with the same name 
+        both data objects must have the same axes with the same name
         axes do not need to be in the same order or have the same points
         """
         self.minuend = minuend.copy()

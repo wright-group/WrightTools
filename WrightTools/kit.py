@@ -259,8 +259,13 @@ class TimeStamp:
     def path(self):
         out = self.datetime.strftime('%Y-%m-%d')
         out += ' '
-        ssm = (self.datetime - self.datetime.replace(hour=0,
-                                                     minute=0, second=0, microsecond=0)).total_seconds()
+        ssm = (
+            self.datetime -
+            self.datetime.replace(
+                hour=0,
+                minute=0,
+                second=0,
+                microsecond=0)).total_seconds()
         out += str(int(ssm)).zfill(5)
         return out
 
@@ -292,8 +297,8 @@ def filename_parse(fstr):
 
 def file_len(fname):
     """ Cheaply get the number of lines in a file.'
-    
-    File is not entirely loaded into memory.  
+
+    File is not entirely loaded into memory.
     """
     # adapted from http://stackoverflow.com/questions/845058
     with open(fname) as f:
@@ -335,8 +340,8 @@ def find_name(fname, suffix):
 class FileSlicer:
 
     def __init__(self, path, skip_headers=True, header_charachter='#'):
-        """ Access groups of lines from a file quickly, without loading the entire file into memory. 
-        
+        """ Access groups of lines from a file quickly, without loading the entire file into memory.
+
         Lines are accesed from Useful especially in cases where
 
         Mostly a convinient wrapper around the standard library 'linecache'
@@ -365,7 +370,7 @@ class FileSlicer:
         linecache.clearcache()
 
     def get(self, line_count):
-        """ Get the next group of lines from the file.  
+        """ Get the next group of lines from the file.
 
         Parameters
         ----------
@@ -391,7 +396,7 @@ class FileSlicer:
         return out
 
     def skip(self, line_count):
-        """ Skip the next group of lines from the file.  
+        """ Skip the next group of lines from the file.
         Parameters
         ----------
         line_count : int
@@ -676,8 +681,8 @@ def write_h5(filepath, dictionary):
 
 
 def write_headers(filepath, dictionary):
-    """ Write 'Wright Group formatted' headers to given file. 
-    
+    """ Write 'Wright Group formatted' headers to given file.
+
     Headers written can be read again using read_headers.
 
     Parameters
@@ -765,8 +770,8 @@ def closest_pair(arr, give='indicies'):
 
 
 def diff(xi, yi, order=1):
-    """ Take the numerical derivative of a 1D array. 
-    
+    """ Take the numerical derivative of a 1D array.
+
     Output is mapped onto the original coordinates  using linear interpolation.
 
     Parameters
@@ -860,8 +865,8 @@ def nm_width(center, width, units='wn'):
 
 
 def remove_nans_1D(arrs):
-    """ Remove nans in a list of 1D arrays. 
-    
+    """ Remove nans in a list of 1D arrays.
+
     Removes indicies in all arrays if any array is nan at that index. All input arrays must have the same size.
 
     Parameters
@@ -890,7 +895,7 @@ def remove_nans_1D(arrs):
 def share_nans(arrs1):
     # Written by DJM. darienmorrow@gmail.com. January 15, 2016.
     """ Takes a list of nD arrays and returns a new list of nD arrays.
-    
+
     The new list is in the same order as the old list.
     If one indexed element in an old array is nan then every element for that
     index in all new arrays in the list is then nan.
@@ -956,8 +961,8 @@ class Spline:
             1000.
         ignore_nans : boolean (optional)
             Toggle removle of nans. Default is True.
-            
-        
+
+
         .. note:: Use k=1 and s=0 for a linear interplation.
 
         """
@@ -1036,8 +1041,8 @@ def zoom2D(xi, yi, zi, xi_zoom=3., yi_zoom=3., order=3, mode='nearest',
 
 
 def array2string(array, sep='\t'):
-    """ Generate a string from an array with useful formatting. 
-    
+    """ Generate a string from an array with useful formatting.
+
     Great for writing arrays into single lines in files.
 
     See Also
@@ -1052,13 +1057,13 @@ def array2string(array, sep='\t'):
 
 
 def flatten_list(l):
-    """ Flatten an irregular list. 
-    
+    """ Flatten an irregular list.
+
     Works generally but may be slower than it could
     be if you can make assumptions about your list.
 
     Adapted from http://stackoverflow.com/questions/2158395
-    
+
         >>> l = [[[1, 2, 3], [4, 5]], 6]
         >>> wt.kit.flatten_list(l)
         [1, 2, 3, 4, 5, 6]
@@ -1106,7 +1111,7 @@ def get_methods(the_class, class_only=False, instance_only=False,
 
 
 def intersperse(lst, item):
-    """ Put item between each existing item in list. 
+    """ Put item between each existing item in list.
 
     From http://stackoverflow.com/a/5921708
     """
@@ -1154,8 +1159,8 @@ def parse_identity(string):
 
 
 class suppress_stdout_stderr(object):
-    """ A context manager for doing a "deep suppression" of stdout and stderr in Python 
-    
+    """ A context manager for doing a "deep suppression" of stdout and stderr in Python
+
     i.e. will suppress all print, even if the print originates in a
     compiled C/Fortran sub-function.
 
@@ -1321,7 +1326,7 @@ unicode_dictionary['omega'] = u'\u03C9'
 
 def update_progress(progress, carriage_return=False, length=50):
     """ prints a pretty progress bar to the console
-    
+
     accepts 'progress' as a percentage
     bool carriage_return toggles overwrite behavior
     """

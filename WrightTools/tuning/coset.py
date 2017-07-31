@@ -81,8 +81,8 @@ class CoSet:
         return '\n'.join(outs)
 
     def coerce_offsets(self):
-        """ Coerce the offsets to lie exactly along the interpolation positions. 
-        
+        """ Coerce the offsets to lie exactly along the interpolation positions.
+
         Can be thought of as 'smoothing' the coset.
         """
         self.map_control_points(self.control_points, units='same')

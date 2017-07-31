@@ -116,7 +116,7 @@ class ExpectationValue(Function):
         # get sum
         sum_y = 0.
         for i in range(len(y_internal)):
-            if np.ma.getmask(y_internal[i]) == True:
+            if np.ma.getmask(y_internal[i]):
                 pass
             elif np.isnan(y_internal[i]):
                 pass
@@ -124,7 +124,7 @@ class ExpectationValue(Function):
                 sum_y += y_internal[i]
         # divide by sum
         for i in range(len(y_internal)):
-            if np.ma.getmask(y_internal[i]) == True:
+            if np.ma.getmask(y_internal[i]):
                 pass
             elif np.isnan(y_internal[i]):
                 pass
@@ -133,7 +133,7 @@ class ExpectationValue(Function):
         # get expectation value
         value = 0.
         for i in range(len(x_internal)):
-            if np.ma.getmask(y_internal[i]) == True:
+            if np.ma.getmask(y_internal[i]):
                 pass
             elif np.isnan(y_internal[i]):
                 pass
@@ -622,8 +622,9 @@ class MultiPeakFitter:
             array offering the remainder (actual - fit) in the native space of the spectra
         """
         # generate arrays for fitting
-        zi_diff = wt_kit.diff(
-            self.data.axes[0].points, self.data.channels[self.channel_index].values, order=self.fittype)
+        zi_diff = wt_kit.diff(self.data.axes[0].points,
+                              self.data.channels[self.channel_index].values,
+                              order=self.fittype)
         names, kinds, p0 = self.extract_params(self.guesses)
         # define error function
 
@@ -736,8 +737,15 @@ class MultiPeakFitter:
         # fit results
         ax.plot(xi, self.remainder, color='k', linestyle='--', linewidth=2)
         for i, kind in enumerate(kinds):
-            ax.plot(xi, self.function(xi, kind, params[i * 3 + 0], params[i * 3 + 1],
-                                      params[i * 3 + 2], diff_order=0), color=cm((i + 1) / num_funcs), linewidth=2)
+            ax.plot(xi,
+                    self.function(xi,
+                                  kind,
+                                  params[i * 3 + 0],
+                                  params[i * 3 + 1],
+                                  params[i * 3 + 2],
+                                  diff_order=0),
+                    color=cm((i + 1) / num_funcs),
+                    linewidth=2)
             ax.axvline(x=params[i * 3 + 2], color=cm((i + 1) / num_funcs), linewidth=1)
         # diff
         ax = plt.subplot(gs[1, 0])

@@ -194,7 +194,7 @@ class Drive:
         return parent
 
     def download(self, fileid, directory='cwd', overwrite=False, verbose=True):
-        """ Recursively download from Google Drive into a local directory. 
+        """ Recursively download from Google Drive into a local directory.
 
         By default, will not re-download if file passes following checks:
 

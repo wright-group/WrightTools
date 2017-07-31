@@ -178,8 +178,12 @@ class Artist:
             for i in range(size[1]):
                 plot = self.subplots[i][0]
                 for i in range(len(self.energies)):
-                    plot.text(-state_text_buffer, energies[i], state_names[i], fontsize=state_font_size,
-                              verticalalignment='center', horizontalalignment='center')
+                    plot.text(-state_text_buffer,
+                              energies[i],
+                              state_names[i],
+                              fontsize=state_font_size,
+                              verticalalignment='center',
+                              horizontalalignment='center')
         # calculate interaction_positons
         self.x_pos = np.linspace(0, 1, number_of_interactions)
         # plot cleans up a bunch - call it now as well as later

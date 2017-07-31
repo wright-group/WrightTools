@@ -212,8 +212,8 @@ class Curve:
         return '\n'.join(outs)
 
     def coerce_motors(self):
-        """ Coerce the motor positions to lie exactly along the interpolation positions. 
-        
+        """ Coerce the motor positions to lie exactly along the interpolation positions.
+
         Can be thought of as 'smoothing' the curve.
         """
         self.map_colors(self.colors, units='same')

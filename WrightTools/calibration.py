@@ -93,7 +93,7 @@ class Calibration:
 
     def _sort(self):
         """ Sort data by all axes.
-        
+
         First axis will be strictly ascending, second
         will be ascending within groups sharing the same value in the first
         axis etc.
@@ -137,7 +137,7 @@ class Calibration:
         self._interpolate()
 
     def get_positions(self, value, **kwargs):
-        """ 
+        """
         Returns
         -------
         list of dictionaries
@@ -211,8 +211,8 @@ class Calibration:
         Returns
         -------
         output
-            Save path if autosave is True, fig object if autosave is False.        
-        
+            Save path if autosave is True, fig object if autosave is False.
+
         .. note:: Only works for one and two-dimensional calibrations at this time.
 
         """

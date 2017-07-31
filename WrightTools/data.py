@@ -298,8 +298,8 @@ class Channel:
 
     def trim(self, neighborhood, method='ztest', factor=3, replace='nan',
              verbose=True):
-        """ Remove outliers from the dataset 
-        
+        """ Remove outliers from the dataset
+
         Identifies outliers by comparing each point to its
         neighbors using a statistical test.
 
@@ -506,7 +506,7 @@ class Data:
                 raise TypeError(message)
             axes_args[i] = arg
         for arg in axes_args:
-            if not arg in self.axis_names:
+            if arg not in self.axis_names:
                 raise Exception('axis {} not in data'.format(arg))
         # iterate! --------------------------------------------------------------------------------
         print(axes_args, chopped_constants)
@@ -1066,7 +1066,7 @@ class Data:
             --requires unique, integer (0<x<10) numbering for index
                 identification
         """
-        #TODO: numpydoc format docstring
+        # TODO: numpydoc format docstring
         # exp_name: [i], [m_i]
         exp_types = {
             'TG': [['1', '2'],
@@ -1800,8 +1800,8 @@ class Data:
         self.shape = self.channels[0].values.shape
 
     def zoom(self, factor, order=1, verbose=True):
-        """ Zoom the data array using spline interpolation of the requested order. 
-        
+        """ Zoom the data array using spline interpolation of the requested order.
+
         The number of points along each axis is increased by factor.
         See `scipy.ndimage.interpolation.zoom <http://docs.scipy.org/doc/scipy/reference/generated/scipy.ndimage.interpolation.zoom.html>`_
         for more info.
@@ -1886,8 +1886,8 @@ def from_Cary50(filepath, verbose=True):
 
 
 def from_text(filepath, name=None, verbose=True):
-    """ Create a data object from plaintext tab deliminated file 
-    
+    """ Create a data object from plaintext tab deliminated file
+
     Expects one energy and one intensity value.
 
     Parameters
@@ -1946,11 +1946,29 @@ def from_rRaman(*args, **kwargs):
     return from_text(*args, **kwargs)
 
 
-def from_COLORS(filepaths, znull=None, name=None, cols=None, invert_d1=True,
-                color_steps_as='energy', ignore=['num', 'w3', 'wa', 'dref', 'm0', 'm1', 'm2', 'm3', 'm4', 'm5', 'm6'],
-                even=True, verbose=True):
+def from_COLORS(
+        filepaths,
+        znull=None,
+        name=None,
+        cols=None,
+        invert_d1=True,
+        color_steps_as='energy',
+        ignore=[
+            'num',
+            'w3',
+            'wa',
+            'dref',
+            'm0',
+            'm1',
+            'm2',
+            'm3',
+            'm4',
+            'm5',
+            'm6'],
+    even=True,
+        verbose=True):
     """
-    filepaths may be string or list 
+    filepaths may be string or list
     color_steps_as one in 'energy', 'wavelength'
     """
 
@@ -2212,7 +2230,7 @@ def from_JASCO(filepath, name=None, kind='absorbance', verbose=True):
 def from_KENT(filepaths, znull=None, name=None, ignore=['wm'], use_norm=False,
               delay_tolerance=0.1, frequency_tolerance=0.5, verbose=True):
     """
-    filepaths may be string or list 
+    filepaths may be string or list
     """
     # do we have a list of files or just one file? ------------------------------------------------
     if isinstance(filepaths, list):
@@ -2380,7 +2398,7 @@ def from_NISE(measure_object, name='simulation', ignore_constants=['A', 'p'],
                     equal[i, j] = True
         # create constant Axis objects
         vals_accounted_for = np.zeros(len(vals), dtype=bool)
-        while not all(vals_accounted_for) == True:
+        while not all(vals_accounted_for):
             for i in range(len(vals)):
                 if vals_accounted_for[i]:
                     pass
@@ -2689,8 +2707,8 @@ def from_Tensor27(filepath, name=None, verbose=True):
 
 
 def join(datas, method='first', verbose=True):
-    """ Join a list of data objects together. 
-    
+    """ Join a list of data objects together.
+
     For now datas must have identical dimensionalities (order and identity).
 
     Parameters
@@ -2812,9 +2830,9 @@ def join(datas, method='first', verbose=True):
 
 def discover_dimensions(arr, dimension_cols, verbose=True):
     """
-    Discover the dimensions of array arr. 
+    Discover the dimensions of array arr.
     Watches the indicies contained in dimension_cols. Returns dictionaries of
-    axis objects [scanned, constant]. 
+    axis objects [scanned, constant].
     Constant objects have their points object initialized. Scanned dictionary is
     in order of scanning (..., zi, yi, xi). Both dictionaries are condensed
     into coscanning / setting.

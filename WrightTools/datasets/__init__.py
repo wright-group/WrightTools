@@ -25,13 +25,13 @@ def clean_name(n, prefix=''):
 
 
 class DatasetContainer(object):
-    
+
     def from_files(self, dirname, prefix=''):
         ps = [os.path.join(here, dirname, p) for p in os.listdir(os.path.join(here, dirname))]
         for p in ps:
             n = clean_name(os.path.basename(p).split('.')[0], prefix=prefix)
             setattr(self, n, p)
-    
+
     def from_directory(self, dirname, prefix=''):
         ps = [os.path.join(here, dirname, p) for p in os.listdir(os.path.join(here, dirname))]
         n = clean_name(os.path.basename(dirname), prefix=prefix)
