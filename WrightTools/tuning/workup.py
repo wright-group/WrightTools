@@ -3,7 +3,7 @@ Methods for processing OPA 800 tuning data.
 """
 
 
-# --- import ---
+# --- import --------------------------------------------------------------------------------------
 
 
 from __future__ import absolute_import, division, print_function, unicode_literals
@@ -44,14 +44,14 @@ from .. import kit as wt_kit
 from .. import units as wt_units
 
 
-# --- define ---
+# --- define --------------------------------------------------------------------------------------
 
 
 cmap = wt_artists.colormaps['default']
 cmap.set_bad([0.75] * 3, 1.)
 cmap.set_under([0.75] * 3)
 
-# --- processing methods ---
+# --- processing methods --------------------------------------------------------------------------
 
 
 def intensity(data, curve, channel_name, level=False, cutoff_factor=0.1,
@@ -72,7 +72,7 @@ def intensity(data, curve, channel_name, level=False, cutoff_factor=0.1,
     data.transpose()
     channel_index = data.channel_names.index(channel_name)
     tune_points = curve.colors
-    # process data ------------------------------------------------------------
+    # process data --------------------------------------------------------------------------------
     if level:
         data.level(channel_index, 0, -3)
     # cutoff
@@ -89,7 +89,7 @@ def intensity(data, curve, channel_name, level=False, cutoff_factor=0.1,
     # pass offsets through spline
     spline = wt_kit.Spline(tune_points, offsets)
     offsets_splined = spline(tune_points)
-    # make curve --------------------------------------------------------------
+    # make curve ----------------------------------------------------------------------------------
     old_curve = curve.copy()
     motors = []
     for motor_index, motor_name in enumerate([m.name for m in old_curve.motors]):
@@ -106,7 +106,7 @@ def intensity(data, curve, channel_name, level=False, cutoff_factor=0.1,
                            name=old_curve.name.split('-')[0],
                            kind=kind, interaction=interaction)
     curve.map_colors(old_curve.colors)
-    # plot --------------------------------------------------------------------
+    # plot ----------------------------------------------------------------------------------------
     fig, gs = wt_artists.create_figure(nrows=2, default_aspect=0.5, cols=[1, 'cbar'])
     # curves
     ax = plt.subplot(gs[0, 0])
@@ -146,7 +146,7 @@ def intensity(data, curve, channel_name, level=False, cutoff_factor=0.1,
     label = channel_name
     ticks = np.linspace(0, np.nanmax(zi), 7)
     wt_artists.plot_colorbar(cax=cax, cmap=cmap, label=label, ticks=ticks)
-    # finish ------------------------------------------------------------------
+    # finish --------------------------------------------------------------------------------------
     if autosave:
         if save_directory is None:
             save_directory = os.getcwd()
@@ -188,7 +188,7 @@ def tune_test(data, curve, channel_name, level=False, cutoff_factor=0.01,
     data = data.copy()
     data.bring_to_front(channel_name)
     data.transpose()
-    # process data ------------------------------------------------------------
+    # process data --------------------------------------------------------------------------------
     # cutoff
     channel_index = data.channel_names.index(channel_name)
     channel = data.channels[channel_index]
@@ -203,7 +203,7 @@ def tune_test(data, curve, channel_name, level=False, cutoff_factor=0.01,
     yi = outs.mean.values
     spline = wt_kit.Spline(xi, yi)
     offsets_splined = spline(xi)  # wn
-    # make curve --------------------------------------------------------------
+    # make curve ----------------------------------------------------------------------------------
     curve = curve.copy()
     curve_native_units = curve.units
     curve.convert('wn')
@@ -211,7 +211,7 @@ def tune_test(data, curve, channel_name, level=False, cutoff_factor=0.01,
     curve.colors += offsets_splined
     curve.map_colors(points, units='wn')
     curve.convert(curve_native_units)
-    # plot --------------------------------------------------------------------
+    # plot ----------------------------------------------------------------------------------------
     data.axes[1].convert(curve_native_units)
     fig, gs = wt_artists.create_figure(default_aspect=0.5, cols=[1, 'cbar'])
     fig, gs = wt_artists.create_figure(default_aspect=0.5, cols=[1, 'cbar'])
@@ -240,7 +240,7 @@ def tune_test(data, curve, channel_name, level=False, cutoff_factor=0.01,
     label = channel_name
     ticks = np.linspace(0, np.nanmax(zi), 7)
     wt_artists.plot_colorbar(cax=cax, cmap=cmap, label=label, ticks=ticks)
-    # finish ------------------------------------------------------------------
+    # finish --------------------------------------------------------------------------------------
     if autosave:
         if save_directory is None:
             save_directory = os.path.dirname(data.source)

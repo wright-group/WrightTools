@@ -2,19 +2,19 @@
 """
 
 
-# --- import ---
+# --- import --------------------------------------------------------------------------------------
 
 
 import os
 
 
-# --- define ---
+# --- define --------------------------------------------------------------------------------------
 
 
 here = os.path.abspath(os.path.dirname(__file__))
 
 
-# --- container class ---
+# --- container class -----------------------------------------------------------------------------
 
 
 def clean_name(n, prefix=''):
@@ -38,7 +38,7 @@ class DatasetContainer(object):
         setattr(self, n, ps)
 
 
-# --- fill ---
+# --- fill ----------------------------------------------------------------------------------------
 
 
 COLORS = DatasetContainer()
@@ -54,7 +54,7 @@ KENT.from_directory(os.path.join('KENT', 'PbSe 2D delay A'))
 KENT.from_directory(os.path.join('KENT', 'PbSe 2D delay B'))
 
 
-# --- pretty namespace ---
+# --- pretty namespace ----------------------------------------------------------------------------
 
 
 __all__ = ['COLORS', 'JASCO', 'KENT']

@@ -3,7 +3,7 @@ fitting tools
 """
 
 
-# --- import ---
+# --- import --------------------------------------------------------------------------------------
 
 
 from __future__ import absolute_import, division, print_function, unicode_literals
@@ -26,7 +26,7 @@ from . import kit as wt_kit
 from . import artists as wt_artists
 
 
-# --- helper functions ---
+# --- helper functions ----------------------------------------------------------------------------
 
 
 def get_baseline(values, deviations=3):
@@ -63,7 +63,7 @@ def get_baseline(values, deviations=3):
     return baseline
 
 
-# --- functions objects ---
+# --- functions objects ---------------------------------------------------------------------------
 
 
 class Function:
@@ -383,7 +383,7 @@ class Moments(Function):
         return [0] * 6
 
 
-# --- fitter ---
+# --- fitter --------------------------------------------------------------------------------------
 
 
 class Fitter:
@@ -400,14 +400,14 @@ class Fitter:
         print('fitter recieved data to make %d fits' % np.product(self.fit_shape))
 
     def run(self, channel=0, verbose=True):
-        # get channel ---------------------------------------------------------
+        # get channel -----------------------------------------------------------------------------
         if isinstance(channel, int):
             channel_index = channel
         elif isinstance(channel, str):
             channel_index = self.data.channel_names.index(channel)
         else:
             print('channel type', type(channel), 'not valid')
-        # transpose data ------------------------------------------------------
+        # transpose data --------------------------------------------------------------------------
         # fitted axes will be LAST
         transpose_order = list(range(len(self.data.axes)))
         self.axis_indicies.reverse()
@@ -417,7 +417,7 @@ class Fitter:
             transpose_order[ri], transpose_order[ai] = transpose_order[ai], transpose_order[ri]
         self.axis_indicies.reverse()
         self.data.transpose(transpose_order, verbose=False)
-        # create output objects -----------------------------------------------
+        # create output objects -------------------------------------------------------------------
         # model
         self.model = self.data.copy()
         if self.data.name:
@@ -435,7 +435,7 @@ class Fitter:
             channel = wt_data.Channel(values, units=None, znull=0, name=param)
             params_channels.append(channel)
         self.outs.channels = params_channels + self.outs.channels
-        # do all fitting operations -------------------------------------------
+        # do all fitting operations ---------------------------------------------------------------
         axes_points = [axis.points for axis in self.data.axes if axis.name in self.axes]
         timer = wt_kit.Timer(verbose=False)
         with timer:
@@ -452,7 +452,7 @@ class Fitter:
                 self.model.channels[channel_index].values[idx] = model_data
         if verbose:
             print('fitter done in %f seconds' % timer.interval)
-        # clean up ------------------------------------------------------------
+        # clean up --------------------------------------------------------------------------------
         # model
         self.model.transpose(transpose_order, verbose=False)
         self.model.channels[channel_index].zmax = np.nanmax(
@@ -470,7 +470,7 @@ class Fitter:
         return self.outs
 
 
-# --- MultiPeakFitter ---
+# --- MultiPeakFitter -----------------------------------------------------------------------------
 
 
 class MultiPeakFitter:
@@ -850,7 +850,7 @@ def leastsqfitter(p0, datax, datay, function, verbose=False, cov_verbose=False):
         print('fitting done in %f seconds' % timer.interval)
     return pfit_leastsq, perr_leastsq
 
-# --- testing ---
+# --- testing -------------------------------------------------------------------------------------
 
 
 if __name__ == '__main__':

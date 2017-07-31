@@ -3,7 +3,7 @@ COSET
 """
 
 
-# --- import ---
+# --- import --------------------------------------------------------------------------------------
 
 
 from __future__ import absolute_import, division, print_function, unicode_literals
@@ -27,7 +27,7 @@ from .. import artists as wt_artists
 debug = False
 
 
-# --- coset class ---
+# --- coset class ---------------------------------------------------------------------------------
 
 
 class CoSet:
@@ -210,7 +210,7 @@ class CoSet:
         self.offset_points = self.offset_points[idxs]
 
 
-# --- coset load method ---
+# --- coset load method ---------------------------------------------------------------------------
 
 
 def from_file(path):

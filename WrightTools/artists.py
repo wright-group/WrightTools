@@ -2,7 +2,7 @@
 """
 
 
-# --- import ---
+# --- import --------------------------------------------------------------------------------------
 
 
 from __future__ import absolute_import, division, print_function, unicode_literals
@@ -28,7 +28,7 @@ from matplotlib.ticker import FormatStrFormatter
 from . import kit as wt_kit
 
 
-# --- define ---
+# --- define --------------------------------------------------------------------------------------
 
 
 # string types
@@ -38,7 +38,7 @@ else:
     string_type = str  # newer versions of python don't have unicode type
 
 
-# --- classes ---
+# --- classes -------------------------------------------------------------------------------------
 
 
 class Axes(matplotlib.axes.Axes):
@@ -149,7 +149,7 @@ class Axes(matplotlib.axes.Axes):
 
         """
         # TODO: should I store a reference to data (or list of refs?)
-        # prepare -------------------------------------------------------------
+        # prepare ---------------------------------------------------------------------------------
         # get dimensionality
         # get channel
         if isinstance(channel, int):
@@ -167,7 +167,7 @@ class Axes(matplotlib.axes.Axes):
         # get zmax
         if zmax is None:
             zmax = channel.zmax
-        # 1D ------------------------------------------------------------------
+        # 1D --------------------------------------------------------------------------------------
         if data.dimensionality == 1:
             # get list of all datas
             # get color
@@ -193,7 +193,7 @@ class Axes(matplotlib.axes.Axes):
                     xdata, ydata = line.get_xdata(), line.get_ydata()
                     line.set_xdata(ydata)
                     line.set_ydata(xdata)
-        # 2D ------------------------------------------------------------------
+        # 2D --------------------------------------------------------------------------------------
         elif data.dimensionality == 2:
             yaxis = data.axes[1]
             # get colormap
@@ -220,10 +220,10 @@ class Axes(matplotlib.axes.Axes):
             # decoration
             self.set_xlim(xi.min(), xi.max())
             self.set_ylim(yi.min(), yi.max())
-        # ND ------------------------------------------------------------------
+        # ND --------------------------------------------------------------------------------------
         else:
             pass
-        # decoration ----------------------------------------------------------
+        # decoration ------------------------------------------------------------------------------
         if xlabel and not self.is_sideplot:
             self.set_xlabel(xaxis.label, fontsize=18)
         if ylabel and not self.is_sideplot:
@@ -298,7 +298,7 @@ class GridSpec(matplotlib.gridspec.GridSpec):
         super(self.__class__, self).__init__(*args, **kwargs)
 
 
-# --- artist helpers ---
+# --- artist helpers ------------------------------------------------------------------------------
 
 
 def _title(fig, title, subtitle='', margin=1, fontsize=20, subfontsize=18):
@@ -797,7 +797,7 @@ def nm_to_rgb(nm):
     original code - http://www.physics.sfasu.edu/astro/color/spectra.html
     """
     w = int(nm)
-    # color -------------------------------------------------------------------
+    # color ---------------------------------------------------------------------------------------
     if w >= 380 and w < 440:
         R = -(w - 440.) / (440. - 350.)
         G = 0.0
@@ -826,7 +826,7 @@ def nm_to_rgb(nm):
         R = 0.0
         G = 0.0
         B = 0.0
-    # intensity correction ----------------------------------------------------
+    # intensity correction ------------------------------------------------------------------------
     if w >= 380 and w < 420:
         SSS = 0.3 + 0.7 * (w - 350) / (420 - 350)
     elif w >= 420 and w <= 700:
@@ -1295,7 +1295,7 @@ def stitch_to_animation(images, outpath=None, duration=0.5, palettesize=256,
     return outpath
 
 
-# --- color maps ---
+# --- color maps ----------------------------------------------------------------------------------
 
 
 cubehelix = make_cubehelix()
@@ -1447,7 +1447,7 @@ for cmap in colormaps.values():
 overline_colors = ['#CCFF00', '#FE4EDA', '#FF6600', '#00FFBF', '#00B7EB']
 
 
-# --- general purpose artists ---
+# --- general purpose artists ---------------------------------------------------------------------
 
 
 class mpl_1D:
@@ -1706,7 +1706,7 @@ class mpl_2D:
         # chew through image generation
         outfiles = [''] * len(self.chopped)
         for i in range(len(self.chopped)):
-            # get data to plot ------------------------------------------------
+            # get data to plot --------------------------------------------------------------------
             current_chop = self.chopped[i]
             axes = current_chop.axes
             channels = current_chop.channels
@@ -1716,7 +1716,7 @@ class mpl_2D:
             channel = channels[channel_index]
             zi = channel.values
             zi = np.ma.masked_invalid(zi)
-            # normalize slices ------------------------------------------------
+            # normalize slices --------------------------------------------------------------------
             if normalize_slices == 'both':
                 pass
             elif normalize_slices == 'horizontal':
@@ -1740,7 +1740,7 @@ class mpl_2D:
                 channel.zmax = zi.max()
                 channel.zmin = zi.min()
                 channel.znull = 0
-            # create figure ---------------------------------------------------
+            # create figure -----------------------------------------------------------------------
             if fig and autosave:
                 plt.close(fig)
 
@@ -1767,7 +1767,7 @@ class mpl_2D:
                                     1, 'cbar'], aspects=[[[0, 0], aspect]])
             subplot_main = plt.subplot(gs[0])
             subplot_main.patch.set_facecolor(facecolor)
-            # levels ----------------------------------------------------------
+            # levels ------------------------------------------------------------------------------
             if channel.signed:
                 if local:
                     print('signed local')
@@ -1792,7 +1792,7 @@ class mpl_2D:
                         levels = np.linspace(channel.zmin, channel.znull, 200)
                     else:
                         levels = np.linspace(channel.znull, channel.zmax, 200)
-            # main plot -------------------------------------------------------
+            # main plot ---------------------------------------------------------------------------
             # get colormap
             if cmap == 'automatic':
                 if channel.signed:
@@ -1826,7 +1826,7 @@ class mpl_2D:
             plt.yticks(fontsize=14)
             plt.xlabel(self.xaxis.get_label(), fontsize=18)
             plt.ylabel(self.yaxis.get_label(), fontsize=17)
-            # delay space deliniation lines -----------------------------------
+            # delay space deliniation lines -------------------------------------------------------
             if lines:
                 if self.xaxis.units_kind == 'delay':
                     plt.axvline(0, lw=2, c='k')
@@ -1834,7 +1834,7 @@ class mpl_2D:
                     plt.axhline(0, lw=2, c='k')
                 if self.xaxis.units_kind == 'delay' and self.xaxis.units == self.yaxis.units:
                     diagonal_line(self.xaxis.points, self.yaxis.points, c='k', lw=2, ls='-')
-            # variable marker lines -------------------------------------------
+            # variable marker lines ---------------------------------------------------------------
             if lines:
                 for constant in constants:
                     if constant.units_kind == 'energy':
@@ -1844,7 +1844,7 @@ class mpl_2D:
                         # y axis
                         if self.yaxis.units == constant.units:
                             plt.axhline(constant.points, color='k', linewidth=4, alpha=0.25)
-            # grid ------------------------------------------------------------
+            # grid --------------------------------------------------------------------------------
             plt.grid(b=True)
             if self.xaxis.units == self.yaxis.units:
                 # add diagonal line
@@ -1859,7 +1859,7 @@ class mpl_2D:
                 diag_min = max(min(x), min(y))
                 diag_max = min(max(x), max(y))
                 plt.plot([diag_min, diag_max], [diag_min, diag_max], 'k:')
-            # contour lines ---------------------------------------------------
+            # contour lines -----------------------------------------------------------------------
             if contours:
                 if contours_local:
                     # force top and bottom contour to be just outside of data range
@@ -1873,7 +1873,7 @@ class mpl_2D:
                 else:
                     subplot_main.contour(X, Y, zi, contours_levels, colors='k',
                                          linewidths=contour_thickness)
-            # finish main subplot ---------------------------------------------
+            # finish main subplot -----------------------------------------------------------------
             if xlim:
                 subplot_main.set_xlim(xlim[0], xlim[1])
             else:
@@ -1882,7 +1882,7 @@ class mpl_2D:
                 subplot_main.set_ylim(ylim[0], ylim[1])
             else:
                 subplot_main.set_ylim(self.yaxis.points[0], self.yaxis.points[-1])
-            # sideplots -------------------------------------------------------
+            # sideplots ---------------------------------------------------------------------------
             divider = make_axes_locatable(subplot_main)
             if xbin or self._xsideplot:
                 axCorrx = divider.append_axes('top', 0.75, pad=0.0, sharex=subplot_main)
@@ -1964,10 +1964,10 @@ class mpl_2D:
                             if self.yaxis.units == constant.units:
                                 axCorry.axvline(constant.points, color='k',
                                                 linewidth=4, alpha=0.25)
-            # onplot ----------------------------------------------------------
+            # onplot ------------------------------------------------------------------------------
             for xi, yi, kwargs in self._onplotdata:
                 subplot_main.plot(xi, yi, **kwargs)
-            # colorbar --------------------------------------------------------
+            # colorbar ----------------------------------------------------------------------------
             subplot_cb = plt.subplot(gs[1])
             cbar_ticks = np.linspace(levels.min(), levels.max(), 11)
             if cbar_ticks.max() == 1.0:
@@ -1978,11 +1978,11 @@ class mpl_2D:
                                     ticks=cbar_ticks, format='%.3f')
             cbar.set_label(channel.name, fontsize=18)
             cbar.ax.tick_params(labelsize=14)
-            # title -----------------------------------------------------------
+            # title -------------------------------------------------------------------------------
             title_text = self.data.name
             constants_text = get_constant_text(constants)
             _title(fig, title_text, constants_text)
-            # save figure -----------------------------------------------------
+            # save figure -------------------------------------------------------------------------
             if autosave:
                 if fname.endswith('.pdf'):
                     file_name = fname.split('.')[0] + ' ' + str(i).zfill(3) + '.pdf'
@@ -2002,7 +2002,7 @@ class mpl_2D:
         return outfiles
 
 
-# --- specific artists ---
+# --- specific artists ----------------------------------------------------------------------------
 
 
 class absorbance:
@@ -2017,7 +2017,7 @@ class absorbance:
     def plot(self, channel_index=0, xlim=None, ylim=None,
              yticks=True, derivative=True, n_smooth=10,):
 
-        # prepare plot environment --------------------------------------------
+        # prepare plot environment ----------------------------------------------------------------
 
         self.font_size = 14
 
@@ -2044,12 +2044,12 @@ class absorbance:
 
         for data in self.data:
 
-            # import data -----------------------------------------------------
+            # import data -------------------------------------------------------------------------
 
             xi = data.axes[0].points
             zi = data.channels[channel_index].values
 
-            # scale -----------------------------------------------------------
+            # scale -------------------------------------------------------------------------------
 
             if xlim:
                 plt.xlim(xlim[0], xlim[1])
@@ -2063,11 +2063,11 @@ class absorbance:
                 zi_truncated = zi[min(min_index, max_index):max(min_index, max_index)]
                 zi /= zi_truncated.max()
 
-            # plot absorbance -------------------------------------------------
+            # plot absorbance ---------------------------------------------------------------------
 
             self.ax1.plot(xi, zi, lw=2)
 
-            # now plot 2nd derivative -----------------------------------------
+            # now plot 2nd derivative -------------------------------------------------------------
 
             if derivative:
                 # compute second derivative
@@ -2078,11 +2078,11 @@ class absorbance:
                 self.ax2.grid(b=True)
                 plt.xlabel(data.axes[0].get_label(), fontsize=18)
 
-        # legend --------------------------------------------------------------
+        # legend ----------------------------------------------------------------------------------
 
         #self.ax1.legend([data.name for data in self.data])
 
-        # ticks ---------------------------------------------------------------
+        # ticks -----------------------------------------------------------------------------------
 
         if not yticks:
             self.ax1.get_yaxis().set_ticks([])
@@ -2090,13 +2090,13 @@ class absorbance:
             self.ax2.get_yaxis().set_ticks([])
             self.ax2.axhline(0, color='k', ls=':')
 
-        # title ---------------------------------------------------------------
+        # title -----------------------------------------------------------------------------------
 
         if len(self.data) == 1:  # only attempt this if we are plotting one data object
             title_text = self.data[0].name
             plt.suptitle(title_text, fontsize=self.font_size)
 
-        # finish --------------------------------------------------------------
+        # finish ----------------------------------------------------------------------------------
 
         if xlim:
             plt.xlim(xlim[0], xlim[1])
@@ -2196,7 +2196,7 @@ class difference_2D():
         # chew through image generation
         for i in range(len(self.minuend_chopped)):
 
-            # create figure ---------------------------------------------------
+            # create figure -----------------------------------------------------------------------
 
             if fig:
                 plt.close(fig)
@@ -2208,7 +2208,7 @@ class difference_2D():
             subplot_main = plt.subplot(gs[0])
             subplot_main.patch.set_facecolor(facecolor)
 
-            # levels ----------------------------------------------------------
+            # levels ------------------------------------------------------------------------------
 
             """
             if channel.signed:
@@ -2228,7 +2228,7 @@ class difference_2D():
             """
             levels = np.linspace(0, 1, 200)
 
-            # main plot -------------------------------------------------------
+            # main plot ---------------------------------------------------------------------------
 
             # get colormap
             mycm = colormaps[cmap]
@@ -2268,7 +2268,7 @@ class difference_2D():
                 #plt.xlabel(xaxis.get_label(), fontsize = self.font_size)
                 #plt.ylabel(yaxis.get_label(), fontsize = self.font_size)
 
-                # grid --------------------------------------------------------
+                # grid ----------------------------------------------------------------------------
 
                 plt.grid(b=True)
 
@@ -2287,7 +2287,7 @@ class difference_2D():
                     diag_max = min(max(x), max(y))
                     plt.plot([diag_min, diag_max], [diag_min, diag_max], 'k:')
 
-                # contour lines -----------------------------------------------
+                # contour lines -------------------------------------------------------------------
 
                 if contours:
                     if contours_local:
@@ -2300,7 +2300,7 @@ class difference_2D():
                     plt.contour(xaxis.points, yaxis.points, zi,
                                 contours_levels, colors='k')
 
-                # finish main subplot -----------------------------------------
+                # finish main subplot -------------------------------------------------------------
 
                 if xlim:
                     subplot_main.set_xlim(xlim[0], xlim[1])
@@ -2311,13 +2311,13 @@ class difference_2D():
                 else:
                     subplot_main.set_ylim(yaxis.points[0], yaxis.points[-1])
 
-            # colorbar --------------------------------------------------------
+            # colorbar ----------------------------------------------------------------------------
 
             subplot_cb = plt.subplot(gs[2])
             cbar_ticks = np.linspace(levels.min(), levels.max(), 11)
             cbar = plt.colorbar(cax, cax=subplot_cb, ticks=cbar_ticks)
 
-            # difference ------------------------------------------------------
+            # difference --------------------------------------------------------------------------
 
             # get colormap
             mycm = colormaps['seismic']
@@ -2344,7 +2344,7 @@ class difference_2D():
             dcbar.set_label(self.minuend.channels[channel_index].name +
                             ' - ' + self.subtrahend.channels[channel_index].name)
 
-            # title -----------------------------------------------------------
+            # title -------------------------------------------------------------------------------
 
             title_text = self.minuend.name + ' - ' + self.subtrahend.name
 
@@ -2356,14 +2356,14 @@ class difference_2D():
             plt.figtext(0.5, 0.01, xaxis.get_label(),
                         fontsize=self.font_size, horizontalalignment='center')
 
-            # cleanup ---------------------------------------------------------
+            # cleanup -----------------------------------------------------------------------------
 
             fig.subplots_adjust(left=0.075, right=1 - 0.075, top=0.90, bottom=0.15)
 
             plt.setp(plt.subplot(gs[1]).get_yticklabels(), visible=False)
             plt.setp(plt.subplot(gs[4]).get_yticklabels(), visible=False)
 
-            # save figure -----------------------------------------------------
+            # save figure -------------------------------------------------------------------------
 
             if autosave:
                 if fname:
@@ -2380,7 +2380,7 @@ class difference_2D():
         plt.ion()
 
 
-# --- artists in progress ---
+# --- artists in progress -------------------------------------------------------------------------
 
 
 class PDFAll2DSlices:

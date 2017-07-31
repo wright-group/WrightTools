@@ -3,7 +3,7 @@ a collection of small, general purpose objects and methods
 """
 
 
-# --- import ---
+# --- import --------------------------------------------------------------------------------------
 
 
 from __future__ import absolute_import, division, print_function, unicode_literals
@@ -37,7 +37,7 @@ from . import units  # legacy
 from . import units as wt_units
 
 
-# --- define ---
+# --- define --------------------------------------------------------------------------------------
 
 
 if sys.version[0] == '2':
@@ -46,7 +46,7 @@ else:
     string_type = str  # newer versions of python don't have unicode type
 
 
-# --- time and date ---
+# --- time and date -------------------------------------------------------------------------------
 
 
 def get_timestamp(style='RFC3339', at=None, hms=True, frac=False,
@@ -274,7 +274,7 @@ def timestamp_from_RFC3339(RFC3339):
     return timestamp
 
 
-# --- file processing ---
+# --- file processing -----------------------------------------------------------------------------
 
 
 def filename_parse(fstr):
@@ -709,7 +709,7 @@ def write_headers(filepath, dictionary):
     return filepath
 
 
-# --- array and math ---
+# --- array and math ------------------------------------------------------------------------------
 
 
 def closest_pair(arr, give='indicies'):
@@ -1032,7 +1032,7 @@ def zoom2D(xi, yi, zi, xi_zoom=3., yi_zoom=3., order=3, mode='nearest',
     return xi, yi, zi
 
 
-# --- uncategorized ---
+# --- uncategorized -------------------------------------------------------------------------------
 
 
 def array2string(array, sep='\t'):

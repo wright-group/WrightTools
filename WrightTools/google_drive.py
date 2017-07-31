@@ -6,7 +6,7 @@ Interact with google drive using the pydrive package.
 # Blaise Thompson - blaise@untzag.com
 
 
-# --- import ---
+# --- import --------------------------------------------------------------------------------------
 
 
 from __future__ import absolute_import, division, print_function, unicode_literals
@@ -16,13 +16,13 @@ import time
 import datetime
 
 
-# --- define ---
+# --- define --------------------------------------------------------------------------------------
 
 
 directory = os.path.dirname(os.path.abspath(__file__))
 
 
-# --- ensure google drive creds folder populated ---
+# --- ensure google drive creds folder populated --------------------------------------------------
 
 
 creds_dir = os.path.join(directory, 'temp', 'google drive')
@@ -34,14 +34,14 @@ if not os.path.isfile(mycreds_path):
     open(mycreds_path, 'a').close()
 
 
-# --- helper methods ---
+# --- helper methods ------------------------------------------------------------------------------
 
 
 def id_to_url(driveid):
     return 'https://drive.google.com/open?id=' + driveid
 
 
-# --- drive class ---
+# --- drive class ---------------------------------------------------------------------------------
 
 
 class Drive:
