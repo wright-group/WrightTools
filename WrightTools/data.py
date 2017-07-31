@@ -178,7 +178,7 @@ class Channel:
 
     def clip(self, zmin=None, zmax=None, replace='nan'):
         """
-        clip (limit) the values in a channel \n
+        clip (limit) the values in a channel
         replace one in ['val', 'nan', 'mask']
         """
         # decide what zmin and zmax will actually be
@@ -1950,7 +1950,7 @@ def from_COLORS(filepaths, znull=None, name=None, cols=None, invert_d1=True,
                 color_steps_as='energy', ignore=['num', 'w3', 'wa', 'dref', 'm0', 'm1', 'm2', 'm3', 'm4', 'm5', 'm6'],
                 even=True, verbose=True):
     """
-    filepaths may be string or list \n
+    filepaths may be string or list 
     color_steps_as one in 'energy', 'wavelength'
     """
 
@@ -2212,7 +2212,7 @@ def from_JASCO(filepath, name=None, kind='absorbance', verbose=True):
 def from_KENT(filepaths, znull=None, name=None, ignore=['wm'], use_norm=False,
               delay_tolerance=0.1, frequency_tolerance=0.5, verbose=True):
     """
-    filepaths may be string or list \n
+    filepaths may be string or list 
     """
     # do we have a list of files or just one file? ------------------------------------------------
     if isinstance(filepaths, list):
@@ -2812,9 +2812,9 @@ def join(datas, method='first', verbose=True):
 
 def discover_dimensions(arr, dimension_cols, verbose=True):
     """
-    Discover the dimensions of array arr. \n
+    Discover the dimensions of array arr. 
     Watches the indicies contained in dimension_cols. Returns dictionaries of
-    axis objects [scanned, constant]. \n
+    axis objects [scanned, constant]. 
     Constant objects have their points object initialized. Scanned dictionary is
     in order of scanning (..., zi, yi, xi). Both dictionaries are condensed
     into coscanning / setting.
