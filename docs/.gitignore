@@ -1,2 +1,3 @@
-/auto_examples/*
-/gen_modules/*
+auto_examples/
+_build/
+gen_modules/
