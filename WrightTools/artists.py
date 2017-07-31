@@ -773,8 +773,8 @@ def make_colormap(seq, name='CustomMap', plot=False):
     """ Return a LinearSegmentedColormap
 
     seq: a sequence of floats and RGB-tuples. The floats should be increasing
-    and in the interval (0,1). \n
-    from http://nbviewer.ipython.org/gist/anonymous/a4fa0adb08f9e9ea4f94#
+    and in the interval (0,1). 
+    from http://nbviewer.ipython.org/gist/anonymous/a4fa0adb08f9e9ea4f94
     """
     seq = [(None,) * 3, 0.0] + list(seq) + [1.0, (None,) * 3]
     cdict = {'red': [], 'green': [], 'blue': []}
@@ -2112,7 +2112,7 @@ class absorbance:
 
     def _smooth(self, dat1, n=20, window_type='default'):
         """
-        data is an array of type [xlis,ylis] \n
+        data is an array of type [xlis,ylis] 
         smooth to prevent 2nd derivative from being noisy
         """
         for i in range(n, len(dat1[1]) - n):

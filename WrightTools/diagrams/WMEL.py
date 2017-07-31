@@ -204,7 +204,7 @@ class Artist:
     def add_arrow(self, diagram, number, between, kind, label='',
                   head_length=0.075, font_size=7, color='k'):
         """
-        kind one in [ket, bra, out] \n
+        kind one in [ket, bra, out]
         returns [line, arrow_head, text]
         """
         column, row = diagram
