@@ -172,6 +172,7 @@ class Channel:
     def _update(self):
         self.zmin = np.nanmin(self.values)
         self.zmax = np.nanmax(self.values)
+        self.znull = self.znull = max(self.zmin, min(self.znull, self.zmax))
 
     def _pupdate(self, *args, **kwargs):
         return self._update(*args, **kwargs)
