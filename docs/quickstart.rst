@@ -31,9 +31,12 @@ The data contains some helpful attributes that we can inspect now:
 Make a Plot
 -----------
 
-Visualizing that dataset is probably the most important tool.
+WrightTools strives to make data visualization as quick and painless as possible.
 
-WrightTools offers a few handy ways to quickly visualize a data object.
+Axes, labels, and units are brought along implicitly.
+
+WrightTools offers a few handy ways to quickly visualize a data object, shown below.
+For more information, check see :ref:`artists`, or check out our :ref:`gallery`.
 
 1D
 ^^
@@ -74,11 +77,6 @@ WrightTools offers a few handy ways to quickly visualize a data object.
    artist = wt.artists.mpl_2D(data, 'w1', 'd2', at={'w2': [2, 'eV']})
    artist.plot()
    plt.show()
-
-``mpl_2D`` quickly generates two-dimensional plots of data objects.
-``'w1'`` and ``'d2'`` are the horizontal and vertical axes, respectively.
-The ``at`` keyword allows you to specify where to plot in the other dimensions.
-If not specified, the artists would generate plots at each w2 position.
 
 Interact with the Data
 ----------------------
