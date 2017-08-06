@@ -12,7 +12,6 @@ Instantiation
 WrightTools aims to provide user-friendly ways of creating data directly from common spectroscopy file formats.
 Here are the formats currently supported.
 
-.. TODO: link syntax fields directly into API documentation
 =========  ================================================================  =========================================
 name       description                                                       API
 ---------  ----------------------------------------------------------------  -----------------------------------------
