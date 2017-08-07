@@ -4,20 +4,23 @@ Artists
 =======
 
 The artists module contains a variety of data visualizaton tools.
-It contains two workhorse classes: ``wt.artists.mpl_2D`` and ``wt.artists.mpl_1D``, which generate visualizations of 2D and 1D slices of ``Data`` objects.
-It also contains a series of specialized artists.
 
-Overview
---------
+Artist objects
+--------------
 
-Colormaps
----------
+==================================================  ==================================================  ====================================
+artist                                              description                                         gallery links
+--------------------------------------------------  --------------------------------------------------  ------------------------------------
+:meth:`~WrightTools.artists.mpl_1D`                 generic 1D slice(s)                                 :ref:`sphx-glr-auto-examples-myexample`
+:meth:`~WrightTools.artists.mpl_2D`                 generic 2D slice(s)                                 :ref:`auto_examples/index`
+:meth:`~WrightTools.artist.absorbance`              absorbance spectra                                  :ref:`sphx_glr_auto_examples_sin.py`
+:meth:`~WrightTools.artists.difference_2D`          2D difference slice(s)                              
+==================================================  ==================================================  ====================================
 
-Generic artists
----------------
+Colors
+------
 
-Specific artists
-----------------
 
-Artist helper methods
----------------------
+
+Custom figures
+--------------

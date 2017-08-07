@@ -189,6 +189,7 @@ A selection of important methods follows.
 method                                              description
 --------------------------------------------------  --------------------------------------------------------------------------------
 :meth:`~WrightTools.data.Data.clip`                 clip values outside of a given range
+:meth:`~WrightTools.data.Data.dOD`                  transform into dOD units
 :meth:`~WrightTools.data.Data.level`                level the edge of data along a certain axis
 :meth:`~WrightTools.data.Data.m`                    apply m-factor corrections
 :meth:`~WrightTools.data.Data.normalize`            normalize a channel such that mag --> 1 and null --> 0
