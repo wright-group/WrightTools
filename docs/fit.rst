@@ -3,8 +3,81 @@
 Fit
 ===
 
-WrightTools provides a suite of fitting tools that work seamlessly with data objects.
-Fitting is a crucial tool in spectroscopy.
+WrightTools provides a suite of fitting tools.
+
+Function
+--------
+
+Function objects are the real workforce of fitting in WrightTools.
+Let's look at one now.
+
+.. code-block:: python
+
+   >>> import WrightTools as wt
+   >>> g = wt.fit.Gaussian()
+   >>> g.params
+   ['mean', 'width', 'amplitude', 'baseline']
+   >>> g.limits
+   {'width': [0, inf]}
+
+At their simplest, function objects can be directly evaluated with a given set of parameters.
+
+.. plot::
+
+   #import
+   import numpy as np
+   import matplotlib.pyplot as plt
+   import WrightTools as wt
+   # parameters
+   xi = np.linspace(6000, 8000, 101)
+   mean = 7000.
+   width = 100.
+   amplitude = 1.
+   baseline = 0.
+   # create, evaluate
+   g = wt.fit.Gaussian()
+   yi = g.evaluate([mean, width, amplitude, baseline], xi)
+   # plot
+   plt.plot(xi, yi)
+
+They can also be used to fit bare arrays.
+
+.. plot::
+
+   #import
+   import numpy as np
+   import matplotlib.pyplot as plt
+   import WrightTools as wt
+   # noisey gaussian
+   xi = np.linspace(-100, 100, 25)
+   yi = 5*np.exp(-0.5*((xi-5)/20.)**2)
+   yi = np.random.poisson(yi)
+   plt.scatter(xi, yi)
+   # fitted
+   g = wt.fit.Gaussian()
+   ps = g.fit(yi, xi)
+   xi = np.linspace(-100, 100, 101)
+   model = g.evaluate(ps, xi)
+   plt.plot(xi, model)
+
+Finally, of course, the can be handed to Fitter to iteratively fit entire data objects.
+
+Here is a list of the functions currently supplied.
+
+==================================================  ============================================================
+function                                            parameters
+--------------------------------------------------  ------------------------------------------------------------
+:meth:`~WrightTools.fit.ExpectationValue`           ['value']
+:meth:`~WrightTools.fit.Exponential`                ['amplitude', 'tau', 'offset']
+:meth:`~WrightTools.fit.Gaussian`                   ['mean', 'width', 'amplitude', 'baseline']
+:meth:`~WrightTools.fit.Moments`                    ['integral', 'one', 'two', 'three', 'four', 'baseline']
+==================================================  ============================================================
+
+Fitter
+------
+
+The Fitter class is specially made to work seamlessly with data objects.
+   
 WrightTools is especially good at dimensionality reduction through fitting.
 This concept is best demonstrated through an example.
 
@@ -144,12 +217,3 @@ Since outs is just another data object, we can plot it directly using :meth:`~Wr
    a.plot('tau')
 
 We can easily see that the two large peaks decay slower than the rest of the spectra.
-
-Function
---------
-
-
-
-Fitter
-------
-
