@@ -19,7 +19,6 @@
 #
 import os
 import sys
-from unittest.mock import MagicMock
 import sphinx_gallery
 import math
 
@@ -30,13 +29,26 @@ sys.path.insert(0, os.path.abspath('../WrightTools'))
 # -- Mocked Modules -------------------------------------------------------
 
 
-class Mock(MagicMock):
+class Mock(object):
+
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def __call__(self, *args, **kwargs):
+        return Mock()
+
     @classmethod
     def __getattr__(cls, name):
-            return MagicMock()
+        if name in ('__file__', '__path__'):
+            return '/dev/null'
+        elif name[0] == name[0].upper():
+            return type(name, (), {})
+        else:
+            return Mock()
 
 MOCK_MODULES = ['matplotlib', 'numpy', 'h5py', 'scipy']
-sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
+for mod_name in MOCK_MODULES:
+    sys.modules[mod_name] = Mock()
 
 
 # -- General configuration ------------------------------------------------
