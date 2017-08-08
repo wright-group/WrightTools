@@ -38,6 +38,12 @@ if sys.version[0] == '2':
 else:
     string_type = str  # newer versions of python don't have unicode type
 
+def true_max(*args, **kwargs):
+    return max(*args, **kwargs)
+
+def true_min(*args, **kwargs):
+    return min(*args, **kwargs)
+
 
 # --- data class ----------------------------------------------------------------------------------
 
@@ -147,10 +153,8 @@ class Axis:
 
 class Channel:
 
-    def __init__(self, values, units=None,
-                 file_idx=None,
-                 znull=None, zmin=None, zmax=None, signed=None,
-                 name='channel', label=None, label_seed=None):
+    def __init__(self, values, units=None, file_idx=None, null=None, signed=None, name='channel',
+                 label=None, label_seed=None):
         # import
         self.name = name
         self.label = label
@@ -159,97 +163,69 @@ class Channel:
         self.file_idx = file_idx
         # values
         if values is not None:
-            self.give_values(np.asarray(values), znull, zmin, zmax, signed)
+            self.give_values(np.asarray(values), null, signed)
         else:
-            self.znull = znull
-            self.zmin = zmin
-            self.zmax = zmax
+            self.null = null
             self.signed = signed
 
     def __repr__(self):
         return 'WrightTools.data.Channel object \'{0}\' at {1}'.format(self.name, str(id(self)))
 
     def _update(self):
-        self.zmin = np.nanmin(self.values)
-        self.zmax = np.nanmax(self.values)
-        self.znull = self.znull = max(self.zmin, min(self.znull, self.zmax))
+        message = '_update is no longer necessary, and will be removed in future versions'
+        warnings.warn(message, wt_exceptions.VisibleDeprecationWarning)
 
-    def _pupdate(self, *args, **kwargs):
-        return self._update(*args, **kwargs)
+    def clip(self, min=None, max=None, replace='nan'):
+        """Clip (limit) the values in a channel.
 
-    def clip(self, zmin=None, zmax=None, replace='nan'):
+        Parameters
+        ----------
+        min : number (optional)
+            New channel minimum. Default is None.
+        max : number (optional)
+            New channel maximum. Default is None.
+        replace : {'val', 'nan', 'mask'} (optional)
+           Replace behavior. Default is nan.
         """
-        clip (limit) the values in a channel
-        replace one in ['val', 'nan', 'mask']
-        """
-        # decide what zmin and zmax will actually be
-        if zmax is not None:
-            pass
-        else:
-            zmax = np.nanmax(self.values)
-        if zmin is not None:
-            pass
-        else:
-            zmin = np.nanmin(self.values)
+        # decide what min and max will actually be
+        if max is None:
+            max = self.max
+        if min is None:
+            min = self.min
         # replace values
         if replace == 'val':
-            self.values.clip(zmin, zmax, out=self.values)
+            self.values.clip(min, max, out=self.values)
         elif replace == 'nan':
-            self.values[self.values < zmin] = np.nan
-            self.values[self.values > zmax] = np.nan
+            self.values[self.values < min] = np.nan
+            self.values[self.values > max] = np.nan
         elif replace == 'mask':
-            self.values = np.ma.masked_outside(self.values,
-                                               zmin, zmax,
-                                               copy=False)
+            self.values = np.ma.masked_outside(self.values, min, max, copy=False)
         else:
             print('replace not recognized in channel.clip')
-        # recalculate zmin and zmax of channel object
-        self._update()
 
-    def give_values(self, values, znull=None, zmin=None, zmax=None,
-                    signed=None):
+    def give_values(self, values, null=None, signed=None):
         self.values = values
-        # znull
-        if znull is not None:
-            self.znull = znull
-        elif hasattr(self, 'znull'):
-            if self.znull:
+        # null
+        if null is not None:
+            self.null = null
+        elif hasattr(self, 'null'):
+            if self.null:
                 pass
             else:
-                self.znull = np.nanmin(self.values)
+                self.null = 0.
         else:
-            self.znull = np.nanmin(self.values)
-        # zmin
-        if zmin is not None:
-            self.zmin = zmin
-        elif hasattr(self, 'zmin'):
-            if self.zmin:
-                pass
-            else:
-                self.zmin = np.nanmin(self.values)
-        else:
-            self.zmin = np.nanmin(self.values)
-        # zmax
-        if zmax is not None:
-            self.zmax = zmax
-        elif hasattr(self, 'zmax'):
-            if self.zmax:
-                pass
-            else:
-                self.zmax = np.nanmax(self.values)
-        else:
-            self.zmax = np.nanmax(self.values)
+            self.null = 0.
         # signed
         if signed is not None:
             self.signed = signed
         elif hasattr(self, 'signed'):
             if self.signed is None:
-                if self.zmin < self.znull:
+                if self.min < self.null:
                     self.signed = True
                 else:
                     self.signed = False
         else:
-            if self.zmin < self.znull:
+            if self.min < self.null:
                 self.signed = True
             else:
                 self.signed = False
@@ -259,19 +235,25 @@ class Channel:
         info = collections.OrderedDict()
         info['name'] = self.name
         info['id'] = id(self)
-        info['zmin'] = self.zmin
-        info['zmax'] = self.zmax
-        info['znull'] = self.znull
+        info['min'] = self.min
+        info['max'] = self.max
+        info['null'] = self.null
         info['signed'] = self.signed
         return info
 
     def invert(self):
         self.values = - self.values
 
+    @property
+    def mag(self):
+        return max((self.max - self.null, self.null - self.min))
+
+    @property
     def max(self):
         """ Maximum, ignorning nans.  """
         return np.nanmax(self.values)
 
+    @property
     def min(self):
         """ Minimum, ignoring nans.  """
         return np.nanmin(self.values)
@@ -285,8 +267,8 @@ class Channel:
             else:  # presumably a simple number
                 axis = int(axis)
         # subtract off znull
-        self.values -= self.znull
-        self.znull = 0.
+        self.values -= self.null
+        self.null = 0.
         # create dummy array
         dummy = self.values.copy()
         dummy[np.isnan(dummy)] = 0  # nans are propagated in np.amax
@@ -379,7 +361,27 @@ class Channel:
 
     @ property
     def zmag(self):
-        return max((self.zmax - self.znull, self.znull - self.zmin))
+        message = "use mag, not zmag"
+        warnings.warn(message, wt_exceptions.VisibleDeprecationWarning)
+        return self.mag
+
+    @ property
+    def zmax(self):
+        message = "use max, not zmax"
+        warnings.warn(message, wt_exceptions.VisibleDeprecationWarning)
+        return self.max
+
+    @ property
+    def zmin(self):
+        message = "use min, not zmin"
+        warnings.warn(message, wt_exceptions.VisibleDeprecationWarning)
+        return self.min
+
+    @ property
+    def znull(self):
+        message = "use null, not znull"
+        warnings.warn(message, wt_exceptions.VisibleDeprecationWarning)
+        return self.null
 
 
 class Data:
