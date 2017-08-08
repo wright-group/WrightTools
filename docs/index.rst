@@ -1,6 +1,11 @@
 WrightTools
 ===========
 
+.. image:: ../logo/logo.png
+   :scale: 25 %
+   :alt: WrightTools
+   :align: center
+
 Tools for loading, processing, and plotting multidimensional spectroscopy data.
 
 Contents
