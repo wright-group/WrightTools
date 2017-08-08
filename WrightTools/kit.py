@@ -1,9 +1,9 @@
-'''
+"""
 a collection of small, general purpose objects and methods
-'''
+"""
 
 
-### import ####################################################################
+# --- import --------------------------------------------------------------------------------------
 
 
 from __future__ import absolute_import, division, print_function, unicode_literals
@@ -37,7 +37,7 @@ from . import units  # legacy
 from . import units as wt_units
 
 
-### define ####################################################################
+# --- define --------------------------------------------------------------------------------------
 
 
 if sys.version[0] == '2':
@@ -46,16 +46,15 @@ else:
     string_type = str  # newer versions of python don't have unicode type
 
 
-### time and date #############################################################
+# --- time and date -------------------------------------------------------------------------------
 
 
 def get_timestamp(style='RFC3339', at=None, hms=True, frac=False,
                   timezone='here', filename_compatible=False):
-    '''
-    Get the current time as a string.
-    
+    """ Get the current time as a string.
+
     LEGACY - please use TimeStamp objects.
-    
+
     Parameters
     ----------
     style : {'RFC3339', 'short', 'display', 'legacy'} (optional)
@@ -76,8 +75,9 @@ def get_timestamp(style='RFC3339', at=None, hms=True, frac=False,
         Timezone. Default is here.
     filename_compatible : bool
         Remove special charachters. Default is False.
-    '''
-    warnings.warn('get_timestamp is depreciated---use TimeStamp objects', DeprecationWarning, stacklevel=2)
+    """
+    warnings.warn('get_timestamp is depreciated---use TimeStamp objects',
+                  DeprecationWarning, stacklevel=2)
     # get timezone
     if timezone == 'here':
         tz = dateutil.tz.tzlocal()
@@ -86,7 +86,7 @@ def get_timestamp(style='RFC3339', at=None, hms=True, frac=False,
     else:
         raise Exception('timezone not recognized in kit.get_timestamp')
     # get now
-    if at == None:
+    if at is None:
         now = datetime.datetime.now(tz)
     else:
         now = datetime.datetime.fromtimestamp(at, tz)
@@ -113,13 +113,14 @@ def get_timestamp(style='RFC3339', at=None, hms=True, frac=False,
                     sign = '+'
                 elif delta_sec < 0:
                     sign = '-'
+
                 def as_string(num):
                     return str(np.abs(int(num))).zfill(2)
                 out += sign + as_string(h) + ':' + as_string(m)
     elif style == 'short':
         ssm = (now - now.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds()
         out = now.strftime('%Y-%m-%d')
-        out += ' ' 
+        out += ' '
         out += str(int(ssm)).zfill(5)
     elif style == 'display':
         # get timezone offset
@@ -146,11 +147,10 @@ def get_timestamp(style='RFC3339', at=None, hms=True, frac=False,
 
 
 class TimeStamp:
-    
+
     def __init__(self, at=None, timezone='local'):
-        '''
-        Class for representing a moment in time.
-        
+        """ Class for representing a moment in time.
+
         Parameters
         ----------
         at : float (optional)
@@ -159,7 +159,7 @@ class TimeStamp:
         timezone : string or integer (optional)
             String (one in {'local', 'utc'} or seconds offset from UTC. Default
             is local.
-            
+
         Attributes
         ----------
         unix : float
@@ -178,7 +178,7 @@ class TimeStamp:
             `RFC5322 <https://tools.ietf.org/html/rfc5322#section-3.3>`_ representation.
         path : string
             Representation of the timestamp meant for inclusion in filepaths.
-        '''
+        """
         # get timezone
         if timezone == 'local':
             self.tz = dateutil.tz.tzlocal()
@@ -194,17 +194,17 @@ class TimeStamp:
         else:
             self.unix = at
         # get now
-        if at == None:
+        if at is None:
             self.datetime = datetime.datetime.now(self.tz)
         else:
             self.datetime = datetime.datetime.fromtimestamp(at, self.tz)
 
     def __repr__(self):
         return self.RFC3339
-        
+
     def __str__(self):
         return str(self.unix)
-        
+
     @property
     def date(self):
         return self.datetime.strftime('%Y-%m-%d')
@@ -223,7 +223,7 @@ class TimeStamp:
         format_string = '%Y-%m-%d %H:%M:%S'
         out = self.datetime.strftime(format_string)
         return out
-    
+
     @property
     def legacy(self):
         return self.datetime.strftime('%Y.%m.%d %H_%M_%S')
@@ -245,20 +245,27 @@ class TimeStamp:
                 sign = '+'
             elif delta_sec < 0:
                 sign = '-'
+
             def as_string(num):
                 return str(np.abs(int(num))).zfill(2)
             out += sign + as_string(h) + ':' + as_string(m)
         return out
-        
+
     @property
     def RFC5322(self):
         return self.datetime.astimezone(tz=pytz.utc).strftime('%a, %d %b %Y %H:%M:%S GMT')
-    
+
     @property
     def path(self):
         out = self.datetime.strftime('%Y-%m-%d')
-        out += ' ' 
-        ssm = (self.datetime - self.datetime.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds()
+        out += ' '
+        ssm = (
+            self.datetime -
+            self.datetime.replace(
+                hour=0,
+                minute=0,
+                second=0,
+                microsecond=0)).total_seconds()
         out += str(int(ssm)).zfill(5)
         return out
 
@@ -266,23 +273,22 @@ class TimeStamp:
 def timestamp_from_RFC3339(RFC3339):
     dt = dateutil.parser.parse(RFC3339)
     timezone = dt.tzinfo._offset.total_seconds()
-    unix = (dt - datetime.datetime(1970, 1, 1, tzinfo=pytz.utc)).total_seconds()  # could use .timestamp() in 3.3 forwards
+    unix = (dt - datetime.datetime(1970, 1, 1, tzinfo=pytz.utc)
+            ).total_seconds()  # could use .timestamp() in 3.3 forwards
     timestamp = TimeStamp(at=unix, timezone=timezone)
     return timestamp
 
 
-### file processing ###########################################################
+# --- file processing -----------------------------------------------------------------------------
 
 
 def filename_parse(fstr):
-    """
-    parses a filepath string into it's path, name, and suffix
-    """
-    folder,filename = os.path.split(fstr) 
-    
+    """ parses a filepath string into it's path, name, and suffix """
+    folder, filename = os.path.split(fstr)
+
     split = filename.split('.', 1)
     file_name = split[0]
-    if len(split)==1:
+    if len(split) == 1:
         file_suffix = None
     else:
         file_suffix = split[1]
@@ -290,10 +296,10 @@ def filename_parse(fstr):
 
 
 def file_len(fname):
-    '''
-    Cheaply get the number of lines in a file. File is not entirely loaded 
-    into memory.
-    '''
+    """ Cheaply get the number of lines in a file.'
+
+    File is not entirely loaded into memory.
+    """
     # adapted from http://stackoverflow.com/questions/845058
     with open(fname) as f:
         for i, l in enumerate(f):
@@ -307,40 +313,40 @@ def find_name(fname, suffix):
     iterates until a unique name is found
     returns False if the loop malfunctions
     """
-    good_name=False
+    good_name = False
     # find a name that isn't used by enumerating
     i = 1
     while not good_name:
         try:
-            with open(fname+'.'+suffix):
-               # file does exist
-               # see if a number has already been guessed
-               if fname.endswith(' ({0})'.format(i-1)):
-                   # cut the old off before putting the new in
-                   fname = fname[:-len(' ({0})'.format(i-1))]
-               fname += ' ({0})'.format(i)
-               i = i + 1
-               # prevent infinite loop if the code isn't perfect
-               if i > 100:
-                   print('didn\'t find a good name; index used up to 100!')
-                   fname = False
-                   good_name=True
+            with open(fname + '.' + suffix):
+                # file does exist
+                # see if a number has already been guessed
+                if fname.endswith(' ({0})'.format(i - 1)):
+                    # cut the old off before putting the new in
+                    fname = fname[:-len(' ({0})'.format(i - 1))]
+                fname += ' ({0})'.format(i)
+                i = i + 1
+                # prevent infinite loop if the code isn't perfect
+                if i > 100:
+                    print('didn\'t find a good name; index used up to 100!')
+                    fname = False
+                    good_name = True
         except IOError:
             # file doesn't exist and is safe to write to this path
             good_name = True
     return
-    
-    
+
+
 class FileSlicer:
-    
+
     def __init__(self, path, skip_headers=True, header_charachter='#'):
-        '''
-        Access groups of lines from a file quickly, without loading the entire
-        file into memory. Lines are accesed from Useful especially in cases where 
-        
+        """ Access groups of lines from a file quickly, without loading the entire file into memory.
+
+        Lines are accesed from Useful especially in cases where
+
         Mostly a convinient wrapper around the standard library 'linecache'
         module.
-        
+
         Parameters
         ----------
         path : string
@@ -350,7 +356,7 @@ class FileSlicer:
         header_charachter : string (optional)
             Charachter that appears at the beginning of header lines for this
             file. Default is '#'.
-        '''
+        """
         self.path = path
         self.n = 0
         self.length = file_len(path)
@@ -358,27 +364,24 @@ class FileSlicer:
             with open(path) as f:
                 while f.readline()[0] == header_charachter:
                     self.n += 1
-                    
+
     def close(self):
-        '''
-        Clear the cache, attempting to free as much memory as possible.
-        '''
+        """ Clear the cache, attempting to free as much memory as possible.  """
         linecache.clearcache()
-    
+
     def get(self, line_count):
-        '''
-        Get the next group of lines from the file.
-        
+        """ Get the next group of lines from the file.
+
         Parameters
         ----------
         line_count : int
             The number of lines to read from the file.
-            
+
         Returns
         -------
         list
             List of lines as strings.
-        '''
+        """
         # calculate indicies
         start = self.n
         stop = self.n + line_count
@@ -387,34 +390,30 @@ class FileSlicer:
                              '(file length {})'.format(self.length))
         # get lines using list comprehension
         # for some reason linecache is 1 indexed >:-(
-        out = [linecache.getline(self.path, i) for i in range(start+1, stop+1)]
+        out = [linecache.getline(self.path, i) for i in range(start + 1, stop + 1)]
         # finish
         self.n += line_count
         return out
-    
+
     def skip(self, line_count):
-        '''
-        Skip the next group of lines from the file.
-        
+        """ Skip the next group of lines from the file.
         Parameters
         ----------
         line_count : int
             The number of lines to skip.
-        '''
+        """
         if self.n + line_count > self.length:
             raise IndexError('there are no more lines in the slicer: ' +
-                             '(file length {})'.format(self.length))        
+                             '(file length {})'.format(self.length))
         # finish
         self.n += line_count
 
 
 def get_box_path():
-    '''
-    LEGACY METHOD. Use ``get_path_matching(name)`` instead.
-    '''
+    """ LEGACY METHOD. Use ``get_path_matching(name)`` instead.  """
     box_path = get_path_matching('Box Sync')
     return os.path.join(box_path, 'Wright Shared')
-    
+
 
 def get_path_matching(name):
     # first try looking in the user folder
@@ -426,16 +425,16 @@ def get_path_matching(name):
         folders = folders.split(os.sep)
         folders.insert(0, os.sep)
         if name in folders:
-            p = os.path.join(drive, *folders[:folders.index(name)+1])
+            p = os.path.join(drive, *folders[:folders.index(name) + 1])
     # TODO: something more robust to catch the rest of the cases?
     return p
 
 
 def glob_handler(extension, folder=None, identifier=None):
-    '''
-    returns a list of all files matching specified inputs \n
+    """
+    returns a list of all files matching specified inputs
     if no folder is specified, looks in chdir
-    '''
+    """
 
     import glob
 
@@ -462,11 +461,9 @@ def glob_handler(extension, folder=None, identifier=None):
 
 
 class INI():
-    
+
     def __init__(self, filepath):
-        '''
-        Handle communication with an INI file.
-        '''
+        """ Handle communication with an INI file.  """
         self.filepath = filepath
         if sys.version[0] == '3':
             self.config = configparser.ConfigParser()
@@ -480,28 +477,26 @@ class INI():
             self.config.write(f)
 
     def clear(self):
-        '''
-        Remove all contents from file. Use with extreme caution.
-        '''
+        """ Remove all contents from file. Use with extreme caution.  """
         with open(self.filepath, "w"):
             pass
         if sys.version[0] == '3':
             self.config = configparser.ConfigParser()
         else:
             self.config = configparser.SafeConfigParser()
-            
+
     @property
     def dictionary(self):
         self.config.read(self.filepath)
         return self.config._sections
-    
+
     def get_options(self, section):
         return list(self.dictionary[section].keys())
 
     def has_option(self, section, option):
         self.config.read(self.filepath)
-        return self.config.has_option(section, option) 
-    
+        return self.config.has_option(section, option)
+
     def has_section(self, section):
         self.config.read(self.filepath)
         return self.config.has_section(section)
@@ -511,26 +506,22 @@ class INI():
         raw = self.config.get(section, option)
         out = string2item(raw, sep=', ')
         return out
-    
+
     @property
     def sections(self):
         self.config.read(self.filepath)
         return self.config.sections()
-    
+
     def write(self, section, option, value):
         self.config.read(self.filepath)
         string = item2string(value, sep=', ')
         self.config.set(section, option, string)
         with open(self.filepath, 'w') as f:
             self.config.write(f)
-    
-    
-    
+
 
 def plot_dats(folder=None, transpose=True):
-    '''
-    Convinience function to plot raw data from COLORS
-    '''
+    """ Convinience function to plot raw data from COLORS """
 
     import data
     import artists
@@ -540,7 +531,7 @@ def plot_dats(folder=None, transpose=True):
     else:
         folder = os.getcwd()
 
-    files = glob_handler('.dat', folder = folder)
+    files = glob_handler('.dat', folder=folder)
 
     for _file in files:
 
@@ -554,39 +545,40 @@ def plot_dats(folder=None, transpose=True):
 
             dat_data.convert('wn')
 
-            #1D
+            # 1D
             if len(dat_data.axes) == 1:
                 artist = artists.mpl_1D(dat_data, dat_data.axes[0].name)
-                artist.plot(0, autosave = True, output_folder = folder, fname = fname)
+                artist.plot(0, autosave=True, output_folder=folder, fname=fname)
 
-            #2D
+            # 2D
             elif len(dat_data.axes) == 2:
-                if transpose: dat_data.transpose()
+                if transpose:
+                    dat_data.transpose()
                 artist = artists.mpl_2D(dat_data, dat_data.axes[0].name, dat_data.axes[1].name)
-                artist.plot(0, pixelated = True, contours = 0, xbin = True, ybin = True,
-                            autosave = True, output_folder = folder, fname = fname)
+                artist.plot(0, pixelated=True, contours=0, xbin=True, ybin=True,
+                            autosave=True, output_folder=folder, fname=fname)
 
             else:
                 print('error! - dimensionality of data ({}) not recognized'.format(len(dat_data.axes)))
 
-        except:
+        except BaseException:
             import sys
-            print('dat {} not recognized as plottible in plot_dats'.format(filename_parse(_file)[1]))
+            print('dat {} not recognized as plottible in plot_dats'.format(
+                filename_parse(_file)[1]))
             print(sys.exc_info()[0])
             pass
 
 
 def read_data_column(path, name):
-    """
-    Read a named column of a PyCMDS data file as a single array.
-    
+    """ Read a named column of a PyCMDS data file as a single array.
+
     Parameters
     ----------
     path : string
         Path of PyCMDS data file.
     name : string
         Name of column to read.
-    
+
     Returns
     -------
     1D numpy.ndarray
@@ -599,19 +591,17 @@ def read_data_column(path, name):
 
 
 def read_h5(filepath):
-    '''
-    Read from a `HDF5 <https://www.hdfgroup.org/HDF5/doc/H5.intro.html>`_
-    file, returning the data within as a python dictionary.
-    
+    """ Read from a `HDF5 <https://www.hdfgroup.org/HDF5/doc/H5.intro.html>`_ file, returning the data within as a python dictionary.
+
     Returns
     -------
     OrderedDict
-        Dictionary containing data from HDF5 file.    
-    
+        Dictionary containing data from HDF5 file.
+
     See Also
     --------
     kit.write_h5
-    '''
+    """
     d = collections.OrderedDict()
     h5f = h5py.File(filepath, mode='r')
     for key in h5f.keys():
@@ -621,19 +611,18 @@ def read_h5(filepath):
 
 
 def read_headers(filepath):
-    '''
-    Read 'Wright group formatted' headers from given path.
-    
+    """ Read 'Wright group formatted' headers from given path.
+
     Parameters
     ----------
     filepath : str
         Path of file.
-        
+
     Returns
     -------
     OrderedDict
         Dictionary containing header information.
-    '''
+    """
     headers = collections.OrderedDict()
     for line in open(filepath):
         if line[0] == '#':
@@ -646,12 +635,11 @@ def read_headers(filepath):
 
 
 def write_h5(filepath, dictionary):
-    '''
-    Save a python dictionary into an `HDF5 <https://www.hdfgroup.org/HDF5/doc/H5.intro.html>`_
+    """ Save a python dictionary into an `HDF5 <https://www.hdfgroup.org/HDF5/doc/H5.intro.html>`_
     file.
-    
+
     Right now it only works to store numpy arrays of numbers.
-    
+
     Parameters
     ----------
     filepath : str
@@ -664,23 +652,23 @@ def write_h5(filepath, dictionary):
     -------
     str
         The full filepath to the created HDF5 file.
-        
-        
+
+
     See Also
     --------
     kit.read_h5
-    '''
+    """
     # get full filepath
     if filepath[-5:] == '.hdf5':
         filepath = filepath
     else:
         filepath += '.hdf5'
     filepath = os.path.abspath(filepath)
-    # create h5f object        
-    h5f = h5py.File(filepath, 'w')    
+    # create h5f object
+    h5f = h5py.File(filepath, 'w')
     # fill h5f object
     for name, data in dictionary.items():
-        if type(data) == np.ndarray:
+        if isinstance(data, np.ndarray):
             h5f.create_dataset(name, data=data, compression="gzip")
         else:
             # TODO: store it as a string
@@ -693,12 +681,12 @@ def write_h5(filepath, dictionary):
 
 
 def write_headers(filepath, dictionary):
-    '''
-    Write 'Wright Group formatted' headers to given file. Headers written can
-    be read again using read_headers.
+    """ Write 'Wright Group formatted' headers to given file.
 
-    Paramters
-    ---------
+    Headers written can be read again using read_headers.
+
+    Parameters
+    ----------
     filepath : str
         Path of file. File must not exist.
     dictionary : dict or OrderedDict
@@ -708,7 +696,7 @@ def write_headers(filepath, dictionary):
     -------
     str
         Filepath of file.
-    '''
+    """
     dictionary = copy.deepcopy(dictionary)
     # write header
     for key, value in dictionary.items():
@@ -719,19 +707,19 @@ def write_headers(filepath, dictionary):
             joiner = ''
         else:
             joiner = '\t'
-        lines.append(joiner.join([key+':', value]))
+        lines.append(joiner.join([key + ':', value]))
     header_str = '\n'.join(lines)
     np.savetxt(filepath, [], header=header_str)
     # return
     return filepath
 
 
-### array and math ############################################################
+# --- array and math ------------------------------------------------------------------------------
 
 
 def closest_pair(arr, give='indicies'):
-    '''
-    Find the pair of indices corresponding to the closest elements in an array.
+    """ Find the pair of indices corresponding to the closest elements in an array.
+
     If multiple pairs are equally close, both pairs of indicies are returned.
     Optionally returns the closest distance itself.
 
@@ -754,12 +742,11 @@ def closest_pair(arr, give='indicies'):
         List containing lists of two tuples: indicies the nearest pair in the
         array.
 
-    Examples
-    --------
-    >>> arr = np.array([0, 1, 2, 3, 3, 4, 5, 6, 1])
-    >>> closest_pair(arr)
-    [[(1,), (8,)], [(3,), (4,)]]
-    '''
+        >>> arr = np.array([0, 1, 2, 3, 3, 4, 5, 6, 1])
+        >>> closest_pair(arr)
+        [[(1,), (8,)], [(3,), (4,)]]
+
+    """
     idxs = [idx for idx in np.ndindex(arr.shape)]
     outs = []
     min_dist = arr.max() - arr.min()
@@ -767,7 +754,7 @@ def closest_pair(arr, give='indicies'):
         for idxb in idxs:
             if idxa == idxb:
                 continue
-            dist = abs(arr[idxa]-arr[idxb])
+            dist = abs(arr[idxa] - arr[idxb])
             if dist == min_dist:
                 if not [idxb, idxa] in outs:
                     outs.append([idxa, idxb])
@@ -783,9 +770,9 @@ def closest_pair(arr, give='indicies'):
 
 
 def diff(xi, yi, order=1):
-    """
-    Take the numerical derivative of a 1D array. Output is mapped onto the
-    original coordinates  using linear interpolation.
+    """ Take the numerical derivative of a 1D array.
+
+    Output is mapped onto the original coordinates  using linear interpolation.
 
     Parameters
     ----------
@@ -815,29 +802,28 @@ def diff(xi, yi, order=1):
 
 
 def fft(xi, yi, axis=0):
-    """
-    Take the 1D FFT of an N-dimensional array and return "sensible" arrays which are shifted properly.
-    
+    """ Take the 1D FFT of an N-dimensional array and return "sensible" arrays which are shifted properly.
+
     Parameters
     ----------
-    xi : numpy.ndarray  
-        1D array over which the points to be FFT'ed are defined 
-    yi : numpy.ndarray  
+    xi : numpy.ndarray
+        1D array over which the points to be FFT'ed are defined
+    yi : numpy.ndarray
         ND array with values to FFT
     axis : int
         axis of yi to perform FFT over
-    
+
     Returns
     -------
     xi : 1D numpy.ndarray
-        1D array. Conjugate to input xi. 
+        1D array. Conjugate to input xi.
         Example: if input xi is in the time domain, output xi is in frequency domain.
     yi : ND numpy.ndarray
         FFT. Has the same shape as the input array (yi).
-    
+
     """
     yi = np.fft.fft(yi, axis=axis)
-    d = (xi.max()-xi.min())/(xi.size-1)
+    d = (xi.max() - xi.min()) / (xi.size - 1)
     xi = np.fft.fftfreq(xi.size, d=d)
     # shift
     xi = np.fft.fftshift(xi)
@@ -845,21 +831,19 @@ def fft(xi, yi, axis=0):
     return xi, yi
 
 
-
 def mono_resolution(grooves_per_mm, slit_width, focal_length, output_color, output_units='wn'):
-    '''
+    """
     slit width mm, focal_length mm, output_color nm
-    '''
-    d_lambda = 1e6*slit_width/(grooves_per_mm*focal_length)  # nm
-    upper = output_color + d_lambda/2  # nm
-    lower = output_color - d_lambda/2  # nm
-    return abs(units.converter(upper, 'nm', output_units) - 
+    """
+    d_lambda = 1e6 * slit_width / (grooves_per_mm * focal_length)  # nm
+    upper = output_color + d_lambda / 2  # nm
+    lower = output_color - d_lambda / 2  # nm
+    return abs(units.converter(upper, 'nm', output_units) -
                units.converter(lower, 'nm', output_units))
 
 
 def nm_width(center, width, units='wn'):
-    '''
-    Given a center and width, in energy units, get back a width in nm.
+    """ Given a center and width, in energy units, get back a width in nm.
 
     Parameters
     ----------
@@ -874,33 +858,33 @@ def nm_width(center, width, units='wn'):
     -------
     number
         Width in nm.
-    '''
-    red = wt_units.converter(center-width/2., units, 'nm')
-    blue = wt_units.converter(center+width/2., units, 'nm')
+    """
+    red = wt_units.converter(center - width / 2., units, 'nm')
+    blue = wt_units.converter(center + width / 2., units, 'nm')
     return red - blue
-    
+
 
 def remove_nans_1D(arrs):
-    '''
-    Remove nans in a list of 1D arrays. Removes indicies in all arrays if any
-    array is nan at that index. All input arrays must have the same size.
-    
+    """ Remove nans in a list of 1D arrays.
+
+    Removes indicies in all arrays if any array is nan at that index. All input arrays must have the same size.
+
     Parameters
     ----------
     arrs : list of 1D arrays
         The arrays to remove nans from
-        
+
     Returns
     -------
     list
         List of 1D arrays in same order as given, with nan indicies removed.
-    '''
+    """
     # find all indicies to keep
     bads = np.array([])
     for arr in arrs:
         bad = np.array(np.where(np.isnan(arr))).flatten()
         bads = np.hstack((bad, bads))
-    if hasattr(arrs, 'shape') and len(arrs.shape)==1:
+    if hasattr(arrs, 'shape') and len(arrs.shape) == 1:
         goods = [i for i in np.arange(arrs.shape[0]) if i not in bads]
     else:
         goods = [i for i in np.arange(len(arrs[0])) if i not in bads]
@@ -909,41 +893,41 @@ def remove_nans_1D(arrs):
 
 
 def share_nans(arrs1):
-    # Written by DJM. darienmorrow@gmail.com. January 15, 2016.    
-    '''
-    Takes a list of nD arrays and returns a new list of nD arrays. 
-    The new list is in the same order as the old list. 
+    # Written by DJM. darienmorrow@gmail.com. January 15, 2016.
+    """ Takes a list of nD arrays and returns a new list of nD arrays.
+
+    The new list is in the same order as the old list.
     If one indexed element in an old array is nan then every element for that
     index in all new arrays in the list is then nan.
-    
+
     Parameters
     ----------
     arrs1 : list of nD arrays
         The arrays to syncronize nans from
-        
+
     Returns
     -------
     list
         List of nD arrays in same order as given, with nan indicies syncronized.
-    '''
-    
+    """
+
     nans = np.zeros((arrs1[0].shape))
-    
+
     for arr in arrs1:
-        nans *= arr       
- 
+        nans *= arr
+
     arrs2 = [a + nans for a in arrs1]
 
     return arrs2
 
 
 def smooth_1D(arr, n=10):
-    '''
-    smooth 1D data by 'running average'\n
+    """
+    smooth 1D data by 'running average'n
     int n smoothing factor (num points)
-    '''
-    for i in range(n, len(arr)-n):
-        window = arr[i-n:i+n].copy()
+    """
+    for i in range(n, len(arr) - n):
+        window = arr[i - n:i + n].copy()
         arr[i] = window.mean()
     return arr
 
@@ -954,10 +938,9 @@ class Spline:
         return self.true_spline(*args, **kwargs)
 
     def __init__(self, xi, yi, k=3, s=1000, ignore_nans=True):
-        '''
-        Wrapper class for scipy.UnivariateSpline, made to be slightly less
+        """ Wrapper class for scipy.UnivariateSpline, made to be slightly less
         finicky with things like decending xi arrays and nans.
-        
+
         Parameters
         ----------
         xi : 1D array
@@ -971,19 +954,18 @@ class Spline:
             Positive smoothing factor used to choose the number of knots.
             Number of knots will be increased until the smoothing condition is
             satisfied::
-            
+
                 sum((w[i] * (y[i]-spl(x[i])))**2, axis=0) <= s
-                
+
             If 0, spline will interpolate through all data points. Default is
             1000.
         ignore_nans : boolean (optional)
             Toggle removle of nans. Default is True.
-            
-        
-        Note
-        ----
-        Use k=1 and s=0 for a linear interplation.
-        '''
+
+
+        .. note:: Use k=1 and s=0 for a linear interplation.
+
+        """
         # import
         from scipy.interpolate import UnivariateSpline
         xi_internal = np.array(xi).copy()
@@ -998,26 +980,24 @@ class Spline:
         yi_internal = yi_internal[sort]
         # create true spline
         self.true_spline = UnivariateSpline(xi_internal, yi_internal, k=k, s=s)
-    
-    
+
+
 def unique(arr, tolerance=1e-6):
-    '''
-    Return unique elements in 1D array, within tolerance.
-    
+    """ Return unique elements in 1D array, within tolerance.
+
     Parameters
     ----------
     arr : array_like
         Input array. This will be flattened if it is not already 1D.
     tolerance : number (optional)
         The tolerance for uniqueness.
-        
+
     Returns
     -------
     array
         The sorted unique values.
-    '''
-    arr = list(arr.flatten())
-    arr.sort()
+    """
+    arr = sorted(arr.flatten())
     unique = []
     while len(arr) > 0:
         current = arr[0]
@@ -1030,9 +1010,8 @@ def unique(arr, tolerance=1e-6):
 
 def zoom2D(xi, yi, zi, xi_zoom=3., yi_zoom=3., order=3, mode='nearest',
            cval=0.):
-    """
-    Zoom a 2D array, with axes.
-    
+    """ Zoom a 2D array, with axes.
+
     Parameters
     ----------
     xi : 1D array
@@ -1050,7 +1029,7 @@ def zoom2D(xi, yi, zi, xi_zoom=3., yi_zoom=3., order=3, mode='nearest',
     mode : {'constant', 'nearest', 'reflect', or 'wrap'}
         Points outside the boundaries of the input are filled according to the
         given mode. Default is constant.
-    cval : Value used for 
+    cval : Value used for
     """
     xi = ndimage.interpolation.zoom(xi, xi_zoom, order=order, mode='nearest')
     yi = ndimage.interpolation.zoom(yi, yi_zoom, order=order, mode='nearest')
@@ -1058,44 +1037,44 @@ def zoom2D(xi, yi, zi, xi_zoom=3., yi_zoom=3., order=3, mode='nearest',
     return xi, yi, zi
 
 
-### uncategorized #############################################################
+# --- uncategorized -------------------------------------------------------------------------------
 
 
 def array2string(array, sep='\t'):
-    '''
-    Generate a string from an array with useful formatting. Great for writing
-    arrays into single lines in files.
-    
+    """ Generate a string from an array with useful formatting.
+
+    Great for writing arrays into single lines in files.
+
     See Also
     --------
     string2array
-    '''
+    """
     np.set_printoptions(threshold=array.size)
     string = np.array2string(array, separator=sep)
     string = string.replace('\n', sep)
     string = re.sub(r'({})(?=\1)'.format(sep), '', string)
     return string
-    
-    
+
+
 def flatten_list(l):
-    '''
-    Flatten an irregular list. Works generally but may be slower than it could
+    """ Flatten an irregular list.
+
+    Works generally but may be slower than it could
     be if you can make assumptions about your list.
-    
+
     Adapted from http://stackoverflow.com/questions/2158395
-    
-    Example
-    -------
-    >>> l = [[[1, 2, 3], [4, 5]], 6]
-    >>> wt.kit.flatten_list(l)
-    [1, 2, 3, 4, 5, 6]
-    '''
+
+        >>> l = [[[1, 2, 3], [4, 5]], 6]
+        >>> wt.kit.flatten_list(l)
+        [1, 2, 3, 4, 5, 6]
+
+    """
     listIsNested = True
     while listIsNested:  # outer loop
         keepChecking = False
         Temp = []
         for element in l:  # inner loop
-            if isinstance(element,list):
+            if isinstance(element, list):
                 Temp.extend(element)
                 keepChecking = True
             else:
@@ -1107,10 +1086,7 @@ def flatten_list(l):
 
 def get_methods(the_class, class_only=False, instance_only=False,
                 exclude_internal=True):
-    '''
-    get a list of strings corresponding to the names of the methods
-    of an object.
-    '''
+    """ get a list of strings corresponding to the names of the methods of an object.  """
     import inspect
 
     def acceptMethod(tup):
@@ -1123,7 +1099,8 @@ def get_methods(the_class, class_only=False, instance_only=False,
             if internal and exclude_internal:
                 include = False
             else:
-                include = (bound_to == the_class and not instance_only) or (bound_to == None and not class_only)
+                include = (bound_to == the_class and not instance_only) or (
+                    bound_to is None and not class_only)
         else:
             include = False
         return include
@@ -1131,13 +1108,13 @@ def get_methods(the_class, class_only=False, instance_only=False,
     # filter to return results according to internal function and arguments
     tups = filter(acceptMethod, inspect.getmembers(the_class))
     return [tup[0] for tup in tups]
-    
+
 
 def intersperse(lst, item):
-    '''
-    Put item between each existing item in list. \n
+    """ Put item between each existing item in list.
+
     From http://stackoverflow.com/a/5921708
-    '''
+    """
     result = [item] * (len(lst) * 2 - 1)
     result[0::2] = lst
     return result
@@ -1148,7 +1125,7 @@ def item2string(item, sep='\t'):
     out = ''
     if isinstance(item, string_type):
         out += '\'' + item + '\''
-    elif type(item) == list:
+    elif isinstance(item, list):
         for i in range(len(item)):
             if isinstance(item[i], string_type):
                 item[i] = '\'' + item[i] + '\''
@@ -1166,24 +1143,25 @@ def item2string(item, sep='\t'):
 
 
 identity_operators = ['=', '+', '-', '*', '/', 'F']
+
+
 def parse_identity(string):
-    '''
-    Parse an identity string into its components.
-    
+    """ Parse an identity string into its components.
+
     Returns
     -------
     tuple of lists
         (names, operators)
-    '''
+    """
     names = re.split("[=F]+", string)
     operators = [c for c in list(string) if c in identity_operators]
     return names, operators
 
 
 class suppress_stdout_stderr(object):
-    '''
-    A context manager for doing a "deep suppression" of stdout and stderr in
-    Python, i.e. will suppress all print, even if the print originates in a
+    """ A context manager for doing a "deep suppression" of stdout and stderr in Python
+
+    i.e. will suppress all print, even if the print originates in a
     compiled C/Fortran sub-function.
 
     This will not suppress raised exceptions, since exceptions are printed
@@ -1194,7 +1172,8 @@ class suppress_stdout_stderr(object):
 
     with wt.kit.suppress_stdout_stderr():
         rogue_function()
-    '''
+    """
+
     def __init__(self):
         # Open a pair of null files
         self.null_fds = [os.open(os.devnull, os.O_RDWR) for x in range(2)]
@@ -1213,36 +1192,36 @@ class suppress_stdout_stderr(object):
         # Close the null files
         os.close(self.null_fds[0])
         os.close(self.null_fds[1])
-        
+
 
 def string2array(string, sep='\t'):
-    '''
-    Generate an array from a string created using array2string.
-    
+    """ Generate an array from a string created using array2string.
+
     See Also
     --------
     array2string
-    '''
+    """
     # discover size
-    size = string.count('\t')+1 
+    size = string.count('\t') + 1
     # discover dimensionality
     dimensionality = 0
     while string[dimensionality] == '[':
         dimensionality += 1
     # discover shape
-    shape = []       
-    for i in range(1, dimensionality+1)[::-1]:
-        to_match = '['*(i-1)
+    shape = []
+    for i in range(1, dimensionality + 1)[::-1]:
+        to_match = '[' * (i - 1)
         count_positive = string.count(to_match + ' ')
         count_negative = string.count(to_match + '-')
         shape.append(count_positive + count_negative)
     shape[-1] = size / shape[-2]
-    for i in range(1, dimensionality-1)[::-1]:
-        shape[i] = shape[i] / shape[i-1]
+    for i in range(1, dimensionality - 1)[::-1]:
+        shape[i] = shape[i] / shape[i - 1]
     shape = tuple([int(s) for s in shape])
     # import list of floats
     l = string.split(' ')
-    l = flatten_list([i.split('-') for i in l])  # annoyingly series of negative values get past previous filters
+    # annoyingly series of negative values get past previous filters
+    l = flatten_list([i.split('-') for i in l])
     for i, item in enumerate(l):
         bad_chars = ['[', ']', '\t', '\n']
         for bad_char in bad_chars:
@@ -1346,16 +1325,16 @@ unicode_dictionary['omega'] = u'\u03C9'
 
 
 def update_progress(progress, carriage_return=False, length=50):
-    '''
-    prints a pretty progress bar to the console     \n
-    accepts 'progress' as a percentage              \n
-    bool carriage_return toggles overwrite behavior \n
-    '''
+    """ prints a pretty progress bar to the console
+
+    accepts 'progress' as a percentage
+    bool carriage_return toggles overwrite behavior
+    """
     # make progress bar string
-    text =  '\r'
-    num_oct = int(progress * (length/100.))
-    text += '[{0}{1}]'.format('#'*num_oct, ' '*(length-num_oct))
-    text += ' {}%'.format(np.round(progress, decimals = 2))
+    text = '\r'
+    num_oct = int(progress * (length / 100.))
+    text += '[{0}{1}]'.format('#' * num_oct, ' ' * (length - num_oct))
+    text += ' {}%'.format(np.round(progress, decimals=2))
     if carriage_return:
         text += '\r\n'
     sys.stdout.write(text)
@@ -1366,9 +1345,7 @@ def update_progress(progress, carriage_return=False, length=50):
 
 
 class Timer:
-    '''
-    with Timer(): your_code()
-    '''
+    """ with Timer(): your_code() """
 
     def __init__(self, verbose=True):
         self.verbose = verbose
