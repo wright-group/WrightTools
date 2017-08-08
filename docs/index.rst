@@ -17,6 +17,7 @@ Contents
    artists
    tuning
    diagrams
+   datasets
    contributing 
    api/modules
    auto_examples/index
@@ -27,4 +28,3 @@ Index
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-

@@ -2,3 +2,5 @@
 
 Diagrams
 ========
+
+Diagrams documentation coming soon.

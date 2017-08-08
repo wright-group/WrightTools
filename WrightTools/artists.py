@@ -715,6 +715,20 @@ def get_scaled_bounds(ax, position, distance=0.1, factor=200):
     return [h_scaled, v_scaled], [va, ha]
 
 
+def grayify_cmap(cmap):
+    """Return a grayscale version of the colormap
+    Source: https://jakevdp.github.io/blog/2014/10/16/how-bad-is-your-colormap/
+    """
+    cmap = plt.cm.get_cmap(cmap)
+    colors = cmap(np.arange(cmap.N))
+    # convert RGBA to perceived greyscale luminance
+    # cf. http://alienryderflex.com/hsp.html
+    RGB_weight = [0.299, 0.587, 0.114]
+    luminance = np.sqrt(np.dot(colors[:, :3] ** 2, RGB_weight))
+    colors[:, :3] = luminance[:, np.newaxis]
+    return cmap.from_list(cmap.name + "_grayscale", colors, cmap.N)
+
+
 def make_cubehelix(gamma=0.5, s=0.25, r=-1, h=1.3, reverse=False, darkest=0.7):
     """ Define cubehelix type colorbars. For more information see http://arxiv.org/abs/1108.5083.
 
@@ -1338,14 +1352,14 @@ invisible = ['#FFFFFF',  # white
 # isoluminant colorbar based on the research of Kindlmann et al.
 # http://dx.doi.org/10.1109/VISUAL.2002.1183788
 c = mplcolors.ColorConverter().to_rgb
-isoluminant = make_colormap([
+isoluminant1 = make_colormap([
     c(r_[1.000, 1.000, 1.000]), c(r_[0.847, 0.057, 0.057]), 1 / 6.,
     c(r_[0.847, 0.057, 0.057]), c(r_[0.527, 0.527, 0.000]), 2 / 6.,
     c(r_[0.527, 0.527, 0.000]), c(r_[0.000, 0.592, 0.000]), 3 / 6.,
     c(r_[0.000, 0.592, 0.000]), c(r_[0.000, 0.559, 0.559]), 4 / 6.,
     c(r_[0.000, 0.559, 0.559]), c(r_[0.316, 0.316, 0.991]), 5 / 6.,
     c(r_[0.316, 0.316, 0.991]), c(r_[0.718, 0.000, 0.718])],
-    name='isoluminant')
+    name='isoluminant`')
 
 isoluminant2 = make_colormap([
     c(r_[1.000, 1.000, 1.000]), c(r_[0.718, 0.000, 0.718]), 1 / 6.,
@@ -1426,31 +1440,24 @@ wright = ['#FFFFFF',
           '#881111']
 
 colormaps = collections.OrderedDict()
-colormaps['CMRmap'] = plt.get_cmap('CMRmap_r')
+colormaps['coolwarm'] = plt.get_cmap('coolwarm')
 colormaps['cubehelix'] = plt.get_cmap('cubehelix_r')
 colormaps['default'] = cubehelix
-colormaps['experimental'] = mplcolors.LinearSegmentedColormap.from_list(
-    'experimental', experimental)
 colormaps['flag'] = plt.get_cmap('flag')
-colormaps['earth'] = plt.get_cmap('gist_earth')
-colormaps['gnuplot2'] = plt.get_cmap('gnuplot2_r')
 colormaps['greenscale'] = mplcolors.LinearSegmentedColormap.from_list('greenscale', greenscale)
 colormaps['greyscale'] = mplcolors.LinearSegmentedColormap.from_list('greyscale', greyscale)
 colormaps['invisible'] = mplcolors.LinearSegmentedColormap.from_list('invisible', invisible)
-colormaps['isoluminant'] = isoluminant
+colormaps['isoluminant1'] = isoluminant1
 colormaps['isoluminant2'] = isoluminant2
 colormaps['isoluminant3'] = isoluminant3
-colormaps['ncar'] = plt.get_cmap('gist_ncar')
-colormaps['paried'] = plt.get_cmap('Paired')
 colormaps['prism'] = plt.get_cmap('prism')
 colormaps['rainbow'] = plt.get_cmap('rainbow')
 colormaps['seismic'] = plt.get_cmap('seismic')
 colormaps['signed'] = plt.get_cmap('bwr')
 colormaps['signed_old'] = mplcolors.LinearSegmentedColormap.from_list('signed', signed_old)
-colormaps['skyebar'] = mplcolors.LinearSegmentedColormap.from_list('skyebar', skyebar)
-colormaps['skyebar_d'] = mplcolors.LinearSegmentedColormap.from_list('skyebar dark', skyebar_d)
-colormaps['skyebar_i'] = mplcolors.LinearSegmentedColormap.from_list('skyebar inverted', skyebar_i)
-colormaps['spectral'] = plt.get_cmap('nipy_spectral')
+colormaps['skyebar1'] = mplcolors.LinearSegmentedColormap.from_list('skyebar', skyebar)
+colormaps['skyebar2'] = mplcolors.LinearSegmentedColormap.from_list('skyebar dark', skyebar_d)
+colormaps['skyebar3'] = mplcolors.LinearSegmentedColormap.from_list('skyebar inverted', skyebar_i)
 colormaps['wright'] = mplcolors.LinearSegmentedColormap.from_list('wright', wright)
 
 
@@ -2021,7 +2028,7 @@ class mpl_2D:
 # --- specific artists ----------------------------------------------------------------------------
 
 
-class absorbance:
+class Absorbance:
 
     def __init__(self, data):
 
@@ -2069,28 +2076,29 @@ class absorbance:
 
             if xlim:
                 plt.xlim(xlim[0], xlim[1])
-
                 min_index = np.argmin(abs(xi - min(xlim)))
                 max_index = np.argmin(abs(xi - max(xlim)))
-
                 zi_truncated = zi[min(min_index, max_index):max(min_index, max_index)]
                 zi -= zi_truncated.min()
-
                 zi_truncated = zi[min(min_index, max_index):max(min_index, max_index)]
                 zi /= zi_truncated.max()
+            else:
+                xlim = xi.min(), xi.max()
 
             # plot absorbance ---------------------------------------------------------------------
 
             self.ax1.plot(xi, zi, lw=2)
+            self.ax1.set_xlim(*xlim)
 
             # now plot 2nd derivative -------------------------------------------------------------
 
             if derivative:
+                print('hello')
                 # compute second derivative
                 xi2, zi2 = self._smooth(np.array([xi, zi]), n_smooth)
-                plotData = wt_kit.diff(xi2, zi2, order=2)
+                diff = wt_kit.diff(xi2, zi2, order=2)
                 # plot the data!
-                self.ax2.plot(plotData[0], plotData[1], lw=2)
+                self.ax2.plot(xi2, diff, lw=2)
                 self.ax2.grid(b=True)
                 plt.xlabel(data.axes[0].get_label(), fontsize=18)
 
@@ -2138,7 +2146,7 @@ class absorbance:
         return dat1[:][:, n:-n]
 
 
-class difference_2D():
+class Diff2D():
 
     def __init__(self, minuend, subtrahend, xaxis=1, yaxis=0, at={},
                  verbose=True):
