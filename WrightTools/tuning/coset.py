@@ -1,9 +1,9 @@
-'''
+"""
 COSET
-'''
+"""
 
 
-### import ####################################################################
+# --- import --------------------------------------------------------------------------------------
 
 
 from __future__ import absolute_import, division, print_function, unicode_literals
@@ -27,7 +27,7 @@ from .. import artists as wt_artists
 debug = False
 
 
-### coset class ###############################################################
+# --- coset class ---------------------------------------------------------------------------------
 
 
 class CoSet:
@@ -81,10 +81,10 @@ class CoSet:
         return '\n'.join(outs)
 
     def coerce_offsets(self):
-        '''
-        Coerce the offsets to lie exactly along the interpolation
-        positions. Can be thought of as 'smoothing' the coset.
-        '''
+        """ Coerce the offsets to lie exactly along the interpolation positions.
+
+        Can be thought of as 'smoothing' the coset.
+        """
         self.map_control_points(self.control_points, units='same')
 
     def convert_control_units(self, units):
@@ -102,8 +102,7 @@ class CoSet:
         return self.__copy__()
 
     def get_limits(self, units='same'):
-        '''
-        Get the edges of the coset object.
+        """ Get the edges of the coset object.
 
         Parameters
         ----------
@@ -114,7 +113,7 @@ class CoSet:
         -------
         list of floats
             [min, max] in given units
-        '''
+        """
         if units == 'same':
             return [self.control_points.min(), self.control_points.max()]
         else:
@@ -140,8 +139,7 @@ class CoSet:
             self.control_points, self.offset_points)
 
     def map_control_points(self, points, units='same'):
-        '''
-        Map the offset points onto new control points using interpolation.
+        """ Map the offset points onto new control points using interpolation.
 
         Parameters
         ----------
@@ -151,7 +149,7 @@ class CoSet:
         units : str (optional.)
             The input units if given as array. Default is same. Units of coset
             object are not changed.
-        '''
+        """
         # get new points in input units
         if isinstance(points, int):
             limits = self.get_limits(self.control_units)
@@ -206,15 +204,13 @@ class CoSet:
             print('coset saved at {}'.format(file_path))
 
     def sort(self):
-        '''
-        Control points must be ascending.
-        '''
+        """ Control points must be ascending.  """
         idxs = np.argsort(self.control_points)
         self.control_points = self.control_points[idxs]
         self.offset_points = self.offset_points[idxs]
 
 
-### coset load method #########################################################
+# --- coset load method ---------------------------------------------------------------------------
 
 
 def from_file(path):

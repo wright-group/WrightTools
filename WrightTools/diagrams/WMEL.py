@@ -1,14 +1,14 @@
-### import ####################################################################
+# --- import --------------------------------------------------------------------------------------
 
 
 import numpy as np
 import matplotlib.pyplot as plt
 
 
-### define ####################################################################
+# --- define --------------------------------------------------------------------------------------
 
 
-### subplot ###################################################################
+# --- subplot -------------------------------------------------------------------------------------
 
 
 class Subplot:
@@ -143,7 +143,7 @@ class Subplot:
         return line, arrow_head, text
 
 
-### artist ####################################################################
+# --- artist --------------------------------------------------------------------------------------
 
 
 class Artist:
@@ -178,8 +178,12 @@ class Artist:
             for i in range(size[1]):
                 plot = self.subplots[i][0]
                 for i in range(len(self.energies)):
-                    plot.text(-state_text_buffer, energies[i], state_names[i], fontsize=state_font_size,
-                              verticalalignment='center', horizontalalignment='center')
+                    plot.text(-state_text_buffer,
+                              energies[i],
+                              state_names[i],
+                              fontsize=state_font_size,
+                              verticalalignment='center',
+                              horizontalalignment='center')
         # calculate interaction_positons
         self.x_pos = np.linspace(0, 1, number_of_interactions)
         # plot cleans up a bunch - call it now as well as later
@@ -204,7 +208,7 @@ class Artist:
     def add_arrow(self, diagram, number, between, kind, label='',
                   head_length=0.075, font_size=7, color='k'):
         """
-        kind one in [ket, bra, out] \n
+        kind one in [ket, bra, out]
         returns [line, arrow_head, text]
         """
         column, row = diagram
@@ -262,7 +266,7 @@ class Artist:
             plt.close()
 
 
-### testing ###################################################################
+# --- testing -------------------------------------------------------------------------------------
 
 
 if __name__ == '__main__':

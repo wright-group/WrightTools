@@ -1,12 +1,12 @@
-'''
+"""
 Interact with google drive using the pydrive package.
-'''
+"""
 
 # Darien Morrow - darienmorrow@gmail.com - dmorrow3@wisc.edu
 # Blaise Thompson - blaise@untzag.com
 
 
-### import ####################################################################
+# --- import --------------------------------------------------------------------------------------
 
 
 from __future__ import absolute_import, division, print_function, unicode_literals
@@ -16,13 +16,13 @@ import time
 import datetime
 
 
-### define ####################################################################
+# --- define --------------------------------------------------------------------------------------
 
 
 directory = os.path.dirname(os.path.abspath(__file__))
 
 
-### ensure google drive creds folder populated ################################
+# --- ensure google drive creds folder populated --------------------------------------------------
 
 
 creds_dir = os.path.join(directory, 'temp', 'google drive')
@@ -34,14 +34,14 @@ if not os.path.isfile(mycreds_path):
     open(mycreds_path, 'a').close()
 
 
-### helper methods ############################################################
+# --- helper methods ------------------------------------------------------------------------------
 
 
 def id_to_url(driveid):
     return 'https://drive.google.com/open?id=' + driveid
 
 
-### drive class ###############################################################
+# --- drive class ---------------------------------------------------------------------------------
 
 
 class Drive:
@@ -87,10 +87,10 @@ class Drive:
         os.chdir(old_cwd)
 
     def _list_folder(self, *args, **kwargs):
-        '''
+        """
         Legacy. Please use self.list_folder instead!
         - Blaise 2016.05.14
-        '''
+        """
         return self.list_folder(*args, **kwargs)
 
     def _upload_file(self, filepath, parentid, overwrite=False,
@@ -145,8 +145,7 @@ class Drive:
         return f['id']
 
     def create_folder(self, name, parentid):
-        """
-        Create a new folder in Google Drive.
+        """ Create a new folder in Google Drive.
 
         Attributes
         ----------
@@ -195,9 +194,9 @@ class Drive:
         return parent
 
     def download(self, fileid, directory='cwd', overwrite=False, verbose=True):
-        '''
-        Recursively download from Google Drive into a local directory. By
-        default, will not re-download if file passes following checks:
+        """ Recursively download from Google Drive into a local directory.
+
+        By default, will not re-download if file passes following checks:
 
         1. same size as remote file
 
@@ -217,7 +216,7 @@ class Drive:
         Returns
         -------
         pydrive.files.GoogleDriveFile
-        '''
+        """
         self._authenticate()
         # get directory
         if directory == 'cwd':
@@ -273,8 +272,7 @@ class Drive:
 
     def upload(self, path, parentid, overwrite=False, delete_local=False,
                verbose=True):
-        '''
-        Upload local file(s) to Google Drive.
+        """ Upload local file(s) to Google Drive.
 
         Parameters
         ----------
@@ -294,7 +292,7 @@ class Drive:
         -------
         driveid : str
             Google Drive ID of folder or file uploaded
-        '''
+        """
         self._authenticate()
         if os.path.isfile(path):
             return self._upload_file(path, parentid, overwrite=overwrite,

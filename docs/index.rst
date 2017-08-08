@@ -12,12 +12,15 @@ Contents
    install
    quickstart
    data
+   units
    fit
    artists
    tuning
    diagrams
+   datasets
    contributing 
    api/modules
+   auto_examples/index
 
 Index
 -----
@@ -25,4 +28,3 @@ Index
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-

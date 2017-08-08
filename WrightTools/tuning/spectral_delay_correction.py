@@ -1,9 +1,9 @@
-'''
+"""
 Tools for processing spectral delay correction data.
-'''
+"""
 
 
-### import ####################################################################
+# --- import --------------------------------------------------------------------------------------
 
 
 from __future__ import absolute_import, division, print_function, unicode_literals
@@ -43,14 +43,13 @@ from . import curve as wt_curve
 from . import coset as wt_coset
 
 
-### processing methods ########################################################
+# --- processing methods --------------------------------------------------------------------------
 
 
 def process_wigner(data_filepath, channel, control_name,
                    offset_name, coset_name, color_units='nm',
                    delay_units='fs', autosave=True, s=1000):
-    '''
-    Create a coset file from a measured wigner.
+    """ Create a coset file from a measured wigner.
 
     Parameters
     ----------
@@ -58,7 +57,7 @@ def process_wigner(data_filepath, channel, control_name,
         Filepath to data file.
     channel : int or str
         The channel to process.
-    '''
+    """
     # get data
     data = wt_data.from_PyCMDS(data_filepath, verbose=False)
     if data.axes[0].units_kind == 'energy':
@@ -119,10 +118,10 @@ def process_wigner(data_filepath, channel, control_name,
 def process_brute_force(data_filepath, opa_index, channel, color_units='nm',
                         delay_units='fs', amplitude_cutoff_factor=0.5,
                         plot=True, autosave=True):
-    '''
+    """
     This method is a good idea, but it isn't ready for prime time yet.
     - Blaise 2016.03.18
-    '''
+    """
     # get data
     data = wt_data.from_PyCMDS(data_filepath, verbose=False)
     # check if data is valid for this operation
@@ -254,10 +253,22 @@ def process_brute_force(data_filepath, opa_index, channel, color_units='nm',
         ), '_'.join([datas[0].axes[0].name, 'w{}'.format(opa_index)]))
     # construct coset objects
     # TODO: generalize
-    x_coset = wt_coset.CoSet('OPA2 TOPAS-C', color_units, ws, 'D1 SMC100', delay_units,
-                             x_corrections, name='_'.join(['w{}'.format(opa_index), datas[0].axes[1].name]))
-    y_coset = wt_coset.CoSet('OPA2 TOPAS-C', color_units, ws, 'D2 SMC100', delay_units,
-                             y_corrections, name='_'.join(['w{}'.format(opa_index), datas[0].axes[0].name]))
+    x_coset = wt_coset.CoSet('OPA2 TOPAS-C',
+                             color_units,
+                             ws,
+                             'D1 SMC100',
+                             delay_units,
+                             x_corrections,
+                             name='_'.join(['w{}'.format(opa_index),
+                                            datas[0].axes[1].name]))
+    y_coset = wt_coset.CoSet('OPA2 TOPAS-C',
+                             color_units,
+                             ws,
+                             'D2 SMC100',
+                             delay_units,
+                             y_corrections,
+                             name='_'.join(['w{}'.format(opa_index),
+                                            datas[0].axes[0].name]))
     # save coset files
     if autosave:
         save_directory = os.path.dirname(data_filepath)

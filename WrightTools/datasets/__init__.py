@@ -2,19 +2,19 @@
 """
 
 
-### import ########################################################################################
+# --- import --------------------------------------------------------------------------------------
 
 
 import os
 
 
-### define ########################################################################################
+# --- define --------------------------------------------------------------------------------------
 
 
 here = os.path.abspath(os.path.dirname(__file__))
 
 
-### container class ###############################################################################
+# --- container class -----------------------------------------------------------------------------
 
 
 def clean_name(n, prefix=''):
@@ -25,20 +25,20 @@ def clean_name(n, prefix=''):
 
 
 class DatasetContainer(object):
-    
+
     def from_files(self, dirname, prefix=''):
         ps = [os.path.join(here, dirname, p) for p in os.listdir(os.path.join(here, dirname))]
         for p in ps:
             n = clean_name(os.path.basename(p).split('.')[0], prefix=prefix)
             setattr(self, n, p)
-    
+
     def from_directory(self, dirname, prefix=''):
         ps = [os.path.join(here, dirname, p) for p in os.listdir(os.path.join(here, dirname))]
         n = clean_name(os.path.basename(dirname), prefix=prefix)
         setattr(self, n, ps)
 
 
-### fill ##########################################################################################
+# --- fill ----------------------------------------------------------------------------------------
 
 
 COLORS = DatasetContainer()
@@ -54,7 +54,7 @@ KENT.from_directory(os.path.join('KENT', 'PbSe 2D delay A'))
 KENT.from_directory(os.path.join('KENT', 'PbSe 2D delay B'))
 
 
-### pretty namespace ##############################################################################
+# --- pretty namespace ----------------------------------------------------------------------------
 
 
 __all__ = ['COLORS', 'JASCO', 'KENT']

@@ -1,9 +1,9 @@
-'''
+"""
 unit and label handling in WrightTools
-'''
+"""
 
 
-### import ####################################################################
+# --- import --------------------------------------------------------------------------------------
 
 
 from __future__ import absolute_import, division, print_function, unicode_literals
@@ -11,7 +11,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import numpy as np
 
 
-### units #####################################################################
+# --- units ---------------------------------------------------------------------------------------
 
 
 # units are stored in dictionaries of like kind. format:
@@ -101,8 +101,7 @@ def converter(val, current_unit, destination_unit):
 
 
 def kind(units):
-    """
-    Find the kind of given units.
+    """ Find the kind of given units.
 
     Parameters
     ----------
@@ -119,7 +118,7 @@ def kind(units):
             return str(d['kind'])
 
 
-### symbol ####################################################################
+# --- symbol --------------------------------------------------------------------------------------
 
 
 class symbol_dict(dict):

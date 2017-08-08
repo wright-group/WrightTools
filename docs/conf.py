@@ -19,6 +19,9 @@
 #
 import os
 import sys
+import sphinx_gallery
+import math
+
 sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('../WrightTools'))
 
@@ -33,14 +36,17 @@ sys.path.insert(0, os.path.abspath('../WrightTools'))
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = ['sphinx.ext.autodoc',
-    'sphinx.ext.doctest',
-    'sphinx.ext.intersphinx',
-    'sphinx.ext.todo',
-    'sphinx.ext.coverage',
-    'sphinx.ext.mathjax',
-    'sphinx.ext.ifconfig',
-    'sphinx.ext.viewcode',
-    'numpydoc']
+              'sphinx.ext.doctest',
+              'sphinx.ext.autosummary',
+              'sphinx.ext.intersphinx',
+              'sphinx.ext.todo',
+              'sphinx.ext.coverage',
+              'sphinx.ext.mathjax',
+              'sphinx.ext.ifconfig',
+              'sphinx.ext.viewcode',
+              'matplotlib.sphinxext.plot_directive',
+              'sphinx_gallery.gen_gallery',
+              'sphinx.ext.napoleon']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -102,11 +108,11 @@ html_theme = 'sphinx_rtd_theme'
 
 # HTML context adapted from http://docs.readthedocs.io/en/latest/vcs.html
 html_context = {
-    "display_github": True, # Integrate GitHub
-    "github_user": "wright-group", # Username
-    "github_repo": "WrightTools", # Repo name
-    "github_version": "documentation", # Version
-    "conf_py_path": "/docs/", # Path in the checkout to the docs root
+    "display_github": True,  # Integrate GitHub
+    "github_user": "wright-group",  # Username
+    "github_repo": "WrightTools",  # Repo name
+    "github_version": "documentation",  # Version
+    "conf_py_path": "/docs/",  # Path in the checkout to the docs root
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
@@ -187,7 +193,51 @@ texinfo_documents = [
 ]
 
 
+# -- gallery --------------------------------------------------------------
 
 
-# Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'https://docs.python.org/': None}
+sphinx_gallery_conf = {
+    'examples_dirs': '../examples',
+    'filename_pattern': '/*.py',
+    'gallery_dirs': 'auto_examples',
+    'download_section_examples': False,
+    'backreferences_dir': os.path.join('gen_modules', 'backreferences')}
+
+# -----------------------------------------------------------------------------
+# Plots
+# -----------------------------------------------------------------------------
+plot_pre_code = """
+import numpy as np
+np.random.seed(0)
+"""
+plot_include_source = True
+plot_formats = [('png', 100), 'pdf']
+
+phi = (math.sqrt(5) + 1) / 2
+
+plot_rcparams = {
+    'font.size': 8,
+    'axes.titlesize': 8,
+    'axes.labelsize': 8,
+    'xtick.labelsize': 8,
+    'ytick.labelsize': 8,
+    'legend.fontsize': 8,
+    'figure.figsize': (3 * phi, 3),
+    'figure.subplot.bottom': 0.2,
+    'figure.subplot.left': 0.2,
+    'figure.subplot.right': 0.9,
+    'figure.subplot.top': 0.85,
+    'figure.subplot.wspace': 0.4,
+    'text.usetex': False,
+}
+
+
+# -----------------------------------------------------------------------------
+# Intersphinx configuration
+# -----------------------------------------------------------------------------
+intersphinx_mapping = {
+    'python': ('https://docs.python.org/3', None),
+    'scipy': ('https://docs.scipy.org/doc/scipy/reference', None),
+    'matplotlib': ('http://matplotlib.org', None),
+    'numpy': ('https://docs.scipy.org/doc/numpy/', None)
+}
