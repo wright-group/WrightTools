@@ -46,7 +46,7 @@ class Mock(object):
         else:
             return Mock()
 
-MOCK_MODULES = ['matplotlib', 'numpy', 'h5py', 'scipy']
+MOCK_MODULES = ['h5py']
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = Mock()
 
