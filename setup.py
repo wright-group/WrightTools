@@ -6,7 +6,7 @@ setup(
     name='WrightTools',
     packages=find_packages(),
     install_requires=['h5py', 'matplotlib', 'numpy', 'python-dateutil', 'pytz', 'scipy'],
-    version='2.13.3',
+    version='2.13.4',
     description='Tools for loading, processing, and plotting multidimensional spectroscopy data.',
     author='Blaise Thompson',
     license='MIT',
