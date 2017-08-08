@@ -2124,7 +2124,7 @@ class Absorbance:
 
         if xlim:
             plt.xlim(xlim[0], xlim[1])
-            for axis, xi, zi in [[self.ax1, xi, zi], [self.ax2, plotData[0], plotData[1]]]:
+            for axis, xi, zi in [[self.ax1, xi, zi], [self.ax2, xi2, diff]]:
                 min_index = np.argmin(abs(xi - min(xlim)))
                 max_index = np.argmin(abs(xi - max(xlim)))
                 zi_truncated = zi[min_index:max_index]

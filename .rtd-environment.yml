@@ -1,6 +1,7 @@
 name: wrighttools
 
 dependencies:
+  - python>=3
   - h5py
   - matplotlib
   - numpy
