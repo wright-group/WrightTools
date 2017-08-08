@@ -10,9 +10,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import os
 import sys
-import ast
 import copy
-import time
 import collections
 import warnings
 import pickle
@@ -32,14 +30,17 @@ from . import units as wt_units
 
 debug = False
 
+
 # string types
 if sys.version[0] == '2':
     string_type = basestring  # recognize unicode and string types
 else:
     string_type = str  # newer versions of python don't have unicode type
 
+
 def true_max(*args, **kwargs):
     return max(*args, **kwargs)
+
 
 def true_min(*args, **kwargs):
     return min(*args, **kwargs)
@@ -431,7 +432,7 @@ class Data:
         if len(all_names) == len(set(all_names)):
             pass
         else:
-            print('axis, constant, and channel names must all be unique - your data object is now broken!!!!')
+            print('axis, constant, and channel names must all be unique')
             return
         for obj in self.axes + self.channels + self.constants:
             setattr(self, obj.name, obj)
@@ -929,7 +930,8 @@ class Data:
             Toggle talkback. Default is True.
 
 
-        .. note:: Healing may take several minutes for large datasets. Interpolation time goes as nearest, linear, then cubic.
+        .. note:: Healing may take several minutes for large datasets.
+           Interpolation time goes as nearest, linear, then cubic.
 
 
         """
@@ -1660,8 +1662,10 @@ class Data:
             for i in range(len(outs)):
                 new_data = outs[i]
                 new_axis = new_data.axes[axis_index]
-                print('  {0} : {1} to {2} {3} (length {4})'.format(
-                    i, new_axis.points[0], new_axis.points[-1], new_axis.units, len(new_axis.points)))
+                print('  {0} : {1} to {2} {3} (length {4})'.format(i, new_axis.points[0],
+                                                                   new_axis.points[-1],
+                                                                   new_axis.units,
+                                                                   len(new_axis.points)))
         # deal with cases where only one element is left
         for new_data in outs:
             if len(new_data.axes[axis_index].points) == 1:
@@ -1757,8 +1761,7 @@ class Data:
             elif key in ['method', 'factor', 'replace', 'verbose']:
                 inputs[key] = value
             else:
-                raise KeyError(
-                    'Keyword arguments to trim must be either an axis name or one of {method, factor, replace, verbose}')
+                raise KeyError('Keyword arguments to trim must be either an axis name or one of {method, factor, replace, verbose}')
         # call trim
         return channel.trim(neighborhood=neighborhood, **inputs)
 
@@ -1968,7 +1971,7 @@ def from_COLORS(
             'm4',
             'm5',
             'm6'],
-    even=True,
+        even=True,
         verbose=True):
     """
     filepaths may be string or list
