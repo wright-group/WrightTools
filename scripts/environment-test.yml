@@ -8,6 +8,7 @@ dependencies:
 - h5py
 - matplotlib
 - numpy
+- pytest
 - python-dateutil
 - pytz
 - scipy
