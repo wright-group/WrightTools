@@ -1,9 +1,9 @@
-'''
+"""
 OPA tuning curves.
-'''
+"""
 
 
-### import ####################################################################
+# --- import --------------------------------------------------------------------------------------
 
 
 from __future__ import absolute_import, division, print_function, unicode_literals
@@ -29,7 +29,7 @@ from .. import kit as wt_kit
 debug = False
 
 
-### define ####################################################################
+# --- define --------------------------------------------------------------------------------------
 
 
 TOPAS_C_motor_names = {0: ['Crystal_1', 'Delay_1', 'Crystal_2', 'Delay_2'],
@@ -37,18 +37,18 @@ TOPAS_C_motor_names = {0: ['Crystal_1', 'Delay_1', 'Crystal_2', 'Delay_2'],
                        2: ['Mixer_2'],
                        3: ['Mixer_3']}
 
-                                         # [num_between, motor_names]
-TOPAS_C_interactions = {'NON-NON-NON-Sig': [8 , TOPAS_C_motor_names[0]],
-                        'NON-NON-NON-Idl': [8 , TOPAS_C_motor_names[0]],
-                        'NON-NON-SH-Sig' : [11, TOPAS_C_motor_names[1]],
-                        'NON-SH-NON-Sig' : [11, TOPAS_C_motor_names[2]],
-                        'NON-NON-SH-Idl' : [11, TOPAS_C_motor_names[1]],
-                        'NON-NON-SF-Sig' : [11, TOPAS_C_motor_names[1]],
-                        'NON-NON-SF-Idl' : [11, TOPAS_C_motor_names[1]],
-                        'NON-SH-SH-Sig'  : [11, TOPAS_C_motor_names[2]],
-                        'SH-SH-NON-Sig'  : [11, TOPAS_C_motor_names[3]],
-                        'NON-SH-SH-Idl'  : [11, TOPAS_C_motor_names[2]],
-                        'SH-NON-SH-Idl'  : [11, TOPAS_C_motor_names[3]],
+# [num_between, motor_names]
+TOPAS_C_interactions = {'NON-NON-NON-Sig': [8, TOPAS_C_motor_names[0]],
+                        'NON-NON-NON-Idl': [8, TOPAS_C_motor_names[0]],
+                        'NON-NON-SH-Sig': [11, TOPAS_C_motor_names[1]],
+                        'NON-SH-NON-Sig': [11, TOPAS_C_motor_names[2]],
+                        'NON-NON-SH-Idl': [11, TOPAS_C_motor_names[1]],
+                        'NON-NON-SF-Sig': [11, TOPAS_C_motor_names[1]],
+                        'NON-NON-SF-Idl': [11, TOPAS_C_motor_names[1]],
+                        'NON-SH-SH-Sig': [11, TOPAS_C_motor_names[2]],
+                        'SH-SH-NON-Sig': [11, TOPAS_C_motor_names[3]],
+                        'NON-SH-SH-Idl': [11, TOPAS_C_motor_names[2]],
+                        'SH-NON-SH-Idl': [11, TOPAS_C_motor_names[3]],
                         'DF1-NON-NON-Sig': [10, TOPAS_C_motor_names[3]]}
 
 TOPAS_800_motor_names = {0: ['Crystal', 'Amplifier', 'Grating'],
@@ -56,25 +56,23 @@ TOPAS_800_motor_names = {0: ['Crystal', 'Amplifier', 'Grating'],
                          2: [''],
                          3: ['NDFG_Crystal', 'NDFG_Mirror', 'NDFG_Delay']}
 
-                                           # [num_between, motor_names]
+# [num_between, motor_names]
 TOPAS_800_interactions = {'NON-NON-NON-Sig': [8, TOPAS_800_motor_names[0]],
                           'NON-NON-NON-Idl': [8, TOPAS_800_motor_names[0]],
                           'DF1-NON-NON-Sig': [7, TOPAS_800_motor_names[3]],
                           'DF2-NON-NON-Sig': [7, TOPAS_800_motor_names[3]]}
 
 TOPAS_interaction_by_kind = {'TOPAS-C': TOPAS_C_interactions,
-                            'TOPAS-800': TOPAS_800_interactions}
+                             'TOPAS-800': TOPAS_800_interactions}
 
 
-### interpolation classes #####################################################
+# --- interpolation classes -----------------------------------------------------------------------
 
 
 class Linear:
 
     def __init__(self, colors, units, motors):
-        '''
-        Linear interpolation using scipy.interpolate.InterpolatedUnivariateSpline.
-        '''
+        """ Linear interpolation using scipy.interpolate.InterpolatedUnivariateSpline.  """
         self.colors = colors
         self.units = units
         self.motors = motors
@@ -121,19 +119,19 @@ class Poly:
         guess = self.linear.get_color(motor_index, motor_position)
         idx = (np.abs(roots - guess)).argmin()
         return roots[idx]
-        
-        
+
+
 class Spline:
-    
+
     def __init__(self, colors, units, motors):
-        '''
-        Linear interpolation using scipy.interpolate.InterpolatedUnivariateSpline.
-        '''
+        """ Linear interpolation using scipy.interpolate.InterpolatedUnivariateSpline.  """
         self.colors = colors
         self.units = units
         self.motors = motors
-        self.functions = [scipy.interpolate.UnivariateSpline(colors, motor.positions,  k=3, s=1000) for motor in motors]
-        self.i_functions = [scipy.interpolate.UnivariateSpline(motor.positions, colors,  k=3, s=1000) for motor in motors]
+        self.functions = [scipy.interpolate.UnivariateSpline(
+            colors, motor.positions, k=3, s=1000) for motor in motors]
+        self.i_functions = [scipy.interpolate.UnivariateSpline(
+            motor.positions, colors, k=3, s=1000) for motor in motors]
 
     def get_motor_positions(self, color):
         return [f(color) for f in self.functions]
@@ -149,15 +147,13 @@ class Spline:
         return self.i_functions[motor_index](motor_position)
 
 
-### curve class ###############################################################
+# --- curve class ---------------------------------------------------------------------------------
 
 
 class Motor:
 
     def __init__(self, positions, name):
-        '''
-        Container class for motor arrays.
-        '''
+        """ Container class for motor arrays.  """
         self.positions = positions
         self.name = name
 
@@ -167,8 +163,7 @@ class Curve:
     def __init__(self, colors, units, motors, name, interaction,
                  kind, method=Linear,
                  subcurve=None, source_colors=None):
-        '''
-        Central object-type for all OPA tuning curves.
+        """ Central object-type for all OPA tuning curves.
 
         Parameters
         ----------
@@ -184,7 +179,7 @@ class Curve:
             The kind of curve (for saving).
         method : interpolation class
             The interpolation method to use.
-        '''
+        """
         # version
         from .. import __version__
         self.__version__ = __version__
@@ -204,33 +199,33 @@ class Curve:
         # initialize function object
         self.method = method
         self.interpolate()
-        
+
     def __repr__(self):
         # when you inspect the object
         outs = []
         outs.append('WrightTools.tuning.curve.Curve object at ' + str(id(self)))
         outs.append('  name: ' + self.name)
         outs.append('  interaction: ' + self.interaction)
-        outs.append('  range: {0} - {1} ({2})'.format(self.colors.min(), self.colors.max(), self.units))
+        outs.append('  range: {0} - {1} ({2})'.format(self.colors.min(),
+                                                      self.colors.max(), self.units))
         outs.append('  number: ' + str(len(self.colors)))
         return '\n'.join(outs)
-        
+
     def coerce_motors(self):
-        '''
-        Coerce the motor positions to lie exactly along the interpolation
-        positions. Can be thought of as 'smoothing' the curve.
-        '''
+        """ Coerce the motor positions to lie exactly along the interpolation positions.
+
+        Can be thought of as 'smoothing' the curve.
+        """
         self.map_colors(self.colors, units='same')
 
     def convert(self, units):
-        '''
-        Convert the colors.
+        """ Convert the colors.
 
         Parameters
         ----------
         units : str
             The destination units.
-        '''
+        """
         self.colors = wt_units.converter(self.colors, self.units, units)
         if self.subcurve:
             positions = self.source_colors.positions
@@ -239,19 +234,17 @@ class Curve:
         self.interpolate()  # how did it ever work if this wasn't here?  - Blaise 2017-03-22
 
     def copy(self):
-        '''
-        Copy the object.
+        """ Copy the object.
 
         Returns
         -------
         curve
             A deep copy of the curve object.
-        '''
+        """
         return copy.deepcopy(self)
 
     def get_color(self, motor_positions, units='same'):
-        '''
-        Get the color given a set of motor positions.
+        """ Get the color given a set of motor positions.
 
         Parameters
         ----------
@@ -264,7 +257,7 @@ class Curve:
         -------
         float
             The current color.
-        '''
+        """
         colors = []
         for motor_index, motor_position in enumerate(motor_positions):
             color = self.interpolator.get_color(motor_index, motor_position)
@@ -273,8 +266,7 @@ class Curve:
         return colors[0]
 
     def get_limits(self, units='same'):
-        '''
-        Get the edges of the curve.
+        """ Get the edges of the curve.
 
         Parameters
         ----------
@@ -285,13 +277,13 @@ class Curve:
         -------
         list of floats
             [min, max] in given units
-        '''
+        """
         if units == 'same':
             return [self.colors.min(), self.colors.max()]
         else:
             units_colors = wt_units.converter(self.colors, self.units, units)
             return [units_colors.min(), units_colors.max()]
-            
+
     def get_motor_names(self, full=True):
         if self.subcurve and full:
             subcurve_motor_names = self.subcurve.get_motor_names()
@@ -300,8 +292,7 @@ class Curve:
         return subcurve_motor_names + [m.name for m in self.motors]
 
     def get_motor_positions(self, color, units='same', full=True):
-        """
-        Get the motor positions for a destination color.
+        """ Get the motor positions for a destination color.
 
         Parameters
         ----------
@@ -312,7 +303,7 @@ class Curve:
 
         Returns
         -------
-        np.ndarray 
+        np.ndarray
             The motor positions. If color is an array the output shape will
             be (motors, colors).
         """
@@ -322,6 +313,7 @@ class Curve:
         else:
             color = wt_units.converter(color, units, self.units)
         # color must be array
+
         def is_numeric(obj):
             attrs = ['__add__', '__sub__', '__mul__', '__pow__']
             return all([hasattr(obj, attr) for attr in attrs] + [not hasattr(obj, '__len__')])
@@ -332,7 +324,8 @@ class Curve:
             out = []
             for c in color:
                 source_color = np.array(self.source_color_interpolator.get_motor_positions(c))
-                source_motor_positions = np.array(self.subcurve.get_motor_positions(source_color, units=self.units, full=True)).squeeze()
+                source_motor_positions = np.array(self.subcurve.get_motor_positions(
+                    source_color, units=self.units, full=True)).squeeze()
                 own_motor_positions = np.array(self.interpolator.get_motor_positions(c)).flatten()
                 out.append(np.hstack((source_motor_positions, own_motor_positions)))
             out = np.array(out)
@@ -340,11 +333,12 @@ class Curve:
         else:
             out = np.array([self.interpolator.get_motor_positions(c) for c in color])
             return out.T
-            
+
     def get_source_color(self, color, units='same'):
         if not self.subcurve:
-            return None 
+            return None
         # color must be array
+
         def is_numeric(obj):
             attrs = ['__add__', '__sub__', '__mul__', '__div__', '__pow__']
             return all([hasattr(obj, attr) for attr in attrs] + [not hasattr(obj, '__len__')])
@@ -359,17 +353,14 @@ class Curve:
         return np.array([self.source_color_interpolator.get_motor_positions(c) for c in color])
 
     def interpolate(self, interpolate_subcurve=True):
-        '''
-        Generate the interploator object.
-        '''
+        """ Generate the interploator object.  """
         self.interpolator = self.method(self.colors, self.units, self.motors)
         if self.subcurve and interpolate_subcurve:
-            self.source_color_interpolator = self.method(self.colors, self.units, [self.source_colors])
+            self.source_color_interpolator = self.method(
+                self.colors, self.units, [self.source_colors])
 
     def map_colors(self, colors, units='same'):
-        '''
-        Map the curve onto new tune points using the curve's own interpolation
-        method
+        """ Map the curve onto new tune points using the curve's own interpolation method
 
         Parameters
         ----------
@@ -379,9 +370,9 @@ class Curve:
         units : str (optional.)
             The input units if given as array. Default is same. Units of curve
             object are not changed by map_colors.
-        '''
+        """
         # get new colors in input units
-        if type(colors) == int:
+        if isinstance(colors, int):
             limits = self.get_limits(units)
             new_colors = np.linspace(limits[0], limits[1], colors)
         else:
@@ -389,8 +380,7 @@ class Curve:
         # convert new colors to local units
         if units == 'same':
             units = self.units
-        new_colors = wt_units.converter(new_colors, units, self.units)
-        new_colors.sort()
+        new_colors = sorted(wt_units.converter(new_colors, units, self.units))
         # ensure that motor interpolators agree with current motor positions
         self.interpolate(interpolate_subcurve=True)
         # map own motors
@@ -401,7 +391,8 @@ class Curve:
             new_motors.append(new_motor)
         # map source colors, subcurves
         if self.subcurve:
-            new_source_colors = np.array(self.source_color_interpolator.get_motor_positions(new_colors)).squeeze()
+            new_source_colors = np.array(
+                self.source_color_interpolator.get_motor_positions(new_colors)).squeeze()
             self.subcurve.map_colors(new_source_colors, units=self.units)
             self.source_colors.positions = new_source_colors
         # finish
@@ -413,8 +404,7 @@ class Curve:
         self.interpolate(interpolate_subcurve=True)
 
     def offset_by(self, motor, amount):
-        '''
-        Offset a motor by some ammount.
+        """ Offset a motor by some ammount.
 
         Parameters
         ----------
@@ -422,15 +412,15 @@ class Curve:
             The motor index or name.
         amount : number
             The offset.
-            
+
         See Also
         --------
         offset_to
-        '''
+        """
         # get motor index
         if type(motor) in [float, int]:
             motor_index = motor
-        elif type(motor) == str:
+        elif isinstance(motor, str):
             motor_index = self.motor_names.index(motor)
         else:
             print('motor type not recognized in curve.offset_by')
@@ -439,9 +429,8 @@ class Curve:
         self.interpolate()
 
     def offset_to(self, motor, destination, color, color_units='same'):
-        '''
-        Offset a motor such that it evaluates to `destination` at `color`.
-        
+        """ Offset a motor such that it evaluates to `destination` at `color`.
+
         Parameters
         ----------
         motor : number or str
@@ -452,15 +441,15 @@ class Curve:
             The color at-which to set the motor to amount.
         color_units : str (optional)
             The color units. Default is same.
-        
+
         See Also
         --------
         offset_by
-        '''
+        """
         # get motor index
         if type(motor) in [float, int]:
             motor_index = motor
-        elif type(motor) == str:
+        elif isinstance(motor, str):
             motor_index = self.motor_names.index(motor)
         else:
             print('motor type not recognized in curve.offset_to')
@@ -471,9 +460,7 @@ class Curve:
         self.offset_by(motor, offset)
 
     def plot(self, autosave=False, save_path='', title=None):
-        '''
-        Plot the curve.
-        '''
+        """ Plot the curve.  """
         # count number of subcurves
         subcurve_count = 0
         total_motor_count = len(self.motors)
@@ -487,7 +474,7 @@ class Curve:
         all_curves = all_curves[::-1]
         # prepare figure
         num_subplots = total_motor_count + subcurve_count
-        fig = plt.figure(figsize=(8, 2*num_subplots))
+        fig = plt.figure(figsize=(8, 2 * num_subplots))
         axs = grd.GridSpec(num_subplots, 1, hspace=0)
         # assign subplot indicies
         ax_index = 0
@@ -496,10 +483,10 @@ class Curve:
         for curve_index, curve in enumerate(all_curves):
             for motor_index, motor in enumerate(curve.motors):
                 ax_dictionary[motor.name] = axs[ax_index]
-                lowest_ax_dictionary[curve.interaction] =axs[ax_index]
-                ax_index += 1            
+                lowest_ax_dictionary[curve.interaction] = axs[ax_index]
+                ax_index += 1
             if curve_index != len(all_curves):
-                ax_index +=1 
+                ax_index += 1
         # add scatter
         for motor_index, motor_name in enumerate(self.get_motor_names()):
             ax = plt.subplot(ax_dictionary[motor_name])
@@ -534,8 +521,8 @@ class Curve:
             xtick_labels = [str(np.around(x, 1)) for x in source_color_arrs[curve.interaction]]
             plt.xticks(xtick_positions, xtick_labels, rotation=45)
         # formatting details
-        xmin = self.colors.min() - np.abs(self.colors[0]-self.colors[1])
-        xmax = self.colors.max() + np.abs(self.colors[0]-self.colors[1])
+        xmin = self.colors.min() - np.abs(self.colors[0] - self.colors[1])
+        xmax = self.colors.max() + np.abs(self.colors[0] - self.colors[1])
         for ax in ax_dictionary.values():
             ax = plt.subplot(ax)
             plt.xlim(xmin, xmax)
@@ -558,8 +545,7 @@ class Curve:
             plt.close(fig)
 
     def save(self, save_directory=None, plot=True, verbose=True, full=False):
-        '''
-        Save the curve.
+        """ Save the curve.
 
         Parameters
         ----------
@@ -577,7 +563,7 @@ class Curve:
         -------
         str
             The filepath of the saved curve.
-        '''
+        """
         # get save directory
         if save_directory is None:
             save_directory = os.getcwd()
@@ -604,7 +590,7 @@ class Curve:
         return out_path
 
 
-### curve import methods ######################################################
+# --- curve import methods ------------------------------------------------------------------------
 
 
 def from_800_curve(filepath):
@@ -649,7 +635,8 @@ def from_poynting_curve(filepath, subcurve=None):
 
 
 def from_TOPAS_crvs(filepaths, kind, interaction_string):
-    '''
+    """ Create a curve object from a TOPAS crv file
+
     Parameters
     ----------
     filepaths : list of str [base, mixer 1, mixer 2, mixer 3]
@@ -658,13 +645,13 @@ def from_TOPAS_crvs(filepaths, kind, interaction_string):
     kind : {'TOPAS-C', 'TOPAS-800'}
         The kind of TOPAS represented.
     interaction_string : str
-        Interaction string for this curve, in the style of Light Conversion - 
+        Interaction string for this curve, in the style of Light Conversion -
         e.g. 'NON-SF-NON-Sig'.
-    
+
     Returns
     ------
     WrightTools.tuning.curve.Curve object
-    '''
+    """
     TOPAS_interactions = TOPAS_interaction_by_kind[kind]
     # setup to recursively import data
     interactions = interaction_string.split('-')
@@ -680,14 +667,14 @@ def from_TOPAS_crvs(filepaths, kind, interaction_string):
         # open appropriate crv
         interactions = interaction_string.split('-')
         curve_index = next((i for i, v in enumerate(interactions) if v != 'NON'), -1)
-        crv_path = filepaths[-(curve_index+1)]
+        crv_path = filepaths[-(curve_index + 1)]
         with open(crv_path, 'r') as crv:
             crv_lines = crv.readlines()
         # collect information from file
         for i in range(len(crv_lines)):
             if crv_lines[i].rstrip() == interaction_string:
                 line_index = i + TOPAS_interactions[interaction_string][0]
-                num_tune_points = int(crv_lines[line_index-1])
+                num_tune_points = int(crv_lines[line_index - 1])
         # get the actual array
         lis = []
         for i in range(line_index, line_index + num_tune_points):
@@ -699,7 +686,7 @@ def from_TOPAS_crvs(filepaths, kind, interaction_string):
         colors = arr[1]
         motors = []
         for i in range(3, len(arr)):
-            motor_name = TOPAS_interactions[interaction_string][1][i-3]
+            motor_name = TOPAS_interactions[interaction_string][1][i - 3]
             motor = Motor(arr[i], motor_name)
             motors.append(motor)
             name = wt_kit.filename_parse(crv_path)[1]
@@ -712,7 +699,7 @@ def from_TOPAS_crvs(filepaths, kind, interaction_string):
     return curve
 
 
-### curve writing methods #####################################################
+# --- curve writing methods -----------------------------------------------------------------------
 
 
 def to_800_curve(curve, save_directory):
@@ -736,7 +723,7 @@ def to_800_curve(curve, save_directory):
     headers['name'] = ['Color (wn)', 'Grating', 'BBO', 'Mixer']
     wt_kit.write_headers(out_path, headers)
     with open(out_path, 'ab') as f:
-        np.savetxt(f, out_arr.T, fmt=['%.2f','%.5f', '%.5f', '%.5f'],
+        np.savetxt(f, out_arr.T, fmt=['%.2f', '%.5f', '%.5f', '%.5f'],
                    delimiter='\t')
     return out_path
 
@@ -762,7 +749,7 @@ def to_poynting_curve(curve, save_directory):
     headers['name'] = ['Color (wn)', 'Phi', 'Theta']
     wt_kit.write_headers(out_path, headers)
     with open(out_path, 'ab') as f:
-        np.savetxt(f, out_arr.T, fmt=['%.2f','%.0f', '%.0f'],
+        np.savetxt(f, out_arr.T, fmt=['%.2f', '%.0f', '%.0f'],
                    delimiter='\t')
     # save subcurve
     if curve.subcurve:
@@ -800,7 +787,7 @@ def to_TOPAS_crvs(curve, save_directory, kind, full, **kwargs):
     for i in range(len(crv_lines)):
         if crv_lines[i].rstrip() == interaction_string:
             line_index = i + TOPAS_interactions[interaction_string][0]
-            num_tune_points = int(crv_lines[line_index-1])
+            num_tune_points = int(crv_lines[line_index - 1])
     # construct to_insert (dictionary of arrays)
     to_insert = collections.OrderedDict()
     if interaction_string == 'NON-NON-NON-Sig':  # must generate idler
@@ -812,10 +799,10 @@ def to_TOPAS_crvs(curve, save_directory, kind, full, **kwargs):
         signal_arr[1] = curve.colors
         signal_arr[2] = 4
         for i in range(4):
-            signal_arr[3+i] = curve.motors[i].positions
+            signal_arr[3 + i] = curve.motors[i].positions
         # create idler aray
         idler_arr = signal_arr.copy()
-        idler_arr[1] = 1/((1/spitfire_output) - (1/curve.colors))
+        idler_arr[1] = 1 / ((1 / spitfire_output) - (1 / curve.colors))
         # construct to_insert
         to_insert['NON-NON-NON-Sig'] = signal_arr
         to_insert['NON-NON-NON-Idl'] = idler_arr
@@ -828,14 +815,15 @@ def to_TOPAS_crvs(curve, save_directory, kind, full, **kwargs):
         idler_arr[1] = curve.colors
         idler_arr[2] = 4
         for i in range(4):
-            idler_arr[3+i] = curve.motors[i].positions
+            idler_arr[3 + i] = curve.motors[i].positions
         # create idler aray
         signal_arr = idler_arr.copy()
-        signal_arr[1] = 1/((1/spitfire_output) - (1/curve.colors))
+        signal_arr[1] = 1 / ((1 / spitfire_output) - (1 / curve.colors))
         # construct to_insert
         to_insert['NON-NON-NON-Sig'] = signal_arr
         to_insert['NON-NON-NON-Idl'] = idler_arr
-    elif interaction_string in ['DF1-NON-NON-Sig', 'DF2-NON-NON-Sig'] and curve.kind == 'TOPAS-800':  # TOPAS800 DFG (3 motor mier)
+    # TOPAS800 DFG (3 motor mier)
+    elif interaction_string in ['DF1-NON-NON-Sig', 'DF2-NON-NON-Sig'] and curve.kind == 'TOPAS-800':
         # create array from curve
         arr = np.zeros([6, len(curve.colors)])
         arr[0] = curve.source_colors.positions
@@ -860,16 +848,16 @@ def to_TOPAS_crvs(curve, save_directory, kind, full, **kwargs):
         for i in range(len(crv_lines)):
             if crv_lines[i].rstrip() == interaction_string:
                 line_index = i + TOPAS_interactions[interaction_string][0]
-                num_tune_points = int(crv_lines[line_index-1])
+                num_tune_points = int(crv_lines[line_index - 1])
         # prepare array for addition
         arr = arr.T
         # TOPAS wants curves to be ascending in nm
         #   curves get added 'backwards' here
         #   so arr should be decending in nm
-        if arr[0, 1] < arr[-1, 1]:    
+        if arr[0, 1] < arr[-1, 1]:
             arr = np.flipud(arr)
         # remove old points
-        del out_lines[line_index-1:line_index+num_tune_points]
+        del out_lines[line_index - 1:line_index + num_tune_points]
         # add strings to out_lines
         for row in arr:
             line = ''
@@ -878,14 +866,15 @@ def to_TOPAS_crvs(curve, save_directory, kind, full, **kwargs):
                 if value in [1, 3, 4]:
                     value_as_string = str(int(value))
                 else:
-                    value_as_string = '%f.6'%value
+                    value_as_string = '%f.6' % value
                     portion_before_decimal = value_as_string.split('.')[0]
                     portion_after_decimal = value_as_string.split('.')[1].ljust(6, '0')
                     value_as_string = portion_before_decimal + '.' + portion_after_decimal
                 line += value_as_string + '\t'
             line += '\n'
-            out_lines.insert(line_index-1, line)
-        out_lines.insert(line_index-1, str(len(curve.colors))+'\n')  # number of points of new curve
+            out_lines.insert(line_index - 1, line)
+        out_lines.insert(line_index - 1, str(len(curve.colors)) +
+                         '\n')  # number of points of new curve
     # filename
     timestamp = wt_kit.TimeStamp().path
     out_name = curve.name.split('-')[0] + '- ' + timestamp
@@ -894,6 +883,3 @@ def to_TOPAS_crvs(curve, save_directory, kind, full, **kwargs):
     with open(out_path, 'w') as new_crv:
         new_crv.write(''.join(out_lines).rstrip())
     return out_path
-
-
-
