@@ -432,7 +432,7 @@ class Fitter:
         params_channels = []
         for param in self.function.params:
             values = np.full(self.outs.shape, np.nan)
-            channel = wt_data.Channel(values, units=None, znull=0, name=param)
+            channel = wt_data.Channel(values, units=None, null=0, name=param)
             params_channels.append(channel)
         self.outs.channels = params_channels + self.outs.channels
         # do all fitting operations ---------------------------------------------------------------
@@ -455,7 +455,7 @@ class Fitter:
         # clean up --------------------------------------------------------------------------------
         # model
         self.model.transpose(transpose_order, verbose=False)
-        self.model.channels[channel_index].zmax = np.nanmax(
+        self.model.channels[channel_index].max = np.nanmax(
             self.model.channels[channel_index].values)
         self.model._update()
         # outs
@@ -463,9 +463,7 @@ class Fitter:
             # give the data all at once
             channel = self.outs.channels[i]
             values = channel.values
-            channel.zmax = np.nanmax(values)
-            channel.znull = 0
-            channel.zmin = np.nanmin(values)
+            channel.null = 0
         self.outs._update()
         return self.outs
 
