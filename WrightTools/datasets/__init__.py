@@ -18,7 +18,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 
 
 def clean_name(n, prefix=''):
-    illegals = [' ', '[', ']']
+    illegals = [' ', '[', ']', '-']
     for c in illegals:
         n = n.replace(c, '_')
     return prefix + n

@@ -2093,7 +2093,6 @@ class Absorbance:
             # now plot 2nd derivative -------------------------------------------------------------
 
             if derivative:
-                print('hello')
                 # compute second derivative
                 xi2, zi2 = self._smooth(np.array([xi, zi]), n_smooth)
                 diff = wt_kit.diff(xi2, zi2, order=2)
