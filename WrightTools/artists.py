@@ -100,7 +100,7 @@ class Axes(matplotlib.axes.Axes):
         contours = matplotlib.axes.Axes.contourf(self, *args, **kwargs)  # why can't I use super?
         # fill lines
         zorder = contours.collections[0].zorder - 0.1
-        matplotlib.axes.Axes.contour(self, *args[:3], len(contours.levels), cmap=contours.cmap,
+        matplotlib.axes.Axes.contour(self, *(args[:3] + [len(contours.levels)]), cmap=contours.cmap,
                                      zorder=zorder)
         # PathCollection modifications
         for c in contours.collections:
