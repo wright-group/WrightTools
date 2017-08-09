@@ -16,6 +16,7 @@ import copy
 import time
 import pytz
 import h5py
+import string
 import warnings
 import dateutil
 import datetime
@@ -1237,6 +1238,32 @@ def string2array(string, sep='\t'):
     arr.shape = shape
     # finish
     return arr
+
+
+def string2identifier(s):
+    """Turns a string into a valid python identifier.
+
+    Parameters
+    ----------
+    s : string
+        string to convert
+
+    Returns
+    -------
+    str
+        valid python identifier.
+    """
+    # https://docs.python.org/3/reference/lexical_analysis.html#identifiers
+    if s[0] not in string.ascii_letters:
+        s = '_' + s
+    valids = string.ascii_letters + string.digits + '_'
+    out = ''
+    for i, char in enumerate(s):
+        if char in valids:
+            out += char
+        else:
+            out += '_'
+    return out
 
 
 def string2item(string, sep='\t'):
