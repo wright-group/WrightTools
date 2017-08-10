@@ -1052,9 +1052,10 @@ class Data:
           indices=None, m=None,
           bounds_error=True, verbose=True):
         """
-        placeholder docstring because the existing one needs numpydoc formatting and is causing errors
+        placeholder docstring because the existing one needs numpydoc formatting
+        and is causing errors
         """
-        docsatring = """
+        docstring = """
         normalize channel by absorptive effects given by absorption data object
             'abs_data'
 
