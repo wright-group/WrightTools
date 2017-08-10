@@ -4,6 +4,20 @@ import os as _os
 import matplotlib as _matplotlib
 
 
+# --- import --------------------------------------------------------------------------------------
+
+
+from . import artists
+from . import calibration
+from . import data
+from . import diagrams
+from . import fit
+from . import google_drive
+from . import kit
+from . import tuning
+from . import units
+
+
 # --- temp directory ------------------------------------------------------------------------------
 
 
@@ -29,20 +43,6 @@ if _os.path.isfile(_p):
         __version__ += '-' + __branch__
 else:
     __branch__ = None
-
-
-# --- import --------------------------------------------------------------------------------------
-
-
-from . import artists
-from . import calibration
-from . import data
-from . import diagrams
-from . import fit
-from . import google_drive
-from . import kit
-from . import tuning
-from . import units
 
 
 # --- rcparams ------------------------------------------------------------------------------------
