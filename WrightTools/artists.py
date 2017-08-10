@@ -16,14 +16,14 @@ import numpy as np
 from numpy import r_
 
 import matplotlib
-from matplotlib.axes import Axes, SubplotBase, subplot_class_factory
+import matplotlib.axes.Axes
+from matplotlib.axes import SubplotBase, subplot_class_factory
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import matplotlib.gridspec as grd
 import matplotlib.colors as mplcolors
 from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib.patheffects as PathEffects
-from matplotlib.ticker import FormatStrFormatter
 
 from . import kit as wt_kit
 
@@ -83,7 +83,7 @@ class Axes(matplotlib.axes.Axes):
         return ax
 
     def contourf(self, *args, **kwargs):
-        # I'm overloading contourf in an attempt to fix aliasing problems when saving vector graphics
+        # Overloading contourf in an attempt to fix aliasing problems when saving vector graphics
         # see https://stackoverflow.com/questions/15822159
         # also see https://stackoverflow.com/a/32911283
         # set_edgecolor('face') does indeed remove all of the aliasing problems
@@ -100,7 +100,8 @@ class Axes(matplotlib.axes.Axes):
         contours = matplotlib.axes.Axes.contourf(self, *args, **kwargs)  # why can't I use super?
         # fill lines
         zorder = contours.collections[0].zorder - 0.1
-        matplotlib.axes.Axes.contour(self, *(args[:3] + [len(contours.levels)]), cmap=contours.cmap,
+        matplotlib.axes.Axes.contour(self, *(args[:3] + [len(contours.levels)]),
+                                     cmap=contours.cmap,
                                      zorder=zorder)
         # PathCollection modifications
         for c in contours.collections:
@@ -1203,7 +1204,7 @@ def plot_gridlines(ax=None, c='grey', lw=1, diagonal=False, zorder=2,
         diag_min = max(min_xi, min_yi)
         diag_max = min(max_xi, max_yi)
         ax.plot([diag_min, diag_max], [diag_min, diag_max], c=c,
-                ls=':', lw=lw, zorder=zorder, dashes=dashes)
+                ls=ls, lw=lw, zorder=zorder, dashes=dashes)
 
 
 def plot_margins(fig=None, inches=1., centers=True, edges=True):
@@ -1497,7 +1498,8 @@ class mpl_1D:
         fig = None
         if len(self.chopped) > 10:
             if not autosave:
-                print('too many images will be generated ({}): forcing autosave'.format(len(self.chopped)))
+                print('too many images will be generated ({}): forcing autosave'.format(
+                                                          len(self.chopped)))
                 autosave = True
         # prepare output folders
         if autosave:
@@ -1934,7 +1936,6 @@ class mpl_2D:
                         s_zi_in_range = s_zi[min(min_index, max_index):max(min_index, max_index)]
                         if len(s_zi_in_range) == 0:
                             continue
-                        #s_zi = s_zi - min(s_zi_in_range)
                         s_zi_in_range = s_zi[min(min_index, max_index):max(min_index, max_index)]
                         s_zi = s_zi / max(s_zi_in_range)
                         axCorrx.plot(s_xi, s_zi, lw=2)
@@ -1974,7 +1975,6 @@ class mpl_2D:
                         s_zi_in_range = s_zi[min(min_index, max_index):max(min_index, max_index)]
                         if len(s_zi_in_range) == 0:
                             continue
-                        #s_zi = s_zi - min(s_zi_in_range)
                         s_zi_in_range = s_zi[min(min_index, max_index):max(min_index, max_index)]
                         s_zi = s_zi / max(s_zi_in_range)
                         axCorry.plot(s_zi, s_xi, lw=2)
@@ -2259,7 +2259,7 @@ class Diff2D():
             for j in range(2):
 
                 if j == 0:
-                    current_chop = chopped = self.minuend_chopped[i]
+                    current_chop = self.minuend_chopped[i]
                 elif j == 1:
                     current_chop = self.subtrahend_chopped[i]
 
