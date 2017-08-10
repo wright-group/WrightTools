@@ -1,9 +1,9 @@
-'''
+"""
 fitting tools
-'''
+"""
 
 
-### import ####################################################################
+# --- import --------------------------------------------------------------------------------------
 
 
 from __future__ import absolute_import, division, print_function, unicode_literals
@@ -26,12 +26,11 @@ from . import kit as wt_kit
 from . import artists as wt_artists
 
 
-### helper functions ##########################################################
+# --- helper functions ----------------------------------------------------------------------------
 
 
 def get_baseline(values, deviations=3):
-    '''
-    Guess the baseline for a data set.
+    """ Guess the baseline for a data set.
 
     Returns the average of all points in ``values`` less than n ``deviations``
     away from zero.
@@ -52,7 +51,7 @@ def get_baseline(values, deviations=3):
     -------
     float
         Baseline guess.
-    '''
+    """
     values_internal = values.copy()
     std = np.nanstd(values)
     values_internal[np.abs(values_internal) >= deviations * std] = np.nan
@@ -64,7 +63,7 @@ def get_baseline(values, deviations=3):
     return baseline
 
 
-### functions objects #########################################################
+# --- functions objects ---------------------------------------------------------------------------
 
 
 class Function:
@@ -102,9 +101,7 @@ class ExpectationValue(Function):
                       DeprecationWarning, stacklevel=2)
 
     def evaluate(self, p, xi):
-        '''
-        Returns 1 at expectation value, 0 elsewhere.
-        '''
+        """ Returns 1 at expectation value, 0 elsewhere.  """
         out = np.zeros(len(xi))
         out[np.argmin(np.abs(xi - p[0]))] = 1
         return out
@@ -119,7 +116,7 @@ class ExpectationValue(Function):
         # get sum
         sum_y = 0.
         for i in range(len(y_internal)):
-            if np.ma.getmask(y_internal[i]) == True:
+            if np.ma.getmask(y_internal[i]):
                 pass
             elif np.isnan(y_internal[i]):
                 pass
@@ -127,7 +124,7 @@ class ExpectationValue(Function):
                 sum_y += y_internal[i]
         # divide by sum
         for i in range(len(y_internal)):
-            if np.ma.getmask(y_internal[i]) == True:
+            if np.ma.getmask(y_internal[i]):
                 pass
             elif np.isnan(y_internal[i]):
                 pass
@@ -136,7 +133,7 @@ class ExpectationValue(Function):
         # get expectation value
         value = 0.
         for i in range(len(x_internal)):
-            if np.ma.getmask(y_internal[i]) == True:
+            if np.ma.getmask(y_internal[i]):
                 pass
             elif np.isnan(y_internal[i]):
                 pass
@@ -222,8 +219,7 @@ class TwoD_Gaussian(Function):
         self.limits = {'sigma_x': [0, np.inf], 'sigma_y': [0, np.inf]}
 
     def _Format_input(self, values, x, y):
-        '''
-        This function makes sure the values and axis are in an ok format for fitting and free of nans
+        """ This function makes sure the values and axis are in an ok format for fitting and free of nans
 
         Parameters
         ----------
@@ -242,7 +238,7 @@ class TwoD_Gaussian(Function):
         OK : boolean
             True if the shapes of the inputs were compatable, False otherwise.
 
-        '''
+        """
         v = values.copy()
         xi = x.copy()
         yi = y.copy()
@@ -347,9 +343,7 @@ class Moments(Function):
         self.subtract_baseline = subtract_baseline
 
     def evaluate(self, p, xi):
-        '''
-        Currently just returns nans.
-        '''
+        """ Currently just returns nans.  """
         # TODO: fix this (how should it work?!)
         return np.full(xi.shape, np.nan)
 
@@ -389,7 +383,7 @@ class Moments(Function):
         return [0] * 6
 
 
-### fitter ####################################################################
+# --- fitter --------------------------------------------------------------------------------------
 
 
 class Fitter:
@@ -406,14 +400,14 @@ class Fitter:
         print('fitter recieved data to make %d fits' % np.product(self.fit_shape))
 
     def run(self, channel=0, verbose=True):
-        # get channel ---------------------------------------------------------
+        # get channel -----------------------------------------------------------------------------
         if isinstance(channel, int):
             channel_index = channel
         elif isinstance(channel, str):
             channel_index = self.data.channel_names.index(channel)
         else:
             print('channel type', type(channel), 'not valid')
-        # transpose data ------------------------------------------------------
+        # transpose data --------------------------------------------------------------------------
         # fitted axes will be LAST
         transpose_order = list(range(len(self.data.axes)))
         self.axis_indicies.reverse()
@@ -423,7 +417,7 @@ class Fitter:
             transpose_order[ri], transpose_order[ai] = transpose_order[ai], transpose_order[ri]
         self.axis_indicies.reverse()
         self.data.transpose(transpose_order, verbose=False)
-        # create output objects -----------------------------------------------
+        # create output objects -------------------------------------------------------------------
         # model
         self.model = self.data.copy()
         if self.data.name:
@@ -438,10 +432,10 @@ class Fitter:
         params_channels = []
         for param in self.function.params:
             values = np.full(self.outs.shape, np.nan)
-            channel = wt_data.Channel(values, units=None, znull=0, name=param)
+            channel = wt_data.Channel(values, units=None, null=0, name=param)
             params_channels.append(channel)
         self.outs.channels = params_channels + self.outs.channels
-        # do all fitting operations -------------------------------------------
+        # do all fitting operations ---------------------------------------------------------------
         axes_points = [axis.points for axis in self.data.axes if axis.name in self.axes]
         timer = wt_kit.Timer(verbose=False)
         with timer:
@@ -458,10 +452,10 @@ class Fitter:
                 self.model.channels[channel_index].values[idx] = model_data
         if verbose:
             print('fitter done in %f seconds' % timer.interval)
-        # clean up ------------------------------------------------------------
+        # clean up --------------------------------------------------------------------------------
         # model
         self.model.transpose(transpose_order, verbose=False)
-        self.model.channels[channel_index].zmax = np.nanmax(
+        self.model.channels[channel_index].max = np.nanmax(
             self.model.channels[channel_index].values)
         self.model._update()
         # outs
@@ -469,21 +463,19 @@ class Fitter:
             # give the data all at once
             channel = self.outs.channels[i]
             values = channel.values
-            channel.zmax = np.nanmax(values)
-            channel.znull = 0
-            channel.zmin = np.nanmin(values)
+            channel.null = 0
         self.outs._update()
         return self.outs
 
 
-### MultiPeakFitter #################################################
+# --- MultiPeakFitter -----------------------------------------------------------------------------
 
 
 class MultiPeakFitter:
-    """
+    """ Class which allows easy fitting and representation of aborbance data.
+
     Written by Darien Morrow. darienmorrow@gmail.com & dmorrow3@wisc.edu
 
-    Class which allows easy fitting and representation of aborbance data.
     Currently only offers Gaussian and Lorentzian functions.
     Functions are paramaterized by FWHM, height, and center.
     Requires the use of WrightTools.Data objects.
@@ -525,8 +517,7 @@ class MultiPeakFitter:
         self.diff = wt_kit.diff(self.data.axes[0].points, self.zi, order=self.fittype)
 
     def build_funcs(self, x, params, kinds, diff_order=0):
-        """
-        Builds a new 1D function of many 1D function of various kinds.
+        """ Builds a new 1D function of many 1D function of various kinds.
 
         Parameters
         ----------
@@ -552,8 +543,7 @@ class MultiPeakFitter:
         return z
 
     def convert(self, destination_units):
-        """
-        Exposes wt.data.convert() method to convert units of data object.
+        """ Exposes wt.data.convert() method to convert units of data object.
 
         Parameters
         ----------
@@ -562,8 +552,7 @@ class MultiPeakFitter:
         self.data.convert(destination_units)
 
     def encode_params(self, names, kinds, params):
-        """
-        Helper method to encode parameters of fit into an ordered dict of dicts.
+        """ Helper method to encode parameters of fit into an ordered dict of dicts.
 
         Parameters
         ----------
@@ -585,8 +574,7 @@ class MultiPeakFitter:
         return dic
 
     def extract_params(self, dic):
-        """
-        Takes dictionary of fit parameters and returns tuple of extracted parameters
+        """ Takes dictionary of fit parameters and returns tuple of extracted parameters
         that function method can work with.
 
         Parameters
@@ -615,8 +603,7 @@ class MultiPeakFitter:
         return names, kinds, p0
 
     def fit(self, verbose=True):
-        """
-        Fitting method that takes data and guesses (class attributes) and instantiates/updates
+        """ Fitting method that takes data and guesses (class attributes) and instantiates/updates
         fit_results, diff_model, and remainder (class attributes),
 
         Parameters
@@ -624,8 +611,8 @@ class MultiPeakFitter:
         verbose : bool
             toggle talkback
 
-        Instantiated attributes
-        -----------------------
+        Attributes
+        ----------
         fit_results : ordered dict of dict
         diff_model : array
             array offerring the final results of the fit in the native space of the fit
@@ -633,8 +620,9 @@ class MultiPeakFitter:
             array offering the remainder (actual - fit) in the native space of the spectra
         """
         # generate arrays for fitting
-        zi_diff = wt_kit.diff(
-            self.data.axes[0].points, self.data.channels[self.channel_index].values, order=self.fittype)
+        zi_diff = wt_kit.diff(self.data.axes[0].points,
+                              self.data.channels[self.channel_index].values,
+                              order=self.fittype)
         names, kinds, p0 = self.extract_params(self.guesses)
         # define error function
 
@@ -655,8 +643,7 @@ class MultiPeakFitter:
             self.build_funcs(self.data.axes[0].points, out[0], kinds, diff_order=0)
 
     def function(self, x, kind, FWHM, intensity, x0, diff_order=0):
-        """
-        Returns a peaked distribution over array x.
+        """ Returns a peaked distribution over array x.
 
         The peaked distributions are characterized by their FWHM, height, and center.
         The distributions are not normalized to the same value given the same parameters!
@@ -704,8 +691,7 @@ class MultiPeakFitter:
             raise Exception('kind not recognized!')
 
     def guess(self, guesses):
-        """
-        Creates guess library for use in fitting.
+        """ Creates guess library for use in fitting.
 
         Parameters
         ----------
@@ -719,8 +705,7 @@ class MultiPeakFitter:
         self.guesses = guesses
 
     def intensity_label_change(self, intensity_label):
-        """
-        Helper method for changing label present in plot method.
+        """ Helper method for changing label present in plot method.
 
         Parameters
         ----------
@@ -729,9 +714,7 @@ class MultiPeakFitter:
         self.intensity_label = intensity_label
 
     def plot(self,):
-        """
-        Plot fit results.
-        """
+        """ Plot fit results.  """
         # get results
         names, kinds, params = self.extract_params(self.fit_results)
         num_funcs = len(kinds)
@@ -752,8 +735,15 @@ class MultiPeakFitter:
         # fit results
         ax.plot(xi, self.remainder, color='k', linestyle='--', linewidth=2)
         for i, kind in enumerate(kinds):
-            ax.plot(xi, self.function(xi, kind, params[i * 3 + 0], params[i * 3 + 1],
-                                      params[i * 3 + 2], diff_order=0), color=cm((i + 1) / num_funcs), linewidth=2)
+            ax.plot(xi,
+                    self.function(xi,
+                                  kind,
+                                  params[i * 3 + 0],
+                                  params[i * 3 + 1],
+                                  params[i * 3 + 2],
+                                  diff_order=0),
+                    color=cm((i + 1) / num_funcs),
+                    linewidth=2)
             ax.axvline(x=params[i * 3 + 2], color=cm((i + 1) / num_funcs), linewidth=1)
         # diff
         ax = plt.subplot(gs[1, 0])
@@ -773,8 +763,7 @@ class MultiPeakFitter:
             ax.axvline(x=params[i * 3 + 2], color=cm((i + 1) / num_funcs), linewidth=1)
 
     def save(self, path=os.getcwd(), fit_params=True, figure=True, verbose=True):
-        """
-        Saves results and representation of fits. Saved files are timestamped.
+        """ Saves results and representation of fits. Saved files are timestamped.
 
         Parameters
         ----------
@@ -809,8 +798,8 @@ class MultiPeakFitter:
 
 
 def leastsqfitter(p0, datax, datay, function, verbose=False, cov_verbose=False):
-    """
-    Convenience method for using scipy.optmize.leastsq().
+    """ Convenience method for using scipy.optmize.leastsq().
+
     Returns fit parameters and their errors.
 
     Parameters
@@ -867,7 +856,7 @@ def leastsqfitter(p0, datax, datay, function, verbose=False, cov_verbose=False):
         print('fitting done in %f seconds' % timer.interval)
     return pfit_leastsq, perr_leastsq
 
-### testing ###################################################################
+# --- testing -------------------------------------------------------------------------------------
 
 
 if __name__ == '__main__':

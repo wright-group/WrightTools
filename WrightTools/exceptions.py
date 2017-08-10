@@ -1,9 +1,9 @@
-'''
+"""
 Custom exception types
-'''
+"""
 
 
-### import ####################################################################
+# --- import --------------------------------------------------------------------------------------
 
 
 import os
@@ -11,7 +11,7 @@ import os
 import warnings
 
 
-### custom exceptions #########################################################
+# --- custom exceptions ---------------------------------------------------------------------------
 
 
 class FileNotFound(Exception):
@@ -21,7 +21,11 @@ class FileNotFound(Exception):
         Exception.__init__(self, message)
 
 
-### custom warnings ###########################################################
+# --- custom warnings -----------------------------------------------------------------------------
+
+
+class VisibleDeprecationWarning(Warning):
+    pass
 
 
 class WrongFileTypeWarning(Warning):

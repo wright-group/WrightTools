@@ -1,4 +1,4 @@
-### import ####################################################################
+# --- import --------------------------------------------------------------------------------------
 
 
 import numpy as np
@@ -7,16 +7,15 @@ import matplotlib
 import matplotlib.pyplot as plt
 
 
-### define ####################################################################
+# --- define --------------------------------------------------------------------------------------
 
 
-### label sectors #############################################################
+# --- label sectors -------------------------------------------------------------------------------
 
 
 def label_sectors(labels=['I', 'II', 'IV', 'VI', 'V', 'III'], ax=None,
                   cs=None, c_zlevel=2, c_alpha=0.5):
-    '''
-    Label the six time-orderings in a three-pulse experiment.
+    """ Label the six time-orderings in a three-pulse experiment.
 
     Parameters
     ----------
@@ -32,7 +31,7 @@ def label_sectors(labels=['I', 'II', 'IV', 'VI', 'V', 'III'], ax=None,
         Matplotlib zlevel of color. Default is 2.
     c_alpha : number between 0 and 1.
         Transparency of color. Default is 0.5
-    '''
+    """
     if ax is None:
         ax = plt.gca()
     # label
@@ -62,7 +61,7 @@ def label_sectors(labels=['I', 'II', 'IV', 'VI', 'V', 'III'], ax=None,
         poly.set_zorder(c_zlevel)
 
 
-### testing ###################################################################
+# --- testing -------------------------------------------------------------------------------------
 
 
 if __name__ == '__main__':
@@ -101,7 +100,7 @@ if __name__ == '__main__':
 
     plt.close()
 
-    # as collected ----------------------------------------------------------------
+    # as collected --------------------------------------------------------------------------------
 
     fig = plt.figure()
     ax = fig.add_subplot(111)

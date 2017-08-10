@@ -1,9 +1,9 @@
-'''
+"""
 Calibration.
-'''
+"""
 
 
-### import ####################################################################
+# --- import --------------------------------------------------------------------------------------
 
 
 from __future__ import absolute_import, division, print_function, unicode_literals
@@ -27,7 +27,7 @@ from . import artists as wt_artists
 debug = False
 
 
-### define ####################################################################
+# --- define --------------------------------------------------------------------------------------
 
 
 cmap = wt_artists.colormaps['default']
@@ -52,15 +52,14 @@ def get_label(name, units):
     return out
 
 
-### calibration class #########################################################
+# --- calibration class ---------------------------------------------------------------------------
 
 
 class Calibration:
 
     def __init__(self, axis_names, axis_units, points, values, name='calibration',
                  note=''):
-        '''
-        Container for unstructured calibration data.
+        """ Container for unstructured calibration data.
 
         Parameters
         ----------
@@ -74,7 +73,7 @@ class Calibration:
             Name of calibration. Default is 'calibration'
         note : string (optional)
             Note about calibration. Default is an empty string.
-        '''
+        """
         self.axis_names = axis_names
         self.axis_units = axis_units
         self.dimensionality = len(self.axis_names)
@@ -85,9 +84,7 @@ class Calibration:
         self._interpolate()
 
     def _interpolate(self):
-        '''
-        (Re)create the interpolator using the current points and values.
-        '''
+        """ (Re)create the interpolator using the current points and values.  """
         self._sort()
         if self.dimensionality == 1:
             self.interpolator = wt_kit.Spline(self.points[0], self.values, k=1, s=0)
@@ -95,18 +92,18 @@ class Calibration:
             self.interpolator = scipy.interpolate.LinearNDInterpolator(self.points.T, self.values)
 
     def _sort(self):
-        '''
-        Sort data by all axes. First axis will be strictly ascending, second
+        """ Sort data by all axes.
+
+        First axis will be strictly ascending, second
         will be ascending within groups sharing the same value in the first
         axis etc.
-        '''
+        """
         ind = np.lexsort((self.points[::-1]))
         self.points = self.points[:, ind]
         self.values = self.values[ind]
 
     def append(self, points, values, units='same'):
-        '''
-        Add new data to the calibration.
+        """ Add new data to the calibration.
 
         Parameters
         ----------
@@ -116,7 +113,7 @@ class Calibration:
             Corrections for each coordinate.
         units : 'same' or list of strings (optional)
             Units of points. Default is 'same'.
-        '''
+        """
         points = np.array(points)
         values = np.array(values)
         if not units == 'same':
@@ -127,25 +124,25 @@ class Calibration:
         self._interpolate()
 
     def convert(self, axis_units):
-        '''
-        Convert axes to new units.
+        """ Convert axes to new units.
 
         Parameters
         ----------
         axis_units : list of string
             New units for each axis.
-        '''
+        """
         for i, p in enumerate(self.points):
             self.points[i] = wt_units.converter(p, self.axis_units[i], axis_units[i])
         self.axis_units = axis_units
         self._interpolate()
 
     def get_positions(self, value, **kwargs):
-        '''
+        """
         Returns
+        -------
         list of dictionaries
             All valid coordinates, defined for all axes. List may be empty.
-        '''
+        """
         # TODO: complete documentation
         if self.dimensionality == 1:
             # TODO:
@@ -159,8 +156,7 @@ class Calibration:
         return out
 
     def get_value(self, positions, units='same'):
-        '''
-        Get the value at some particular coordinate using linear interpolation.
+        """ Get the value at some particular coordinate using linear interpolation.
 
         Parameters
         ----------
@@ -168,12 +164,11 @@ class Calibration:
             Coordinate to evaluate at.
         units : 'same' or list of strings (optional)
             Units of positions. Default is 'same'.
-        '''
+        """
         return self.interpolator(*positions)
 
     def map_points(self, points, units='same'):
-        '''
-        Map the points onto new points using interpolation.
+        """ Map the points onto new points using interpolation.
 
         Parameters
         ----------
@@ -183,7 +178,7 @@ class Calibration:
         units : str (optional.)
             The input units if given as array. Default is same. Units of coset
             object are not changed.
-        '''
+        """
         # get new points in input units
         if isinstance(points, int):
             limits = self.get_limits(self.units)
@@ -200,8 +195,7 @@ class Calibration:
         self.values = new_values
 
     def plot(self, autosave=False, save_directory=None, file_name=None):
-        '''
-        Plot the calibration.
+        """ Plot the calibration.
 
         Parameters
         ----------
@@ -219,10 +213,9 @@ class Calibration:
         output
             Save path if autosave is True, fig object if autosave is False.
 
-        Note
-        ----
-        Only works for one and two-dimensional calibrations at this time.
-        '''
+        .. note:: Only works for one and two-dimensional calibrations at this time.
+
+        """
         if self.dimensionality == 1:
             fig, gs = wt_artists.create_figure(cols=[1])
             ax = plt.subplot(gs[0])
@@ -271,8 +264,7 @@ class Calibration:
 
     def save(self, save_directory=None, file_name=None, plot=True,
              verbose=True):
-        '''
-        Save the calibration.
+        """ Save the calibration.
 
         Parameters
         ----------
@@ -291,7 +283,7 @@ class Calibration:
         -------
         string
             Full path to saved file.
-        '''
+        """
         time_stamp = wt_kit.TimeStamp()
         # get save path
         if save_directory is None:
@@ -321,7 +313,7 @@ class Calibration:
         return file_path
 
 
-### load method ###############################################################
+# --- load method ---------------------------------------------------------------------------------
 
 
 def from_file(path):

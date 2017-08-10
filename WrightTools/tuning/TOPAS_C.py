@@ -1,4 +1,4 @@
-### import ####################################################################
+# --- import --------------------------------------------------------------------------------------
 
 
 from __future__ import absolute_import, division, print_function, unicode_literals
@@ -37,13 +37,13 @@ from .. import data as wt_data
 from . import curve as wt_curve
 
 
-### define ####################################################################
+# --- define --------------------------------------------------------------------------------------
 
 
 spitfire_output = 800.  # nm
 
 
-### helper methods ############################################################
+# --- helper methods ------------------------------------------------------------------------------
 
 
 def _gauss_residuals(p, y, x):
@@ -63,7 +63,7 @@ def _exp_value(y, x):
     # get sum
     sum_y = 0.
     for i in range(len(y_internal)):
-        if np.ma.getmask(y_internal[i]) == True:
+        if np.ma.getmask(y_internal[i]):
             pass
         elif np.isnan(y_internal[i]):
             pass
@@ -72,7 +72,7 @@ def _exp_value(y, x):
 
     # divide by sum
     for i in range(len(y_internal)):
-        if np.ma.getmask(y_internal[i]) == True:
+        if np.ma.getmask(y_internal[i]):
             pass
         elif np.isnan(y_internal[i]):
             pass
@@ -82,7 +82,7 @@ def _exp_value(y, x):
     # get expectation value
     value = 0.
     for i in range(len(x_internal)):
-        if np.ma.getmask(y_internal[i]) == True:
+        if np.ma.getmask(y_internal[i]):
             pass
         elif np.isnan(y_internal[i]):
             pass
@@ -91,7 +91,7 @@ def _exp_value(y, x):
     return value
 
 
-### processing methods ########################################################
+# --- processing methods --------------------------------------------------------------------------
 
 
 def process_C2_motortune(opa_index, data_filepath, curves, save=True):
