@@ -24,6 +24,10 @@ class FileNotFound(Exception):
 # --- custom warnings -----------------------------------------------------------------------------
 
 
+class VisibleDeprecationWarning(Warning):
+    pass
+
+
 class WrongFileTypeWarning(Warning):
 
     def warn(filepath, expected):
