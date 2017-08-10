@@ -2712,7 +2712,7 @@ def from_Tensor27(filepath, name=None, verbose=True):
     return data
 
 
-def join(datas, method='first', verbose=True):
+def join(datas, method='first', verbose=True, **kwargs):
     """ Join a list of data objects together.
 
     For now datas must have identical dimensionalities (order and identity).
@@ -2723,10 +2723,16 @@ def join(datas, method='first', verbose=True):
         The list of data objects to join together.
     method : {'first', 'sum', 'max', 'min', 'mean'} (optional)
         The method for how overlapping points get treated. Default is first,
-        meaning that the data object that appears first in data will take
+        meaning that the data object that appears first in datas will take
         precedence.
     verbose : bool (optional)
         Toggle talkback. Default is True.
+
+    kwargs
+    ------
+    axis objects
+        The axes of the new data object. If not supplied, the points of the
+        new axis will be guessed from the given datas.
 
     Returns
     -------
@@ -2745,6 +2751,8 @@ def join(datas, method='first', verbose=True):
     axis_objects = []
     for data in datas:
         for i, axis in enumerate(data.axes):
+            if axis.name in kwargs.keys():
+                axis.convert(kwargs[axis.name].units)
             if axis.points[0] > axis.points[-1]:
                 data.flip(i)
             if axis.name not in axis_names:
@@ -2761,6 +2769,9 @@ def join(datas, method='first', verbose=True):
     # get axis points
     axis_points = []  # list of 1D arrays
     for axis_name in axis_names:
+        if axis_name in kwargs.keys():
+            axis_points.append(kwargs[axis_name].points)
+            continue
         all_points = np.array([])
         step_sizes = []
         for data in datas:
@@ -2784,10 +2795,7 @@ def join(datas, method='first', verbose=True):
             for axis in data.axes:
                 if axis.name == axis_name:
                     if not np.array_equiv(axis.points, axis_points[axis_index]):
-                        print(axis.points)
-                        print(axis_points[axis_index])
                         data.map_axis(axis_name, axis_points[axis_index])
-                        print(data.name, axis_name, data.channels[0].values[29, 0, 0])
     # make new channel objects
     channel_objects = []
     n_channels = min([len(d.channels) for d in datas])
