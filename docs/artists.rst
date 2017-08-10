@@ -13,7 +13,7 @@ artist                                              description                 
 --------------------------------------------------  --------------------------------------------------  ------------------------------------
 :meth:`~WrightTools.artists.mpl_1D`                 generic 1D slice(s)                                 :ref:`1 <sphx_glr_auto_examples_simple_1D.py>`
 :meth:`~WrightTools.artists.mpl_2D`                 generic 2D slice(s)                                 :ref:`1 <sphx_glr_auto_examples_simple_2D.py>`
-:meth:`~WrightTools.artist.absorbance`              absorbance spectra                                  :ref:`1 <sphx_glr_auto_examples_absorbance.py>`
+:meth:`~WrightTools.artist.absorbance`              absorbance spectra                                  :ref:`1 <sphx_glr_auto_examples_absorbance.py>`, :ref:`2 <sphx_glr_auto_examples_batch_4_comparison.py>` 
 :meth:`~WrightTools.artists.difference_2D`          2D difference slice(s)                              :ref:`1 <sphx_glr_auto_examples_diff2D.py>`
 ==================================================  ==================================================  ====================================
 

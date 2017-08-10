@@ -27,6 +27,11 @@ Preparing
 
 #. run tests
 
+    .. code-block:: bash
+
+        $ python setup.py test
+
+
 Contributing
 ------------
 
@@ -44,6 +49,11 @@ Contributing
         $ git checkout <your branch> # Switch to the newly created branch
 
 #. run all tests to ensure that nothing is broken right off the start
+
+    .. code-block:: bash
+
+        $ python setup.py test
+
 #. make your changes, commiting often
 
     .. code-block:: bash
@@ -78,7 +88,7 @@ Contributing
 
 #. make a pull request to the development branch
 #. communicate with the maintainers in your pull request, assuming any further work needs to be done
-#. celebrate!
+#. celebrate! 🎉
 
 Style
 -----
