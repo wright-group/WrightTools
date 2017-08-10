@@ -54,7 +54,7 @@ class Axis:
     def __init__(self, points, units, symbol_type=None,
                  tolerance=None, file_idx=None,
                  name='', label_seed=[''], **kwargs):
-        self.name = name
+        self.name = wt_kit.string2identifier(name)
         self.tolerance = tolerance
         self.points = np.asarray(points)
         self.units = units
@@ -157,7 +157,7 @@ class Channel:
     def __init__(self, values, units=None, file_idx=None, null=None, signed=None, name='channel',
                  label=None, label_seed=None):
         # import
-        self.name = name
+        self.name = wt_kit.string2identifier(name)
         self.label = label
         self.label_seed = label_seed
         self.units = units
