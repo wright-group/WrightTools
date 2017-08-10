@@ -48,6 +48,9 @@ KENT.from_directory(os.path.join(here, 'KENT', 'LDS821 TRSF'))
 KENT.from_directory(os.path.join(here, 'KENT', 'PbSe 2D delay A'))
 KENT.from_directory(os.path.join(here, 'KENT', 'PbSe 2D delay B'))
 
+PyCMDS = DatasetContainer()
+PyCMDS.from_files('PyCMDS')
+
 
 # --- pretty namespace ----------------------------------------------------------------------------
 
