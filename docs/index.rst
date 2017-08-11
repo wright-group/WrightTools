@@ -14,11 +14,11 @@ Tools for loading, processing, and plotting multidimensional spectroscopy data.
 .. image:: https://badge.fury.io/py/WrightTools.svg
    :target: https://badge.fury.io/py/WrightTools
 
-.. image:: https://readthedocs.org/projects/wrighttools/badge/?version=latest
-   :target: http://wright.tools/en/latest/?badge=latest
-   :alt: Documentation Status
+.. image:: https://readthedocs.org/projects/wrighttools/badge/?version=master
+   :target: http://wright.tools/en/master/?badge=master
 
-
+.. image:: https://readthedocs.org/projects/wrighttools/badge/?version=development
+   :target: http://wright.tools/en/development/?badge=development
 
 Contents
 --------

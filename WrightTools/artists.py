@@ -100,7 +100,7 @@ class Axes(matplotlib.axes.Axes):
         contours = matplotlib.axes.Axes.contourf(self, *args, **kwargs)  # why can't I use super?
         # fill lines
         zorder = contours.collections[0].zorder - 0.1
-        matplotlib.axes.Axes.contour(self, *args[:3], len(contours.levels), cmap=contours.cmap,
+        matplotlib.axes.Axes.contour(self, *(args[:3] + [len(contours.levels)]), cmap=contours.cmap,
                                      zorder=zorder)
         # PathCollection modifications
         for c in contours.collections:
@@ -117,7 +117,7 @@ class Axes(matplotlib.axes.Axes):
         return super().legend(*args, **kwargs)
 
     def plot_data(self, data, channel=0, interpolate=False, coloring=None,
-                  xlabel=True, ylabel=True, zmin=None, zmax=None):
+                  xlabel=True, ylabel=True, min=None, max=None):
         """ Plot directly from a data object.
 
         Parameters
@@ -135,10 +135,10 @@ class Axes(matplotlib.axes.Axes):
             Toggle xlabel. Default is True.
         ylabel : boolean (optional)
             Toggle ylabel. Default is True.
-        zmin : number (optional)
-            Zmin. Default is None (inherited from channel).
-        zmax : number (optional)
-            Zmax. Default is None (inherited from channel).
+        min : number (optional)
+            min. Default is None (inherited from channel).
+        max : number (optional)
+            max. Default is None (inherited from channel).
 
 
         .. plot::
@@ -161,12 +161,12 @@ class Axes(matplotlib.axes.Axes):
         channel = data.channels[channel_index]
         # get axes
         xaxis = data.axes[0]
-        # get zmin
-        if zmin is None:
-            zmin = channel.zmin
-        # get zmax
-        if zmax is None:
-            zmax = channel.zmax
+        # get min
+        if min is None:
+            min = channel.min
+        # get max
+        if max is None:
+            max = channel.max
         # 1D --------------------------------------------------------------------------------------
         if data.dimensionality == 1:
             # get list of all datas
@@ -186,7 +186,7 @@ class Axes(matplotlib.axes.Axes):
             # decoration
             if self.get_adjustable() == 'datalim':
                 self.set_xlim(xi.min(), xi.max())
-                self.set_ylim(zmin, zmax)
+                self.set_ylim(min, max)
             # transposed catcher
             if self.transposed:
                 for line in self.lines:
@@ -211,12 +211,12 @@ class Axes(matplotlib.axes.Axes):
             # plot
             if interpolate:
                 # contourf
-                levels = np.linspace(zmin, zmax, 256)
+                levels = np.linspace(min, max, 256)
                 self.contourf(xi, yi, zi, levels=levels, cmap=cmap)
             else:
                 # pcolor
                 X, Y, Z = pcolor_helper(xi, yi, zi)
-                self.pcolor(X, Y, Z, vmin=zmin, vmax=zmax, cmap=cmap)
+                self.pcolor(X, Y, Z, vmin=min, vmax=max, cmap=cmap)
             # decoration
             self.set_xlim(xi.min(), xi.max())
             self.set_ylim(yi.min(), yi.max())
@@ -1541,7 +1541,7 @@ class mpl_1D:
             if local:
                 pass
             else:
-                plt.ylim(channels[channel_index].zmin, channels[channel_index].zmax)
+                plt.ylim(channels[channel_index].min, channels[channel_index].max)
             # label axes
             plt.xlabel(axes[0].get_label(), fontsize=18)
             plt.ylabel(channels[channel_index].name, fontsize=18)
@@ -1743,26 +1743,24 @@ class mpl_2D:
             if normalize_slices == 'both':
                 pass
             elif normalize_slices == 'horizontal':
-                nmin = channel.znull
+                nmin = channel.null
                 # normalize all x traces to a common value
                 maxes = zi.max(axis=1)
                 numerator = (zi - nmin)
                 denominator = (maxes - nmin)
                 for j in range(zi.shape[0]):
                     zi[j] = numerator[j] / denominator[j]
-                channel.zmax = zi.max()
-                channel.zmin = zi.min()
-                channel.znull = 0
+                channel.max = zi.max()
+                channel.min = zi.min()
+                channel.null = 0
             elif normalize_slices == 'vertical':
-                nmin = channel.znull
+                nmin = channel.null
                 maxes = zi.max(axis=0)
                 numerator = (zi - nmin)
                 denominator = (maxes - nmin)
                 for j in range(zi.shape[1]):
                     zi[:, j] = numerator[:, j] / denominator[j]
-                channel.zmax = zi.max()
-                channel.zmin = zi.min()
-                channel.znull = 0
+                channel.null = 0
             # create figure -----------------------------------------------------------------------
             if fig and autosave:
                 plt.close(fig)
@@ -1794,27 +1792,27 @@ class mpl_2D:
             if channel.signed:
                 if local:
                     print('signed local')
-                    limit = max(abs(channel.znull - np.nanmin(zi)),
-                                abs(channel.znull - np.nanmax(zi)))
+                    limit = max(abs(channel.null - np.nanmin(zi)),
+                                abs(channel.null - np.nanmax(zi)))
                 else:
                     if dynamic_range:
-                        limit = min(abs(channel.znull - channel.zmin),
-                                    abs(channel.znull - channel.zmax))
+                        limit = min(abs(channel.null - channel.min),
+                                    abs(channel.null - channel.max))
                     else:
-                        limit = channel.zmag
+                        limit = channel.mag
                 if np.isnan(limit):
                     limit = 1.
                 if limit is np.ma.masked:
                     limit = 1.
-                levels = np.linspace(-limit + channel.znull, limit + channel.znull, 200)
+                levels = np.linspace(-limit + channel.null, limit + channel.null, 200)
             else:
                 if local:
-                    levels = np.linspace(channel.znull, np.nanmax(zi), 200)
+                    levels = np.linspace(channel.null, np.nanmax(zi), 200)
                 else:
-                    if channel.zmax < channel.znull:
-                        levels = np.linspace(channel.zmin, channel.znull, 200)
+                    if channel.max < channel.null:
+                        levels = np.linspace(channel.min, channel.null, 200)
                     else:
-                        levels = np.linspace(channel.znull, channel.zmax, 200)
+                        levels = np.linspace(channel.null, channel.max, 200)
             # main plot ---------------------------------------------------------------------------
             # get colormap
             if cmap == 'automatic':
@@ -1888,7 +1886,7 @@ class mpl_2D:
                     # force top and bottom contour to be just outside of data range
                     # add two contours
                     contours_levels = np.linspace(
-                        channel.znull - 1e-10, np.nanmax(zi) + 1e-10, contours + 2)
+                        channel.null - 1e-10, np.nanmax(zi) + 1e-10, contours + 2)
                 else:
                     contours_levels = contours
                 if contour_thickness is None:
@@ -1920,7 +1918,7 @@ class mpl_2D:
                     axCorrx.set_ylim([0, 1.1])
                 # bin
                 if xbin:
-                    x_ax_int = np.nansum(zi, axis=0) - channel.znull * len(self.yaxis.points)
+                    x_ax_int = np.nansum(zi, axis=0) - channel.null * len(self.yaxis.points)
                     x_ax_int[x_ax_int == 0] = np.nan
                     # normalize (min is a pixel)
                     xmax = max(np.abs(x_ax_int))
@@ -1960,7 +1958,7 @@ class mpl_2D:
                     axCorry.set_xlim([0, 1.1])
                 # bin
                 if ybin:
-                    y_ax_int = np.nansum(zi, axis=1) - channel.znull * len(self.xaxis.points)
+                    y_ax_int = np.nansum(zi, axis=1) - channel.null * len(self.xaxis.points)
                     y_ax_int[y_ax_int == 0] = np.nan
                     # normalize (min is a pixel)
                     ymax = max(np.abs(y_ax_int))
@@ -2093,7 +2091,6 @@ class Absorbance:
             # now plot 2nd derivative -------------------------------------------------------------
 
             if derivative:
-                print('hello')
                 # compute second derivative
                 xi2, zi2 = self._smooth(np.array([xi, zi]), n_smooth)
                 diff = wt_kit.diff(xi2, zi2, order=2)
@@ -2238,17 +2235,17 @@ class Diff2D():
             if channel.signed:
 
                 if dynamic_range:
-                    limit = min(abs(channel.znull - channel.zmin), abs(channel.znull - channel.zmax))
+                    limit = min(abs(channel.null - channel.min), abs(channel.null - channel.max))
                 else:
-                    limit = max(abs(channel.znull - channel.zmin), abs(channel.znull - channel.zmax))
-                levels = np.linspace(-limit + channel.znull, limit + channel.znull, 200)
+                    limit = max(abs(channel.null - channel.min), abs(channel.null - channel.max))
+                levels = np.linspace(-limit + channel.null, limit + channel.null, 200)
 
             else:
 
                 if local:
-                    levels = np.linspace(channel.znull, zi.max(), 200)
+                    levels = np.linspace(channel.null, zi.max(), 200)
                 else:
-                    levels = np.linspace(channel.znull, channel.zmax, 200)
+                    levels = np.linspace(channel.null, channel.max, 200)
             """
             levels = np.linspace(0, 1, 200)
 
@@ -2318,7 +2315,7 @@ class Diff2D():
                         # force top and bottom contour to be just outside of data range
                         # add two contours
                         contours_levels = np.linspace(
-                            channel.znull - 1e-10, np.nanmax(zi) + 1e-10, contours + 2)
+                            channel.null - 1e-10, np.nanmax(zi) + 1e-10, contours + 2)
                     else:
                         contours_levels = contours
                     plt.contour(xaxis.points, yaxis.points, zi,
@@ -2555,11 +2552,11 @@ class PDFAll2DSlices:
                     for data_index in range(len(self.datas)):
                         data = self.chopped_datas[data_index][slice_index]
                         if self.data_signed:
-                            global_limits = [self.datas[data_index].channels[channel_index].zmin,
-                                             self.datas[data_index].channels[channel_index].zmax]
+                            global_limits = [self.datas[data_index].channels[channel_index].min,
+                                             self.datas[data_index].channels[channel_index].max]
                         else:
-                            global_limits = [self.datas[data_index].channels[channel_index].znull,
-                                             self.datas[data_index].channels[channel_index].zmax]
+                            global_limits = [self.datas[data_index].channels[channel_index].null,
+                                             self.datas[data_index].channels[channel_index].max]
                         axs, spss = self._fill_row(
                             data, channel_index, gs, data_index, global_limits)
                         if not data_index == len(self.datas) - 1:
@@ -2581,11 +2578,11 @@ class PDFAll2DSlices:
                     for data_index in range(len(self.datas)):
                         data = self.chopped_datas[data_index][slice_index]
                         if self.data_signed:
-                            global_limits = [self.datas[data_index].channels[channel_index].zmin,
-                                             self.datas[data_index].channels[channel_index].zmax]
+                            global_limits = [self.datas[data_index].channels[channel_index].min,
+                                             self.datas[data_index].channels[channel_index].max]
                         else:
-                            global_limits = [self.datas[data_index].channels[channel_index].znull,
-                                             self.datas[data_index].channels[channel_index].zmax]
+                            global_limits = [self.datas[data_index].channels[channel_index].null,
+                                             self.datas[data_index].channels[channel_index].max]
                         axs, spss = self._fill_row(
                             data, channel_index, gs, data_index, global_limits)
                         if not data_index == len(self.datas) - 1:
@@ -2612,11 +2609,11 @@ class PDFAll2DSlices:
                     for data_index in range(len(self.datas)):
                         data = self.chopped_datas[data_index][slice_index]
                         if self.data_signed:
-                            global_limits = [self.datas[data_index].channels[channel_index].zmin,
-                                             self.datas[data_index].channels[channel_index].zmax]
+                            global_limits = [self.datas[data_index].channels[channel_index].min,
+                                             self.datas[data_index].channels[channel_index].max]
                         else:
-                            global_limits = [self.datas[data_index].channels[channel_index].znull,
-                                             self.datas[data_index].channels[channel_index].zmax]
+                            global_limits = [self.datas[data_index].channels[channel_index].null,
+                                             self.datas[data_index].channels[channel_index].max]
                         axs, spss = self._fill_row(
                             data, channel_index, gs, data_index, global_limits)
                         if not data_index == len(self.datas) - 1:

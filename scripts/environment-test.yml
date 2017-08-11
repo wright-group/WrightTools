@@ -1,0 +1,14 @@
+name: wrighttools-test
+
+channels:
+- defaults
+- conda-forge
+
+dependencies:
+- h5py
+- matplotlib
+- numpy
+- pytest
+- python-dateutil
+- pytz
+- scipy

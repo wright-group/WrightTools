@@ -10,9 +10,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import os
 import sys
-import ast
 import copy
-import time
 import collections
 import warnings
 import pickle
@@ -32,11 +30,20 @@ from . import units as wt_units
 
 debug = False
 
+
 # string types
 if sys.version[0] == '2':
     string_type = basestring  # recognize unicode and string types
 else:
     string_type = str  # newer versions of python don't have unicode type
+
+
+def true_max(*args, **kwargs):
+    return max(*args, **kwargs)
+
+
+def true_min(*args, **kwargs):
+    return min(*args, **kwargs)
 
 
 # --- data class ----------------------------------------------------------------------------------
@@ -47,7 +54,7 @@ class Axis:
     def __init__(self, points, units, symbol_type=None,
                  tolerance=None, file_idx=None,
                  name='', label_seed=[''], **kwargs):
-        self.name = name
+        self.name = wt_kit.string2identifier(name)
         self.tolerance = tolerance
         self.points = np.asarray(points)
         self.units = units
@@ -147,109 +154,79 @@ class Axis:
 
 class Channel:
 
-    def __init__(self, values, units=None,
-                 file_idx=None,
-                 znull=None, zmin=None, zmax=None, signed=None,
-                 name='channel', label=None, label_seed=None):
+    def __init__(self, values, units=None, file_idx=None, null=None, signed=None, name='channel',
+                 label=None, label_seed=None):
         # import
-        self.name = name
+        self.name = wt_kit.string2identifier(name)
         self.label = label
         self.label_seed = label_seed
         self.units = units
         self.file_idx = file_idx
         # values
         if values is not None:
-            self.give_values(np.asarray(values), znull, zmin, zmax, signed)
+            self.give_values(np.asarray(values), null, signed)
         else:
-            self.znull = znull
-            self.zmin = zmin
-            self.zmax = zmax
+            self.null = null
             self.signed = signed
 
     def __repr__(self):
         return 'WrightTools.data.Channel object \'{0}\' at {1}'.format(self.name, str(id(self)))
 
     def _update(self):
-        self.zmin = np.nanmin(self.values)
-        self.zmax = np.nanmax(self.values)
-        self.znull = self.znull = max(self.zmin, min(self.znull, self.zmax))
+        message = '_update is no longer necessary, and will be removed in future versions'
+        warnings.warn(message, wt_exceptions.VisibleDeprecationWarning)
 
-    def _pupdate(self, *args, **kwargs):
-        return self._update(*args, **kwargs)
+    def clip(self, min=None, max=None, replace='nan'):
+        """Clip (limit) the values in a channel.
 
-    def clip(self, zmin=None, zmax=None, replace='nan'):
+        Parameters
+        ----------
+        min : number (optional)
+            New channel minimum. Default is None.
+        max : number (optional)
+            New channel maximum. Default is None.
+        replace : {'val', 'nan', 'mask'} (optional)
+           Replace behavior. Default is nan.
         """
-        clip (limit) the values in a channel
-        replace one in ['val', 'nan', 'mask']
-        """
-        # decide what zmin and zmax will actually be
-        if zmax is not None:
-            pass
-        else:
-            zmax = np.nanmax(self.values)
-        if zmin is not None:
-            pass
-        else:
-            zmin = np.nanmin(self.values)
+        # decide what min and max will actually be
+        if max is None:
+            max = self.max
+        if min is None:
+            min = self.min
         # replace values
         if replace == 'val':
-            self.values.clip(zmin, zmax, out=self.values)
+            self.values.clip(min, max, out=self.values)
         elif replace == 'nan':
-            self.values[self.values < zmin] = np.nan
-            self.values[self.values > zmax] = np.nan
+            self.values[self.values < min] = np.nan
+            self.values[self.values > max] = np.nan
         elif replace == 'mask':
-            self.values = np.ma.masked_outside(self.values,
-                                               zmin, zmax,
-                                               copy=False)
+            self.values = np.ma.masked_outside(self.values, min, max, copy=False)
         else:
             print('replace not recognized in channel.clip')
-        # recalculate zmin and zmax of channel object
-        self._update()
 
-    def give_values(self, values, znull=None, zmin=None, zmax=None,
-                    signed=None):
+    def give_values(self, values, null=None, signed=None):
         self.values = values
-        # znull
-        if znull is not None:
-            self.znull = znull
-        elif hasattr(self, 'znull'):
-            if self.znull:
+        # null
+        if null is not None:
+            self.null = null
+        elif hasattr(self, 'null'):
+            if self.null:
                 pass
             else:
-                self.znull = np.nanmin(self.values)
+                self.null = 0.
         else:
-            self.znull = np.nanmin(self.values)
-        # zmin
-        if zmin is not None:
-            self.zmin = zmin
-        elif hasattr(self, 'zmin'):
-            if self.zmin:
-                pass
-            else:
-                self.zmin = np.nanmin(self.values)
-        else:
-            self.zmin = np.nanmin(self.values)
-        # zmax
-        if zmax is not None:
-            self.zmax = zmax
-        elif hasattr(self, 'zmax'):
-            if self.zmax:
-                pass
-            else:
-                self.zmax = np.nanmax(self.values)
-        else:
-            self.zmax = np.nanmax(self.values)
+            self.null = 0.
         # signed
         if signed is not None:
             self.signed = signed
         elif hasattr(self, 'signed'):
             if self.signed is None:
-                if self.zmin < self.znull:
+                if self.min < self.null:
                     self.signed = True
                 else:
                     self.signed = False
         else:
-            if self.zmin < self.znull:
+            if self.min < self.null:
                 self.signed = True
             else:
                 self.signed = False
@@ -259,19 +236,25 @@ class Channel:
         info = collections.OrderedDict()
         info['name'] = self.name
         info['id'] = id(self)
-        info['zmin'] = self.zmin
-        info['zmax'] = self.zmax
-        info['znull'] = self.znull
+        info['min'] = self.min
+        info['max'] = self.max
+        info['null'] = self.null
         info['signed'] = self.signed
         return info
 
     def invert(self):
         self.values = - self.values
 
+    @property
+    def mag(self):
+        return max((self.max - self.null, self.null - self.min))
+
+    @property
     def max(self):
         """ Maximum, ignorning nans.  """
         return np.nanmax(self.values)
 
+    @property
     def min(self):
         """ Minimum, ignoring nans.  """
         return np.nanmin(self.values)
@@ -284,9 +267,9 @@ class Channel:
                 axis = tuple((int(i) for i in axis))
             else:  # presumably a simple number
                 axis = int(axis)
-        # subtract off znull
-        self.values -= self.znull
-        self.znull = 0.
+        # subtract off null
+        self.values -= self.null
+        self.null = 0.
         # create dummy array
         dummy = self.values.copy()
         dummy[np.isnan(dummy)] = 0  # nans are propagated in np.amax
@@ -379,7 +362,27 @@ class Channel:
 
     @ property
     def zmag(self):
-        return max((self.zmax - self.znull, self.znull - self.zmin))
+        message = "use mag, not zmag"
+        warnings.warn(message, wt_exceptions.VisibleDeprecationWarning)
+        return self.mag
+
+    @ property
+    def zmax(self):
+        message = "use max, not zmax"
+        warnings.warn(message, wt_exceptions.VisibleDeprecationWarning)
+        return self.max
+
+    @ property
+    def zmin(self):
+        message = "use min, not zmin"
+        warnings.warn(message, wt_exceptions.VisibleDeprecationWarning)
+        return self.min
+
+    @ property
+    def znull(self):
+        message = "use null, not znull"
+        warnings.warn(message, wt_exceptions.VisibleDeprecationWarning)
+        return self.null
 
 
 class Data:
@@ -429,7 +432,7 @@ class Data:
         if len(all_names) == len(set(all_names)):
             pass
         else:
-            print('axis, constant, and channel names must all be unique - your data object is now broken!!!!')
+            print('axis, constant, and channel names must all be unique')
             return
         for obj in self.axes + self.channels + self.constants:
             setattr(self, obj.name, obj)
@@ -927,7 +930,8 @@ class Data:
             Toggle talkback. Default is True.
 
 
-        .. note:: Healing may take several minutes for large datasets. Interpolation time goes as nearest, linear, then cubic.
+        .. note:: Healing may take several minutes for large datasets.
+           Interpolation time goes as nearest, linear, then cubic.
 
 
         """
@@ -1658,8 +1662,10 @@ class Data:
             for i in range(len(outs)):
                 new_data = outs[i]
                 new_axis = new_data.axes[axis_index]
-                print('  {0} : {1} to {2} {3} (length {4})'.format(
-                    i, new_axis.points[0], new_axis.points[-1], new_axis.units, len(new_axis.points)))
+                print('  {0} : {1} to {2} {3} (length {4})'.format(i, new_axis.points[0],
+                                                                   new_axis.points[-1],
+                                                                   new_axis.units,
+                                                                   len(new_axis.points)))
         # deal with cases where only one element is left
         for new_data in outs:
             if len(new_data.axes[axis_index].points) == 1:
@@ -1755,8 +1761,7 @@ class Data:
             elif key in ['method', 'factor', 'replace', 'verbose']:
                 inputs[key] = value
             else:
-                raise KeyError(
-                    'Keyword arguments to trim must be either an axis name or one of {method, factor, replace, verbose}')
+                raise KeyError('Keyword arguments to trim must be either an axis name or one of {method, factor, replace, verbose}')
         # call trim
         return channel.trim(neighborhood=neighborhood, **inputs)
 
@@ -2016,7 +2021,7 @@ def from_COLORS(
             'm4',
             'm5',
             'm6'],
-    even=True,
+        even=True,
         verbose=True):
     """
     filepaths may be string or list
@@ -2206,7 +2211,7 @@ def from_COLORS(
 
     # create data object --------------------------------------------------------------------------
 
-    data = Data(list(scanned), list(channels.values()), list(constant), znull)
+    data = Data(list(scanned), list(channels.values()), list(constant))
 
     if color_steps_as == 'energy':
         try:
@@ -2278,7 +2283,7 @@ def from_JASCO(filepath, name=None, kind='absorbance', verbose=True):
     return data
 
 
-def from_KENT(filepaths, znull=None, name=None, ignore=['wm'], use_norm=False,
+def from_KENT(filepaths, null=None, name=None, ignore=['wm'], use_norm=False,
               delay_tolerance=0.1, frequency_tolerance=0.5, verbose=True):
     """
     filepaths may be string or list
@@ -2376,7 +2381,7 @@ def from_KENT(filepaths, znull=None, name=None, ignore=['wm'], use_norm=False,
             if debug:
                 print(key)
     # create data object --------------------------------------------------------------------------
-    data = Data(list(scanned), list(channels.values()), list(constant), znull)
+    data = Data(list(scanned), list(channels.values()), list(constant))
     for axis in data.axes:
         axis.get_label()
     for axis in data.constants:
@@ -2757,7 +2762,7 @@ def from_Tensor27(filepath, name=None, verbose=True):
     return data
 
 
-def join(datas, method='first', verbose=True):
+def join(datas, method='first', verbose=True, **kwargs):
     """ Join a list of data objects together.
 
     For now datas must have identical dimensionalities (order and identity).
@@ -2768,10 +2773,16 @@ def join(datas, method='first', verbose=True):
         The list of data objects to join together.
     method : {'first', 'sum', 'max', 'min', 'mean'} (optional)
         The method for how overlapping points get treated. Default is first,
-        meaning that the data object that appears first in data will take
+        meaning that the data object that appears first in datas will take
         precedence.
     verbose : bool (optional)
         Toggle talkback. Default is True.
+
+    kwargs
+    ------
+    axis objects
+        The axes of the new data object. If not supplied, the points of the
+        new axis will be guessed from the given datas.
 
     Returns
     -------
@@ -2789,7 +2800,11 @@ def join(datas, method='first', verbose=True):
     axis_units = []
     axis_objects = []
     for data in datas:
-        for axis in data.axes:
+        for i, axis in enumerate(data.axes):
+            if axis.name in kwargs.keys():
+                axis.convert(kwargs[axis.name].units)
+            if axis.points[0] > axis.points[-1]:
+                data.flip(i)
             if axis.name not in axis_names:
                 axis_names.append(axis.name)
                 axis_units.append(axis.units)
@@ -2804,6 +2819,9 @@ def join(datas, method='first', verbose=True):
     # get axis points
     axis_points = []  # list of 1D arrays
     for axis_name in axis_names:
+        if axis_name in kwargs.keys():
+            axis_points.append(kwargs[axis_name].points)
+            continue
         all_points = np.array([])
         step_sizes = []
         for data in datas:
@@ -2812,21 +2830,22 @@ def join(datas, method='first', verbose=True):
                     all_points = np.concatenate([all_points, axis.points])
                     this_axis_min = np.nanmin(axis.points)
                     this_axis_max = np.nanmax(axis.points)
-                    this_axis_number = float(axis.points.size)
+                    this_axis_number = float(axis.points.size)-1
                     step_size = (this_axis_max - this_axis_min) / this_axis_number
                     step_sizes.append(step_size)
         axis_min = np.nanmin(all_points)
         axis_max = np.nanmax(all_points)
         axis_step_size = min(step_sizes)
         axis_n_points = np.ceil((axis_max - axis_min) / axis_step_size)
-        points = np.linspace(axis_min, axis_max, axis_n_points)
+        points = np.linspace(axis_min, axis_max, axis_n_points+1)
         axis_points.append(points)
     # map datas to new points
     for axis_index, axis_name in enumerate(axis_names):
         for data in datas:
             for axis in data.axes:
                 if axis.name == axis_name:
-                    data.map_axis(axis_name, axis_points[axis_index])
+                    if not np.array_equiv(axis.points, axis_points[axis_index]):
+                        data.map_axis(axis_name, axis_points[axis_index])
     # make new channel objects
     channel_objects = []
     n_channels = min([len(d.channels) for d in datas])
@@ -2853,7 +2872,7 @@ def join(datas, method='first', verbose=True):
             print('method', method, 'not recognized in join')
             return
         zis[np.isnan(full).all(axis=0)] = np.nan  # if all datas NaN, zis NaN
-        channel = Channel(zis, 'V', znull=0.,
+        channel = Channel(zis, 'V', null=0.,
                           signed=datas[0].channels[channel_index].signed,
                           name=datas[0].channels[channel_index].name)
         channel_objects.append(channel)
@@ -2872,7 +2891,7 @@ def join(datas, method='first', verbose=True):
             percent_nan = np.around(100. * (np.isnan(channel.values).sum() /
                                             float(channel.values.size)), decimals=2)
             print('    {0} : {1} to {2} ({3}% NaN)'.format(
-                channel.name, channel.zmin, channel.zmax, percent_nan))
+                channel.name, channel.min, channel.max, percent_nan))
     return out
 
 
