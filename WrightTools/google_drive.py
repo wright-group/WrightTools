@@ -47,8 +47,6 @@ def id_to_url(driveid):
 class Drive:
 
     def __init__(self):
-        # import pydrive
-        import pydrive
         # authenticate
         self.mycreds_path = mycreds_path
         self._authenticate()
@@ -68,7 +66,6 @@ class Drive:
         # import
         from pydrive.auth import GoogleAuth
         from pydrive.drive import GoogleDrive
-        from pydrive.files import GoogleDriveFile
         # load
         self.gauth = GoogleAuth()
         self.gauth.LoadCredentialsFile(self.mycreds_path)
@@ -173,7 +170,8 @@ class Drive:
         for n in name:
             # check if folder with that name already exists
             q = {
-                'q': "'{}' in parents and trashed=false and mimeType contains \'folder\'".format(parent)}
+                'q': "'{}' in parents and trashed=false and mimeType contains \'folder\'".format(
+                       parent)}
             fs = self.api.ListFile(q).GetList()
             found = False
             for f in fs:
