@@ -12,7 +12,7 @@ from WrightTools import datasets
 p = datasets.BrunoldrRaman.LDS821_514nm_80mW
 data = wt.data.from_BrunoldrRaman(p)
 trash_pixels = 56
-data=data.split(0,843.0)[1]
+data = data.split(0, 843.0)[1]
 
 data.convert('wn', verbose=False)
 

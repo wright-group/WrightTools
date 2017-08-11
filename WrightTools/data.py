@@ -1971,7 +1971,7 @@ def from_BrunoldrRaman(filepath, name=None, verbose=True):
     if not filepath.endswith('txt'):
         wt_exceptions.WrongFileTypeWarning.warn(filepath, 'txt')
     # import array
-    arr = np.genfromtxt(filepath,delimiter='\t').T
+    arr = np.genfromtxt(filepath, delimiter='\t').T
     # chew through all scans
     axis = Axis(arr[0], 'wn', name='wm')
     signal = Channel(arr[1], name='signal', label='counts', signed=False)
