@@ -1946,7 +1946,7 @@ def from_text(filepath, name=None, verbose=True):
     return data
 
 
-def from_BrunoldrRaman(filepath, name=None, verbose=True, trash_pixels=56):
+def from_BrunoldrRaman(filepath, name=None, verbose=True):
     """ Create a data object from plaintext tab deliminated file
 
     Expects one energy (in wavenumbers) and one counts value.
@@ -1975,8 +1975,6 @@ def from_BrunoldrRaman(filepath, name=None, verbose=True, trash_pixels=56):
     # import array
     lines = []
     with open(filepath, 'r') as f:
-        for i in range(trash_pixels):
-            line = f.readline()
         while True:
             line = f.readline()
             if line == '\n' or line == '':
