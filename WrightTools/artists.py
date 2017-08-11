@@ -32,7 +32,8 @@ from . import kit as wt_kit
 
 # string types
 if sys.version[0] == '2':
-    string_type = basestring  # recognize unicode and string types
+    # recognize unicode and string types
+    string_type = basestring  # noqa: F821 
 else:
     string_type = str  # newer versions of python don't have unicode type
 

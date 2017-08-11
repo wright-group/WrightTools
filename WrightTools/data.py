@@ -33,7 +33,8 @@ debug = False
 
 # string types
 if sys.version[0] == '2':
-    string_type = basestring  # recognize unicode and string types
+    # recognize unicode and string types
+    string_type = basestring  # noqa: F821
 else:
     string_type = str  # newer versions of python don't have unicode type
 
@@ -2651,13 +2652,7 @@ def from_shimadzu(filepath, name=None, verbose=True):
     # is the file suffix one that we expect?  warn if it is not!
     filesuffix = os.path.basename(filepath).split('.')[-1]
     if filesuffix != 'txt':
-        should_continue = raw_input(
-            'Filetype is not recognized and may not be supported.  Continue (y/n)?')
-        if should_continue == 'y':
-            pass
-        else:
-            print('Aborting')
-            return
+        wt_exceptions.WrongFileTypeWarning.warn(filepath, 'txt')
 
     # import data ---------------------------------------------------------------------------------
 
