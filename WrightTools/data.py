@@ -1941,10 +1941,10 @@ def from_text(filepath, name=None, verbose=True):
     return data
 
 
-def from_BrunoldrRaman(filepath, name=None, verbose=True):
+def from_BrunoldrRaman(filepath, name=None, verbose=True, trash_pixels=56):
     """ Create a data object from plaintext tab deliminated file
 
-    Expects one energy and one intensity value.
+    Expects one energy (in wavenumbers) and one counts value.
 
     Parameters
     ----------
@@ -1962,7 +1962,7 @@ def from_BrunoldrRaman(filepath, name=None, verbose=True):
         New data object(s).
     """
     if isinstance(filepath, type([])) or isinstance(filepath, type(np.array([]))):
-        return [from_text(f) for f in filepath]
+        return [from_BrunoldrRaman(f) for f in filepath]
     if not os.path.isfile(filepath):
         raise wt_exceptions.FileNotFound(path=filepath)
     if not filepath.endswith('txt') and not filepath.endswith('dpt'):
@@ -1970,7 +1970,6 @@ def from_BrunoldrRaman(filepath, name=None, verbose=True):
     # import array
     lines = []
     with open(filepath, 'r') as f:
-        trash_pixels = 56
         for i in range(trash_pixels):
             line = f.readline()
         while True:
