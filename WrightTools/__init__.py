@@ -4,6 +4,14 @@ import os as _os
 import matplotlib as _matplotlib
 
 
+# --- temp directory ------------------------------------------------------------------------------
+
+
+_temp_dir = _os.path.join(_os.path.dirname(__file__), 'temp')
+if not _os.path.isdir(_temp_dir):
+    _os.mkdir(_temp_dir)
+
+
 # --- import --------------------------------------------------------------------------------------
 
 
@@ -16,14 +24,6 @@ from . import google_drive
 from . import kit
 from . import tuning
 from . import units
-
-
-# --- temp directory ------------------------------------------------------------------------------
-
-
-_temp_dir = _os.path.join(_os.path.dirname(__file__), 'temp')
-if not _os.path.isdir(_temp_dir):
-    _os.mkdir(_temp_dir)
 
 
 # --- version -------------------------------------------------------------------------------------
