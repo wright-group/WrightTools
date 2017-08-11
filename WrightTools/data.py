@@ -1966,37 +1966,23 @@ def from_BrunoldrRaman(filepath, name=None, verbose=True):
     data
         New data object(s).
     """
-    if isinstance(filepath, type([])) or isinstance(filepath, type(np.array([]))):
-        return [from_BrunoldrRaman(f) for f in filepath]
     if not os.path.isfile(filepath):
         raise wt_exceptions.FileNotFound(path=filepath)
-    if not filepath.endswith('txt') and not filepath.endswith('dpt'):
-        wt_exceptions.WrongFileTypeWarning.warn(filepath, 'txt or dpt')
+    if not filepath.endswith('txt'):
+        wt_exceptions.WrongFileTypeWarning.warn(filepath, 'txt')
     # import array
-    lines = []
-    with open(filepath, 'r') as f:
-        while True:
-            line = f.readline()
-            if line == '\n' or line == '':
-                break
-            else:
-                clean = line[:-2]  # lines end with ',/n'
-                lines.append(np.fromstring(clean, sep=' '))
-
-    arr = np.array(lines).T
+    arr = np.genfromtxt(filepath,delimiter='\t').T
     # chew through all scans
-    indicies = np.arange(1)
-    for i in indicies:
-        axis = Axis(arr[i], 'wn', name='wm')
-        signal = Channel(arr[i + 1], name='signal', label='counts', signed=False)
-        if name:
-            data = Data([axis], [signal], source='Brunold rRaman', name=name)
-        else:
-            name = filepath.split('//')[-1].split('.')[0]
-            data = Data([axis], [signal], source='Brunold rRaman', name=name)
+    axis = Axis(arr[0], 'wn', name='wm')
+    signal = Channel(arr[1], name='signal', label='counts', signed=False)
+    if name:
+        data = Data([axis], [signal], source='Brunold rRaman', name=name)
+    else:
+        name = filepath.split('//')[-1].split('.')[0]
+        data = Data([axis], [signal], source='Brunold rRaman', name=name)
     # finish
     if verbose:
-        print('{0} data objects successfully created from file:'.format(len(indicies)))
+        print('1 data object successfully created from file')
     return data
 
 
