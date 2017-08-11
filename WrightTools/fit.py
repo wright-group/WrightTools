@@ -15,10 +15,8 @@ from collections import OrderedDict
 
 import numpy as np
 
-import matplotlib
 import matplotlib.pyplot as plt
 
-import scipy
 from scipy import optimize as scipy_optimize
 
 from . import data as wt_data
@@ -669,11 +667,14 @@ class MultiPeakFitter:
             if diff_order == 0:
                 return intensity * (0.5 * FWHM)**2 / ((x - x0)**2 + (.5 * FWHM)**2)
             elif diff_order == 1:
-                return intensity * (0.5 * FWHM)**2 * (-1) * \
-                    (((x - x0)**2 + (0.5 * FWHM)**2))**-2 * (2 * (x - x0))
+                return intensity * (0.5 * FWHM)**2 * (-1) * (((x - x0)**2 +
+                                                             (0.5 * FWHM)**2))**-2 * (2 * (x - x0))
             elif diff_order == 2:
-                return intensity * (0.5 * FWHM)**2 * (2 * ((((x - x0)**2 + (0.5 * FWHM)**2))**-3)
-                                                      * (2 * (x - x0))**2 + (-2) * (((x - x0)**2 + (0.5 * FWHM)**2))**-2)
+                return intensity * (0.5 * FWHM)**2 * (2 * ((((x - x0)**2 +
+                                                       (0.5 * FWHM)**2))**-3) * (2 * (x - x0))**2 +
+                                                       (-2) * (((x - x0)**2 +
+                                                       (0.5 * FWHM)**2))**-2
+                                                       )
             else:
                 print('analytic derivative not pre-calculated')
         elif kind == 'gaussian':
@@ -700,7 +701,7 @@ class MultiPeakFitter:
             dict, at minimum, should have entries specifying 'kind', 'FWHM', 'intensity', and 'x0'.
             The contents of guesses are used in the fit method.
         """
-        if isinstance(guesses, OrderedDict) != True:
+        if not isinstance(guesses, OrderedDict):
             raise Exception('guesses must be an OrderedDict')
         self.guesses = guesses
 
