@@ -48,6 +48,9 @@ KENT.from_directory(os.path.join(here, 'KENT', 'LDS821 TRSF'))
 KENT.from_directory(os.path.join(here, 'KENT', 'PbSe 2D delay A'))
 KENT.from_directory(os.path.join(here, 'KENT', 'PbSe 2D delay B'))
 
+BrunoldrRaman = DatasetContainer()
+BrunoldrRaman.from_files(os.path.join(here, 'BrunoldrRaman'))
+
 PyCMDS = DatasetContainer()
 PyCMDS.from_files('PyCMDS')
 
@@ -55,4 +58,4 @@ PyCMDS.from_files('PyCMDS')
 # --- pretty namespace ----------------------------------------------------------------------------
 
 
-__all__ = ['COLORS', 'JASCO', 'KENT']
+__all__ = ['COLORS', 'JASCO', 'KENT', 'BrunoldrRaman']

@@ -1912,7 +1912,7 @@ def from_text(filepath, name=None, verbose=True):
         New data object(s).
     """
     if isinstance(filepath, type([])) or isinstance(filepath, type(np.array([]))):
-        return [from_rRaman(f) for f in filepath]
+        return [from_text(f) for f in filepath]
 
     if not os.path.isfile(filepath):
         raise wt_exceptions.FileNotFound(path=filepath)
@@ -1934,22 +1934,56 @@ def from_text(filepath, name=None, verbose=True):
     indicies = np.arange(1)
     for i in indicies:
         axis = Axis(arr[i], 'wn', name='wm')
-        signal = Channel(arr[i + 1], name='signal', label='counts', signed=False)
+        signal = Channel(arr[i + 1], name='signal', label='units', signed=False)
         if name:
-            data = Data([axis], [signal], source='Brunold rRaman', name=name)
+            data = Data([axis], [signal], source='txt file', name=name)
         else:
             name = filepath.split('//')[-1].split('.')[0]
-            data = Data([axis], [signal], source='Brunold rRaman', name=name)
+            data = Data([axis], [signal], source='txt file', name=name)
     # finish
     if verbose:
         print('{0} data objects successfully created from file:'.format(len(indicies)))
-        for i, data in enumerate(datas):
-            print('  {0}: {1}'.format(i, data.name))
     return data
 
 
-def from_rRaman(*args, **kwargs):
-    return from_text(*args, **kwargs)
+def from_BrunoldrRaman(filepath, name=None, verbose=True):
+    """ Create a data object from plaintext tab deliminated file
+
+    Expects one energy (in wavenumbers) and one counts value.
+
+    Parameters
+    ----------
+    filepath : string, list of strings, or array of strings
+        Path to .txt file.
+    name : string (optional)
+        Name to give to the created data object. If None, filename is used.
+        Default is None.
+    verbose : boolean (optional)
+        Toggle talkback. Default is True.
+
+    Returns
+    -------
+    data
+        New data object(s).
+    """
+    if not os.path.isfile(filepath):
+        raise wt_exceptions.FileNotFound(path=filepath)
+    if not filepath.endswith('txt'):
+        wt_exceptions.WrongFileTypeWarning.warn(filepath, 'txt')
+    # import array
+    arr = np.genfromtxt(filepath, delimiter='\t').T
+    # chew through all scans
+    axis = Axis(arr[0], 'wn', name='wm')
+    signal = Channel(arr[1], name='signal', label='counts', signed=False)
+    if name:
+        data = Data([axis], [signal], source='Brunold rRaman', name=name)
+    else:
+        name = filepath.split('//')[-1].split('.')[0]
+        data = Data([axis], [signal], source='Brunold rRaman', name=name)
+    # finish
+    if verbose:
+        print('1 data object successfully created from file')
+    return data
 
 
 def from_COLORS(
