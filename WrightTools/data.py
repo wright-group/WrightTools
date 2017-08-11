@@ -1907,7 +1907,7 @@ def from_text(filepath, name=None, verbose=True):
         New data object(s).
     """
     if isinstance(filepath, type([])) or isinstance(filepath, type(np.array([]))):
-        return [from_rRaman(f) for f in filepath]
+        return [from_text(f) for f in filepath]
 
     if not os.path.isfile(filepath):
         raise wt_exceptions.FileNotFound(path=filepath)
@@ -1916,6 +1916,63 @@ def from_text(filepath, name=None, verbose=True):
     # import array
     lines = []
     with open(filepath, 'r') as f:
+        while True:
+            line = f.readline()
+            if line == '\n' or line == '':
+                break
+            else:
+                clean = line[:-2]  # lines end with ',/n'
+                lines.append(np.fromstring(clean, sep=' '))
+
+    arr = np.array(lines).T
+    # chew through all scans
+    indicies = np.arange(1)
+    for i in indicies:
+        axis = Axis(arr[i], 'wn', name='wm')
+        signal = Channel(arr[i + 1], name='signal', label='units', signed=False)
+        if name:
+            data = Data([axis], [signal], source='txt file', name=name)
+        else:
+            name = filepath.split('//')[-1].split('.')[0]
+            data = Data([axis], [signal], source='txt file', name=name)
+    # finish
+    if verbose:
+        print('{0} data objects successfully created from file:'.format(len(indicies)))
+    return data
+
+
+def from_BrunoldrRaman(filepath, name=None, verbose=True):
+    """ Create a data object from plaintext tab deliminated file
+
+    Expects one energy and one intensity value.
+
+    Parameters
+    ----------
+    filepath : string, list of strings, or array of strings
+        Path to .txt file.
+    name : string (optional)
+        Name to give to the created data object. If None, filename is used.
+        Default is None.
+    verbose : boolean (optional)
+        Toggle talkback. Default is True.
+
+    Returns
+    -------
+    data
+        New data object(s).
+    """
+    if isinstance(filepath, type([])) or isinstance(filepath, type(np.array([]))):
+        return [from_text(f) for f in filepath]
+    if not os.path.isfile(filepath):
+        raise wt_exceptions.FileNotFound(path=filepath)
+    if not filepath.endswith('txt') and not filepath.endswith('dpt'):
+        wt_exceptions.WrongFileTypeWarning.warn(filepath, 'txt or dpt')
+    # import array
+    lines = []
+    with open(filepath, 'r') as f:
+        trash_pixels = 56
+        for i in range(trash_pixels):
+            line = f.readline()
         while True:
             line = f.readline()
             if line == '\n' or line == '':
@@ -1938,13 +1995,7 @@ def from_text(filepath, name=None, verbose=True):
     # finish
     if verbose:
         print('{0} data objects successfully created from file:'.format(len(indicies)))
-        for i, data in enumerate(datas):
-            print('  {0}: {1}'.format(i, data.name))
     return data
-
-
-def from_rRaman(*args, **kwargs):
-    return from_text(*args, **kwargs)
 
 
 def from_COLORS(
