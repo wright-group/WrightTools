@@ -20,7 +20,6 @@ import string
 import warnings
 import dateutil
 import datetime
-import itertools
 import linecache
 import collections
 from time import clock
@@ -42,7 +41,8 @@ from . import units as wt_units
 
 
 if sys.version[0] == '2':
-    string_type = basestring  # recognize unicode and string types
+    # recognize unicode and string types
+    string_type = basestring  # noqa: F821
 else:
     string_type = str  # newer versions of python don't have unicode type
 
@@ -560,7 +560,8 @@ def plot_dats(folder=None, transpose=True):
                             autosave=True, output_folder=folder, fname=fname)
 
             else:
-                print('error! - dimensionality of data ({}) not recognized'.format(len(dat_data.axes)))
+                print('error! - dimensionality of data ({}) not recognized'.format(
+                                                        len(dat_data.axes)))
 
         except BaseException:
             import sys
@@ -868,7 +869,8 @@ def nm_width(center, width, units='wn'):
 def remove_nans_1D(arrs):
     """ Remove nans in a list of 1D arrays.
 
-    Removes indicies in all arrays if any array is nan at that index. All input arrays must have the same size.
+    Removes indicies in all arrays if any array is nan at that index.
+    All input arrays must have the same size.
 
     Parameters
     ----------
@@ -1096,7 +1098,8 @@ def get_methods(the_class, class_only=False, instance_only=False,
         is_method = inspect.ismethod(tup[1])
         if is_method:
             bound_to = tup[1].im_self
-            internal = tup[1].im_func.func_name[:2] == '__' and tup[1].im_func.func_name[-2:] == '__'
+            internal = (tup[1].im_func.func_name[:2] == '__' and
+                        tup[1].im_func.func_name[-2:] == '__')
             if internal and exclude_internal:
                 include = False
             else:

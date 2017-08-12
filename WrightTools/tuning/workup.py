@@ -9,36 +9,13 @@ Methods for processing OPA 800 tuning data.
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import os
-import re
-import sys
-import imp
-import ast
-import time
-import copy
-import inspect
-import collections
-import subprocess
-import glob
 
-try:
-    import configparser as _ConfigParser  # python 3
-except ImportError:
-    import ConfigParser as _ConfigParser  # python 2'
-
-import matplotlib
 import matplotlib.pyplot as plt
 
 import numpy as np
-from numpy import sin, cos
-
-import scipy
-from scipy.interpolate import griddata, interp1d, interp2d, UnivariateSpline
-import scipy.integrate as integrate
-from scipy.optimize import leastsq
 
 from . import curve as wt_curve
 from .. import artists as wt_artists
-from .. import data as wt_data
 from .. import fit as wt_fit
 from .. import kit as wt_kit
 from .. import units as wt_units

@@ -9,37 +9,17 @@ Tools for processing spectral delay correction data.
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import os
-import re
-import sys
-import imp
-import time
-import copy
-import inspect
-import itertools
-import subprocess
-import glob
 
-try:
-    import configparser as _ConfigParser  # python 3
-except ImportError:
-    import ConfigParser as _ConfigParser  # python 2
-
-import matplotlib
 import matplotlib.pyplot as plt
-import matplotlib.gridspec as grd
 
 import numpy as np
 
-import scipy
-from scipy.optimize import leastsq
-from scipy.interpolate import griddata, interp1d, interp2d, UnivariateSpline
+from scipy.interpolate import UnivariateSpline
 
 from .. import artists as wt_artists
-from .. import units as wt_units
 from .. import kit as wt_kit
 from .. import fit as wt_fit
 from .. import data as wt_data
-from . import curve as wt_curve
 from . import coset as wt_coset
 
 
@@ -134,6 +114,7 @@ def process_brute_force(data_filepath, opa_index, channel, color_units='nm',
     else:
         print('channel type not recognized')
         return
+
     # pre-process data
     data.normalize(channel_index)
     data.convert(color_units, verbose=False)
@@ -154,6 +135,7 @@ def process_brute_force(data_filepath, opa_index, channel, color_units='nm',
         xi = d.axes[0].points
         yi = d.channels[channel_index].values
         return function.fit(yi, xi)
+
     x_outs = [fitit(d) for d in x_bins]
     y_outs = [fitit(d) for d in y_bins]
     x_centers = [o[0] for o in x_outs]
@@ -165,16 +147,12 @@ def process_brute_force(data_filepath, opa_index, channel, color_units='nm',
         centers[centers < lower_cutoff] = np.nan
         centers[centers > upper_cutoff] = np.nan
         amplitudes = np.array([o[2] for o in outs])
-        if False:
-            # HACK - Blaise
-            print(ws)
-            amplitudes[:-20] = np.nan
-            #plt.plot(ws, amplitudes)
         amplitudes[amplitudes < amplitudes.max() * amplitude_cutoff_factor] = np.nan
         ws_internal, centers, amplitudes = wt_kit.remove_nans_1D(
             [ws_internal, centers, amplitudes])
         spline = UnivariateSpline(ws_internal, centers, k=2, s=10000)
         return spline(ws)
+
     x_corrections = get_corrections(
         ws, x_outs, datas[0].axes[1].points.min(), datas[0].axes[1].points.max())
     y_corrections = get_corrections(

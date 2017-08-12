@@ -33,7 +33,8 @@ debug = False
 
 # string types
 if sys.version[0] == '2':
-    string_type = basestring  # recognize unicode and string types
+    # recognize unicode and string types
+    string_type = basestring  # noqa: F821
 else:
     string_type = str  # newer versions of python don't have unicode type
 
@@ -1052,9 +1053,10 @@ class Data:
           indices=None, m=None,
           bounds_error=True, verbose=True):
         """
-        placeholder docstring because the existing one needs numpydoc formatting and is causing errors
+        placeholder docstring because the existing one needs numpydoc formatting
+        and is causing errors
         """
-        docsatring = """
+        docstring = """
         normalize channel by absorptive effects given by absorption data object
             'abs_data'
 
@@ -2684,13 +2686,7 @@ def from_shimadzu(filepath, name=None, verbose=True):
     # is the file suffix one that we expect?  warn if it is not!
     filesuffix = os.path.basename(filepath).split('.')[-1]
     if filesuffix != 'txt':
-        should_continue = raw_input(
-            'Filetype is not recognized and may not be supported.  Continue (y/n)?')
-        if should_continue == 'y':
-            pass
-        else:
-            print('Aborting')
-            return
+        wt_exceptions.WrongFileTypeWarning.warn(filepath, 'txt')
 
     # import data ---------------------------------------------------------------------------------
 
