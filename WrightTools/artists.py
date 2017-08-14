@@ -33,7 +33,7 @@ from . import kit as wt_kit
 # string types
 if sys.version[0] == '2':
     # recognize unicode and string types
-    string_type = basestring  # noqa: F821 
+    string_type = basestring  # noqa: F821
 else:
     string_type = str  # newer versions of python don't have unicode type
 
@@ -722,7 +722,7 @@ def grayify_cmap(cmap):
     """Return a grayscale version of the colormap
 
     `grayify source`_
-    
+
     .. _grayify source: https://jakevdp.github.io/blog/2014/10/16/how-bad-is-your-colormap/
     """
     cmap = plt.cm.get_cmap(cmap)
@@ -736,10 +736,10 @@ def grayify_cmap(cmap):
 
 
 def make_cubehelix(gamma=0.5, s=0.25, r=-1, h=1.3, reverse=False, darkest=0.7):
-    """ Define cubehelix type colorbars. 
-    
+    """ Define cubehelix type colorbars.
+
     Look `here`_ for more information.
-    
+
     .. _here: http://arxiv.org/abs/1108.5083.
 
     Parameters
@@ -800,7 +800,7 @@ def make_colormap(seq, name='CustomMap', plot=False):
     and in the interval (0,1).
 
     `Source`_
-    
+
     .. _Source: http://nbviewer.ipython.org/gist/anonymous/a4fa0adb08f9e9ea4f94
     """
     seq = [(None,) * 3, 0.0] + list(seq) + [1.0, (None,) * 3]
@@ -821,8 +821,8 @@ def make_colormap(seq, name='CustomMap', plot=False):
 def nm_to_rgb(nm):
     """ returns list [r, g, b] (zero to one scale) for given input in nm
 
-    `original code`_  
-    
+    `original code`_
+
     .. _original code: http://www.physics.sfasu.edu/astro/color/spectra.html
     """
     w = int(nm)
@@ -1513,7 +1513,7 @@ class mpl_1D:
         if len(self.chopped) > 10:
             if not autosave:
                 print('too many images will be generated ({}): forcing autosave'.format(
-                                                          len(self.chopped)))
+                    len(self.chopped)))
                 autosave = True
         # prepare output folders
         if autosave:
