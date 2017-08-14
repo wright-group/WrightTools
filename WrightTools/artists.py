@@ -524,8 +524,9 @@ def create_figure(width='single', nrows=1, cols=[1], margin=1.,
         contains SubplotSpec objects that can have axes placed into them.
         The SubplotSpec objects can be accessed through indexing: [row, col].
         Slicing works, for example ``cax = plt.subplot(gs[:, -1])``. See
-        `matplotlib documentation <http://matplotlib.org/1.4.0/users/gridspec.html#gridspec-and-subplotspec>`_
-        for more information.
+        `matplotlib documentation`_ for more information.
+
+        .. _matplotlib documentation: http://matplotlib.org/users/gridspec.html#gridspec-and-subplotspec
 
     Notes
     -----
@@ -542,6 +543,7 @@ def create_figure(width='single', nrows=1, cols=[1], margin=1.,
         debug and design purposes.
     wt.artsits.subplots_adjust
         Enforce margins for figure generated elsewhere.
+
     """
     # get width
     if width == 'double':
@@ -718,7 +720,10 @@ def get_scaled_bounds(ax, position, distance=0.1, factor=200):
 
 def grayify_cmap(cmap):
     """Return a grayscale version of the colormap
-    Source: https://jakevdp.github.io/blog/2014/10/16/how-bad-is-your-colormap/
+
+    `grayify source`_
+    
+    .. _grayify source: https://jakevdp.github.io/blog/2014/10/16/how-bad-is-your-colormap/
     """
     cmap = plt.cm.get_cmap(cmap)
     colors = cmap(np.arange(cmap.N))
@@ -731,7 +736,11 @@ def grayify_cmap(cmap):
 
 
 def make_cubehelix(gamma=0.5, s=0.25, r=-1, h=1.3, reverse=False, darkest=0.7):
-    """ Define cubehelix type colorbars. For more information see http://arxiv.org/abs/1108.5083.
+    """ Define cubehelix type colorbars. 
+    
+    Look `here`_ for more information.
+    
+    .. _here: http://arxiv.org/abs/1108.5083.
 
     Parameters
     ----------
@@ -789,7 +798,10 @@ def make_colormap(seq, name='CustomMap', plot=False):
 
     seq: a sequence of floats and RGB-tuples. The floats should be increasing
     and in the interval (0,1).
-    from http://nbviewer.ipython.org/gist/anonymous/a4fa0adb08f9e9ea4f94
+
+    `Source`_
+    
+    .. _Source: http://nbviewer.ipython.org/gist/anonymous/a4fa0adb08f9e9ea4f94
     """
     seq = [(None,) * 3, 0.0] + list(seq) + [1.0, (None,) * 3]
     cdict = {'red': [], 'green': [], 'blue': []}
@@ -809,7 +821,9 @@ def make_colormap(seq, name='CustomMap', plot=False):
 def nm_to_rgb(nm):
     """ returns list [r, g, b] (zero to one scale) for given input in nm
 
-    original code - http://www.physics.sfasu.edu/astro/color/spectra.html
+    `original code`_  
+    
+    .. _original code: http://www.physics.sfasu.edu/astro/color/spectra.html
     """
     w = int(nm)
     # color ---------------------------------------------------------------------------------------
