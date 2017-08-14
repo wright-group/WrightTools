@@ -922,8 +922,10 @@ class Data:
             Channel to heal. Default is 0.
         method : {'linear', 'nearest', 'cubic'} (optional)
             The interpolation method. Note that cubic interpolation is only
-            possible for 1D and 2D data. See `griddata <http://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.griddata.html>`_
-            for more information. Default is linear.
+            possible for 1D and 2D data. See `griddata`_ for more information.
+            Default is linear.
+
+            .. _griddata: http://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.griddata.html
         fill_value : number-like (optional)
             The value written to pixels that cannot be filled by interpolation.
             Default is nan.
@@ -1263,8 +1265,8 @@ class Data:
             interpolation range will be written nan.
         method : {'linear', 'nearest', 'cubic'} (optional)
             The interpolation method. Note that cubic interpolation is only
-            possible for 1D and 2D data. See `griddata <http://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.griddata.html>`_
-            for more information. Default is linear.
+            possible for 1D and 2D data. See `griddata`_ for more information.
+            Default is linear.
         verbose : bool (optional)
             Toggle talkback. Default is True.
 
@@ -1418,8 +1420,9 @@ class Data:
 
     def save(self, filepath=None, verbose=True):
         """
-        Save using the `pickle <https://docs.python.org/2/library/pickle.html>`_
-        module.
+        Save using the `pickle`_ module.
+
+        .. _pickle: https://docs.python.org/3/library/pickle.html
 
         Parameters
         ----------
@@ -1502,7 +1505,9 @@ class Data:
 
     def smooth(self, factors, channel=None, verbose=True):
         """
-        Smooth a channel using an n-dimenional `kaiser window <https://en.wikipedia.org/wiki/Kaiser_window>`_.
+        Smooth a channel using an n-dimenional `kaiser window`_.
+
+        .. _kaiser window: https://en.wikipedia.org/wiki/Kaiser_window
 
         Parameters
         ----------
@@ -1811,8 +1816,9 @@ class Data:
         """ Zoom the data array using spline interpolation of the requested order.
 
         The number of points along each axis is increased by factor.
-        See `scipy.ndimage.interpolation.zoom <http://docs.scipy.org/doc/scipy/reference/generated/scipy.ndimage.interpolation.zoom.html>`_
-        for more info.
+        See `scipy ndimage`_ for more info.
+
+        .. _scipy ndimage: http://docs.scipy.org/doc/scipy/reference/generated/scipy.ndimage.interpolation.zoom.html
 
         Parameters
         ----------

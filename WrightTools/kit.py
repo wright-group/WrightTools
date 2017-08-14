@@ -174,11 +174,15 @@ class TimeStamp:
         legacy : string
             Legacy WrightTools timestamp representation.
         RFC3339 : string
-            `RFC3339 <https://www.ietf.org/rfc/rfc3339.txt>`_ representation (recommended for most applications).
+            `RFC3339`_ representation (recommended for most applications).
         RFC5322 : string
-            `RFC5322 <https://tools.ietf.org/html/rfc5322#section-3.3>`_ representation.
+            `RFC5322`_ representation.
         path : string
             Representation of the timestamp meant for inclusion in filepaths.
+
+
+        .. _RFC3339: https://www.ietf.org/rfc/rfc3339.txt
+        .. _RFC5322: https://tools.ietf.org/html/rfc5322#section-3.3
         """
         # get timezone
         if timezone == 'local':
@@ -593,7 +597,9 @@ def read_data_column(path, name):
 
 
 def read_h5(filepath):
-    """ Read from a `HDF5 <https://www.hdfgroup.org/HDF5/doc/H5.intro.html>`_ file, returning the data within as a python dictionary.
+    """ Read from a `HDF5`_ file, returning the data within as a python dictionary.
+
+    .. _HDF5: https://www.hdfgroup.org/HDF5/doc/H5.intro.html
 
     Returns
     -------
@@ -603,6 +609,7 @@ def read_h5(filepath):
     See Also
     --------
     kit.write_h5
+
     """
     d = collections.OrderedDict()
     h5f = h5py.File(filepath, mode='r')
@@ -637,7 +644,7 @@ def read_headers(filepath):
 
 
 def write_h5(filepath, dictionary):
-    """ Save a python dictionary into an `HDF5 <https://www.hdfgroup.org/HDF5/doc/H5.intro.html>`_
+    """ Save a python dictionary into an `HDF5`_
     file.
 
     Right now it only works to store numpy arrays of numbers.
