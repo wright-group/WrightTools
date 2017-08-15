@@ -1898,6 +1898,8 @@ class mpl_2D:
                 plt.plot([diag_min, diag_max], [diag_min, diag_max], 'k:')
             # contour lines -----------------------------------------------------------------------
             if contours:
+                # Ensure that X, Y are that expected by contour, not pcolor
+                X, Y = np.meshgrid(self.xaxis.points, self.yaxis.points)
                 if contours_local:
                     # force top and bottom contour to be just outside of data range
                     # add two contours
