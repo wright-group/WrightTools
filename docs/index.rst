@@ -31,6 +31,7 @@ Contents
    data
    units
    fit
+   kit
    artists
    tuning
    diagrams
