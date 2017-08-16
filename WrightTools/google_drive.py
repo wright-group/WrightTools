@@ -171,7 +171,7 @@ class Drive:
             # check if folder with that name already exists
             q = {
                 'q': "'{}' in parents and trashed=false and mimeType contains \'folder\'".format(
-                       parent)}
+                    parent)}
             fs = self.api.ListFile(q).GetList()
             found = False
             for f in fs:

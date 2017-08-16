@@ -572,7 +572,7 @@ def plot_dats(folder=None, transpose=True):
 
             else:
                 print('error! - dimensionality of data ({}) not recognized'.format(
-                       len(dat_data.axes)))
+                    len(dat_data.axes)))
 
         except BaseException:
             import sys
