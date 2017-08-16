@@ -26,7 +26,22 @@ dataset                                            axis names                   
 ``BrunoldrRaman.LDS821_514nm_80mW``                ``['wm']``                    ``(1340,)``
 =================================================  ============================  ===================  ==============
 
-.. [#kohler2014] `doi:10.1021/jp412058u <http://dx.doi.org/10.1021/jp412058u>`_
-.. [#czech2015] `doi:10.1021/acsnano.5b05198 <http://dx.doi.org/10.1021/acsnano.5b05198>`_
-.. [#yurs2011] `doi:10.1021/jp207273x <http://dx.doi.org/10.1021/jp207273x>`_
-.. [#boyle2013] `doi:10.1021/jp409377a <http://dx.doi.org/10.1021/jp409377a>`_
+.. [#kohler2014] **Ultrafast Dynamics within the 1S Exciton Band of Colloidal PbSe Quantum Dots Using Multiresonant Coherent Multidimensional Spectroscopy**
+                 Daniel D. Kohler, Stephen B. Block, Schuyler Kain, Andrei V. Pakoulev, and John C. Wright
+                 *The Journal of Physical Chemistry C* **2014** 118 (9), 5020-5031
+                 `doi:10.1021/jp412058u <http://dx.doi.org/10.1021/jp412058u>`_
+
+.. [#czech2015] **Measurement of Ultrafast Excitonic Dynamics of Few-Layer MoS2 Using State-Selective Coherent Multidimensional Spectroscopy**
+                Kyle J. Czech, Blaise J. Thompson, Schuyler Kain, Qi Ding, Melinda J. Shearer, Robert J. Hamers, Song Jin, and John C. Wright
+                *ACS Nano* **2015** 9 (12), 12146-12157
+                `doi:10.1021/acsnano.5b05198 <http://dx.doi.org/10.1021/acsnano.5b05198>`_
+
+.. [#yurs2011] **Multiresonant Coherent Multidimensional Electronic Spectroscopy of Colloidal PbSe Quantum Dots**
+               Lena A. Yurs, Stephen B. Block, Andrei V. Pakoulev, Rachel S. Selinsky, Song Jin, and John Wright
+               *The Journal of Physical Chemistry C* **2011** 115 (46), 22833-22844
+               `doi:10.1021/jp207273x <http://dx.doi.org/10.1021/jp207273x>`_
+
+.. [#boyle2013] **Triply Resonant Sum Frequency Spectroscopy: Combining Advantages of Resonance Raman and 2D-IR**
+                Erin S. Boyle, Nathan A. Neff-Mallon, and John C. Wright
+                *The Journal of Physical Chemistry A* **2013** 117 (47), 12401-12408
+                `doi:10.1021/jp409377a <http://dx.doi.org/10.1021/jp409377a>`_

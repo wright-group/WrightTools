@@ -1,5 +1,11 @@
 """
 Central data class and associated.
+
+.. [#carlson1989] **Absorption and Coherent Interference Effects in Multiply Resonant
+                  Four-Wave Mixing Spectroscopy**
+                  Roger J. Carlson, and John C. Wright
+                  *Applied Spectroscopy* **1989** 43, 1195--1208
+                  `doi:10.1366/0003702894203408 <http://dx.doi.org/10.1366/0003702894203408>`_
 """
 
 
@@ -1054,28 +1060,28 @@ class Data:
     def m(self, abs_data, channel=0, this_exp='TG',
           indices=None, m=None,
           bounds_error=True, verbose=True):
-        """
-        placeholder docstring because the existing one needs numpydoc formatting
-        and is causing errors
-        """
-        docstring = """
-        normalize channel by absorptive effects given by absorption data object
-            'abs_data'
+        """Perform m-factor corrections. [#carlson1989]_
 
-        indices can be used to override default assignments for normalization
-        m can be used to override default assignments for functional forms
-         --> better to just add to the dictionary, though!
-        assumes all abs fxns are independent of each axis, so we can normalize
-            each axis individually
-        need to be ready that:
-            1.  not all axes that m accepts may be present--in this case,
-                assumes abs of 0
-        currently in alpha testing...so be careful
-        known issues:
-            --requires unique, integer (0<x<10) numbering for index
-                identification
+        Assumes all absorption functions are independent, so we can
+        normalize each axis individually.
+
+        Parameters
+        ----------
+        abs_data : wt.data.Data object
+            Absorption data to normalize by
+        channel : int or string (optional)
+            Channel to correct (default is zero)
+        this_exp : {'TG', 'TA'} (optional)
+            Experimental configuration. Default is TG.
+        indices : list of integers (optional)
+            axis indices
+        m : function (optional)
+            m-factor function
+        bounds_error : boolean (optinal)
+            Toggle bounds_error. Default is True.
+        verbose : boolean (optional)
+            Toggle talkback. Default is True.
         """
-        # TODO: numpydoc format docstring
         # exp_name: [i], [m_i]
         exp_types = {
             'TG': [['1', '2'],
