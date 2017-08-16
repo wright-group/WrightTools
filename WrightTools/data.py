@@ -1,5 +1,11 @@
 """
 Central data class and associated.
+
+.. _griddata: http://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.griddata.html
+.. _pickle: https://docs.python.org/3/library/pickle.html
+.. _kaiser window: https://en.wikipedia.org/wiki/Kaiser_window
+.. _scipy ndimage:
+    http://docs.scipy.org/doc/scipy/reference/generated/scipy.ndimage.interpolation.zoom.html
 """
 
 
@@ -924,8 +930,6 @@ class Data:
             The interpolation method. Note that cubic interpolation is only
             possible for 1D and 2D data. See `griddata`_ for more information.
             Default is linear.
-
-            .. _griddata: http://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.griddata.html
         fill_value : number-like (optional)
             The value written to pixels that cannot be filled by interpolation.
             Default is nan.
@@ -1422,7 +1426,6 @@ class Data:
         """
         Save using the `pickle`_ module.
 
-        .. _pickle: https://docs.python.org/3/library/pickle.html
 
         Parameters
         ----------
@@ -1507,7 +1510,6 @@ class Data:
         """
         Smooth a channel using an n-dimenional `kaiser window`_.
 
-        .. _kaiser window: https://en.wikipedia.org/wiki/Kaiser_window
 
         Parameters
         ----------
@@ -1818,7 +1820,6 @@ class Data:
         The number of points along each axis is increased by factor.
         See `scipy ndimage`_ for more info.
 
-        .. _scipy ndimage: http://docs.scipy.org/doc/scipy/reference/generated/scipy.ndimage.interpolation.zoom.html
 
         Parameters
         ----------
@@ -2816,14 +2817,14 @@ def join(datas, method='first', verbose=True, **kwargs):
                     all_points = np.concatenate([all_points, axis.points])
                     this_axis_min = np.nanmin(axis.points)
                     this_axis_max = np.nanmax(axis.points)
-                    this_axis_number = float(axis.points.size)-1
+                    this_axis_number = float(axis.points.size) - 1
                     step_size = (this_axis_max - this_axis_min) / this_axis_number
                     step_sizes.append(step_size)
         axis_min = np.nanmin(all_points)
         axis_max = np.nanmax(all_points)
         axis_step_size = min(step_sizes)
         axis_n_points = np.ceil((axis_max - axis_min) / axis_step_size)
-        points = np.linspace(axis_min, axis_max, axis_n_points+1)
+        points = np.linspace(axis_min, axis_max, axis_n_points + 1)
         axis_points.append(points)
     # map datas to new points
     for axis_index, axis_name in enumerate(axis_names):
