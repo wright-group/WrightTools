@@ -17,9 +17,6 @@ import numpy as np
 
 import scipy
 
-import matplotlib
-from mpl_toolkits.axes_grid1 import host_subplot
-import mpl_toolkits.axisartist as AA
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as grd
 

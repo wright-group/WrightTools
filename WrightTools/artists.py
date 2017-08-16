@@ -1,4 +1,10 @@
 """ Tools for visualizing data.
+
+.. _gridspec: http://matplotlib.org/users/gridspec.html#gridspec-and-subplotspec
+.. _grayify: https://jakevdp.github.io/blog/2014/10/16/how-bad-is-your-colormap/
+.. _cubehelix: http://arxiv.org/abs/1108.5083.
+.. _colormap: http://nbviewer.ipython.org/gist/anonymous/a4fa0adb08f9e9ea4f94
+.. _nmtorgb: http://www.physics.sfasu.edu/astro/color/spectra.html
 """
 
 
@@ -16,14 +22,13 @@ import numpy as np
 from numpy import r_
 
 import matplotlib
-from matplotlib.axes import Axes, SubplotBase, subplot_class_factory
+from matplotlib.axes import SubplotBase, subplot_class_factory
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import matplotlib.gridspec as grd
 import matplotlib.colors as mplcolors
 from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib.patheffects as PathEffects
-from matplotlib.ticker import FormatStrFormatter
 
 from . import kit as wt_kit
 
@@ -33,7 +38,8 @@ from . import kit as wt_kit
 
 # string types
 if sys.version[0] == '2':
-    string_type = basestring  # recognize unicode and string types
+    # recognize unicode and string types
+    string_type = basestring  # noqa: F821
 else:
     string_type = str  # newer versions of python don't have unicode type
 
@@ -83,7 +89,7 @@ class Axes(matplotlib.axes.Axes):
         return ax
 
     def contourf(self, *args, **kwargs):
-        # I'm overloading contourf in an attempt to fix aliasing problems when saving vector graphics
+        # Overloading contourf in an attempt to fix aliasing problems when saving vector graphics
         # see https://stackoverflow.com/questions/15822159
         # also see https://stackoverflow.com/a/32911283
         # set_edgecolor('face') does indeed remove all of the aliasing problems
@@ -100,7 +106,8 @@ class Axes(matplotlib.axes.Axes):
         contours = matplotlib.axes.Axes.contourf(self, *args, **kwargs)  # why can't I use super?
         # fill lines
         zorder = contours.collections[0].zorder - 0.1
-        matplotlib.axes.Axes.contour(self, *(args[:3] + [len(contours.levels)]), cmap=contours.cmap,
+        matplotlib.axes.Axes.contour(self, *(args[:3] + [len(contours.levels)]),
+                                     cmap=contours.cmap,
                                      zorder=zorder)
         # PathCollection modifications
         for c in contours.collections:
@@ -523,8 +530,8 @@ def create_figure(width='single', nrows=1, cols=[1], margin=1.,
         contains SubplotSpec objects that can have axes placed into them.
         The SubplotSpec objects can be accessed through indexing: [row, col].
         Slicing works, for example ``cax = plt.subplot(gs[:, -1])``. See
-        `matplotlib documentation <http://matplotlib.org/1.4.0/users/gridspec.html#gridspec-and-subplotspec>`_
-        for more information.
+        matplotlib gridspec_ documentation for more information.
+
 
     Notes
     -----
@@ -541,6 +548,7 @@ def create_figure(width='single', nrows=1, cols=[1], margin=1.,
         debug and design purposes.
     wt.artsits.subplots_adjust
         Enforce margins for figure generated elsewhere.
+
     """
     # get width
     if width == 'double':
@@ -717,7 +725,10 @@ def get_scaled_bounds(ax, position, distance=0.1, factor=200):
 
 def grayify_cmap(cmap):
     """Return a grayscale version of the colormap
-    Source: https://jakevdp.github.io/blog/2014/10/16/how-bad-is-your-colormap/
+
+    `Source`__
+
+     __ grayify_
     """
     cmap = plt.cm.get_cmap(cmap)
     colors = cmap(np.arange(cmap.N))
@@ -730,7 +741,12 @@ def grayify_cmap(cmap):
 
 
 def make_cubehelix(gamma=0.5, s=0.25, r=-1, h=1.3, reverse=False, darkest=0.7):
-    """ Define cubehelix type colorbars. For more information see http://arxiv.org/abs/1108.5083.
+    """ Define cubehelix type colorbars.
+
+    Look `here`__ for more information.
+
+    __ cubehelix_
+
 
     Parameters
     ----------
@@ -788,7 +804,11 @@ def make_colormap(seq, name='CustomMap', plot=False):
 
     seq: a sequence of floats and RGB-tuples. The floats should be increasing
     and in the interval (0,1).
-    from http://nbviewer.ipython.org/gist/anonymous/a4fa0adb08f9e9ea4f94
+
+    `Source`__
+
+    __ colormap_
+
     """
     seq = [(None,) * 3, 0.0] + list(seq) + [1.0, (None,) * 3]
     cdict = {'red': [], 'green': [], 'blue': []}
@@ -808,7 +828,10 @@ def make_colormap(seq, name='CustomMap', plot=False):
 def nm_to_rgb(nm):
     """ returns list [r, g, b] (zero to one scale) for given input in nm
 
-    original code - http://www.physics.sfasu.edu/astro/color/spectra.html
+    `original code`__
+
+    __ nmtorgb_
+
     """
     w = int(nm)
     # color ---------------------------------------------------------------------------------------
@@ -1203,7 +1226,7 @@ def plot_gridlines(ax=None, c='grey', lw=1, diagonal=False, zorder=2,
         diag_min = max(min_xi, min_yi)
         diag_max = min(max_xi, max_yi)
         ax.plot([diag_min, diag_max], [diag_min, diag_max], c=c,
-                ls=':', lw=lw, zorder=zorder, dashes=dashes)
+                ls=ls, lw=lw, zorder=zorder, dashes=dashes)
 
 
 def plot_margins(fig=None, inches=1., centers=True, edges=True):
@@ -1497,7 +1520,8 @@ class mpl_1D:
         fig = None
         if len(self.chopped) > 10:
             if not autosave:
-                print('too many images will be generated ({}): forcing autosave'.format(len(self.chopped)))
+                print('too many images will be generated ({}): forcing autosave'.format(
+                    len(self.chopped)))
                 autosave = True
         # prepare output folders
         if autosave:
@@ -1882,6 +1906,8 @@ class mpl_2D:
                 plt.plot([diag_min, diag_max], [diag_min, diag_max], 'k:')
             # contour lines -----------------------------------------------------------------------
             if contours:
+                # Ensure that X, Y are that expected by contour, not pcolor
+                X, Y = np.meshgrid(self.xaxis.points, self.yaxis.points)
                 if contours_local:
                     # force top and bottom contour to be just outside of data range
                     # add two contours
@@ -1934,7 +1960,6 @@ class mpl_2D:
                         s_zi_in_range = s_zi[min(min_index, max_index):max(min_index, max_index)]
                         if len(s_zi_in_range) == 0:
                             continue
-                        #s_zi = s_zi - min(s_zi_in_range)
                         s_zi_in_range = s_zi[min(min_index, max_index):max(min_index, max_index)]
                         s_zi = s_zi / max(s_zi_in_range)
                         axCorrx.plot(s_xi, s_zi, lw=2)
@@ -1974,7 +1999,6 @@ class mpl_2D:
                         s_zi_in_range = s_zi[min(min_index, max_index):max(min_index, max_index)]
                         if len(s_zi_in_range) == 0:
                             continue
-                        #s_zi = s_zi - min(s_zi_in_range)
                         s_zi_in_range = s_zi[min(min_index, max_index):max(min_index, max_index)]
                         s_zi = s_zi / max(s_zi_in_range)
                         axCorry.plot(s_zi, s_xi, lw=2)
@@ -2259,7 +2283,7 @@ class Diff2D():
             for j in range(2):
 
                 if j == 0:
-                    current_chop = chopped = self.minuend_chopped[i]
+                    current_chop = self.minuend_chopped[i]
                 elif j == 1:
                     current_chop = self.subtrahend_chopped[i]
 

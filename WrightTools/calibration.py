@@ -9,7 +9,6 @@ Calibration.
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import os
-import copy
 import collections
 
 import numpy as np
@@ -18,12 +17,12 @@ import scipy
 
 import matplotlib
 import matplotlib.pyplot as plt
-matplotlib.rcParams['font.size'] = 14
 
 from . import units as wt_units
 from . import kit as wt_kit
 from . import artists as wt_artists
 
+matplotlib.rcParams['font.size'] = 14
 debug = False
 
 

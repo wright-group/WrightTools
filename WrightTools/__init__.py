@@ -12,6 +12,20 @@ if not _os.path.isdir(_temp_dir):
     _os.mkdir(_temp_dir)
 
 
+# --- import --------------------------------------------------------------------------------------
+
+
+from . import artists           # noqa: F401
+from . import calibration       # noqa: F401
+from . import data              # noqa: F401
+from . import diagrams          # noqa: F401
+from . import fit               # noqa: F401
+from . import google_drive      # noqa: F401
+from . import kit               # noqa: F401
+from . import tuning            # noqa: F401
+from . import units             # noqa: F401
+
+
 # --- version -------------------------------------------------------------------------------------
 
 
@@ -29,20 +43,6 @@ if _os.path.isfile(_p):
         __version__ += '-' + __branch__
 else:
     __branch__ = None
-
-
-# --- import --------------------------------------------------------------------------------------
-
-
-from . import artists
-from . import calibration
-from . import data
-from . import diagrams
-from . import fit
-from . import google_drive
-from . import kit
-from . import tuning
-from . import units
 
 
 # --- rcparams ------------------------------------------------------------------------------------

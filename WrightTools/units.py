@@ -85,7 +85,7 @@ def converter(val, current_unit, destination_unit):
                 native = eval(dic[current_unit][0])
             except ZeroDivisionError:
                 native = np.inf
-            x = native
+            x = native  # noqa: F841
             try:
                 out = eval(dic[destination_unit][1])
             except ZeroDivisionError:

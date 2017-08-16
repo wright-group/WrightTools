@@ -33,7 +33,8 @@ debug = False
 
 # string types
 if sys.version[0] == '2':
-    string_type = basestring  # recognize unicode and string types
+    # recognize unicode and string types
+    string_type = basestring  # noqa: F821
 else:
     string_type = str  # newer versions of python don't have unicode type
 
@@ -267,7 +268,7 @@ class Channel:
                 axis = tuple((int(i) for i in axis))
             else:  # presumably a simple number
                 axis = int(axis)
-        # subtract off znull
+        # subtract off null
         self.values -= self.null
         self.null = 0.
         # create dummy array
@@ -921,8 +922,10 @@ class Data:
             Channel to heal. Default is 0.
         method : {'linear', 'nearest', 'cubic'} (optional)
             The interpolation method. Note that cubic interpolation is only
-            possible for 1D and 2D data. See `griddata <http://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.griddata.html>`_
-            for more information. Default is linear.
+            possible for 1D and 2D data. See `griddata`_ for more information.
+            Default is linear.
+
+            .. _griddata: http://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.griddata.html
         fill_value : number-like (optional)
             The value written to pixels that cannot be filled by interpolation.
             Default is nan.
@@ -1052,9 +1055,10 @@ class Data:
           indices=None, m=None,
           bounds_error=True, verbose=True):
         """
-        placeholder docstring because the existing one needs numpydoc formatting and is causing errors
+        placeholder docstring because the existing one needs numpydoc formatting
+        and is causing errors
         """
-        docsatring = """
+        docstring = """
         normalize channel by absorptive effects given by absorption data object
             'abs_data'
 
@@ -1261,8 +1265,8 @@ class Data:
             interpolation range will be written nan.
         method : {'linear', 'nearest', 'cubic'} (optional)
             The interpolation method. Note that cubic interpolation is only
-            possible for 1D and 2D data. See `griddata <http://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.griddata.html>`_
-            for more information. Default is linear.
+            possible for 1D and 2D data. See `griddata`_ for more information.
+            Default is linear.
         verbose : bool (optional)
             Toggle talkback. Default is True.
 
@@ -1416,8 +1420,9 @@ class Data:
 
     def save(self, filepath=None, verbose=True):
         """
-        Save using the `pickle <https://docs.python.org/2/library/pickle.html>`_
-        module.
+        Save using the `pickle`_ module.
+
+        .. _pickle: https://docs.python.org/3/library/pickle.html
 
         Parameters
         ----------
@@ -1500,7 +1505,9 @@ class Data:
 
     def smooth(self, factors, channel=None, verbose=True):
         """
-        Smooth a channel using an n-dimenional `kaiser window <https://en.wikipedia.org/wiki/Kaiser_window>`_.
+        Smooth a channel using an n-dimenional `kaiser window`_.
+
+        .. _kaiser window: https://en.wikipedia.org/wiki/Kaiser_window
 
         Parameters
         ----------
@@ -1809,8 +1816,9 @@ class Data:
         """ Zoom the data array using spline interpolation of the requested order.
 
         The number of points along each axis is increased by factor.
-        See `scipy.ndimage.interpolation.zoom <http://docs.scipy.org/doc/scipy/reference/generated/scipy.ndimage.interpolation.zoom.html>`_
-        for more info.
+        See `scipy ndimage`_ for more info.
+
+        .. _scipy ndimage: http://docs.scipy.org/doc/scipy/reference/generated/scipy.ndimage.interpolation.zoom.html
 
         Parameters
         ----------
@@ -1912,7 +1920,7 @@ def from_text(filepath, name=None, verbose=True):
         New data object(s).
     """
     if isinstance(filepath, type([])) or isinstance(filepath, type(np.array([]))):
-        return [from_rRaman(f) for f in filepath]
+        return [from_text(f) for f in filepath]
 
     if not os.path.isfile(filepath):
         raise wt_exceptions.FileNotFound(path=filepath)
@@ -1934,22 +1942,56 @@ def from_text(filepath, name=None, verbose=True):
     indicies = np.arange(1)
     for i in indicies:
         axis = Axis(arr[i], 'wn', name='wm')
-        signal = Channel(arr[i + 1], name='signal', label='counts', signed=False)
+        signal = Channel(arr[i + 1], name='signal', label='units', signed=False)
         if name:
-            data = Data([axis], [signal], source='Brunold rRaman', name=name)
+            data = Data([axis], [signal], source='txt file', name=name)
         else:
             name = filepath.split('//')[-1].split('.')[0]
-            data = Data([axis], [signal], source='Brunold rRaman', name=name)
+            data = Data([axis], [signal], source='txt file', name=name)
     # finish
     if verbose:
         print('{0} data objects successfully created from file:'.format(len(indicies)))
-        for i, data in enumerate(datas):
-            print('  {0}: {1}'.format(i, data.name))
     return data
 
 
-def from_rRaman(*args, **kwargs):
-    return from_text(*args, **kwargs)
+def from_BrunoldrRaman(filepath, name=None, verbose=True):
+    """ Create a data object from plaintext tab deliminated file
+
+    Expects one energy (in wavenumbers) and one counts value.
+
+    Parameters
+    ----------
+    filepath : string, list of strings, or array of strings
+        Path to .txt file.
+    name : string (optional)
+        Name to give to the created data object. If None, filename is used.
+        Default is None.
+    verbose : boolean (optional)
+        Toggle talkback. Default is True.
+
+    Returns
+    -------
+    data
+        New data object(s).
+    """
+    if not os.path.isfile(filepath):
+        raise wt_exceptions.FileNotFound(path=filepath)
+    if not filepath.endswith('txt'):
+        wt_exceptions.WrongFileTypeWarning.warn(filepath, 'txt')
+    # import array
+    arr = np.genfromtxt(filepath, delimiter='\t').T
+    # chew through all scans
+    axis = Axis(arr[0], 'wn', name='wm')
+    signal = Channel(arr[1], name='signal', label='counts', signed=False)
+    if name:
+        data = Data([axis], [signal], source='Brunold rRaman', name=name)
+    else:
+        name = filepath.split('//')[-1].split('.')[0]
+        data = Data([axis], [signal], source='Brunold rRaman', name=name)
+    # finish
+    if verbose:
+        print('1 data object successfully created from file')
+    return data
 
 
 def from_COLORS(
@@ -2161,7 +2203,7 @@ def from_COLORS(
 
     # create data object --------------------------------------------------------------------------
 
-    data = Data(list(scanned), list(channels.values()), list(constant), znull)
+    data = Data(list(scanned), list(channels.values()), list(constant))
 
     if color_steps_as == 'energy':
         try:
@@ -2233,7 +2275,7 @@ def from_JASCO(filepath, name=None, kind='absorbance', verbose=True):
     return data
 
 
-def from_KENT(filepaths, znull=None, name=None, ignore=['wm'], use_norm=False,
+def from_KENT(filepaths, null=None, name=None, ignore=['wm'], use_norm=False,
               delay_tolerance=0.1, frequency_tolerance=0.5, verbose=True):
     """
     filepaths may be string or list
@@ -2331,7 +2373,7 @@ def from_KENT(filepaths, znull=None, name=None, ignore=['wm'], use_norm=False,
             if debug:
                 print(key)
     # create data object --------------------------------------------------------------------------
-    data = Data(list(scanned), list(channels.values()), list(constant), znull)
+    data = Data(list(scanned), list(channels.values()), list(constant))
     for axis in data.axes:
         axis.get_label()
     for axis in data.constants:
@@ -2650,13 +2692,7 @@ def from_shimadzu(filepath, name=None, verbose=True):
     # is the file suffix one that we expect?  warn if it is not!
     filesuffix = os.path.basename(filepath).split('.')[-1]
     if filesuffix != 'txt':
-        should_continue = raw_input(
-            'Filetype is not recognized and may not be supported.  Continue (y/n)?')
-        if should_continue == 'y':
-            pass
-        else:
-            print('Aborting')
-            return
+        wt_exceptions.WrongFileTypeWarning.warn(filepath, 'txt')
 
     # import data ---------------------------------------------------------------------------------
 
@@ -2712,7 +2748,7 @@ def from_Tensor27(filepath, name=None, verbose=True):
     return data
 
 
-def join(datas, method='first', verbose=True):
+def join(datas, method='first', verbose=True, **kwargs):
     """ Join a list of data objects together.
 
     For now datas must have identical dimensionalities (order and identity).
@@ -2723,10 +2759,16 @@ def join(datas, method='first', verbose=True):
         The list of data objects to join together.
     method : {'first', 'sum', 'max', 'min', 'mean'} (optional)
         The method for how overlapping points get treated. Default is first,
-        meaning that the data object that appears first in data will take
+        meaning that the data object that appears first in datas will take
         precedence.
     verbose : bool (optional)
         Toggle talkback. Default is True.
+
+    kwargs
+    ------
+    axis objects
+        The axes of the new data object. If not supplied, the points of the
+        new axis will be guessed from the given datas.
 
     Returns
     -------
@@ -2744,7 +2786,11 @@ def join(datas, method='first', verbose=True):
     axis_units = []
     axis_objects = []
     for data in datas:
-        for axis in data.axes:
+        for i, axis in enumerate(data.axes):
+            if axis.name in kwargs.keys():
+                axis.convert(kwargs[axis.name].units)
+            if axis.points[0] > axis.points[-1]:
+                data.flip(i)
             if axis.name not in axis_names:
                 axis_names.append(axis.name)
                 axis_units.append(axis.units)
@@ -2759,6 +2805,9 @@ def join(datas, method='first', verbose=True):
     # get axis points
     axis_points = []  # list of 1D arrays
     for axis_name in axis_names:
+        if axis_name in kwargs.keys():
+            axis_points.append(kwargs[axis_name].points)
+            continue
         all_points = np.array([])
         step_sizes = []
         for data in datas:
@@ -2767,21 +2816,22 @@ def join(datas, method='first', verbose=True):
                     all_points = np.concatenate([all_points, axis.points])
                     this_axis_min = np.nanmin(axis.points)
                     this_axis_max = np.nanmax(axis.points)
-                    this_axis_number = float(axis.points.size)
+                    this_axis_number = float(axis.points.size)-1
                     step_size = (this_axis_max - this_axis_min) / this_axis_number
                     step_sizes.append(step_size)
         axis_min = np.nanmin(all_points)
         axis_max = np.nanmax(all_points)
         axis_step_size = min(step_sizes)
         axis_n_points = np.ceil((axis_max - axis_min) / axis_step_size)
-        points = np.linspace(axis_min, axis_max, axis_n_points)
+        points = np.linspace(axis_min, axis_max, axis_n_points+1)
         axis_points.append(points)
     # map datas to new points
     for axis_index, axis_name in enumerate(axis_names):
         for data in datas:
             for axis in data.axes:
                 if axis.name == axis_name:
-                    data.map_axis(axis_name, axis_points[axis_index])
+                    if not np.array_equiv(axis.points, axis_points[axis_index]):
+                        data.map_axis(axis_name, axis_points[axis_index])
     # make new channel objects
     channel_objects = []
     n_channels = min([len(d.channels) for d in datas])
@@ -2808,7 +2858,7 @@ def join(datas, method='first', verbose=True):
             print('method', method, 'not recognized in join')
             return
         zis[np.isnan(full).all(axis=0)] = np.nan  # if all datas NaN, zis NaN
-        channel = Channel(zis, 'V', znull=0.,
+        channel = Channel(zis, 'V', null=0.,
                           signed=datas[0].channels[channel_index].signed,
                           name=datas[0].channels[channel_index].name)
         channel_objects.append(channel)
@@ -2827,7 +2877,7 @@ def join(datas, method='first', verbose=True):
             percent_nan = np.around(100. * (np.isnan(channel.values).sum() /
                                             float(channel.values.size)), decimals=2)
             print('    {0} : {1} to {2} ({3}% NaN)'.format(
-                channel.name, channel.zmin, channel.zmax, percent_nan))
+                channel.name, channel.min, channel.max, percent_nan))
     return out
 
 

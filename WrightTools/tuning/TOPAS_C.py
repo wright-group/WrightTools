@@ -4,36 +4,19 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import os
-import re
-import sys
-import imp
-import time
-import copy
-import inspect
-import itertools
-import subprocess
-import glob
 
-try:
-    import configparser as _ConfigParser  # python 3
-except ImportError:
-    import ConfigParser as _ConfigParser  # python 2
-
-import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as grd
 
 import numpy as np
 
-import scipy
 from scipy.optimize import leastsq
-from scipy.interpolate import griddata, interp1d, interp2d, UnivariateSpline
+from scipy.interpolate import griddata, interp1d, UnivariateSpline
 
 from .. import artists as wt_artists
 from .. import units as wt_units
 from .. import kit as wt_kit
 from .. import fit as wt_fit
-from .. import data as wt_data
 from . import curve as wt_curve
 
 
@@ -216,7 +199,7 @@ def process_C2_motortune(opa_index, data_filepath, curves, save=True):
     # finish
     if save:
         directory = os.path.dirname(data_filepath)
-        path = curve.save(save_directory=directory)
+        curve.save(save_directory=directory)
         image_path = data_filepath.replace('.data', '.png')
         plt.savefig(image_path, dpi=300, transparent=True)
         plt.close(fig)
@@ -321,7 +304,7 @@ def process_D2_motortune(opa_index, data_filepath, curves, save=True):
     # finish
     if save:
         directory = os.path.dirname(data_filepath)
-        path = curve.save(save_directory=directory)
+        curve.save(save_directory=directory)
         image_path = data_filepath.replace('.data', '.png')
         plt.savefig(image_path, dpi=300, transparent=True)
         plt.close(fig)
@@ -555,7 +538,7 @@ def process_preamp_motortune(OPA_index, data_filepath, curves, save=True):
     # write files
     if save:
         directory = os.path.dirname(data_filepath)
-        path = curve.save(save_directory=directory)
+        curve.save(save_directory=directory)
         image_path = data_filepath.replace('.data', '.png')
         # TODO: figure out how to get transparent background >:-(
         plt.savefig(image_path, dpi=300, transparent=False)
@@ -680,7 +663,7 @@ def process_SHS_motortune(OPA_index, data_filepath, curves, save=True):
     # finish
     if save:
         directory = os.path.dirname(data_filepath)
-        path = curve.save(save_directory=directory)
+        curve.save(save_directory=directory)
         image_path = data_filepath.replace('.data', '.png')
         plt.savefig(image_path, dpi=300, transparent=True)
         plt.close(fig)
@@ -802,7 +785,7 @@ def process_SFS_motortune(OPA_index, data_filepath, curves, save=True):
     # finish
     if save:
         directory = os.path.dirname(data_filepath)
-        path = curve.save(save_directory=directory, old_filepaths=curves)
+        curve.save(save_directory=directory, old_filepaths=curves)
         image_path = data_filepath.replace('.data', '.png')
         plt.savefig(image_path, dpi=300, transparent=True)
         plt.close(fig)
