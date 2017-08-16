@@ -825,8 +825,11 @@ def leastsqfitter(p0, datax, datay, function, verbose=False, cov_verbose=False):
 
     timer = wt_kit.Timer(verbose=False)
     with timer:
+
         # define error function
-        def errfunc(p, x, y): return y - function(p, x)
+        def errfunc(p, x, y):
+            return y - function(p, x)
+
         # run optimization
         pfit_leastsq, pcov, infodict, errmsg, success = scipy_optimize.leastsq(
             errfunc, p0, args=(datax, datay), full_output=1, epsfcn=0.0001)

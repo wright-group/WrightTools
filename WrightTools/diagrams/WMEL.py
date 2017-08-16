@@ -124,8 +124,8 @@ class Subplot:
                                 linewidth=2, zorder=9)
         elif kind == 'out':
             yi = np.linspace(y_poss[0], y_poss[1], 100)
-            xi = np.sin((yi - y_poss[0]) * int((1 / length) * 20)
-                        * 2 * np.pi * length) / 40 + x_pos[0]
+            xi = np.sin((yi - y_poss[0]) * int((1 / length) * 20) *
+                        2 * np.pi * length) / 40 + x_pos[0]
             line = self.ax.plot(xi, yi, linestyle='-', color=color,
                                 linewidth=2, solid_capstyle='butt', zorder=9)
         else:
@@ -234,8 +234,8 @@ class Artist:
             line = subplot.plot([x_pos, x_pos], y_poss, linestyle='--', color=color, linewidth=2)
         elif kind == 'out':
             yi = np.linspace(y_poss[0], y_poss[1], 100)
-            xi = np.sin((yi - y_poss[0]) * int((1 / length) * 20)
-                        * 2 * np.pi * length) / 40 + x_pos
+            xi = np.sin((yi - y_poss[0]) * int((1 / length) * 20) *
+                        2 * np.pi * length) / 40 + x_pos
             line = subplot.plot(xi, yi, linestyle='-', color=color,
                                 linewidth=2, solid_capstyle='butt')
         # add arrow head

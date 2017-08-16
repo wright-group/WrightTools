@@ -1,5 +1,14 @@
 """
 a collection of small, general purpose objects and methods
+
+
+.. _RFC3339: https://www.ietf.org/rfc/rfc3339.txt
+.. _RFC5322: https://tools.ietf.org/html/rfc5322#section-3.3
+.. _HDF5: https://www.hdfgroup.org/HDF5/doc/H5.intro.html
+.. _intersperse http://stackoverflow.com/a/5921708
+.. _flatten: http://stackoverflow.com/questions/2158395
+.. _suppress:
+    http://stackoverflow.com/questions/11130156/suppress-stdout-stderr-print-from-python-functions
 """
 
 
@@ -181,8 +190,6 @@ class TimeStamp:
             Representation of the timestamp meant for inclusion in filepaths.
 
 
-        .. _RFC3339: https://www.ietf.org/rfc/rfc3339.txt
-        .. _RFC5322: https://tools.ietf.org/html/rfc5322#section-3.3
         """
         # get timezone
         if timezone == 'local':
@@ -565,7 +572,7 @@ def plot_dats(folder=None, transpose=True):
 
             else:
                 print('error! - dimensionality of data ({}) not recognized'.format(
-                                                        len(dat_data.axes)))
+                    len(dat_data.axes)))
 
         except BaseException:
             import sys
@@ -599,7 +606,6 @@ def read_data_column(path, name):
 def read_h5(filepath):
     """ Read from a `HDF5`_ file, returning the data within as a python dictionary.
 
-    .. _HDF5: https://www.hdfgroup.org/HDF5/doc/H5.intro.html
 
     Returns
     -------
@@ -1072,7 +1078,11 @@ def flatten_list(l):
     Works generally but may be slower than it could
     be if you can make assumptions about your list.
 
-    Adapted from http://stackoverflow.com/questions/2158395
+
+    `Source`__
+
+    __ flatten_
+
 
         >>> l = [[[1, 2, 3], [4, 5]], 6]
         >>> wt.kit.flatten_list(l)
@@ -1124,7 +1134,9 @@ def get_methods(the_class, class_only=False, instance_only=False,
 def intersperse(lst, item):
     """ Put item between each existing item in list.
 
-    From http://stackoverflow.com/a/5921708
+    `Source`__
+
+    __ intersperse_
     """
     result = [item] * (len(lst) * 2 - 1)
     result[0::2] = lst
@@ -1179,10 +1191,14 @@ class suppress_stdout_stderr(object):
     to stderr just before a script exits, and after the context manager has
     exited (at least, I think that is why it lets exceptions through).
 
-    from http://stackoverflow.com/questions/11130156/suppress-stdout-stderr-print-from-python-functions
+    `Source`__
 
-    with wt.kit.suppress_stdout_stderr():
-        rogue_function()
+    __ suppress_
+
+
+    >>> with wt.kit.suppress_stdout_stderr():
+    ...     rogue_function()
+
     """
 
     def __init__(self):
