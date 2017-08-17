@@ -149,7 +149,7 @@ class Calibration:
         self._interpolate()
 
     def get_positions(self, value, **kwargs):
-        """Retrieve 
+        """Get all valid coordinates. 
         
         Returns
         -------
