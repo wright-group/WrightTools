@@ -38,6 +38,18 @@ if not os.path.isfile(mycreds_path):
 
 
 def id_to_url(driveid):
+    """Generate a url from a Google Drive id.
+
+    Parameters
+    ----------
+    id : string
+        ID.
+
+    Returns
+    -------
+    string
+        url.
+    """
     return 'https://drive.google.com/open?id=' + driveid
 
 
@@ -45,8 +57,10 @@ def id_to_url(driveid):
 
 
 class Drive:
+    """Google Drive class."""
 
     def __init__(self):
+        """init."""
         # authenticate
         self.mycreds_path = mycreds_path
         self._authenticate()
@@ -83,15 +97,23 @@ class Drive:
         self.api = GoogleDrive(self.gauth)
         os.chdir(old_cwd)
 
-    def _list_folder(self, *args, **kwargs):
-        """
-        Legacy. Please use self.list_folder instead!
-        - Blaise 2016.05.14
-        """
-        return self.list_folder(*args, **kwargs)
-
     def _upload_file(self, filepath, parentid, overwrite=False,
                      delete_local=False, verbose=True):
+        """Upload file.
+
+        Parameters
+        ----------
+        filepath : string
+            Filepath.
+        parentid : string
+            Parent ID.
+        overwrite : boolean (optional)
+            Toggle remote overwrite. Default is False.
+        delete_local : boolean (optional).
+            Toggle local deletion after upload. Default is False.
+        verbose : boolean (optional)
+            Toggle talkback. Default is True.
+        """
         self._authenticate()
         title = filepath.split(os.path.sep)[-1]
         # check if remote file already exists
@@ -261,6 +283,18 @@ class Drive:
             return f
 
     def list_folder(self, folderid):
+        """List contents of a remote folder.
+
+        Properties
+        ----------
+        folderid : string
+            Folder ID.
+
+        Returns
+        -------
+        list of strings
+            List of contained IDs.
+        """
         # adapted from https://github.com/googledrive/PyDrive/issues/37
         # folder_id: GoogleDriveFile['id']
         self._authenticate()
