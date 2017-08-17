@@ -1,6 +1,4 @@
-"""
-Tools for processing spectral delay correction data.
-"""
+"""Tools for processing spectral delay correction data."""
 
 
 # --- import --------------------------------------------------------------------------------------
@@ -29,7 +27,7 @@ from . import coset as wt_coset
 def process_wigner(data_filepath, channel, control_name,
                    offset_name, coset_name, color_units='nm',
                    delay_units='fs', autosave=True, s=1000):
-    """ Create a coset file from a measured wigner.
+    """Create a coset file from a measured wigner.
 
     Parameters
     ----------
