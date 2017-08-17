@@ -1,4 +1,36 @@
- p) for p in os.listdir(os.path.join(here, dirname))]
+"""Datasets."""
+
+
+# --- import --------------------------------------------------------------------------------------
+
+
+import os
+
+from .. import kit as wt_kit
+
+
+# --- define --------------------------------------------------------------------------------------
+
+
+here = os.path.abspath(os.path.dirname(__file__))
+
+
+# --- container class -----------------------------------------------------------------------------
+
+
+class DatasetContainer(object):
+
+    def from_files(self, dirname, prefix=''):
+        """Add datasets from files in a directory.
+
+        Parameters
+        ----------
+        dirname : string
+            Directory name.
+        prefix : string
+            Prefix.
+        """
+        ps = [os.path.join(here, dirname, p) for p in os.listdir(os.path.join(here, dirname))]
         for p in ps:
             n = prefix + wt_kit.string2identifier(os.path.basename(p).split('.')[0])
             setattr(self, n, p)
