@@ -1,6 +1,4 @@
-"""
-Methods for processing OPA 800 tuning data.
-"""
+"""Methods for processing OPA 800 tuning data."""
 
 
 # --- import --------------------------------------------------------------------------------------
