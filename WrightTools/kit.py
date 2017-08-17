@@ -161,7 +161,8 @@ class TimeStamp:
     """Class for representing a moment in time."""
 
     def __init__(self, at=None, timezone='local'):
-        """
+        """Create a ``TimeStamp`` object.
+
         Parameters
         ----------
         at : float (optional)
@@ -341,15 +342,15 @@ def file_len(fname):
 
 
 class FileSlicer:
-    """Access groups of lines from a file quickly,
-    without loading the entire file into memory.
+    """Access groups of lines from a file quickly, without loading the entire file into memory.
 
     Mostly a convinient wrapper around the standard library linecache
     module.
     """
 
     def __init__(self, path, skip_headers=True, header_charachter='#'):
-        """
+        """Create a ``FileSlicer`` object.
+
         Parameters
         ----------
         path : string
@@ -477,7 +478,8 @@ class INI():
     """Handle communication with an INI file."""
 
     def __init__(self, filepath):
-        """
+        """Create an INI handler object.
+
         Parameters
         ----------
         filepath : string
@@ -516,7 +518,7 @@ class INI():
 
     @property
     def dictionary(self):
-        """A python dictionary of contents."""
+        """Get a python dictionary of contents."""
         self.config.read(self.filepath)
         return self.config._sections
 
@@ -603,7 +605,8 @@ class INI():
         option : string
             Option.
         value : string
-            Value."""
+            Value.
+        """
         self.config.read(self.filepath)
         string = item2string(value, sep=', ')
         self.config.set(section, option, string)
@@ -1198,7 +1201,7 @@ def intersperse(lst, item):
 
 
 def item2string(item, sep='\t'):
-    """Generate string from item.
+    r"""Generate string from item.
 
     Parameters
     ----------
@@ -1210,6 +1213,10 @@ def item2string(item, sep='\t'):
     Returns
     -------
     string
+
+    See Also
+    --------
+    string2item
     """
     out = ''
     if isinstance(item, string_type):
@@ -1362,7 +1369,7 @@ def string2identifier(s):
 
 
 def string2item(string, sep='\t'):
-    """Turn a string into a python object.
+    r"""Turn a string into a python object.
 
     Parameters
     ----------
@@ -1375,7 +1382,7 @@ def string2item(string, sep='\t'):
     -------
     object
 
-    See also
+    See Also
     --------
     item2string
     """
