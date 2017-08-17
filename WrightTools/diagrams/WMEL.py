@@ -156,8 +156,26 @@ class Artist:
     def __init__(self, size, energies, state_names=None,
                  number_of_interactions=4, virtual=[None],
                  state_font_size=8, state_text_buffer=0.5):
-        """ virtual a list of indicies """
-        # create figure
+        """Initialize.
+
+        Parameters
+        ----------
+        size : [rows, collumns]
+            Layout.
+        energies : list of numbers
+            State energies.
+        state_names : list of strings (optional)
+            State names. Default is None.
+        number_of_interactions : integer (optional)
+            Number of interactions. Default is 4.
+        virtual : list of integers (optional)
+            Indices of states which are virtual. Default is [None].
+        state_font_size : number (optional)
+            State font size. Default is 8.
+        state_text_buffer : number (optional)
+            Size of buffer around state text. Default is 0.5.
+        """
+        #create figure
         figsize = [int(size[0] * ((number_of_interactions + 1.) / 6.)), size[1] * 2.5]
         fig, (subplots) = plt.subplots(size[1], size[0], figsize=figsize)
         self.fig = fig

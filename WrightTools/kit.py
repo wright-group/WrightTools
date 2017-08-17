@@ -1006,13 +1006,11 @@ class Spline:
     """Spline."""
     
     def __call__(self, *args, **kwargs):
-        """Evaluate spline."""
+        """Evaluate."""
         return self.true_spline(*args, **kwargs)
 
     def __init__(self, xi, yi, k=3, s=1000, ignore_nans=True):
-        """Wrapper class for scipy.UnivariateSpline.
-        
-        Made to be slightly less finicky with things like decending xi arrays and nans.
+        """Initialize.
 
         Parameters
         ----------

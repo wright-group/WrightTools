@@ -2344,9 +2344,16 @@ class Absorbance:
             self.ax1.set_ylim(ylim)
 
     def _smooth(self, dat1, n=20, window_type='default'):
-        """
-        data is an array of type [xlis,ylis]
-        smooth to prevent 2nd derivative from being noisy
+        """Smooth to prevent 2nd derivative from being too noisy.
+
+        Parameters
+        ----------
+        dat1 : 2D array
+            [xlis,ylis]
+        n : integer
+            Smoothing amount.
+        window_type : string
+            Does literally nothing.
         """
         for i in range(n, len(dat1[1]) - n):
             # change the x value to the average
