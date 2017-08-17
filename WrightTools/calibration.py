@@ -35,6 +35,20 @@ cmap.set_under([0.75] * 3)
 
 
 def get_label(name, units):
+    """Get label.
+
+    Parameters
+    ----------
+    name : string
+        Name.
+    units : string
+        Units.
+
+    Returns
+    -------
+    string
+        Label.
+    """
     # units kind
     units_kind = None
     for dic in wt_units.unit_dicts:
@@ -55,11 +69,11 @@ def get_label(name, units):
 
 
 class Calibration:
+    """Container for unstructured calibration data."""
 
     def __init__(self, axis_names, axis_units, points, values, name='calibration',
                  note=''):
-        """ Container for unstructured calibration data.
-
+        """
         Parameters
         ----------
         points : list of lists
@@ -316,6 +330,16 @@ class Calibration:
 
 
 def from_file(path):
+    """Generate a calibration object from a file.
+
+    Parameters
+    ----------
+    path : string
+        Filepath.
+
+    Returns
+    -------
+    WrightTools.calibration.Calibration"""
     # get raw information from file
     headers = wt_kit.read_headers(path)
     arr = np.genfromtxt(path).T
