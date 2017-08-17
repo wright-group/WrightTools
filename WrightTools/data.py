@@ -1,5 +1,4 @@
-"""
-Central data class and associated.
+"""Central data class and associated.
 
 .. [#carlson1989] **Absorption and Coherent Interference Effects in Multiply Resonant
                   Four-Wave Mixing Spectroscopy**
@@ -69,7 +68,8 @@ class Axis:
     def __init__(self, points, units, symbol_type=None,
                  tolerance=None, file_idx=None,
                  name='', label_seed=[''], **kwargs):
-        """
+        """Create an `Axis` object.
+
         Paramaters
         ----------
         points : 1D array-like
@@ -111,7 +111,7 @@ class Axis:
         self.get_label()
 
     def __repr__(self):
-        """An unambiguous representation of the Axis.
+        """Return an unambiguous representation of the Axis.
 
         Returns
         -------
@@ -200,7 +200,7 @@ class Axis:
 
     @property
     def label(self):
-        """LaTex formatted label."""
+        """LaTeX formatted label."""
         return self.get_label()
 
     def max(self):
@@ -213,11 +213,12 @@ class Axis:
 
 
 class Channel:
-    """Channel"""
+    """Channel."""
 
     def __init__(self, values, units=None, file_idx=None, null=None, signed=None, name='channel',
                  label=None, label_seed=None):
-        """
+        """Construct a channel object.
+
         Parameters
         ----------
         values : array-like
@@ -251,7 +252,7 @@ class Channel:
             self.signed = signed
 
     def __repr__(self):
-        """An unambiguous representation of the Channel.
+        """Retrun an unambiguous representation of the Channel.
 
         Returns
         -------
@@ -333,7 +334,7 @@ class Channel:
 
     @property
     def info(self):
-        """Channel info dictionary"""
+        """Return Channel info dictionary."""
         info = collections.OrderedDict()
         info['name'] = self.name
         info['id'] = id(self)
@@ -363,7 +364,7 @@ class Channel:
         return np.nanmin(self.values)
 
     def normalize(self, axis=None):
-        """Normalizes a Channel, setting z-null to 0 and the max to 1."""
+        """Normalize a Channel, set `null` to 0 and the max to 1."""
         # process axis argument
         if axis is not None:
             if hasattr(axis, '__contains__'):  # list, tuple or similar
@@ -385,7 +386,7 @@ class Channel:
 
     def trim(self, neighborhood, method='ztest', factor=3, replace='nan',
              verbose=True):
-        """ Remove outliers from the dataset
+        """Remove outliers from the dataset.
 
         Identifies outliers by comparing each point to its
         neighbors using a statistical test.
@@ -497,7 +498,8 @@ class Data:
 
     def __init__(self, axes, channels, constants=[],
                  name='', source=None):
-        """
+        """Create a ``Data`` object.
+
         Parameters
         ----------
         channels : list
@@ -524,7 +526,7 @@ class Data:
         self._original = self.copy()
 
     def __repr__(self):
-        """An unambiguous representation.
+        """Return an unambiguous representation.
 
         Returns
         -------
@@ -535,7 +537,8 @@ class Data:
             self.name, str(self.axis_names), str(id(self)))
 
     def _update(self):
-        """
+        """Ensure that a Data Object is up to date.
+
         Ensure that the ``axis_names``, ``constant_names``, ``channel_names``,
         and ``shape`` attributes are correct.
         """
@@ -556,7 +559,7 @@ class Data:
         return self._update(*args, **kwargs)
 
     def bring_to_front(self, channel):
-        """ Bring a specific channel to the zero-indexed position in channels.
+        """Bring a specific channel to the zero-indexed position in channels.
 
         All other channels get pushed back but remain in order.
 
@@ -577,7 +580,7 @@ class Data:
         self._update()
 
     def chop(self, *args, **kwargs):
-        """ Divide the dataset into its lower-dimensionality components.
+        """Divide the dataset into its lower-dimensionality components.
 
         Parameters
         ----------
@@ -702,7 +705,9 @@ class Data:
         return out
 
     def clip(self, channel=0, *args, **kwargs):
-        """ Wrapper method for ``Channel.clip``.
+        """Call ``Channel.clip``.
+
+        Wrapper method for ``Channel.clip``.
 
         Parameters
         ----------
@@ -776,8 +781,7 @@ class Data:
         self._update()
 
     def convert(self, destination_units, verbose=True):
-        """
-        Converts all compatable constants and axes to given units.
+        """Convert all compatable constants and axes to given units.
 
         Parameters
         ----------
@@ -816,12 +820,13 @@ class Data:
 
     @property
     def dimensionality(self):
-        """Data dimensionality."""
+        """Get dimensionality of Data object."""
         return len(self.axes)
 
     def divide(self, divisor, channel=0, divisor_channel=0):
-        """
-        Divide a given channel by another data object. Divisor may be self.
+        """Divide a given channel by another data object.
+        
+        Divisor may be self.
         All axes in divisor must be contained in self.
 
         Parameters
@@ -934,9 +939,9 @@ class Data:
         self.channels[signal_channel_index]._update()
 
     def flip(self, axis):
-        """
-        Flip direction of arrays along an axis. Changes the index of elements
-        without changing their correspondance to axis positions.
+        """Flip direction of arrays along an axis.
+        
+        Changes the index of elements without changing their correspondance to axis positions.
 
         Parameters
         ----------
@@ -1083,7 +1088,7 @@ class Data:
 
     @property
     def info(self):
-        """Data info dictionary."""
+        """Retrieve info dictionary about a Data object."""
         info = collections.OrderedDict()
         info['name'] = self.name
         info['id'] = id(self)
@@ -1094,9 +1099,7 @@ class Data:
         return info
 
     def level(self, channel, axis, npts, verbose=True):
-        """
-        For a channel, subtract the average value of several points at the edge
-        of a given axis.
+        """For a channel, subtract the average value of several points at the edge of a given axis.
 
         Parameters
         ----------
@@ -1167,7 +1170,7 @@ class Data:
     def m(self, abs_data, channel=0, this_exp='TG',
           indices=None, m=None,
           bounds_error=True, verbose=True):
-        """Perform m-factor corrections. [#carlson1989]_
+        """Perform m-factor corrections [#carlson1989]_.
 
         Assumes all absorption functions are independent, so we can
         normalize each axis individually.
@@ -1260,9 +1263,9 @@ class Data:
         return
 
     def map_axis(self, axis, points, input_units='same', verbose=True):
-        """
-        Map points of an axis to new points using linear interpolation. Out-
-        of-bounds points are written nan.
+        """Map points of an axis to new points using linear interpolation.
+        
+        Out-of-bounds points are written nan.
 
         Parameters
         ----------
@@ -1355,9 +1358,9 @@ class Data:
     def offset(self, points, offsets, along, offset_axis,
                units='same', offset_units='same', mode='valid',
                method='linear', verbose=True):
-        """
-        Offset one axis based on another axis' values. Useful for correcting
-        instrumental artifacts such as zerotune.
+        """Offset one axis based on another axis' values.
+        
+        Useful for correcting instrumental artifacts such as zerotune.
 
         Parameters
         ----------
@@ -1388,7 +1391,6 @@ class Data:
             >>> data.offset(points, offsets, 'w1', 'd1')
 
         """
-
         # axis ------------------------------------------------------------------------------------
 
         if isinstance(along, int):
@@ -1518,9 +1520,7 @@ class Data:
         self._update()
 
     def revert(self):
-        """
-        Revert this data object back to its original state.
-        """
+        """Revert this data object back to its original state."""
         for attribute_name in dir(self):
             if attribute_name not in ['_original'] + wt_kit.get_methods(self):
                 # if attribute does not exist in original, delete it
@@ -1532,9 +1532,7 @@ class Data:
         self._update()
 
     def save(self, filepath=None, verbose=True):
-        """
-        Save using the `pickle`_ module.
-
+        """Save using the `pickle`_ module.
 
         Parameters
         ----------
@@ -1603,10 +1601,10 @@ class Data:
         channel._update()
 
     def share_nans(self):
-        """
-        Share not-a-numbers between all channels. If any channel is nan at a
-        given index, all channels will be nan at that index after this
-        operation.
+        """Share not-a-numbers between all channels.
+        
+        If any channel is nan at a given index, all channels will be nan
+        at that index after this operation.
 
         Uses the share_nans method found in wt.kit.
         """
@@ -1616,9 +1614,7 @@ class Data:
             c.values = a
 
     def smooth(self, factors, channel=None, verbose=True):
-        """
-        Smooth a channel using an n-dimenional `kaiser window`_.
-
+        """Smooth a channel using an n-dimenional `kaiser window`_.
 
         Parameters
         ----------
@@ -1799,9 +1795,10 @@ class Data:
         return outs
 
     def subtract(self, subtrahend, channel=0, subtrahend_channel=0):
-        """
-        Subtract a given channel by another data object. Subtrahend smay be self.
-        All axes in divisor must be contained in self.
+        """Subtract a given channel by another data object.
+        
+        Subtrahend may be self.
+        All axes in subtrahend must be contained in self.
 
         Parameters
         ----------
@@ -1856,7 +1853,9 @@ class Data:
         self.transpose(transpose_order, verbose=False)
 
     def trim(self, channel, **kwargs):
-        """ Wrapper method for ``Channel.trim``.
+        """Call ``Channel.trim``.
+
+        Wrapper method for ``Channel.trim``.
 
         Parameters
         ----------
@@ -1884,7 +1883,7 @@ class Data:
         return channel.trim(neighborhood=neighborhood, **inputs)
 
     def transform(self, transform=None):
-        """ Transforms the dataset using arbitrary coordinates, then regrids the data
+        """Transform the dataset using arbitrary coordinates, then regrids the data.
 
         Parameters
         ----------
@@ -1898,10 +1897,10 @@ class Data:
         # use np.griddata
         # find code used to deal with constants
         # possibly use to plot vs constants?
-        print('not yet implemented.')
+        raise NotImplementedError
 
     def transpose(self, axes=None, verbose=True):
-        """ Transpose the dataset.
+        """Transpose the dataset.
 
         Parameters
         ----------
@@ -1924,7 +1923,7 @@ class Data:
         self.shape = self.channels[0].values.shape
 
     def zoom(self, factor, order=1, verbose=True):
-        """ Zoom the data array using spline interpolation of the requested order.
+        """Zoom the data array using spline interpolation of the requested order.
 
         The number of points along each axis is increased by factor.
         See `scipy ndimage`_ for more info.
@@ -1959,7 +1958,7 @@ class Data:
 
 
 def from_Cary50(filepath, verbose=True):
-    """ Create a data object from a Cary 50 UV VIS absorbance file.
+    """Create a data object from a Cary 50 UV VIS absorbance file.
 
     Parameters
     ----------
@@ -2010,7 +2009,7 @@ def from_Cary50(filepath, verbose=True):
 
 
 def from_text(filepath, name=None, verbose=True):
-    """ Create a data object from plaintext tab deliminated file
+    """Create a data object from plaintext tab deliminated file.
 
     Expects one energy and one intensity value.
 
@@ -2065,7 +2064,7 @@ def from_text(filepath, name=None, verbose=True):
 
 
 def from_BrunoldrRaman(filepath, name=None, verbose=True):
-    """ Create a data object from plaintext tab deliminated file
+    """Create a data object from the Brunold rRaman instrument.
 
     Expects one energy (in wavenumbers) and one counts value.
 
@@ -2125,11 +2124,10 @@ def from_COLORS(
             'm6'],
         even=True,
         verbose=True):
-    """
-    filepaths may be string or list
+    """Read a Data object from a COLORS filetype.
+
     color_steps_as one in 'energy', 'wavelength'
     """
-
     # do we have a list of files or just one file? ------------------------------------------------
 
     if isinstance(filepaths, list):
@@ -2345,7 +2343,7 @@ def from_COLORS(
 
 
 def from_JASCO(filepath, name=None, kind='absorbance', verbose=True):
-    """ Create a data object from a JASCO UV-VIS NIR file.
+    """Create a data object from a JASCO UV-VIS NIR file.
 
     Parameters
     ----------
@@ -2387,9 +2385,7 @@ def from_JASCO(filepath, name=None, kind='absorbance', verbose=True):
 
 def from_KENT(filepaths, null=None, name=None, ignore=['wm'], use_norm=False,
               delay_tolerance=0.1, frequency_tolerance=0.5, verbose=True):
-    """
-    filepaths may be string or list
-    """
+    """Read data object from KENT files."""
     # do we have a list of files or just one file? ------------------------------------------------
     if isinstance(filepaths, list):
         file_example = filepaths[0]
@@ -2636,7 +2632,7 @@ def from_pickle(filepath, verbose=True):
 
 def from_PyCMDS(filepath, name=None,
                 shots_processing_module='mean_and_std', verbose=True):
-    """ Create a data object from a single PyCMDS output file.
+    """Create a data object from a single PyCMDS output file.
 
     Parameters
     ----------
@@ -2874,7 +2870,7 @@ def from_shimadzu(filepath, name=None, verbose=True):
 
 
 def from_Tensor27(filepath, name=None, verbose=True):
-    """ Create a data object from a Tensor27 FTIR file.
+    """Create a data object from a Tensor27 FTIR file.
 
     Parameters
     ----------
@@ -2913,7 +2909,7 @@ def from_Tensor27(filepath, name=None, verbose=True):
 
 
 def join(datas, method='first', verbose=True, **kwargs):
-    """ Join a list of data objects together.
+    """Join a list of data objects together.
 
     For now datas must have identical dimensionalities (order and identity).
 
@@ -3049,15 +3045,14 @@ def join(datas, method='first', verbose=True, **kwargs):
 
 
 def discover_dimensions(arr, dimension_cols, verbose=True):
-    """
-    Discover the dimensions of array arr.
+    """Discover the dimensions of array arr.
+
     Watches the indicies contained in dimension_cols. Returns dictionaries of
     axis objects [scanned, constant].
     Constant objects have their points object initialized. Scanned dictionary is
     in order of scanning (..., zi, yi, xi). Both dictionaries are condensed
     into coscanning / setting.
     """
-
     # sorry that this method is so convoluted and unreadable - blaise
 
     input_cols = dimension_cols
