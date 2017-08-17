@@ -1,9 +1,4 @@
-"""
-Interact with google drive using the pydrive package.
-"""
-
-# Darien Morrow - darienmorrow@gmail.com - dmorrow3@wisc.edu
-# Blaise Thompson - blaise@untzag.com
+"""Interact with google drive using the pydrive package."""
 
 
 # --- import --------------------------------------------------------------------------------------
@@ -66,7 +61,8 @@ class Drive:
         self._authenticate()
 
     def _authenticate(self):
-        """
+        """Authenticate the user via a web browser.
+
         This function, once run, will open up a login window in a web browser.
         The user must then athenticate via email and password to authorize the
         API for usage with that particular account. Note that 'mycreds.txt' may
@@ -164,7 +160,7 @@ class Drive:
         return f['id']
 
     def create_folder(self, name, parentid):
-        """ Create a new folder in Google Drive.
+        """Create a new folder in Google Drive.
 
         Attributes
         ----------
@@ -214,7 +210,7 @@ class Drive:
         return parent
 
     def download(self, fileid, directory='cwd', overwrite=False, verbose=True):
-        """ Recursively download from Google Drive into a local directory.
+        """Recursively download from Google Drive into a local directory.
 
         By default, will not re-download if file passes following checks:
 
@@ -304,7 +300,7 @@ class Drive:
 
     def upload(self, path, parentid, overwrite=False, delete_local=False,
                verbose=True):
-        """ Upload local file(s) to Google Drive.
+        """Upload local file(s) to Google Drive.
 
         Parameters
         ----------
