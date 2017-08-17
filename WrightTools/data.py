@@ -51,10 +51,12 @@ else:
 
 
 def true_max(*args, **kwargs):
+    """Call standard library max function."""
     return max(*args, **kwargs)
 
 
 def true_min(*args, **kwargs):
+    """Call standard library min function."""
     return min(*args, **kwargs)
 
 
@@ -62,10 +64,32 @@ def true_min(*args, **kwargs):
 
 
 class Axis:
+    """Axis class."""
 
     def __init__(self, points, units, symbol_type=None,
                  tolerance=None, file_idx=None,
                  name='', label_seed=[''], **kwargs):
+        """
+        Paramaters
+        ----------
+        points : 1D array-like
+            Axis points.
+        units : string
+            Axis units.
+        symbol_type : string (optional)
+            Axis symbol type. If None, symbol_type is automatically
+            generated. Default is None.
+        tolerance : number (optional)
+            Axis tolerance. Default is None.
+        file_idx : integer (optional)
+            Axis position in original data file. Default is None.
+        name : string (optional)
+            Axis name. Default is ''.
+        label_seed : list of strings
+            Axis label subscripts. Default is [''].
+        **kwargs
+            Keyword arguments.
+        """
         self.name = wt_kit.string2identifier(name)
         self.tolerance = tolerance
         self.points = np.asarray(points)
@@ -87,14 +111,39 @@ class Axis:
         self.get_label()
 
     def __repr__(self):
+        """An unambiguous representation of the Axis.
+
+        Returns
+        -------
+        string
+            Representation.
+        """
         return 'WrightTools.data.Axis object \'{0}\' at {1}'.format(self.name, str(id(self)))
 
     def convert(self, destination_units):
+        """Convert axis to destination units.
+
+        Parameters
+        ----------
+        destination_units : string
+            Destination units.
+        """
         self.points = wt_units.converter(self.points, self.units,
                                          destination_units)
         self.units = destination_units
 
     def get_label(self, show_units=True, points=False, decimals=2):
+        """Get a LaTeX formatted label.
+
+        Parameters
+        ----------
+        show_units : boolean (optional)
+            Toggle showing units. Default is True.
+        points : boolean (optional)
+            Toggle showing points. Default is False.
+        decimals : integer (optional)
+            Number of decimals to show for numbers. Default is 2.
+        """
         label = r'$\mathsf{'
         # label
         for part in self.label_seed:
@@ -128,6 +177,7 @@ class Axis:
 
     @property
     def info(self):
+        """Axis info dictionary."""
         info = collections.OrderedDict()
         info['name'] = self.name
         info['id'] = id(self)
@@ -140,6 +190,7 @@ class Axis:
         return info
 
     def is_constant(self):
+        """Axis constant flag."""
         try:
             len(self.points)
         except TypeError:
@@ -149,25 +200,43 @@ class Axis:
 
     @property
     def label(self):
+        """LaTex formatted label."""
         return self.get_label()
 
     def max(self):
+        """Axis max, ignoring nans."""
         return self.points.max()
 
     def min(self):
+        """Axis min, ignoring nans."""
         return self.points.min()
-
-    def min_max_step(self):
-        _min = self.points.min()
-        _max = self.points.max()
-        _step = (_max - _min) / (len(self.points) - 1)
-        return _min, _max, _step
 
 
 class Channel:
+    """Channel"""
 
     def __init__(self, values, units=None, file_idx=None, null=None, signed=None, name='channel',
                  label=None, label_seed=None):
+        """
+        Parameters
+        ----------
+        values : array-like
+            Values.
+        units : string (optional)
+            Channel units. Default is None.
+        file_idx : integer (optional)
+            Channel file index. Default is None.
+        null : number (optional)
+            Channel null. Default is None (0).
+        signed : booelan (optional)
+            Channel signed flag. Default is None (guess).
+        name : string (optional)
+            Channel name. Default is 'channel'.
+        label : string.
+            Label. Default is None.
+        label_seed : list of strings
+            Label seed. Default is None.
+        """
         # import
         self.name = wt_kit.string2identifier(name)
         self.label = label
@@ -182,9 +251,17 @@ class Channel:
             self.signed = signed
 
     def __repr__(self):
+        """An unambiguous representation of the Channel.
+
+        Returns
+        -------
+        string
+            Representation.
+        """
         return 'WrightTools.data.Channel object \'{0}\' at {1}'.format(self.name, str(id(self)))
 
     def _update(self):
+        """Update channel."""
         message = '_update is no longer necessary, and will be removed in future versions'
         warnings.warn(message, wt_exceptions.VisibleDeprecationWarning)
 
@@ -217,6 +294,17 @@ class Channel:
             print('replace not recognized in channel.clip')
 
     def give_values(self, values, null=None, signed=None):
+        """Give values.
+
+        Parameters
+        ----------
+        values : array-like
+            Values.
+        null : number (optional)
+            Null. Default is None (0).
+        signed : boolean (optional)
+            Signed flag. Default is None (guess).
+        """
         self.values = values
         # null
         if null is not None:
@@ -245,6 +333,7 @@ class Channel:
 
     @property
     def info(self):
+        """Channel info dictionary"""
         info = collections.OrderedDict()
         info['name'] = self.name
         info['id'] = id(self)
@@ -255,24 +344,26 @@ class Channel:
         return info
 
     def invert(self):
+        """Invert channel values."""
         self.values = - self.values
 
     @property
     def mag(self):
+        """Channel magnitude (maximum deviation from null)."""
         return max((self.max - self.null, self.null - self.min))
 
     @property
     def max(self):
-        """ Maximum, ignorning nans.  """
+        """Maximum, ignorning nans."""
         return np.nanmax(self.values)
 
     @property
     def min(self):
-        """ Minimum, ignoring nans.  """
+        """Minimum, ignoring nans."""
         return np.nanmin(self.values)
 
     def normalize(self, axis=None):
-        """ Normalizes a Channel, setting z-null to 0 and the max to 1.  """
+        """Normalizes a Channel, setting z-null to 0 and the max to 1."""
         # process axis argument
         if axis is not None:
             if hasattr(axis, '__contains__'):  # list, tuple or similar
@@ -374,35 +465,39 @@ class Channel:
 
     @ property
     def zmag(self):
+        """Channel magnitude."""
         message = "use mag, not zmag"
         warnings.warn(message, wt_exceptions.VisibleDeprecationWarning)
         return self.mag
 
     @ property
     def zmax(self):
+        """Channel maximum."""
         message = "use max, not zmax"
         warnings.warn(message, wt_exceptions.VisibleDeprecationWarning)
         return self.max
 
     @ property
     def zmin(self):
+        """Channel minimum."""
         message = "use min, not zmin"
         warnings.warn(message, wt_exceptions.VisibleDeprecationWarning)
         return self.min
 
     @ property
     def znull(self):
+        """Channel null."""
         message = "use null, not znull"
         warnings.warn(message, wt_exceptions.VisibleDeprecationWarning)
         return self.null
 
 
 class Data:
+    """Central multidimensional data class."""
 
     def __init__(self, axes, channels, constants=[],
                  name='', source=None):
-        """ Central class for data in the Wright Group.
-
+        """
         Parameters
         ----------
         channels : list
@@ -429,6 +524,13 @@ class Data:
         self._original = self.copy()
 
     def __repr__(self):
+        """An unambiguous representation.
+
+        Returns
+        -------
+        string
+            Representation.
+        """
         return 'WrightTools.data.Data object \'{0}\' {1} at {2}'.format(
             self.name, str(self.axis_names), str(id(self)))
 
@@ -714,6 +816,7 @@ class Data:
 
     @property
     def dimensionality(self):
+        """Data dimensionality."""
         return len(self.axes)
 
     def divide(self, divisor, channel=0, divisor_channel=0):
@@ -980,6 +1083,7 @@ class Data:
 
     @property
     def info(self):
+        """Data info dictionary."""
         info = collections.OrderedDict()
         info['name'] = self.name
         info['id'] = id(self)
@@ -2410,6 +2514,25 @@ def from_KENT(filepaths, null=None, name=None, ignore=['wm'], use_norm=False,
 
 def from_NISE(measure_object, name='simulation', ignore_constants=['A', 'p'],
               flip_delays=True, verbose=True):
+    """Create a Data object from a NISE Measure object.
+
+    Parameters
+    ----------
+    measure_object : NISE Measure object.
+        Measure object.
+    name : string (optional)
+        Data name. Default is 'simulation'.
+    ignore_constants : list of strings (optional)
+        Constants to ignore. Default is ['A', 'p'].
+    flip_delays : boolean (optional)
+        Toggle flipping of delay conventions. Default is True.
+    verbose : boolean (optional)
+        Toggle talkback. Default is True.
+
+    Returns
+    -------
+    WrightTools.data.Data object
+    """
     try:
         import NISE
     except BaseException:
@@ -2481,6 +2604,19 @@ def from_NISE(measure_object, name='simulation', ignore_constants=['A', 'p'],
 
 
 def from_pickle(filepath, verbose=True):
+    """Open a pickled data object.
+
+    Parameters
+    ----------
+    filepath : path
+        Path to pickle.
+    verbose : boolean (optional)
+        Toggle talkback. Default is True.
+
+    Returns
+    -------
+    WrightTools.data.Data object
+    """
     data = pickle.load(open(filepath, 'rb'))
     if hasattr(data, '__version__'):
         from . import __version__
@@ -2665,6 +2801,21 @@ def from_PyCMDS(filepath, name=None,
 
 
 def from_scope(filepath, name=None, verbose=True):
+    """Create a Data object from an Ocean Optics .scope file.
+
+    Parameters
+    ----------
+    filepath : path
+        Filepath to .scope file.
+    name : string (optional)
+        Name of Data object. Default is None (filename).
+    verbose : boolean (optional)
+        Toggle talkback. Default is True.
+
+    Returns
+    -------
+    WrightTools.data.Data object
+    """
     # check filepath
     if os.path.isfile(filepath):
         if verbose:
@@ -2685,33 +2836,40 @@ def from_scope(filepath, name=None, verbose=True):
 
 
 def from_shimadzu(filepath, name=None, verbose=True):
+    """Create a Data object from a Shimadzu txt file.
 
+    Parameters
+    ----------
+    filepath : path
+        Path to Shimadzu dataset.
+    name : string (optional)
+        Data name. Default is None (filename).
+    verbose : boolean (optional)
+        Toggle talkback. Default is True.
+
+    Returns
+    -------
+    WrightTools.data.Data object
+    """
     # check filepath ------------------------------------------------------------------------------
-
     if os.path.isfile(filepath):
         if verbose:
             print('found the file!')
     else:
         print('Error: filepath does not yield a file')
         return
-
     # is the file suffix one that we expect?  warn if it is not!
     filesuffix = os.path.basename(filepath).split('.')[-1]
     if filesuffix != 'txt':
         wt_exceptions.WrongFileTypeWarning.warn(filepath, 'txt')
-
     # import data ---------------------------------------------------------------------------------
-
     # now import file as a local var--18 lines are just txt and thus discarded
     data = np.genfromtxt(filepath, skip_header=2, delimiter=',').T
-
     # construct data
     x_axis = Axis(data[0], 'nm', name='wm')
     signal = Channel(data[1], 'sig', file_idx=1, signed=False)
     data = Data([x_axis], [signal], source='Shimadzu', name=name)
-
     # return --------------------------------------------------------------------------------------
-
     return data
 
 
