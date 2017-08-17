@@ -199,7 +199,7 @@ class Axis:
             return True
 
     @property
-    def label(self):
+    def label(self):  # noqa: D403
         """LaTeX formatted label."""
         return self.get_label()
 
