@@ -1,6 +1,4 @@
-"""
-Custom exception types
-"""
+"""Custom exception types."""
 
 
 # --- import --------------------------------------------------------------------------------------
@@ -18,7 +16,8 @@ class FileNotFound(Exception):
     """FileNotFound."""
 
     def __init__(self, path):
-        """
+        """Format a file not found exception.
+
         Parameters
         ----------
         path : string
@@ -33,11 +32,12 @@ class FileNotFound(Exception):
 
 class VisibleDeprecationWarning(Warning):
     """VisibleDepreciationWarning."""
+
     pass
 
 
 class WrongFileTypeWarning(Warning):
-    """WrongFileTypeWarning"""
+    """WrongFileTypeWarning."""
 
     def warn(filepath, expected):
         """Raise warning.

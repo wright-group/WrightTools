@@ -1,4 +1,4 @@
-""" Tools for visualizing data.
+"""Tools for visualizing data.
 
 .. _gridspec: http://matplotlib.org/users/gridspec.html#gridspec-and-subplotspec
 .. _grayify: https://jakevdp.github.io/blog/2014/10/16/how-bad-is-your-colormap/
@@ -49,11 +49,12 @@ else:
 
 class Axes(matplotlib.axes.Axes):
     """Axes."""
+
     transposed = False
     is_sideplot = False
 
     def add_sideplot(self, along, pad=0, height=0.75, ymin=0, ymax=1.1):
-        """ Add a side axis.
+        """Add a side axis.
 
         Parameters
         ----------
@@ -152,7 +153,7 @@ class Axes(matplotlib.axes.Axes):
 
     def plot_data(self, data, channel=0, interpolate=False, coloring=None,
                   xlabel=True, ylabel=True, min=None, max=None):
-        """ Plot directly from a data object.
+        """Plot directly from a data object.
 
         Parameters
         ----------
@@ -340,6 +341,7 @@ class Figure(matplotlib.figure.Figure):
 
 class GridSpec(matplotlib.gridspec.GridSpec):
     """GridSpec."""
+
     pass
 
 
@@ -357,7 +359,7 @@ def _title(fig, title, subtitle='', margin=1, fontsize=20, subfontsize=18):
 def add_sideplot(ax, along, pad=0., grid=True, zero_line=True,
                  arrs_to_bin=None, normalize_bin=True, ymin=0, ymax=1.1,
                  height=0.75, c='C0'):
-    """ Add a sideplot to an axis. Sideplots share their corresponding axis.
+    """Add a sideplot to an axis. Sideplots share their corresponding axis.
 
     Parameters
     ----------
@@ -430,11 +432,12 @@ def add_sideplot(ax, along, pad=0., grid=True, zero_line=True,
 
 
 def apply_rcparams(kind='fast'):
-    """ Quickly apply rcparams.
+    """Quickly apply rcparams for given purposes.
 
     Parameters
     ----------
-
+    kind: {'default', 'fast', 'publication'} (optional)
+        Settings to use. Default is 'fast'.
     """
     if kind == 'default':
         matplotlib.rcdefaults()
@@ -460,7 +463,7 @@ def apply_rcparams(kind='fast'):
 
 def corner_text(text, distance=0.075, ax=None, corner='UL', factor=200, bbox=True,
                 fontsize=18, background_alpha=1, edgecolor=None):
-    """ Place some text in the corner of the figure.
+    """Place some text in the corner of the figure.
 
     Parameters
     ----------
@@ -519,8 +522,7 @@ def corner_text(text, distance=0.075, ax=None, corner='UL', factor=200, bbox=Tru
 def create_figure(width='single', nrows=1, cols=[1], margin=1.,
                   hspace=0.25, wspace=0.25, cbar_width=0.25, aspects=[],
                   default_aspect=1):
-    """ Re-parameterization of matplotlib figure creation tools, exposing variables
-    convinient for the Wright Group.
+    """Re-parameterization of matplotlib figure creation tools, exposing convenient variables.
 
     Figures are defined primarily by their width. Height is defined by the
     aspect ratios of the subplots contained within. hspace, wspace, and
@@ -579,7 +581,7 @@ def create_figure(width='single', nrows=1, cols=[1], margin=1.,
     ``plt.savefig(plt.savefig(output_path, dpi=300, transparent=True,
     pad_inches=1))``
 
-    See also
+    See Also
     --------
     wt.artists.plot_margins
         Plot lines to visualize the figure edges, margins, and centers. For
@@ -656,7 +658,7 @@ def create_figure(width='single', nrows=1, cols=[1], margin=1.,
 
 
 def diagonal_line(xi, yi, ax=None, c='k', ls=':', lw=1, zorder=3):
-    """ Plot a diagonal line.
+    """Plot a diagonal line.
 
     Parameters
     ----------
@@ -691,8 +693,9 @@ def diagonal_line(xi, yi, ax=None, c='k', ls=':', lw=1, zorder=3):
 
 
 def get_color_cycle(n, cmap='rainbow', rotations=3):
-    """ Get a list of RGBA colors. Useful for plotting lots of elements, keeping
-    the color of each unique.
+    """Get a list of RGBA colors following a colormap.
+    
+    Useful for plotting lots of elements, keeping the color of each unique.
 
     Parameters
     ----------
@@ -701,8 +704,7 @@ def get_color_cycle(n, cmap='rainbow', rotations=3):
     cmap : string (optional)
         The colormap to use in the cycle. Default is rainbow.
     rotations : integer (optional)
-        The number of times to repeat the colormap over the cycle. Default is
-        3.
+        The number of times to repeat the colormap over the cycle. Default is 3.
 
     Returns
     -------
@@ -791,7 +793,7 @@ def get_scaled_bounds(ax, position, distance=0.1, factor=200):
 
 
 def grayify_cmap(cmap):
-    """Return a grayscale version of the colormap
+    """Return a grayscale version of the colormap.
 
     `Source`__
 
@@ -808,7 +810,7 @@ def grayify_cmap(cmap):
 
 
 def make_cubehelix(gamma=0.5, s=0.25, r=-1, h=1.3, reverse=False, darkest=0.7):
-    """ Define cubehelix type colorbars.
+    """Define cubehelix type colorbars.
 
     Look `here`__ for more information.
 
@@ -867,15 +869,25 @@ def make_cubehelix(gamma=0.5, s=0.25, r=-1, h=1.3, reverse=False, darkest=0.7):
 
 
 def make_colormap(seq, name='CustomMap', plot=False):
-    """ Return a LinearSegmentedColormap
+    """Generate a LinearSegmentedColormap.
 
-    seq: a sequence of floats and RGB-tuples. The floats should be increasing
-    and in the interval (0,1).
+    Parameters
+    ----------
+    seq : list of tuples
+        A sequence of floats and RGB-tuples. The floats should be increasing
+        and in the interval (0,1).
+    name : string (optional)
+        A name for the colormap
+    plot : boolean (optional)
+        Use to generate a plot of the colormap (Defalut is False).
+
+    Returns
+    -------
+    matplotlib.colors.LinearSegmentedColormap
 
     `Source`__
 
     __ colormap_
-
     """
     seq = [(None,) * 3, 0.0] + list(seq) + [1.0, (None,) * 3]
     cdict = {'red': [], 'green': [], 'blue': []}
@@ -893,12 +905,20 @@ def make_colormap(seq, name='CustomMap', plot=False):
 
 
 def nm_to_rgb(nm):
-    """ returns list [r, g, b] (zero to one scale) for given input in nm
+    """Convert a wavelength to corresponding RGB values [0.0-1.0].
+
+    Parameter
+    ---------
+    nm : int or float
+        The wavelength of light.
+
+    Returns
+    -------
+    List of [R,G,B] values between 0 and 1
 
     `original code`__
 
     __ nmtorgb_
-
     """
     w = int(nm)
     # color ---------------------------------------------------------------------------------------
@@ -946,17 +966,31 @@ def nm_to_rgb(nm):
 
 
 def pcolor_helper(xi, yi, zi, transform=None):
+    """Prepare a set of arrays for plotting using `pcolor`.
+
+    The return values are suitable for feeding directly into ``matplotlib.pcolor``
+    such that the pixels are properly centered.
+
+    Parameters
+    ----------
+    xi : 1D array-like
+        1D array of X-coordinates.
+    yi : 1D array-like
+        1D array of Y-coordinates.
+    zi : 2D array-like
+        Rectangular array of Z-coordinates.
+
+    xi, yi, and zi, are those that you would pass to contourf, e.g.
+
+    Returns
+    -------
+    X : 2D ndarray
+        X dimension for pcolor
+    Y : 2D ndarray
+        Y dimension for pcolor
+    Z : 2D ndarray
+        Z dimension for pcolor
     """
-
-    accepts xi, yi, zi as the normal rectangular arrays
-    that would be given to contorf etc
-
-    returns list [X, Y, Z] appropriate for feeding directly
-    into matplotlib.pyplot.pcolor so that the pixels are centered correctly.
-
-    transform takes a function that accepts a
-    """
-
     x_points = np.zeros(len(xi) + 1)
     y_points = np.zeros(len(yi) + 1)
 
@@ -981,7 +1015,7 @@ def pcolor_helper(xi, yi, zi, transform=None):
 def plot_colorbar(cax=None, cmap='default', ticks=None, clim=None, vlim=None,
                   label=None, tick_fontsize=14, label_fontsize=18, decimals=3,
                   orientation='vertical', ticklocation='auto'):
-    """ Easily add a colormap to an axis.
+    """Easily add a colormap to an axis.
 
     Parameters
     ----------
@@ -1050,8 +1084,7 @@ def plot_colorbar(cax=None, cmap='default', ticks=None, clim=None, vlim=None,
 
 
 def plot_colormap_components(cmap):
-    """ Plot the components of a given colormap.  """
-
+    """Plot the components of a given colormap."""
     plt.figure(figsize=[8, 4])
     gs = grd.GridSpec(2, 1, height_ratios=[1, 10], hspace=0.05)
     # colorbar
@@ -1084,7 +1117,7 @@ def plot_colormap_components(cmap):
 
 
 def savefig(path, fig=None, close=True, dpi=300):
-    """ Save a figure.
+    """Save a figure.
 
     Parameters
     ----------
@@ -1117,7 +1150,7 @@ def savefig(path, fig=None, close=True, dpi=300):
 
 def set_ax_labels(ax=None, xlabel=None, ylabel=None, xticks=None, yticks=None,
                   label_fontsize=18):
-    """ Set all axis labels properties easily.
+    """Set all axis labels properties easily.
 
     Parameters
     ----------
@@ -1134,7 +1167,7 @@ def set_ax_labels(ax=None, xlabel=None, ylabel=None, xticks=None, yticks=None,
     label_fontsize : number
         Fontsize of label. Default is 18.
 
-    See also
+    See Also
     --------
     set_fig_labels
     """
@@ -1162,7 +1195,7 @@ def set_ax_labels(ax=None, xlabel=None, ylabel=None, xticks=None, yticks=None,
 
 
 def set_ax_spines(ax=None, c='k', lw=3, zorder=10):
-    """ Easily the properties of all four axis spines.
+    """Easily the properties of all four axis spines.
 
     Parameters
     ----------
@@ -1187,7 +1220,7 @@ def set_ax_spines(ax=None, c='k', lw=3, zorder=10):
 
 def set_fig_labels(fig=None, xlabel=None, ylabel=None, xticks=None, yticks=None,
                    title=None, label_fontsize=18, title_fontsize=20):
-    """ Set all axis labels of a figure simultaniously.
+    """Set all axis labels of a figure simultaniously.
 
     Only plots ticks and labels for edge axes.
 
@@ -1210,7 +1243,7 @@ def set_fig_labels(fig=None, xlabel=None, ylabel=None, xticks=None, yticks=None,
     title_fontsize : number
         Fontsize of title. Default is 20.
 
-    See also
+    See Also
     --------
     set_ax_labels
     """
@@ -1253,7 +1286,7 @@ def set_fig_labels(fig=None, xlabel=None, ylabel=None, xticks=None, yticks=None,
 
 def plot_gridlines(ax=None, c='grey', lw=1, diagonal=False, zorder=2,
                    makegrid=True):
-    """ Plot dotted gridlines onto an axis.
+    """Plot dotted gridlines onto an axis.
 
     Parameters
     ----------
@@ -1297,7 +1330,7 @@ def plot_gridlines(ax=None, c='grey', lw=1, diagonal=False, zorder=2,
 
 
 def plot_margins(fig=None, inches=1., centers=True, edges=True):
-    """ Add lines onto a figure indicating the margins, centers, and edges.
+    """Add lines onto a figure indicating the margins, centers, and edges.
 
     Useful for ensuring your figure design scripts work as intended, and for laying
     out figures.
@@ -1346,13 +1379,13 @@ def plot_margins(fig=None, inches=1., centers=True, edges=True):
 
 
 def subplots_adjust(fig=None, inches=1):
-    """ Enforce margin to be equal around figure, starting at subplots.
+    """Enforce margin to be equal around figure, starting at subplots.
 
     .. note::
 
         You probably should be using wt.artists.create_figure instead.
 
-    See also
+    See Also
     --------
     wt.artists.plot_margins
         Visualize margins, for debugging / layout.
@@ -1369,7 +1402,7 @@ def subplots_adjust(fig=None, inches=1):
 
 def stitch_to_animation(images, outpath=None, duration=0.5, palettesize=256,
                         verbose=True):
-    """ Stitch a series of images into an animation.
+    """Stitch a series of images into an animation.
 
     Currently supports animated gifs, other formats coming as needed.
 
@@ -1702,7 +1735,7 @@ class mpl_1D:
 
 
 class mpl_2D:
-    """matplotlib 2D"""
+    """matplotlib 2D."""
 
     def __init__(self, data, xaxis=1, yaxis=0, at={}, verbose=True):
         """Plot generic 2D slice(s) quickly and easily.
@@ -1734,7 +1767,7 @@ class mpl_2D:
         self._onplotdata = []
 
     def get_lims(self, transform=None):
-        """ Find plot limits using transform.
+        """Find plot limits using transform.
 
         Assumes that the corners of the axes are also the most extreme points
         of the transformed axes.
@@ -1749,7 +1782,7 @@ class mpl_2D:
             The transform function, accepts a tuple, ouptus transformed tuple
 
         Returns
-        ----------
+        -------
         xlim : tuple of floats
             (min_x, max_x)
         ylim : tuple of floats
@@ -1830,7 +1863,7 @@ class mpl_2D:
              ybin=False, xlim=None, ylim=None, autosave=False,
              output_folder=None, fname=None, verbose=True,
              transform=None, contour_thickness=None):
-        """ Draw the plot(s).
+        """Draw the plot(s).
 
         Parameters
         ----------
@@ -2323,11 +2356,11 @@ class Absorbance:
 
 
 class Diff2D():
-    """Diff2D"""
+    """Diff2D."""
 
     def __init__(self, minuend, subtrahend, xaxis=1, yaxis=0, at={},
                  verbose=True):
-        """ plot the difference between exactly two datasets in 2D
+        """Plot the difference between exactly two datasets in 2D.
 
         both data objects must have the same axes with the same name
         axes do not need to be in the same order or have the same points
@@ -2366,11 +2399,12 @@ class Diff2D():
              xlim=None, ylim=None,
              autosave=False, output_folder=None, fname=None,
              verbose=True):
-        """ set contours to zero to turn off
+        """Set contours to zero to turn off.
 
         dynamic_range forces the colorbar to use all of its colors (only matters
         for signed data)
         """
+        #TODO: add parameters to this plot function (KS)
         fig = None
         if len(self.minuend_chopped) > 10:
             if not autosave:
@@ -2539,9 +2573,9 @@ class Diff2D():
 class PDF2DSlices:
     """PDF 2D slices."""
 
-
     def __init__(self, datas, name='', data_signed=False):
-        """
+        """Initialize the 2D slice PDF generator.
+
         Parameters
         ----------
         datas : list of WrightTools.data.Data objects
