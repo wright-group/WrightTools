@@ -48,6 +48,7 @@ else:
 
 
 class Axes(matplotlib.axes.Axes):
+    """Axes."""
     transposed = False
     is_sideplot = False
 
@@ -89,6 +90,19 @@ class Axes(matplotlib.axes.Axes):
         return ax
 
     def contourf(self, *args, **kwargs):
+        """Draw filled contours.
+
+        Parameters
+        ----------
+        *args
+            matplotlib contourf args.
+        **kwargs
+            matplotlib contourf kwargs.
+
+        Returns
+        -------
+        contours
+        """
         # Overloading contourf in an attempt to fix aliasing problems when saving vector graphics
         # see https://stackoverflow.com/questions/15822159
         # also see https://stackoverflow.com/a/32911283
@@ -117,6 +131,19 @@ class Axes(matplotlib.axes.Axes):
         return contours
 
     def legend(self, *args, **kwargs):
+        """Add a legend.
+
+        Parameters
+        ----------
+        *args
+            matplotlib legend args.
+        *kwargs
+            matplotlib legend kwargs.
+
+        Returns
+        -------
+        legend
+        """
         if 'fancybox' not in kwargs.keys():
             kwargs['fancybox'] = False
         if 'framealpha' not in kwargs.keys():
@@ -241,8 +268,20 @@ class Axes(matplotlib.axes.Axes):
 
 
 class Figure(matplotlib.figure.Figure):
+    """Figure."""
 
     def add_subplot(self, *args, **kwargs):
+        """Add a subplot to the figure.
+
+        Parameters
+        ----------
+        *args
+        **kwargs
+
+        Returns
+        -------
+        WrightTools.artists.Axes object
+        """
         # projection
         if 'projection' not in kwargs.keys():
             projection = 'wright'
@@ -300,9 +339,8 @@ class Figure(matplotlib.figure.Figure):
 
 
 class GridSpec(matplotlib.gridspec.GridSpec):
-
-    def __init__(self, *args, **kwargs):
-        super(self.__class__, self).__init__(*args, **kwargs)
+    """GridSpec."""
+    pass
 
 
 # --- artist helpers ------------------------------------------------------------------------------
@@ -684,12 +722,41 @@ def get_color_cycle(n, cmap='rainbow', rotations=3):
 
 
 def get_constant_text(constants):
+    """Get a nicely formatted string representing all constants.
+
+    Parameters
+    ----------
+    constants : list of WrightTools.data.Axis objects
+        The constants to be formatted.
+
+    Returns
+    -------
+    string
+        The constant text.
+    """
     string_list = [constant.get_label(show_units=True, points=True) for constant in constants]
     text = '    '.join(string_list)
     return text
 
 
 def get_scaled_bounds(ax, position, distance=0.1, factor=200):
+    """Get scaled bounds.
+
+    Parameters
+    ----------
+    ax : Axes object
+        Axes object.
+    position : {'UL', 'LL', 'UR', 'LR'}
+        Position.
+    distance : number (optional)
+        Distance. Default is 0.1.
+    factor : number (optional)
+        Factor. Default is 200.
+
+    Returns
+    -------
+    ([h_scaled, v_scaled], [va, ha])
+    """
     # get bounds
     x0, y0, width, height = ax.bbox.bounds
     width_scaled = width / factor
@@ -1497,8 +1564,23 @@ overline_colors = ['#CCFF00', '#FE4EDA', '#FF6600', '#00FFBF', '#00B7EB']
 
 
 class mpl_1D:
+    """matplotlib 1D."""
 
     def __init__(self, data, xaxis=0, at={}, verbose=True):
+        """Plot generic 1D slice(s) quickly and easily.
+
+        Parameters
+        ----------
+        data : WrightTools.data.Data object.
+            The data object to plot.
+        xaxis : string or int (optional)
+            xaxis name or index. Default is zero.
+        at : dictionary (optional)
+            Dictionary of parameters in non-plotted dimension(s). If not
+            provided, plots will be made at each coordinate.
+        verbose : boolean (optional)
+            Toggle talkback. Default is True.
+        """
         # import data
         self.data = data
         self.chopped = self.data.chop(xaxis, at=at, verbose=False)
@@ -1509,6 +1591,33 @@ class mpl_1D:
 
     def plot(self, channel=0, local=False, autosave=False, output_folder=None,
              fname=None, lines=True, verbose=True):
+        """Plot.
+
+        Parameters
+        ----------
+        channel : string or int (optional)
+            Name or index of plotted channel. Default is zero.
+        local : boolean (optional)
+            Toggle rescaling for each generated plot. Default is False.
+        autosave : boolean (optional)
+            Toggle saving. Default is False.
+        output_folder : path (optional)
+            Location to place generated images. If None, a new timestamped
+            folder will be created. Default is None.
+        fname : string (optional)
+            Name of generated image files. If None, a simple name is used.
+            Default is None.
+        lines : boolean (optional)
+            Toggle plotting of lines to indicate value of constant axes in a
+            visual way. Default is True.
+        verbose : boolean (optional)
+            Toggle talkback. Default is True.
+
+        Returns
+        -------
+        list of filepaths
+            List of generated filepaths, if files were saved.
+        """
         # get channel index
         if type(channel) in [int, float]:
             channel_index = int(channel)
@@ -1593,8 +1702,25 @@ class mpl_1D:
 
 
 class mpl_2D:
+    """matplotlib 2D"""
 
     def __init__(self, data, xaxis=1, yaxis=0, at={}, verbose=True):
+        """Plot generic 2D slice(s) quickly and easily.
+
+        Parameters
+        ----------
+        data : WrightTools.data.Data object.
+            The data object to plot.
+        xaxis : string or int (optional)
+            xaxis name or index. Default is 1.
+        yaxis : string or int (optional)
+            yaxis name or index. Default is 0.
+        at : dictionary (optional)
+            Dictionary of parameters in non-plotted dimension(s). If not
+            provided, plots will be made at each coordinate.
+        verbose : boolean (optional)
+            Toggle talkback. Default is True.
+        """
         # import data
         self.data = data
         self.chopped = self.data.chop(yaxis, xaxis, at=at, verbose=False)
@@ -1645,6 +1771,17 @@ class mpl_2D:
         return xlim, ylim
 
     def sideplot(self, data, x=True, y=True):
+        """Add data to sideplot(s).
+
+        Parameters
+        ----------
+        data : 1D WrightTools.data.Data object
+            Data to add to sideplot.
+        x : boolean (optional)
+            Toggle plotting along horizontal sideplot. Default is True.
+        y : boolean (optional)
+            Toggle plotting along vertical sideplot. Default is True.
+        """
         data = data.copy()
         if x:
             if self.chopped[0].axes[1].units_kind == data.axes[0].units_kind:
@@ -1664,6 +1801,23 @@ class mpl_2D:
                     data.axes[0].units_kind, self.chopped[0].axes[0].units_kind))
 
     def onplot(self, xi, yi, c='k', lw=5, alpha=0.3, **kwargs):
+        """Plot a line directly onto the plot.
+
+        Parameters
+        ----------
+        xi : 1D array-like
+            X points.
+        yi : 1D array-like
+            Y points.
+        c : matplotlib color (optional)
+            Line color. Default is 'k'.
+        lw : number (optional)
+            Line width. Default is 5.
+        alpha : number (optional)
+            Line opacity. Default is 0.3
+        **kwargs
+            Additional matplotlib.pyplot.plot arguments.
+        """
         kwargs['c'] = c
         kwargs['lw'] = lw
         kwargs['alpha'] = alpha
@@ -2051,21 +2205,41 @@ class mpl_2D:
 
 
 class Absorbance:
+    """Absorbance plot."""
 
     def __init__(self, data):
+        """Absorbance plot.
 
+        Parameters
+        ----------
+        data : WrightTools.data.Data object, or list thereof
+           Absorbance data to plot.
+        """
         if not isinstance(data, list):
             data = [data]
-
         self.data = data
 
     def plot(self, channel_index=0, xlim=None, ylim=None,
              yticks=True, derivative=True, n_smooth=10,):
+        """Plot.
 
+        Parameters
+        ----------
+        channel_index : int (optional)
+            Channel index. Default is 0.
+        xlim : [xmin, xmax] (optional)
+            Energy axis limits. Default is None (inherits from data).
+        ylim : [ymin, ymax] (optional)
+            Absorption axis limits. Default is None (inherits from data).
+        yticks : boolean (optional)
+            Toggle yticks. Default is True.
+        derivative : boolean (optional)
+            Toggle plotting derivative. Default is True.
+        n_smooth : integer (optioanl)
+            Smoothing factor. Default is 10.
+        """
         # prepare plot environment ----------------------------------------------------------------
-
         self.font_size = 14
-
         if derivative:
             aspects = [[[0, 0], 0.35], [[1, 0], 0.35]]
             hspace = 0.1
@@ -2084,18 +2258,12 @@ class Absorbance:
             self.ax1 = plt.subplot(111)
             plt.ylabel('OD', fontsize=18)
             plt.grid()
-
         plt.xticks(rotation=45)
-
         for data in self.data:
-
             # import data -------------------------------------------------------------------------
-
             xi = data.axes[0].points
             zi = data.channels[channel_index].values
-
             # scale -------------------------------------------------------------------------------
-
             if xlim:
                 plt.xlim(xlim[0], xlim[1])
                 min_index = np.argmin(abs(xi - min(xlim)))
@@ -2106,14 +2274,10 @@ class Absorbance:
                 zi /= zi_truncated.max()
             else:
                 xlim = xi.min(), xi.max()
-
             # plot absorbance ---------------------------------------------------------------------
-
             self.ax1.plot(xi, zi, lw=2)
             self.ax1.set_xlim(*xlim)
-
             # now plot 2nd derivative -------------------------------------------------------------
-
             if derivative:
                 # compute second derivative
                 xi2, zi2 = self._smooth(np.array([xi, zi]), n_smooth)
@@ -2122,27 +2286,19 @@ class Absorbance:
                 self.ax2.plot(xi2, diff, lw=2)
                 self.ax2.grid(b=True)
                 plt.xlabel(data.axes[0].get_label(), fontsize=18)
-
         # legend ----------------------------------------------------------------------------------
-
         #self.ax1.legend([data.name for data in self.data])
-
         # ticks -----------------------------------------------------------------------------------
-
         if not yticks:
             self.ax1.get_yaxis().set_ticks([])
         if derivative:
             self.ax2.get_yaxis().set_ticks([])
             self.ax2.axhline(0, color='k', ls=':')
-
         # title -----------------------------------------------------------------------------------
-
         if len(self.data) == 1:  # only attempt this if we are plotting one data object
             title_text = self.data[0].name
             plt.suptitle(title_text, fontsize=self.font_size)
-
         # finish ----------------------------------------------------------------------------------
-
         if xlim:
             plt.xlim(xlim[0], xlim[1])
             for axis, xi, zi in [[self.ax1, xi, zi], [self.ax2, xi2, diff]]:
@@ -2151,7 +2307,6 @@ class Absorbance:
                 zi_truncated = zi[min_index:max_index]
                 extra = (zi_truncated.max() - zi_truncated.min()) * 0.1
                 axis.set_ylim(zi_truncated.min() - extra, zi_truncated.max() + extra)
-
         if ylim:
             self.ax1.set_ylim(ylim)
 
@@ -2168,6 +2323,7 @@ class Absorbance:
 
 
 class Diff2D():
+    """Diff2D"""
 
     def __init__(self, minuend, subtrahend, xaxis=1, yaxis=0, at={},
                  verbose=True):
@@ -2220,7 +2376,6 @@ class Diff2D():
             if not autosave:
                 print('too many images will be generated: forcing autosave')
                 autosave = True
-
         # prepare output folder
         if autosave:
             plt.ioff()
@@ -2237,24 +2392,16 @@ class Diff2D():
                     folder_name = 'difference_2D ' + wt_kit.get_timestamp()
                     os.mkdir(folder_name)
                     output_folder = folder_name
-
         # chew through image generation
         for i in range(len(self.minuend_chopped)):
-
             # create figure -----------------------------------------------------------------------
-
             if fig:
                 plt.close(fig)
-
             fig = plt.figure(figsize=(22, 7))
-
             gs = grd.GridSpec(1, 6, width_ratios=[20, 20, 1, 1, 20, 1], wspace=0.1)
-
             subplot_main = plt.subplot(gs[0])
             subplot_main.patch.set_facecolor(facecolor)
-
             # levels ------------------------------------------------------------------------------
-
             """
             if channel.signed:
 
@@ -2272,32 +2419,24 @@ class Diff2D():
                     levels = np.linspace(channel.null, channel.max, 200)
             """
             levels = np.linspace(0, 1, 200)
-
             # main plot ---------------------------------------------------------------------------
-
             # get colormap
             mycm = colormaps[cmap]
             mycm.set_bad(facecolor)
             mycm.set_under(facecolor)
-
             for j in range(2):
-
                 if j == 0:
                     current_chop = self.minuend_chopped[i]
                 elif j == 1:
                     current_chop = self.subtrahend_chopped[i]
-
                 axes = current_chop.axes
                 channels = current_chop.channels
                 constants = current_chop.constants
-
                 xaxis = axes[1]
                 yaxis = axes[0]
                 channel = channels[channel_index]
                 zi = channel.values
-
                 plt.subplot(gs[j])
-
                 # fill in main data environment
                 if pixelated:
                     xi, yi, zi = pcolor_helper(xaxis.points, yaxis.points, zi)
@@ -2308,15 +2447,11 @@ class Diff2D():
                 else:
                     cax = subplot_main.contourf(xaxis.points, yaxis.points, zi,
                                                 levels, cmap=mycm)
-
                 plt.xticks(rotation=45)
                 #plt.xlabel(xaxis.get_label(), fontsize = self.font_size)
                 #plt.ylabel(yaxis.get_label(), fontsize = self.font_size)
-
                 # grid ----------------------------------------------------------------------------
-
                 plt.grid(b=True)
-
                 if xaxis.units == yaxis.units:
                     # add diagonal line
                     if xlim:
@@ -2331,9 +2466,7 @@ class Diff2D():
                     diag_min = max(min(x), min(y))
                     diag_max = min(max(x), max(y))
                     plt.plot([diag_min, diag_max], [diag_min, diag_max], 'k:')
-
                 # contour lines -------------------------------------------------------------------
-
                 if contours:
                     if contours_local:
                         # force top and bottom contour to be just outside of data range
@@ -2344,9 +2477,7 @@ class Diff2D():
                         contours_levels = contours
                     plt.contour(xaxis.points, yaxis.points, zi,
                                 contours_levels, colors='k')
-
                 # finish main subplot -------------------------------------------------------------
-
                 if xlim:
                     subplot_main.set_xlim(xlim[0], xlim[1])
                 else:
@@ -2355,61 +2486,40 @@ class Diff2D():
                     subplot_main.set_ylim(ylim[0], ylim[1])
                 else:
                     subplot_main.set_ylim(yaxis.points[0], yaxis.points[-1])
-
             # colorbar ----------------------------------------------------------------------------
-
             subplot_cb = plt.subplot(gs[2])
             cbar_ticks = np.linspace(levels.min(), levels.max(), 11)
             cbar = plt.colorbar(cax, cax=subplot_cb, ticks=cbar_ticks)
-
             # difference --------------------------------------------------------------------------
-
             # get colormap
             mycm = colormaps['seismic']
             mycm.set_bad(facecolor)
             mycm.set_under(facecolor)
-
             dzi = self.minuend_chopped[i].channels[0].values - \
                 self.subtrahend_chopped[i].channels[0].values
-
             dax = plt.subplot(gs[4])
             plt.subplot(dax)
-
             X, Y, Z = pcolor_helper(xaxis.points, yaxis.points, dzi)
-
             largest = np.nanmax(np.abs(dzi))
-
             dcax = dax.pcolor(X, Y, Z, vmin=-largest, vmax=largest, cmap=mycm)
-
             dax.set_xlim(xaxis.points.min(), xaxis.points.max())
             dax.set_ylim(yaxis.points.min(), yaxis.points.max())
-
             differenc_cb = plt.subplot(gs[5])
             dcbar = plt.colorbar(dcax, cax=differenc_cb)
             dcbar.set_label(self.minuend.channels[channel_index].name +
                             ' - ' + self.subtrahend.channels[channel_index].name)
-
             # title -------------------------------------------------------------------------------
-
             title_text = self.minuend.name + ' - ' + self.subtrahend.name
-
             constants_text = '\n' + get_constant_text(constants)
-
             plt.suptitle(title_text + constants_text, fontsize=self.font_size)
-
             plt.figtext(0.03, 0.5, yaxis.get_label(), fontsize=self.font_size, rotation=90)
             plt.figtext(0.5, 0.01, xaxis.get_label(),
                         fontsize=self.font_size, horizontalalignment='center')
-
             # cleanup -----------------------------------------------------------------------------
-
             fig.subplots_adjust(left=0.075, right=1 - 0.075, top=0.90, bottom=0.15)
-
             plt.setp(plt.subplot(gs[1]).get_yticklabels(), visible=False)
             plt.setp(plt.subplot(gs[4]).get_yticklabels(), visible=False)
-
             # save figure -------------------------------------------------------------------------
-
             if autosave:
                 if fname:
                     file_name = fname + ' ' + str(i).zfill(3)
@@ -2418,22 +2528,28 @@ class Diff2D():
                 fpath = os.path.join(output_folder, file_name + '.png')
                 plt.savefig(fpath, facecolor='none')
                 plt.close()
-
                 if verbose:
                     print('image saved at', fpath)
-
         plt.ion()
 
 
 # --- artists in progress -------------------------------------------------------------------------
 
 
-class PDFAll2DSlices:
+class PDF2DSlices:
+    """PDF 2D slices."""
+
 
     def __init__(self, datas, name='', data_signed=False):
         """
-        I'm working on this. Expect nothing.
-        - Blaise 2016.03.28
+        Parameters
+        ----------
+        datas : list of WrightTools.data.Data objects
+            Datas to plot.
+        name : string (optional)
+            Name. Default is ''.
+        data_signed : boolean (optional)
+            Toggle data signed. Default is False.
         """
         self.datas = datas
         self.name = name
@@ -2542,6 +2658,7 @@ class PDFAll2DSlices:
         plt.close(fig)
 
     def sideplot(self, data, c, axes, channel=0):
+        """Add sideplot."""
         # get channel index
         if type(channel) in [int, float]:
             channel_index = int(channel)
@@ -2555,6 +2672,7 @@ class PDFAll2DSlices:
 
     def plot(self, channel=0, output_path=None, w1w2=True, w1_wigner=True,
              w2_wigner=True):
+        """Plot."""
         # get channel index
         if type(channel) in [int, float]:
             channel_index = int(channel)
