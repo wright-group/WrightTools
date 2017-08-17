@@ -1,6 +1,4 @@
-"""
-fitting tools
-"""
+"""Fitting tools."""
 
 
 # --- import --------------------------------------------------------------------------------------
@@ -28,7 +26,7 @@ from . import artists as wt_artists
 
 
 def get_baseline(values, deviations=3):
-    """ Guess the baseline for a data set.
+    """Guess the baseline for a data set.
 
     Returns the average of all points in ``values`` less than n ``deviations``
     away from zero.
@@ -61,7 +59,7 @@ def get_baseline(values, deviations=3):
 
 
 def leastsqfitter(p0, datax, datay, function, verbose=False, cov_verbose=False):
-    """ Convenience method for using scipy.optmize.leastsq().
+    """Conveniently call scipy.optmize.leastsq().
 
     Returns fit parameters and their errors.
 
@@ -127,7 +125,8 @@ class Function:
     """Base class for all fit functions."""
 
     def __init__(self, *args, **kwargs):
-        """
+        """Create a ``Function`` object.
+
         Parameters
         ----------
         *args
@@ -388,7 +387,7 @@ class Gaussian(Function):
 
 
 class TwoD_Gaussian(Function):
-    """TwoD_Gaussian"""
+    """TwoD_Gaussian."""
 
     def __init__(self):
         """Initialization."""
@@ -398,7 +397,7 @@ class TwoD_Gaussian(Function):
         self.limits = {'sigma_x': [0, np.inf], 'sigma_y': [0, np.inf]}
 
     def _Format_input(self, values, x, y):
-        """ This function makes sure the values and axis are in an ok format for fitting and free of nans
+        """Make sure the values and axis are in an ok format for fitting and free of nans.
 
         Parameters
         ----------
@@ -648,7 +647,8 @@ class Fitter:
     """Fit each slice of a Data object."""
 
     def __init__(self, function, data, *args, **kwargs):
-        """
+        """Create a `Fitter` object.
+
         Parameters
         ----------
         function : Function
@@ -750,7 +750,7 @@ class Fitter:
 
 
 class MultiPeakFitter:
-    """ Class which allows easy fitting and representation of aborbance data.
+    """Class which allows easy fitting and representation of aborbance data.
 
     Currently only offers Gaussian and Lorentzian functions.
     Functions are paramaterized by FWHM, height, and center.
@@ -761,7 +761,8 @@ class MultiPeakFitter:
     """
 
     def __init__(self, data, channel=0, name='', fittype=2, intensity_label='OD'):
-        """
+        """Create a `MultiPeakFitter object`.
+
         Parameters
         ----------
         data : WrightTools.Data object
@@ -793,7 +794,7 @@ class MultiPeakFitter:
         self.diff = wt_kit.diff(self.data.axes[0].points, self.zi, order=self.fittype)
 
     def build_funcs(self, x, params, kinds, diff_order=0):
-        """ Builds a new 1D function of many 1D function of various kinds.
+        """Build a new 1D function of many 1D function of various kinds.
 
         Parameters
         ----------
@@ -819,7 +820,7 @@ class MultiPeakFitter:
         return z
 
     def convert(self, destination_units):
-        """ Exposes wt.data.convert() method to convert units of data object.
+        """Exposes wt.data.convert() method to convert units of data object.
 
         Parameters
         ----------
@@ -828,7 +829,7 @@ class MultiPeakFitter:
         self.data.convert(destination_units)
 
     def encode_params(self, names, kinds, params):
-        """ Helper method to encode parameters of fit into an ordered dict of dicts.
+        """Encode parameters of fit into an ordered dict of dicts.
 
         Parameters
         ----------
@@ -850,8 +851,7 @@ class MultiPeakFitter:
         return dic
 
     def extract_params(self, dic):
-        """ Takes dictionary of fit parameters and returns tuple of extracted parameters
-        that function method can work with.
+        """Extract parameters from a dictionary.
 
         Parameters
         ----------
@@ -879,7 +879,9 @@ class MultiPeakFitter:
         return names, kinds, p0
 
     def fit(self, verbose=True):
-        """ Fitting method that takes data and guesses (class attributes) and instantiates/updates
+        """Run the fitting algorithm.
+
+        Fitting method that takes data and guesses (class attributes) and instantiates/updates
         fit_results, diff_model, and remainder (class attributes),
 
         Parameters
@@ -919,7 +921,7 @@ class MultiPeakFitter:
             self.build_funcs(self.data.axes[0].points, out[0], kinds, diff_order=0)
 
     def function(self, x, kind, FWHM, intensity, x0, diff_order=0):
-        """ Returns a peaked distribution over array x.
+        """Return a peaked distribution over array x.
 
         The peaked distributions are characterized by their FWHM, height, and center.
         The distributions are not normalized to the same value given the same parameters!
@@ -967,7 +969,7 @@ class MultiPeakFitter:
             raise Exception('kind not recognized!')
 
     def guess(self, guesses):
-        """ Creates guess library for use in fitting.
+        """Create guess library for use in fitting.
 
         Parameters
         ----------
@@ -981,7 +983,7 @@ class MultiPeakFitter:
         self.guesses = guesses
 
     def intensity_label_change(self, intensity_label):
-        """ Helper method for changing label present in plot method.
+        """Change label present in plot method.
 
         Parameters
         ----------
@@ -990,7 +992,7 @@ class MultiPeakFitter:
         self.intensity_label = intensity_label
 
     def plot(self,):
-        """ Plot fit results.  """
+        """Plot fit results."""
         # get results
         names, kinds, params = self.extract_params(self.fit_results)
         num_funcs = len(kinds)
@@ -1039,7 +1041,9 @@ class MultiPeakFitter:
             ax.axvline(x=params[i * 3 + 2], color=cm((i + 1) / num_funcs), linewidth=1)
 
     def save(self, path=os.getcwd(), fit_params=True, figure=True, verbose=True):
-        """ Saves results and representation of fits. Saved files are timestamped.
+        """Save results and representation of fits.
+        
+        Saved files are timestamped.
 
         Parameters
         ----------
