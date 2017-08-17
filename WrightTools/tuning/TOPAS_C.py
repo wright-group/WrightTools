@@ -1,4 +1,4 @@
-"""Methods for TOPAS-C processing"""
+"""Methods for TOPAS-C processing."""
 
 
 # --- import --------------------------------------------------------------------------------------

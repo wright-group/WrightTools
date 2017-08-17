@@ -1,4 +1,4 @@
-"""Tuning tools"""
+"""Tuning tools."""
 
 # flake8: noqa
 

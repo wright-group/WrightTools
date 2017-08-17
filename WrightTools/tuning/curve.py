@@ -66,7 +66,8 @@ class Linear:
     """Linear interpolation."""
 
     def __init__(self, colors, units, motors):
-        """
+        """Create a ``Linear`` object.
+
         Parameters
         ----------
         colors : 1D array
@@ -102,7 +103,8 @@ class Poly:
     """Polynomial interpolation."""
 
     def __init__(self, colors, units, motors):
-        """
+        """Create a ``Poly`` object.
+
         Parameters
         ----------
         colors : 1D array
@@ -144,7 +146,8 @@ class Spline:
     """Spline interpolation."""
 
     def __init__(self, colors, units, motors):
-        """
+        """Create a ``Spline`` object.
+
         Parameters
         ----------
         colors : 1D array
@@ -185,7 +188,8 @@ class Motor:
     """Container class for motor arrays."""
 
     def __init__(self, positions, name):
-        """
+        """Create a ``Motor`` object.
+
         Parameters
         ----------
         positions : 1D array
@@ -203,7 +207,8 @@ class Curve:
     def __init__(self, colors, units, motors, name, interaction,
                  kind, method=Linear,
                  subcurve=None, source_colors=None):
-        """
+        """Create a ``Curve`` object.
+
         Parameters
         ----------
         colors : array

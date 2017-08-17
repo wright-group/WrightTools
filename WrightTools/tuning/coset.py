@@ -1,6 +1,4 @@
-"""
-COSET.
-"""
+"""COSET."""
 
 
 # --- import --------------------------------------------------------------------------------------
@@ -60,7 +58,8 @@ class CoSet:
 
     def __init__(self, control_name, control_units, control_points,
                  offset_name, offset_units, offset_points, name='coset'):
-        """
+        """Create a ``CoSet`` object.
+
         Parameters
         ----------
         control_name : string
@@ -135,7 +134,7 @@ class CoSet:
         return self.__copy__()
 
     def get_limits(self, units='same'):
-        """ Get the edges of the coset object.
+        """Get the edges of the coset object.
 
         Parameters
         ----------
@@ -169,7 +168,8 @@ class CoSet:
         Returns
         -------
         number
-            Offset."""
+            Offset.
+        """
         # get control position in own units
         if not input_units == 'same':
             control_position = wt_units.converter(
@@ -188,7 +188,7 @@ class CoSet:
             self.control_points, self.offset_points)
 
     def map_control_points(self, points, units='same'):
-        """ Map the offset points onto new control points using interpolation.
+        """Map the offset points onto new control points using interpolation.
 
         Parameters
         ----------
@@ -273,7 +273,7 @@ class CoSet:
             print('coset saved at {}'.format(file_path))
 
     def sort(self):
-        """ Control points must be ascending.  """
+        """Control points must be ascending."""
         idxs = np.argsort(self.control_points)
         self.control_points = self.control_points[idxs]
         self.offset_points = self.offset_points[idxs]
