@@ -20,7 +20,7 @@ class Subplot:
     def __init__(self, ax, energies, number_of_interactions=4, title='',
                  title_font_size=16, state_names=None, virtual=[None],
                  state_font_size=14, state_text_buffer=0.5, label_side='left'):
-        """ Subplot.
+        """Subplot.
 
         Parameters
         ----------
@@ -78,7 +78,7 @@ class Subplot:
 
     def add_arrow(self, index, between, kind, label='', head_length=0.1,
                   head_aspect=2, font_size=14, color='k'):
-        """ Add an arrow to the WMEL diagram.
+        """Add an arrow to the WMEL diagram.
 
         Parameters
         ----------
