@@ -21,8 +21,6 @@ import matplotlib.gridspec as grd
 from .. import units as wt_units
 from .. import kit as wt_kit
 
-debug = False
-
 
 # --- define --------------------------------------------------------------------------------------
 
@@ -65,9 +63,19 @@ TOPAS_interaction_by_kind = {'TOPAS-C': TOPAS_C_interactions,
 
 
 class Linear:
+    """Linear interpolation."""
 
     def __init__(self, colors, units, motors):
-        """Linear interpolation using scipy.interpolate.InterpolatedUnivariateSpline."""
+        """
+        Parameters
+        ----------
+        colors : 1D array
+            Setpoints.
+        units : string
+            Units.
+        motors : list of WrightTools.tuning.curve.Motor
+            Motors.
+        """
         self.colors = colors
         self.units = units
         self.motors = motors
@@ -75,22 +83,35 @@ class Linear:
         self.i_functions = [wt_kit.Spline(motor.positions, colors, k=1, s=0) for motor in motors]
 
     def get_motor_positions(self, color):
-        return [f(color) for f in self.functions]
+        """Get motor positions.
 
-    def get_color(self, motor_index, motor_position):
-        motor = self.motors[motor_index]
-        if motor.positions.min() < motor_position < motor.positions.max():
-            pass
-        else:
-            # take closest valid motor position if outside of range
-            idx = (np.abs(motor.positions - motor_position)).argmin()
-            motor_position = motor.positions[idx]
-        return self.i_functions[motor_index](motor_position)
+        Parameters
+        ----------
+        color : number
+            Destination, in units.
+
+        Returns
+        -------
+        list of numbers
+            Motor positions.
+        """
+        return [f(color) for f in self.functions]
 
 
 class Poly:
+    """Polynomial interpolation."""
 
     def __init__(self, colors, units, motors):
+        """
+        Parameters
+        ----------
+        colors : 1D array
+            Setpoints.
+        units : string
+            Units.
+        motors : list of WrightTools.tuning.curve.Motor
+            Motors.
+        """
         self.colors = colors
         self.n = 8
         self.fit_params = []
@@ -100,26 +121,39 @@ class Poly:
         self.linear = Linear(colors, units, motors)
 
     def get_motor_positions(self, color):
+        """Get motor positions.
+
+        Parameters
+        ----------
+        color : number
+            Destination, in units.
+
+        Returns
+        -------
+        list of numbers
+            Motor positions.
+        """
         outs = []
         for params in self.fit_params:
             out = np.polynomial.polynomial.polyval(color, params[0])
             outs.append(out)
         return outs
 
-    def get_color(self, motor_index, motor_position):
-        a = self.fit_params[motor_index][0][::-1].copy()
-        a[-1] -= motor_position
-        roots = np.real(np.roots(a))
-        # return root closest to guess from linear interpolation
-        guess = self.linear.get_color(motor_index, motor_position)
-        idx = (np.abs(roots - guess)).argmin()
-        return roots[idx]
-
 
 class Spline:
+    """Spline interpolation."""
 
     def __init__(self, colors, units, motors):
-        """Spline interpolation using scipy.interpolate.InterpolatedUnivariateSpline."""
+        """
+        Parameters
+        ----------
+        colors : 1D array
+            Setpoints.
+        units : string
+            Units.
+        motors : list of WrightTools.tuning.curve.Motor
+            Motors.
+        """
         self.colors = colors
         self.units = units
         self.motors = motors
@@ -129,37 +163,47 @@ class Spline:
             motor.positions, colors, k=3, s=1000) for motor in motors]
 
     def get_motor_positions(self, color):
-        return [f(color) for f in self.functions]
+        """Get motor positions.
 
-    def get_color(self, motor_index, motor_position):
-        motor = self.motors[motor_index]
-        if motor.positions.min() < motor_position < motor.positions.max():
-            pass
-        else:
-            # take closest valid motor position if outside of range
-            idx = (np.abs(motor.positions - motor_position)).argmin()
-            motor_position = motor.positions[idx]
-        return self.i_functions[motor_index](motor_position)
+        Parameters
+        ----------
+        color : number
+            Destination, in units.
+
+        Returns
+        -------
+        list of numbers
+            Motor positions.
+        """
+        return [f(color) for f in self.functions]
 
 
 # --- curve class ---------------------------------------------------------------------------------
 
 
 class Motor:
+    """Container class for motor arrays."""
 
     def __init__(self, positions, name):
-        """Container class for motor arrays."""
+        """
+        Parameters
+        ----------
+        positions : 1D array
+            Motor positions.
+        name : string
+            Name.
+        """
         self.positions = positions
         self.name = name
 
 
 class Curve:
+    """Central object-type for all OPA tuning curves."""
 
     def __init__(self, colors, units, motors, name, interaction,
                  kind, method=Linear,
                  subcurve=None, source_colors=None):
-        """Central object-type for all OPA tuning curves.
-
+        """
         Parameters
         ----------
         colors : array
@@ -170,7 +214,7 @@ class Curve:
             Motor positions for each color.
         name : str
             Name of curve.
-        kind : {'opa800'}
+        kind : string
             The kind of curve (for saving).
         method : interpolation class
             The interpolation method to use.
@@ -280,6 +324,18 @@ class Curve:
             return [units_colors.min(), units_colors.max()]
 
     def get_motor_names(self, full=True):
+        """Get motor names.
+
+        Parameters
+        ----------
+        full : boolean (optional)
+            Toggle inclusion of motor names from subcurve.
+
+        Returns
+        -------
+        list of strings
+            Motor names.
+        """
         if self.subcurve and full:
             subcurve_motor_names = self.subcurve.get_motor_names()
         else:
@@ -330,10 +386,23 @@ class Curve:
             return out.T
 
     def get_source_color(self, color, units='same'):
+        """Get color of source curve.
+
+        Parameters
+        ----------
+        color : number or 1D array
+            Color(s).
+        units : string (optional)
+            Units. Default is same.
+
+        Returns
+        -------
+        number or 1D array
+            Source color(s).
+        """
         if not self.subcurve:
             return None
         # color must be array
-
         def is_numeric(obj):
             attrs = ['__add__', '__sub__', '__mul__', '__div__', '__pow__']
             return all([hasattr(obj, attr) for attr in attrs] + [not hasattr(obj, '__len__')])
@@ -348,7 +417,13 @@ class Curve:
         return np.array([self.source_color_interpolator.get_motor_positions(c) for c in color])
 
     def interpolate(self, interpolate_subcurve=True):
-        """Generate the interploator object."""
+        """Generate the interploator object.
+
+        Parameters
+        ----------
+        interpolate_subcurve : boolean (optional)
+            Toggle interpolation of subcurve. Default is True.
+        """
         self.interpolator = self.method(self.colors, self.units, self.motors)
         if self.subcurve and interpolate_subcurve:
             self.source_color_interpolator = self.method(
@@ -589,6 +664,17 @@ class Curve:
 
 
 def from_800_curve(filepath):
+    """Generate a Curve object from a file.
+
+    Parameters
+    ----------
+    filepath : string
+        Filepath.
+
+    Returns
+    -------
+    WrightTools.tuning.curve.Curve
+    """
     headers = wt_kit.read_headers(filepath)
     arr = np.genfromtxt(filepath).T
     colors = arr[0]
@@ -604,7 +690,19 @@ def from_800_curve(filepath):
 
 
 def from_poynting_curve(filepath, subcurve=None):
-    print('FROM POYNTING CURVE', filepath, subcurve)
+    """Generate a Curve object from a file.
+
+    Parameters
+    ----------
+    filepath : string
+        Filepath.
+    subcurve : WrightTools.curve.Curve
+        Subcurve.
+
+    Returns
+    -------
+    WrightTools.tuning.curve.Curve
+    """
     # read from file
     headers = wt_kit.read_headers(filepath)
     arr = np.genfromtxt(filepath).T
@@ -698,6 +796,20 @@ def from_TOPAS_crvs(filepaths, kind, interaction_string):
 
 
 def to_800_curve(curve, save_directory):
+    """Save a curve object.
+
+    Parameters
+    ----------
+    curve : WrightTools.tuning.curve.Curve object
+        Curve.
+    save_directory : string.
+        Save directory.
+
+    Returns
+    -------
+    string
+        Output path.
+    """
     # ensure curve is in wn
     curve = curve.copy()
     curve.convert('wn')
@@ -724,6 +836,20 @@ def to_800_curve(curve, save_directory):
 
 
 def to_poynting_curve(curve, save_directory):
+    """Save a curve object.
+
+    Parameters
+    ----------
+    curve : WrightTools.tuning.curve.Curve object
+        Curve.
+    save_directory : string.
+        Save directory.
+
+    Returns
+    -------
+    string
+        Output path.
+    """
     # ensure curve is in wn
     curve = curve.copy()
     curve.convert('wn')
@@ -753,6 +879,25 @@ def to_poynting_curve(curve, save_directory):
 
 
 def to_TOPAS_crvs(curve, save_directory, kind, full, **kwargs):
+    """Save a curve object.
+
+    Parameters
+    ----------
+    curve : WrightTools.tuning.curve.Curve object
+        Curve.
+    save_directory : string.
+        Save directory.
+    kind : string
+        Curve kind.
+    full : boolean
+        Toggle saving subcurves.
+    **kwargs
+
+    Returns
+    -------
+    string
+        Output path.
+    """
     TOPAS_interactions = TOPAS_interaction_by_kind[kind]
     # unpack
     curve = curve.copy()
