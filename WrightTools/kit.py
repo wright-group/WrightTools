@@ -1,6 +1,5 @@
 """
-a collection of small, general purpose objects and methods
-
+A collection of small, general purpose objects and methods.
 
 .. _RFC3339: https://www.ietf.org/rfc/rfc3339.txt
 .. _RFC5322: https://tools.ietf.org/html/rfc5322#section-3.3
@@ -61,9 +60,11 @@ else:
 
 def get_timestamp(style='RFC3339', at=None, hms=True, frac=False,
                   timezone='here', filename_compatible=False):
-    """ Get the current time as a string.
+    """Get the current time as a string.
 
-    LEGACY - please use TimeStamp objects.
+    .. note: Deprecated
+             `get_timestamp` is no longer supported
+             Use `Timestamp` objects instead
 
     Parameters
     ----------
@@ -159,7 +160,7 @@ def get_timestamp(style='RFC3339', at=None, hms=True, frac=False,
 class TimeStamp:
 
     def __init__(self, at=None, timezone='local'):
-        """ Class for representing a moment in time.
+        """Class for representing a moment in time.
 
         Parameters
         ----------
@@ -295,7 +296,7 @@ def timestamp_from_RFC3339(RFC3339):
 
 
 def filename_parse(fstr):
-    """ parses a filepath string into it's path, name, and suffix """
+    """Parse a filepath string into it's path, name, and suffix."""
     folder, filename = os.path.split(fstr)
 
     split = filename.split('.', 1)
@@ -308,9 +309,9 @@ def filename_parse(fstr):
 
 
 def file_len(fname):
-    """ Cheaply get the number of lines in a file.'
+    """Cheaply get the number of lines in a file.
 
-    File is not entirely loaded into memory.
+    File is not entirely loaded into memory at once.
     """
     # adapted from http://stackoverflow.com/questions/845058
     with open(fname) as f:
@@ -319,40 +320,10 @@ def file_len(fname):
     return i + 1
 
 
-def find_name(fname, suffix):
-    """
-    save the file using fname, and tacking on a number if fname already exists
-    iterates until a unique name is found
-    returns False if the loop malfunctions
-    """
-    good_name = False
-    # find a name that isn't used by enumerating
-    i = 1
-    while not good_name:
-        try:
-            with open(fname + '.' + suffix):
-                # file does exist
-                # see if a number has already been guessed
-                if fname.endswith(' ({0})'.format(i - 1)):
-                    # cut the old off before putting the new in
-                    fname = fname[:-len(' ({0})'.format(i - 1))]
-                fname += ' ({0})'.format(i)
-                i = i + 1
-                # prevent infinite loop if the code isn't perfect
-                if i > 100:
-                    print('didn\'t find a good name; index used up to 100!')
-                    fname = False
-                    good_name = True
-        except IOError:
-            # file doesn't exist and is safe to write to this path
-            good_name = True
-    return
-
-
 class FileSlicer:
 
     def __init__(self, path, skip_headers=True, header_charachter='#'):
-        """ Access groups of lines from a file quickly, without loading the entire file into memory.
+        """Access groups of lines from a file quickly, without loading the entire file into memory.
 
         Lines are accesed from Useful especially in cases where
 
@@ -378,11 +349,11 @@ class FileSlicer:
                     self.n += 1
 
     def close(self):
-        """ Clear the cache, attempting to free as much memory as possible.  """
+        """Clear the cache, attempting to free as much memory as possible."""
         linecache.clearcache()
 
     def get(self, line_count):
-        """ Get the next group of lines from the file.
+        """Get the next group of lines from the file.
 
         Parameters
         ----------
@@ -408,7 +379,8 @@ class FileSlicer:
         return out
 
     def skip(self, line_count):
-        """ Skip the next group of lines from the file.
+        """Skip the next group of lines from the file.
+
         Parameters
         ----------
         line_count : int
@@ -422,7 +394,12 @@ class FileSlicer:
 
 
 def get_box_path():
-    """ LEGACY METHOD. Use ``get_path_matching(name)`` instead.  """
+    """LEGACY METHOD. Use ``get_path_matching(name)`` instead.
+    
+    .. note:: Deprecated
+        `get_box_path` will be removed in a future version of WrightTools.
+        Use `get_path_matching` instead.
+    """
     box_path = get_path_matching('Box Sync')
     return os.path.join(box_path, 'Wright Shared')
 
@@ -443,11 +420,14 @@ def get_path_matching(name):
 
 
 def glob_handler(extension, folder=None, identifier=None):
-    """
-    returns a list of all files matching specified inputs
-    if no folder is specified, looks in chdir
-    """
+    """Return a list of all files matching specified inputs.
 
+    Parameters
+    ----------
+    extension: string
+    folder: string
+    identifier: string
+    """
     import glob
 
     filepaths = []
@@ -475,7 +455,7 @@ def glob_handler(extension, folder=None, identifier=None):
 class INI():
 
     def __init__(self, filepath):
-        """ Handle communication with an INI file.  """
+        """Handle communication with an INI file."""
         self.filepath = filepath
         if sys.version[0] == '3':
             self.config = configparser.ConfigParser()
@@ -489,7 +469,10 @@ class INI():
             self.config.write(f)
 
     def clear(self):
-        """ Remove all contents from file. Use with extreme caution.  """
+        """Remove all contents from file. Use with extreme caution.
+        
+        .. warning:: This is a destructive action.
+        """
         with open(self.filepath, "w"):
             pass
         if sys.version[0] == '3':
@@ -533,8 +516,7 @@ class INI():
 
 
 def plot_dats(folder=None, transpose=True):
-    """ Convinience function to plot raw data from COLORS """
-
+    """Convinience function to plot raw data from COLORS."""
     import data
     import artists
 
@@ -583,7 +565,7 @@ def plot_dats(folder=None, transpose=True):
 
 
 def read_data_column(path, name):
-    """ Read a named column of a PyCMDS data file as a single array.
+    """Read a named column of a PyCMDS data file as a single array.
 
     Parameters
     ----------
@@ -604,8 +586,7 @@ def read_data_column(path, name):
 
 
 def read_h5(filepath):
-    """ Read from a `HDF5`_ file, returning the data within as a python dictionary.
-
+    """Read from a `HDF5`_ file, returning the data within as a python dictionary.
 
     Returns
     -------
@@ -615,7 +596,6 @@ def read_h5(filepath):
     See Also
     --------
     kit.write_h5
-
     """
     d = collections.OrderedDict()
     h5f = h5py.File(filepath, mode='r')
@@ -626,7 +606,7 @@ def read_h5(filepath):
 
 
 def read_headers(filepath):
-    """ Read 'Wright group formatted' headers from given path.
+    """Read 'Wright group formatted' headers from given path.
 
     Parameters
     ----------
@@ -637,6 +617,10 @@ def read_headers(filepath):
     -------
     OrderedDict
         Dictionary containing header information.
+
+    See Also
+    --------
+    kit.write_headers
     """
     headers = collections.OrderedDict()
     for line in open(filepath):
@@ -650,8 +634,7 @@ def read_headers(filepath):
 
 
 def write_h5(filepath, dictionary):
-    """ Save a python dictionary into an `HDF5`_
-    file.
+    """Save a python dictionary into an `HDF5`_ file.
 
     Right now it only works to store numpy arrays of numbers.
 
@@ -667,7 +650,6 @@ def write_h5(filepath, dictionary):
     -------
     str
         The full filepath to the created HDF5 file.
-
 
     See Also
     --------
@@ -696,7 +678,7 @@ def write_h5(filepath, dictionary):
 
 
 def write_headers(filepath, dictionary):
-    """ Write 'Wright Group formatted' headers to given file.
+    """Write 'Wright Group formatted' headers to given file.
 
     Headers written can be read again using read_headers.
 
@@ -711,6 +693,10 @@ def write_headers(filepath, dictionary):
     -------
     str
         Filepath of file.
+
+    See Also
+    --------
+    kit.read_headers
     """
     dictionary = copy.deepcopy(dictionary)
     # write header
@@ -733,7 +719,7 @@ def write_headers(filepath, dictionary):
 
 
 def closest_pair(arr, give='indicies'):
-    """ Find the pair of indices corresponding to the closest elements in an array.
+    """Find the pair of indices corresponding to the closest elements in an array.
 
     If multiple pairs are equally close, both pairs of indicies are returned.
     Optionally returns the closest distance itself.
@@ -785,7 +771,7 @@ def closest_pair(arr, give='indicies'):
 
 
 def diff(xi, yi, order=1):
-    """ Take the numerical derivative of a 1D array.
+    """Take the numerical derivative of a 1D array.
 
     Output is mapped onto the original coordinates  using linear interpolation.
 
@@ -817,7 +803,7 @@ def diff(xi, yi, order=1):
 
 
 def fft(xi, yi, axis=0):
-    """ Take the 1D FFT of an N-dimensional array and return "sensible" arrays which are shifted properly.
+    """Take the 1D FFT of an N-dimensional array and return "sensible" arrays which are shifted properly.
 
     Parameters
     ----------
@@ -835,7 +821,6 @@ def fft(xi, yi, axis=0):
         Example: if input xi is in the time domain, output xi is in frequency domain.
     yi : ND numpy.ndarray
         FFT. Has the same shape as the input array (yi).
-
     """
     yi = np.fft.fft(yi, axis=axis)
     d = (xi.max() - xi.min()) / (xi.size - 1)
@@ -847,9 +832,6 @@ def fft(xi, yi, axis=0):
 
 
 def mono_resolution(grooves_per_mm, slit_width, focal_length, output_color, output_units='wn'):
-    """
-    slit width mm, focal_length mm, output_color nm
-    """
     d_lambda = 1e6 * slit_width / (grooves_per_mm * focal_length)  # nm
     upper = output_color + d_lambda / 2  # nm
     lower = output_color - d_lambda / 2  # nm
@@ -858,7 +840,7 @@ def mono_resolution(grooves_per_mm, slit_width, focal_length, output_color, outp
 
 
 def nm_width(center, width, units='wn'):
-    """ Given a center and width, in energy units, get back a width in nm.
+    """Given a center and width, in energy units, get back a width in nm.
 
     Parameters
     ----------
@@ -880,7 +862,7 @@ def nm_width(center, width, units='wn'):
 
 
 def remove_nans_1D(arrs):
-    """ Remove nans in a list of 1D arrays.
+    """Remove nans in a list of 1D arrays.
 
     Removes indicies in all arrays if any array is nan at that index.
     All input arrays must have the same size.
@@ -910,7 +892,7 @@ def remove_nans_1D(arrs):
 
 def share_nans(arrs1):
     # Written by DJM. darienmorrow@gmail.com. January 15, 2016.
-    """ Takes a list of nD arrays and returns a new list of nD arrays.
+    """Take a list of nD arrays and return a new list of nD arrays.
 
     The new list is in the same order as the old list.
     If one indexed element in an old array is nan then every element for that
@@ -926,7 +908,6 @@ def share_nans(arrs1):
     list
         List of nD arrays in same order as given, with nan indicies syncronized.
     """
-
     nans = np.zeros((arrs1[0].shape))
 
     for arr in arrs1:
@@ -938,9 +919,12 @@ def share_nans(arrs1):
 
 
 def smooth_1D(arr, n=10):
-    """
-    smooth 1D data by 'running average'n
-    int n smoothing factor (num points)
+    """Smooth 1D data by 'running average'.
+
+    Parameters
+    ----------
+    n : int
+        number of points to average
     """
     for i in range(n, len(arr) - n):
         window = arr[i - n:i + n].copy()
@@ -949,13 +933,15 @@ def smooth_1D(arr, n=10):
 
 
 class Spline:
-
+    """Spline."""
+    
     def __call__(self, *args, **kwargs):
         return self.true_spline(*args, **kwargs)
 
     def __init__(self, xi, yi, k=3, s=1000, ignore_nans=True):
-        """ Wrapper class for scipy.UnivariateSpline, made to be slightly less
-        finicky with things like decending xi arrays and nans.
+        """Wrapper class for scipy.UnivariateSpline.
+        
+        Made to be slightly less finicky with things like decending xi arrays and nans.
 
         Parameters
         ----------
@@ -999,7 +985,7 @@ class Spline:
 
 
 def unique(arr, tolerance=1e-6):
-    """ Return unique elements in 1D array, within tolerance.
+    """Return unique elements in 1D array, within tolerance.
 
     Parameters
     ----------
@@ -1026,7 +1012,7 @@ def unique(arr, tolerance=1e-6):
 
 def zoom2D(xi, yi, zi, xi_zoom=3., yi_zoom=3., order=3, mode='nearest',
            cval=0.):
-    """ Zoom a 2D array, with axes.
+    """Zoom a 2D array, with axes.
 
     Parameters
     ----------
@@ -1057,7 +1043,7 @@ def zoom2D(xi, yi, zi, xi_zoom=3., yi_zoom=3., order=3, mode='nearest',
 
 
 def array2string(array, sep='\t'):
-    """ Generate a string from an array with useful formatting.
+    """Generate a string from an array with useful formatting.
 
     Great for writing arrays into single lines in files.
 
@@ -1073,7 +1059,7 @@ def array2string(array, sep='\t'):
 
 
 def flatten_list(l):
-    """ Flatten an irregular list.
+    """Flatten an irregular list.
 
     Works generally but may be slower than it could
     be if you can make assumptions about your list.
@@ -1106,7 +1092,7 @@ def flatten_list(l):
 
 def get_methods(the_class, class_only=False, instance_only=False,
                 exclude_internal=True):
-    """ get a list of strings corresponding to the names of the methods of an object.  """
+    """Get a list of strings corresponding to the names of the methods of an object."""
     import inspect
 
     def acceptMethod(tup):
@@ -1132,7 +1118,7 @@ def get_methods(the_class, class_only=False, instance_only=False,
 
 
 def intersperse(lst, item):
-    """ Put item between each existing item in list.
+    """Put item between each existing item in list.
 
     `Source`__
 
@@ -1169,7 +1155,7 @@ identity_operators = ['=', '+', '-', '*', '/', 'F']
 
 
 def parse_identity(string):
-    """ Parse an identity string into its components.
+    """Parse an identity string into its components.
 
     Returns
     -------
@@ -1182,7 +1168,7 @@ def parse_identity(string):
 
 
 class suppress_stdout_stderr(object):
-    """ A context manager for doing a "deep suppression" of stdout and stderr in Python
+    """Context manager for doing a "deep suppression" of stdout and stderr in Python.
 
     i.e. will suppress all print, even if the print originates in a
     compiled C/Fortran sub-function.
@@ -1222,7 +1208,7 @@ class suppress_stdout_stderr(object):
 
 
 def string2array(string, sep='\t'):
-    """ Generate an array from a string created using array2string.
+    """Generate an array from a string created using array2string.
 
     See Also
     --------
@@ -1267,7 +1253,7 @@ def string2array(string, sep='\t'):
 
 
 def string2identifier(s):
-    """Turns a string into a valid python identifier.
+    """Turn a string into a valid python identifier.
 
     Parameters
     ----------
@@ -1378,7 +1364,7 @@ unicode_dictionary['omega'] = u'\u03C9'
 
 
 def update_progress(progress, carriage_return=False, length=50):
-    """ prints a pretty progress bar to the console
+    """Print a pretty progress bar to the console.
 
     accepts 'progress' as a percentage
     bool carriage_return toggles overwrite behavior
@@ -1398,7 +1384,14 @@ def update_progress(progress, carriage_return=False, length=50):
 
 
 class Timer:
-    """ with Timer(): your_code() """
+    """Context manager for timing code.
+    
+    Usage:
+    ------
+
+    >>> with Timer(): 
+    ...     your_code() 
+    """
 
     def __init__(self, verbose=True):
         self.verbose = verbose

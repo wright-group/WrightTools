@@ -1,6 +1,4 @@
-"""
-unit and label handling in WrightTools
-"""
+"""Unit and label handling in WrightTools."""
 
 
 # --- import --------------------------------------------------------------------------------------
@@ -92,7 +90,8 @@ def converter(val, current_unit, destination_unit):
     Returns
     -------
     number
-        Converted value."""
+        Converted value.
+    """
     x = val
     for dic in unit_dicts:
         if current_unit in dic.keys() and destination_unit in dic.keys():
@@ -116,7 +115,7 @@ def converter(val, current_unit, destination_unit):
 
 
 def kind(units):
-    """ Find the kind of given units.
+    """Find the kind of given units.
 
     Parameters
     ----------
@@ -140,7 +139,7 @@ class SymbolDict(dict):
     """Subclass dictionary to get at __missing__ method."""
 
     def __missing__(self, key):
-        """Defines what happens when key is missing."""
+        """Define what happens when key is missing."""
         return self['default']
 
 
