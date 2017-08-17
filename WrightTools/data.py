@@ -822,7 +822,7 @@ class Data:
         # finish
         self.channels[signal_channel_index].give_values(out)
         self.channels[signal_channel_index].signed = True
-        self.channels[signal_channel_index].znull = 0
+        self.channels[signal_channel_index].null = 0
         self.channels[signal_channel_index]._update()
 
     def flip(self, axis):
@@ -1042,9 +1042,9 @@ class Data:
         values = values.transpose(transpose_order)
         # return
         channel.values = values
-        channel.znull = 0.
-        channel.zmax = np.nanmax(values)
-        channel.zmin = np.nanmin(values)
+        channel.null = 0.
+        channel.max = np.nanmax(values)
+        channel.min = np.nanmin(values)
         # print
         if verbose:
             axis = self.axes[axis_index]
@@ -1211,7 +1211,7 @@ class Data:
 
     def normalize(self, channel=0, axis=None):
         """
-        Normalize data in given channel so that null=0 and zmax=1.
+        Normalize data in given channel so that null=0 and max=1.
 
         Parameters
         ----------
@@ -1997,7 +1997,7 @@ def from_BrunoldrRaman(filepath, name=None, verbose=True):
 
 def from_COLORS(
         filepaths,
-        znull=None,
+        null=None,
         name=None,
         cols=None,
         invert_d1=True,
@@ -2393,8 +2393,8 @@ def from_KENT(filepaths, null=None, name=None, ignore=['wm'], use_norm=False,
         #data_norm = data.channels[0].values*data.axes[0].points*data.axes[1].points/(OPA1*OPA2)
         data_norm = data.channels[0].values / (OPA1 * OPA2)  # I think this is correct.
         data.channels[0].values = data_norm
-        data.channels[0].zmax = data_norm.max()
-        data.channels[0].zmin = data_norm.min()
+        data.channels[0].max = data_norm.max()
+        data.channels[0].min = data_norm.min()
     # return --------------------------------------------------------------------------------------
     if verbose:
         print('data object succesfully created')
