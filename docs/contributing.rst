@@ -38,9 +38,6 @@ Contributing
 #. ensure that the changes you intend to make have corresponding `issues on GitHub <https://github.com/wright-group/WrightTools/issues>`_
     a) if you aren't sure how to break your ideas into atomic issues, feel free to open a discussion issue
     b) looking for low-hanging fruit? check out the `help wanted label <https://github.com/wright-group/WrightTools/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22>`_ for beginner-friendly issues
-#. if you are working on documentation or tests, please work within the dedicated branches---otherwise create your own feature branch
-    
-    a. If you wish to track changes over multiple days prior to submitting a pull request, also create a dedicated branch, and merge into the apropriate branch when ready to submit
 
     .. code-block:: bash
 
@@ -71,11 +68,12 @@ Contributing
 
     a. If your commit is related to an issue, but does not resolve it, use ``addresses #99`` in the commit message
 #. if appropriate, add tests that address your changes (if you just fixed a bug, it is strongly reccomended that you add a test so that the bug cannot come back unanounced)
-#. once you are done with your changes, run your code through flake8
+#. once you are done with your changes, run your code through flake8 and pydocstyle
 
     .. code-block:: bash
 
         $ flake8 file.py
+        $ pydocstyle file.py
 
 #. rerun tests
 #. add yourself to `CONTRIBUTORS <https://github.com/wright-group/WrightTools/blob/master/CONTRIBUTORS>`_
@@ -105,15 +103,26 @@ Internally we use the following abbreviations:
 
 WrightTools follows `pep8 <https://www.python.org/dev/peps/pep-0008/>`_, with the following modifications:
 
-#. maximum line length from 79 characters to 99 charachters
-#. `NumPy style docstrings <https://github.com/numpy/numpy/blob/master/doc/HOWTO_DOCUMENT.rst.txt>`_
+#. Maximum line length from 79 characters to 99 characters.
 
-We use `flake8 <http://flake8.pycqa.org/en/latest/>`_ for automated code style enforcement.
+WrightTools also folows `numpy Docstring Convention`_, which is a set of adjustments to `pep257`_.
+WrightTools additionally ignores one guideline:
+
+#. WrightTools does not require all magic methods (e.g. ``__add__``) to have a docstring.
+
+    a) It remains encourged to add a docstring if there is any ambiguity of the meaning.
+
+.. _numpy docstring convention: https://github.com/numpy/numpy/blob/master/doc/HOWTO_DOCUMENT.rst.txt
+.. _pep257: https://www.python.org/dev/peps/pep-0257/
+
+We use `flake8 <http://flake8.pycqa.org/en/latest/>`_ for automated code style enforcement, and `pydocstyle <http://www.pydocstyle.org>`_ for automated docstring style checking.
 
 
 .. code-block:: bash
 
+     $ # These will check the whole directory (recursively)
      $ flake8
+     $ pydocstyle
 
 Consider using `autopep8 <https://pypi.python.org/pypi/autopep8>`_ for automated code corrections --- Make sure to confirm that the output is expected
 
