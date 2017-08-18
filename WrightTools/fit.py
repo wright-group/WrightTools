@@ -479,7 +479,7 @@ class TwoD_Gaussian(Function):
         -------
         numpy array
             Function evaluated at coordinates.
-        """ 
+        """
         # enforce limits
         for i, name in zip(range(len(p)), self.params):
             if name in self.limits.keys():
@@ -949,7 +949,7 @@ class MultiPeakFitter:
                     (((x - x0)**2 + (0.5 * FWHM)**2))**-2 * (2 * (x - x0))
             elif diff_order == 2:
                 return intensity * (0.5 * FWHM)**2 * (2 * ((((x - x0)**2 + (0.5 * FWHM)**2))**-3) *
-                                                      (2 * (x - x0))**2 + (-2) * (((x - x0)**2 + (0.5 * FWHM)**2))**-2)
+                    (2 * (x - x0))**2 + (-2) * (((x - x0)**2 + (0.5 * FWHM)**2))**-2)
             else:
                 print('analytic derivative not pre-calculated')
         elif kind == 'gaussian':
@@ -1040,7 +1040,7 @@ class MultiPeakFitter:
 
     def save(self, path=os.getcwd(), fit_params=True, figure=True, verbose=True):
         """Save results and representation of fits.
-        
+
         Saved files are timestamped.
 
         Parameters

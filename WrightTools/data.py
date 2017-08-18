@@ -825,7 +825,7 @@ class Data:
 
     def divide(self, divisor, channel=0, divisor_channel=0):
         """Divide a given channel by another data object.
-        
+
         Divisor may be self.
         All axes in divisor must be contained in self.
 
@@ -940,7 +940,7 @@ class Data:
 
     def flip(self, axis):
         """Flip direction of arrays along an axis.
-        
+
         Changes the index of elements without changing their correspondance to axis positions.
 
         Parameters
@@ -1262,7 +1262,7 @@ class Data:
 
     def map_axis(self, axis, points, input_units='same', verbose=True):
         """Map points of an axis to new points using linear interpolation.
-        
+
         Out-of-bounds points are written nan.
 
         Parameters
@@ -1357,7 +1357,7 @@ class Data:
                units='same', offset_units='same', mode='valid',
                method='linear', verbose=True):
         """Offset one axis based on another axis' values.
-        
+
         Useful for correcting instrumental artifacts such as zerotune.
 
         Parameters
@@ -1600,7 +1600,7 @@ class Data:
 
     def share_nans(self):
         """Share not-a-numbers between all channels.
-        
+
         If any channel is nan at a given index, all channels will be nan
         at that index after this operation.
 
@@ -1794,7 +1794,7 @@ class Data:
 
     def subtract(self, subtrahend, channel=0, subtrahend_channel=0):
         """Subtract a given channel by another data object.
-        
+
         Subtrahend may be self.
         All axes in subtrahend must be contained in self.
 
@@ -1876,7 +1876,8 @@ class Data:
             elif key in ['method', 'factor', 'replace', 'verbose']:
                 inputs[key] = value
             else:
-                raise KeyError('Keyword arguments to trim must be either an axis name or one of {method, factor, replace, verbose}')
+                raise KeyError(
+                    'Keyword arguments to trim must be either an axis name or one of {method, factor, replace, verbose}')
         # call trim
         return channel.trim(neighborhood=neighborhood, **inputs)
 

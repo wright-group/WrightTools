@@ -150,7 +150,7 @@ class Calibration:
 
     def get_positions(self, value, **kwargs):
         """Get all valid coordinates.
-        
+
         Returns
         -------
         list of dictionaries

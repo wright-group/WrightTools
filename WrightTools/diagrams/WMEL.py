@@ -352,4 +352,3 @@ class Artist:
         # close
         if close:
             plt.close()
-

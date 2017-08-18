@@ -694,7 +694,7 @@ def diagonal_line(xi, yi, ax=None, c='k', ls=':', lw=1, zorder=3):
 
 def get_color_cycle(n, cmap='rainbow', rotations=3):
     """Get a list of RGBA colors following a colormap.
-    
+
     Useful for plotting lots of elements, keeping the color of each unique.
 
     Parameters
@@ -2413,7 +2413,7 @@ class Diff2D():
         dynamic_range forces the colorbar to use all of its colors (only matters
         for signed data)
         """
-        #TODO: add parameters to this plot function (KS)
+        # TODO: add parameters to this plot function (KS)
         fig = None
         if len(self.minuend_chopped) > 10:
             if not autosave:

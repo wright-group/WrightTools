@@ -228,7 +228,7 @@ class TimeStamp:
 
     @property
     def hms(self):
-        """Get time formated as ``HH:MM:SS``"""
+        """Get time formated as ``HH:MM:SS``."""
         return self.datetime.strftime('%H:%M:%S')
 
     @property
@@ -1004,7 +1004,7 @@ def smooth_1D(arr, n=10):
 
 class Spline:
     """Spline."""
-    
+
     def __call__(self, *args, **kwargs):
         """Evaluate."""
         return self.true_spline(*args, **kwargs)
@@ -1489,9 +1489,9 @@ def update_progress(progress, carriage_return=False, length=50):
 
 class Timer:
     """Context manager for timing code.
-    
-    >>> with Timer(): 
-    ...     your_code() 
+
+    >>> with Timer():
+    ...     your_code()
     """
 
     def __init__(self, verbose=True):
