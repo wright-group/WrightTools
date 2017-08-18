@@ -117,7 +117,7 @@ Use ``clip`` to ignore points outside of a specific range.
 
 .. code-block:: python
 
-   data.clip('ai0', zmin=0.0, zmax=0.1)
+   data.clip('ai0', min=0.0, max=0.1)
 
 .. plot::
    :include-source: False
@@ -127,7 +127,7 @@ Use ``clip`` to ignore points outside of a specific range.
    from WrightTools import datasets
    ps = datasets.COLORS.v2p1_MoS2_TrEE_movie
    data = wt.data.from_COLORS(ps)
-   data.clip('ai0', zmin=0.0, zmax=0.1)
+   data.clip('ai0', min=0.0, max=0.1)
    artist = wt.artists.mpl_2D(data, 'w1', 'd2', at={'w2': [2, 'eV']})
    artist.plot()
    plt.show()
