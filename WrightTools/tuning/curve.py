@@ -408,9 +408,11 @@ class Curve:
         if not self.subcurve:
             return None
         # color must be array
+
         def is_numeric(obj):
             attrs = ['__add__', '__sub__', '__mul__', '__div__', '__pow__']
             return all([hasattr(obj, attr) for attr in attrs] + [not hasattr(obj, '__len__')])
+
         if is_numeric(color):
             color = np.array([color])
         # get color in units
