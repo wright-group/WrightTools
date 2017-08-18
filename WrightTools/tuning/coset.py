@@ -1,6 +1,4 @@
-"""
-COSET
-"""
+"""COSET."""
 
 
 # --- import --------------------------------------------------------------------------------------
@@ -31,10 +29,9 @@ matplotlib.rcParams['font.size'] = 14
 
 
 class CoSet:
+    """Interpolated correspondance between axes."""
 
     def __add__(self, coset):
-        # HOW THIS WORKS
-        #
         # TODO: proper checks and warnings...
         # copy
         other_copy = coset.__copy__()
@@ -61,6 +58,25 @@ class CoSet:
 
     def __init__(self, control_name, control_units, control_points,
                  offset_name, offset_units, offset_points, name='coset'):
+        """Create a ``CoSet`` object.
+
+        Parameters
+        ----------
+        control_name : string
+            Control name.
+        control_units : string
+            Control units.
+        control_points : 1D array
+            Control points.
+        offset_name : string
+            Offset name.
+        offset_units : string
+            Offset units.
+        offset_points : 1D array
+            Offset points.
+        name : string (optional)
+            Name. Default is 'coset'.
+        """
         self.control_name = control_name
         self.control_units = control_units
         self.control_points = control_points
@@ -72,6 +88,7 @@ class CoSet:
         self.interpolate()
 
     def __repr__(self):
+        """Unambiguous representation."""
         # when you inspect the object
         outs = []
         outs.append('WrightTools.tuning.coset.CoSet object at ' + str(id(self)))
@@ -81,28 +98,43 @@ class CoSet:
         return '\n'.join(outs)
 
     def coerce_offsets(self):
-        """ Coerce the offsets to lie exactly along the interpolation positions.
+        """Coerce the offsets to lie exactly along the interpolation positions.
 
         Can be thought of as 'smoothing' the coset.
         """
         self.map_control_points(self.control_points, units='same')
 
     def convert_control_units(self, units):
+        """Convert control units.
+
+        Parameters
+        ----------
+        units : string
+            New control units.
+        """
         self.control_points = wt_units.converter(self.control_points, self.control_units, units)
         self.sort()
         self.control_units = units
         self.interpolate()
 
     def convert_offset_units(self, units):
+        """Convert offset units.
+
+        Parameters
+        ----------
+        units : string
+            New offset units.
+        """
         self.offset_points = wt_units.converter(self.offset_points, self.offset_units, units)
         self.offset_units = units
         self.interpolate()
 
     def copy(self):
+        """Copy."""
         return self.__copy__()
 
     def get_limits(self, units='same'):
-        """ Get the edges of the coset object.
+        """Get the edges of the coset object.
 
         Parameters
         ----------
@@ -122,6 +154,22 @@ class CoSet:
 
     def get_offset(self, control_position, input_units='same',
                    output_units='same'):
+        """Get offset.
+
+        Parameters
+        ----------
+        control_position : number
+            Control position, in input_units.
+        input_units : string (optional)
+            Input units. Default is same.
+        output_units : string (optional)
+            Output units. Default is same.
+
+        Returns
+        -------
+        number
+            Offset.
+        """
         # get control position in own units
         if not input_units == 'same':
             control_position = wt_units.converter(
@@ -135,11 +183,12 @@ class CoSet:
         return offset
 
     def interpolate(self):
+        """Force interpolation recalculation."""
         self.spline = scipy.interpolate.InterpolatedUnivariateSpline(
             self.control_points, self.offset_points)
 
     def map_control_points(self, points, units='same'):
-        """ Map the offset points onto new control points using interpolation.
+        """Map the offset points onto new control points using interpolation.
 
         Parameters
         ----------
@@ -166,6 +215,15 @@ class CoSet:
         self.offset_points = new_offsets
 
     def plot(self, autosave=False, save_path=''):
+        """Plot.
+
+        Parameters
+        ----------
+        autosave : boolean (optional)
+            Toggle saving. Default is False.
+        save_path : string (optional)
+            Location to save figure. Default is ''.
+        """
         fig, gs = wt_artists.create_figure(cols=[1])
         ax = plt.subplot(gs[0])
         xi = self.control_points
@@ -183,6 +241,17 @@ class CoSet:
             plt.close(fig)
 
     def save(self, save_directory=None, plot=True, verbose=True):
+        """Save to a .coset file.
+
+        Parameters
+        ----------
+        save_directory : string (optional).
+            Save directory. Default is None.
+        plot : boolean (optional)
+            Toggle creation of plot. Default is True.
+        verbose : boolean (optional)
+            Toggle talkback. Default is True.
+        """
         if save_directory is None:
             save_directory = os.getcwd()
         time_stamp = wt_kit.TimeStamp()
@@ -204,7 +273,7 @@ class CoSet:
             print('coset saved at {}'.format(file_path))
 
     def sort(self):
-        """ Control points must be ascending.  """
+        """Control points must be ascending."""
         idxs = np.argsort(self.control_points)
         self.control_points = self.control_points[idxs]
         self.offset_points = self.offset_points[idxs]
@@ -214,6 +283,17 @@ class CoSet:
 
 
 def from_file(path):
+    """Create a coset object from file.
+
+    Parameters
+    ----------
+    path : string
+        Filepath.
+
+    Returns
+    -------
+    WrightTools.tuning.coset.Coset
+    """
     # get raw information from file
     headers = wt_kit.read_headers(path)
     arr = np.genfromtxt(path).T

@@ -4,7 +4,7 @@ A collection of small, general purpose objects and methods.
 .. _RFC3339: https://www.ietf.org/rfc/rfc3339.txt
 .. _RFC5322: https://tools.ietf.org/html/rfc5322#section-3.3
 .. _HDF5: https://www.hdfgroup.org/HDF5/doc/H5.intro.html
-.. _intersperse http://stackoverflow.com/a/5921708
+.. _intersperse: http://stackoverflow.com/a/5921708
 .. _flatten: http://stackoverflow.com/questions/2158395
 .. _suppress:
     http://stackoverflow.com/questions/11130156/suppress-stdout-stderr-print-from-python-functions
@@ -158,9 +158,10 @@ def get_timestamp(style='RFC3339', at=None, hms=True, frac=False,
 
 
 class TimeStamp:
+    """Class for representing a moment in time."""
 
     def __init__(self, at=None, timezone='local'):
-        """Class for representing a moment in time.
+        """Create a ``TimeStamp`` object.
 
         Parameters
         ----------
@@ -213,21 +214,26 @@ class TimeStamp:
             self.datetime = datetime.datetime.fromtimestamp(at, self.tz)
 
     def __repr__(self):
-        return self.RFC3339
+        """Unambiguous representation."""
+        return str(self.unix)
 
     def __str__(self):
-        return str(self.unix)
+        """Readable representation."""
+        return self.RFC3339
 
     @property
     def date(self):
+        """year-month-day."""
         return self.datetime.strftime('%Y-%m-%d')
 
     @property
     def hms(self):
+        """Get time formated as ``HH:MM:SS``."""
         return self.datetime.strftime('%H:%M:%S')
 
     @property
     def human(self):
+        """Human-readable timestamp."""
         # get timezone offset
         delta_sec = time.timezone
         m, s = divmod(delta_sec, 60)
@@ -239,10 +245,12 @@ class TimeStamp:
 
     @property
     def legacy(self):
+        """Legacy timestamp format."""
         return self.datetime.strftime('%Y.%m.%d %H_%M_%S')
 
     @property
     def RFC3339(self):
+        """RFC3339_."""
         # get timezone offset
         delta_sec = time.timezone
         m, s = divmod(delta_sec, 60)
@@ -266,10 +274,12 @@ class TimeStamp:
 
     @property
     def RFC5322(self):
+        """RFC5322_."""
         return self.datetime.astimezone(tz=pytz.utc).strftime('%a, %d %b %Y %H:%M:%S GMT')
 
     @property
     def path(self):
+        """Timestamp for placing into filepaths."""
         out = self.datetime.strftime('%Y-%m-%d')
         out += ' '
         ssm = (
@@ -284,6 +294,17 @@ class TimeStamp:
 
 
 def timestamp_from_RFC3339(RFC3339):
+    """Generate a Timestamp object from a RFC3339_ formatted string.
+
+    Parameters
+    ----------
+    RFC3339 : string
+        RFC3339 formatted string.
+
+    Returns
+    -------
+    WrightTools.kit.TimeStamp
+    """
     dt = dateutil.parser.parse(RFC3339)
     timezone = dt.tzinfo._offset.total_seconds()
     unix = (dt - datetime.datetime(1970, 1, 1, tzinfo=pytz.utc)
@@ -321,14 +342,14 @@ def file_len(fname):
 
 
 class FileSlicer:
+    """Access groups of lines from a file quickly, without loading the entire file into memory.
+
+    Mostly a convinient wrapper around the standard library linecache
+    module.
+    """
 
     def __init__(self, path, skip_headers=True, header_charachter='#'):
-        """Access groups of lines from a file quickly, without loading the entire file into memory.
-
-        Lines are accesed from Useful especially in cases where
-
-        Mostly a convinient wrapper around the standard library 'linecache'
-        module.
+        """Create a ``FileSlicer`` object.
 
         Parameters
         ----------
@@ -393,18 +414,19 @@ class FileSlicer:
         self.n += line_count
 
 
-def get_box_path():
-    """LEGACY METHOD. Use ``get_path_matching(name)`` instead.
-    
-    .. note:: Deprecated
-        `get_box_path` will be removed in a future version of WrightTools.
-        Use `get_path_matching` instead.
-    """
-    box_path = get_path_matching('Box Sync')
-    return os.path.join(box_path, 'Wright Shared')
-
-
 def get_path_matching(name):
+    """Get path matching a name.
+
+    Parameters
+    ----------
+    name : string
+        Name to search for.
+
+    Returns
+    -------
+    string
+        Full filepath.
+    """
     # first try looking in the user folder
     p = os.path.join(os.path.expanduser('~'), name)
     # then try expanding upwards from cwd
@@ -453,9 +475,16 @@ def glob_handler(extension, folder=None, identifier=None):
 
 
 class INI():
+    """Handle communication with an INI file."""
 
     def __init__(self, filepath):
-        """Handle communication with an INI file."""
+        """Create an INI handler object.
+
+        Parameters
+        ----------
+        filepath : string
+            Filepath.
+        """
         self.filepath = filepath
         if sys.version[0] == '3':
             self.config = configparser.ConfigParser()
@@ -463,6 +492,13 @@ class INI():
             self.config = configparser.SafeConfigParser()
 
     def add_section(self, section):
+        """Add section.
+
+        Parameters
+        ----------
+        section : string
+            Section to add.
+        """
         self.config.read(self.filepath)
         self.config.add_section(section)
         with open(self.filepath, 'w') as f:
@@ -470,7 +506,7 @@ class INI():
 
     def clear(self):
         """Remove all contents from file. Use with extreme caution.
-        
+
         .. warning:: This is a destructive action.
         """
         with open(self.filepath, "w"):
@@ -482,21 +518,72 @@ class INI():
 
     @property
     def dictionary(self):
+        """Get a python dictionary of contents."""
         self.config.read(self.filepath)
         return self.config._sections
 
     def get_options(self, section):
+        """List the options in a section.
+
+        Parameters
+        ----------
+        section : string
+            The section to investigate.
+
+        Returns
+        -------
+        list of strings
+            The options within the given section.
+        """
         return list(self.dictionary[section].keys())
 
     def has_option(self, section, option):
+        """Test if file has option.
+
+        Parameters
+        ----------
+        section : string
+            Section.
+        option : string
+            Option.
+
+        Returns
+        -------
+        boolean
+        """
         self.config.read(self.filepath)
         return self.config.has_option(section, option)
 
     def has_section(self, section):
+        """Test if file has section.
+
+        Parameters
+        ----------
+        section : string
+            Section.
+
+        Returns
+        -------
+        boolean
+        """
         self.config.read(self.filepath)
         return self.config.has_section(section)
 
     def read(self, section, option):
+        """Read from file.
+
+        Parameters
+        ----------
+        section : string
+            Section.
+        option : string
+            Option.
+
+        Returns
+        -------
+        string
+            Value.
+        """
         self.config.read(self.filepath)
         raw = self.config.get(section, option)
         out = string2item(raw, sep=', ')
@@ -504,64 +591,27 @@ class INI():
 
     @property
     def sections(self):
+        """List of sections."""
         self.config.read(self.filepath)
         return self.config.sections()
 
     def write(self, section, option, value):
+        """Write to file.
+
+        Parameters
+        ----------
+        section : string
+            Section.
+        option : string
+            Option.
+        value : string
+            Value.
+        """
         self.config.read(self.filepath)
         string = item2string(value, sep=', ')
         self.config.set(section, option, string)
         with open(self.filepath, 'w') as f:
             self.config.write(f)
-
-
-def plot_dats(folder=None, transpose=True):
-    """Convinience function to plot raw data from COLORS."""
-    import data
-    import artists
-
-    if folder:
-        pass
-    else:
-        folder = os.getcwd()
-
-    files = glob_handler('.dat', folder=folder)
-
-    for _file in files:
-
-        print(' ')
-
-        try:
-
-            dat_data = data.from_COLORS(_file)
-
-            fname = filename_parse(_file)[1]
-
-            dat_data.convert('wn')
-
-            # 1D
-            if len(dat_data.axes) == 1:
-                artist = artists.mpl_1D(dat_data, dat_data.axes[0].name)
-                artist.plot(0, autosave=True, output_folder=folder, fname=fname)
-
-            # 2D
-            elif len(dat_data.axes) == 2:
-                if transpose:
-                    dat_data.transpose()
-                artist = artists.mpl_2D(dat_data, dat_data.axes[0].name, dat_data.axes[1].name)
-                artist.plot(0, pixelated=True, contours=0, xbin=True, ybin=True,
-                            autosave=True, output_folder=folder, fname=fname)
-
-            else:
-                print('error! - dimensionality of data ({}) not recognized'.format(
-                    len(dat_data.axes)))
-
-        except BaseException:
-            import sys
-            print('dat {} not recognized as plottible in plot_dats'.format(
-                filename_parse(_file)[1]))
-            print(sys.exc_info()[0])
-            pass
 
 
 def read_data_column(path, name):
@@ -832,6 +882,26 @@ def fft(xi, yi, axis=0):
 
 
 def mono_resolution(grooves_per_mm, slit_width, focal_length, output_color, output_units='wn'):
+    """Calculate the resolution of a monochromator.
+
+    Parameters
+    ----------
+    grooves_per_mm : number
+        Grooves per millimeter.
+    slit_width : number
+        Slit width in microns.
+    focal_length : number
+        Focal length in mm.
+    output_color : number
+        Output color in nm.
+    output_units : string (optional)
+        Output units. Default is wn.
+
+    Returns
+    -------
+    float
+        Resolution.
+    """
     d_lambda = 1e6 * slit_width / (grooves_per_mm * focal_length)  # nm
     upper = output_color + d_lambda / 2  # nm
     lower = output_color - d_lambda / 2  # nm
@@ -934,14 +1004,13 @@ def smooth_1D(arr, n=10):
 
 class Spline:
     """Spline."""
-    
+
     def __call__(self, *args, **kwargs):
+        """Evaluate."""
         return self.true_spline(*args, **kwargs)
 
     def __init__(self, xi, yi, k=3, s=1000, ignore_nans=True):
-        """Wrapper class for scipy.UnivariateSpline.
-        
-        Made to be slightly less finicky with things like decending xi arrays and nans.
+        """Initialize.
 
         Parameters
         ----------
@@ -957,7 +1026,7 @@ class Spline:
             Number of knots will be increased until the smoothing condition is
             satisfied::
 
-                sum((w[i] * (y[i]-spl(x[i])))**2, axis=0) <= s
+            ``sum((w[i] * (y[i]-spl(x[i])))**2, axis=0) <= s``
 
             If 0, spline will interpolate through all data points. Default is
             1000.
@@ -1130,7 +1199,23 @@ def intersperse(lst, item):
 
 
 def item2string(item, sep='\t'):
-    # TODO: document
+    r"""Generate string from item.
+
+    Parameters
+    ----------
+    item : object
+        Item.
+    sep : string (optional)
+        Separator. Default is '\t'.
+
+    Returns
+    -------
+    string
+
+    See Also
+    --------
+    string2item
+    """
     out = ''
     if isinstance(item, string_type):
         out += '\'' + item + '\''
@@ -1188,17 +1273,20 @@ class suppress_stdout_stderr(object):
     """
 
     def __init__(self):
+        """init."""
         # Open a pair of null files
         self.null_fds = [os.open(os.devnull, os.O_RDWR) for x in range(2)]
         # Save the actual stdout (1) and stderr (2) file descriptors.
         self.save_fds = (os.dup(1), os.dup(2))
 
     def __enter__(self):
+        """enter."""
         # Assign the null pointers to stdout and stderr.
         os.dup2(self.null_fds[0], 1)
         os.dup2(self.null_fds[1], 2)
 
     def __exit__(self, *_):
+        """exit."""
         # Re-assign the real stdout/stderr back to (1) and (2)
         os.dup2(self.save_fds[0], 1)
         os.dup2(self.save_fds[1], 2)
@@ -1279,7 +1367,23 @@ def string2identifier(s):
 
 
 def string2item(string, sep='\t'):
-    # TODO: document
+    r"""Turn a string into a python object.
+
+    Parameters
+    ----------
+    string : string
+        String.
+    sep : string (optional)
+        Seperator. Default is '\t'.
+
+    Returns
+    -------
+    object
+
+    See Also
+    --------
+    item2string
+    """
     if string[0] == '\'' and string[-1] == '\'':
         out = string[1:-1]
     else:
@@ -1385,21 +1489,21 @@ def update_progress(progress, carriage_return=False, length=50):
 
 class Timer:
     """Context manager for timing code.
-    
-    Usage:
-    ------
 
-    >>> with Timer(): 
-    ...     your_code() 
+    >>> with Timer():
+    ...     your_code()
     """
 
     def __init__(self, verbose=True):
+        """init."""
         self.verbose = verbose
 
     def __enter__(self, progress=None):
+        """enter."""
         self.start = clock()
 
     def __exit__(self, type, value, traceback):
+        """exit."""
         self.end = clock()
         self.interval = self.end - self.start
         if self.verbose:

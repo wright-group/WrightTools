@@ -29,9 +29,10 @@ Contents
    install
    quickstart
    data
-   units
-   fit
    artists
+   fit
+   kit
+   units
    tuning
    diagrams
    datasets

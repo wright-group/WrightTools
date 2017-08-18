@@ -1,6 +1,10 @@
-"""
-Central data class and associated.
+"""Central data class and associated.
 
+.. [#carlson1989] **Absorption and Coherent Interference Effects in Multiply Resonant
+                  Four-Wave Mixing Spectroscopy**
+                  Roger J. Carlson, and John C. Wright
+                  *Applied Spectroscopy* **1989** 43, 1195--1208
+                  `doi:10.1366/0003702894203408 <http://dx.doi.org/10.1366/0003702894203408>`_
 .. _griddata: http://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.griddata.html
 .. _pickle: https://docs.python.org/3/library/pickle.html
 .. _kaiser window: https://en.wikipedia.org/wiki/Kaiser_window
@@ -46,10 +50,12 @@ else:
 
 
 def true_max(*args, **kwargs):
+    """Call standard library max function."""
     return max(*args, **kwargs)
 
 
 def true_min(*args, **kwargs):
+    """Call standard library min function."""
     return min(*args, **kwargs)
 
 
@@ -57,10 +63,33 @@ def true_min(*args, **kwargs):
 
 
 class Axis:
+    """Axis class."""
 
     def __init__(self, points, units, symbol_type=None,
                  tolerance=None, file_idx=None,
                  name='', label_seed=[''], **kwargs):
+        """Create an `Axis` object.
+
+        Paramaters
+        ----------
+        points : 1D array-like
+            Axis points.
+        units : string
+            Axis units.
+        symbol_type : string (optional)
+            Axis symbol type. If None, symbol_type is automatically
+            generated. Default is None.
+        tolerance : number (optional)
+            Axis tolerance. Default is None.
+        file_idx : integer (optional)
+            Axis position in original data file. Default is None.
+        name : string (optional)
+            Axis name. Default is ''.
+        label_seed : list of strings
+            Axis label subscripts. Default is [''].
+        **kwargs
+            Keyword arguments.
+        """
         self.name = wt_kit.string2identifier(name)
         self.tolerance = tolerance
         self.points = np.asarray(points)
@@ -82,14 +111,39 @@ class Axis:
         self.get_label()
 
     def __repr__(self):
+        """Return an unambiguous representation of the Axis.
+
+        Returns
+        -------
+        string
+            Representation.
+        """
         return 'WrightTools.data.Axis object \'{0}\' at {1}'.format(self.name, str(id(self)))
 
     def convert(self, destination_units):
+        """Convert axis to destination units.
+
+        Parameters
+        ----------
+        destination_units : string
+            Destination units.
+        """
         self.points = wt_units.converter(self.points, self.units,
                                          destination_units)
         self.units = destination_units
 
     def get_label(self, show_units=True, points=False, decimals=2):
+        """Get a LaTeX formatted label.
+
+        Parameters
+        ----------
+        show_units : boolean (optional)
+            Toggle showing units. Default is True.
+        points : boolean (optional)
+            Toggle showing points. Default is False.
+        decimals : integer (optional)
+            Number of decimals to show for numbers. Default is 2.
+        """
         label = r'$\mathsf{'
         # label
         for part in self.label_seed:
@@ -123,6 +177,7 @@ class Axis:
 
     @property
     def info(self):
+        """Axis info dictionary."""
         info = collections.OrderedDict()
         info['name'] = self.name
         info['id'] = id(self)
@@ -135,6 +190,7 @@ class Axis:
         return info
 
     def is_constant(self):
+        """Axis constant flag."""
         try:
             len(self.points)
         except TypeError:
@@ -143,26 +199,45 @@ class Axis:
             return True
 
     @property
-    def label(self):
+    def label(self):  # noqa: D403
+        """LaTeX formatted label."""
         return self.get_label()
 
     def max(self):
+        """Axis max, ignoring nans."""
         return self.points.max()
 
     def min(self):
+        """Axis min, ignoring nans."""
         return self.points.min()
-
-    def min_max_step(self):
-        _min = self.points.min()
-        _max = self.points.max()
-        _step = (_max - _min) / (len(self.points) - 1)
-        return _min, _max, _step
 
 
 class Channel:
+    """Channel."""
 
     def __init__(self, values, units=None, file_idx=None, null=None, signed=None, name='channel',
                  label=None, label_seed=None):
+        """Construct a channel object.
+
+        Parameters
+        ----------
+        values : array-like
+            Values.
+        units : string (optional)
+            Channel units. Default is None.
+        file_idx : integer (optional)
+            Channel file index. Default is None.
+        null : number (optional)
+            Channel null. Default is None (0).
+        signed : booelan (optional)
+            Channel signed flag. Default is None (guess).
+        name : string (optional)
+            Channel name. Default is 'channel'.
+        label : string.
+            Label. Default is None.
+        label_seed : list of strings
+            Label seed. Default is None.
+        """
         # import
         self.name = wt_kit.string2identifier(name)
         self.label = label
@@ -177,9 +252,17 @@ class Channel:
             self.signed = signed
 
     def __repr__(self):
+        """Retrun an unambiguous representation of the Channel.
+
+        Returns
+        -------
+        string
+            Representation.
+        """
         return 'WrightTools.data.Channel object \'{0}\' at {1}'.format(self.name, str(id(self)))
 
     def _update(self):
+        """Update channel."""
         message = '_update is no longer necessary, and will be removed in future versions'
         warnings.warn(message, wt_exceptions.VisibleDeprecationWarning)
 
@@ -212,6 +295,17 @@ class Channel:
             print('replace not recognized in channel.clip')
 
     def give_values(self, values, null=None, signed=None):
+        """Give values.
+
+        Parameters
+        ----------
+        values : array-like
+            Values.
+        null : number (optional)
+            Null. Default is None (0).
+        signed : boolean (optional)
+            Signed flag. Default is None (guess).
+        """
         self.values = values
         # null
         if null is not None:
@@ -240,6 +334,7 @@ class Channel:
 
     @property
     def info(self):
+        """Return Channel info dictionary."""
         info = collections.OrderedDict()
         info['name'] = self.name
         info['id'] = id(self)
@@ -250,24 +345,26 @@ class Channel:
         return info
 
     def invert(self):
+        """Invert channel values."""
         self.values = - self.values
 
     @property
     def mag(self):
+        """Channel magnitude (maximum deviation from null)."""
         return max((self.max - self.null, self.null - self.min))
 
     @property
     def max(self):
-        """ Maximum, ignorning nans.  """
+        """Maximum, ignorning nans."""
         return np.nanmax(self.values)
 
     @property
     def min(self):
-        """ Minimum, ignoring nans.  """
+        """Minimum, ignoring nans."""
         return np.nanmin(self.values)
 
     def normalize(self, axis=None):
-        """ Normalizes a Channel, setting z-null to 0 and the max to 1.  """
+        """Normalize a Channel, set `null` to 0 and the max to 1."""
         # process axis argument
         if axis is not None:
             if hasattr(axis, '__contains__'):  # list, tuple or similar
@@ -289,7 +386,7 @@ class Channel:
 
     def trim(self, neighborhood, method='ztest', factor=3, replace='nan',
              verbose=True):
-        """ Remove outliers from the dataset
+        """Remove outliers from the dataset.
 
         Identifies outliers by comparing each point to its
         neighbors using a statistical test.
@@ -369,34 +466,39 @@ class Channel:
 
     @ property
     def zmag(self):
+        """Channel magnitude."""
         message = "use mag, not zmag"
         warnings.warn(message, wt_exceptions.VisibleDeprecationWarning)
         return self.mag
 
     @ property
     def zmax(self):
+        """Channel maximum."""
         message = "use max, not zmax"
         warnings.warn(message, wt_exceptions.VisibleDeprecationWarning)
         return self.max
 
     @ property
     def zmin(self):
+        """Channel minimum."""
         message = "use min, not zmin"
         warnings.warn(message, wt_exceptions.VisibleDeprecationWarning)
         return self.min
 
     @ property
     def znull(self):
+        """Channel null."""
         message = "use null, not znull"
         warnings.warn(message, wt_exceptions.VisibleDeprecationWarning)
         return self.null
 
 
 class Data:
+    """Central multidimensional data class."""
 
     def __init__(self, axes, channels, constants=[],
                  name='', source=None):
-        """ Central class for data in the Wright Group.
+        """Create a ``Data`` object.
 
         Parameters
         ----------
@@ -424,11 +526,19 @@ class Data:
         self._original = self.copy()
 
     def __repr__(self):
+        """Return an unambiguous representation.
+
+        Returns
+        -------
+        string
+            Representation.
+        """
         return 'WrightTools.data.Data object \'{0}\' {1} at {2}'.format(
             self.name, str(self.axis_names), str(id(self)))
 
     def _update(self):
-        """
+        """Ensure that a Data Object is up to date.
+
         Ensure that the ``axis_names``, ``constant_names``, ``channel_names``,
         and ``shape`` attributes are correct.
         """
@@ -449,7 +559,7 @@ class Data:
         return self._update(*args, **kwargs)
 
     def bring_to_front(self, channel):
-        """ Bring a specific channel to the zero-indexed position in channels.
+        """Bring a specific channel to the zero-indexed position in channels.
 
         All other channels get pushed back but remain in order.
 
@@ -470,7 +580,7 @@ class Data:
         self._update()
 
     def chop(self, *args, **kwargs):
-        """ Divide the dataset into its lower-dimensionality components.
+        """Divide the dataset into its lower-dimensionality components.
 
         Parameters
         ----------
@@ -595,7 +705,9 @@ class Data:
         return out
 
     def clip(self, channel=0, *args, **kwargs):
-        """ Wrapper method for ``Channel.clip``.
+        """Call ``Channel.clip``.
+
+        Wrapper method for ``Channel.clip``.
 
         Parameters
         ----------
@@ -669,8 +781,7 @@ class Data:
         self._update()
 
     def convert(self, destination_units, verbose=True):
-        """
-        Converts all compatable constants and axes to given units.
+        """Convert all compatable constants and axes to given units.
 
         Parameters
         ----------
@@ -709,11 +820,13 @@ class Data:
 
     @property
     def dimensionality(self):
+        """Get dimensionality of Data object."""
         return len(self.axes)
 
     def divide(self, divisor, channel=0, divisor_channel=0):
-        """
-        Divide a given channel by another data object. Divisor may be self.
+        """Divide a given channel by another data object.
+
+        Divisor may be self.
         All axes in divisor must be contained in self.
 
         Parameters
@@ -826,9 +939,9 @@ class Data:
         self.channels[signal_channel_index]._update()
 
     def flip(self, axis):
-        """
-        Flip direction of arrays along an axis. Changes the index of elements
-        without changing their correspondance to axis positions.
+        """Flip direction of arrays along an axis.
+
+        Changes the index of elements without changing their correspondance to axis positions.
 
         Parameters
         ----------
@@ -975,6 +1088,7 @@ class Data:
 
     @property
     def info(self):
+        """Retrieve info dictionary about a Data object."""
         info = collections.OrderedDict()
         info['name'] = self.name
         info['id'] = id(self)
@@ -985,9 +1099,7 @@ class Data:
         return info
 
     def level(self, channel, axis, npts, verbose=True):
-        """
-        For a channel, subtract the average value of several points at the edge
-        of a given axis.
+        """For a channel, subtract the average value of several points at the edge of a given axis.
 
         Parameters
         ----------
@@ -1043,8 +1155,6 @@ class Data:
         # return
         channel.values = values
         channel.null = 0.
-        channel.max = np.nanmax(values)
-        channel.min = np.nanmin(values)
         # print
         if verbose:
             axis = self.axes[axis_index]
@@ -1058,28 +1168,28 @@ class Data:
     def m(self, abs_data, channel=0, this_exp='TG',
           indices=None, m=None,
           bounds_error=True, verbose=True):
-        """
-        placeholder docstring because the existing one needs numpydoc formatting
-        and is causing errors
-        """
-        docstring = """
-        normalize channel by absorptive effects given by absorption data object
-            'abs_data'
+        """Perform m-factor corrections [#carlson1989]_.
 
-        indices can be used to override default assignments for normalization
-        m can be used to override default assignments for functional forms
-         --> better to just add to the dictionary, though!
-        assumes all abs fxns are independent of each axis, so we can normalize
-            each axis individually
-        need to be ready that:
-            1.  not all axes that m accepts may be present--in this case,
-                assumes abs of 0
-        currently in alpha testing...so be careful
-        known issues:
-            --requires unique, integer (0<x<10) numbering for index
-                identification
+        Assumes all absorption functions are independent, so we can
+        normalize each axis individually.
+
+        Parameters
+        ----------
+        abs_data : wt.data.Data object
+            Absorption data to normalize by
+        channel : int or string (optional)
+            Channel to correct (default is zero)
+        this_exp : {'TG', 'TA'} (optional)
+            Experimental configuration. Default is TG.
+        indices : list of integers (optional)
+            axis indices
+        m : function (optional)
+            m-factor function
+        bounds_error : boolean (optinal)
+            Toggle bounds_error. Default is True.
+        verbose : boolean (optional)
+            Toggle talkback. Default is True.
         """
-        # TODO: numpydoc format docstring
         # exp_name: [i], [m_i]
         exp_types = {
             'TG': [['1', '2'],
@@ -1151,9 +1261,9 @@ class Data:
         return
 
     def map_axis(self, axis, points, input_units='same', verbose=True):
-        """
-        Map points of an axis to new points using linear interpolation. Out-
-        of-bounds points are written nan.
+        """Map points of an axis to new points using linear interpolation.
+
+        Out-of-bounds points are written nan.
 
         Parameters
         ----------
@@ -1246,9 +1356,9 @@ class Data:
     def offset(self, points, offsets, along, offset_axis,
                units='same', offset_units='same', mode='valid',
                method='linear', verbose=True):
-        """
-        Offset one axis based on another axis' values. Useful for correcting
-        instrumental artifacts such as zerotune.
+        """Offset one axis based on another axis' values.
+
+        Useful for correcting instrumental artifacts such as zerotune.
 
         Parameters
         ----------
@@ -1279,7 +1389,6 @@ class Data:
             >>> data.offset(points, offsets, 'w1', 'd1')
 
         """
-
         # axis ------------------------------------------------------------------------------------
 
         if isinstance(along, int):
@@ -1409,9 +1518,7 @@ class Data:
         self._update()
 
     def revert(self):
-        """
-        Revert this data object back to its original state.
-        """
+        """Revert this data object back to its original state."""
         for attribute_name in dir(self):
             if attribute_name not in ['_original'] + wt_kit.get_methods(self):
                 # if attribute does not exist in original, delete it
@@ -1423,9 +1530,7 @@ class Data:
         self._update()
 
     def save(self, filepath=None, verbose=True):
-        """
-        Save using the `pickle`_ module.
-
+        """Save using the `pickle`_ module.
 
         Parameters
         ----------
@@ -1494,10 +1599,10 @@ class Data:
         channel._update()
 
     def share_nans(self):
-        """
-        Share not-a-numbers between all channels. If any channel is nan at a
-        given index, all channels will be nan at that index after this
-        operation.
+        """Share not-a-numbers between all channels.
+
+        If any channel is nan at a given index, all channels will be nan
+        at that index after this operation.
 
         Uses the share_nans method found in wt.kit.
         """
@@ -1507,9 +1612,7 @@ class Data:
             c.values = a
 
     def smooth(self, factors, channel=None, verbose=True):
-        """
-        Smooth a channel using an n-dimenional `kaiser window`_.
-
+        """Smooth a channel using an n-dimenional `kaiser window`_.
 
         Parameters
         ----------
@@ -1690,9 +1793,10 @@ class Data:
         return outs
 
     def subtract(self, subtrahend, channel=0, subtrahend_channel=0):
-        """
-        Subtract a given channel by another data object. Subtrahend smay be self.
-        All axes in divisor must be contained in self.
+        """Subtract a given channel by another data object.
+
+        Subtrahend may be self.
+        All axes in subtrahend must be contained in self.
 
         Parameters
         ----------
@@ -1747,7 +1851,9 @@ class Data:
         self.transpose(transpose_order, verbose=False)
 
     def trim(self, channel, **kwargs):
-        """ Wrapper method for ``Channel.trim``.
+        """Call ``Channel.trim``.
+
+        Wrapper method for ``Channel.trim``.
 
         Parameters
         ----------
@@ -1770,12 +1876,13 @@ class Data:
             elif key in ['method', 'factor', 'replace', 'verbose']:
                 inputs[key] = value
             else:
-                raise KeyError('Keyword arguments to trim must be either an axis name or one of {method, factor, replace, verbose}')
+                raise KeyError(
+                    'Keyword arguments to trim must be either an axis name or one of {method, factor, replace, verbose}')
         # call trim
         return channel.trim(neighborhood=neighborhood, **inputs)
 
     def transform(self, transform=None):
-        """ Transforms the dataset using arbitrary coordinates, then regrids the data
+        """Transform the dataset using arbitrary coordinates, then regrids the data.
 
         Parameters
         ----------
@@ -1789,10 +1896,10 @@ class Data:
         # use np.griddata
         # find code used to deal with constants
         # possibly use to plot vs constants?
-        print('not yet implemented.')
+        raise NotImplementedError
 
     def transpose(self, axes=None, verbose=True):
-        """ Transpose the dataset.
+        """Transpose the dataset.
 
         Parameters
         ----------
@@ -1815,7 +1922,7 @@ class Data:
         self.shape = self.channels[0].values.shape
 
     def zoom(self, factor, order=1, verbose=True):
-        """ Zoom the data array using spline interpolation of the requested order.
+        """Zoom the data array using spline interpolation of the requested order.
 
         The number of points along each axis is increased by factor.
         See `scipy ndimage`_ for more info.
@@ -1850,7 +1957,7 @@ class Data:
 
 
 def from_Cary50(filepath, verbose=True):
-    """ Create a data object from a Cary 50 UV VIS absorbance file.
+    """Create a data object from a Cary 50 UV VIS absorbance file.
 
     Parameters
     ----------
@@ -1901,7 +2008,7 @@ def from_Cary50(filepath, verbose=True):
 
 
 def from_text(filepath, name=None, verbose=True):
-    """ Create a data object from plaintext tab deliminated file
+    """Create a data object from plaintext tab deliminated file.
 
     Expects one energy and one intensity value.
 
@@ -1956,7 +2063,7 @@ def from_text(filepath, name=None, verbose=True):
 
 
 def from_BrunoldrRaman(filepath, name=None, verbose=True):
-    """ Create a data object from plaintext tab deliminated file
+    """Create a data object from the Brunold rRaman instrument.
 
     Expects one energy (in wavenumbers) and one counts value.
 
@@ -2016,11 +2123,10 @@ def from_COLORS(
             'm6'],
         even=True,
         verbose=True):
-    """
-    filepaths may be string or list
+    """Read a Data object from a COLORS filetype.
+
     color_steps_as one in 'energy', 'wavelength'
     """
-
     # do we have a list of files or just one file? ------------------------------------------------
 
     if isinstance(filepaths, list):
@@ -2236,7 +2342,7 @@ def from_COLORS(
 
 
 def from_JASCO(filepath, name=None, kind='absorbance', verbose=True):
-    """ Create a data object from a JASCO UV-VIS NIR file.
+    """Create a data object from a JASCO UV-VIS NIR file.
 
     Parameters
     ----------
@@ -2278,9 +2384,7 @@ def from_JASCO(filepath, name=None, kind='absorbance', verbose=True):
 
 def from_KENT(filepaths, null=None, name=None, ignore=['wm'], use_norm=False,
               delay_tolerance=0.1, frequency_tolerance=0.5, verbose=True):
-    """
-    filepaths may be string or list
-    """
+    """Read data object from KENT files."""
     # do we have a list of files or just one file? ------------------------------------------------
     if isinstance(filepaths, list):
         file_example = filepaths[0]
@@ -2405,6 +2509,25 @@ def from_KENT(filepaths, null=None, name=None, ignore=['wm'], use_norm=False,
 
 def from_NISE(measure_object, name='simulation', ignore_constants=['A', 'p'],
               flip_delays=True, verbose=True):
+    """Create a Data object from a NISE Measure object.
+
+    Parameters
+    ----------
+    measure_object : NISE Measure object.
+        Measure object.
+    name : string (optional)
+        Data name. Default is 'simulation'.
+    ignore_constants : list of strings (optional)
+        Constants to ignore. Default is ['A', 'p'].
+    flip_delays : boolean (optional)
+        Toggle flipping of delay conventions. Default is True.
+    verbose : boolean (optional)
+        Toggle talkback. Default is True.
+
+    Returns
+    -------
+    WrightTools.data.Data object
+    """
     try:
         import NISE
     except BaseException:
@@ -2476,6 +2599,19 @@ def from_NISE(measure_object, name='simulation', ignore_constants=['A', 'p'],
 
 
 def from_pickle(filepath, verbose=True):
+    """Open a pickled data object.
+
+    Parameters
+    ----------
+    filepath : path
+        Path to pickle.
+    verbose : boolean (optional)
+        Toggle talkback. Default is True.
+
+    Returns
+    -------
+    WrightTools.data.Data object
+    """
     data = pickle.load(open(filepath, 'rb'))
     if hasattr(data, '__version__'):
         from . import __version__
@@ -2495,7 +2631,7 @@ def from_pickle(filepath, verbose=True):
 
 def from_PyCMDS(filepath, name=None,
                 shots_processing_module='mean_and_std', verbose=True):
-    """ Create a data object from a single PyCMDS output file.
+    """Create a data object from a single PyCMDS output file.
 
     Parameters
     ----------
@@ -2660,6 +2796,21 @@ def from_PyCMDS(filepath, name=None,
 
 
 def from_scope(filepath, name=None, verbose=True):
+    """Create a Data object from an Ocean Optics .scope file.
+
+    Parameters
+    ----------
+    filepath : path
+        Filepath to .scope file.
+    name : string (optional)
+        Name of Data object. Default is None (filename).
+    verbose : boolean (optional)
+        Toggle talkback. Default is True.
+
+    Returns
+    -------
+    WrightTools.data.Data object
+    """
     # check filepath
     if os.path.isfile(filepath):
         if verbose:
@@ -2680,38 +2831,45 @@ def from_scope(filepath, name=None, verbose=True):
 
 
 def from_shimadzu(filepath, name=None, verbose=True):
+    """Create a Data object from a Shimadzu txt file.
 
+    Parameters
+    ----------
+    filepath : path
+        Path to Shimadzu dataset.
+    name : string (optional)
+        Data name. Default is None (filename).
+    verbose : boolean (optional)
+        Toggle talkback. Default is True.
+
+    Returns
+    -------
+    WrightTools.data.Data object
+    """
     # check filepath ------------------------------------------------------------------------------
-
     if os.path.isfile(filepath):
         if verbose:
             print('found the file!')
     else:
         print('Error: filepath does not yield a file')
         return
-
     # is the file suffix one that we expect?  warn if it is not!
     filesuffix = os.path.basename(filepath).split('.')[-1]
     if filesuffix != 'txt':
         wt_exceptions.WrongFileTypeWarning.warn(filepath, 'txt')
-
     # import data ---------------------------------------------------------------------------------
-
     # now import file as a local var--18 lines are just txt and thus discarded
     data = np.genfromtxt(filepath, skip_header=2, delimiter=',').T
-
     # construct data
     x_axis = Axis(data[0], 'nm', name='wm')
     signal = Channel(data[1], 'sig', file_idx=1, signed=False)
     data = Data([x_axis], [signal], source='Shimadzu', name=name)
-
     # return --------------------------------------------------------------------------------------
-
     return data
 
 
 def from_Tensor27(filepath, name=None, verbose=True):
-    """ Create a data object from a Tensor27 FTIR file.
+    """Create a data object from a Tensor27 FTIR file.
 
     Parameters
     ----------
@@ -2750,7 +2908,7 @@ def from_Tensor27(filepath, name=None, verbose=True):
 
 
 def join(datas, method='first', verbose=True, **kwargs):
-    """ Join a list of data objects together.
+    """Join a list of data objects together.
 
     For now datas must have identical dimensionalities (order and identity).
 
@@ -2886,15 +3044,14 @@ def join(datas, method='first', verbose=True, **kwargs):
 
 
 def discover_dimensions(arr, dimension_cols, verbose=True):
-    """
-    Discover the dimensions of array arr.
+    """Discover the dimensions of array arr.
+
     Watches the indicies contained in dimension_cols. Returns dictionaries of
     axis objects [scanned, constant].
     Constant objects have their points object initialized. Scanned dictionary is
     in order of scanning (..., zi, yi, xi). Both dictionaries are condensed
     into coscanning / setting.
     """
-
     # sorry that this method is so convoluted and unreadable - blaise
 
     input_cols = dimension_cols

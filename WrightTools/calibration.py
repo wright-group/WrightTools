@@ -1,6 +1,4 @@
-"""
-Calibration.
-"""
+"""Calibration."""
 
 
 # --- import --------------------------------------------------------------------------------------
@@ -35,6 +33,20 @@ cmap.set_under([0.75] * 3)
 
 
 def get_label(name, units):
+    """Get label.
+
+    Parameters
+    ----------
+    name : string
+        Name.
+    units : string
+        Units.
+
+    Returns
+    -------
+    string
+        Label.
+    """
     # units kind
     units_kind = None
     for dic in wt_units.unit_dicts:
@@ -55,10 +67,11 @@ def get_label(name, units):
 
 
 class Calibration:
+    """Container for unstructured calibration data."""
 
     def __init__(self, axis_names, axis_units, points, values, name='calibration',
                  note=''):
-        """ Container for unstructured calibration data.
+        """Create an unstructured calibration object.
 
         Parameters
         ----------
@@ -83,7 +96,7 @@ class Calibration:
         self._interpolate()
 
     def _interpolate(self):
-        """ (Re)create the interpolator using the current points and values.  """
+        """(Re)create the interpolator using the current points and values."""
         self._sort()
         if self.dimensionality == 1:
             self.interpolator = wt_kit.Spline(self.points[0], self.values, k=1, s=0)
@@ -91,7 +104,7 @@ class Calibration:
             self.interpolator = scipy.interpolate.LinearNDInterpolator(self.points.T, self.values)
 
     def _sort(self):
-        """ Sort data by all axes.
+        """Sort data by all axes.
 
         First axis will be strictly ascending, second
         will be ascending within groups sharing the same value in the first
@@ -102,7 +115,7 @@ class Calibration:
         self.values = self.values[ind]
 
     def append(self, points, values, units='same'):
-        """ Add new data to the calibration.
+        """Add new data to the calibration.
 
         Parameters
         ----------
@@ -123,7 +136,7 @@ class Calibration:
         self._interpolate()
 
     def convert(self, axis_units):
-        """ Convert axes to new units.
+        """Convert axes to new units.
 
         Parameters
         ----------
@@ -136,7 +149,8 @@ class Calibration:
         self._interpolate()
 
     def get_positions(self, value, **kwargs):
-        """
+        """Get all valid coordinates.
+
         Returns
         -------
         list of dictionaries
@@ -155,7 +169,7 @@ class Calibration:
         return out
 
     def get_value(self, positions, units='same'):
-        """ Get the value at some particular coordinate using linear interpolation.
+        """Get the value at some particular coordinate using linear interpolation.
 
         Parameters
         ----------
@@ -167,7 +181,7 @@ class Calibration:
         return self.interpolator(*positions)
 
     def map_points(self, points, units='same'):
-        """ Map the points onto new points using interpolation.
+        """Map the points onto new points using interpolation.
 
         Parameters
         ----------
@@ -194,7 +208,7 @@ class Calibration:
         self.values = new_values
 
     def plot(self, autosave=False, save_directory=None, file_name=None):
-        """ Plot the calibration.
+        """Plot the calibration.
 
         Parameters
         ----------
@@ -263,7 +277,7 @@ class Calibration:
 
     def save(self, save_directory=None, file_name=None, plot=True,
              verbose=True):
-        """ Save the calibration.
+        """Save the calibration.
 
         Parameters
         ----------
@@ -316,6 +330,17 @@ class Calibration:
 
 
 def from_file(path):
+    """Generate a calibration object from a file.
+
+    Parameters
+    ----------
+    path : string
+        Filepath.
+
+    Returns
+    -------
+    WrightTools.calibration.Calibration
+    """
     # get raw information from file
     headers = wt_kit.read_headers(path)
     arr = np.genfromtxt(path).T

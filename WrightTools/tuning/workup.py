@@ -1,6 +1,4 @@
-"""
-Methods for processing OPA 800 tuning data.
-"""
+"""Methods for processing OPA 800 tuning data."""
 
 
 # --- import --------------------------------------------------------------------------------------
@@ -33,7 +31,7 @@ cmap.set_under([0.75] * 3)
 
 def intensity(data, curve, channel_name, level=False, cutoff_factor=0.1,
               autosave=True, save_directory=None):
-    """
+    """Workup a generic intensity plot for a single motor.
 
     Parameters
     ----------
@@ -135,7 +133,7 @@ def intensity(data, curve, channel_name, level=False, cutoff_factor=0.1,
 
 def tune_test(data, curve, channel_name, level=False, cutoff_factor=0.01,
               autosave=True, save_directory=None):
-    """
+    """Workup a Tune Test.
 
     Parameters
     ----------
