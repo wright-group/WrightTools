@@ -281,7 +281,7 @@ class Drive:
     def list_folder(self, folderid):
         """List contents of a remote folder.
 
-        Properties
+        Parameters
         ----------
         folderid : string
             Folder ID.

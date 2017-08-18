@@ -4,7 +4,7 @@ A collection of small, general purpose objects and methods.
 .. _RFC3339: https://www.ietf.org/rfc/rfc3339.txt
 .. _RFC5322: https://tools.ietf.org/html/rfc5322#section-3.3
 .. _HDF5: https://www.hdfgroup.org/HDF5/doc/H5.intro.html
-.. _intersperse http://stackoverflow.com/a/5921708
+.. _intersperse: http://stackoverflow.com/a/5921708
 .. _flatten: http://stackoverflow.com/questions/2158395
 .. _suppress:
     http://stackoverflow.com/questions/11130156/suppress-stdout-stderr-print-from-python-functions
@@ -228,7 +228,7 @@ class TimeStamp:
 
     @property
     def hms(self):
-        """hour:minute:second."""
+        """Get time formated as ``HH:MM:SS``"""
         return self.datetime.strftime('%H:%M:%S')
 
     @property
@@ -1026,7 +1026,7 @@ class Spline:
             Number of knots will be increased until the smoothing condition is
             satisfied::
 
-                sum((w[i] * (y[i]-spl(x[i])))**2, axis=0) <= s
+            ``sum((w[i] * (y[i]-spl(x[i])))**2, axis=0) <= s``
 
             If 0, spline will interpolate through all data points. Default is
             1000.
@@ -1490,9 +1490,6 @@ def update_progress(progress, carriage_return=False, length=50):
 class Timer:
     """Context manager for timing code.
     
-    Usage:
-    ------
-
     >>> with Timer(): 
     ...     your_code() 
     """

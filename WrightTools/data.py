@@ -1155,8 +1155,6 @@ class Data:
         # return
         channel.values = values
         channel.null = 0.
-        channel.max = np.nanmax(values)
-        channel.min = np.nanmin(values)
         # print
         if verbose:
             axis = self.axes[axis_index]

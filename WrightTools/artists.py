@@ -885,6 +885,7 @@ def make_colormap(seq, name='CustomMap', plot=False):
     -------
     matplotlib.colors.LinearSegmentedColormap
 
+
     `Source`__
 
     __ colormap_
@@ -907,14 +908,15 @@ def make_colormap(seq, name='CustomMap', plot=False):
 def nm_to_rgb(nm):
     """Convert a wavelength to corresponding RGB values [0.0-1.0].
 
-    Parameter
-    ---------
+    Parameters
+    ----------
     nm : int or float
         The wavelength of light.
 
     Returns
     -------
     List of [R,G,B] values between 0 and 1
+
 
     `original code`__
 

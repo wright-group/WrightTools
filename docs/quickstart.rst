@@ -36,7 +36,7 @@ WrightTools strives to make data visualization as quick and painless as possible
 Axes, labels, and units are brought along implicitly.
 
 WrightTools offers a few handy ways to quickly visualize a data object, shown below.
-For more information, check see :ref:`artists`, or check out our :ref:`gallery`.
+For more information, check see :ref:`artists`, or check out our `gallery`_.
 
 1D
 ^^
@@ -131,3 +131,6 @@ Use ``clip`` to ignore points outside of a specific range.
    artist = wt.artists.mpl_2D(data, 'w1', 'd2', at={'w2': [2, 'eV']})
    artist.plot()
    plt.show()
+
+
+.. _gallery: auto_examples/index.html

@@ -733,8 +733,6 @@ class Fitter:
         # clean up --------------------------------------------------------------------------------
         # model
         self.model.transpose(transpose_order, verbose=False)
-        self.model.channels[channel_index].max = np.nanmax(
-            self.model.channels[channel_index].values)
         self.model._update()
         # outs
         for i in range(len(self.function.params)):
