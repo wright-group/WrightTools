@@ -592,6 +592,7 @@ class Moments(Function):
         *args
         **kwargs
         """
+        y, x = args
         y_internal = np.ma.copy(y)
         x_internal = np.ma.copy(x)
         # x must be ascending here, because of how np.trapz works
