@@ -21,7 +21,6 @@ from . import kit as wt_kit
 from . import artists as wt_artists
 
 matplotlib.rcParams['font.size'] = 14
-debug = False
 
 
 # --- define --------------------------------------------------------------------------------------

@@ -38,9 +38,6 @@ from . import units as wt_units
 # --- define --------------------------------------------------------------------------------------
 
 
-debug = False
-
-
 # string types
 if sys.version[0] == '2':
     # recognize unicode and string types
@@ -2305,8 +2302,6 @@ def from_COLORS(
             grid_i = griddata(points, zi, xi,
                               method='linear', fill_value=fill_value)
             channel.give_values(grid_i)
-            if debug:
-                print(key)
 
     # create data object --------------------------------------------------------------------------
 
@@ -2475,8 +2470,6 @@ def from_KENT(filepaths, null=None, name=None, ignore=['wm'], use_norm=False,
             grid_i = griddata(points, zi, xi,
                               method='linear', fill_value=fill_value)
             channel.give_values(grid_i)
-            if debug:
-                print(key)
     # create data object --------------------------------------------------------------------------
     data = Data(list(scanned), list(channels.values()), list(constant))
     for axis in data.axes:
@@ -3092,25 +3085,11 @@ def discover_dimensions(arr, dimension_cols, verbose=True):
                 else:
                     d_equal[i, j] = False
                     break
-    if debug:
-        print(d_equal)
 
     # condense
     dims_unaccounted = list(range(len(dims)))
     dims_condensed = []
     while dims_unaccounted:
-        if debug:
-            print(dims_unaccounted)
-        dim_current = dims_unaccounted[0]
-        index = dims[dim_current][0]
-        tolerance = [dims[dim_current][1]]
-        units = dims[dim_current][2]
-        key = [dims[dim_current][3]]
-        dims_unaccounted.pop(0)
-        indicies = list(range(len(dims_unaccounted)))
-        indicies.reverse()
-        if debug:
-            print(indicies)
         for i in indicies:
             dim_check = dims_unaccounted[i]
             if d_equal[dim_check, dim_current]:
@@ -3120,8 +3099,6 @@ def discover_dimensions(arr, dimension_cols, verbose=True):
         tolerance = max(tolerance)
         dims_condensed.append([index, tolerance, units, key])
     dims = dims_condensed
-    if debug:
-        print(dims)
 
     # which dimensions are scanned ----------------------------------------------------------------
 
