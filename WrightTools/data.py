@@ -3090,6 +3090,14 @@ def discover_dimensions(arr, dimension_cols, verbose=True):
     dims_unaccounted = list(range(len(dims)))
     dims_condensed = []
     while dims_unaccounted:
+        dim_current = dims_unaccounted[0]
+        index = dims[dim_current][0]
+        tolerance = [dims[dim_current][1]]
+        units = dims[dim_current][2]
+        key = [dims[dim_current][3]]
+        dims_unaccounted.pop(0)
+        indicies = list(range(len(dims_unaccounted)))
+        indicies.reverse()
         for i in indicies:
             dim_check = dims_unaccounted[i]
             if d_equal[dim_check, dim_current]:
