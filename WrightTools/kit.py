@@ -656,7 +656,7 @@ def read_h5(filepath):
 
 
 def read_headers(filepath):
-    """Read 'Wright group formatted' headers from given path.
+    """Read 'WrightTools formatted' headers from given path.
 
     Parameters
     ----------
@@ -728,7 +728,7 @@ def write_h5(filepath, dictionary):
 
 
 def write_headers(filepath, dictionary):
-    """Write 'Wright Group formatted' headers to given file.
+    """Write 'WrightTooTools formatted' headers to given file.
 
     Headers written can be read again using read_headers.
 
