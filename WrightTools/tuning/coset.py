@@ -21,8 +21,6 @@ from .. import units as wt_units
 from .. import kit as wt_kit
 from .. import artists as wt_artists
 
-debug = False
-
 matplotlib.rcParams['font.size'] = 14
 
 # --- coset class ---------------------------------------------------------------------------------
