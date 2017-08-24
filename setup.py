@@ -10,7 +10,12 @@ def package_files(directory):
             paths.append(os.path.join('..', path, filename))
     return paths
 
-extra_files = package_files('WrightTools/datasets')
+here = os.path.abspath(os.path.dirname(__file__))
+
+extra_files = package_files(os.path.join(here, 'WrightTools', 'datasets'))
+
+with open('VERSION') as version_file:
+    version = version_file.read().strip()
 
 setup(
     name='WrightTools',
@@ -19,7 +24,7 @@ setup(
     setup_requires=['pytest-runner'],
     tests_require=['pytest'],
     install_requires=['h5py', 'matplotlib', 'numpy', 'python-dateutil', 'pytz', 'scipy'],
-    version='2.13.4',
+    version=version,
     description='Tools for loading, processing, and plotting multidimensional spectroscopy data.',
     author='Blaise Thompson',
     license='MIT',
