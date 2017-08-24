@@ -981,8 +981,8 @@ def pcolor_helper(xi, yi, zi, transform=None):
         1D array of Y-coordinates.
     zi : 2D array-like
         Rectangular array of Z-coordinates.
-
-    xi, yi, and zi, are those that you would pass to contourf, e.g.
+    transform : function
+        Transform function.
 
     Returns
     -------
@@ -994,8 +994,6 @@ def pcolor_helper(xi, yi, zi, transform=None):
         Z dimension for pcolor
     """
     x_points = np.zeros(len(xi) + 1)
-    y_points = np.zeros(len(yi) + 1)
-
     for points, axis in [[x_points, xi], [y_points, yi]]:
         for j in range(len(points)):
             if j == 0:  # first point
@@ -1004,7 +1002,6 @@ def pcolor_helper(xi, yi, zi, transform=None):
                 points[j] = axis[-1] + (axis[-1] - axis[-2])
             else:
                 points[j] = np.average([axis[j], axis[j - 1]])
-
     X, Y = np.meshgrid(x_points, y_points)
     if isinstance(transform, type(None)):
         return X, Y, zi
