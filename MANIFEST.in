@@ -1,5 +1,0 @@
-include CONTRIBUTORS
-include LICENSE
-include README.rst
-include VERSION
-recursive-include WrightTools/datasets *
