@@ -1,4 +1,5 @@
-#!/bin/sh
+#!/bin/bash
+cd "$(dirname "$0")"
 cd ..
 # test
 printf "\033[1;35mtesting...\033[0m\n"
