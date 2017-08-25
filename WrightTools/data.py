@@ -67,7 +67,7 @@ class Axis:
                  name='', label_seed=[''], **kwargs):
         """Create an `Axis` object.
 
-        Paramaters
+        Parameters
         ----------
         points : 1D array-like
             Axis points.
@@ -2916,8 +2916,8 @@ def join(datas, method='first', verbose=True, **kwargs):
     verbose : bool (optional)
         Toggle talkback. Default is True.
 
-    kwargs
-    ------
+    Keyword Arguments
+    -----------------
     axis objects
         The axes of the new data object. If not supplied, the points of the
         new axis will be guessed from the given datas.
