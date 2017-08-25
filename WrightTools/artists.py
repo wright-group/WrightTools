@@ -994,6 +994,7 @@ def pcolor_helper(xi, yi, zi, transform=None):
         Z dimension for pcolor
     """
     x_points = np.zeros(len(xi) + 1)
+    y_points = np.zeros(len(yi) + 1)
     for points, axis in [[x_points, xi], [y_points, yi]]:
         for j in range(len(points)):
             if j == 0:  # first point
