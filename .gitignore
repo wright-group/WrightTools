@@ -8,6 +8,10 @@ __pycache__/
 # vim swap files
 *.sw?
 
+# emacs
+flycheck_*.el
+.projectile
+
 # Images
 *.jpg
 *.gif
