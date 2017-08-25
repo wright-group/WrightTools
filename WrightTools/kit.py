@@ -229,7 +229,7 @@ class TimeStamp:
     @property
     def hms(self):
         """Get time formated.
-        
+
         ``HH:MM:SS``"""
         return self.datetime.strftime('%H:%M:%S')
 
