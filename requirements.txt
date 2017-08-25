@@ -1,0 +1,6 @@
+h5py
+matplotlib
+numpy
+python-dateutil
+pytz
+scipy
