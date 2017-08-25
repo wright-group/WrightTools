@@ -18,7 +18,10 @@ extra_files.append(os.path.join(here, 'LICENSE'))
 extra_files.append(os.path.join(here, 'README.rst'))
 extra_files.append(os.path.join(here, 'VERSION'))
 
-with open('VERSION') as version_file:
+with open(os.path.join(here, 'requirements.txt')) as f:
+    required = f.read().splitlines()
+
+with open(os.path.join(here, 'VERSION')) as version_file:
     version = version_file.read().strip()
 
 setup(
@@ -27,7 +30,8 @@ setup(
     package_data={'': extra_files},
     setup_requires=['pytest-runner'],
     tests_require=['pytest'],
-    install_requires=['h5py', 'matplotlib', 'numpy', 'python-dateutil', 'pytz', 'scipy'],
+    install_requires=required,
+    extras_require={'tests': [], 'docs': ['sphinx>=1.4', 'sphinx-gallery>=0.1.9']},
     version=version,
     description='Tools for loading, processing, and plotting multidimensional spectroscopy data.',
     author='Blaise Thompson',
