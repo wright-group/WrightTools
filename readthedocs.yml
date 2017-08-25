@@ -1,9 +1,9 @@
 requirements_file: requirements.txt
 
 python:
+  pip_install: true
   extra_requirements: [docs]
-  setup_py_install: true
-
+  
 formats:
   - epub
   - pdf
