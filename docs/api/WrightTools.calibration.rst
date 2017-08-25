@@ -3,5 +3,6 @@ WrightTools\.calibration module
 
 .. automodule:: WrightTools.calibration
     :members:
+    :special-members: __init__
     :undoc-members:
     :show-inheritance:
