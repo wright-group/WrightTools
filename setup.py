@@ -16,6 +16,7 @@ extra_files = package_files(os.path.join(here, 'WrightTools', 'datasets'))
 extra_files.append(os.path.join(here, 'CONTRIBUTORS'))
 extra_files.append(os.path.join(here, 'LICENSE'))
 extra_files.append(os.path.join(here, 'README.rst'))
+extra_files.append(os.path.join(here, 'requirements.txt'))
 extra_files.append(os.path.join(here, 'VERSION'))
 
 with open(os.path.join(here, 'requirements.txt')) as f:
