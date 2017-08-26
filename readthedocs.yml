@@ -1,8 +1,9 @@
-conda:
-  file: .rtd-environment.yml
+requirements_file: requirements.txt
 
 python:
-  setup_py_install: true
-
+  pip_install: true
+  extra_requirements: [docs]
+  
 formats:
-  - none
+  - epub
+  - pdf

@@ -3,6 +3,7 @@ WrightTools\.diagrams package
 
 .. automodule:: WrightTools.diagrams
     :members:
+    :special-members: __init__
     :undoc-members:
     :show-inheritance:
 

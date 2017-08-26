@@ -1,39 +1,25 @@
+"""Methods for TOPAS-C processing."""
+
+
 # --- import --------------------------------------------------------------------------------------
 
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import os
-import re
-import sys
-import imp
-import time
-import copy
-import inspect
-import itertools
-import subprocess
-import glob
 
-try:
-    import configparser as _ConfigParser  # python 3
-except ImportError:
-    import ConfigParser as _ConfigParser  # python 2
-
-import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as grd
 
 import numpy as np
 
-import scipy
 from scipy.optimize import leastsq
-from scipy.interpolate import griddata, interp1d, interp2d, UnivariateSpline
+from scipy.interpolate import griddata, interp1d, UnivariateSpline
 
 from .. import artists as wt_artists
 from .. import units as wt_units
 from .. import kit as wt_kit
 from .. import fit as wt_fit
-from .. import data as wt_data
 from . import curve as wt_curve
 
 
@@ -47,19 +33,14 @@ spitfire_output = 800.  # nm
 
 
 def _gauss_residuals(p, y, x):
-
     A, mu, sigma = p
-
     err = y - np.abs(A) * np.exp(-(x - mu)**2 / (2 * np.abs(sigma)**2))
-
     return np.abs(err)
 
 
 def _exp_value(y, x):
-
     y_internal = np.ma.copy(y)
     x_internal = np.ma.copy(x)
-
     # get sum
     sum_y = 0.
     for i in range(len(y_internal)):
@@ -69,7 +50,6 @@ def _exp_value(y, x):
             pass
         else:
             sum_y = sum_y + y_internal[i]
-
     # divide by sum
     for i in range(len(y_internal)):
         if np.ma.getmask(y_internal[i]):
@@ -78,7 +58,6 @@ def _exp_value(y, x):
             pass
         else:
             y_internal[i] = y_internal[i] / sum_y
-
     # get expectation value
     value = 0.
     for i in range(len(x_internal)):
@@ -95,6 +74,23 @@ def _exp_value(y, x):
 
 
 def process_C2_motortune(opa_index, data_filepath, curves, save=True):
+    """Process C2 motortune.
+
+    Parameters
+    ----------
+    opa_index : integer
+        OPA index.
+    data_filepath : string
+        Data filepath.
+    curves : list of strings
+        Old curves.
+    save : boolean (optional)
+        Toggle saving. Default is True.
+
+    Returns
+    -------
+    WrightTools.tuning.curve.Curve
+    """
     old_curve = wt_curve.from_TOPAS_crvs(curves, 'TOPAS-C', 'NON-NON-NON-Sig')
     # extract information from file
     headers = wt_kit.read_headers(data_filepath)
@@ -216,7 +212,7 @@ def process_C2_motortune(opa_index, data_filepath, curves, save=True):
     # finish
     if save:
         directory = os.path.dirname(data_filepath)
-        path = curve.save(save_directory=directory)
+        curve.save(save_directory=directory)
         image_path = data_filepath.replace('.data', '.png')
         plt.savefig(image_path, dpi=300, transparent=True)
         plt.close(fig)
@@ -224,6 +220,23 @@ def process_C2_motortune(opa_index, data_filepath, curves, save=True):
 
 
 def process_D2_motortune(opa_index, data_filepath, curves, save=True):
+    """Process D2 motortune.
+
+    Parameters
+    ----------
+    opa_index : integer
+        OPA index.
+    data_filepath : string
+        Data filepath.
+    curves : list of strings
+        Old curves.
+    save : boolean (optional)
+        Toggle saving. Default is True.
+
+    Returns
+    -------
+    WrightTools.tuning.curve.Curve
+    """
     old_curve = wt_curve.from_TOPAS_crvs(curves, 'TOPAS-C', 'NON-NON-NON-Sig')
     # extract information from file
     headers = wt_kit.read_headers(data_filepath)
@@ -321,7 +334,7 @@ def process_D2_motortune(opa_index, data_filepath, curves, save=True):
     # finish
     if save:
         directory = os.path.dirname(data_filepath)
-        path = curve.save(save_directory=directory)
+        curve.save(save_directory=directory)
         image_path = data_filepath.replace('.data', '.png')
         plt.savefig(image_path, dpi=300, transparent=True)
         plt.close(fig)
@@ -329,6 +342,23 @@ def process_D2_motortune(opa_index, data_filepath, curves, save=True):
 
 
 def process_preamp_motortune(OPA_index, data_filepath, curves, save=True):
+    """Process preamp motortune.
+
+    Parameters
+    ----------
+    opa_index : integer
+        OPA index.
+    data_filepath : string
+        Data filepath.
+    curves : list of strings
+        Old curves.
+    save : boolean (optional)
+        Toggle saving. Default is True.
+
+    Returns
+    -------
+    WrightTools.tuning.curve.Curve
+    """
     # extract information from file
     headers = wt_kit.read_headers(data_filepath)
     arr = np.genfromtxt(data_filepath).T
@@ -555,7 +585,7 @@ def process_preamp_motortune(OPA_index, data_filepath, curves, save=True):
     # write files
     if save:
         directory = os.path.dirname(data_filepath)
-        path = curve.save(save_directory=directory)
+        curve.save(save_directory=directory)
         image_path = data_filepath.replace('.data', '.png')
         # TODO: figure out how to get transparent background >:-(
         plt.savefig(image_path, dpi=300, transparent=False)
@@ -565,6 +595,23 @@ def process_preamp_motortune(OPA_index, data_filepath, curves, save=True):
 
 
 def process_SHS_motortune(OPA_index, data_filepath, curves, save=True):
+    """Process SHS motortune.
+
+    Parameters
+    ----------
+    opa_index : integer
+        OPA index.
+    data_filepath : string
+        Data filepath.
+    curves : list of strings
+        Old curves.
+    save : boolean (optional)
+        Toggle saving. Default is True.
+
+    Returns
+    -------
+    WrightTools.tuning.curve.Curve
+    """
     old_curve = wt_curve.from_TOPAS_crvs(curves, 'TOPAS-C', 'NON-SH-NON-Sig')
     # extract information from headers
     headers = wt_kit.read_headers(data_filepath)
@@ -680,7 +727,7 @@ def process_SHS_motortune(OPA_index, data_filepath, curves, save=True):
     # finish
     if save:
         directory = os.path.dirname(data_filepath)
-        path = curve.save(save_directory=directory)
+        curve.save(save_directory=directory)
         image_path = data_filepath.replace('.data', '.png')
         plt.savefig(image_path, dpi=300, transparent=True)
         plt.close(fig)
@@ -688,6 +735,23 @@ def process_SHS_motortune(OPA_index, data_filepath, curves, save=True):
 
 
 def process_SFS_motortune(OPA_index, data_filepath, curves, save=True):
+    """Process SFS motortune.
+
+    Parameters
+    ----------
+    opa_index : integer
+        OPA index.
+    data_filepath : string
+        Data filepath.
+    curves : list of strings
+        Old curves.
+    save : boolean (optional)
+        Toggle saving. Default is True.
+
+    Returns
+    -------
+    WrightTools.tuning.curve.Curve
+    """
     old_curve = wt_curve.from_TOPAS_crvs(curves, 'TOPAS-C', 'NON-NON-SF-Sig')
     # extract information from headers
     headers = wt_kit.read_headers(data_filepath)
@@ -802,7 +866,7 @@ def process_SFS_motortune(OPA_index, data_filepath, curves, save=True):
     # finish
     if save:
         directory = os.path.dirname(data_filepath)
-        path = curve.save(save_directory=directory, old_filepaths=curves)
+        curve.save(save_directory=directory, old_filepaths=curves)
         image_path = data_filepath.replace('.data', '.png')
         plt.savefig(image_path, dpi=300, transparent=True)
         plt.close(fig)

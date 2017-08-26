@@ -191,7 +191,7 @@ method                                              description
 :meth:`~WrightTools.data.Data.clip`                 clip values outside of a given range
 :meth:`~WrightTools.data.Data.dOD`                  transform into dOD units
 :meth:`~WrightTools.data.Data.level`                level the edge of data along a certain axis
-:meth:`~WrightTools.data.Data.m`                    apply m-factor corrections
+:meth:`~WrightTools.data.Data.m`                    apply m-factor corrections [#carlson1989]_
 :meth:`~WrightTools.data.Data.normalize`            normalize a channel such that mag --> 1 and null --> 0
 :meth:`~WrightTools.data.Data.revert`               revert the data object to an earlier state
 :meth:`~WrightTools.data.Data.scale`                apply a scaling to a channel, such as square root or log
@@ -201,6 +201,14 @@ method                                              description
 ==================================================  ================================================================================
 
 .. _JASCO: https://jascoinc.com/products/spectroscopy/
+
 .. _NISE: https://github.com/wright-group/NISE
+
 .. _PyCMDS: https://github.com/wright-group/PyCMDS
+
 .. _Shimadzu: http://www.ssi.shimadzu.com/products/productgroup.cfm?subcatlink=uvvisspectro
+
+.. [#carlson1989] **Absorption and Coherent Interference Effects in Multiply Resonant Four-Wave Mixing Spectroscopy**
+                  Roger J. Carlson, and John C. Wright
+                  *Applied Spectroscopy* **1989** 43, 1195--1208
+                  `doi:10.1366/0003702894203408 <http://dx.doi.org/10.1366/0003702894203408>`_

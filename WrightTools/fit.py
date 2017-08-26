@@ -1,6 +1,4 @@
-"""
-fitting tools
-"""
+"""Fitting tools."""
 
 
 # --- import --------------------------------------------------------------------------------------
@@ -15,10 +13,8 @@ from collections import OrderedDict
 
 import numpy as np
 
-import matplotlib
 import matplotlib.pyplot as plt
 
-import scipy
 from scipy import optimize as scipy_optimize
 
 from . import data as wt_data
@@ -30,7 +26,7 @@ from . import artists as wt_artists
 
 
 def get_baseline(values, deviations=3):
-    """ Guess the baseline for a data set.
+    """Guess the baseline for a data set.
 
     Returns the average of all points in ``values`` less than n ``deviations``
     away from zero.
@@ -58,23 +54,111 @@ def get_baseline(values, deviations=3):
     baseline = np.nanmean(values_internal)
     if np.isnan(baseline):
         baseline = np.nanmin(values)
-
     # return np.nanmin(values) # TODO Fix baseline
     return baseline
+
+
+def leastsqfitter(p0, datax, datay, function, verbose=False, cov_verbose=False):
+    """Conveniently call scipy.optmize.leastsq().
+
+    Returns fit parameters and their errors.
+
+    Parameters
+    ----------
+    p0 : list
+        list of guess parameters to pass to function
+    datax : array
+        array of independent values
+    datay : array
+        array of dependent values
+    function : function
+        function object to fit data to. Must be of the callable form function(p, x)
+    verbose : bool
+        toggles printing of fit time, fit params, and fit param errors
+    cov_verbose : bool
+        toggles printing of covarience matrix
+
+    Returns
+    -------
+    pfit_leastsq : list
+        list of fit parameters. s.t. the error between datay and function(p, datax) is minimized
+    perr_leastsq : list
+        list of fit parameter errors (1 std)
+    """
+    timer = wt_kit.Timer(verbose=False)
+    with timer:
+        # define error function
+        def errfunc(p, x, y):
+            return y - function(p, x)
+        # run optimization
+        pfit_leastsq, pcov, infodict, errmsg, success = scipy_optimize.leastsq(
+            errfunc, p0, args=(datax, datay), full_output=1, epsfcn=0.0001)
+        # calculate covarience matrix
+        # original idea https://stackoverflow.com/a/21844726
+        if (len(datay) > len(p0)) and pcov is not None:
+            s_sq = (errfunc(pfit_leastsq, datax, datay)**2).sum() / (len(datay) - len(p0))
+            pcov = pcov * s_sq
+            if cov_verbose:
+                print(pcov)
+        else:
+            pcov = np.inf
+        # calculate and write errors
+        error = []
+        for i in range(len(pfit_leastsq)):
+            try:
+                error.append(np.absolute(pcov[i][i])**0.5)
+            except BaseException:
+                error.append(0.00)
+        perr_leastsq = np.array(error)
+    # exit
+    if verbose:
+        print('fit params:       ', pfit_leastsq)
+        print('fit params error: ', perr_leastsq)
+        print('fitting done in %f seconds' % timer.interval)
+    return pfit_leastsq, perr_leastsq
 
 
 # --- functions objects ---------------------------------------------------------------------------
 
 
 class Function:
+    """Base class for all fit functions."""
 
     def __init__(self, *args, **kwargs):
+        """Create a ``Function`` object.
+
+        Parameters
+        ----------
+        *args
+        **kwargs
+        """
         pass
 
     def residuals(self, p, *args):
+        """Get residuals.
+
+        Parameters
+        ----------
+        p : list of numbers
+            Parameters.
+        *args
+            values, points
+
+        Returns
+        -------
+        numpy array
+            Residuals.
+        """
         return args[0] - self.evaluate(p, *args[1:])
 
     def fit(self, *args, **kwargs):
+        """Do fit.
+
+        Parameters
+        ----------
+        *args
+        **kwargs
+        """
         if self.dimensionality == 1:
             args = tuple(wt_kit.remove_nans_1D(args))
             if len(args[0]) == 0:
@@ -90,8 +174,10 @@ class Function:
 
 
 class ExpectationValue(Function):
+    """ExpectationValue."""
 
     def __init__(self):
+        """Initialization."""
         Function.__init__(self)
         self.dimensionality = 1
         self.params = ['value']
@@ -101,12 +187,32 @@ class ExpectationValue(Function):
                       DeprecationWarning, stacklevel=2)
 
     def evaluate(self, p, xi):
-        """ Returns 1 at expectation value, 0 elsewhere.  """
+        """Evaluate the function.
+
+        Parameters
+        ----------
+        p : list of numbers
+            Parameters.
+        xi : array-like
+            Coordinates.
+
+        Returns
+        -------
+        numpy array
+            Function evaluated at coordinates.
+        """
         out = np.zeros(len(xi))
         out[np.argmin(np.abs(xi - p[0]))] = 1
         return out
 
     def fit(self, *args, **kwargs):
+        """Do fit.
+
+        Parameters
+        ----------
+        *args
+        **kwargs
+        """
         y, x = args
         y_internal = np.ma.copy(y)
         x_internal = np.ma.copy(x)
@@ -142,18 +248,43 @@ class ExpectationValue(Function):
         return [value]
 
     def guess(self, values, xi):
+        """Guess.
+
+        Parameters
+        ----------
+        values : array-like
+            Values.
+        xi : array-like
+            Points.
+        """
         return 1.
 
 
 class Exponential(Function):
+    """Exponential."""
 
     def __init__(self):
+        """Initialization."""
         Function.__init__(self)
         self.dimensionality = 1
         self.params = ['amplitude', 'tau', 'offset']
         self.limits = {}
 
     def evaluate(self, p, xi):
+        """Evaluate the function.
+
+        Parameters
+        ----------
+        p : list of numbers
+            Parameters.
+        xi : array-like
+            Coordinates.
+
+        Returns
+        -------
+        numpy array
+            Function evaluated at coordinates.
+        """
         # check the sign convention
         if np.mean(xi) < 0:
             x = xi.copy() * -1
@@ -168,6 +299,20 @@ class Exponential(Function):
         return a * np.exp(-x / b) + c
 
     def guess(self, values, xi):
+        """Guess.
+
+        Parameters
+        ----------
+        values : array-like
+            Values.
+        xi : array-like
+            Points.
+
+        Returns
+        -------
+        list of numbers
+            Guessed parameters.
+        """
         p0 = np.zeros(3)
         p0[0] = values.max() - values.min()  # amplitude
         idx = np.argmin(abs(np.median(values) - values))
@@ -177,13 +322,30 @@ class Exponential(Function):
 
 
 class Gaussian(Function):
+    """Gaussian."""
+
     def __init__(self):
+        """Initialization."""
         Function.__init__(self)
         self.dimensionality = 1
         self.params = ['mean', 'width', 'amplitude', 'baseline']
         self.limits = {'width': [0, np.inf]}
 
     def evaluate(self, p, xi):
+        """Evaluate the function.
+
+        Parameters
+        ----------
+        p : list of numbers
+            Parameters.
+        xi : array-like
+            Coordinates.
+
+        Returns
+        -------
+        numpy array
+            Function evaluated at coordinates.
+        """
         # enforce limits
         for i, name in zip(range(len(p)), self.params):
             if name in self.limits.keys():
@@ -194,6 +356,20 @@ class Gaussian(Function):
         return out
 
     def guess(self, values, xi):
+        """Guess.
+
+        Parameters
+        ----------
+        values : array-like
+            Values.
+        xi : array-like
+            Points.
+
+        Returns
+        -------
+        list of numbers
+            Guessed parameters.
+        """
         values, xi = wt_kit.remove_nans_1D([values, xi])
         if len(values) == 0:
             return [np.nan] * 4
@@ -211,15 +387,17 @@ class Gaussian(Function):
 
 
 class TwoD_Gaussian(Function):
+    """TwoD_Gaussian."""
 
     def __init__(self):
+        """Initialization."""
         Function.__init__(self)
         self.dimensionality = 2
         self.params = ['amplitude', 'x0', 'y0', 'sigma_x', 'sigma_y', 'theta', 'baseline']
         self.limits = {'sigma_x': [0, np.inf], 'sigma_y': [0, np.inf]}
 
     def _Format_input(self, values, x, y):
-        """ This function makes sure the values and axis are in an ok format for fitting and free of nans
+        """Make sure the values and axis are in an ok format for fitting and free of nans.
 
         Parameters
         ----------
@@ -271,9 +449,37 @@ class TwoD_Gaussian(Function):
             return np.nan, np.nan, np.nan, False
 
     def residuals(self, p, *args):
+        """Get residuals.
+
+        Parameters
+        ----------
+        p : list of numbers
+            Parameters.
+        *args
+            values, points
+
+        Returns
+        -------
+        numpy array
+            Residuals.
+        """
         return args[0][0] - self.evaluate(p, args[0][1], args[0][2])
 
     def evaluate(self, p, x, y):
+        """Evaluate the function.
+
+        Parameters
+        ----------
+        p : list of numbers
+            Parameters.
+        xi : array-like
+            Coordinates.
+
+        Returns
+        -------
+        numpy array
+            Function evaluated at coordinates.
+        """
         # enforce limits
         for i, name in zip(range(len(p)), self.params):
             if name in self.limits.keys():
@@ -287,6 +493,20 @@ class TwoD_Gaussian(Function):
                               (y - yo) + c * ((y - yo)**2))) + baseline
 
     def guess(self, v, x, y):
+        """Guess.
+
+        Parameters
+        ----------
+        values : array-like
+            Values.
+        xi : array-like
+            Points.
+
+        Returns
+        -------
+        list of numbers
+            Guessed parameters.
+        """
         if len(v) == 0:
             return [np.nan] * 4
         # Makes sure xi and yi are already the right size and shape
@@ -312,30 +532,34 @@ class TwoD_Gaussian(Function):
         return p0
 
     def fit(self, values, x, y, **kwargs):
+        """Do fit.
 
+        Parameters
+        ----------
+        *args
+        **kwargs
+        """
         if 'p0' in kwargs:
             p0 = kwargs['p0']
         else:
             p0 = self.guess(values, x, y)
-
         # Makes sure xi and yi are already the right size and shape & remove nans
         v, xi, yi, ok = self._Format_input(values, x, y)
-
         if not ok:
             print("xi, yi are not the correct size and/or shape")
             return np.full(7, np.nan)
-
         # optimize
         self.out = scipy_optimize.leastsq(self.residuals, p0, [v, xi, yi])
-
         if self.out[1] not in [1]:  # solution was not found
             return np.full(len(p0), np.nan)
         return self.out[0]
 
 
 class Moments(Function):
+    """Moments."""
 
     def __init__(self, subtract_baseline=False):
+        """Initialization."""
         Function.__init__(self)
         self.dimensionality = 1
         self.params = ['integral', 'one', 'two', 'three', 'four', 'baseline']
@@ -343,11 +567,31 @@ class Moments(Function):
         self.subtract_baseline = subtract_baseline
 
     def evaluate(self, p, xi):
-        """ Currently just returns nans.  """
+        """Evaluate the function.
+
+        Parameters
+        ----------
+        p : list of numbers
+            Parameters.
+        xi : array-like
+            Coordinates.
+
+        Returns
+        -------
+        numpy array
+            Function evaluated at coordinates.
+        """
         # TODO: fix this (how should it work?!)
         return np.full(xi.shape, np.nan)
 
     def fit(self, *args, **kwargs):
+        """Do fit.
+
+        Parameters
+        ----------
+        *args
+        **kwargs
+        """
         y, x = args
         y_internal = np.ma.copy(y)
         x_internal = np.ma.copy(x)
@@ -380,6 +624,20 @@ class Moments(Function):
         return outs
 
     def guess(self, values, xi):
+        """Guess.
+
+        Parameters
+        ----------
+        values : array-like
+            Values.
+        xi : array-like
+            Points.
+
+        Returns
+        -------
+        list of numbers
+            Guessed parameters.
+        """
         return [0] * 6
 
 
@@ -387,8 +645,20 @@ class Moments(Function):
 
 
 class Fitter:
+    """Fit each slice of a Data object."""
 
     def __init__(self, function, data, *args, **kwargs):
+        """Create a `Fitter` object.
+
+        Parameters
+        ----------
+        function : Function
+            A function object.
+        data : WrightTools.data.Data
+            The data to fit to.
+        *args
+        **kwargs
+        """
         self.function = function
         self.data = data.copy()
         self.axes = args
@@ -400,6 +670,15 @@ class Fitter:
         print('fitter recieved data to make %d fits' % np.product(self.fit_shape))
 
     def run(self, channel=0, verbose=True):
+        """Run.
+
+        Parameters
+        ----------
+        channel : string or integer (optional)
+            Name or index of channel. Default is 0.
+        verbose : boolean (optional)
+            Toggle talkback. Default is True.
+        """
         # get channel -----------------------------------------------------------------------------
         if isinstance(channel, int):
             channel_index = channel
@@ -432,7 +711,7 @@ class Fitter:
         params_channels = []
         for param in self.function.params:
             values = np.full(self.outs.shape, np.nan)
-            channel = wt_data.Channel(values, units=None, znull=0, name=param)
+            channel = wt_data.Channel(values, units=None, null=0, name=param)
             params_channels.append(channel)
         self.outs.channels = params_channels + self.outs.channels
         # do all fitting operations ---------------------------------------------------------------
@@ -455,17 +734,13 @@ class Fitter:
         # clean up --------------------------------------------------------------------------------
         # model
         self.model.transpose(transpose_order, verbose=False)
-        self.model.channels[channel_index].zmax = np.nanmax(
-            self.model.channels[channel_index].values)
         self.model._update()
         # outs
         for i in range(len(self.function.params)):
             # give the data all at once
             channel = self.outs.channels[i]
             values = channel.values
-            channel.zmax = np.nanmax(values)
-            channel.znull = 0
-            channel.zmin = np.nanmin(values)
+            channel.null = 0
         self.outs._update()
         return self.outs
 
@@ -474,9 +749,7 @@ class Fitter:
 
 
 class MultiPeakFitter:
-    """ Class which allows easy fitting and representation of aborbance data.
-
-    Written by Darien Morrow. darienmorrow@gmail.com & dmorrow3@wisc.edu
+    """Class which allows easy fitting and representation of aborbance data.
 
     Currently only offers Gaussian and Lorentzian functions.
     Functions are paramaterized by FWHM, height, and center.
@@ -487,7 +760,8 @@ class MultiPeakFitter:
     """
 
     def __init__(self, data, channel=0, name='', fittype=2, intensity_label='OD'):
-        """
+        """Create a `MultiPeakFitter object`.
+
         Parameters
         ----------
         data : WrightTools.Data object
@@ -519,7 +793,7 @@ class MultiPeakFitter:
         self.diff = wt_kit.diff(self.data.axes[0].points, self.zi, order=self.fittype)
 
     def build_funcs(self, x, params, kinds, diff_order=0):
-        """ Builds a new 1D function of many 1D function of various kinds.
+        """Build a new 1D function of many 1D function of various kinds.
 
         Parameters
         ----------
@@ -545,7 +819,7 @@ class MultiPeakFitter:
         return z
 
     def convert(self, destination_units):
-        """ Exposes wt.data.convert() method to convert units of data object.
+        """Exposes wt.data.convert() method to convert units of data object.
 
         Parameters
         ----------
@@ -554,7 +828,7 @@ class MultiPeakFitter:
         self.data.convert(destination_units)
 
     def encode_params(self, names, kinds, params):
-        """ Helper method to encode parameters of fit into an ordered dict of dicts.
+        """Encode parameters of fit into an ordered dict of dicts.
 
         Parameters
         ----------
@@ -576,8 +850,7 @@ class MultiPeakFitter:
         return dic
 
     def extract_params(self, dic):
-        """ Takes dictionary of fit parameters and returns tuple of extracted parameters
-        that function method can work with.
+        """Extract parameters from a dictionary.
 
         Parameters
         ----------
@@ -605,7 +878,9 @@ class MultiPeakFitter:
         return names, kinds, p0
 
     def fit(self, verbose=True):
-        """ Fitting method that takes data and guesses (class attributes) and instantiates/updates
+        """Run the fitting algorithm.
+
+        Fitting method that takes data and guesses (class attributes) and instantiates/updates
         fit_results, diff_model, and remainder (class attributes),
 
         Parameters
@@ -645,7 +920,7 @@ class MultiPeakFitter:
             self.build_funcs(self.data.axes[0].points, out[0], kinds, diff_order=0)
 
     def function(self, x, kind, FWHM, intensity, x0, diff_order=0):
-        """ Returns a peaked distribution over array x.
+        """Return a peaked distribution over array x.
 
         The peaked distributions are characterized by their FWHM, height, and center.
         The distributions are not normalized to the same value given the same parameters!
@@ -674,8 +949,9 @@ class MultiPeakFitter:
                 return intensity * (0.5 * FWHM)**2 * (-1) * \
                     (((x - x0)**2 + (0.5 * FWHM)**2))**-2 * (2 * (x - x0))
             elif diff_order == 2:
-                return intensity * (0.5 * FWHM)**2 * (2 * ((((x - x0)**2 + (0.5 * FWHM)**2))**-3)
-                                                      * (2 * (x - x0))**2 + (-2) * (((x - x0)**2 + (0.5 * FWHM)**2))**-2)
+                return intensity * (0.5 * FWHM)**2 * \
+                    (2 * ((((x - x0)**2 + (0.5 * FWHM)**2))**-3) *
+                        (2 * (x - x0))**2 + (-2) * (((x - x0)**2 + (0.5 * FWHM)**2))**-2)
             else:
                 print('analytic derivative not pre-calculated')
         elif kind == 'gaussian':
@@ -693,7 +969,7 @@ class MultiPeakFitter:
             raise Exception('kind not recognized!')
 
     def guess(self, guesses):
-        """ Creates guess library for use in fitting.
+        """Create guess library for use in fitting.
 
         Parameters
         ----------
@@ -702,12 +978,12 @@ class MultiPeakFitter:
             dict, at minimum, should have entries specifying 'kind', 'FWHM', 'intensity', and 'x0'.
             The contents of guesses are used in the fit method.
         """
-        if isinstance(guesses, OrderedDict) != True:
+        if not isinstance(guesses, OrderedDict):
             raise Exception('guesses must be an OrderedDict')
         self.guesses = guesses
 
     def intensity_label_change(self, intensity_label):
-        """ Helper method for changing label present in plot method.
+        """Change label present in plot method.
 
         Parameters
         ----------
@@ -716,7 +992,7 @@ class MultiPeakFitter:
         self.intensity_label = intensity_label
 
     def plot(self,):
-        """ Plot fit results.  """
+        """Plot fit results."""
         # get results
         names, kinds, params = self.extract_params(self.fit_results)
         num_funcs = len(kinds)
@@ -765,7 +1041,9 @@ class MultiPeakFitter:
             ax.axvline(x=params[i * 3 + 2], color=cm((i + 1) / num_funcs), linewidth=1)
 
     def save(self, path=os.getcwd(), fit_params=True, figure=True, verbose=True):
-        """ Saves results and representation of fits. Saved files are timestamped.
+        """Save results and representation of fits.
+
+        Saved files are timestamped.
 
         Parameters
         ----------
@@ -797,70 +1075,3 @@ class MultiPeakFitter:
             write = wt_artists.savefig(fig_path, fig=fig, close=True)
             if verbose:
                 print('Figure saved to:', write)
-
-
-def leastsqfitter(p0, datax, datay, function, verbose=False, cov_verbose=False):
-    """ Convenience method for using scipy.optmize.leastsq().
-
-    Returns fit parameters and their errors.
-
-    Parameters
-    ----------
-    p0 : list
-        list of guess parameters to pass to function
-    datax : array
-        array of independent values
-    datay : array
-        array of dependent values
-    function : function
-        function object to fit data to. Must be of the callable form function(p, x)
-    verbose : bool
-        toggles printing of fit time, fit params, and fit param errors
-    cov_verbose : bool
-        toggles printing of covarience matrix
-
-    Returns
-    -------
-    pfit_leastsq : list
-        list of fit parameters. s.t. the error between datay and function(p, datax) is minimized
-    perr_leastsq : list
-        list of fit parameter errors (1 std)
-    """
-
-    timer = wt_kit.Timer(verbose=False)
-    with timer:
-        # define error function
-        def errfunc(p, x, y): return y - function(p, x)
-        # run optimization
-        pfit_leastsq, pcov, infodict, errmsg, success = scipy_optimize.leastsq(
-            errfunc, p0, args=(datax, datay), full_output=1, epsfcn=0.0001)
-        # calculate covarience matrix
-        # original idea https://stackoverflow.com/a/21844726
-        if (len(datay) > len(p0)) and pcov is not None:
-            s_sq = (errfunc(pfit_leastsq, datax, datay)**2).sum() / (len(datay) - len(p0))
-            pcov = pcov * s_sq
-            if cov_verbose:
-                print(pcov)
-        else:
-            pcov = np.inf
-        # calculate and write errors
-        error = []
-        for i in range(len(pfit_leastsq)):
-            try:
-                error.append(np.absolute(pcov[i][i])**0.5)
-            except BaseException:
-                error.append(0.00)
-        perr_leastsq = np.array(error)
-    # exit
-    if verbose:
-        print('fit params:       ', pfit_leastsq)
-        print('fit params error: ', perr_leastsq)
-        print('fitting done in %f seconds' % timer.interval)
-    return pfit_leastsq, perr_leastsq
-
-# --- testing -------------------------------------------------------------------------------------
-
-
-if __name__ == '__main__':
-
-    pass

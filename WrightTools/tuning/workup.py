@@ -1,6 +1,4 @@
-"""
-Methods for processing OPA 800 tuning data.
-"""
+"""Methods for processing OPA 800 tuning data."""
 
 
 # --- import --------------------------------------------------------------------------------------
@@ -9,36 +7,13 @@ Methods for processing OPA 800 tuning data.
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import os
-import re
-import sys
-import imp
-import ast
-import time
-import copy
-import inspect
-import collections
-import subprocess
-import glob
 
-try:
-    import configparser as _ConfigParser  # python 3
-except ImportError:
-    import ConfigParser as _ConfigParser  # python 2'
-
-import matplotlib
 import matplotlib.pyplot as plt
 
 import numpy as np
-from numpy import sin, cos
-
-import scipy
-from scipy.interpolate import griddata, interp1d, interp2d, UnivariateSpline
-import scipy.integrate as integrate
-from scipy.optimize import leastsq
 
 from . import curve as wt_curve
 from .. import artists as wt_artists
-from .. import data as wt_data
 from .. import fit as wt_fit
 from .. import kit as wt_kit
 from .. import units as wt_units
@@ -56,7 +31,7 @@ cmap.set_under([0.75] * 3)
 
 def intensity(data, curve, channel_name, level=False, cutoff_factor=0.1,
               autosave=True, save_directory=None):
-    """
+    """Workup a generic intensity plot for a single motor.
 
     Parameters
     ----------
@@ -158,7 +133,7 @@ def intensity(data, curve, channel_name, level=False, cutoff_factor=0.1,
 
 def tune_test(data, curve, channel_name, level=False, cutoff_factor=0.01,
               autosave=True, save_directory=None):
-    """
+    """Workup a Tune Test.
 
     Parameters
     ----------

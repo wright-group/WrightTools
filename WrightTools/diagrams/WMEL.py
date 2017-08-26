@@ -1,3 +1,6 @@
+"""WMEL diagrams."""
+
+
 # --- import --------------------------------------------------------------------------------------
 
 
@@ -12,11 +15,12 @@ import matplotlib.pyplot as plt
 
 
 class Subplot:
+    """Subplot containing WMEL."""
 
     def __init__(self, ax, energies, number_of_interactions=4, title='',
                  title_font_size=16, state_names=None, virtual=[None],
                  state_font_size=14, state_text_buffer=0.5, label_side='left'):
-        """ Subplot.
+        """Subplot.
 
         Parameters
         ----------
@@ -74,7 +78,7 @@ class Subplot:
 
     def add_arrow(self, index, between, kind, label='', head_length=0.1,
                   head_aspect=2, font_size=14, color='k'):
-        """ Add an arrow to the WMEL diagram.
+        """Add an arrow to the WMEL diagram.
 
         Parameters
         ----------
@@ -124,8 +128,8 @@ class Subplot:
                                 linewidth=2, zorder=9)
         elif kind == 'out':
             yi = np.linspace(y_poss[0], y_poss[1], 100)
-            xi = np.sin((yi - y_poss[0]) * int((1 / length) * 20)
-                        * 2 * np.pi * length) / 40 + x_pos[0]
+            xi = np.sin((yi - y_poss[0]) * int((1 / length) * 20) *
+                        2 * np.pi * length) / 40 + x_pos[0]
             line = self.ax.plot(xi, yi, linestyle='-', color=color,
                                 linewidth=2, solid_capstyle='butt', zorder=9)
         else:
@@ -147,12 +151,31 @@ class Subplot:
 
 
 class Artist:
+    """Dedicated WMEL figure artist."""
 
     def __init__(self, size, energies, state_names=None,
                  number_of_interactions=4, virtual=[None],
                  state_font_size=8, state_text_buffer=0.5):
-        """ virtual a list of indicies """
-        # create figure
+        """Initialize.
+
+        Parameters
+        ----------
+        size : [rows, collumns]
+            Layout.
+        energies : list of numbers
+            State energies.
+        state_names : list of strings (optional)
+            State names. Default is None.
+        number_of_interactions : integer (optional)
+            Number of interactions. Default is 4.
+        virtual : list of integers (optional)
+            Indices of states which are virtual. Default is [None].
+        state_font_size : number (optional)
+            State font size. Default is 8.
+        state_text_buffer : number (optional)
+            Size of buffer around state text. Default is 0.5.
+        """
+        #create figure
         figsize = [int(size[0] * ((number_of_interactions + 1.) / 6.)), size[1] * 2.5]
         fig, (subplots) = plt.subplots(size[1], size[0], figsize=figsize)
         self.fig = fig
@@ -190,26 +213,77 @@ class Artist:
         self.plot()
 
     def label_rows(self, labels, font_size=15, text_buffer=1.5):
+        """Label rows.
+
+        Parameters
+        ----------
+        labels : list of strings
+            Labels.
+        font_size : number (optional)
+            Font size. Default is 15.
+        text_buffer : number
+            Buffer around text. Default is 1.5.
+        """
         for i in range(len(self.subplots)):
             plot = self.subplots[i][-1]
             plot.text(text_buffer, 0.5, labels[i], fontsize=font_size,
                       verticalalignment='center', horizontalalignment='center')
 
     def label_columns(self, labels, font_size=15, text_buffer=1.15):
+        """Label columns.
+
+        Parameters
+        ----------
+        labels : list of strings
+            Labels.
+        font_size : number (optional)
+            Font size. Default is 15.
+        text_buffer : number
+            Buffer around text. Default is 1.5.
+        """
         for i in range(len(labels)):
             plot = self.subplots[0][i]
             plot.text(0.5, text_buffer, labels[i], fontsize=font_size,
                       verticalalignment='center', horizontalalignment='center')
 
     def clear_diagram(self, diagram):
+        """Clear diagram.
+
+        Parameters
+        ----------
+        diagram : [column, row]
+            Diagram to clear.
+        """
         plot = self.subplots[diagram[1]][diagram[0]]
         plot.cla()
 
     def add_arrow(self, diagram, number, between, kind, label='',
                   head_length=0.075, font_size=7, color='k'):
-        """
-        kind one in [ket, bra, out]
-        returns [line, arrow_head, text]
+        """Add arrow.
+
+        Parameters
+        ----------
+        diagram : [column, row]
+            Diagram position.
+        number : integer
+            Arrow position.
+        between : [start, stop]
+            Arrow span.
+        kind : {'ket', 'bra', 'out'}
+            Arrow style.
+        label : string (optional)
+            Arrow label. Default is ''.
+        head_length : number (optional)
+            Arrow head length. Default 0.075.
+        font_size : number (optional)
+            Font size. Default is 7.
+        color : matplotlib color
+            Arrow color. Default is 'k'.
+
+        Returns
+        -------
+        list
+            [line, arrow_head, text]
         """
         column, row = diagram
         x_pos = self.x_pos[number]
@@ -234,8 +308,8 @@ class Artist:
             line = subplot.plot([x_pos, x_pos], y_poss, linestyle='--', color=color, linewidth=2)
         elif kind == 'out':
             yi = np.linspace(y_poss[0], y_poss[1], 100)
-            xi = np.sin((yi - y_poss[0]) * int((1 / length) * 20)
-                        * 2 * np.pi * length) / 40 + x_pos
+            xi = np.sin((yi - y_poss[0]) * int((1 / length) * 20) *
+                        2 * np.pi * length) / 40 + x_pos
             line = subplot.plot(xi, yi, linestyle='-', color=color,
                                 linewidth=2, solid_capstyle='butt')
         # add arrow head
@@ -250,6 +324,20 @@ class Artist:
         return line, arrow_head, text
 
     def plot(self, save_path=None, close=False, bbox_inches='tight', pad_inches=1):
+        """Plot figure.
+
+        Parameters
+        ----------
+        save_path : string (optional)
+            Save path. Default is None.
+        close : boolean (optional)
+            Toggle automatic figure closure after plotting.
+            Default is False.
+        bbox_inches : number (optional)
+            Bounding box size, in inches. Default is 'tight'.
+        pad_inches : number (optional)
+            Pad inches. Default is 1.
+        """
         # final manipulations
         for plot in self.subplots.flatten():
             # set limits
@@ -264,31 +352,3 @@ class Artist:
         # close
         if close:
             plt.close()
-
-
-# --- testing -------------------------------------------------------------------------------------
-
-
-if __name__ == '__main__':
-    # testing code
-
-    plt.close('all')
-
-    diagram = Artist(size=[6, 3],
-                     energies=[0., 0.4, 0.6, 1.],
-                     state_names=['g', 'a', 'b', 'a+b'])
-
-    diagram.label_rows([r'$\mathrm{\alpha}$', r'$\mathrm{\beta}$', r'$\mathrm{\gamma}$'])
-    diagram.label_columns(['I', 'II', 'III', 'IV', 'V', 'VI'])
-
-    # pw1 alpha
-    diagram.add_arrow([0, 0], 0, [0, 2], 'ket', '1')
-    diagram.add_arrow([0, 0], 1, [0, 1], 'bra', '-2')
-    diagram.add_arrow([0, 0], 2, [1, 0], 'bra', '2\'')
-    diagram.add_arrow([0, 0], 3, [3, 0], 'out')
-
-    diagram.add_arrow([1, 0], 3, [2, 0], 'out')
-
-    diagram.clear_diagram([2, 1])
-
-    diagram.plot('WMEL_out.png')

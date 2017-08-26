@@ -1,6 +1,4 @@
-"""
-unit and label handling in WrightTools
-"""
+"""Unit and label handling in WrightTools."""
 
 
 # --- import --------------------------------------------------------------------------------------
@@ -78,6 +76,22 @@ unit_dicts = [angle, delay, energy, time, position, pulse_width, fluence, od]
 
 
 def converter(val, current_unit, destination_unit):
+    """Convert from one unit to another.
+
+    Parameters
+    ----------
+    val : number
+        Number to convert.
+    current_unit : string
+        Current unit.
+    destination_unit : string
+        Destination unit.
+
+    Returns
+    -------
+    number
+        Converted value.
+    """
     x = val
     for dic in unit_dicts:
         if current_unit in dic.keys() and destination_unit in dic.keys():
@@ -85,7 +99,7 @@ def converter(val, current_unit, destination_unit):
                 native = eval(dic[current_unit][0])
             except ZeroDivisionError:
                 native = np.inf
-            x = native
+            x = native  # noqa: F841
             try:
                 out = eval(dic[destination_unit][1])
             except ZeroDivisionError:
@@ -101,7 +115,7 @@ def converter(val, current_unit, destination_unit):
 
 
 def kind(units):
-    """ Find the kind of given units.
+    """Find the kind of given units.
 
     Parameters
     ----------
@@ -121,14 +135,16 @@ def kind(units):
 # --- symbol --------------------------------------------------------------------------------------
 
 
-class symbol_dict(dict):
-    # subclass dictionary to get at __missing__ method
+class SymbolDict(dict):
+    """Subclass dictionary to get at __missing__ method."""
+
     def __missing__(self, key):
+        """Define what happens when key is missing."""
         return self['default']
 
 
 # color
-color_symbols = symbol_dict()
+color_symbols = SymbolDict()
 color_symbols['default'] = r'E'
 color_symbols['nm'] = r'\lambda'
 color_symbols['wn'] = r'\bar\nu'
@@ -138,23 +154,35 @@ color_symbols['THz'] = r'f'
 color_symbols['GHz'] = r'f'
 
 # delay
-delay_symbols = symbol_dict()
+delay_symbols = SymbolDict()
 delay_symbols['default'] = r'\tau'
 
 # fluence
-fluence_symbols = symbol_dict()
+fluence_symbols = SymbolDict()
 fluence_symbols['default'] = r'\mathcal{F}'
 
 # pulse width
-pulse_width_symbols = symbol_dict()
+pulse_width_symbols = SymbolDict()
 pulse_width_symbols['default'] = r'\sigma'
 
 # catch all
-none_symbols = symbol_dict()
+none_symbols = SymbolDict()
 none_symbols['default'] = ''
 
 
 def get_default_symbol_type(units_str):
+    """Get default symbol type.
+
+    Parameters
+    ----------
+    units_str : string
+        Units.
+
+    Returns
+    -------
+    string
+        Symbol dictionary name.
+    """
     if units_str in ['nm', 'wn', 'eV']:
         return 'color_symbols'
     elif units_str in ['fs', 'ps', 'ns']:

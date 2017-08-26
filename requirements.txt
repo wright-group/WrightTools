@@ -1,0 +1,8 @@
+# from conda: conda create -n wrighttools --file requirements.txt
+# from pip: pip install -r requirements.txt
+h5py>=2.7.0
+matplotlib>=2.0
+numpy
+python-dateutil
+pytz
+scipy

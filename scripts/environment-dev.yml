@@ -1,7 +1,0 @@
-name: _wright-tools-dev
-channels:
-- defaults
-- conda-forge
-dependencies:
-- conda-build
-- conda-build-all
