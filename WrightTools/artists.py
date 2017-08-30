@@ -30,6 +30,8 @@ import matplotlib.colors as mplcolors
 from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib.patheffects as PathEffects
 
+import imageio
+
 from . import kit as wt_kit
 
 
@@ -1421,12 +1423,6 @@ def stitch_to_animation(images, outpath=None, duration=0.5, palettesize=256,
     verbose : bool (optional)
         Toggle talkback. Default is True.
     """
-    # import imageio
-    try:
-        import imageio
-    except ImportError:
-        raise ImportError(
-            'WrightTools.artists.stitch_to_animation requires imageio - https://imageio.github.io/')
     # parse filename
     if outpath is None:
         outpath = os.path.splitext(images[0])[0] + '.gif'
