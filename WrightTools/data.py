@@ -2862,7 +2862,7 @@ def from_shimadzu(filepath, name=None, verbose=True):
 
 
 def from_spc130(filepath, name=None, delimiter=None, verbose=True):
-    """Create a data object from a SPC-130 TCSPC an exported 
+    """Create a data object from a SPC-130 TCSPC an exported
     comma-delimited (.asc) file within the SPCM 9.75 software.
 
 
@@ -2897,8 +2897,8 @@ def from_spc130(filepath, name=None, delimiter=None, verbose=True):
 
     # now import file as a local var as comma-delimited .asc file
     arr = np.genfromtxt(filepath,
-                        skip_header = 10, skip_footer = 1,
-                        delimiter = delimiter).T
+                        skip_header=10, skip_footer=1,
+                        delimiter=delimiter).T
 
     # unexpected delimiter handler
     if np.any(np.isnan(arr)):
@@ -2908,17 +2908,16 @@ def from_spc130(filepath, name=None, delimiter=None, verbose=True):
         delim_dict = dict(zip(delim_args, delim_strs))
         if verbose:
             print("Error: file is not %s-delimited!\n"
-            "Trying other delimiters "
-            "in wt.data.from_spc130() call." % delim_dict[delimiter])
-
+                  "Trying other delimiters "
+                  "in wt.data.from_spc130() call." % delim_dict[delimiter])
 
         for delimiter in delim_args:
 
             arr = np.genfromtxt(filepath,
-                                skip_header = 10, skip_footer = 1,
-                                delimiter = delimiter).T
+                                skip_header=10, skip_footer=1,
+                                delimiter=delimiter).T
 
-            if np.any(np.isnan(arr)) != True:
+            if not np.any(np.isnan(arr)):
                 if verbose:
                     print("Error resolved: file is %s-delimited."
                           % delim_dict[delimiter])
