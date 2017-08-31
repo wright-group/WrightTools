@@ -2881,25 +2881,26 @@ def from_spc130(filepath, name=None, delimiter=None, verbose=True):
     WrightTools.data.Data object
     """
     # check filepath ------------------------------------------------------
-    
+
     if not os.path.isfile(filepath):
         raise wt_exceptions.FileNotFound(path=filepath)
     if not filepath.endswith('asc'):
-        wt_exceptions.WrongFileTypeWarning.warn(filepath, 'asc')
-    
-    
+        wt_exceptions.WrongFileTypeWarning.warn(filepath,'asc')
+
     # set unspecified delimiter parameter arg to ','
     if delimiter is None:
         delimiter=','
     else:
         pass
+
     # import data ---------------------------------------------------------
-    
+
     # now import file as a local var as comma-delimited .asc file
     arr = np.genfromtxt(filepath,
-                        skip_header=10, skip_footer=1, delimiter = delimiter).T
-        
-    #unexpected delimiter handler
+                        skip_header=10, skip_footer=1,
+                        delimiter=delimiter).T
+
+    # unexpected delimiter handler
     if np.any(np.isnan(arr)):
         # delimiter warning dictionary
         delim_args = [',','','\t',';',':']
@@ -2909,47 +2910,39 @@ def from_spc130(filepath, name=None, delimiter=None, verbose=True):
             print("Error: file is not %s-delimited!\n"\
             "Trying other delimiters "\
             "in wt.data.from_spc130() call."%delim_dict[delimiter])
-        
-        
+
+
         for delimiter in delim_args:
-            
-            
+
             arr = np.genfromtxt(filepath,
                                 skip_header=10, skip_footer=1,
                                 delimiter = delimiter).T
-                              
-            #print(delimiter)
+
             if np.any(np.isnan(arr)) != True:
                 if verbose:
-                    print("Error resolved: file is %s-delimited." %delim_dict[delimiter])
+                    print("Error resolved: file is %s-delimited."
+                          %delim_dict[delimiter])
                 break
-            
+
     if np.any(np.isnan(arr)):
         print("Error unresolved: Please check that your file "\
               "is formatted properly. An example of SPC-130 file format "\
               "can be found in ..\WrightTools\WrightTools\datasets\spc130"\
               "\n")
-        
+
         print('data object not created!\n')
-    
-    # return --------------------------------------------------------------
-    #return print(warning_str)
+
 
     else:
         # construct data
         x_axis = Axis(arr[0], 'ns', name = 'time')
         signal = Channel(arr[1], 'sig', name="counts", signed = False)
         data = Data([x_axis], [signal], source='SPC_130', name=name)
-        
         if verbose:
-                print('data object created!\n')
-        
-        # return --------------------------------------------------------------
-        
-        return data
-    
-    
+            print('data object created!\n')
 
+        # return --------------------------------------------------------------
+        return data
 
 def from_Tensor27(filepath, name=None, verbose=True):
     """Create a data object from a Tensor27 FTIR file.
