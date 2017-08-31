@@ -2861,6 +2861,54 @@ def from_shimadzu(filepath, name=None, verbose=True):
     return data
 
 
+def from_spc130(filepath, name=None, verbose=True):
+    """Create a data object from a SPC-130 TCSPC an exported 
+    comma-delimited (.asc) file within the SPCM 9.75 software.
+
+    Parameters
+    ----------
+    filepath : string
+        Path to SPC-130 output file (.asc).
+    name : string (optional)
+        Name to give to the created data object. If None, filename is used.
+        Default is None.
+    verbose : boolean (optional)
+        Toggle talkback. Default is True.
+
+    Returns
+    -------
+    WrightTools.data.Data object
+    """
+    # check filepath ------------------------------------------------------
+    
+    if os.path.isfile(filepath):
+        if verbose:
+            print('found the file!')
+    else:
+        print('Error: filepath does not yield a file')
+        return
+    
+    
+    # is the file suffix one that we expect?  warn if it is not!
+    filesuffix = os.path.basename(filepath).split('.')[-1]
+    if filesuffix != 'asc':
+        wt_exceptions.WrongFileTypeWarning.warn(filepath, 'asc')      
+    # import data ---------------------------------------------------------
+    
+    # now import file as a local var
+    arr = np.genfromtxt(filepath,
+                        skip_header=10, skip_footer=1, delimiter = ',').T
+    
+    # construct data
+    x_axis = Axis(arr[0], 'ns', name = 'time')
+    signal = Channel(arr[1], 'sig', name="counts", signed = False)
+    data = Data([x_axis], [signal], source='SPC_130', name=name)
+    
+    # return --------------------------------------------------------------
+    
+    return data
+
+
 def from_Tensor27(filepath, name=None, verbose=True):
     """Create a data object from a Tensor27 FTIR file.
 
