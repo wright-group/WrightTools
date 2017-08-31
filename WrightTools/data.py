@@ -2882,18 +2882,11 @@ def from_spc130(filepath, name=None, delimiter=None, verbose=True):
     """
     # check filepath ------------------------------------------------------
     
-    if os.path.isfile(filepath):
-        if verbose:
-            print('found the file!')
-    else:
-        print('Error: filepath does not yield a file')
-        return
-    
-    
-    # is the file suffix one that we expect?  warn if it is not!
-    filesuffix = os.path.basename(filepath).split('.')[-1]
-    if filesuffix != 'asc':
+    if not os.path.isfile(filepath):
+        raise wt_exceptions.FileNotFound(path=filepath)
+    if not filepath.endswith('asc'):
         wt_exceptions.WrongFileTypeWarning.warn(filepath, 'asc')
+    
     
     # set unspecified delimiter parameter arg to ','
     if delimiter is None:
@@ -2903,23 +2896,19 @@ def from_spc130(filepath, name=None, delimiter=None, verbose=True):
     # import data ---------------------------------------------------------
     
     # now import file as a local var as comma-delimited .asc file
-    
-    
-        
-    
     arr = np.genfromtxt(filepath,
                         skip_header=10, skip_footer=1, delimiter = delimiter).T
         
-    #legacy compatibility warning if data exported as space-delimited .asc file
+    #unexpected delimiter handler
     if np.any(np.isnan(arr)):
         # delimiter warning dictionary
-        delim_args = [',','','\t', ':']
-        delim_strs = ['comma','space','tab', 'colon']
+        delim_args = [',','','\t',';',':']
+        delim_strs = ['comma','space','tab', 'semicolon','colon']
         delim_dict = dict(zip(delim_args, delim_strs))
-        
-        print("Error: file is not %s-delimited!\n"\
-                      "Trying other delimiters "\
-                      "in wt.data.from_spc130() call."%delim_dict[delimiter])
+        if verbose:
+            print("Error: file is not %s-delimited!\n"\
+            "Trying other delimiters "\
+            "in wt.data.from_spc130() call."%delim_dict[delimiter])
         
         
         for delimiter in delim_args:
@@ -2931,15 +2920,17 @@ def from_spc130(filepath, name=None, delimiter=None, verbose=True):
                               
             #print(delimiter)
             if np.any(np.isnan(arr)) != True:
-                print("Error resolved: file is %s-delimited." %delim_dict[delimiter])
+                if verbose:
+                    print("Error resolved: file is %s-delimited." %delim_dict[delimiter])
                 break
             
     if np.any(np.isnan(arr)):
         print("Error unresolved: Please check that your file "\
               "is formatted properly. An example of SPC-130 file format "\
-              "can be found in C:\**\WrightTools\WrightTools\datasets\spc130")
-        if verbose:
-            print('data object not created!\n')
+              "can be found in ..\WrightTools\WrightTools\datasets\spc130"\
+              "\n")
+        
+        print('data object not created!\n')
     
     # return --------------------------------------------------------------
     #return print(warning_str)
