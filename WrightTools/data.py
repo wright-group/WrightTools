@@ -2897,7 +2897,7 @@ def from_spc130(filepath, name=None, delimiter=',', verbose=True):
     
     # now import file as a local var
     arr = np.genfromtxt(filepath,
-                        skip_header=10, skip_footer=1, delimiter = ',').T
+                        skip_header=10, skip_footer=1, delimiter = delimiter).T
     
     # construct data
     x_axis = Axis(arr[0], 'ns', name = 'time')
