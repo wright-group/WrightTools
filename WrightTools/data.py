@@ -2864,7 +2864,7 @@ def from_shimadzu(filepath, name=None, verbose=True):
 def from_spc130(filepath, name=None, delimiter=None, verbose=True):
     """Create a data object from a SPC-130 TCSPC an exported 
     comma-delimited (.asc) file within the SPCM 9.75 software.
-    
+
 
     Parameters
     ----------
@@ -2885,11 +2885,11 @@ def from_spc130(filepath, name=None, delimiter=None, verbose=True):
     if not os.path.isfile(filepath):
         raise wt_exceptions.FileNotFound(path=filepath)
     if not filepath.endswith('asc'):
-        wt_exceptions.WrongFileTypeWarning.warn(filepath,'asc')
+        wt_exceptions.WrongFileTypeWarning.warn(filepath, 'asc')
 
     # set unspecified delimiter parameter arg to ','
     if delimiter is None:
-        delimiter=','
+        delimiter = ','
     else:
         pass
 
@@ -2897,46 +2897,44 @@ def from_spc130(filepath, name=None, delimiter=None, verbose=True):
 
     # now import file as a local var as comma-delimited .asc file
     arr = np.genfromtxt(filepath,
-                        skip_header=10, skip_footer=1,
-                        delimiter=delimiter).T
+                        skip_header = 10, skip_footer = 1,
+                        delimiter = delimiter).T
 
     # unexpected delimiter handler
     if np.any(np.isnan(arr)):
         # delimiter warning dictionary
-        delim_args = [',','','\t',';',':']
-        delim_strs = ['comma','space','tab', 'semicolon','colon']
+        delim_args = [',', '', '\t', ';', ':']
+        delim_strs = ['comma', 'space', 'tab', 'semicolon', 'colon']
         delim_dict = dict(zip(delim_args, delim_strs))
         if verbose:
-            print("Error: file is not %s-delimited!\n"\
-            "Trying other delimiters "\
-            "in wt.data.from_spc130() call."%delim_dict[delimiter])
+            print("Error: file is not %s-delimited!\n"
+            "Trying other delimiters "
+            "in wt.data.from_spc130() call." % delim_dict[delimiter])
 
 
         for delimiter in delim_args:
 
             arr = np.genfromtxt(filepath,
-                                skip_header=10, skip_footer=1,
+                                skip_header = 10, skip_footer = 1,
                                 delimiter = delimiter).T
 
             if np.any(np.isnan(arr)) != True:
                 if verbose:
                     print("Error resolved: file is %s-delimited."
-                          %delim_dict[delimiter])
+                          % delim_dict[delimiter])
                 break
 
     if np.any(np.isnan(arr)):
-        print("Error unresolved: Please check that your file "\
-              "is formatted properly. An example of SPC-130 file format "\
-              "can be found in ..\WrightTools\WrightTools\datasets\spc130"\
+        print("Error unresolved: Please check that your file "
+              "is formatted properly. An example of SPC-130 file format "
+              "can be found in ..\WrightTools\WrightTools\datasets\spc130"
               "\n")
 
         print('data object not created!\n')
-
-
     else:
         # construct data
-        x_axis = Axis(arr[0], 'ns', name = 'time')
-        signal = Channel(arr[1], 'sig', name="counts", signed = False)
+        x_axis = Axis(arr[0], 'ns', name='time')
+        signal = Channel(arr[1], 'sig', name='counts', signed=False)
         data = Data([x_axis], [signal], source='SPC_130', name=name)
         if verbose:
             print('data object created!\n')
@@ -2946,6 +2944,7 @@ def from_spc130(filepath, name=None, delimiter=None, verbose=True):
 
 def from_Tensor27(filepath, name=None, verbose=True):
     """Create a data object from a Tensor27 FTIR file.
+
 
     Parameters
     ----------
