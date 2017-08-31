@@ -1314,14 +1314,13 @@ def plot_gridlines(ax=None, c='grey', lw=1, diagonal=False, zorder=2,
     # grid
     # ax.grid(True)
     lines = ax.xaxis.get_gridlines() + ax.yaxis.get_gridlines()
-    for l in lines.copy():
-        l = l
-        l.set_linestyle(':')
-        l.set_color(c)
-        l.set_linewidth(lw)
-        l.set_zorder(zorder)
-        l.set_dashes(dashes)
-        ax.add_line(l)
+    for line in lines.copy():
+        line.set_linestyle(':')
+        line.set_color(c)
+        line.set_linewidth(lw)
+        line.set_zorder(zorder)
+        line.set_dashes(dashes)
+        ax.add_line(line)
     # diagonal
     if diagonal:
         min_xi, max_xi = ax.get_xlim()
