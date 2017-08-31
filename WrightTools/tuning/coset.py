@@ -206,7 +206,7 @@ class CoSet:
         # convert new points to local units
         if units == 'same':
             units = self.control_units
-        new_points = sorted(wt_units.converter(new_points, units, self.control_units))
+        new_points = np.sort(wt_units.converter(new_points, units, self.control_units))
         new_offsets = self.get_offset(new_points)
         # finish
         self.control_points = new_points

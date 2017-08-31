@@ -457,7 +457,7 @@ class Curve:
         # convert new colors to local units
         if units == 'same':
             units = self.units
-        new_colors = sorted(wt_units.converter(new_colors, units, self.units))
+        new_colors = np.sort(wt_units.converter(new_colors, units, self.units))
         # ensure that motor interpolators agree with current motor positions
         self.interpolate(interpolate_subcurve=True)
         # map own motors
