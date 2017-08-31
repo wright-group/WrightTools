@@ -30,6 +30,8 @@ import matplotlib.colors as mplcolors
 from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib.patheffects as PathEffects
 
+import imageio
+
 from . import kit as wt_kit
 
 
@@ -121,7 +123,8 @@ class Axes(matplotlib.axes.Axes):
         contours = matplotlib.axes.Axes.contourf(self, *args, **kwargs)  # why can't I use super?
         # fill lines
         zorder = contours.collections[0].zorder - 0.1
-        matplotlib.axes.Axes.contour(self, *(args[:3] + [len(contours.levels)]),
+        levels = (contours.levels[1:] + contours.levels[:-1]) / 2
+        matplotlib.axes.Axes.contour(self, *args[:3], levels=levels,
                                      cmap=contours.cmap,
                                      zorder=zorder)
         # PathCollection modifications
@@ -1421,12 +1424,6 @@ def stitch_to_animation(images, outpath=None, duration=0.5, palettesize=256,
     verbose : bool (optional)
         Toggle talkback. Default is True.
     """
-    # import imageio
-    try:
-        import imageio
-    except ImportError:
-        raise ImportError(
-            'WrightTools.artists.stitch_to_animation requires imageio - https://imageio.github.io/')
     # parse filename
     if outpath is None:
         outpath = os.path.splitext(images[0])[0] + '.gif'
