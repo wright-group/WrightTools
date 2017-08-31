@@ -3,12 +3,14 @@
 import os
 from setuptools import setup, find_packages
 
+
 def package_files(directory):
     paths = []
     for (path, directories, filenames) in os.walk(directory):
         for filename in filenames:
             paths.append(os.path.join('..', path, filename))
     return paths
+
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -18,6 +20,7 @@ extra_files.append(os.path.join(here, 'LICENSE'))
 extra_files.append(os.path.join(here, 'README.rst'))
 extra_files.append(os.path.join(here, 'requirements.txt'))
 extra_files.append(os.path.join(here, 'VERSION'))
+extra_files.append(os.path.join(here, 'WrightTools', 'client_secrets.json'))
 
 with open(os.path.join(here, 'requirements.txt')) as f:
     required = f.read().splitlines()
