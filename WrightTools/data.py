@@ -2861,7 +2861,7 @@ def from_shimadzu(filepath, name=None, verbose=True):
     return data
 
 
-def from_spc130(filepath, name=None, verbose=True):
+def from_spc130(filepath, name=None, delimiter=',', verbose=True):
     """Create a data object from a SPC-130 TCSPC an exported 
     comma-delimited (.asc) file within the SPCM 9.75 software.
 
