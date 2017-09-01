@@ -49,28 +49,33 @@ class Drive:
         """init."""
         # Define the temp directory and file name format
         configDir = appdirs.user_data_dir('WrightTools', 'WrightGroup')
-        
+
         if not os.path.isdir(configDir):
             os.makedirs(configDir)
 
         prefix = 'google-drive-'
         suffix = '-' + account_id + '.txt'
 
-        lis = glob(os.path.join(configDir, prefix+"*"+suffix))
+        # Check for existing file
+
+        lis = glob(os.path.join(configDir, prefix + "*" + suffix))
 
         self.mycreds_path = ''
         if len(lis) > 0:
             for f in lis:
                 # Check that for read and write access (or is bitwise, checking both)
-                if os.access(f, os.W_OK|os.R_OK):
+                # Note this check is probably not needed with appdirs, but is not
+                #     harmful and provides additional insurance against crashes.
+                if os.access(f, os.W_OK | os.R_OK):
                     self.mycreds_path = f
-                    break;
+                    break
 
         # Make a new file if one does not exist with sufficent permissions
         if self.mycreds_path == '':
-            self.mycreds_path = tempfile.mkstemp(prefix=prefix, suffix=suffix, text=True, dir=configDir)[1]
-
-        # Check for existing file
+            self.mycreds_path = tempfile.mkstemp(prefix=prefix,
+                                                 suffix=suffix,
+                                                 text=True,
+                                                 dir=configDir)[1]
 
         self._authenticate()
 
