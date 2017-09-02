@@ -49,17 +49,12 @@ class Drive:
         """init."""
         # Define the temp directory and file name format
         configDir = appdirs.user_data_dir('WrightTools', 'WrightGroup')
-
         if not os.path.isdir(configDir):
             os.makedirs(configDir)
-
         prefix = 'google-drive-'
         suffix = '-' + account_id + '.txt'
-
         # Check for existing file
-
         lis = glob(os.path.join(configDir, prefix + "*" + suffix))
-
         self.mycreds_path = ''
         if len(lis) > 0:
             for f in lis:
@@ -69,14 +64,12 @@ class Drive:
                 if os.access(f, os.W_OK | os.R_OK):
                     self.mycreds_path = f
                     break
-
         # Make a new file if one does not exist with sufficent permissions
         if self.mycreds_path == '':
             self.mycreds_path = tempfile.mkstemp(prefix=prefix,
                                                  suffix=suffix,
                                                  text=True,
                                                  dir=configDir)[1]
-
         self._authenticate()
 
     def _authenticate(self):
