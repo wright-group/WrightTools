@@ -10,16 +10,6 @@ import os as _os
 import matplotlib as _matplotlib
 
 
-# --- temp directory ------------------------------------------------------------------------------
-
-
-_here = _os.path.abspath(_os.path.dirname(__file__))
-
-_temp_dir = _os.path.join(_here, 'temp')
-if not _os.path.isdir(_temp_dir):
-    _os.mkdir(_temp_dir)
-
-
 # --- import --------------------------------------------------------------------------------------
 
 
@@ -38,6 +28,7 @@ from . import units             # noqa: F401
 
 
 # read from VERSION file
+_here = _os.path.abspath(_os.path.dirname(__file__))
 with open(_os.path.join(_os.path.dirname(_here), 'VERSION')) as _version_file:
     __version__ = _version_file.read().strip()
 
