@@ -50,6 +50,7 @@ Contents
    contributing 
    api/modules
    auto_examples/index
+   alternatives
 
 Index
 -----
