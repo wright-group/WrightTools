@@ -1901,7 +1901,7 @@ class mpl_2D:
         output_folder : str (optional)
             Output folder.
         fname : str (optional)
-            File name.
+            File name. If None, data name is used. Default is None.
         verbose : bool (optional)
             Toggle talkback. Default is True.
         """
@@ -1912,6 +1912,11 @@ class mpl_2D:
             channel_index = self.chopped[0].channel_names.index(channel)
         else:
             print('channel type not recognized in mpl_2D!')
+        # get fname
+        if fname:
+            pass
+        else:
+            fname = self.data.name
         # prepare figure
         fig = None
         if len(self.chopped) > 10:
@@ -1925,10 +1930,6 @@ class mpl_2D:
             else:
                 if len(self.chopped) == 1:
                     output_folder = os.getcwd()
-                    if fname:
-                        pass
-                    else:
-                        fname = self.data.name
                 else:
                     folder_name = 'mpl_2D ' + wt_kit.get_timestamp(style='short')
                     os.mkdir(folder_name)
