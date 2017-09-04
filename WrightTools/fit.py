@@ -740,8 +740,7 @@ class Fitter:
             # give the data all at once
             channel = self.outs.channels[i]
             values = channel.values
-            channel.null = 0
-        self.outs._update()
+            channel._null = 0
         return self.outs
 
 

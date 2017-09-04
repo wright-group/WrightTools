@@ -2713,11 +2713,11 @@ class PDF2DSlices:
                     for data_index in range(len(self.datas)):
                         data = self.chopped_datas[data_index][slice_index]
                         if self.data_signed:
-                            global_limits = [self.datas[data_index].channels[channel_index].min,
-                                             self.datas[data_index].channels[channel_index].max]
+                            global_limits = [self.datas[data_index].channels[channel_index].min(),
+                                             self.datas[data_index].channels[channel_index].max()]
                         else:
-                            global_limits = [self.datas[data_index].channels[channel_index].null,
-                                             self.datas[data_index].channels[channel_index].max]
+                            global_limits = [self.datas[data_index].channels[channel_index].null(),
+                                             self.datas[data_index].channels[channel_index].max()]
                         axs, spss = self._fill_row(
                             data, channel_index, gs, data_index, global_limits)
                         if not data_index == len(self.datas) - 1:
@@ -2739,11 +2739,11 @@ class PDF2DSlices:
                     for data_index in range(len(self.datas)):
                         data = self.chopped_datas[data_index][slice_index]
                         if self.data_signed:
-                            global_limits = [self.datas[data_index].channels[channel_index].min,
-                                             self.datas[data_index].channels[channel_index].max]
+                            global_limits = [self.datas[data_index].channels[channel_index].min(),
+                                             self.datas[data_index].channels[channel_index].max()]
                         else:
-                            global_limits = [self.datas[data_index].channels[channel_index].null,
-                                             self.datas[data_index].channels[channel_index].max]
+                            global_limits = [self.datas[data_index].channels[channel_index].null(),
+                                             self.datas[data_index].channels[channel_index].max()]
                         axs, spss = self._fill_row(
                             data, channel_index, gs, data_index, global_limits)
                         if not data_index == len(self.datas) - 1:
@@ -2770,11 +2770,11 @@ class PDF2DSlices:
                     for data_index in range(len(self.datas)):
                         data = self.chopped_datas[data_index][slice_index]
                         if self.data_signed:
-                            global_limits = [self.datas[data_index].channels[channel_index].min,
-                                             self.datas[data_index].channels[channel_index].max]
+                            global_limits = [self.datas[data_index].channels[channel_index].min(),
+                                             self.datas[data_index].channels[channel_index].max()]
                         else:
-                            global_limits = [self.datas[data_index].channels[channel_index].null,
-                                             self.datas[data_index].channels[channel_index].max]
+                            global_limits = [self.datas[data_index].channels[channel_index].null(),
+                                             self.datas[data_index].channels[channel_index].max()]
                         axs, spss = self._fill_row(
                             data, channel_index, gs, data_index, global_limits)
                         if not data_index == len(self.datas) - 1:

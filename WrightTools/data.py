@@ -2490,8 +2490,6 @@ def from_KENT(filepaths, null=None, name=None, ignore=['wm'], use_norm=False,
         #data_norm = data.channels[0].values*data.axes[0].points*data.axes[1].points/(OPA1*OPA2)
         data_norm = data.channels[0].values / (OPA1 * OPA2)  # I think this is correct.
         data.channels[0].values = data_norm
-        data.channels[0].max = data_norm.max()
-        data.channels[0].min = data_norm.min()
     # return --------------------------------------------------------------------------------------
     if verbose:
         print('data object succesfully created')
