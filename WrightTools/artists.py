@@ -201,10 +201,10 @@ class Axes(matplotlib.axes.Axes):
         xaxis = data.axes[0]
         # get min
         if min is None:
-            min = channel.min
+            min = channel.min()
         # get max
         if max is None:
-            max = channel.max
+            max = channel.max()
         # 1D --------------------------------------------------------------------------------------
         if data.dimensionality == 1:
             # get list of all datas
@@ -1703,7 +1703,7 @@ class mpl_1D:
             if local:
                 pass
             else:
-                plt.ylim(channels[channel_index].min, channels[channel_index].max)
+                plt.ylim(channels[channel_index].min(), channels[channel_index].max())
             # label axes
             plt.xlabel(axes[0].get_label(), fontsize=18)
             plt.ylabel(channels[channel_index].name, fontsize=18)
@@ -1950,24 +1950,22 @@ class mpl_2D:
             if normalize_slices == 'both':
                 pass
             elif normalize_slices == 'horizontal':
-                nmin = channel.null
+                nmin = channel.null()
                 # normalize all x traces to a common value
                 maxes = zi.max(axis=1)
                 numerator = (zi - nmin)
                 denominator = (maxes - nmin)
                 for j in range(zi.shape[0]):
                     zi[j] = numerator[j] / denominator[j]
-                channel.max = zi.max()
-                channel.min = zi.min()
-                channel.null = 0
+                channel._null = 0
             elif normalize_slices == 'vertical':
-                nmin = channel.null
+                nmin = channel.null()
                 maxes = zi.max(axis=0)
                 numerator = (zi - nmin)
                 denominator = (maxes - nmin)
                 for j in range(zi.shape[1]):
                     zi[:, j] = numerator[:, j] / denominator[j]
-                channel.null = 0
+                channel._null = 0
             # create figure -----------------------------------------------------------------------
             if fig and autosave:
                 plt.close(fig)
@@ -1999,27 +1997,27 @@ class mpl_2D:
             if channel.signed:
                 if local:
                     print('signed local')
-                    limit = max(abs(channel.null - np.nanmin(zi)),
-                                abs(channel.null - np.nanmax(zi)))
+                    limit = max(abs(channel.null() - np.nanmin(zi)),
+                                abs(channel.null() - np.nanmax(zi)))
                 else:
                     if dynamic_range:
-                        limit = min(abs(channel.null - channel.min),
-                                    abs(channel.null - channel.max))
+                        limit = min(abs(channel.null() - channel.min()),
+                                    abs(channel.null() - channel.max()))
                     else:
-                        limit = channel.mag
+                        limit = channel.mag()
                 if np.isnan(limit):
                     limit = 1.
                 if limit is np.ma.masked:
                     limit = 1.
-                levels = np.linspace(-limit + channel.null, limit + channel.null, 200)
+                levels = np.linspace(-limit + channel.null(), limit + channel.null(), 200)
             else:
                 if local:
-                    levels = np.linspace(channel.null, np.nanmax(zi), 200)
+                    levels = np.linspace(channel.null(), np.nanmax(zi), 200)
                 else:
-                    if channel.max < channel.null:
-                        levels = np.linspace(channel.min, channel.null, 200)
+                    if channel.max() < channel.null():
+                        levels = np.linspace(channel.min(), channel.null(), 200)
                     else:
-                        levels = np.linspace(channel.null, channel.max, 200)
+                        levels = np.linspace(channel.null(), channel.max(), 200)
             # main plot ---------------------------------------------------------------------------
             # get colormap
             if cmap == 'automatic':
@@ -2095,7 +2093,7 @@ class mpl_2D:
                     # force top and bottom contour to be just outside of data range
                     # add two contours
                     contours_levels = np.linspace(
-                        channel.null - 1e-10, np.nanmax(zi) + 1e-10, contours + 2)
+                        channel.null() - 1e-10, np.nanmax(zi) + 1e-10, contours + 2)
                 else:
                     contours_levels = contours
                 if contour_thickness is None:
@@ -2127,7 +2125,7 @@ class mpl_2D:
                     axCorrx.set_ylim([0, 1.1])
                 # bin
                 if xbin:
-                    x_ax_int = np.nansum(zi, axis=0) - channel.null * len(self.yaxis.points)
+                    x_ax_int = np.nansum(zi, axis=0) - channel.null() * len(self.yaxis.points)
                     x_ax_int[x_ax_int == 0] = np.nan
                     # normalize (min is a pixel)
                     xmax = max(np.abs(x_ax_int))
@@ -2166,7 +2164,7 @@ class mpl_2D:
                     axCorry.set_xlim([0, 1.1])
                 # bin
                 if ybin:
-                    y_ax_int = np.nansum(zi, axis=1) - channel.null * len(self.xaxis.points)
+                    y_ax_int = np.nansum(zi, axis=1) - channel.null() * len(self.xaxis.points)
                     y_ax_int[y_ax_int == 0] = np.nan
                     # normalize (min is a pixel)
                     ymax = max(np.abs(y_ax_int))
@@ -2439,22 +2437,6 @@ class Diff2D():
             subplot_main = plt.subplot(gs[0])
             subplot_main.patch.set_facecolor(facecolor)
             # levels ------------------------------------------------------------------------------
-            """
-            if channel.signed:
-
-                if dynamic_range:
-                    limit = min(abs(channel.null - channel.min), abs(channel.null - channel.max))
-                else:
-                    limit = max(abs(channel.null - channel.min), abs(channel.null - channel.max))
-                levels = np.linspace(-limit + channel.null, limit + channel.null, 200)
-
-            else:
-
-                if local:
-                    levels = np.linspace(channel.null, zi.max(), 200)
-                else:
-                    levels = np.linspace(channel.null, channel.max, 200)
-            """
             levels = np.linspace(0, 1, 200)
             # main plot ---------------------------------------------------------------------------
             # get colormap
@@ -2509,7 +2491,7 @@ class Diff2D():
                         # force top and bottom contour to be just outside of data range
                         # add two contours
                         contours_levels = np.linspace(
-                            channel.null - 1e-10, np.nanmax(zi) + 1e-10, contours + 2)
+                            channel.null() - 1e-10, np.nanmax(zi) + 1e-10, contours + 2)
                     else:
                         contours_levels = contours
                     plt.contour(xaxis.points, yaxis.points, zi,
