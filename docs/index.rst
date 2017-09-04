@@ -1,5 +1,3 @@
-WrightTools
-===========
 
 .. image:: ../logo/logo.png
    :scale: 25 %
@@ -8,17 +6,30 @@ WrightTools
 
 Tools for loading, processing, and plotting multidimensional spectroscopy data.
 
-.. image:: https://anaconda.org/conda-forge/wrighttools/badges/version.svg
-   :target: https://anaconda.org/conda-forge/wrighttools
+Status
+------
 
-.. image:: https://badge.fury.io/py/WrightTools.svg
-   :target: https://badge.fury.io/py/WrightTools
-
-.. image:: https://readthedocs.org/projects/wrighttools/badge/?version=master
-   :target: http://wright.tools/en/master/?badge=master
-
-.. image:: https://readthedocs.org/projects/wrighttools/badge/?version=development
-   :target: http://wright.tools/en/development/?badge=development
++-------------------+-------------------+
+| **PyPI**                              |
++-------------------+-------------------+
++ version           | |pypi-version|    |
++-------------------+-------------------+
+| **conda-forge**                       |
++-------------------+-------------------+
+| version           | |conda-version|   |
++-------------------+-------------------+
+| Linux             | |cf-linux|        |
++-------------------+-------------------+
+| OSX               | |cf-osx|          |
++-------------------+-------------------+
+| Windows           | |cf-windows|      |
++-------------------+-------------------+
+| **Read the Docs**                     |
++-------------------+-------------------+
+| master            | |rtd-master|      |
++-------------------+-------------------+
+| development       | |rtd-development| |
++-------------------+-------------------+
 
 Contents
 --------
@@ -39,6 +50,7 @@ Contents
    contributing 
    api/modules
    auto_examples/index
+   alternatives
 
 Index
 -----
@@ -46,3 +58,26 @@ Index
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+
+.. |cf-linux| image:: https://circleci.com/gh/conda-forge/wrighttools-feedstock.svg?style=shield
+    :target: https://circleci.com/gh/conda-forge/wrighttools-feedstock
+
+.. |cf-osx| image:: https://travis-ci.org/conda-forge/wrighttools-feedstock.svg?branch=master
+    :target: https://travis-ci.org/conda-forge/wrighttools-feedstock
+
+.. |cf-windows| image:: https://ci.appveyor.com/api/projects/status/github/conda-forge/wrighttools-feedstock?svg=True
+    :target: https://ci.appveyor.com/project/conda-forge/wrighttools-feedstock/branch/master
+
+.. |conda-version| image:: https://anaconda.org/conda-forge/wrighttools/badges/version.svg
+   :target: https://anaconda.org/conda-forge/wrighttools
+
+.. |pypi-version| image:: https://badge.fury.io/py/WrightTools.svg
+   :target: https://badge.fury.io/py/WrightTools
+
+
+.. |rtd-development| image:: https://readthedocs.org/projects/wrighttools/badge/?version=development
+   :target: http://wright.tools/en/development/?badge=development
+
+.. |rtd-master| image:: https://readthedocs.org/projects/wrighttools/badge/?version=master
+   :target: http://wright.tools/en/master/?badge=master
+

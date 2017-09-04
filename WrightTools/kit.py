@@ -1045,8 +1045,8 @@ class Spline:
         yi_internal = np.array(yi).copy()
         # nans
         if ignore_nans:
-            l = [xi_internal, yi_internal]
-            xi_internal, yi_internal = remove_nans_1D(l)
+            lis = [xi_internal, yi_internal]
+            xi_internal, yi_internal = remove_nans_1D(lis)
         # UnivariateSpline needs ascending xi
         sort = np.argsort(xi_internal)
         xi_internal = xi_internal[sort]
@@ -1157,8 +1157,8 @@ def flatten_list(l):
             else:
                 Temp.append(element)
         listIsNested = keepChecking  # determine if outer loop exits
-        l = Temp[:]
-    return l
+        lis = Temp[:]
+    return lis
 
 
 def get_methods(the_class, class_only=False, instance_only=False,
@@ -1322,9 +1322,9 @@ def string2array(string, sep='\t'):
         shape[i] = shape[i] / shape[i - 1]
     shape = tuple([int(s) for s in shape])
     # import list of floats
-    l = string.split(' ')
+    lis = string.split(' ')
     # annoyingly series of negative values get past previous filters
-    l = flatten_list([i.split('-') for i in l])
+    lis = flatten_list([i.split('-') for i in lis])
     for i, item in enumerate(l):
         bad_chars = ['[', ']', '\t', '\n']
         for bad_char in bad_chars:

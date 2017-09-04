@@ -123,7 +123,8 @@ class Axes(matplotlib.axes.Axes):
         contours = matplotlib.axes.Axes.contourf(self, *args, **kwargs)  # why can't I use super?
         # fill lines
         zorder = contours.collections[0].zorder - 0.1
-        matplotlib.axes.Axes.contour(self, *(args[:3] + [len(contours.levels)]),
+        levels = (contours.levels[1:] + contours.levels[:-1]) / 2
+        matplotlib.axes.Axes.contour(self, *args[:3], levels=levels,
                                      cmap=contours.cmap,
                                      zorder=zorder)
         # PathCollection modifications
@@ -1313,14 +1314,13 @@ def plot_gridlines(ax=None, c='grey', lw=1, diagonal=False, zorder=2,
     # grid
     # ax.grid(True)
     lines = ax.xaxis.get_gridlines() + ax.yaxis.get_gridlines()
-    for l in lines.copy():
-        l = l
-        l.set_linestyle(':')
-        l.set_color(c)
-        l.set_linewidth(lw)
-        l.set_zorder(zorder)
-        l.set_dashes(dashes)
-        ax.add_line(l)
+    for line in lines.copy():
+        line.set_linestyle(':')
+        line.set_color(c)
+        line.set_linewidth(lw)
+        line.set_zorder(zorder)
+        line.set_dashes(dashes)
+        ax.add_line(line)
     # diagonal
     if diagonal:
         min_xi, max_xi = ax.get_xlim()
@@ -1901,7 +1901,7 @@ class mpl_2D:
         output_folder : str (optional)
             Output folder.
         fname : str (optional)
-            File name.
+            File name. If None, data name is used. Default is None.
         verbose : bool (optional)
             Toggle talkback. Default is True.
         """
@@ -1912,6 +1912,11 @@ class mpl_2D:
             channel_index = self.chopped[0].channel_names.index(channel)
         else:
             print('channel type not recognized in mpl_2D!')
+        # get fname
+        if fname:
+            pass
+        else:
+            fname = self.data.name
         # prepare figure
         fig = None
         if len(self.chopped) > 10:
@@ -1925,10 +1930,6 @@ class mpl_2D:
             else:
                 if len(self.chopped) == 1:
                     output_folder = os.getcwd()
-                    if fname:
-                        pass
-                    else:
-                        fname = self.data.name
                 else:
                     folder_name = 'mpl_2D ' + wt_kit.get_timestamp(style='short')
                     os.mkdir(folder_name)

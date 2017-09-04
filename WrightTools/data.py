@@ -916,10 +916,10 @@ class Data:
         else:
             print('channel type', type(reference_channel), 'not valid')
         # process
-        I = self.channels[reference_channel_index].values.copy()
-        dI = self.channels[signal_channel_index].values.copy()
+        intensity = self.channels[reference_channel_index].values.copy()
+        d_intensity = self.channels[signal_channel_index].values.copy()
         if method == 'digital':
-            out = -np.log10((I + dI) / I)
+            out = -np.log10((intensity + d_intensity) / intensity)
         elif method == 'boxcar':
             # assume data collected with boxcar i.e.
             # sig = 1/2 dT
