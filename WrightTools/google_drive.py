@@ -257,7 +257,7 @@ class Drive:
             if not os.path.isdir(f_path):
                 os.mkdir(f_path)
             # fill contents
-            for child_id in self._list_folder(fileid):
+            for child_id in self.list_folder(fileid):
                 self.download(child_id, directory=f_path)
         else:  # single file
             # check if file exists
