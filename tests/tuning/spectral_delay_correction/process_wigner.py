@@ -39,6 +39,7 @@ def test_SDC_0():
     # exceptions will be raised if the above fails
     assert True
 
+
 def test_SDC_1():
     p = os.path.join(here, 'SDC 1.data')
     data = wt.data.from_PyCMDS(p)
@@ -50,4 +51,3 @@ def test_SDC_1():
                                                                save_directory=dir)
     # exceptions will be raised if the above fails
     assert True
-

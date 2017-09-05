@@ -70,15 +70,15 @@ def process_wigner(data, channel, control_name, offset_name, coset_name, color_u
     else:
         print('channel type not recognized')
         return
-     # clip slice
+    # clip slice
     values = data.channels[channel_index].values
     cutoffs = np.amax(values, axis=0)*slice_cutoff_factor  # caught by nans
     print(cutoffs, cutoffs.shape)
-    values[values<cutoffs] = np.nan
+    values[values < cutoffs] = np.nan
     data.channels[channel_index].values = values
     # clip global
     data.channels[channel_index].clip(min=data.channels[channel_index].max()*global_cutoff_factor)
-   # process
+    # process
     function = wt_fit.Gaussian()
     fitter = wt_fit.Fitter(function, data, data.axes[0].name)
     outs = fitter.run(channel_index, propagate_other_channels=False, verbose=False)
