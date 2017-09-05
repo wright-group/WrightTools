@@ -669,15 +669,22 @@ class Fitter:
         self.fit_shape = [self.data.axes[i].points.shape[0] for i in self.not_fit_indicies]
         print('fitter recieved data to make %d fits' % np.product(self.fit_shape))
 
-    def run(self, channel=0, verbose=True):
+    def run(self, channel=0, propagate_other_channels=True, verbose=True):
         """Run.
 
         Parameters
         ----------
         channel : string or integer (optional)
             Name or index of channel. Default is 0.
+        propagate_other_channels : boolean (optional)
+            Toggle inclusion of other channels (collapsed) in outs. Default is True.
         verbose : boolean (optional)
             Toggle talkback. Default is True.
+
+        Returns
+        -------
+        WrightTools.data.Data object
+            outs
         """
         # get channel -----------------------------------------------------------------------------
         if isinstance(channel, int):
@@ -713,7 +720,10 @@ class Fitter:
             values = np.full(self.outs.shape, np.nan)
             channel = wt_data.Channel(values, units=None, null=0, name=param)
             params_channels.append(channel)
-        self.outs.channels = params_channels + self.outs.channels
+        if propagate_other_channels:
+            self.outs.channels += params_channels + self.outs.channels
+        else:
+            self.outs.channels = params_channels
         # do all fitting operations ---------------------------------------------------------------
         axes_points = [axis.points for axis in self.data.axes if axis.name in self.axes]
         timer = wt_kit.Timer(verbose=False)
@@ -741,6 +751,7 @@ class Fitter:
             channel = self.outs.channels[i]
             values = channel.values
             channel._null = 0
+        self.outs._update()
         return self.outs
 
 
