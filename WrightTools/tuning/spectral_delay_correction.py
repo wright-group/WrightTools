@@ -87,8 +87,9 @@ def process_wigner(data, channel, control_name, offset_name, coset_name, color_u
     # should probably do something more sophisticated...
     outs.amplitude.values[0] = np.nan
     outs.amplitude.values[-1] = np.nan
-    outs.width.clip(0, 500)
-    outs.mean.clip(-1000, 1000)
+    width = data.channels[0].max() - data.channels[0].min()
+    outs.width.clip(0, width)
+    outs.mean.clip(data.channels[0].min(), data.channels[0].max())
     outs.share_nans()
     centers = outs.channels[0].values
     # spline
