@@ -925,8 +925,8 @@ class Data:
             # assume data collected with boxcar i.e.
             # sig = 1/2 dT
             # ref = T + 1/2 dT
-            dI *= 2
-            out = -np.log10((I + dI) / I)
+            d_intensity *= 2
+            out = -np.log10((intensity + d_intensity) / intensity)
         else:
             print('method not recognized in dOD, returning')
             return

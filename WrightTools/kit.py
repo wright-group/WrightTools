@@ -230,7 +230,8 @@ class TimeStamp:
     def hms(self):
         """Get time formated.
 
-        ``HH:MM:SS``"""
+        ``HH:MM:SS``
+        """
         return self.datetime.strftime('%H:%M:%S')
 
     @property
@@ -1325,18 +1326,18 @@ def string2array(string, sep='\t'):
     lis = string.split(' ')
     # annoyingly series of negative values get past previous filters
     lis = flatten_list([i.split('-') for i in lis])
-    for i, item in enumerate(l):
+    for i, item in enumerate(lis):
         bad_chars = ['[', ']', '\t', '\n']
         for bad_char in bad_chars:
             item = item.replace(bad_char, '')
-        l[i] = item
-    for i in range(len(l))[::-1]:
+        lis[i] = item
+    for i in range(len(lis))[::-1]:
         try:
-            l[i] = float(l[i])
+            lis[i] = float(lis[i])
         except ValueError:
-            l.pop(i)
+            lis.pop(i)
     # create and reshape array
-    arr = np.array(l)
+    arr = np.array(lis)
     arr.shape = shape
     # finish
     return arr
