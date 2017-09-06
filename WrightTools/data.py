@@ -10,6 +10,7 @@
 .. _kaiser window: https://en.wikipedia.org/wiki/Kaiser_window
 .. _scipy ndimage:
     http://docs.scipy.org/doc/scipy/reference/generated/scipy.ndimage.interpolation.zoom.html
+.. _spcm: http://www.becker-hickl.com/software/spcm.htm
 """
 
 
@@ -2862,8 +2863,8 @@ def from_shimadzu(filepath, name=None, verbose=True):
     return data
 
 
-def from_spc130(filepath, name=None, delimiter=',', verbose=True):
-    """Create a data object from a SPC-130 TCSPC .asc file
+def from_spcm(filepath, name=None, delimiter=',', format=None, verbose=True):
+    """Create a data object from Becker & Hickl spcm_ software.
 
     Parameters
     ----------
@@ -2873,7 +2874,10 @@ def from_spc130(filepath, name=None, delimiter=',', verbose=True):
         Name to give to the created data object. If None, filename is used.
         Default is None.
     delimiter : string (optional)
-        The string used to separate values. Default is ','.        
+        The string used to separate values. Default is ','.
+    format : {'ascii'} (optional)
+        Force file to be interpreted as a specific format. Default is None
+        (autorecognized).
     verbose : boolean (optional)
         Toggle talkback. Default is True.
 
@@ -2885,8 +2889,8 @@ def from_spc130(filepath, name=None, delimiter=',', verbose=True):
     if not os.path.isfile(filepath):
         raise wt_exceptions.FileNotFound(path=filepath)
     if not filepath.endswith('asc'):
-        wt_exceptions.WrongFileTypeWarning.warn(filepath, 'asc')
-
+        w = wt_exceptions.WrongFileTypeWarning.warn(filepath, 'asc')
+        warnings.warn(w)
     # create headers dictionary
     headers = collections.OrderedDict()
     with open(filepath) as f:
@@ -2900,58 +2904,39 @@ def from_spc130(filepath, name=None, delimiter=',', verbose=True):
                     headers['resolution'] = int(value.strip(' bits ADC'))
                 else:
                     headers[key.strip()] = value.strip()
-
-    headers.__setattr__('Revision', 'resolution')
-
     # import data
     # now import file as a local var as comma-delimited .asc file
-    arr = np.genfromtxt(filepath,
-                        skip_header=(len(headers) + 2), skip_footer=1,
+    arr = np.genfromtxt(filepath, skip_header=(len(headers) + 2), skip_footer=1,
                         delimiter=delimiter).T
-
     # unexpected delimiter handler
     if np.any(np.isnan(arr)):
         # delimiter warning dictionary
-        delim_args = [',', '', '\t', ';', ':']
-        delim_strs = ['comma', 'space', 'tab', 'semicolon', 'colon']
-        delim_dict = dict(zip(delim_args, delim_strs))
-
-        warning_message = ('\n\nfile is not %s-delimited!\n'\
-        'Trying other delimiters in wt.data.from_spc130() call.'\
-                                                       %delim_dict[delimiter])
-        print(warning_message)
-
-        for delimiter in delim_args:
-            arr = np.genfromtxt(filepath,
-                                skip_header=10, skip_footer=1,
+        delim_dict = {',': 'comma',
+                      ' ': 'space',
+                      '\t': 'tab',
+                      ';': 'semicolon',
+                      ':': 'colon'}
+        warnings.warn('file is not %s-delimited! Trying other delimiters.' % delim_dict[delimiter])
+        for delimiter in delim_dict.keys():
+            arr = np.genfromtxt(filepath, skip_header=len(headers) + 2, skip_footer=1,
                                 delimiter=delimiter).T
-
             if not np.any(np.isnan(arr)):
-                warnings.warn('\nfile is %s-delimited.\n'\
-                              %delim_dict[delimiter])
+                print('file is %s-delimited.' % delim_dict[delimiter])
                 break
-
-        if np.any(np.isnan(arr)):
-            try:
-                error = ('\nUnable to load data file.\nData object not created!'
-                    'Please check that your file is formatted properly.\n\n'
-                    'An example of the SPC-130 file format can be found in'
-                    '<..\WrightTools\WrightTools\datasets\spc130>')
-                raise ValueError
-            except ValueError:
-                print(error)
-    else:
-        # construct data
-        x_axis = Axis(arr[0], 'ns', name='time')
-        signal = Channel(arr[1], 'sig', name='counts', signed=False)
-        data = Data([x_axis], [signal], source='SPC_130',
-                    name=name)
-        data.attrs.update(headers)
-
-        if verbose:
-            print('data object created!\n')
-        # return
-        return data
+        else:
+            error = '''Unable to load data file.
+                       Data object not created!
+                       Please check that your file is formatted properly.'''
+            raise RuntimeError(error)
+    # construct data
+    x_axis = Axis(arr[0], 'ns', name='time')
+    signal = Channel(arr[1], 'sig', name='counts', signed=False)
+    data = Data([x_axis], [signal], source='SPC_130', name=name)
+    data.attrs.update(headers)
+    if verbose:
+        print('data object created!')
+    # return
+    return data
 
 
 def from_Tensor27(filepath, name=None, verbose=True):
