@@ -2887,7 +2887,7 @@ def from_spc130(filepath, name=None, delimiter=',', verbose=True):
     if not filepath.endswith('asc'):
         wt_exceptions.WrongFileTypeWarning.warn(filepath, 'asc')
 
-    # headers
+    # create headers dictionary
     headers = collections.OrderedDict()
     with open(filepath) as f:
         while True:
@@ -2900,62 +2900,62 @@ def from_spc130(filepath, name=None, delimiter=',', verbose=True):
                     headers['resolution'] = int(value.strip(' bits ADC'))
                 else:
                     headers[key.strip()] = value.strip()
-                
+
     headers.__setattr__('Revision', 'resolution')
-    
+
     # import data
     # now import file as a local var as comma-delimited .asc file
     arr = np.genfromtxt(filepath,
                         skip_header=(len(headers) + 2), skip_footer=1,
                         delimiter=delimiter).T
-    
+
     # unexpected delimiter handler
     if np.any(np.isnan(arr)):
         # delimiter warning dictionary
         delim_args = [',', '', '\t', ';', ':']
         delim_strs = ['comma', 'space', 'tab', 'semicolon', 'colon']
         delim_dict = dict(zip(delim_args, delim_strs))
-        
-        message = ("Error: file is not %s-delimited!\n"\
-        "Trying other delimiters in wt.data.from_spc130() call."\
-        %delim_dict[delimiter])
-        
-        warnings.warn(message)
-        
+
+        warning_message = ('\n\nfile is not %s-delimited!\n'\
+        'Trying other delimiters in wt.data.from_spc130() call.'\
+                                                       %delim_dict[delimiter])
+        print(warning_message)
+
         for delimiter in delim_args:
             arr = np.genfromtxt(filepath,
                                 skip_header=10, skip_footer=1,
                                 delimiter=delimiter).T
-            if not np.any(np.isnan(arr)):
-                message = ("Error resolved: file is %s-delimited." \
-                           %delim_dict[delimiter])
-                warnings.warn(message)
-                break
-            
-    if np.any(np.isnan(arr)):
-        error = ("Unable to load data file.\nData object not created!"
-        "Please check that your file is formatted properly.\n\n"
-        "An example of the SPC-130 file format can be found in"
-        "<..\WrightTools\WrightTools\datasets\spc130>")
-        
-        raise RuntimeError(error)
 
-    # construct data
-    x_axis = Axis(arr[0], 'ns', name='time')
-    signal = Channel(arr[1], 'sig', name='counts', signed=False)
-    data = Data([x_axis], [signal], source='SPC_130',
-                name=name)
-    data.attrs.update(headers)
-    
-    if verbose:
-        print('data object created!\n')
-    # return
-    return data
+            if not np.any(np.isnan(arr)):
+                warnings.warn('\nfile is %s-delimited.\n'\
+                              %delim_dict[delimiter])
+                break
+
+        if np.any(np.isnan(arr)):
+            try:
+                error = ('\nUnable to load data file.\nData object not created!'
+                    'Please check that your file is formatted properly.\n\n'
+                    'An example of the SPC-130 file format can be found in'
+                    '<..\WrightTools\WrightTools\datasets\spc130>')
+                raise ValueError
+            except ValueError:
+                print(error)
+    else:
+        # construct data
+        x_axis = Axis(arr[0], 'ns', name='time')
+        signal = Channel(arr[1], 'sig', name='counts', signed=False)
+        data = Data([x_axis], [signal], source='SPC_130',
+                    name=name)
+        data.attrs.update(headers)
+
+        if verbose:
+            print('data object created!\n')
+        # return
+        return data
 
 
 def from_Tensor27(filepath, name=None, verbose=True):
     """Create a data object from a Tensor27 FTIR file.
-
 
     Parameters
     ----------
