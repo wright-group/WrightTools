@@ -517,6 +517,7 @@ class Data:
         self.channels = channels
         self.name = name
         self.source = source
+        self.attrs = {}
         # update
         self._update()
         # reserve a copy of own self at this stage
@@ -2861,17 +2862,18 @@ def from_shimadzu(filepath, name=None, verbose=True):
     return data
 
 
-def from_1130(filepath, name=None, delimiter=None, verbose=True):
-    """Create a data object from a SPC-130 TCSPC an exported
-    comma-delimited (.asc) file within the SPCM 9.75 software.
+def from_spc130(filepath, name=None, delimiter=',', verbose=True):
+    """Create a data object from a SPC-130 TCSPC .asc file
 
     Parameters
     ----------
     filepath : string
-        Path to SPC-130 output file (.asc).
+        Path to SPC-130 .asc file.
     name : string (optional)
         Name to give to the created data object. If None, filename is used.
         Default is None.
+    delimiter : string (optional)
+        The string used to separate values. Default is ','.        
     verbose : boolean (optional)
         Toggle talkback. Default is True.
 
@@ -2884,23 +2886,36 @@ def from_1130(filepath, name=None, delimiter=None, verbose=True):
         raise wt_exceptions.FileNotFound(path=filepath)
     if not filepath.endswith('asc'):
         wt_exceptions.WrongFileTypeWarning.warn(filepath, 'asc')
-    # set unspecified delimiter parameter arg to ','
-    if delimiter is None:
-        delimiter = ','
-    else:
-        pass
+
+    # headers
+    headers = collections.OrderedDict()
+    with open(filepath) as f:
+        while True:
+            line = f.readline().strip()
+            if len(line) == 0:
+                break
+            else:
+                key, value = line.split(':', 1)
+                if key.strip() == 'Revision':
+                    headers['resolution'] = int(value.strip(' bits ADC'))
+                else:
+                    headers[key.strip()] = value.strip()
+                
+    headers.__setattr__('Revision', 'resolution')
+    
     # import data
     # now import file as a local var as comma-delimited .asc file
     arr = np.genfromtxt(filepath,
-                        skip_header=10, skip_footer=1,
+                        skip_header=(len(headers) + 2), skip_footer=1,
                         delimiter=delimiter).T
+    
     # unexpected delimiter handler
     if np.any(np.isnan(arr)):
         # delimiter warning dictionary
         delim_args = [',', '', '\t', ';', ':']
         delim_strs = ['comma', 'space', 'tab', 'semicolon', 'colon']
         delim_dict = dict(zip(delim_args, delim_strs))
-        if verbose:
+        
             print("Error: file is not %s-delimited!\n"
                   "Trying other delimiters "
                   "in wt.data.from_spc130() call." % delim_dict[delimiter])
@@ -2923,7 +2938,10 @@ def from_1130(filepath, name=None, delimiter=None, verbose=True):
         # construct data
         x_axis = Axis(arr[0], 'ns', name='time')
         signal = Channel(arr[1], 'sig', name='counts', signed=False)
-        data = Data([x_axis], [signal], source='SPC_130', name=name)
+        data = Data([x_axis], [signal], source='SPC_130',
+                    name=name)
+        data.attrs.update(headers)
+        
         if verbose:
             print('data object created!\n')
         # return
