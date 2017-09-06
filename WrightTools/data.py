@@ -246,7 +246,7 @@ class Channel:
         if values is not None:
             self.give_values(np.asarray(values), null, signed)
         else:
-            self.null = null
+            self._null = null
             self.signed = signed
 
     def __repr__(self):
@@ -278,9 +278,9 @@ class Channel:
         """
         # decide what min and max will actually be
         if max is None:
-            max = self.max
+            max = self.max()
         if min is None:
-            min = self.min
+            min = self.min()
         # replace values
         if replace == 'val':
             self.values.clip(min, max, out=self.values)
@@ -307,25 +307,25 @@ class Channel:
         self.values = values
         # null
         if null is not None:
-            self.null = null
-        elif hasattr(self, 'null'):
-            if self.null:
+            self._null = null
+        elif hasattr(self, '_null'):
+            if self._null:
                 pass
             else:
-                self.null = 0.
+                self._null = 0.
         else:
-            self.null = 0.
+            self._null = 0.
         # signed
         if signed is not None:
             self.signed = signed
         elif hasattr(self, 'signed'):
             if self.signed is None:
-                if self.min < self.null:
+                if self.min() < self.null():
                     self.signed = True
                 else:
                     self.signed = False
         else:
-            if self.min < self.null:
+            if self.min() < self.null():
                 self.signed = True
             else:
                 self.signed = False
@@ -336,9 +336,9 @@ class Channel:
         info = collections.OrderedDict()
         info['name'] = self.name
         info['id'] = id(self)
-        info['min'] = self.min
-        info['max'] = self.max
-        info['null'] = self.null
+        info['min'] = self.min()
+        info['max'] = self.max()
+        info['null'] = self.null()
         info['signed'] = self.signed
         return info
 
@@ -346,17 +346,14 @@ class Channel:
         """Invert channel values."""
         self.values = - self.values
 
-    @property
     def mag(self):
         """Channel magnitude (maximum deviation from null)."""
-        return max((self.max - self.null, self.null - self.min))
+        return max((self.max() - self.null(), self.null() - self.min()))
 
-    @property
     def max(self):
         """Maximum, ignorning nans."""
         return np.nanmax(self.values)
 
-    @property
     def min(self):
         """Minimum, ignoring nans."""
         return np.nanmin(self.values)
@@ -370,8 +367,8 @@ class Channel:
             else:  # presumably a simple number
                 axis = int(axis)
         # subtract off null
-        self.values -= self.null
-        self.null = 0.
+        self.values -= self.null()
+        self._null = 0.
         # create dummy array
         dummy = self.values.copy()
         dummy[np.isnan(dummy)] = 0  # nans are propagated in np.amax
@@ -381,6 +378,10 @@ class Channel:
         self.values /= np.amax(dummy, axis=axis, keepdims=True)
         # finish
         self._update()
+
+    def null(self):
+        """Null value."""
+        return self._null
 
     def trim(self, neighborhood, method='ztest', factor=3, replace='nan',
              verbose=True):
@@ -488,7 +489,7 @@ class Channel:
         """Channel null."""
         message = "use null, not znull"
         warnings.warn(message, wt_exceptions.VisibleDeprecationWarning)
-        return self.null
+        return self.null()
 
 
 class Data:
@@ -1153,7 +1154,7 @@ class Data:
         values = values.transpose(transpose_order)
         # return
         channel.values = values
-        channel.null = 0.
+        channel._null = 0.
         # print
         if verbose:
             axis = self.axes[axis_index]
@@ -1563,8 +1564,7 @@ class Data:
         return filepath
 
     def scale(self, channel=0, kind='amplitude', verbose=True):
-        """
-        Scale a channel.
+        """Scale a channel.
 
         Parameters
         ----------
@@ -2492,8 +2492,6 @@ def from_KENT(filepaths, null=None, name=None, ignore=['wm'], use_norm=False,
         #data_norm = data.channels[0].values*data.axes[0].points*data.axes[1].points/(OPA1*OPA2)
         data_norm = data.channels[0].values / (OPA1 * OPA2)  # I think this is correct.
         data.channels[0].values = data_norm
-        data.channels[0].max = data_norm.max()
-        data.channels[0].min = data_norm.min()
     # return --------------------------------------------------------------------------------------
     if verbose:
         print('data object succesfully created')
@@ -3107,7 +3105,7 @@ def join(datas, method='first', verbose=True, **kwargs):
             percent_nan = np.around(100. * (np.isnan(channel.values).sum() /
                                             float(channel.values.size)), decimals=2)
             print('    {0} : {1} to {2} ({3}% NaN)'.format(
-                channel.name, channel.min, channel.max, percent_nan))
+                channel.name, channel.min(), channel.max(), percent_nan))
     return out
 
 
