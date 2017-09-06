@@ -2916,36 +2916,41 @@ def from_spc130(filepath, name=None, delimiter=',', verbose=True):
         delim_strs = ['comma', 'space', 'tab', 'semicolon', 'colon']
         delim_dict = dict(zip(delim_args, delim_strs))
         
-            print("Error: file is not %s-delimited!\n"
-                  "Trying other delimiters "
-                  "in wt.data.from_spc130() call." % delim_dict[delimiter])
+        message = ("Error: file is not %s-delimited!\n"\
+        "Trying other delimiters in wt.data.from_spc130() call."\
+        %delim_dict[delimiter])
+        
+        warnings.warn(message)
+        
         for delimiter in delim_args:
             arr = np.genfromtxt(filepath,
                                 skip_header=10, skip_footer=1,
                                 delimiter=delimiter).T
             if not np.any(np.isnan(arr)):
-                if verbose:
-                    print("Error resolved: file is %s-delimited."
-                          % delim_dict[delimiter])
+                message = ("Error resolved: file is %s-delimited." \
+                           %delim_dict[delimiter])
+                warnings.warn(message)
                 break
+            
     if np.any(np.isnan(arr)):
-        print("Error unresolved: Please check that your file "
-              "is formatted properly. An example of SPC-130 file format "
-              "can be found in ..\WrightTools\WrightTools\datasets\spc130"
-              "\n")
-        print('data object not created!\n')
-    else:
-        # construct data
-        x_axis = Axis(arr[0], 'ns', name='time')
-        signal = Channel(arr[1], 'sig', name='counts', signed=False)
-        data = Data([x_axis], [signal], source='SPC_130',
-                    name=name)
-        data.attrs.update(headers)
+        error = ("Unable to load data file.\nData object not created!"
+        "Please check that your file is formatted properly.\n\n"
+        "An example of the SPC-130 file format can be found in"
+        "<..\WrightTools\WrightTools\datasets\spc130>")
         
-        if verbose:
-            print('data object created!\n')
-        # return
-        return data
+        raise RuntimeError(error)
+
+    # construct data
+    x_axis = Axis(arr[0], 'ns', name='time')
+    signal = Channel(arr[1], 'sig', name='counts', signed=False)
+    data = Data([x_axis], [signal], source='SPC_130',
+                name=name)
+    data.attrs.update(headers)
+    
+    if verbose:
+        print('data object created!\n')
+    # return
+    return data
 
 
 def from_Tensor27(filepath, name=None, verbose=True):
