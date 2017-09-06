@@ -9,24 +9,15 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import os
 import time
 import datetime
+import tempfile
+import appdirs
+from glob import glob
 
 
 # --- define --------------------------------------------------------------------------------------
 
 
 directory = os.path.dirname(os.path.abspath(__file__))
-
-
-# --- ensure google drive creds folder populated --------------------------------------------------
-
-
-creds_dir = os.path.join(directory, 'temp', 'google drive')
-if not os.path.isdir(creds_dir):
-    os.mkdir(creds_dir)
-
-mycreds_path = os.path.join(creds_dir, 'mycreds.txt')
-if not os.path.isfile(mycreds_path):
-    open(mycreds_path, 'a').close()
 
 
 # --- helper methods ------------------------------------------------------------------------------
@@ -54,10 +45,31 @@ def id_to_url(driveid):
 class Drive:
     """Google Drive class."""
 
-    def __init__(self):
+    def __init__(self, account_id='default'):
         """init."""
-        # authenticate
-        self.mycreds_path = mycreds_path
+        # Define the temp directory and file name format
+        configDir = appdirs.user_data_dir('WrightTools', 'WrightGroup')
+        if not os.path.isdir(configDir):
+            os.makedirs(configDir)
+        prefix = 'google-drive-'
+        suffix = '-' + account_id + '.txt'
+        # Check for existing file
+        lis = glob(os.path.join(configDir, prefix + "*" + suffix))
+        self.mycreds_path = ''
+        if len(lis) > 0:
+            for f in lis:
+                # Check that for read and write access (or is bitwise, checking both)
+                # Note this check is probably not needed with appdirs, but is not
+                #     harmful and provides additional insurance against crashes.
+                if os.access(f, os.W_OK | os.R_OK):
+                    self.mycreds_path = f
+                    break
+        # Make a new file if one does not exist with sufficent permissions
+        if self.mycreds_path == '':
+            self.mycreds_path = tempfile.mkstemp(prefix=prefix,
+                                                 suffix=suffix,
+                                                 text=True,
+                                                 dir=configDir)[1]
         self._authenticate()
 
     def _authenticate(self):
@@ -245,7 +257,7 @@ class Drive:
             if not os.path.isdir(f_path):
                 os.mkdir(f_path)
             # fill contents
-            for child_id in self._list_folder(fileid):
+            for child_id in self.list_folder(fileid):
                 self.download(child_id, directory=f_path)
         else:  # single file
             # check if file exists
