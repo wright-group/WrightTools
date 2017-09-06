@@ -12,6 +12,8 @@ The following table contains every dataset distributed within WrightTools.
 =================================================  ============================  ===================  ==============
 dataset                                            axis names                    shape                gallery links
 =================================================  ============================  ===================  ==============
+``BrunoldrRaman.LDS821_514nm_80mW``                ``['wm']``                    ``(1340,)``
+``Cary50.CuPCtS_H2O_vis``                          ``['wm']``                    ``(141,)``
 ``COLORS.v0p2_d1_d2_diagonal`` [#kohler2014]_      ``['d1', 'd2']``              ``(21, 21)``        
 ``COLORS.v0p2_d1_d2_off_diagonal`` [#kohler2014]_  ``['d1', 'd2']``              ``(21, 21)``       
 ``COLORS.v2p1_MoS2_TrEE_movie`` [#czech2015]_      ``['w2', 'w1', 'd2']``        ``(41, 41, 23)``  
@@ -23,7 +25,7 @@ dataset                                            axis names                   
 ``KENT.PbSe_2D_delay_B`` [#yurs2011]_              ``['d2', 'd1']``              ``(20, 20)``         
 ``PyCMDS.wm_w2_w1_000``                            ``['wm', 'w2', 'w1']``        ``(35, 11, 11)``
 ``PyCMDS.wm_w2_w1_001``                            ``['wm', 'w2', 'w1']``        ``(29, 11, 11)``
-``BrunoldrRaman.LDS821_514nm_80mW``                ``['wm']``                    ``(1340,)``
+``Tensor27.CuPCtS_powder_ATR``                     ``['w']``                     ``(7259,)``
 =================================================  ============================  ===================  ==============
 
 .. [#kohler2014] **Ultrafast Dynamics within the 1S Exciton Band of Colloidal PbSe Quantum Dots Using Multiresonant Coherent Multidimensional Spectroscopy**
