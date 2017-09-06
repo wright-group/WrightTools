@@ -71,8 +71,14 @@ BrunoldrRaman.from_files(os.path.join(here, 'BrunoldrRaman'))
 PyCMDS = DatasetContainer()
 PyCMDS.from_files('PyCMDS')
 
+Cary50 = DatasetContainer()
+Cary50.from_files('Cary50')
+
+Tensor27 = DatasetContainer()
+Tensor27.from_files('Tensor27')
+
 
 # --- pretty namespace ----------------------------------------------------------------------------
 
 
-__all__ = ['COLORS', 'JASCO', 'KENT', 'BrunoldrRaman']
+__all__ = ['COLORS', 'JASCO', 'KENT', 'BrunoldrRaman', 'Cary50', 'Tensor27']
