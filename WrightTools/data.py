@@ -1968,7 +1968,7 @@ def from_Cary50(filepath, verbose=True):
     Parameters
     ----------
     filepath : string
-        Path to Tensor27 output file (.dpt).
+        Path to Cary50 output file (.csv).
     verbose : boolean (optional)
         Toggle talkback. Default is True.
 
@@ -1996,6 +1996,7 @@ def from_Cary50(filepath, verbose=True):
                 clean = line[:-2]  # lines end with ',/n'
                 lines.append(np.fromstring(clean, sep=','))
     header = header.split(',')
+    lines = [i for i in lines if len(i)>0]
     arr = np.array(lines).T
     # chew through all scans
     datas = []
