@@ -927,8 +927,8 @@ class Data:
             # assume data collected with boxcar i.e.
             # sig = 1/2 dT
             # ref = T + 1/2 dT
-            dI *= 2
-            out = -np.log10((I + dI) / I)
+            d_intensity *= 2
+            out = -np.log10((intensity + d_intensity) / intensity)
         else:
             print('method not recognized in dOD, returning')
             return
@@ -1958,10 +1958,19 @@ class Data:
 def from_Cary50(filepath, verbose=True):
     """Create a data object from a Cary 50 UV VIS absorbance file.
 
+    .. plot::
+
+        >>> import WrightTools as wt
+        >>> from WrightTools import datasets
+        >>> p = datasets.Cary50.CuPCtS_H2O_vis
+        >>> data = wt.data.from_Cary50(p)[0]
+        >>> artist = wt.artists.mpl_1D(data)
+        >>> artist.plot()
+
     Parameters
     ----------
     filepath : string
-        Path to Tensor27 output file (.dpt).
+        Path to Cary50 output file (.csv).
     verbose : boolean (optional)
         Toggle talkback. Default is True.
 
@@ -1989,6 +1998,7 @@ def from_Cary50(filepath, verbose=True):
                 clean = line[:-2]  # lines end with ',/n'
                 lines.append(np.fromstring(clean, sep=','))
     header = header.split(',')
+    lines = [i for i in lines if len(i)>0]
     arr = np.array(lines).T
     # chew through all scans
     datas = []
@@ -2939,6 +2949,18 @@ def from_spcm(filepath, name=None, delimiter=',', format=None, verbose=True):
 
 def from_Tensor27(filepath, name=None, verbose=True):
     """Create a data object from a Tensor27 FTIR file.
+
+    .. plot::
+
+        >>> import WrightTools as wt
+        >>> import matplotlib
+        >>> from WrightTools import datasets
+        >>> p = datasets.Tensor27.CuPCtS_powder_ATR
+        >>> data = wt.data.from_Tensor27(p)
+        >>> artist = wt.artists.mpl_1D(data)
+        >>> artist.plot()
+        >>> matplotlib.pyplot.xlim(1300,1700)
+        >>> matplotlib.pyplot.ylim(-0.005,.02)
 
     Parameters
     ----------

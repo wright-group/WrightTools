@@ -24,20 +24,39 @@ from . import coset as wt_coset
 # --- processing methods --------------------------------------------------------------------------
 
 
-def process_wigner(data_filepath, channel, control_name,
-                   offset_name, coset_name, color_units='nm',
-                   delay_units='fs', autosave=True, s=1000):
+def process_wigner(data, channel, control_name, offset_name, coset_name, color_units='nm',
+                   delay_units='fs', global_cutoff_factor=0.05, slice_cutoff_factor=0.1,
+                   s=1000, autosave=True, save_directory=None):
     """Create a coset file from a measured wigner.
 
     Parameters
     ----------
-    data_filepath : str
-        Filepath to data file.
+    data : WrightTools.data.Data object
+        Data.
     channel : int or str
         The channel to process.
+    control_name : string
+        Control name.
+    offset_name : string
+        Offset name.
+    coset_name : string
+        Coset name.
+    color_units : string (optional)
+        Color units. Default is nm.
+    delay_units : string (optional)
+        Delay uints. Default is fs.
+    global_cutoff_factor : number (optional)
+        Global cutoff factor. Default is 0.05
+    slice_cutoff_factor : number (optional)
+        Slice cutoff factor. Default is 0.1
+    s : integer (optional)
+        Smoothing parameter. Default is 1000
+    autosave : boolean (optional)
+        Toggle autosave. Default is True.
+    save_directory : string (optional)
+        Control save directory. Default is None (current working directory).
     """
     # get data
-    data = wt_data.from_PyCMDS(data_filepath, verbose=False)
     if data.axes[0].units_kind == 'energy':
         data.transpose()  # prefered shape - delay then color
     data.convert(color_units)
@@ -51,19 +70,26 @@ def process_wigner(data_filepath, channel, control_name,
     else:
         print('channel type not recognized')
         return
+    # clip slice
+    values = data.channels[channel_index].values
+    cutoffs = np.amax(values, axis=0) * slice_cutoff_factor  # caught by nans
+    print(cutoffs, cutoffs.shape)
+    values[values < cutoffs] = np.nan
+    data.channels[channel_index].values = values
+    # clip global
+    data.channels[channel_index].clip(min=data.channels[channel_index].max() * global_cutoff_factor)
     # process
     function = wt_fit.Gaussian()
     fitter = wt_fit.Fitter(function, data, data.axes[0].name)
-    outs = fitter.run(channel_index)
+    outs = fitter.run(channel_index, propagate_other_channels=False, verbose=False)
     # clean
     # remove the edges because they are badly behaved...
     # should probably do something more sophisticated...
-    outs.amplitude.clip(outs.amplitude.max() * 0.1, outs.amplitude.max())
-    #outs.amplitude.clip(outs.amplitude.max()*0.04, outs.amplitude.max())
     outs.amplitude.values[0] = np.nan
     outs.amplitude.values[-1] = np.nan
-    outs.width.clip(0, 500)
-    outs.mean.clip(-1000, 1000)
+    width = data.axes[0].max() - data.axes[0].min()
+    outs.width.clip(0, width)
+    outs.mean.clip(data.axes[0].min(), data.axes[0].max())
     outs.share_nans()
     centers = outs.channels[0].values
     # spline
@@ -79,17 +105,16 @@ def process_wigner(data_filepath, channel, control_name,
     xi = ws
     yi = corrections
     artist.onplot(xi, yi, alpha=1)
-    # finish plot
-    artist.plot(channel_index, contours=0, lines=False)
-    if autosave:
-        figure_path = data_filepath.replace('.data', '.png')
-        plt.savefig(figure_path, dpi=300, transparent=True, pad_inches=1)
-        plt.close()
-    # construct, save coset
+    # make coset
     coset = wt_coset.CoSet(control_name, color_units, ws, offset_name,
                            delay_units, corrections, coset_name)
+    # save
+    if save_directory is None:
+        save_directory = os.getcwd()
+    artist.plot(channel_index, contours=0, lines=False, fname=data.name,
+                output_folder=save_directory, autosave=autosave)
     if autosave:
-        coset.save(save_directory=os.path.dirname(data_filepath))
+        coset.save(save_directory=save_directory)
     return coset
 
 
