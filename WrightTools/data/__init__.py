@@ -17,7 +17,7 @@ from ._spcm import *
 from ._tensor27 import *
 
 
-__all__ = ['Data', 
+__all__ = ['Data',
            'join',
            'Axis',
            'Channel',
@@ -34,4 +34,4 @@ __all__ = ['Data',
            'from_shimadzu',
            'from_spcm',
            'from_Tensor27',
-          ]
+           ]
