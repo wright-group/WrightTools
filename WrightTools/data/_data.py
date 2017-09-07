@@ -379,7 +379,6 @@ class Channel:
         # divide through by max
         self.values /= np.amax(dummy, axis=axis, keepdims=True)
         # finish
-        self._update()
 
     def null(self):
         """Null value."""
@@ -460,7 +459,6 @@ class Channel:
         else:
             raise KeyError('replace must be one of {nan, mean, mask} or some number')
         # finish
-        self._update()
         if verbose:
             print('%i outliers removed' % len(outliers))
         return outliers
@@ -554,9 +552,6 @@ class Data:
         for obj in self.axes + self.channels + self.constants:
             setattr(self, obj.name, obj)
         self.shape = self.channels[0].values.shape
-
-    def _pupdate(self, *args, **kwargs):
-        return self._update(*args, **kwargs)
 
     def bring_to_front(self, channel):
         """Bring a specific channel to the zero-indexed position in channels.
@@ -775,7 +770,6 @@ class Data:
                 channel.values = np.average(channel.values, axis=axis_index)
             else:
                 print('method not recognized in data.collapse')
-            channel._update()
         # cleanup ---------------------------------------------------------------------------------
         self.axes.pop(axis_index)
         self._update()
@@ -877,7 +871,6 @@ class Data:
         divisor_channel = divisor.channels[divisor_channel_index]
         # do division
         channel.values /= divisor_channel.values
-        channel._update()
         # transpose out
         self.transpose(transpose_order, verbose=False)
 
@@ -936,7 +929,6 @@ class Data:
         self.channels[signal_channel_index].give_values(out)
         self.channels[signal_channel_index].signed = True
         self.channels[signal_channel_index].null = 0
-        self.channels[signal_channel_index]._update()
 
     def flip(self, axis):
         """Flip direction of arrays along an axis.
@@ -1080,7 +1072,6 @@ class Data:
             # grid data
             out = griddata(tup, arr[-1], xi, method=method, fill_value=fill_value)
             self.channels[channel_index].values = out
-            self.channels[channel_index]._update()
         # print
         if verbose:
             print('channel {0} healed in {1} seconds'.format(
@@ -1390,7 +1381,6 @@ class Data:
 
         """
         # axis ------------------------------------------------------------------------------------
-
         if isinstance(along, int):
             axis_index = along
         elif isinstance(along, string_type):
@@ -1398,21 +1388,17 @@ class Data:
         else:
             print('axis type', type(along), 'not valid')
         axis = self.axes[axis_index]
-
         # values & points -------------------------------------------------------------------------
-
         # get values, points, units
         if units == 'same':
             input_units = axis.units
         else:
             input_units = units
-
         # check offsets is 1D or 0D
         if len(offsets.shape) == 1:
             pass
         else:
             raise RuntimeError('values must be 1D or 0D in offset!')
-
         # check if units is compatible, convert
         dictionary = getattr(wt_units, axis.units_kind)
         if input_units in dictionary.keys():
@@ -1420,26 +1406,21 @@ class Data:
         else:
             raise RuntimeError('units incompatible in offset!')
         points = wt_units.converter(points, input_units, axis.units)
-
         # create correction array
         function = interp1d(points, offsets, bounds_error=False)
         corrections = function(axis.points)
-
         # remove nans
         finite_indicies = np.where(np.isfinite(corrections))[0]
         left_pad_width = finite_indicies[0]
         right_pad_width = len(corrections) - finite_indicies[-1] - 1
         corrections = np.pad(corrections[np.isfinite(corrections)],
                              (int(left_pad_width), int(right_pad_width)), mode='edge')
-
         # do correction ---------------------------------------------------------------------------
-
         # transpose so axis is last
         transpose_order = np.arange(len(self.axes))
         transpose_order[axis_index] = len(self.axes) - 1
         transpose_order[-1] = axis_index
         self.transpose(transpose_order, verbose=False)
-
         # get offset axis index
         if isinstance(offset_axis, int):
             offset_axis_index = offset_axis
@@ -1447,7 +1428,6 @@ class Data:
             offset_axis_index = self.axis_names.index(offset_axis)
         else:
             print('offset_axis type', type(offset_axis), 'not valid')
-
         # new points
         new_points = [a.points for a in self.axes]
         old_offset_axis_points = self.axes[offset_axis_index].points
@@ -1467,31 +1447,24 @@ class Data:
             new_offset_axis_points = np.linspace(_min, _max, n)
         new_points[offset_axis_index] = new_offset_axis_points
         new_xi = tuple(np.meshgrid(*new_points, indexing='ij'))
-
         xi = tuple(np.meshgrid(*[a.points for a in self.axes], indexing='ij'))
         for channel in self.channels:
-
             # 'undo' gridding
             arr = np.zeros((len(self.axes) + 1, channel.values.size))
             for i in range(len(self.axes)):
                 arr[i] = xi[i].flatten()
             arr[-1] = channel.values.flatten()
-
             # do corrections
             corrections = list(corrections)
             corrections = corrections * int((len(arr[0]) / len(corrections)))
             arr[offset_axis_index] += corrections
-
             # grid data
             tup = tuple([arr[i] for i in range(len(arr) - 1)])
             # note that rescale is crucial in this operation
             out = griddata(tup, arr[-1], new_xi, method=method,
                            fill_value=np.nan, rescale=True)
             channel.values = out
-            channel._update()
-
         self.axes[offset_axis_index].points = new_offset_axis_points
-
         # transpose out
         self.transpose(transpose_order, verbose=False)
         self._update()
@@ -1583,7 +1556,6 @@ class Data:
             channel.values = np.log10(channel.values)
         if kind in ['invert']:
             channel.values *= -1.
-        channel._update()
 
     def share_nans(self):
         """Share not-a-numbers between all channels.
@@ -1833,7 +1805,6 @@ class Data:
         subtrahend_channel = subtrahend.channels[subtrahend_channel_index]
         # do division
         channel.values -= subtrahend_channel.values
-        channel._update()
         # transpose out
         self.transpose(transpose_order, verbose=False)
 
