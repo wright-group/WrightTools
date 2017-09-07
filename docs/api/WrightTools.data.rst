@@ -1,5 +1,5 @@
-WrightTools\.data module
-========================
+WrightTools\.data package
+=========================
 
 .. automodule:: WrightTools.data
     :members:

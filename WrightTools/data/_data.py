@@ -1,16 +1,4 @@
-"""Central data class and associated.
-
-.. [#carlson1989] **Absorption and Coherent Interference Effects in Multiply Resonant
-                  Four-Wave Mixing Spectroscopy**
-                  Roger J. Carlson, and John C. Wright
-                  *Applied Spectroscopy* **1989** 43, 1195--1208
-                  `doi:10.1366/0003702894203408 <http://dx.doi.org/10.1366/0003702894203408>`_
-.. _griddata: http://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.griddata.html
-.. _pickle: https://docs.python.org/3/library/pickle.html
-.. _kaiser window: https://en.wikipedia.org/wiki/Kaiser_window
-.. _scipy ndimage:
-    http://docs.scipy.org/doc/scipy/reference/generated/scipy.ndimage.interpolation.zoom.html
-"""
+"""Central data class and associated."""
 
 
 # --- import --------------------------------------------------------------------------------------
@@ -1033,13 +1021,16 @@ class Data:
             Channel to heal. Default is 0.
         method : {'linear', 'nearest', 'cubic'} (optional)
             The interpolation method. Note that cubic interpolation is only
-            possible for 1D and 2D data. See `griddata`_ for more information.
+            possible for 1D and 2D data. See `griddata`__ for more information.
             Default is linear.
         fill_value : number-like (optional)
             The value written to pixels that cannot be filled by interpolation.
             Default is nan.
         verbose : bool (optional)
             Toggle talkback. Default is True.
+
+
+        __ http://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.griddata.html
 
 
         .. note:: Healing may take several minutes for large datasets.
@@ -1180,6 +1171,12 @@ class Data:
             Toggle bounds_error. Default is True.
         verbose : boolean (optional)
             Toggle talkback. Default is True.
+
+        .. [#carlson1989] **Absorption and Coherent Interference Effects in Multiply Resonant
+                  Four-Wave Mixing Spectroscopy**
+                  Roger J. Carlson, and John C. Wright
+                  *Applied Spectroscopy* **1989** 43, 1195--1208
+                  `doi:10.1366/0003702894203408 <http://dx.doi.org/10.1366/0003702894203408>`_
         """
         # exp_name: [i], [m_i]
         exp_types = {
@@ -1370,10 +1367,13 @@ class Data:
             interpolation range will be written nan.
         method : {'linear', 'nearest', 'cubic'} (optional)
             The interpolation method. Note that cubic interpolation is only
-            possible for 1D and 2D data. See `griddata`_ for more information.
+            possible for 1D and 2D data. See `griddata`__ for more information.
             Default is linear.
         verbose : bool (optional)
             Toggle talkback. Default is True.
+
+
+        __ http://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.griddata.html
 
             >>> points  # an array of w1 points
             >>> offsets  # an array of d1 corrections
@@ -1491,7 +1491,9 @@ class Data:
         self._update()
 
     def save(self, filepath=None, verbose=True):
-        """Save using the `pickle`_ module.
+        """Save using the `pickle`__ module.
+
+        __ https://docs.python.org/3/library/pickle.html
 
         Parameters
         ----------
@@ -1571,7 +1573,9 @@ class Data:
             c.values = a
 
     def smooth(self, factors, channel=None, verbose=True):
-        """Smooth a channel using an n-dimenional `kaiser window`_.
+        """Smooth a channel using an n-dimenional `kaiser window`__.
+
+        __ https://en.wikipedia.org/wiki/Kaiser_window
 
         Parameters
         ----------
@@ -1883,8 +1887,10 @@ class Data:
         """Zoom the data array using spline interpolation of the requested order.
 
         The number of points along each axis is increased by factor.
-        See `scipy ndimage`_ for more info.
+        See `scipy ndimage`__ for more info.
 
+        __ http://docs.scipy.org/doc/scipy/reference/
+                    generated/scipy.ndimage.interpolation.zoom.html
 
         Parameters
         ----------

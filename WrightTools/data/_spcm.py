@@ -1,7 +1,4 @@
-"""SPCM.
-
-.. _spcm: http://www.becker-hickl.com/software/spcm.htm
-"""
+"""SPCM."""
 
 
 # --- import --------------------------------------------------------------------------------------
@@ -29,7 +26,9 @@ __all__ = ['from_spcm']
 
 
 def from_spcm(filepath, name=None, delimiter=',', format=None, verbose=True):
-    """Create a data object from Becker & Hickl spcm_ software.
+    """Create a data object from Becker & Hickl `spcm`__ software.
+
+    __ http://www.becker-hickl.com/software/spcm.htm
 
     Parameters
     ----------
