@@ -1,4 +1,4 @@
-"""Tensor 27."""
+"""SPCM."""
 
 
 # --- import --------------------------------------------------------------------------------------
@@ -12,7 +12,7 @@ import warnings
 
 import numpy as np
 
-from .main import *
+from .main import Axis, Channel, Data
 from .. import exceptions as wt_exceptions
 
 
