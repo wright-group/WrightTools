@@ -46,16 +46,6 @@ else:
     string_type = str  # newer versions of python don't have unicode type
 
 
-def true_max(*args, **kwargs):
-    """Call standard library max function."""
-    return max(*args, **kwargs)
-
-
-def true_min(*args, **kwargs):
-    """Call standard library min function."""
-    return min(*args, **kwargs)
-
-
 __all__ = ['Axis', 'Channel', 'Data']
 
 
