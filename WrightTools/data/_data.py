@@ -10,7 +10,6 @@
 .. _kaiser window: https://en.wikipedia.org/wiki/Kaiser_window
 .. _scipy ndimage:
     http://docs.scipy.org/doc/scipy/reference/generated/scipy.ndimage.interpolation.zoom.html
-.. _spcm: http://www.becker-hickl.com/software/spcm.htm
 """
 
 
@@ -525,8 +524,6 @@ class Data:
         self.attrs = {}
         # update
         self._update()
-        # reserve a copy of own self at this stage
-        self._original = self.copy()
 
     def __repr__(self):
         """Return an unambiguous representation.
@@ -1518,18 +1515,6 @@ class Data:
         # remove
         self.channels.pop(channel_index)
         # finish
-        self._update()
-
-    def revert(self):
-        """Revert this data object back to its original state."""
-        for attribute_name in dir(self):
-            if attribute_name not in ['_original'] + wt_kit.get_methods(self):
-                # if attribute does not exist in original, delete it
-                try:
-                    original_attribute = getattr(self._original, attribute_name)
-                    setattr(self, attribute_name, original_attribute)
-                except AttributeError:
-                    delattr(self, attribute_name)
         self._update()
 
     def save(self, filepath=None, verbose=True):
