@@ -1,4 +1,4 @@
-"""Tensor 27."""
+"""JASCO."""
 
 
 # --- import --------------------------------------------------------------------------------------
@@ -10,41 +10,31 @@ import os
 
 import numpy as np
 
-from .main import Axis, Channel, Data
+from ._data import Axis, Channel, Data
 from .. import exceptions as wt_exceptions
 
 
 # --- define --------------------------------------------------------------------------------------
 
 
-__all__ = ['from_Tensor27']
+__all__ = ['from_JASCO']
 
 
 # --- from function -------------------------------------------------------------------------------
 
 
-def from_Tensor27(filepath, name=None, verbose=True):
-    """Create a data object from a Tensor27 FTIR file.
-
-    .. plot::
-
-        >>> import WrightTools as wt
-        >>> import matplotlib
-        >>> from WrightTools import datasets
-        >>> p = datasets.Tensor27.CuPCtS_powder_ATR
-        >>> data = wt.data.from_Tensor27(p)
-        >>> artist = wt.artists.mpl_1D(data)
-        >>> artist.plot()
-        >>> matplotlib.pyplot.xlim(1300,1700)
-        >>> matplotlib.pyplot.ylim(-0.005,.02)
+def from_JASCO(filepath, name=None, kind='absorbance', verbose=True):
+    """Create a data object from a JASCO UV-VIS NIR file.
 
     Parameters
     ----------
     filepath : string
-        Path to Tensor27 output file (.dpt).
+        Path to JASCO output file (.txt).
     name : string (optional)
         Name to give to the created data object. If None, filename is used.
         Default is None.
+    kind : {'absorbance', 'diffuse reflectance'} (optional)
+        Kind of data taken. Default is absorbance.
     verbose : boolean (optional)
         Toggle talkback. Default is True.
 
@@ -57,18 +47,18 @@ def from_Tensor27(filepath, name=None, verbose=True):
     if not os.path.isfile(filepath):
         raise wt_exceptions.FileNotFound(path=filepath)
     filesuffix = os.path.basename(filepath).split('.')[-1]
-    if filesuffix != 'dpt':
-        wt_exceptions.WrongFileTypeWarning.warn(filepath, 'dpt')
+    if filesuffix != 'txt':
+        wt_exceptions.WrongFileTypeWarning.warn(filepath, 'txt')
     # import array
-    arr = np.genfromtxt(filepath, skip_header=0).T
+    arr = np.genfromtxt(filepath, skip_header=18).T
     # name
     if not name:
-        name = os.path.basename(filepath)
+        name = filepath
     # construct data
-    axis = Axis(arr[0], 'wn', name='w')
-    signal = Channel(arr[1], name='absorbance', label='absorbance', signed=False)
-    data = Data([axis], [signal], source='Tensor 27', name=name)
+    axis = Axis(arr[0], 'nm', name='wm')
+    signal = Channel(arr[1], kind, signed=False)
+    data = Data([axis], [signal], source='JASCO', name=name)
     # finish
     if verbose:
-        print('data object successfully created from Tensor 27 file')
+        print(data)
     return data

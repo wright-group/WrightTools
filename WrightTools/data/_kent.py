@@ -1,4 +1,4 @@
-"""COLORS."""
+"""Kent Meyer."""
 
 
 # --- import --------------------------------------------------------------------------------------
@@ -12,14 +12,14 @@ import numpy as np
 
 from scipy.interpolate import griddata
 
-from .main import Axis, Channel, Data
+from ._data import Axis, Channel, Data
 from .. import kit as wt_kit
 
 
 # --- define --------------------------------------------------------------------------------------
 
 
-__all__ = ['from_COLORS']
+__all__ = ['from_KENT']
 
 
 # --- helpers -------------------------------------------------------------------------------------
@@ -135,31 +135,9 @@ def discover_dimensions(arr, dimension_cols, verbose=True):
 # --- from function -------------------------------------------------------------------------------
 
 
-def from_COLORS(
-        filepaths,
-        null=None,
-        name=None,
-        cols=None,
-        invert_d1=True,
-        color_steps_as='energy',
-        ignore=[
-            'num',
-            'w3',
-            'wa',
-            'dref',
-            'm0',
-            'm1',
-            'm2',
-            'm3',
-            'm4',
-            'm5',
-            'm6'],
-        even=True,
-        verbose=True):
-    """Read a Data object from a COLORS filetype.
-
-    color_steps_as one in 'energy', 'wavelength'
-    """
+def from_KENT(filepaths, null=None, name=None, ignore=['wm'], use_norm=False,
+              delay_tolerance=0.1, frequency_tolerance=0.5, verbose=True):
+    """Read data object from KENT files."""
     # do we have a list of files or just one file? ------------------------------------------------
     if isinstance(filepaths, list):
         file_example = filepaths[0]
@@ -167,92 +145,37 @@ def from_COLORS(
         file_example = filepaths
         filepaths = [filepaths]
     # define format of dat file -------------------------------------------------------------------
-    if cols:
-        pass
-    else:
-        num_cols = len(np.genfromtxt(file_example).T)
-        if num_cols in [28, 35]:
-            cols = 'v2'
-        elif num_cols in [20]:
-            cols = 'v1'
-        elif num_cols in [15, 16, 19]:
-            cols = 'v0'
-        if verbose:
-            print('cols recognized as', cols, '(%d)' % num_cols)
-    if cols == 'v2':
-        axes = collections.OrderedDict()
-        axes['num'] = Axis(None, None, tolerance=0.5, file_idx=0,
-                           name='num', label_seed=['num'])
-        axes['w1'] = Axis(None, 'nm', tolerance=0.5, file_idx=1, name='w1', label_seed=['1'])
-        axes['w2'] = Axis(None, 'nm', tolerance=0.5, file_idx=3, name='w2', label_seed=['2'])
-        axes['w3'] = Axis(None, 'nm', tolerance=5.0, file_idx=5, name='w3', label_seed=['3'])
-        axes['wm'] = Axis(None, 'nm', tolerance=1.0, file_idx=7, name='wm', label_seed=['m'])
-        axes['wa'] = Axis(None, 'nm', tolerance=1.0, file_idx=8, name='wm', label_seed=['a'])
-        axes['dref'] = Axis(None, 'fs', tolerance=25.0, file_idx=10,
-                            name='dref', label_seed=['ref'])
-        axes['d1'] = Axis(None, 'fs', tolerance=4.0, file_idx=12,
-                          name='d1', label_seed=['22\''])
-        axes['d2'] = Axis(None, 'fs', tolerance=4.0, file_idx=14, name='d2', label_seed=['21'])
-        axes['m0'] = Axis(None, None, tolerance=10.0, file_idx=22, name='m0', label_seed=['0'])
-        axes['m1'] = Axis(None, None, tolerance=10.0, file_idx=23, name='m1', label_seed=['1'])
-        axes['m2'] = Axis(None, None, tolerance=10.0, file_idx=24, name='m2', label_seed=['2'])
-        axes['m3'] = Axis(None, None, tolerance=10.0, file_idx=25, name='m3', label_seed=['3'])
-        axes['m4'] = Axis(None, None, tolerance=15.0, file_idx=26, name='m4', label_seed=['4'])
-        axes['m5'] = Axis(None, None, tolerance=15.0, file_idx=27, name='m5', label_seed=['5'])
-        axes['m6'] = Axis(None, None, tolerance=15.0, file_idx=28, name='m6', label_seed=['6'])
-        channels = collections.OrderedDict()
-        channels['ai0'] = Channel(None, 'V', file_idx=16, name='ai0', label_seed=['0'])
-        channels['ai1'] = Channel(None, 'V', file_idx=17, name='ai1', label_seed=['1'])
-        channels['ai2'] = Channel(None, 'V', file_idx=18, name='ai2', label_seed=['2'])
-        channels['ai3'] = Channel(None, 'V', file_idx=19, name='ai3', label_seed=['3'])
-        channels['ai4'] = Channel(None, 'V', file_idx=20, name='ai4', label_seed=['4'])
-        channels['mc'] = Channel(None, None, file_idx=21, name='array', label_seed=['a'])
-    elif cols == 'v1':
-        axes = collections.OrderedDict()
-        axes['num'] = Axis(None, None, tolerance=0.5, file_idx=0,
-                           name='num', label_seed=['num'])
-        axes['w1'] = Axis(None, 'nm', tolerance=0.5, file_idx=1, name='w1', label_seed=['1'])
-        axes['w2'] = Axis(None, 'nm', tolerance=0.5, file_idx=3, name='w2', label_seed=['2'])
-        axes['wm'] = Axis(None, 'nm', tolerance=0.5, file_idx=5, name='wm', label_seed=['m'])
-        axes['d1'] = Axis(None, 'fs', tolerance=3.0, file_idx=6, name='d1', label_seed=['1'])
-        axes['d2'] = Axis(None, 'fs', tolerance=3.0, file_idx=7, name='d2', label_seed=['2'])
-        channels = collections.OrderedDict()
-        channels['ai0'] = Channel(None, 'V', file_idx=8, name='ai0', label_seed=['0'])
-        channels['ai1'] = Channel(None, 'V', file_idx=9, name='ai1', label_seed=['1'])
-        channels['ai2'] = Channel(None, 'V', file_idx=10, name='ai2', label_seed=['2'])
-        channels['ai3'] = Channel(None, 'V', file_idx=11, name='ai3', label_seed=['3'])
-    elif cols == 'v0':
-        axes = collections.OrderedDict()
-        axes['num'] = Axis(None, None, tolerance=0.5, file_idx=0,
-                           name='num', label_seed=['num'])
-        axes['w1'] = Axis(None, 'nm', tolerance=0.5, file_idx=1, name='w1', label_seed=['1'])
-        axes['w2'] = Axis(None, 'nm', tolerance=0.5, file_idx=3, name='w2', label_seed=['2'])
-        axes['wm'] = Axis(None, 'nm', tolerance=0.5, file_idx=5, name='wm', label_seed=['m'])
-        axes['d1'] = Axis(None, 'fs', tolerance=3.0, file_idx=6, name='d1', label_seed=['1'])
-        axes['d2'] = Axis(None, 'fs', tolerance=3.0, file_idx=8, name='d2', label_seed=['2'])
-        channels = collections.OrderedDict()
-        channels['ai0'] = Channel(None, 'V', file_idx=10, name='ai0', label_seed=['0'])
-        channels['ai1'] = Channel(None, 'V', file_idx=11, name='ai1', label_seed=['1'])
-        channels['ai2'] = Channel(None, 'V', file_idx=12, name='ai2', label_seed=['2'])
-        channels['ai3'] = Channel(None, 'V', file_idx=13, name='ai3', label_seed=['3'])
+    # axes
+    axes = collections.OrderedDict()
+    axes['w1'] = Axis(None, 'wn', tolerance=frequency_tolerance,
+                      file_idx=0, name='w1', label_seed=['1'])
+    axes['w2'] = Axis(None, 'wn', tolerance=frequency_tolerance,
+                      file_idx=1, name='w2', label_seed=['2'])
+    axes['wm'] = Axis(None, 'wn', tolerance=frequency_tolerance,
+                      file_idx=2, name='wm', label_seed=['m'])
+    axes['d1'] = Axis(None, 'ps', tolerance=delay_tolerance,
+                      file_idx=3, name='d1', label_seed=['1'])
+    axes['d2'] = Axis(None, 'ps', tolerance=delay_tolerance,
+                      file_idx=4, name='d2', label_seed=['2'])
+    # channels
+    channels = collections.OrderedDict()
+    channels['signal'] = Channel(None, 'V', file_idx=5, name='signal', label_seed=['0'])
+    channels['OPA2'] = Channel(None, 'V', file_idx=6, name='OPA2', label_seed=['1'])
+    channels['OPA1'] = Channel(None, 'V', file_idx=7, name='OPA1', label_seed=['2'])
     # import full array ---------------------------------------------------------------------------
     for i in range(len(filepaths)):
         dat = np.genfromtxt(filepaths[i]).T
         if verbose:
-            print('dat imported:', dat.shape)
+            print('file imported:', dat.shape)
         if i == 0:
             arr = dat
         else:
             arr = np.append(arr, dat, axis=1)
-    if invert_d1:
-        idx = axes['d1'].file_idx
-        arr[idx] = -arr[idx]
     # recognize dimensionality of data ------------------------------------------------------------
     axes_discover = axes.copy()
     for key in ignore:
         if key in axes_discover:
             axes_discover.pop(key)  # remove dimensions that mess up discovery
-
     scanned, constant = discover_dimensions(arr, axes_discover)
     # get axes points -----------------------------------------------------------------------------
     for axis in scanned:
@@ -281,19 +204,10 @@ def from_COLORS(
         # infinitesimal offset used to properly interpolate on bounds; can
         #   be a problem, especially for stepping axis
         tol = sum(xstd) / len(xstd)
-        tol = max(tol, 0.3)
-        if even:
-            if axis.units_kind == 'energy' and color_steps_as == 'energy':
-                min_wn = 1e7 / max(xs) + tol
-                max_wn = 1e7 / min(xs) - tol
-                axis.units = 'wn'
-                axis.points = np.linspace(min_wn, max_wn, num=len(xs))
-                axis.convert('nm')
-            else:
-                axis.points = np.linspace(min(xs) + tol, max(xs) - tol, num=len(xs))
-        else:
-            axis.points = np.array(xs)
+        tol = max(tol, 1e-4)
+        axis.points = np.linspace(min(xs) + tol, max(xs) - tol, num=len(xs))
     # grid data -----------------------------------------------------------------------------------
+    # May not need, but doesnt hurt to include
     if len(scanned) == 1:
         # 1D data
         axis = scanned[0]
@@ -306,8 +220,6 @@ def from_COLORS(
     else:
         # all other dimensionalities
         points = tuple(arr[axis.file_idx] for axis in scanned)
-        # beware, meshgrid gives wrong answer with default indexing
-        # this took me many hours to figure out... - blaise
         xi = tuple(np.meshgrid(*[axis.points for axis in scanned], indexing='ij'))
         for key in channels.keys():
             channel = channels[key]
@@ -318,11 +230,6 @@ def from_COLORS(
             channel.give_values(grid_i)
     # create data object --------------------------------------------------------------------------
     data = Data(list(scanned), list(channels.values()), list(constant))
-    if color_steps_as == 'energy':
-        try:
-            data.convert('wn', verbose=False)
-        except BaseException:
-            pass
     for axis in data.axes:
         axis.get_label()
     for axis in data.constants:
@@ -332,6 +239,14 @@ def from_COLORS(
     if not name:
         name = wt_kit.filename_parse(file_example)[1]
     data.name = name
+    # normalize the data --------------------------------------------------------------------------
+    if use_norm:
+        # normalize the OPAs
+        OPA1 = data.channels[2].values / data.axes[0].points
+        OPA2 = data.channels[1].values / data.axes[1].points
+        # Signal normalization
+        data_norm = data.channels[0].values / (OPA1 * OPA2)  # I think this is correct.
+        data.channels[0].values = data_norm
     # return --------------------------------------------------------------------------------------
     if verbose:
         print('data object succesfully created')

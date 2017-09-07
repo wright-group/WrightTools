@@ -13,7 +13,7 @@ import numpy as np
 
 from scipy.interpolate import griddata
 
-from .main import Axis, Channel, Data
+from ._data import Axis, Channel, Data
 from .. import kit as wt_kit
 from .. import units as wt_units
 

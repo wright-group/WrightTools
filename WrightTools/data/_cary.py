@@ -10,7 +10,7 @@ import os
 
 import numpy as np
 
-from .main import Axis, Channel, Data
+from ._data import Axis, Channel, Data
 from .. import exceptions as wt_exceptions
 
 

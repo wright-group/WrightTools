@@ -2,14 +2,16 @@
 # flake8: noqa
 
 
-from .brunold import *
-from .cary import *
-from .colors import *
-from .jasco import *
-from .kent import *
-from .main import *
-from .ocean_optics import *
-from .pycmds import *
-from .shimadzu import *
-from .spcm import *
-from .tensor27 import *
+from ._brunold import *
+from ._cary import *
+from ._collection import *
+from ._colors import *
+from ._data import *
+from ._jasco import *
+from ._join import *
+from ._kent import *
+from ._ocean_optics import *
+from ._pycmds import *
+from ._shimadzu import *
+from ._spcm import *
+from ._tensor27 import *
