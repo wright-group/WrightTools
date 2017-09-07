@@ -1865,7 +1865,7 @@ def from_Cary50(filepath, verbose=True):
     lines = []
     with open(filepath, 'r') as f:
         header = f.readline()
-        units = f.readline()
+        _units = f.readline()
         while True:
             line = f.readline()
             if line == '\n' or line == '':
