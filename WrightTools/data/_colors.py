@@ -201,12 +201,12 @@ def from_COLORS(
         axes['m5'] = Axis(None, None, tolerance=15.0, file_idx=27, name='m5', label_seed=['5'])
         axes['m6'] = Axis(None, None, tolerance=15.0, file_idx=28, name='m6', label_seed=['6'])
         channels = collections.OrderedDict()
-        channels['ai0'] = Channel(None, 'V', file_idx=16, name='ai0', label_seed=['0'])
-        channels['ai1'] = Channel(None, 'V', file_idx=17, name='ai1', label_seed=['1'])
-        channels['ai2'] = Channel(None, 'V', file_idx=18, name='ai2', label_seed=['2'])
-        channels['ai3'] = Channel(None, 'V', file_idx=19, name='ai3', label_seed=['3'])
-        channels['ai4'] = Channel(None, 'V', file_idx=20, name='ai4', label_seed=['4'])
-        channels['mc'] = Channel(None, None, file_idx=21, name='array', label_seed=['a'])
+        channels['ai0'] = Channel(None, file_idx=16, name='ai0', label_seed=['0'])
+        channels['ai1'] = Channel(None, file_idx=17, name='ai1', label_seed=['1'])
+        channels['ai2'] = Channel(None, file_idx=18, name='ai2', label_seed=['2'])
+        channels['ai3'] = Channel(None, file_idx=19, name='ai3', label_seed=['3'])
+        channels['ai4'] = Channel(None, file_idx=20, name='ai4', label_seed=['4'])
+        channels['mc'] = Channel(None, file_idx=21, name='array', label_seed=['a'])
     elif cols == 'v1':
         axes = collections.OrderedDict()
         axes['num'] = Axis(None, None, tolerance=0.5, file_idx=0,
@@ -217,10 +217,10 @@ def from_COLORS(
         axes['d1'] = Axis(None, 'fs', tolerance=3.0, file_idx=6, name='d1', label_seed=['1'])
         axes['d2'] = Axis(None, 'fs', tolerance=3.0, file_idx=7, name='d2', label_seed=['2'])
         channels = collections.OrderedDict()
-        channels['ai0'] = Channel(None, 'V', file_idx=8, name='ai0', label_seed=['0'])
-        channels['ai1'] = Channel(None, 'V', file_idx=9, name='ai1', label_seed=['1'])
-        channels['ai2'] = Channel(None, 'V', file_idx=10, name='ai2', label_seed=['2'])
-        channels['ai3'] = Channel(None, 'V', file_idx=11, name='ai3', label_seed=['3'])
+        channels['ai0'] = Channel(None, file_idx=8, name='ai0', label_seed=['0'])
+        channels['ai1'] = Channel(None, file_idx=9, name='ai1', label_seed=['1'])
+        channels['ai2'] = Channel(None, file_idx=10, name='ai2', label_seed=['2'])
+        channels['ai3'] = Channel(None, file_idx=11, name='ai3', label_seed=['3'])
     elif cols == 'v0':
         axes = collections.OrderedDict()
         axes['num'] = Axis(None, None, tolerance=0.5, file_idx=0,
@@ -231,10 +231,10 @@ def from_COLORS(
         axes['d1'] = Axis(None, 'fs', tolerance=3.0, file_idx=6, name='d1', label_seed=['1'])
         axes['d2'] = Axis(None, 'fs', tolerance=3.0, file_idx=8, name='d2', label_seed=['2'])
         channels = collections.OrderedDict()
-        channels['ai0'] = Channel(None, 'V', file_idx=10, name='ai0', label_seed=['0'])
-        channels['ai1'] = Channel(None, 'V', file_idx=11, name='ai1', label_seed=['1'])
-        channels['ai2'] = Channel(None, 'V', file_idx=12, name='ai2', label_seed=['2'])
-        channels['ai3'] = Channel(None, 'V', file_idx=13, name='ai3', label_seed=['3'])
+        channels['ai0'] = Channel(None, file_idx=10, name='ai0', label_seed=['0'])
+        channels['ai1'] = Channel(None, file_idx=11, name='ai1', label_seed=['1'])
+        channels['ai2'] = Channel(None, file_idx=12, name='ai2', label_seed=['2'])
+        channels['ai3'] = Channel(None, file_idx=13, name='ai3', label_seed=['3'])
     # import full array ---------------------------------------------------------------------------
     for i in range(len(filepaths)):
         dat = np.genfromtxt(filepaths[i]).T

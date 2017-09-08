@@ -126,7 +126,7 @@ def join(datas, method='first', verbose=True, **kwargs):
             print('method', method, 'not recognized in join')
             return
         zis[np.isnan(full).all(axis=0)] = np.nan  # if all datas NaN, zis NaN
-        channel = Channel(zis, 'V', null=0.,
+        channel = Channel(zis, null=0.,
                           signed=datas[0].channels[channel_index].signed,
                           name=datas[0].channels[channel_index].name)
         channel_objects.append(channel)
