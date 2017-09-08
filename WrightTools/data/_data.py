@@ -564,7 +564,7 @@ class Data:
         self.shape = self.channels[0].values.shape
         # attrs
         for key, value in self.attrs.items():
-            identifier = wt_kit.string2identifer(key)
+            identifier = wt_kit.string2identifier(key)
             if not hasattr(self, identifier):
                 setattr(self, identifier, value)
 
