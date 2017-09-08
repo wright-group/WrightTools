@@ -212,7 +212,7 @@ class Axis:
 class Channel:
     """Channel."""
 
-    def __init__(self, values, name, units=None, file_idx=None, null=None, signed=None,
+    def __init__(self, values, name, units=None, null=None, signed=None,
                  label=None, label_seed=None, **kwargs):
         """Construct a channel object.
 
@@ -224,8 +224,6 @@ class Channel:
             Channel name.
         units : string (optional)
             Channel units. Default is None.
-        file_idx : integer (optional)
-            Channel file index. Default is None.
         null : number (optional)
             Channel null. Default is None (0).
         signed : booelan (optional)
@@ -242,7 +240,6 @@ class Channel:
         self.label = label
         self.label_seed = label_seed
         self.units = units
-        self.file_idx = file_idx
         # values
         if values is not None:
             self.give_values(np.asarray(values), null, signed)
