@@ -94,9 +94,8 @@ def from_spcm(filepath, name=None, delimiter=',', format=None, verbose=True):
             raise RuntimeError(error)
     # construct data
     x_axis = Axis(arr[0], 'ns', name='time')
-    signal = Channel(arr[1], 'sig', name='counts', signed=False)
-    data = Data([x_axis], [signal], source='SPC_130', name=name)
-    data.attrs.update(headers)
+    signal = Channel(arr[1], name='counts', signed=False)
+    data = Data([x_axis], [signal], source='SPC_130', name=name, **headers)
     if verbose:
         print('data object created!')
     # return

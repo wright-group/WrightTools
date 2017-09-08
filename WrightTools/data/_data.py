@@ -43,9 +43,7 @@ __all__ = ['Axis', 'Channel', 'Data']
 class Axis:
     """Axis class."""
 
-    def __init__(self, points, units, symbol_type=None,
-                 tolerance=None, file_idx=None,
-                 name='', label_seed=[''], **kwargs):
+    def __init__(self, points, units, name, symbol_type=None,  label_seed=[''], **kwargs):
         """Create an `Axis` object.
 
         Parameters
@@ -54,39 +52,38 @@ class Axis:
             Axis points.
         units : string
             Axis units.
+        name : string
+            Axis name. Must be unique.
         symbol_type : string (optional)
             Axis symbol type. If None, symbol_type is automatically
             generated. Default is None.
-        tolerance : number (optional)
-            Axis tolerance. Default is None.
-        file_idx : integer (optional)
-            Axis position in original data file. Default is None.
-        name : string (optional)
-            Axis name. Default is ''.
         label_seed : list of strings
             Axis label subscripts. Default is [''].
         **kwargs
-            Keyword arguments.
+            Additional keyword arguments are added to the attrs dictionary
+            and to the natural namespace of the object (if possible).
         """
         self.name = wt_kit.string2identifier(name)
-        self.tolerance = tolerance
         self.points = np.asarray(points)
+        # units
         self.units = units
-        self.file_idx = file_idx
-        self.label_seed = label_seed
-        for key in kwargs.keys():
-            setattr(self, key, kwargs[key])
-        # get units kind
         self.units_kind = None
         for dic in wt_units.unit_dicts:
             if self.units in dic.keys():
                 self.units_kind = dic['kind']
-        # get symbol type
+        # label
+        self.label_seed = label_seed
         if symbol_type:
             self.symbol_type = symbol_type
         else:
             self.symbol_type = wt_units.get_default_symbol_type(self.units)
         self.get_label()
+        # attrs
+        self.attrs = kwargs
+        for key, value in self.attrs.items():
+            identifier = wt_kit.string2identifier(key)
+            if not hasattr(self, identifier):
+                setattr(self, identifier, value)
 
     def __repr__(self):
         """Return an unambiguous representation of the Axis.
@@ -193,41 +190,46 @@ class Axis:
 class Channel:
     """Channel."""
 
-    def __init__(self, values, units=None, file_idx=None, null=None, signed=None, name='channel',
-                 label=None, label_seed=None):
+    def __init__(self, values, name, units=None, null=None, signed=None,
+                 label=None, label_seed=None, **kwargs):
         """Construct a channel object.
 
         Parameters
         ----------
         values : array-like
             Values.
+        name : string
+            Channel name.
         units : string (optional)
             Channel units. Default is None.
-        file_idx : integer (optional)
-            Channel file index. Default is None.
         null : number (optional)
             Channel null. Default is None (0).
         signed : booelan (optional)
             Channel signed flag. Default is None (guess).
-        name : string (optional)
-            Channel name. Default is 'channel'.
         label : string.
             Label. Default is None.
         label_seed : list of strings
             Label seed. Default is None.
+        **kwargs
+            Additional keyword arguments are added to the attrs dictionary
+            and to the natural namespace of the object (if possible).
         """
-        # import
         self.name = wt_kit.string2identifier(name)
         self.label = label
         self.label_seed = label_seed
         self.units = units
-        self.file_idx = file_idx
         # values
         if values is not None:
             self.give_values(np.asarray(values), null, signed)
         else:
             self._null = null
             self.signed = signed
+        # attrs
+        self.attrs = kwargs
+        for key, value in self.attrs.items():
+            identifier = wt_kit.string2identifier(key)
+            if not hasattr(self, identifier):
+                setattr(self, identifier, value)
 
     def __repr__(self):
         """Retrun an unambiguous representation of the Channel.
@@ -474,7 +476,7 @@ class Data:
     """Central multidimensional data class."""
 
     def __init__(self, axes, channels, constants=[],
-                 name='', source=None):
+                 name='', source=None, **kwargs):
         """Create a ``Data`` object.
 
         Parameters
@@ -487,6 +489,9 @@ class Data:
             the axis name: ``data.w1``, for example.
         constants : list
             A list of Axis objects, each with exactly one point.
+        **kwargs
+            Additional keyword arguments are added to the attrs dictionary
+            and to the natural namespace of the object (if possible).
         """
         # record version
         from .. import __version__
@@ -497,7 +502,7 @@ class Data:
         self.channels = channels
         self.name = name
         self.source = source
-        self.attrs = {}
+        self.attrs = kwargs
         # update
         self._update()
 
@@ -530,6 +535,11 @@ class Data:
         for obj in self.axes + self.channels + self.constants:
             setattr(self, obj.name, obj)
         self.shape = self.channels[0].values.shape
+        # attrs
+        for key, value in self.attrs.items():
+            identifier = wt_kit.string2identifier(key)
+            if not hasattr(self, identifier):
+                setattr(self, identifier, value)
 
     def bring_to_front(self, channel):
         """Bring a specific channel to the zero-indexed position in channels.

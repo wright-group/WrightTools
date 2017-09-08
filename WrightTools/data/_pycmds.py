@@ -176,7 +176,7 @@ def from_PyCMDS(filepath, name=None,
             signed = headers['channel signed'][zi_index]
             name = headers['name'][arr_index]
             label = headers['label'][arr_index]
-            channel = Channel(zi, units, signed=signed, name=name, label=label)
+            channel = Channel(zi, units=units, signed=signed, name=name, label=label)
             channels.append(channel)
     # get constants
     constants = []
