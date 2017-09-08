@@ -14,4 +14,6 @@ __all__ = ['Collection']
 
 
 class Collection(object):
+    """Nestable Collection of Data objects."""
+
     pass
