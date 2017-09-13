@@ -159,9 +159,9 @@ def from_KENT(filepaths, null=None, name=None, ignore=['wm'], use_norm=False,
                       file_idx=4, name='d2', label_seed=['2'])
     # channels
     channels = collections.OrderedDict()
-    channels['signal'] = Channel(None, 'V', file_idx=5, name='signal', label_seed=['0'])
-    channels['OPA2'] = Channel(None, 'V', file_idx=6, name='OPA2', label_seed=['1'])
-    channels['OPA1'] = Channel(None, 'V', file_idx=7, name='OPA1', label_seed=['2'])
+    channels['signal'] = Channel(None, file_idx=5, name='signal', label_seed=['0'])
+    channels['OPA2'] = Channel(None, file_idx=6, name='OPA2', label_seed=['1'])
+    channels['OPA1'] = Channel(None, file_idx=7, name='OPA1', label_seed=['2'])
     # import full array ---------------------------------------------------------------------------
     for i in range(len(filepaths)):
         dat = np.genfromtxt(filepaths[i]).T
