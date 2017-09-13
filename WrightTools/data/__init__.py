@@ -4,7 +4,6 @@
 
 from ._brunold import *
 from ._cary import *
-from ._collection import *
 from ._colors import *
 from ._data import *
 from ._jasco import *
@@ -21,7 +20,6 @@ __all__ = ['Data',
            'join',
            'Axis',
            'Channel',
-           'Collection',
 
            # From methods in alphabetic order
            'from_BrunoldrRaman',
