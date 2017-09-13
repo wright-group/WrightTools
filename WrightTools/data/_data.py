@@ -719,7 +719,7 @@ class Data:
         method : {'integrate', 'average', 'sum', 'max', 'min'} (optional)
             The method of collapsing the given axis. Method may also be list
             of methods corresponding to the channels of the object. Default
-            is integrate.
+            is integrate. All methods but integrate disregard NANs.
 
         See Also
         --------
@@ -749,13 +749,13 @@ class Data:
                 channel.values = np.trapz(
                     y=channel.values, x=self.axes[axis_index].points, axis=axis_index)
             elif method == 'sum':
-                channel.values = channel.values.sum(axis=axis_index)
+                channel.values = np.nansum(channel.values, axis=axis_index)
             elif method in ['max', 'maximum']:
                 channel.values = np.nanmax(channel.values, axis=axis_index)
             elif method in ['min', 'minimum']:
                 channel.values = np.nanmin(channel.values, axis=axis_index)
-            elif method in ['ave', 'average']:
-                channel.values = np.average(channel.values, axis=axis_index)
+            elif method in ['ave', 'average', 'mean']:
+                channel.values = np.nanmean(channel.values, axis=axis_index)
             else:
                 print('method not recognized in data.collapse')
         # cleanup ---------------------------------------------------------------------------------
