@@ -1056,6 +1056,29 @@ class Spline:
         self.true_spline = UnivariateSpline(xi_internal, yi_internal, k=k, s=s)
 
 
+def symmetric_sqrt(x, out=None):
+    """Compute the 'symmetric' square root: sign(x) * sqrt(abs(x)).
+
+    Parameters
+    ----------
+    x : array_like or number
+        Input array.
+    out : ndarray, None, or tuple of ndarray and None (optional)
+        A location into which the result is stored. If provided, it must
+        have a shape that the inputs broadcast to. If not provided or None,
+        a freshly-allocated array is returned. A tuple (possible only as a
+        keyword argument) must have length equal to the number of outputs.
+
+    Returns
+    -------
+    np.ndarray
+        Symmetric square root of arr.
+    """
+    factor = np.sign(x)
+    out = np.sqrt(np.abs(x), out=out)
+    return out * factor
+
+
 def unique(arr, tolerance=1e-6):
     """Return unique elements in 1D array, within tolerance.
 
