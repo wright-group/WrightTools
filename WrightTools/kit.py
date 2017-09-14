@@ -1074,20 +1074,9 @@ def symmetric_sqrt(x, out=None):
     np.ndarray
         Symmetric square root of arr.
     """
-    if hasattr(x, '__len__'):
-        x = np.array(x)
-        number = False
-    else:
-        x = np.array([x])
-        number = True
-    factor = np.ones(x.shape)
-    factor[x < 0] = -1
+    factor = np.sign(x)
     out = np.sqrt(np.abs(x), out=out)
-    out *= factor
-    if number:
-        return out[0]
-    else:
-        return out
+    return out * factor
 
 
 def unique(arr, tolerance=1e-6):
