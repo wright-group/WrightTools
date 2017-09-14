@@ -44,8 +44,7 @@ def from_shimadzu(filepath, name=None, verbose=True):
         if verbose:
             print('found the file!')
     else:
-        print('Error: filepath does not yield a file')
-        return
+        raise FileNotFoundError(filepath)
     # is the file suffix one that we expect?  warn if it is not!
     filesuffix = os.path.basename(filepath).split('.')[-1]
     if filesuffix != 'txt':
