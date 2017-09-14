@@ -1548,12 +1548,7 @@ class Data:
         channel = self.channels[channel_index]
         # do scaling
         if kind in ['amp', 'amplitude']:
-            channel_data = channel.values
-            channel_data_abs = np.sqrt(np.abs(channel_data))
-            factor = np.ones(channel_data.shape)
-            factor[channel_data < 0] = -1
-            channel_data_out = channel_data_abs * factor
-            channel.values = channel_data_out
+            channel.values = wt_kit.symmetric_sqrt(channel.values, out=channel.values)
         if kind in ['log']:
             channel.values = np.log10(channel.values)
         if kind in ['invert']:
