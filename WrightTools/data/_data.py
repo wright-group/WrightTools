@@ -734,7 +734,7 @@ class Data:
         elif isinstance(axis, string_type):
             axis_index = self.axis_names.index(axis)
         else:
-            print('axis type', type(axis), 'not valid')
+            raise TypeError("axis: expected {int, str}, got %s" % type(axis))
         # methods ---------------------------------------------------------------------------------
         if isinstance(method, list):
             if len(method) == len(self.channels):
@@ -934,7 +934,7 @@ class Data:
         elif isinstance(axis, string_type):
             axis_index = self.axis_names.index(axis)
         else:
-            print('axis type', type(axis), 'not valid')
+            raise TypeError("axis: expected {int, str}, got %s" % type(axis))
         axis = self.axes[axis_index]
         # flip ------------------------------------------------------------------------------------
         # axis
@@ -1109,7 +1109,7 @@ class Data:
         elif isinstance(axis, string_type):
             axis_index = self.axis_names.index(axis)
         else:
-            print('axis type', type(axis), 'not valid')
+            raise TypeError("axis: expected {int, str}, got %s" % type(axis))
         # verify npts not zero --------------------------------------------------------------------
         npts = int(npts)
         if npts == 0:
@@ -1271,7 +1271,7 @@ class Data:
         elif isinstance(axis, string_type):
             axis_index = self.axis_names.index(axis)
         else:
-            print('axis type', type(axis), 'not valid')
+            raise TypeError("axis: expected {int, str}, got %s" % type(axis))
         axis = self.axes[axis_index]
         # transform points to axis units ----------------------------------------------------------
         if input_units == 'same':
@@ -1386,7 +1386,7 @@ class Data:
         elif isinstance(along, string_type):
             axis_index = self.axis_names.index(along)
         else:
-            print('axis type', type(along), 'not valid')
+            raise TypeError("along: expected {int, str}, got %s" % type(along))
         axis = self.axes[axis_index]
         # values & points -------------------------------------------------------------------------
         # get values, points, units
@@ -1427,7 +1427,7 @@ class Data:
         elif isinstance(offset_axis, string_type):
             offset_axis_index = self.axis_names.index(offset_axis)
         else:
-            print('offset_axis type', type(offset_axis), 'not valid')
+            raise TypeError("offset_axis: expected {int, str}, got %s" % type(offset_axis))
         # new points
         new_points = [a.points for a in self.axes]
         old_offset_axis_points = self.axes[offset_axis_index].points
@@ -1671,7 +1671,7 @@ class Data:
         elif isinstance(axis, string_type):
             axis_index = self.axis_names.index(axis)
         else:
-            print('axis type', type(axis), 'not valid')
+            raise TypeError("axis: expected {int, str}, got %s" % type(axis))
         axis = self.axes[axis_index]
         # indicies --------------------------------------------------------------------------------
         # positions must be iterable and should be a numpy array
