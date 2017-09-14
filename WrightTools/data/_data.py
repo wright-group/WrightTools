@@ -43,7 +43,7 @@ __all__ = ['Axis', 'Channel', 'Data']
 class Axis:
     """Axis class."""
 
-    def __init__(self, points, units, name, symbol_type=None,  label_seed=[''], **kwargs):
+    def __init__(self, points, units, name, symbol_type=None, label_seed=[''], **kwargs):
         """Create an `Axis` object.
 
         Parameters
@@ -911,8 +911,7 @@ class Data:
             d_intensity *= 2
             out = -np.log10((intensity + d_intensity) / intensity)
         else:
-            print('method not recognized in dOD, returning')
-            return
+            raise ValueError("Method '%s' not in {'digital', 'boxcar'}" % method)
         # finish
         self.channels[signal_channel_index].give_values(out)
         self.channels[signal_channel_index].signed = True
