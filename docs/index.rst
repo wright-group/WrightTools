@@ -18,11 +18,7 @@ Status
 +-------------------+-------------------+
 | version           | |conda-version|   |
 +-------------------+-------------------+
-| Linux             | |cf-linux|        |
-+-------------------+-------------------+
-| OSX               | |cf-osx|          |
-+-------------------+-------------------+
-| Windows           | |cf-windows|      |
+| status            | |cf-noarch|       |
 +-------------------+-------------------+
 | **Read the Docs**                     |
 +-------------------+-------------------+
@@ -59,21 +55,14 @@ Index
 * :ref:`modindex`
 * :ref:`search`
 
-.. |cf-linux| image:: https://circleci.com/gh/conda-forge/wrighttools-feedstock.svg?style=shield
+.. |cf-noarch| image:: https://circleci.com/gh/conda-forge/wrighttools-feedstock.svg?style=shield
     :target: https://circleci.com/gh/conda-forge/wrighttools-feedstock
-
-.. |cf-osx| image:: https://travis-ci.org/conda-forge/wrighttools-feedstock.svg?branch=master
-    :target: https://travis-ci.org/conda-forge/wrighttools-feedstock
-
-.. |cf-windows| image:: https://ci.appveyor.com/api/projects/status/github/conda-forge/wrighttools-feedstock?svg=True
-    :target: https://ci.appveyor.com/project/conda-forge/wrighttools-feedstock/branch/master
 
 .. |conda-version| image:: https://anaconda.org/conda-forge/wrighttools/badges/version.svg
    :target: https://anaconda.org/conda-forge/wrighttools
 
 .. |pypi-version| image:: https://badge.fury.io/py/WrightTools.svg
    :target: https://badge.fury.io/py/WrightTools
-
 
 .. |rtd-development| image:: https://readthedocs.org/projects/wrighttools/badge/?version=development
    :target: http://wright.tools/en/development/?badge=development
