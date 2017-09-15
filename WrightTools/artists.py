@@ -2195,16 +2195,9 @@ class mpl_2D:
             for xi, yi, kwargs in self._onplotdata:
                 subplot_main.plot(xi, yi, **kwargs)
             # colorbar ----------------------------------------------------------------------------
-            subplot_cb = plt.subplot(gs[1])
+            cax = plt.subplot(gs[1])
             cbar_ticks = np.linspace(levels.min(), levels.max(), 11)
-            if cbar_ticks.max() == 1.0:
-                cbar = plt.colorbar(cax, cax=subplot_cb, cmap=mycm,
-                                    ticks=cbar_ticks, format='%.1f')
-            else:
-                cbar = plt.colorbar(cax, cax=subplot_cb, cmap=mycm,
-                                    ticks=cbar_ticks, format='%.3f')
-            cbar.set_label(channel.name, fontsize=18)
-            cbar.ax.tick_params(labelsize=14)
+            plot_colorbar(cax=cax, ticks=cbar_ticks, label=channel.name, cmap=mycm)
             # title -------------------------------------------------------------------------------
             title_text = self.data.name
             constants_text = get_constant_text(constants)
