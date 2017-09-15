@@ -43,7 +43,7 @@ __all__ = ['Axis', 'Channel', 'Data']
 class Axis:
     """Axis class."""
 
-    def __init__(self, points, units, name, symbol_type=None,  label_seed=[''], **kwargs):
+    def __init__(self, points, units, name, symbol_type=None, label_seed=[''], **kwargs):
         """Create an `Axis` object.
 
         Parameters
@@ -557,7 +557,7 @@ class Data:
         elif isinstance(channel, string_type):
             channel_index = self.channel_names.index(channel)
         else:
-            print('channel type', type(channel), 'not valid')
+            raise TypeError("channel: expected {int, str}, got %s" % type(channel))
         # bring to front
         self.channels.insert(0, self.channels.pop(channel_index))
         self._update()
@@ -703,7 +703,7 @@ class Data:
         elif isinstance(channel, string_type):
             channel_index = self.channel_names.index(channel)
         else:
-            print('channel type', type(channel), 'not valid')
+            raise TypeError("channel: expected {int, str}, got %s" % type(channel))
         channel = self.channels[channel_index]
         # call clip on channel object
         channel.clip(*args, **kwargs)
@@ -734,7 +734,7 @@ class Data:
         elif isinstance(axis, string_type):
             axis_index = self.axis_names.index(axis)
         else:
-            print('axis type', type(axis), 'not valid')
+            raise TypeError("axis: expected {int, str}, got %s" % type(axis))
         # methods ---------------------------------------------------------------------------------
         if isinstance(method, list):
             if len(method) == len(self.channels):
@@ -847,7 +847,7 @@ class Data:
         elif isinstance(channel, string_type):
             channel_index = self.channel_names.index(channel)
         else:
-            print('channel type', type(channel), 'not valid')
+            raise TypeError("channel: expected {int, str}, got %s" % type(channel))
         channel = self.channels[channel_index]
         # get divisor channel
         if isinstance(divisor_channel, int):
@@ -855,7 +855,7 @@ class Data:
         elif isinstance(divisor_channel, string_type):
             divisor_channel_index = divisor.channel_names.index(divisor_channel)
         else:
-            print('divisor channel type', type(channel), 'not valid')
+            raise TypeError("divisor_channel: expected {int, str}, got %s" % type(divisor_channel))
         divisor_channel = divisor.channels[divisor_channel_index]
         # do division
         channel.values /= divisor_channel.values
@@ -891,14 +891,15 @@ class Data:
         elif isinstance(signal_channel, string_type):
             signal_channel_index = self.channel_names.index(signal_channel)
         else:
-            print('channel type', type(signal_channel), 'not valid')
+            raise TypeError("signal_channel: expected {int, str}, got %s" % type(signal_channel))
         # get reference channel
         if isinstance(reference_channel, int):
             reference_channel_index = reference_channel
         elif isinstance(reference_channel, string_type):
             reference_channel_index = self.channel_names.index(reference_channel)
         else:
-            print('channel type', type(reference_channel), 'not valid')
+            raise TypeError("reference_channel: expected {int, str}, got %s" %
+                            type(reference_channel))
         # process
         intensity = self.channels[reference_channel_index].values.copy()
         d_intensity = self.channels[signal_channel_index].values.copy()
@@ -911,8 +912,7 @@ class Data:
             d_intensity *= 2
             out = -np.log10((intensity + d_intensity) / intensity)
         else:
-            print('method not recognized in dOD, returning')
-            return
+            raise ValueError("Method '%s' not in {'digital', 'boxcar'}" % method)
         # finish
         self.channels[signal_channel_index].give_values(out)
         self.channels[signal_channel_index].signed = True
@@ -934,7 +934,7 @@ class Data:
         elif isinstance(axis, string_type):
             axis_index = self.axis_names.index(axis)
         else:
-            print('axis type', type(axis), 'not valid')
+            raise TypeError("axis: expected {int, str}, got %s" % type(axis))
         axis = self.axes[axis_index]
         # flip ------------------------------------------------------------------------------------
         # axis
@@ -974,7 +974,7 @@ class Data:
         elif isinstance(channel, string_type):
             channel_index = self.channel_names.index(channel)
         else:
-            print('channel type', type(channel), 'not valid')
+            raise TypeError("channel: expected {int, str}, got %s" % type(channel))
         channel = self.channels[channel_index]
         # get indicies
         arr = channel.values
@@ -1002,7 +1002,7 @@ class Data:
         elif isinstance(channel, string_type):
             channel_index = self.channel_names.index(channel)
         else:
-            print('channel type', type(channel), 'not valid')
+            raise TypeError("channel: expected {int, str}, got %s" % type(channel))
         channel = self.channels[channel_index]
         # get indicies
         arr = channel.values
@@ -1046,7 +1046,7 @@ class Data:
             elif isinstance(channel, string_type):
                 channel_index = self.channel_names.index(channel)
             else:
-                print('channel type', type(channel), 'not valid')
+                raise TypeError("channel: expected {int, str}, got %s" % type(channel))
             channel = self.channels[channel_index]
             values = self.channels[channel_index].values
             points = [axis.points for axis in self.axes]
@@ -1101,7 +1101,7 @@ class Data:
         elif isinstance(channel, string_type):
             channel_index = self.channel_names.index(channel)
         else:
-            print('channel type', type(channel), 'not valid')
+                raise TypeError("channel: expected {int, str}, got %s" % type(channel))
         channel = self.channels[channel_index]
         # axis ------------------------------------------------------------------------------------
         if isinstance(axis, int):
@@ -1109,7 +1109,7 @@ class Data:
         elif isinstance(axis, string_type):
             axis_index = self.axis_names.index(axis)
         else:
-            print('axis type', type(axis), 'not valid')
+            raise TypeError("axis: expected {int, str}, got %s" % type(axis))
         # verify npts not zero --------------------------------------------------------------------
         npts = int(npts)
         if npts == 0:
@@ -1271,7 +1271,7 @@ class Data:
         elif isinstance(axis, string_type):
             axis_index = self.axis_names.index(axis)
         else:
-            print('axis type', type(axis), 'not valid')
+            raise TypeError("axis: expected {int, str}, got %s" % type(axis))
         axis = self.axes[axis_index]
         # transform points to axis units ----------------------------------------------------------
         if input_units == 'same':
@@ -1325,7 +1325,7 @@ class Data:
         elif isinstance(channel, string_type):
             channel_index = self.channel_names.index(channel)
         else:
-            print('channel type', type(channel), 'not valid')
+                raise TypeError("channel: expected {int, str}, got %s" % type(channel))
         channel = self.channels[channel_index]
         # process axes
 
@@ -1386,7 +1386,7 @@ class Data:
         elif isinstance(along, string_type):
             axis_index = self.axis_names.index(along)
         else:
-            print('axis type', type(along), 'not valid')
+            raise TypeError("along: expected {int, str}, got %s" % type(along))
         axis = self.axes[axis_index]
         # values & points -------------------------------------------------------------------------
         # get values, points, units
@@ -1427,7 +1427,7 @@ class Data:
         elif isinstance(offset_axis, string_type):
             offset_axis_index = self.axis_names.index(offset_axis)
         else:
-            print('offset_axis type', type(offset_axis), 'not valid')
+            raise TypeError("offset_axis: expected {int, str}, got %s" % type(offset_axis))
         # new points
         new_points = [a.points for a in self.axes]
         old_offset_axis_points = self.axes[offset_axis_index].points
@@ -1484,7 +1484,7 @@ class Data:
         elif isinstance(channel, string_type):
             channel_index = self.channel_names.index(channel)
         else:
-            print('channel type', type(channel), 'not valid')
+            raise TypeError("channel: expected {int, str}, got %s" % type(channel))
         # remove
         self.channels.pop(channel_index)
         # finish
@@ -1544,7 +1544,7 @@ class Data:
         elif isinstance(channel, string_type):
             channel_index = self.channel_names.index(channel)
         else:
-            print('channel type', type(channel), 'not valid')
+            raise TypeError("channel: expected {int, str}, got %s" % type(channel))
         channel = self.channels[channel_index]
         # do scaling
         if kind in ['amp', 'amplitude']:
@@ -1600,7 +1600,7 @@ class Data:
             elif isinstance(channel, string_type):
                 channel_index = self.channel_names.index(channel)
             else:
-                print('channel type', type(channel), 'not valid')
+                raise TypeError("channel: expected {int, str}, got %s" % type(channel))
             channels = [self.channels[channel_index]]
         # smooth ----------------------------------------------------------------------------------
         for channel in channels:
@@ -1671,7 +1671,7 @@ class Data:
         elif isinstance(axis, string_type):
             axis_index = self.axis_names.index(axis)
         else:
-            print('axis type', type(axis), 'not valid')
+            raise TypeError("axis: expected {int, str}, got %s" % type(axis))
         axis = self.axes[axis_index]
         # indicies --------------------------------------------------------------------------------
         # positions must be iterable and should be a numpy array
@@ -1792,7 +1792,7 @@ class Data:
         elif isinstance(channel, string_type):
             channel_index = self.channel_names.index(channel)
         else:
-            print('channel type', type(channel), 'not valid')
+            raise TypeError("channel: expected {int, str}, got %s" % type(channel))
         channel = self.channels[channel_index]
         # get subtrahend channel
         if isinstance(subtrahend_channel, int):
@@ -1800,7 +1800,8 @@ class Data:
         elif isinstance(subtrahend_channel, string_type):
             subtrahend_channel_index = subtrahend.channel_names.index(subtrahend_channel)
         else:
-            print('divisor channel type', type(channel), 'not valid')
+            raise TypeError("subtrahend_channel: expected {int, str}, got %s" %
+                            type(subtrahend_channel))
         subtrahend_channel = subtrahend.channels[subtrahend_channel_index]
         # do division
         channel.values -= subtrahend_channel.values
