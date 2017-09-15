@@ -1185,7 +1185,7 @@ def flatten_list(items, seqtypes=(list, tuple), in_place=True):
     """
     if not in_place:
         items = items[:]
-    for i, x in enumerate(items):
+    for i, _ in enumerate(items):
         while i < len(items) and isinstance(items[i], seqtypes):
             items[i:i + 1] = items[i]
     return items
