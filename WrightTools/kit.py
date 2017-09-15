@@ -5,7 +5,6 @@ A collection of small, general purpose objects and methods.
 .. _RFC5322: https://tools.ietf.org/html/rfc5322#section-3.3
 .. _HDF5: https://www.hdfgroup.org/HDF5/doc/H5.intro.html
 .. _intersperse: http://stackoverflow.com/a/5921708
-.. _flatten: http://stackoverflow.com/questions/2158395
 .. _suppress:
     http://stackoverflow.com/questions/11130156/suppress-stdout-stderr-print-from-python-functions
 """
@@ -1153,36 +1152,43 @@ def array2string(array, sep='\t'):
     return string
 
 
-def flatten_list(l):
-    """Flatten an irregular list.
+def flatten_list(items, seqtypes=(list, tuple), in_place=True):
+    """Flatten an irregular sequence.
 
     Works generally but may be slower than it could
     be if you can make assumptions about your list.
 
-
     `Source`__
 
-    __ flatten_
+    __ https://stackoverflow.com/a/10824086
 
+    Parameters
+    ----------
+    items : iterable
+        The irregular sequence to flatten.
+    seqtypes : iterable of types (optional)
+        Types to flatten. Default is (list, tuple).
+    in_place : boolean (optional)
+        Toggle in_place flattening. Default is True.
 
-        >>> l = [[[1, 2, 3], [4, 5]], 6]
-        >>> wt.kit.flatten_list(l)
-        [1, 2, 3, 4, 5, 6]
+    Returns
+    -------
+    list
+        Flattened list.
 
+    Examples
+    --------
+
+    >>> l = [[[1, 2, 3], [4, 5]], 6]
+    >>> wt.kit.flatten_list(l)
+    [1, 2, 3, 4, 5, 6]
     """
-    listIsNested = True
-    while listIsNested:  # outer loop
-        keepChecking = False
-        Temp = []
-        for element in l:  # inner loop
-            if isinstance(element, list):
-                Temp.extend(element)
-                keepChecking = True
-            else:
-                Temp.append(element)
-        listIsNested = keepChecking  # determine if outer loop exits
-        lis = Temp[:]
-    return lis
+    if not in_place:
+        items = items[:]
+    for i, x in enumerate(items):
+        while i < len(items) and isinstance(items[i], seqtypes):
+            items[i:i + 1] = items[i]
+    return items
 
 
 def get_methods(the_class, class_only=False, instance_only=False,
