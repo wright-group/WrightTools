@@ -669,7 +669,7 @@ class Fitter:
         self.fit_shape = [self.data.axes[i].points.shape[0] for i in self.not_fit_indicies]
         print('fitter recieved data to make %d fits' % np.product(self.fit_shape))
 
-    def run(self, channel=0, propagate_other_channels=True, verbose=True):
+    def run(self, channel=0, propagate_other_channels=False, verbose=True):
         """Run.
 
         Parameters
