@@ -721,7 +721,7 @@ class Fitter:
             channel = wt_data.Channel(values, units=None, null=0, name=param)
             params_channels.append(channel)
         if propagate_other_channels:
-            self.outs.channels += params_channels + self.outs.channels
+            self.outs.channels = params_channels + self.outs.channels
         else:
             self.outs.channels = params_channels
         # do all fitting operations ---------------------------------------------------------------
