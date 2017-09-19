@@ -29,7 +29,6 @@ class FileNotFound(Exception):
 
 # --- custom warnings -----------------------------------------------------------------------------
 
-
 class VisibleDeprecationWarning(Warning):
     """VisibleDepreciationWarning."""
 
