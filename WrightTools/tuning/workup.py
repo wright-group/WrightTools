@@ -186,7 +186,7 @@ def tune_test(data, curve, channel_name, level=False, cutoff_factor=0.01,
         assert np.array_equal(curve.colors, outs.axes[0].points)
     except AssertionError:
         message = 'The curve points do not match the data points.'
-        message += ' You may have the worng .curve file.'
+        message += ' You may have the wrong .curve file.'
         warnings.warn(message)
         curve.map_colors(outs.axes[0].points)
     # make curve ----------------------------------------------------------------------------------
