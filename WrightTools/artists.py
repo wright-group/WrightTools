@@ -1073,7 +1073,7 @@ def plot_colorbar(cax=None, cmap='default', ticks=None, clim=None, vlim=None,
     if isinstance(decimals, int):
         format = '%.{0}f'.format(decimals)
     else:
-        magnitude = int(np.log10(max(vlim) - min(vlim)))
+        magnitude = int(np.log10(max(vlim) - min(vlim)) - 0.99)
         if 1 > magnitude > -3:
             format = '%.{0}f'.format(-magnitude + 1)
         elif magnitude in (1, 2, 3):
