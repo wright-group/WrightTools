@@ -904,7 +904,7 @@ def make_colormap(seq, name='CustomMap', plot=False):
             cdict['blue'].append([item, b1, b2])
     cmap = mplcolors.LinearSegmentedColormap(name, cdict)
     if plot:
-        plot_colormap(cmap)
+        plot_colormap_components(cmap)
     return cmap
 
 
@@ -1016,7 +1016,7 @@ def pcolor_helper(xi, yi, zi, transform=None):
 
 
 def plot_colorbar(cax=None, cmap='default', ticks=None, clim=None, vlim=None,
-                  label=None, tick_fontsize=14, label_fontsize=18, decimals=3,
+                  label=None, tick_fontsize=14, label_fontsize=18, decimals=None,
                   orientation='vertical', ticklocation='auto'):
     """Easily add a colormap to an axis.
 
@@ -1043,7 +1043,7 @@ def plot_colorbar(cax=None, cmap='default', ticks=None, clim=None, vlim=None,
     label_fontsize : number (optional)
         Label fontsize. Default is 18.
     decimals : integer (optional)
-        Number of decimals to appear in tick labels. Default is 3.
+        Number of decimals to appear in tick labels. Default is None (best guess).
     orientation : {'vertical', 'horizontal'} (optional)
         Colorbar orientation. Default is vertical.
     ticklocation : {'auto', 'left', 'right', 'top', 'bottom'} (optional)
@@ -1069,8 +1069,26 @@ def plot_colorbar(cax=None, cmap='default', ticks=None, clim=None, vlim=None,
     # parse clim
     if vlim is None:
         vlim = clim
+    # parse format
+    if isinstance(decimals, int):
+        format = '%.{0}f'.format(decimals)
+    else:
+        magnitude = int(np.log10(max(vlim) - min(vlim)) - 0.99)
+        if 1 > magnitude > -3:
+            format = '%.{0}f'.format(-magnitude + 1)
+        elif magnitude in (1, 2, 3):
+            format = '%i'
+        else:
+            # scientific notation
+            def fmt(x, _):
+                return '%.1f' % (x / float(10 ** magnitude))
+            format = matplotlib.ticker.FuncFormatter(fmt)
+            magnitude_label = r'  $\mathsf{\times 10^{%d}}$' % magnitude
+            if label is None:
+                label = magnitude_label
+            else:
+                label = ' '.join([label, magnitude_label])
     # make cbar
-    format = '%.{0}f'.format(decimals)
     norm = matplotlib.colors.Normalize(vmin=vlim[0], vmax=vlim[1])
     cbar = matplotlib.colorbar.ColorbarBase(ax=cax, cmap=cmap,
                                             norm=norm, ticks=ticks,
@@ -1970,7 +1988,6 @@ class mpl_2D:
             # create figure -----------------------------------------------------------------------
             if fig and autosave:
                 plt.close(fig)
-
             find_xlim = isinstance(xlim, type(None))
             find_ylim = isinstance(ylim, type(None))
             if find_ylim or find_xlim:
@@ -2048,7 +2065,6 @@ class mpl_2D:
                 #    X,Y,Z = self.sort_points(X,Y,zi)
                 cax = subplot_main.contourf(X, Y, zi,
                                             levels, cmap=mycm)
-
             plt.xticks(rotation=45, fontsize=14)
             plt.yticks(fontsize=14)
             plt.xlabel(self.xaxis.get_label(), fontsize=18)
@@ -2195,16 +2211,9 @@ class mpl_2D:
             for xi, yi, kwargs in self._onplotdata:
                 subplot_main.plot(xi, yi, **kwargs)
             # colorbar ----------------------------------------------------------------------------
-            subplot_cb = plt.subplot(gs[1])
+            cax = plt.subplot(gs[1])
             cbar_ticks = np.linspace(levels.min(), levels.max(), 11)
-            if cbar_ticks.max() == 1.0:
-                cbar = plt.colorbar(cax, cax=subplot_cb, cmap=mycm,
-                                    ticks=cbar_ticks, format='%.1f')
-            else:
-                cbar = plt.colorbar(cax, cax=subplot_cb, cmap=mycm,
-                                    ticks=cbar_ticks, format='%.3f')
-            cbar.set_label(channel.name, fontsize=18)
-            cbar.ax.tick_params(labelsize=14)
+            plot_colorbar(cax=cax, ticks=cbar_ticks, label=channel.name, cmap=mycm)
             # title -------------------------------------------------------------------------------
             title_text = self.data.name
             constants_text = get_constant_text(constants)
@@ -2509,7 +2518,7 @@ class Diff2D():
             # colorbar ----------------------------------------------------------------------------
             subplot_cb = plt.subplot(gs[2])
             cbar_ticks = np.linspace(levels.min(), levels.max(), 11)
-            cbar = plt.colorbar(cax, cax=subplot_cb, ticks=cbar_ticks)
+            plt.colorbar(cax, cax=subplot_cb, ticks=cbar_ticks)
             # difference --------------------------------------------------------------------------
             # get colormap
             mycm = colormaps['seismic']
