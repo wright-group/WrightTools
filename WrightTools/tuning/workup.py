@@ -183,12 +183,12 @@ def tune_test(data, curve, channel_name, level=False, cutoff_factor=0.01,
     # check old curve for compatability with data object make curve -------------------------------
     curve = curve.copy()    
     try:
-        assert curve.colors == xi
+        assert np.array_equal(curve.colors,outs.axes[0].points)
     except AssertionError:
         message = 'The curve points do not match the data points.'
         message += ' You may have the worng .curve file.'
         warnings.warn(message)
-        curve.map_colors(xi)     
+        curve.map_colors(outs.axes[0].points)     
     # make curve ----------------------------------------------------------------------------------
     curve_native_units = curve.units
     curve.convert('wn')
