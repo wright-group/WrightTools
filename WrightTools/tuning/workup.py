@@ -19,7 +19,6 @@ from .. import artists as wt_artists
 from .. import fit as wt_fit
 from .. import kit as wt_kit
 from .. import units as wt_units
-from .. import exceptions as wt_except
 
 
 # --- define --------------------------------------------------------------------------------------
