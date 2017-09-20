@@ -1186,7 +1186,7 @@ class Data:
                     ]
                    ],
             'TA': [['2'],
-                   [lambda a2: 1 - 10**(-a2)]
+                   [lambda a2: (1 - 10**-a2) / (a2 * np.log(10))]
                    ]
         }
         # try to figure out the experiment or adopt the imported norm functions
@@ -1208,7 +1208,7 @@ class Data:
         m_axes = [axi for axi in self.axes if axi.units_kind == 'energy']
         # loop through 'indices' and find axis whole label_seeds contain indi
         for i, indi in enumerate(indices):
-            t_order = range(len(self.axes))
+            t_order = list(range(len(self.axes)))
             # find axes indices that have the correct label seed
             # and also belong to the list of axes under consideration
             # ni = [j for j in range(len(m_axes)) if indi in
