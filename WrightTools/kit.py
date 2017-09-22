@@ -1285,7 +1285,7 @@ def parse_identity(string):
 
 
 def parse_ordered_strings(lis, argument):
-    """Find the index a string, given either the name or index as an
+    """Find the index of a string, given either the name or index as an
     argument.
 
     Parameters
@@ -1310,7 +1310,6 @@ def parse_ordered_strings(lis, argument):
         return lis.index(argument)
     else:
         raise TypeError("argument: expected {int, str}, got %s" % type(argument))
-
 
 
 class suppress_stdout_stderr(object):
