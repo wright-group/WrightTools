@@ -195,7 +195,7 @@ class Axes(matplotlib.axes.Axes):
         elif isinstance(channel, string_type):
             channel_index = data.channel_names.index(channel)
         else:
-            print('channel type', type(channel), 'not valid')
+            raise TypeError("channel: expected {int, str}, got %s" % type(channel))
         channel = data.channels[channel_index]
         # get axes
         xaxis = data.axes[0]
