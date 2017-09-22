@@ -613,7 +613,6 @@ class Data:
             if arg not in self.axis_names:
                 raise Exception('axis {} not in data'.format(arg))
         # iterate! --------------------------------------------------------------------------------
-        print(axes_args, chopped_constants)
         # find iterated dimensions
         iterated_dimensions = []
         iterated_shape = [1]
@@ -916,7 +915,7 @@ class Data:
         # finish
         self.channels[signal_channel_index].give_values(out)
         self.channels[signal_channel_index].signed = True
-        self.channels[signal_channel_index].null = 0
+        self.channels[signal_channel_index]._null = 0
 
     def flip(self, axis):
         """Flip direction of arrays along an axis.
@@ -1147,10 +1146,9 @@ class Data:
             print('channel', channel.name, 'offset by', axis.name, 'between',
                   int(points.min()), 'and', int(points.max()), axis.units)
 
-    def m(self, abs_data, channel=0, this_exp='TG',
-          indices=None, m=None,
-          bounds_error=True, verbose=True):
-        """Perform m-factor corrections [#carlson1989]_.
+    def m(self, abs_data, channel=0, this_exp='TG', indices=None, m=None, bounds_error=True,
+          verbose=True):
+        """Perform m-factor corrections.
 
         Assumes all absorption functions are independent, so we can
         normalize each axis individually.
@@ -1162,21 +1160,31 @@ class Data:
         channel : int or string (optional)
             Channel to correct (default is zero)
         this_exp : {'TG', 'TA'} (optional)
-            Experimental configuration. Default is TG.
+            Experimental configuration. Default is TG. Note that TG data
+            should be processed on the intensity level.
         indices : list of integers (optional)
-            axis indices
+            axis indices. If None, indices are guessed from label_seed.
+            Default is None.
         m : function (optional)
-            m-factor function
-        bounds_error : boolean (optinal)
+            m-factor function. Should take arguments a1 and a2.
+        bounds_error : boolean (optional)
             Toggle bounds_error. Default is True.
         verbose : boolean (optional)
             Toggle talkback. Default is True.
 
-        .. [#carlson1989] **Absorption and Coherent Interference Effects in Multiply Resonant
-                  Four-Wave Mixing Spectroscopy**
-                  Roger J. Carlson, and John C. Wright
-                  *Applied Spectroscopy* **1989** 43, 1195--1208
-                  `doi:10.1366/0003702894203408 <http://dx.doi.org/10.1366/0003702894203408>`_
+        Notes
+        -----
+
+        m-factors originally derived by Carlson and Wright. [1]_
+
+        References
+        ----------
+
+        .. [1] **Absorption and Coherent Interference Effects in Multiply Resonant
+               Four-Wave Mixing Spectroscopy**
+               Roger J. Carlson, and John C. Wright
+               *Applied Spectroscopy* **1989** 43, 1195--1208
+               `doi:10.1366/0003702894203408 <http://dx.doi.org/10.1366/0003702894203408>`_
         """
         # exp_name: [i], [m_i]
         exp_types = {
@@ -1186,7 +1194,7 @@ class Data:
                     ]
                    ],
             'TA': [['2'],
-                   [lambda a2: 1 - 10**(-a2)]
+                   [lambda a2: (1 - 10**-a2) / (a2 * np.log(10))]
                    ]
         }
         # try to figure out the experiment or adopt the imported norm functions
@@ -1197,29 +1205,22 @@ class Data:
         elif m is not None and indices is not None:
             pass
         else:
-            print('m-factors for this experiment have not yet been implemented')
-            print('currently available experiments:')
-            for key in exp_types.keys():
-                print(key)
-            print('no m-factor normalization was performed')
-            return
-        # find which axes have m-factor dependence; move to the inside and
-        # operate
+            raise KeyError('experiment {0} not recognized'.format(this_exp))
+        # find which axes have m-factor dependence; move to the inside and operate
         m_axes = [axi for axi in self.axes if axi.units_kind == 'energy']
         # loop through 'indices' and find axis whole label_seeds contain indi
         for i, indi in enumerate(indices):
-            t_order = range(len(self.axes))
+            t_order = list(range(len(self.axes)))
             # find axes indices that have the correct label seed
             # and also belong to the list of axes under consideration
             # ni = [j for j in range(len(m_axes)) if indi in
-            ni = [j for j in range(len(self.axes)) if indi in
-                  self.axes[j].label_seed and self.axes[j] in m_axes]
-            # m_axes[j].label_seed]
+            ni = [j for j in range(len(self.axes)) if indi in self.axes[j].label_seed and
+                  self.axes[j] in m_axes]
             if verbose:
                 print(ni)
             # there should never be more than one axis that agrees
             if len(ni) > 1:
-                raise ValueError()
+                raise RuntimeError('axes are not unique!')
             elif len(ni) > 0:
                 ni = ni[0]
                 axi = self.axes[ni]
@@ -1230,14 +1231,14 @@ class Data:
                 if verbose:
                     print(t_order)
                 self.transpose(axes=t_order, verbose=verbose)
-                # evaluate ai ---------------------------------------------------------------------
+                # evaluate ai
                 abs_data.axes[0].convert(axi.units)
                 Ei = abs_data.axes[0].points
                 Ai = interp1d(Ei, abs_data.channels[0].values,
                               bounds_error=bounds_error)
                 ai = Ai(axi.points)
                 Mi = mi(ai)
-                # apply Mi to channel -------------------------------------------------------------
+                # apply Mi to channel
                 self.channels[i].values /= Mi
                 # invert back out of the transpose
                 t_inv = [t_order.index(j) for j in range(len(t_order))]
@@ -1245,8 +1246,7 @@ class Data:
                     print(t_inv)
                 self.transpose(axes=t_inv, verbose=verbose)
             else:
-                print('{0} label_seed not found'.format(indi))
-        return
+                raise RuntimeError('{0} label_seed not found'.format(indi))
 
     def map_axis(self, axis, points, input_units='same', verbose=True):
         """Map points of an axis to new points using linear interpolation.
@@ -1265,6 +1265,7 @@ class Data:
         verbose : bool (optional)
             Toggle talkback. Default is True.
         """
+        points = np.array(points)
         # get axis index --------------------------------------------------------------------------
         if isinstance(axis, int):
             axis_index = axis
