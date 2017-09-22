@@ -1284,6 +1284,35 @@ def parse_identity(string):
     return names, operators
 
 
+def parse_ordered_strings(lis, argument):
+    """Find the index a string, given either the name or index as an
+    argument.
+
+    Parameters
+    ----------
+    lis : list of strings
+        Iterable to parse.
+    argument : int or str
+        Argument.
+
+    Returns
+    -------
+    int
+        Index of chosen object.
+    """
+    # get channel
+    if isinstance(argument, int):
+        if -len(lis) - 1 < argument < len(lis):
+            return argument
+        else:
+            raise IndexError('index {0} incompatible with length {1}'.format(argument, len(lis)))
+    elif isinstance(argument, string_type):
+        return lis.index(argument)
+    else:
+        raise TypeError("argument: expected {int, str}, got %s" % type(argument))
+
+
+
 class suppress_stdout_stderr(object):
     """Context manager for doing a "deep suppression" of stdout and stderr in Python.
 
