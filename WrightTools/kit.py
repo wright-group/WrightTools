@@ -1284,15 +1284,17 @@ def parse_identity(string):
     return names, operators
 
 
-def parse_ordered_strings(lis, argument):
-    """Find the index of a string, given either the name or index as an
+def get_index(lis, argument):
+    """Find the index of an item, given either the item or index as an
     argument.
+
+    Particularly useful as a wrapper for arguments like channel or axis.
 
     Parameters
     ----------
-    lis : list of strings
-        Iterable to parse.
-    argument : int or str
+    lis : list
+        List to parse.
+    argument : int or object
         Argument.
 
     Returns
@@ -1302,14 +1304,12 @@ def parse_ordered_strings(lis, argument):
     """
     # get channel
     if isinstance(argument, int):
-        if -len(lis) - 1 < argument < len(lis):
+        if -len(lis) <= argument < len(lis):
             return argument
         else:
             raise IndexError('index {0} incompatible with length {1}'.format(argument, len(lis)))
-    elif isinstance(argument, string_type):
-        return lis.index(argument)
     else:
-        raise TypeError("argument: expected {int, str}, got %s" % type(argument))
+        return lis.index(argument)
 
 
 class suppress_stdout_stderr(object):
