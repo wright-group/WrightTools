@@ -1284,6 +1284,34 @@ def parse_identity(string):
     return names, operators
 
 
+def get_index(lis, argument):
+    """Find the index of an item, given either the item or index as an
+    argument.
+
+    Particularly useful as a wrapper for arguments like channel or axis.
+
+    Parameters
+    ----------
+    lis : list
+        List to parse.
+    argument : int or object
+        Argument.
+
+    Returns
+    -------
+    int
+        Index of chosen object.
+    """
+    # get channel
+    if isinstance(argument, int):
+        if -len(lis) <= argument < len(lis):
+            return argument
+        else:
+            raise IndexError('index {0} incompatible with length {1}'.format(argument, len(lis)))
+    else:
+        return lis.index(argument)
+
+
 class suppress_stdout_stderr(object):
     """Context manager for doing a "deep suppression" of stdout and stderr in Python.
 
