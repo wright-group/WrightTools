@@ -32,6 +32,8 @@ import matplotlib.patheffects as PathEffects
 
 import imageio
 
+from . import exceptions as wt_exceptions
+from . import data as wt_data
 from . import kit as wt_kit
 
 
@@ -51,9 +53,43 @@ else:
 
 class Axes(matplotlib.axes.Axes):
     """Axes."""
-
     transposed = False
     is_sideplot = False
+
+    def _parse_cmap(self, data=None, channel_index=None, **kwargs):
+        if 'cmap' in kwargs.keys():
+            if isinstance(cmap, string_type):
+                kwargs['cmap'] = colormaps[kwargs['cmap']]
+                return kwargs
+        if data:
+            if data.channels[channel_index].signed:
+                kwargs['cmap'] = colormaps['signed']
+                return kwargs
+        kwargs['cmap'] = colormaps['default']
+        return kwargs
+
+    def _parse_limits(self, zi=None, data=None, channel_index=None, **kwargs):
+        if zi:
+            vmin = np.nanmax(zi)
+            vmax = np.nanmin(zi)
+        elif data:
+            signed = data.channels[channel_index].signed
+            dynamic_range = kwargs['dynamic_range']
+            if signed and dynamic_range:
+                vmin = -data.channels[channel_index].minor_extent
+                vmax = +data.channels[channel_index].minor_extent
+            elif signed and not dynamic_range:
+                vmin = -data.channels[channel_index].major_extent
+                vmax = +data.channels[channel_index].major_extent
+            else:
+                vmin = -data.channels[channel_index].null()
+                vmax = +data.channels[channel_index].max()
+        # don't overwrite
+        if 'vmin' not in kwargs.keys():
+            kwargs['vmin'] = vmin
+        if 'vmax' not in kwargs.keys():
+            kwargs['vmax'] = vmax
+        return kwargs
 
     def add_sideplot(self, along, pad=0, height=0.75, ymin=0, ymax=1.1):
         """Add a side axis.
@@ -92,7 +128,49 @@ class Axes(matplotlib.axes.Axes):
         ax.tick_params(axis='both', which='both', length=0)
         return ax
 
-    def contourf(self, *args, **kwargs):
+    def contour(self, *args, channel=0, dynamic_range=False, **kwargs):
+        """Draw contours.
+
+        Parameters
+        ----------
+        *args
+            matplotlib contourf args.
+        **kwargs
+            matplotlib contourf kwargs.
+
+        Returns
+        -------
+        contours
+        """
+        args = list(args)  # offer pop, append etc
+        kwargs['dynamic_range'] = dynamic_range
+        # unpack data object, if given
+        if isinstance(args[0], wt_data.Data):
+            data = args.pop(0)
+            if not data.dimensionality == 2:
+                raise wt_exceptions.DimensionalityError(2, data.dimensionality)
+            # arrays
+            channel_index = wt_kit.get_index(data.channel_names, channel)
+            xi = data.axes[0].points
+            yi = data.axes[1].points
+            zi = data.channels[channel_index].values.T
+            args = [xi, yi, zi] + args
+            # limits
+            kwargs = self._parse_limits(data=data, channel_index=channel_index, **kwargs)
+        else:
+            kwargs = self._parse_limits(zi=args[2], **kwargs)
+        # levels        
+        if not 'levels' in kwargs.keys():
+            kwargs['levels'] = np.linspace(kwargs.pop('vmin'), kwargs.pop('vmax'), 11)[1:-1]
+        # colors
+        if not 'colors' in kwargs.keys():
+            kwargs['colors'] = 'k'
+        if not 'alpha' in kwargs.keys():
+            kwargs['alpha'] = 0.5
+        # call parent
+        return matplotlib.axes.Axes.contour(self, *args, **kwargs)  # why can't I use super?
+
+    def contourf(self, *args, channel=0, dynamic_range=False, **kwargs):
         """Draw filled contours.
 
         Parameters
@@ -106,6 +184,29 @@ class Axes(matplotlib.axes.Axes):
         -------
         contours
         """
+        args = list(args)  # offer pop, append etc
+        kwargs['dynamic_range'] = dynamic_range
+        # unpack data object, if given
+        if isinstance(args[0], wt_data.Data):
+            data = args.pop(0)
+            if not data.dimensionality == 2:
+                raise wt_exceptions.DimensionalityError(2, data.dimensionality)
+            # arrays
+            channel_index = wt_kit.get_index(data.channel_names, channel)
+            xi = data.axes[0].points
+            yi = data.axes[1].points
+            zi = data.channels[channel_index].values.T
+            args = [xi, yi, zi] + args
+            # limits
+            kwargs = self._parse_limits(data=data, channel_index=channel_index, **kwargs)
+            # cmap
+            kwargs = self._parse_cmap(data=data, channel_index=channel_index, **kwargs)
+        else:
+            kwargs = self._parse_limits(zi=args[2], **kwargs)
+            kwargs = self._parse_cmap(kwargs)
+        # levels        
+        if not 'levels' in kwargs.keys():
+            kwargs['levels'] = np.linspace(kwargs.pop('vmin'), kwargs.pop('vmax'), 256)
         # Overloading contourf in an attempt to fix aliasing problems when saving vector graphics
         # see https://stackoverflow.com/questions/15822159
         # also see https://stackoverflow.com/a/32911283
@@ -154,6 +255,45 @@ class Axes(matplotlib.axes.Axes):
             kwargs['framealpha'] = 1.
         return super().legend(*args, **kwargs)
 
+    def pcolor(self, *args, channel=0, dynamic_range=False, **kwargs):
+        """Draw contours.
+
+        Parameters
+        ----------
+        *args
+            matplotlib contourf args.
+        **kwargs
+            matplotlib contourf kwargs.
+
+        Returns
+        -------
+        contours
+        """
+        args = list(args)  # offer pop, append etc
+        kwargs['dynamic_range'] = dynamic_range
+        # unpack data object, if given
+        if isinstance(args[0], wt_data.Data):
+            data = args.pop(0)
+            if not data.dimensionality == 2:
+                raise wt_exceptions.DimensionalityError(2, data.dimensionality)
+            # arrays
+            channel_index = wt_kit.get_index(data.channel_names, channel)
+            xi = data.axes[0].points
+            yi = data.axes[1].points
+            zi = data.channels[channel_index].values.T
+            X, Y, Z = pcolor_helper(xi, yi, zi)
+            args = [X, Y, Z] + args
+            # limits
+            kwargs = self._parse_limits(data=data, channel_index=channel_index, **kwargs)
+            # cmap
+            kwargs = self._parse_cmap(data=data, channel_index=channel_index, **kwargs)
+        else:
+            kwargs = self._parse_limits(zi=args[2], **kwargs)
+            kwargs = self._parse_cmap(kwargs)
+        # call parent
+        kwargs.pop('dynamic_range')
+        return matplotlib.axes.Axes.pcolor(self, *args, **kwargs)  # why can't I use super?
+
     def plot_data(self, data, channel=0, interpolate=False, coloring=None,
                   xlabel=True, ylabel=True, min=None, max=None):
         """Plot directly from a data object.
@@ -186,6 +326,8 @@ class Axes(matplotlib.axes.Axes):
            >>> plt.plot(range(10))
 
         """
+        message = "plot_data is deprecated---use plot methods directly"
+        raise wt_exceptions.VisibleDeprecationWarning(message)
         # TODO: should I store a reference to data (or list of refs?)
         # prepare ---------------------------------------------------------------------------------
         # get dimensionality
