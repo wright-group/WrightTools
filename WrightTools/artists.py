@@ -74,9 +74,9 @@ class Axes(matplotlib.axes.Axes):
                 xlabel = data.axes[0].label
             self.set_xlabel(xlabel, fontsize=18)
         if ylabel:
-            if isinstance(xlabel, bool):
-                xlabel = data.axes[0].label
-            self.set_xlabel(xlabel, fontsize=18)          
+            if isinstance(ylabel, bool):
+                ylabel = data.axes[1].label
+            self.set_ylabel(ylabel, fontsize=18)
 
     def _parse_limits(self, zi=None, data=None, channel_index=None, dynamic_range=False, **kwargs):
         if zi is not None:
@@ -344,8 +344,7 @@ class Axes(matplotlib.axes.Axes):
             kwargs = self._parse_limits(data=data, channel_index=channel_index,
                                         dynamic_range=dynamic_range, **kwargs)
             # cmap
-            kwargs = self._parse_cmap(data=data, channel_index=channel_index,
-                                      dynamic_range=dynamic_range, **kwargs)
+            kwargs = self._parse_cmap(data=data, channel_index=channel_index, **kwargs)
         else:
             data = None
             kwargs = self._parse_limits(zi=args[2], **kwargs)
