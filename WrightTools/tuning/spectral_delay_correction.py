@@ -63,13 +63,8 @@ def process_wigner(data, channel, control_name, offset_name, coset_name, color_u
     data.convert(delay_units)
     ws = data.axes[1].points
     # get channel index
-    if type(channel) in [int, float]:
-        channel_index = int(channel)
-    elif type(channel) in [str]:
-        channel_index = data.channel_names.index(channel)
-    else:
-        print('channel type not recognized')
-        return
+    channel_index = wt_kit.get_index(data.channel_names, channel)
+
     # clip slice
     values = data.channels[channel_index].values
     cutoffs = np.amax(values, axis=0) * slice_cutoff_factor  # caught by nans

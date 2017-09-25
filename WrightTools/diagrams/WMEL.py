@@ -297,8 +297,7 @@ class Artist:
             direction = -1
             y_poss = [self.energies[between[0]], self.energies[between[1]] + head_length]
         else:
-            print('between invalid!')
-            return
+            raise ValueError("Variable between invalid")
         subplot = self.subplots[row][column]
         # add line
         length = abs(y_poss[0] - y_poss[1])
