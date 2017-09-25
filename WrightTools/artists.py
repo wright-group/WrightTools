@@ -68,13 +68,12 @@ class Axes(matplotlib.axes.Axes):
         kwargs['cmap'] = colormaps['default']
         return kwargs
 
-    def _parse_limits(self, zi=None, data=None, channel_index=None, **kwargs):
-        if zi:
+    def _parse_limits(self, zi=None, data=None, channel_index=None, dynamic_range=False, **kwargs):
+        if zi is not None:
             vmin = np.nanmax(zi)
             vmax = np.nanmin(zi)
-        elif data:
+        elif data is not None:
             signed = data.channels[channel_index].signed
-            dynamic_range = kwargs['dynamic_range']
             if signed and dynamic_range:
                 vmin = -data.channels[channel_index].minor_extent
                 vmax = +data.channels[channel_index].minor_extent
@@ -128,7 +127,7 @@ class Axes(matplotlib.axes.Axes):
         ax.tick_params(axis='both', which='both', length=0)
         return ax
 
-    def contour(self, *args, channel=0, dynamic_range=False, **kwargs):
+    def contour(self, *args, **kwargs):
         """Draw contours.
 
         Parameters
@@ -143,7 +142,8 @@ class Axes(matplotlib.axes.Axes):
         contours
         """
         args = list(args)  # offer pop, append etc
-        kwargs['dynamic_range'] = dynamic_range
+        channel = kwargs.pop('channel', 0)
+        dynamic_range = kwargs.pop('dynamic_range', False)
         # unpack data object, if given
         if isinstance(args[0], wt_data.Data):
             data = args.pop(0)
@@ -156,10 +156,11 @@ class Axes(matplotlib.axes.Axes):
             zi = data.channels[channel_index].values.T
             args = [xi, yi, zi] + args
             # limits
-            kwargs = self._parse_limits(data=data, channel_index=channel_index, **kwargs)
+            kwargs = self._parse_limits(data=data, channel_index=channel_index,
+                                        dynamic_range=dynamic_range, **kwargs)
         else:
-            kwargs = self._parse_limits(zi=args[2], **kwargs)
-        # levels        
+            kwargs = self._parse_limits(zi=args[2], dynamic_range=dynamic_range, **kwargs)
+        # levels
         if not 'levels' in kwargs.keys():
             kwargs['levels'] = np.linspace(kwargs.pop('vmin'), kwargs.pop('vmax'), 11)[1:-1]
         # colors
@@ -170,7 +171,7 @@ class Axes(matplotlib.axes.Axes):
         # call parent
         return matplotlib.axes.Axes.contour(self, *args, **kwargs)  # why can't I use super?
 
-    def contourf(self, *args, channel=0, dynamic_range=False, **kwargs):
+    def contourf(self, *args, **kwargs):
         """Draw filled contours.
 
         Parameters
@@ -185,7 +186,8 @@ class Axes(matplotlib.axes.Axes):
         contours
         """
         args = list(args)  # offer pop, append etc
-        kwargs['dynamic_range'] = dynamic_range
+        channel = kwargs.pop('channel', 0)
+        dynamic_range = kwargs.pop('dynamic_range', False)
         # unpack data object, if given
         if isinstance(args[0], wt_data.Data):
             data = args.pop(0)
@@ -198,13 +200,14 @@ class Axes(matplotlib.axes.Axes):
             zi = data.channels[channel_index].values.T
             args = [xi, yi, zi] + args
             # limits
-            kwargs = self._parse_limits(data=data, channel_index=channel_index, **kwargs)
+            kwargs = self._parse_limits(data=data, channel_index=channel_index,
+                                        dynamic_range=dynamic_range, **kwargs)
             # cmap
             kwargs = self._parse_cmap(data=data, channel_index=channel_index, **kwargs)
         else:
-            kwargs = self._parse_limits(zi=args[2], **kwargs)
+            kwargs = self._parse_limits(zi=args[2], dynamic_range=dynamic_range, **kwargs)
             kwargs = self._parse_cmap(kwargs)
-        # levels        
+        # levels
         if not 'levels' in kwargs.keys():
             kwargs['levels'] = np.linspace(kwargs.pop('vmin'), kwargs.pop('vmax'), 256)
         # Overloading contourf in an attempt to fix aliasing problems when saving vector graphics
@@ -255,7 +258,7 @@ class Axes(matplotlib.axes.Axes):
             kwargs['framealpha'] = 1.
         return super().legend(*args, **kwargs)
 
-    def pcolor(self, *args, channel=0, dynamic_range=False, **kwargs):
+    def pcolor(self, *args, **kwargs):
         """Draw contours.
 
         Parameters
@@ -270,7 +273,8 @@ class Axes(matplotlib.axes.Axes):
         contours
         """
         args = list(args)  # offer pop, append etc
-        kwargs['dynamic_range'] = dynamic_range
+        channel = kwargs.pop('channel', 0)
+        dynamic_range = kwargs.pop('dynamic_range', False)
         # unpack data object, if given
         if isinstance(args[0], wt_data.Data):
             data = args.pop(0)
@@ -284,15 +288,37 @@ class Axes(matplotlib.axes.Axes):
             X, Y, Z = pcolor_helper(xi, yi, zi)
             args = [X, Y, Z] + args
             # limits
-            kwargs = self._parse_limits(data=data, channel_index=channel_index, **kwargs)
+            kwargs = self._parse_limits(data=data, channel_index=channel_index,
+                                        dynamic_range=dynamic_range, **kwargs)
             # cmap
-            kwargs = self._parse_cmap(data=data, channel_index=channel_index, **kwargs)
+            kwargs = self._parse_cmap(data=data, channel_index=channel_index,
+                                      dynamic_range=dynamic_range, **kwargs)
         else:
             kwargs = self._parse_limits(zi=args[2], **kwargs)
             kwargs = self._parse_cmap(kwargs)
         # call parent
-        kwargs.pop('dynamic_range')
         return matplotlib.axes.Axes.pcolor(self, *args, **kwargs)  # why can't I use super?
+
+    def plot(self, *args, **kwargs):
+        args = list(args)  # offer pop, append etc
+        channel = kwargs.pop('channel', 0)
+        # unpack data object, if given
+        if isinstance(args[0], wt_data.Data):
+            data = args.pop(0)
+            if not data.dimensionality == 1:
+                raise wt_exceptions.DimensionalityError(1, data.dimensionality)
+            # arrays
+            channel_index = wt_kit.get_index(data.channel_names, channel)
+            xi = data.axes[0].points
+            zi = data.channels[channel_index].values.T
+            args = [xi, zi] + args
+            # limits
+            kwargs = self._parse_limits(data=data, channel_index=channel_index, **kwargs)
+        else:
+            kwargs = self._parse_limits(zi=args[1], **kwargs)
+        # call parent
+        self.set_ylim(kwargs.pop('vmin'), kwargs.pop('vmax'))
+        return matplotlib.axes.Axes.plot(self, *args, **kwargs)  # why can't I use super?
 
     def plot_data(self, data, channel=0, interpolate=False, coloring=None,
                   xlabel=True, ylabel=True, min=None, max=None):
@@ -411,6 +437,27 @@ class Axes(matplotlib.axes.Axes):
                 self.set_ylabel(channel.label, fontsize=18)
             if data.dimensionality == 2:
                 self.set_ylabel(yaxis.label, fontsize=18)
+
+    def scatter(self, *args, **kwargs):
+        args = list(args)  # offer pop, append etc
+        channel = kwargs.pop('channel', 0)
+        # unpack data object, if given
+        if isinstance(args[0], wt_data.Data):
+            data = args.pop(0)
+            if not data.dimensionality == 1:
+                raise wt_exceptions.DimensionalityError(1, data.dimensionality)
+            # arrays
+            channel_index = wt_kit.get_index(data.channel_names, channel)
+            xi = data.axes[0].points
+            zi = data.channels[channel_index].values.T
+            args = [xi, zi] + args
+            # limits
+            kwargs = self._parse_limits(data=data, channel_index=channel_index, **kwargs)
+        else:
+            kwargs = self._parse_limits(zi=args[1], **kwargs)
+        # call parent
+        self.set_ylim(kwargs.pop('vmin'), kwargs.pop('vmax'))
+        return matplotlib.axes.Axes.scatter(self, *args, **kwargs)  # why can't I use super?
 
 
 class Figure(matplotlib.figure.Figure):
