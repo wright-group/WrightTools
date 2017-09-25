@@ -495,7 +495,7 @@ class Curve:
         offset_to
         """
         # get motor index
-        motor_index = wt_kit.get_index(motor, self.motor_names)
+        motor_index = wt_kit.get_index(self.motor_names, motor)
 
         # offset
         self.motors[motor_index].positions += amount
