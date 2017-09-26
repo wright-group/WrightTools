@@ -147,10 +147,10 @@ def from_KENT(filepaths, null=None, name=None, ignore=['wm'], use_norm=False,
     # define format of dat file -------------------------------------------------------------------
     # axes
     axes = collections.OrderedDict()
-    axes['w1'] = Axis(None, 'wn', tolerance=frequency_tolerance,
-                      file_idx=0, name='w1', label_seed=['1'])
     axes['w2'] = Axis(None, 'wn', tolerance=frequency_tolerance,
-                      file_idx=1, name='w2', label_seed=['2'])
+                      file_idx=0, name='w2', label_seed=['2'])
+    axes['w1'] = Axis(None, 'wn', tolerance=frequency_tolerance,
+                      file_idx=1, name='w1', label_seed=['1'])
     axes['wm'] = Axis(None, 'wn', tolerance=frequency_tolerance,
                       file_idx=2, name='wm', label_seed=['m'])
     axes['d1'] = Axis(None, 'ps', tolerance=delay_tolerance,
