@@ -155,7 +155,7 @@ def from_PyCMDS(filepath, name=None,
                 zi = griddata(all_points, values, meshgrid, rescale=True,
                               method='linear', fill_value=np.nan)
                 # assemble
-                channel = Channel(zi, units, signed=signed, name=name, label=label)
+                channel = Channel(zi, units=units, signed=signed, name=name, label=label)
                 channels.append(channel)
     else:
         # if none of the axes are interpolated onto,
