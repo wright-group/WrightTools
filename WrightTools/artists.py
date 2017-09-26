@@ -80,8 +80,8 @@ class Axes(matplotlib.axes.Axes):
 
     def _parse_limits(self, zi=None, data=None, channel_index=None, dynamic_range=False, **kwargs):
         if zi is not None:
-            vmin = np.nanmax(zi)
-            vmax = np.nanmin(zi)
+            vmin = np.nanmin(zi)
+            vmax = np.nanmax(zi)
         elif data is not None:
             signed = data.channels[channel_index].signed
             if signed and dynamic_range:
@@ -155,12 +155,12 @@ class Axes(matplotlib.axes.Axes):
             Toggle or provide ylabel. If True, label is read from data object. Default is False.
         **kwargs
             matplotlib.axes.Axes.contour__ optional keyword arguments.
-        
+
         __ https://matplotlib.org/api/_as_gen/matplotlib.axes.Axes.contour.html
 
         Returns
         -------
-        QuadContourSet        
+        QuadContourSet
         """
         args = list(args)  # offer pop, append etc
         channel = kwargs.pop('channel', 0)
@@ -183,12 +183,12 @@ class Axes(matplotlib.axes.Axes):
             data = None
             kwargs = self._parse_limits(zi=args[2], dynamic_range=dynamic_range, **kwargs)
         # levels
-        if not 'levels' in kwargs.keys():
+        if 'levels' not in kwargs.keys():
             kwargs['levels'] = np.linspace(kwargs.pop('vmin'), kwargs.pop('vmax'), 11)[1:-1]
         # colors
-        if not 'colors' in kwargs.keys():
+        if 'colors' not in kwargs.keys():
             kwargs['colors'] = 'k'
-        if not 'alpha' in kwargs.keys():
+        if 'alpha' not in kwargs.keys():
             kwargs['alpha'] = 0.5
         # labels
         xlabel = kwargs.pop('xlabel', False)
@@ -215,12 +215,12 @@ class Axes(matplotlib.axes.Axes):
             Toggle or provide ylabel. If True, label is read from data object. Default is False.
         **kwargs
             matplotlib.axes.Axes.contourf__ optional keyword arguments.
-        
+
         __ https://matplotlib.org/api/_as_gen/matplotlib.axes.Axes.contourf.html
 
         Returns
         -------
-        QuadContourSet        
+        QuadContourSet
         """
         args = list(args)  # offer pop, append etc
         channel = kwargs.pop('channel', 0)
@@ -246,7 +246,7 @@ class Axes(matplotlib.axes.Axes):
             kwargs = self._parse_limits(zi=args[2], dynamic_range=dynamic_range, **kwargs)
             kwargs = self._parse_cmap(kwargs)
         # levels
-        if not 'levels' in kwargs.keys():
+        if 'levels' not in kwargs.keys():
             kwargs['levels'] = np.linspace(kwargs.pop('vmin'), kwargs.pop('vmax'), 256)
         # labels
         xlabel = kwargs.pop('xlabel', False)
@@ -318,12 +318,12 @@ class Axes(matplotlib.axes.Axes):
             Toggle or provide ylabel. If True, label is read from data object. Default is False.
         **kwargs
             matplotlib.axes.Axes.pcolor__ optional keyword arguments.
-        
+
         __ https://matplotlib.org/api/_as_gen/matplotlib.axes.Axes.pcolor.html
 
         Returns
         -------
-        QuadContourSet        
+        QuadContourSet
         """
         args = list(args)  # offer pop, append etc
         channel = kwargs.pop('channel', 0)
@@ -374,19 +374,19 @@ class Axes(matplotlib.axes.Axes):
             Toggle or provide ylabel. If True, label is read from data object. Default is False.
         **kwargs
             matplotlib.axes.Axes.pcolor__ optional keyword arguments.
-        
+
         __ https://matplotlib.org/api/_as_gen/matplotlib.axes.Axes.plot.html
 
         Returns
         -------
         list
-            list of added lines        
+            list of added lines
         """
         args = list(args)  # offer pop, append etc
-        channel = kwargs.pop('channel', 0)
         # unpack data object, if given
         if isinstance(args[0], wt_data.Data):
             data = args.pop(0)
+            channel = kwargs.pop('channel', 0)
             if not data.dimensionality == 1:
                 raise wt_exceptions.DimensionalityError(1, data.dimensionality)
             # arrays
@@ -394,17 +394,13 @@ class Axes(matplotlib.axes.Axes):
             xi = data.axes[0].points
             zi = data.channels[channel_index].values.T
             args = [xi, zi] + args
-            # limits
-            kwargs = self._parse_limits(data=data, channel_index=channel_index, **kwargs)
         else:
             data = None
-            kwargs = self._parse_limits(zi=args[1], **kwargs)
         # labels
         xlabel = kwargs.pop('xlabel', False)
         ylabel = kwargs.pop('ylabel', False)
         self._apply_labels(xlabel=xlabel, ylabel=ylabel, data=data)
         # call parent
-        self.set_ylim(kwargs.pop('vmin'), kwargs.pop('vmax'))
         return matplotlib.axes.Axes.plot(self, *args, **kwargs)  # why can't I use super?
 
     def plot_data(self, data, channel=0, interpolate=False, coloring=None,
@@ -1602,6 +1598,14 @@ def plot_gridlines(ax=None, c='grey', lw=1, diagonal=False, zorder=2,
         diag_max = min(max_xi, max_yi)
         ax.plot([diag_min, diag_max], [diag_min, diag_max], c=c,
                 ls=ls, lw=lw, zorder=zorder, dashes=dashes)
+
+        # Plot resets xlim and ylim sometimes for unknown reasons.
+        # This is here to ensure that the xlim and ylim are unchanged
+        # after adding a diagonal, whose limits are calculated so
+        # as to not change the xlim and ylim.
+        #           -- KFS 2017-09-26
+        ax.set_ylim(min_yi, max_yi)
+        ax.set_xlim(min_xi, max_xi)
 
 
 def plot_margins(fig=None, inches=1., centers=True, edges=True):
