@@ -12,6 +12,23 @@ import warnings
 # --- custom exceptions ---------------------------------------------------------------------------
 
 
+class DimensionalityError(Exception):
+    """DimensionalityError."""
+    
+    def __init__(self, expected, recieved):
+        """Dimensionality error.
+        
+        Parameters
+        ----------
+        expected : object
+            Expected dimensionalit(ies).
+        recieved : object
+            Recieved dimensionality.
+        """
+        message = "dimensionality must be {0} (recieved {1})".format(expected, recieved)
+        Exception.__init__(self, message)
+
+
 class FileNotFound(Exception):
     """FileNotFound."""
 
