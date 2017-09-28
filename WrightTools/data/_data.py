@@ -1249,7 +1249,7 @@ class Data:
                 ai = Ai(axi.points)
                 Mi = mi(ai)
                 # apply Mi to channel
-                self.channels[i].values /= Mi
+                self.channels[channel].values /= Mi
                 # invert back out of the transpose
                 t_inv = [t_order.index(j) for j in range(len(t_order))]
                 if verbose:

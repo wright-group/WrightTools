@@ -172,6 +172,7 @@ class Axes(matplotlib.axes.Axes):
                 raise wt_exceptions.DimensionalityError(2, data.dimensionality)
             # arrays
             channel_index = wt_kit.get_index(data.channel_names, channel)
+            signed = data.channels[channel_index].signed
             xi = data.axes[0].points
             yi = data.axes[1].points
             zi = data.channels[channel_index].values.T
@@ -181,10 +182,15 @@ class Axes(matplotlib.axes.Axes):
                                         dynamic_range=dynamic_range, **kwargs)
         else:
             data = None
+            signed = False
             kwargs = self._parse_limits(zi=args[2], dynamic_range=dynamic_range, **kwargs)
         # levels
         if 'levels' not in kwargs.keys():
-            kwargs['levels'] = np.linspace(kwargs.pop('vmin'), kwargs.pop('vmax'), 11)[1:-1]
+            if signed:
+                n = 11
+            else:
+                n = 6
+            kwargs['levels'] = np.linspace(kwargs.pop('vmin'), kwargs.pop('vmax'), n)[1:-1]
         # colors
         if 'colors' not in kwargs.keys():
             kwargs['colors'] = 'k'
