@@ -250,7 +250,7 @@ class Axes(matplotlib.axes.Axes):
         else:
             data = None
             kwargs = self._parse_limits(zi=args[2], dynamic_range=dynamic_range, **kwargs)
-            kwargs = self._parse_cmap(kwargs)
+            kwargs = self._parse_cmap(**kwargs)
         # levels
         if 'levels' not in kwargs.keys():
             kwargs['levels'] = np.linspace(kwargs.pop('vmin'), kwargs.pop('vmax'), 256)
@@ -354,7 +354,7 @@ class Axes(matplotlib.axes.Axes):
         else:
             data = None
             kwargs = self._parse_limits(zi=args[2], **kwargs)
-            kwargs = self._parse_cmap(kwargs)
+            kwargs = self._parse_cmap(**kwargs)
         # labels
         xlabel = kwargs.pop('xlabel', False)
         ylabel = kwargs.pop('ylabel', False)
