@@ -123,8 +123,7 @@ def join(datas, method='first', verbose=True, **kwargs):
         elif method == 'mean':
             zis = np.nanmean(full, axis=0)
         else:
-            print('method', method, 'not recognized in join')
-            return
+            raise ValueError("method %s not recognized" % method)
         zis[np.isnan(full).all(axis=0)] = np.nan  # if all datas NaN, zis NaN
         channel = Channel(zis, null=0.,
                           signed=datas[0].channels[channel_index].signed,

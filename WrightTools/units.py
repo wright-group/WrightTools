@@ -7,6 +7,7 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import numpy as np
+import warnings
 
 
 # --- units ---------------------------------------------------------------------------------------
@@ -109,8 +110,8 @@ def converter(val, current_unit, destination_unit):
     if current_unit is None and destination_unit is None:
         pass
     else:
-        print('conversion {0} to {1} not valid: returning input'.format(
-            current_unit, destination_unit))
+        warnings.warn('conversion {0} to {1} not valid: returning input'.format(
+                       current_unit, destination_unit))
     return val
 
 
