@@ -91,8 +91,8 @@ class Axes(matplotlib.axes.Axes):
                 vmin = -data.channels[channel_index].major_extent
                 vmax = +data.channels[channel_index].major_extent
             else:
-                vmin = -data.channels[channel_index].null()
-                vmax = +data.channels[channel_index].max()
+                vmin = data.channels[channel_index].null()
+                vmax = data.channels[channel_index].max()
         # don't overwrite
         if 'vmin' not in kwargs.keys():
             kwargs['vmin'] = vmin
