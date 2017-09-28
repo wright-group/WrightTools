@@ -1530,7 +1530,9 @@ def set_fig_labels(fig=None, xlabel=None, ylabel=None, xticks=None, yticks=None,
         fig = plt.gcf()
     # axes
     for ax in fig.axes:
-        if ax.is_first_col() and ax.is_last_row():
+        if ax.is_sideplot:
+            continue
+        elif ax.is_first_col() and ax.is_last_row():
             # lower left corner
             set_ax_labels(
                 ax=ax,
