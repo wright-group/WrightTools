@@ -482,17 +482,11 @@ class Axes(matplotlib.axes.Axes):
 
         """
         message = "plot_data is deprecated---use plot methods directly"
-        raise wt_exceptions.VisibleDeprecationWarning(message)
-        # TODO: should I store a reference to data (or list of refs?)
+        warnings.warn(wt_exceptions.VisibleDeprecationWarning(message))
         # prepare ---------------------------------------------------------------------------------
         # get dimensionality
         # get channel
-        if isinstance(channel, int):
-            channel_index = channel
-        elif isinstance(channel, string_type):
-            channel_index = data.channel_names.index(channel)
-        else:
-            raise TypeError("channel: expected {int, str}, got %s" % type(channel))
+        channel_index = wt_kit.get_index(data.channel_names, channel)
         channel = data.channels[channel_index]
         # get axes
         xaxis = data.axes[0]
