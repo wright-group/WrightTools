@@ -68,7 +68,31 @@ class Axes(matplotlib.axes.Axes):
         kwargs['cmap'] = colormaps['default']
         return kwargs
 
-    def _apply_labels(self, xlabel=False, ylabel=False, data=None):
+    def _apply_labels(self, label='none', xlabel=None, ylabel=None, data=None, channel_index=0):
+        """Apply x and y labels to axes.
+
+        Parameters
+        ----------
+        label : {'none', 'both', 'x', 'y'} (optional)
+            Label(s) to apply from data. Default is none.
+        xlabel : string (optional)
+            x label. Default is None.
+        ylabel : string (optional)
+            y label. Default is None.
+        data : WrightTools.data.Data object (optional)
+            data to read labels from. Default is None.
+        channel_index : integer (optional)
+            Channel index. Default is 0.
+        """
+        # read from data
+        if label in ['xy', 'both', 'x'] and not xlabel:
+            xlabel = data.axes[0].label
+        if label in ['xy', 'both', 'y'] and not ylabel:
+            if data.dimensionality == 1:
+                ylabel = data.channels[channel_index].label
+            elif data.dimensionality == 2:
+                ylabel = data.axes[1].label
+        # apply
         if xlabel:
             if isinstance(xlabel, bool):
                 xlabel = data.axes[0].label
@@ -149,10 +173,12 @@ class Axes(matplotlib.axes.Axes):
         dynamic_range : boolean (optional)
             Force plotting of all contours, overloading for major extent. Only applies to signed
             data. Default is False.
-        xlabel : boolean or string (optional)
-            Toggle or provide xlabel. If True, label is read from data object. Default is False.
-        ylabel : boolean or string (optional)
-            Toggle or provide ylabel. If True, label is read from data object. Default is False.
+        label : {'none', 'both', 'x', 'y'}  (optional)
+            Parameterize application of labels directly from data object. Default is none.
+        xlabel : string (optional)
+            xlabel. Default is None.
+        ylabel : string (optional)
+            ylabel. Default is None.
         **kwargs
             matplotlib.axes.Axes.contour__ optional keyword arguments.
 
@@ -182,6 +208,7 @@ class Axes(matplotlib.axes.Axes):
                                         dynamic_range=dynamic_range, **kwargs)
         else:
             data = None
+            channel_index = 0
             signed = False
             kwargs = self._parse_limits(zi=args[2], dynamic_range=dynamic_range, **kwargs)
         # levels
@@ -197,9 +224,10 @@ class Axes(matplotlib.axes.Axes):
         if 'alpha' not in kwargs.keys():
             kwargs['alpha'] = 0.5
         # labels
-        xlabel = kwargs.pop('xlabel', False)
-        ylabel = kwargs.pop('ylabel', False)
-        self._apply_labels(xlabel=xlabel, ylabel=ylabel, data=data)
+        self._apply_labels(label=kwargs.pop('label', False),
+                           xlabel=kwargs.pop('xlabel', None),
+                           ylabel=kwargs.pop('xlabel', None),
+                           data=data, channel_index=channel_index)
         # call parent
         return matplotlib.axes.Axes.contour(self, *args, **kwargs)  # why can't I use super?
 
@@ -215,10 +243,12 @@ class Axes(matplotlib.axes.Axes):
         dynamic_range : boolean (optional)
             Force plotting of all contours, overloading for major extent. Only applies to signed
             data. Default is False.
-        xlabel : boolean or string (optional)
-            Toggle or provide xlabel. If True, label is read from data object. Default is False.
-        ylabel : boolean or string (optional)
-            Toggle or provide ylabel. If True, label is read from data object. Default is False.
+        label : {'none', 'both', 'x', 'y'}  (optional)
+            Parameterize application of labels directly from data object. Default is none.
+        xlabel : string (optional)
+            xlabel. Default is None.
+        ylabel : string (optional)
+            ylabel. Default is None.
         **kwargs
             matplotlib.axes.Axes.contourf__ optional keyword arguments.
 
@@ -249,15 +279,17 @@ class Axes(matplotlib.axes.Axes):
             kwargs = self._parse_cmap(data=data, channel_index=channel_index, **kwargs)
         else:
             data = None
+            channel_index = 0
             kwargs = self._parse_limits(zi=args[2], dynamic_range=dynamic_range, **kwargs)
             kwargs = self._parse_cmap(**kwargs)
         # levels
         if 'levels' not in kwargs.keys():
             kwargs['levels'] = np.linspace(kwargs.pop('vmin'), kwargs.pop('vmax'), 256)
         # labels
-        xlabel = kwargs.pop('xlabel', False)
-        ylabel = kwargs.pop('ylabel', False)
-        self._apply_labels(xlabel=xlabel, ylabel=ylabel, data=data)
+        self._apply_labels(label=kwargs.pop('label', False),
+                           xlabel=kwargs.pop('xlabel', None),
+                           ylabel=kwargs.pop('xlabel', None),
+                           data=data, channel_index=channel_index)
         # Overloading contourf in an attempt to fix aliasing problems when saving vector graphics
         # see https://stackoverflow.com/questions/15822159
         # also see https://stackoverflow.com/a/32911283
@@ -318,10 +350,12 @@ class Axes(matplotlib.axes.Axes):
         dynamic_range : boolean (optional)
             Force plotting of all contours, overloading for major extent. Only applies to signed
             data. Default is False.
-        xlabel : boolean or string (optional)
-            Toggle or provide xlabel. If True, label is read from data object. Default is False.
-        ylabel : boolean or string (optional)
-            Toggle or provide ylabel. If True, label is read from data object. Default is False.
+        label : {'none', 'both', 'x', 'y'}  (optional)
+            Parameterize application of labels directly from data object. Default is none.
+        xlabel : string (optional)
+            xlabel. Default is None.
+        ylabel : string (optional)
+            ylabel. Default is None.
         **kwargs
             matplotlib.axes.Axes.pcolor__ optional keyword arguments.
 
@@ -353,12 +387,14 @@ class Axes(matplotlib.axes.Axes):
             kwargs = self._parse_cmap(data=data, channel_index=channel_index, **kwargs)
         else:
             data = None
+            channel_index = 0
             kwargs = self._parse_limits(zi=args[2], **kwargs)
             kwargs = self._parse_cmap(**kwargs)
         # labels
-        xlabel = kwargs.pop('xlabel', False)
-        ylabel = kwargs.pop('ylabel', False)
-        self._apply_labels(xlabel=xlabel, ylabel=ylabel, data=data)
+        self._apply_labels(label=kwargs.pop('label', False),
+                           xlabel=kwargs.pop('xlabel', None),
+                           ylabel=kwargs.pop('xlabel', None),
+                           data=data, channel_index=channel_index)
         # call parent
         return matplotlib.axes.Axes.pcolor(self, *args, **kwargs)  # why can't I use super?
 
@@ -374,10 +410,12 @@ class Axes(matplotlib.axes.Axes):
         dynamic_range : boolean (optional)
             Force plotting of all contours, overloading for major extent. Only applies to signed
             data. Default is False.
-        xlabel : boolean or string (optional)
-            Toggle or provide xlabel. If True, label is read from data object. Default is False.
-        ylabel : boolean or string (optional)
-            Toggle or provide ylabel. If True, label is read from data object. Default is False.
+        label : {'none', 'both', 'x', 'y'}  (optional)
+            Parameterize application of labels directly from data object. Default is none.
+        xlabel : string (optional)
+            xlabel. Default is None.
+        ylabel : string (optional)
+            ylabel. Default is None.
         **kwargs
             matplotlib.axes.Axes.pcolor__ optional keyword arguments.
 
@@ -402,10 +440,12 @@ class Axes(matplotlib.axes.Axes):
             args = [xi, zi] + args
         else:
             data = None
+            channel_index = 0
         # labels
-        xlabel = kwargs.pop('xlabel', False)
-        ylabel = kwargs.pop('ylabel', False)
-        self._apply_labels(xlabel=xlabel, ylabel=ylabel, data=data)
+        self._apply_labels(label=kwargs.pop('label', False),
+                           xlabel=kwargs.pop('xlabel', None),
+                           ylabel=kwargs.pop('xlabel', None),
+                           data=data, channel_index=channel_index)
         # call parent
         return matplotlib.axes.Axes.plot(self, *args, **kwargs)  # why can't I use super?
 
