@@ -1174,12 +1174,10 @@ class Data:
 
         Notes
         -----
-
         m-factors originally derived by Carlson and Wright. [1]_
 
         References
         ----------
-
         .. [1] **Absorption and Coherent Interference Effects in Multiply Resonant
                Four-Wave Mixing Spectroscopy**
                Roger J. Carlson, and John C. Wright
@@ -1489,6 +1487,29 @@ class Data:
         # remove
         self.channels.pop(channel_index)
         # finish
+        self._update()
+
+    def rename_attrs(self, **kwargs):
+        """Rename a set of attributes.
+
+        Keyword Arguments
+        -----------------
+        Each argument should have the key of a current axis or channel,
+            and a value which is a string of its new name.
+
+        The name will be set to str(val), and its natural naming identifier
+        will be wt.kit.string2identifier(str(val))
+        """
+        changed = kwargs.keys()
+        for k, v in kwargs.items():
+            if type(getattr(self, k)) not in (Channel, Axis):
+                raise
+            if v not in changed and hasattr(self, v):
+                raise
+        for k, v in kwargs.items():
+            axis = getattr(self, k)
+            axis.name = str(v)
+            delattr(self, k)
         self._update()
 
     def save(self, filepath=None, verbose=True):
