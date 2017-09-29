@@ -1496,20 +1496,22 @@ def set_ax_labels(ax=None, xlabel=None, ylabel=None, xticks=None, yticks=None,
     if xlabel is not None:
         ax.set_xlabel(xlabel, fontsize=label_fontsize)
     if xticks is not None:
-        if xticks is not False:
-            ax.set_xticks(xticks)
+        if isinstance(xticks, bool):
+            plt.setp(ax.get_xticklabels(), visible=xticks)
+            if not xticks:
+                ax.tick_params(axis='x', which='both', length=0)
         else:
-            plt.setp(ax.get_xticklabels(), visible=False)
-            ax.tick_params(axis='x', which='both', length=0)
+            ax.set_xticks(xticks)
     # y
     if ylabel is not None:
         ax.set_ylabel(ylabel, fontsize=label_fontsize)
     if yticks is not None:
-        if yticks is not False:
-            ax.set_yticks(yticks)
+        if isinstance(yticks, bool):
+            plt.setp(ax.get_yticklabels(), visible=yticks)
+            if not yticks:
+                ax.tick_params(axis='y', which='both', length=0)
         else:
-            plt.setp(ax.get_yticklabels(), visible=False)
-            ax.tick_params(axis='y', which='both', length=0)
+            ax.set_yticks(yticks)
 
 
 def set_ax_spines(ax=None, c='k', lw=3, zorder=10):
