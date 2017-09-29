@@ -344,7 +344,7 @@ class Channel:
     def min(self):
         """Minimum, ignoring nans."""
         return np.nanmin(self.values)
-    
+
     @property
     def minor_extent(self):
         """Minimum deviation from null."""

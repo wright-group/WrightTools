@@ -14,10 +14,10 @@ import warnings
 
 class DimensionalityError(Exception):
     """DimensionalityError."""
-    
+
     def __init__(self, expected, recieved):
         """Dimensionality error.
-        
+
         Parameters
         ----------
         expected : object
