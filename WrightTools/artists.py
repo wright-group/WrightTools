@@ -186,7 +186,7 @@ class Axes(matplotlib.axes.Axes):
 
         Returns
         -------
-        QuadContourSet
+        matplotlib.collections.Collection
         """
         args = list(args)  # offer pop, append etc
         channel = kwargs.pop('channel', 0)
@@ -256,7 +256,7 @@ class Axes(matplotlib.axes.Axes):
 
         Returns
         -------
-        QuadContourSet
+        matplotlib.collections.Collection
         """
         args = list(args)  # offer pop, append etc
         channel = kwargs.pop('channel', 0)
@@ -363,7 +363,7 @@ class Axes(matplotlib.axes.Axes):
 
         Returns
         -------
-        QuadContourSet
+        matplotlib.collections.Collection
         """
         args = list(args)  # offer pop, append etc
         channel = kwargs.pop('channel', 0)
