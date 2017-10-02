@@ -451,7 +451,7 @@ class Axes(matplotlib.axes.Axes):
 
     def plot_data(self, data, channel=0, interpolate=False, coloring=None,
                   xlabel=True, ylabel=True, min=None, max=None):
-        """Plot directly from a data object.
+        """DEPRECATED.
 
         Parameters
         ----------
@@ -461,9 +461,10 @@ class Axes(matplotlib.axes.Axes):
             The channel to plot. Default is 0.
         interpolate : boolean (optional)
             Toggle interpolation. Default is False.
-        cmap : str (optional)
-            A key to the colormaps dictionary found in artists module. Default
-            is None (inherits from channel).
+        coloring : str (optional)
+            A key to the colormaps dictionary found in artists module, for
+            two-dimensional data. A matplotlib color string for
+            one-dimensional data. Default is None.
         xlabel : boolean (optional)
             Toggle xlabel. Default is True.
         ylabel : boolean (optional)
@@ -472,7 +473,6 @@ class Axes(matplotlib.axes.Axes):
             min. Default is None (inherited from channel).
         max : number (optional)
             max. Default is None (inherited from channel).
-
 
         .. plot::
 
