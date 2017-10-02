@@ -186,7 +186,7 @@ class Axes(matplotlib.axes.Axes):
 
         Returns
         -------
-        matplotlib.collections.Collection
+        matplotlib.contour.QuadContourSet
         """
         args = list(args)  # offer pop, append etc
         channel = kwargs.pop('channel', 0)
@@ -256,7 +256,7 @@ class Axes(matplotlib.axes.Axes):
 
         Returns
         -------
-        matplotlib.collections.Collection
+        matplotlib.contour.QuadContourSet
         """
         args = list(args)  # offer pop, append etc
         channel = kwargs.pop('channel', 0)
@@ -363,7 +363,7 @@ class Axes(matplotlib.axes.Axes):
 
         Returns
         -------
-        matplotlib.collections.Collection
+        matplotlib.collections.PolyCollection
         """
         args = list(args)  # offer pop, append etc
         channel = kwargs.pop('channel', 0)
@@ -424,7 +424,7 @@ class Axes(matplotlib.axes.Axes):
         Returns
         -------
         list
-            list of added lines
+            list of matplotlib.lines.line2D objects
         """
         args = list(args)  # offer pop, append etc
         # unpack data object, if given
