@@ -330,6 +330,11 @@ class Channel:
 
     def mag(self):
         """Channel magnitude (maximum deviation from null)."""
+        return self.major_extent
+
+    @property
+    def major_extent(self):
+        """Maximum deviation from null."""
         return max((self.max() - self.null(), self.null() - self.min()))
 
     def max(self):
@@ -339,6 +344,11 @@ class Channel:
     def min(self):
         """Minimum, ignoring nans."""
         return np.nanmin(self.values)
+
+    @property
+    def minor_extent(self):
+        """Minimum deviation from null."""
+        return min((self.max() - self.null(), self.null() - self.min()))
 
     def normalize(self, axis=None):
         """Normalize a Channel, set `null` to 0 and the max to 1."""

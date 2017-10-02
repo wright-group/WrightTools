@@ -32,6 +32,8 @@ import matplotlib.patheffects as PathEffects
 
 import imageio
 
+from . import exceptions as wt_exceptions
+from . import data as wt_data
 from . import kit as wt_kit
 
 
@@ -51,9 +53,76 @@ else:
 
 class Axes(matplotlib.axes.Axes):
     """Axes."""
-
     transposed = False
     is_sideplot = False
+
+    def _parse_cmap(self, data=None, channel_index=None, **kwargs):
+        if 'cmap' in kwargs.keys():
+            if isinstance(cmap, string_type):
+                kwargs['cmap'] = colormaps[kwargs['cmap']]
+                return kwargs
+        if data:
+            if data.channels[channel_index].signed:
+                kwargs['cmap'] = colormaps['signed']
+                return kwargs
+        kwargs['cmap'] = colormaps['default']
+        return kwargs
+
+    def _apply_labels(self, label='none', xlabel=None, ylabel=None, data=None, channel_index=0):
+        """Apply x and y labels to axes.
+
+        Parameters
+        ----------
+        label : {'none', 'both', 'x', 'y'} (optional)
+            Label(s) to apply from data. Default is none.
+        xlabel : string (optional)
+            x label. Default is None.
+        ylabel : string (optional)
+            y label. Default is None.
+        data : WrightTools.data.Data object (optional)
+            data to read labels from. Default is None.
+        channel_index : integer (optional)
+            Channel index. Default is 0.
+        """
+        # read from data
+        if label in ['xy', 'both', 'x'] and not xlabel:
+            xlabel = data.axes[0].label
+        if label in ['xy', 'both', 'y'] and not ylabel:
+            if data.dimensionality == 1:
+                ylabel = data.channels[channel_index].label
+            elif data.dimensionality == 2:
+                ylabel = data.axes[1].label
+        # apply
+        if xlabel:
+            if isinstance(xlabel, bool):
+                xlabel = data.axes[0].label
+            self.set_xlabel(xlabel, fontsize=18)
+        if ylabel:
+            if isinstance(ylabel, bool):
+                ylabel = data.axes[1].label
+            self.set_ylabel(ylabel, fontsize=18)
+
+    def _parse_limits(self, zi=None, data=None, channel_index=None, dynamic_range=False, **kwargs):
+        if zi is not None:
+            vmin = np.nanmin(zi)
+            vmax = np.nanmax(zi)
+        elif data is not None:
+            signed = data.channels[channel_index].signed
+            if signed and dynamic_range:
+                vmin = -data.channels[channel_index].minor_extent
+                vmax = +data.channels[channel_index].minor_extent
+            elif signed and not dynamic_range:
+                vmin = -data.channels[channel_index].major_extent
+                vmax = +data.channels[channel_index].major_extent
+            else:
+                vmin = data.channels[channel_index].null()
+                vmax = data.channels[channel_index].max()
+        # don't overwrite
+        if 'vmin' not in kwargs.keys():
+            kwargs['vmin'] = vmin
+        if 'vmax' not in kwargs.keys():
+            kwargs['vmax'] = vmax
+        return kwargs
 
     def add_sideplot(self, along, pad=0, height=0.75, ymin=0, ymax=1.1):
         """Add a side axis.
@@ -92,20 +161,135 @@ class Axes(matplotlib.axes.Axes):
         ax.tick_params(axis='both', which='both', length=0)
         return ax
 
-    def contourf(self, *args, **kwargs):
-        """Draw filled contours.
+    def contour(self, *args, **kwargs):
+        """Plot contours.
 
         Parameters
         ----------
-        *args
-            matplotlib contourf args.
+        data : 2D WrightTools.data.Data object
+            Data to plot.
+        channel : int or string (optional)
+            Channel index or name. Default is 0.
+        dynamic_range : boolean (optional)
+            Force plotting of all contours, overloading for major extent. Only applies to signed
+            data. Default is False.
+        label : {'none', 'both', 'x', 'y'}  (optional)
+            Parameterize application of labels directly from data object. Default is none.
+        xlabel : string (optional)
+            xlabel. Default is None.
+        ylabel : string (optional)
+            ylabel. Default is None.
         **kwargs
-            matplotlib contourf kwargs.
+            matplotlib.axes.Axes.contour__ optional keyword arguments.
+
+        __ https://matplotlib.org/api/_as_gen/matplotlib.axes.Axes.contour.html
 
         Returns
         -------
-        contours
+        matplotlib.contour.QuadContourSet
         """
+        args = list(args)  # offer pop, append etc
+        channel = kwargs.pop('channel', 0)
+        dynamic_range = kwargs.pop('dynamic_range', False)
+        # unpack data object, if given
+        if isinstance(args[0], wt_data.Data):
+            data = args.pop(0)
+            if not data.dimensionality == 2:
+                raise wt_exceptions.DimensionalityError(2, data.dimensionality)
+            # arrays
+            channel_index = wt_kit.get_index(data.channel_names, channel)
+            signed = data.channels[channel_index].signed
+            xi = data.axes[0].points
+            yi = data.axes[1].points
+            zi = data.channels[channel_index].values.T
+            args = [xi, yi, zi] + args
+            # limits
+            kwargs = self._parse_limits(data=data, channel_index=channel_index,
+                                        dynamic_range=dynamic_range, **kwargs)
+        else:
+            data = None
+            channel_index = 0
+            signed = False
+            kwargs = self._parse_limits(zi=args[2], dynamic_range=dynamic_range, **kwargs)
+        # levels
+        if 'levels' not in kwargs.keys():
+            if signed:
+                n = 11
+            else:
+                n = 6
+            kwargs['levels'] = np.linspace(kwargs.pop('vmin'), kwargs.pop('vmax'), n)[1:-1]
+        # colors
+        if 'colors' not in kwargs.keys():
+            kwargs['colors'] = 'k'
+        if 'alpha' not in kwargs.keys():
+            kwargs['alpha'] = 0.5
+        # labels
+        self._apply_labels(label=kwargs.pop('label', False),
+                           xlabel=kwargs.pop('xlabel', None),
+                           ylabel=kwargs.pop('xlabel', None),
+                           data=data, channel_index=channel_index)
+        # call parent
+        return matplotlib.axes.Axes.contour(self, *args, **kwargs)  # why can't I use super?
+
+    def contourf(self, *args, **kwargs):
+        """Plot contours.
+
+        Parameters
+        ----------
+        data : 2D WrightTools.data.Data object
+            Data to plot.
+        channel : int or string (optional)
+            Channel index or name. Default is 0.
+        dynamic_range : boolean (optional)
+            Force plotting of all contours, overloading for major extent. Only applies to signed
+            data. Default is False.
+        label : {'none', 'both', 'x', 'y'}  (optional)
+            Parameterize application of labels directly from data object. Default is none.
+        xlabel : string (optional)
+            xlabel. Default is None.
+        ylabel : string (optional)
+            ylabel. Default is None.
+        **kwargs
+            matplotlib.axes.Axes.contourf__ optional keyword arguments.
+
+        __ https://matplotlib.org/api/_as_gen/matplotlib.axes.Axes.contourf.html
+
+        Returns
+        -------
+        matplotlib.contour.QuadContourSet
+        """
+        args = list(args)  # offer pop, append etc
+        channel = kwargs.pop('channel', 0)
+        dynamic_range = kwargs.pop('dynamic_range', False)
+        # unpack data object, if given
+        if isinstance(args[0], wt_data.Data):
+            data = args.pop(0)
+            if not data.dimensionality == 2:
+                raise wt_exceptions.DimensionalityError(2, data.dimensionality)
+            # arrays
+            channel_index = wt_kit.get_index(data.channel_names, channel)
+            xi = data.axes[0].points
+            yi = data.axes[1].points
+            zi = data.channels[channel_index].values.T
+            args = [xi, yi, zi] + args
+            # limits
+            kwargs = self._parse_limits(data=data, channel_index=channel_index,
+                                        dynamic_range=dynamic_range, **kwargs)
+            # cmap
+            kwargs = self._parse_cmap(data=data, channel_index=channel_index, **kwargs)
+        else:
+            data = None
+            channel_index = 0
+            kwargs = self._parse_limits(zi=args[2], dynamic_range=dynamic_range, **kwargs)
+            kwargs = self._parse_cmap(**kwargs)
+        # levels
+        if 'levels' not in kwargs.keys():
+            kwargs['levels'] = np.linspace(kwargs.pop('vmin'), kwargs.pop('vmax'), 256)
+        # labels
+        self._apply_labels(label=kwargs.pop('label', False),
+                           xlabel=kwargs.pop('xlabel', None),
+                           ylabel=kwargs.pop('xlabel', None),
+                           data=data, channel_index=channel_index)
         # Overloading contourf in an attempt to fix aliasing problems when saving vector graphics
         # see https://stackoverflow.com/questions/15822159
         # also see https://stackoverflow.com/a/32911283
@@ -154,6 +338,117 @@ class Axes(matplotlib.axes.Axes):
             kwargs['framealpha'] = 1.
         return super().legend(*args, **kwargs)
 
+    def pcolor(self, *args, **kwargs):
+        """Create a pseudocolor plot of a 2-D array.
+
+        Parameters
+        ----------
+        data : 2D WrightTools.data.Data object
+            Data to plot.
+        channel : int or string (optional)
+            Channel index or name. Default is 0.
+        dynamic_range : boolean (optional)
+            Force plotting of all contours, overloading for major extent. Only applies to signed
+            data. Default is False.
+        label : {'none', 'both', 'x', 'y'}  (optional)
+            Parameterize application of labels directly from data object. Default is none.
+        xlabel : string (optional)
+            xlabel. Default is None.
+        ylabel : string (optional)
+            ylabel. Default is None.
+        **kwargs
+            matplotlib.axes.Axes.pcolor__ optional keyword arguments.
+
+        __ https://matplotlib.org/api/_as_gen/matplotlib.axes.Axes.pcolor.html
+
+        Returns
+        -------
+        matplotlib.collections.PolyCollection
+        """
+        args = list(args)  # offer pop, append etc
+        channel = kwargs.pop('channel', 0)
+        dynamic_range = kwargs.pop('dynamic_range', False)
+        # unpack data object, if given
+        if isinstance(args[0], wt_data.Data):
+            data = args.pop(0)
+            if not data.dimensionality == 2:
+                raise wt_exceptions.DimensionalityError(2, data.dimensionality)
+            # arrays
+            channel_index = wt_kit.get_index(data.channel_names, channel)
+            xi = data.axes[0].points
+            yi = data.axes[1].points
+            zi = data.channels[channel_index].values.T
+            X, Y, Z = pcolor_helper(xi, yi, zi)
+            args = [X, Y, Z] + args
+            # limits
+            kwargs = self._parse_limits(data=data, channel_index=channel_index,
+                                        dynamic_range=dynamic_range, **kwargs)
+            # cmap
+            kwargs = self._parse_cmap(data=data, channel_index=channel_index, **kwargs)
+        else:
+            data = None
+            channel_index = 0
+            kwargs = self._parse_limits(zi=args[2], **kwargs)
+            kwargs = self._parse_cmap(**kwargs)
+        # labels
+        self._apply_labels(label=kwargs.pop('label', False),
+                           xlabel=kwargs.pop('xlabel', None),
+                           ylabel=kwargs.pop('xlabel', None),
+                           data=data, channel_index=channel_index)
+        # call parent
+        return matplotlib.axes.Axes.pcolor(self, *args, **kwargs)  # why can't I use super?
+
+    def plot(self, *args, **kwargs):
+        """Plot lines and/or markers.
+
+        Parameters
+        ----------
+        data : 1D WrightTools.data.Data object
+            Data to plot.
+        channel : int or string (optional)
+            Channel index or name. Default is 0.
+        dynamic_range : boolean (optional)
+            Force plotting of all contours, overloading for major extent. Only applies to signed
+            data. Default is False.
+        label : {'none', 'both', 'x', 'y'}  (optional)
+            Parameterize application of labels directly from data object. Default is none.
+        xlabel : string (optional)
+            xlabel. Default is None.
+        ylabel : string (optional)
+            ylabel. Default is None.
+        **kwargs
+            matplotlib.axes.Axes.pcolor__ optional keyword arguments.
+
+        __ https://matplotlib.org/api/_as_gen/matplotlib.axes.Axes.plot.html
+
+        Returns
+        -------
+        list
+            list of matplotlib.lines.line2D objects
+        """
+        args = list(args)  # offer pop, append etc
+        # unpack data object, if given
+        if isinstance(args[0], wt_data.Data):
+            data = args.pop(0)
+            channel = kwargs.pop('channel', 0)
+            if not data.dimensionality == 1:
+                raise wt_exceptions.DimensionalityError(1, data.dimensionality)
+            # arrays
+            channel_index = wt_kit.get_index(data.channel_names, channel)
+            xi = data.axes[0].points
+            zi = data.channels[channel_index].values.T
+            args = [xi, zi] + args
+        else:
+            data = None
+            channel_index = 0
+        # labels
+        self._apply_labels(label=kwargs.pop('label', False),
+                           xlabel=kwargs.pop('xlabel', None),
+                           ylabel=kwargs.pop('xlabel', None),
+                           data=data, channel_index=channel_index)
+        # call parent
+        return matplotlib.axes.Axes.plot(self, *args, **kwargs)  # why can't I use super?
+
     def plot_data(self, data, channel=0, interpolate=False, coloring=None,
                   xlabel=True, ylabel=True, min=None, max=None):
         """Plot directly from a data object.
@@ -186,16 +481,12 @@ class Axes(matplotlib.axes.Axes):
            >>> plt.plot(range(10))
 
         """
-        # TODO: should I store a reference to data (or list of refs?)
+        message = "plot_data is deprecated---use plot methods directly"
+        warnings.warn(wt_exceptions.VisibleDeprecationWarning(message))
         # prepare ---------------------------------------------------------------------------------
         # get dimensionality
         # get channel
-        if isinstance(channel, int):
-            channel_index = channel
-        elif isinstance(channel, string_type):
-            channel_index = data.channel_names.index(channel)
-        else:
-            print('channel type', type(channel), 'not valid')
+        channel_index = wt_kit.get_index(data.channel_names, channel)
         channel = data.channels[channel_index]
         # get axes
         xaxis = data.axes[0]
@@ -1199,20 +1490,22 @@ def set_ax_labels(ax=None, xlabel=None, ylabel=None, xticks=None, yticks=None,
     if xlabel is not None:
         ax.set_xlabel(xlabel, fontsize=label_fontsize)
     if xticks is not None:
-        if xticks is not False:
-            ax.set_xticks(xticks)
+        if isinstance(xticks, bool):
+            plt.setp(ax.get_xticklabels(), visible=xticks)
+            if not xticks:
+                ax.tick_params(axis='x', which='both', length=0)
         else:
-            plt.setp(ax.get_xticklabels(), visible=False)
-            ax.tick_params(axis='x', which='both', length=0)
+            ax.set_xticks(xticks)
     # y
     if ylabel is not None:
         ax.set_ylabel(ylabel, fontsize=label_fontsize)
     if yticks is not None:
-        if yticks is not False:
-            ax.set_yticks(yticks)
+        if isinstance(yticks, bool):
+            plt.setp(ax.get_yticklabels(), visible=yticks)
+            if not yticks:
+                ax.tick_params(axis='y', which='both', length=0)
         else:
-            plt.setp(ax.get_yticklabels(), visible=False)
-            ax.tick_params(axis='y', which='both', length=0)
+            ax.set_yticks(yticks)
 
 
 def set_ax_spines(ax=None, c='k', lw=3, zorder=10):
@@ -1273,7 +1566,9 @@ def set_fig_labels(fig=None, xlabel=None, ylabel=None, xticks=None, yticks=None,
         fig = plt.gcf()
     # axes
     for ax in fig.axes:
-        if ax.is_first_col() and ax.is_last_row():
+        if ax.is_sideplot:
+            continue
+        elif ax.is_first_col() and ax.is_last_row():
             # lower left corner
             set_ax_labels(
                 ax=ax,
@@ -1347,6 +1642,14 @@ def plot_gridlines(ax=None, c='grey', lw=1, diagonal=False, zorder=2,
         diag_max = min(max_xi, max_yi)
         ax.plot([diag_min, diag_max], [diag_min, diag_max], c=c,
                 ls=ls, lw=lw, zorder=zorder, dashes=dashes)
+
+        # Plot resets xlim and ylim sometimes for unknown reasons.
+        # This is here to ensure that the xlim and ylim are unchanged
+        # after adding a diagonal, whose limits are calculated so
+        # as to not change the xlim and ylim.
+        #           -- KFS 2017-09-26
+        ax.set_ylim(min_yi, max_yi)
+        ax.set_xlim(min_xi, max_xi)
 
 
 def plot_margins(fig=None, inches=1., centers=True, edges=True):
