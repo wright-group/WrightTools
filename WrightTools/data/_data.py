@@ -592,7 +592,7 @@ class Data:
         -------
         list of WrightTools.data.Data
             List of chopped data objects.
- 
+
         Examples
         --------
         >>> data.axis_names
