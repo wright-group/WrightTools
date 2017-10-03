@@ -12,6 +12,23 @@ import warnings
 # --- custom exceptions ---------------------------------------------------------------------------
 
 
+class DimensionalityError(Exception):
+    """DimensionalityError."""
+
+    def __init__(self, expected, recieved):
+        """Dimensionality error.
+
+        Parameters
+        ----------
+        expected : object
+            Expected dimensionalit(ies).
+        recieved : object
+            Recieved dimensionality.
+        """
+        message = "dimensionality must be {0} (recieved {1})".format(expected, recieved)
+        Exception.__init__(self, message)
+
+
 class FileNotFound(Exception):
     """FileNotFound."""
 
@@ -24,6 +41,21 @@ class FileNotFound(Exception):
             Given path.
         """
         message = 'no file was found at {}'.format(path)
+        Exception.__init__(self, message)
+
+
+class NameNotUniqueError(Exception):
+    """NameNotUniqueError."""
+
+    def __init__(self, name):
+        """Format a Name Not Unique Error.
+
+        Parameters
+        ----------
+        name : string
+            Name of an attribute which causes a duplication.
+        """
+        message = 'Name {} results in a duplicate'.format(name)
         Exception.__init__(self, message)
 
 

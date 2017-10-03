@@ -9,12 +9,9 @@ import os as _os
 
 import matplotlib as _matplotlib
 
-
-# --- import --------------------------------------------------------------------------------------
-
-
 from . import artists           # noqa: F401
 from . import calibration       # noqa: F401
+from . import collection        # noqa: F401
 from . import data              # noqa: F401
 from . import diagrams          # noqa: F401
 from . import fit               # noqa: F401

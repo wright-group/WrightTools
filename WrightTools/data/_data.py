@@ -1,17 +1,4 @@
-"""Central data class and associated.
-
-.. [#carlson1989] **Absorption and Coherent Interference Effects in Multiply Resonant
-                  Four-Wave Mixing Spectroscopy**
-                  Roger J. Carlson, and John C. Wright
-                  *Applied Spectroscopy* **1989** 43, 1195--1208
-                  `doi:10.1366/0003702894203408 <http://dx.doi.org/10.1366/0003702894203408>`_
-.. _griddata: http://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.griddata.html
-.. _pickle: https://docs.python.org/3/library/pickle.html
-.. _kaiser window: https://en.wikipedia.org/wiki/Kaiser_window
-.. _scipy ndimage:
-    http://docs.scipy.org/doc/scipy/reference/generated/scipy.ndimage.interpolation.zoom.html
-.. _spcm: http://www.becker-hickl.com/software/spcm.htm
-"""
+"""Central data class and associated."""
 
 
 # --- import --------------------------------------------------------------------------------------
@@ -31,9 +18,9 @@ import numpy as np
 import scipy
 from scipy.interpolate import griddata, interp1d
 
-from . import exceptions as wt_exceptions
-from . import kit as wt_kit
-from . import units as wt_units
+from .. import exceptions as wt_exceptions
+from .. import kit as wt_kit
+from .. import units as wt_units
 
 
 # --- define --------------------------------------------------------------------------------------
@@ -47,25 +34,16 @@ else:
     string_type = str  # newer versions of python don't have unicode type
 
 
-def true_max(*args, **kwargs):
-    """Call standard library max function."""
-    return max(*args, **kwargs)
+__all__ = ['Axis', 'Channel', 'Data']
 
 
-def true_min(*args, **kwargs):
-    """Call standard library min function."""
-    return min(*args, **kwargs)
-
-
-# --- data class ----------------------------------------------------------------------------------
+# --- classes -------------------------------------------------------------------------------------
 
 
 class Axis:
     """Axis class."""
 
-    def __init__(self, points, units, symbol_type=None,
-                 tolerance=None, file_idx=None,
-                 name='', label_seed=[''], **kwargs):
+    def __init__(self, points, units, name, symbol_type=None, label_seed=[''], **kwargs):
         """Create an `Axis` object.
 
         Parameters
@@ -74,39 +52,38 @@ class Axis:
             Axis points.
         units : string
             Axis units.
+        name : string
+            Axis name. Must be unique.
         symbol_type : string (optional)
             Axis symbol type. If None, symbol_type is automatically
             generated. Default is None.
-        tolerance : number (optional)
-            Axis tolerance. Default is None.
-        file_idx : integer (optional)
-            Axis position in original data file. Default is None.
-        name : string (optional)
-            Axis name. Default is ''.
         label_seed : list of strings
             Axis label subscripts. Default is [''].
         **kwargs
-            Keyword arguments.
+            Additional keyword arguments are added to the attrs dictionary
+            and to the natural namespace of the object (if possible).
         """
         self.name = wt_kit.string2identifier(name)
-        self.tolerance = tolerance
         self.points = np.asarray(points)
+        # units
         self.units = units
-        self.file_idx = file_idx
-        self.label_seed = label_seed
-        for key in kwargs.keys():
-            setattr(self, key, kwargs[key])
-        # get units kind
         self.units_kind = None
         for dic in wt_units.unit_dicts:
             if self.units in dic.keys():
                 self.units_kind = dic['kind']
-        # get symbol type
+        # label
+        self.label_seed = label_seed
         if symbol_type:
             self.symbol_type = symbol_type
         else:
             self.symbol_type = wt_units.get_default_symbol_type(self.units)
         self.get_label()
+        # attrs
+        self.attrs = kwargs
+        for key, value in self.attrs.items():
+            identifier = wt_kit.string2identifier(key)
+            if not hasattr(self, identifier):
+                setattr(self, identifier, value)
 
     def __repr__(self):
         """Return an unambiguous representation of the Axis.
@@ -213,41 +190,46 @@ class Axis:
 class Channel:
     """Channel."""
 
-    def __init__(self, values, units=None, file_idx=None, null=None, signed=None, name='channel',
-                 label=None, label_seed=None):
+    def __init__(self, values, name, units=None, null=None, signed=None,
+                 label=None, label_seed=None, **kwargs):
         """Construct a channel object.
 
         Parameters
         ----------
         values : array-like
             Values.
+        name : string
+            Channel name.
         units : string (optional)
             Channel units. Default is None.
-        file_idx : integer (optional)
-            Channel file index. Default is None.
         null : number (optional)
             Channel null. Default is None (0).
         signed : booelan (optional)
             Channel signed flag. Default is None (guess).
-        name : string (optional)
-            Channel name. Default is 'channel'.
         label : string.
             Label. Default is None.
         label_seed : list of strings
             Label seed. Default is None.
+        **kwargs
+            Additional keyword arguments are added to the attrs dictionary
+            and to the natural namespace of the object (if possible).
         """
-        # import
         self.name = wt_kit.string2identifier(name)
         self.label = label
         self.label_seed = label_seed
         self.units = units
-        self.file_idx = file_idx
         # values
         if values is not None:
             self.give_values(np.asarray(values), null, signed)
         else:
             self._null = null
             self.signed = signed
+        # attrs
+        self.attrs = kwargs
+        for key, value in self.attrs.items():
+            identifier = wt_kit.string2identifier(key)
+            if not hasattr(self, identifier):
+                setattr(self, identifier, value)
 
     def __repr__(self):
         """Retrun an unambiguous representation of the Channel.
@@ -348,6 +330,11 @@ class Channel:
 
     def mag(self):
         """Channel magnitude (maximum deviation from null)."""
+        return self.major_extent
+
+    @property
+    def major_extent(self):
+        """Maximum deviation from null."""
         return max((self.max() - self.null(), self.null() - self.min()))
 
     def max(self):
@@ -357,6 +344,11 @@ class Channel:
     def min(self):
         """Minimum, ignoring nans."""
         return np.nanmin(self.values)
+
+    @property
+    def minor_extent(self):
+        """Minimum deviation from null."""
+        return min((self.max() - self.null(), self.null() - self.min()))
 
     def normalize(self, axis=None):
         """Normalize a Channel, set `null` to 0 and the max to 1."""
@@ -377,7 +369,6 @@ class Channel:
         # divide through by max
         self.values /= np.amax(dummy, axis=axis, keepdims=True)
         # finish
-        self._update()
 
     def null(self):
         """Null value."""
@@ -458,7 +449,6 @@ class Channel:
         else:
             raise KeyError('replace must be one of {nan, mean, mask} or some number')
         # finish
-        self._update()
         if verbose:
             print('%i outliers removed' % len(outliers))
         return outliers
@@ -496,7 +486,7 @@ class Data:
     """Central multidimensional data class."""
 
     def __init__(self, axes, channels, constants=[],
-                 name='', source=None):
+                 name='', source=None, **kwargs):
         """Create a ``Data`` object.
 
         Parameters
@@ -509,9 +499,12 @@ class Data:
             the axis name: ``data.w1``, for example.
         constants : list
             A list of Axis objects, each with exactly one point.
+        **kwargs
+            Additional keyword arguments are added to the attrs dictionary
+            and to the natural namespace of the object (if possible).
         """
         # record version
-        from . import __version__
+        from .. import __version__
         self.__version__ = __version__
         # assign
         self.axes = axes
@@ -519,11 +512,9 @@ class Data:
         self.channels = channels
         self.name = name
         self.source = source
-        self.attrs = {}
+        self.attrs = kwargs
         # update
         self._update()
-        # reserve a copy of own self at this stage
-        self._original = self.copy()
 
     def __repr__(self):
         """Return an unambiguous representation.
@@ -554,9 +545,11 @@ class Data:
         for obj in self.axes + self.channels + self.constants:
             setattr(self, obj.name, obj)
         self.shape = self.channels[0].values.shape
-
-    def _pupdate(self, *args, **kwargs):
-        return self._update(*args, **kwargs)
+        # attrs
+        for key, value in self.attrs.items():
+            identifier = wt_kit.string2identifier(key)
+            if not hasattr(self, identifier):
+                setattr(self, identifier, value)
 
     def bring_to_front(self, channel):
         """Bring a specific channel to the zero-indexed position in channels.
@@ -574,7 +567,7 @@ class Data:
         elif isinstance(channel, string_type):
             channel_index = self.channel_names.index(channel)
         else:
-            print('channel type', type(channel), 'not valid')
+            raise TypeError("channel: expected {int, str}, got %s" % type(channel))
         # bring to front
         self.channels.insert(0, self.channels.pop(channel_index))
         self._update()
@@ -584,19 +577,42 @@ class Data:
 
         Parameters
         ----------
-        axis : str or int
+        axis : str or int (args)
             Axes of the returned data objects. Strings refer to the names of
-            axes in this object, integers refer to their index.
-        at : dict
-            Dictonary. Keys are axis names, values are lists
-            ``[position, input units]``.
-        verbose : bool, optional
+            axes in this object, integers refer to their index. Provide multiple
+            axes to return multidimensional data objects.
+        at : dict (kwarg)
+            Choice of position along an axis. Keys are axis names, values are lists
+            ``[position, input units]``. If exact position does not exist,
+            the closest valid position is used.
+        verbose : bool, optional (kwarg)
             Toggle talkback. Default is True.
 
         Returns
         -------
-        list
-            A list of data objects.
+        list of WrightTools.data.Data
+            List of chopped data objects.
+
+        Examples
+        --------
+        >>> data.axis_names
+        ['d2', 'w1', 'w2']
+
+        Get all w1 wigners.
+
+        >>> datas = data.chop('d2', 'w1')
+        >>> len(datas)
+        51
+
+        Get 2D frequency at d2=0 fs.
+
+        >>> datas = data.chop('w1', 'w2', at={'d2': [0, 'fs']})
+        >>> len(datas)
+        0
+        >>> datas[0].axis_names
+        ['w1', 'w2']
+        >>> datas[0].d2.points
+        0.
 
         See Also
         --------
@@ -604,10 +620,6 @@ class Data:
             Collapse the dataset along one axis.
         split
             Split the dataset while maintaining its dimensionality.
-
-            >>> data.chop('w1', 'w2', at={'d2': [0, 'fs']})
-            [data]
-
         """
         # organize arguments recieved -------------------------------------------------------------
         axes_args = list(args)
@@ -630,7 +642,6 @@ class Data:
             if arg not in self.axis_names:
                 raise Exception('axis {} not in data'.format(arg))
         # iterate! --------------------------------------------------------------------------------
-        print(axes_args, chopped_constants)
         # find iterated dimensions
         iterated_dimensions = []
         iterated_shape = [1]
@@ -720,7 +731,7 @@ class Data:
         elif isinstance(channel, string_type):
             channel_index = self.channel_names.index(channel)
         else:
-            print('channel type', type(channel), 'not valid')
+            raise TypeError("channel: expected {int, str}, got %s" % type(channel))
         channel = self.channels[channel_index]
         # call clip on channel object
         channel.clip(*args, **kwargs)
@@ -736,7 +747,7 @@ class Data:
         method : {'integrate', 'average', 'sum', 'max', 'min'} (optional)
             The method of collapsing the given axis. Method may also be list
             of methods corresponding to the channels of the object. Default
-            is integrate.
+            is integrate. All methods but integrate disregard NANs.
 
         See Also
         --------
@@ -751,7 +762,7 @@ class Data:
         elif isinstance(axis, string_type):
             axis_index = self.axis_names.index(axis)
         else:
-            print('axis type', type(axis), 'not valid')
+            raise TypeError("axis: expected {int, str}, got %s" % type(axis))
         # methods ---------------------------------------------------------------------------------
         if isinstance(method, list):
             if len(method) == len(self.channels):
@@ -766,16 +777,15 @@ class Data:
                 channel.values = np.trapz(
                     y=channel.values, x=self.axes[axis_index].points, axis=axis_index)
             elif method == 'sum':
-                channel.values = channel.values.sum(axis=axis_index)
+                channel.values = np.nansum(channel.values, axis=axis_index)
             elif method in ['max', 'maximum']:
                 channel.values = np.nanmax(channel.values, axis=axis_index)
             elif method in ['min', 'minimum']:
                 channel.values = np.nanmin(channel.values, axis=axis_index)
-            elif method in ['ave', 'average']:
-                channel.values = np.average(channel.values, axis=axis_index)
+            elif method in ['ave', 'average', 'mean']:
+                channel.values = np.nanmean(channel.values, axis=axis_index)
             else:
                 print('method not recognized in data.collapse')
-            channel._update()
         # cleanup ---------------------------------------------------------------------------------
         self.axes.pop(axis_index)
         self._update()
@@ -865,7 +875,7 @@ class Data:
         elif isinstance(channel, string_type):
             channel_index = self.channel_names.index(channel)
         else:
-            print('channel type', type(channel), 'not valid')
+            raise TypeError("channel: expected {int, str}, got %s" % type(channel))
         channel = self.channels[channel_index]
         # get divisor channel
         if isinstance(divisor_channel, int):
@@ -873,11 +883,10 @@ class Data:
         elif isinstance(divisor_channel, string_type):
             divisor_channel_index = divisor.channel_names.index(divisor_channel)
         else:
-            print('divisor channel type', type(channel), 'not valid')
+            raise TypeError("divisor_channel: expected {int, str}, got %s" % type(divisor_channel))
         divisor_channel = divisor.channels[divisor_channel_index]
         # do division
         channel.values /= divisor_channel.values
-        channel._update()
         # transpose out
         self.transpose(transpose_order, verbose=False)
 
@@ -910,14 +919,15 @@ class Data:
         elif isinstance(signal_channel, string_type):
             signal_channel_index = self.channel_names.index(signal_channel)
         else:
-            print('channel type', type(signal_channel), 'not valid')
+            raise TypeError("signal_channel: expected {int, str}, got %s" % type(signal_channel))
         # get reference channel
         if isinstance(reference_channel, int):
             reference_channel_index = reference_channel
         elif isinstance(reference_channel, string_type):
             reference_channel_index = self.channel_names.index(reference_channel)
         else:
-            print('channel type', type(reference_channel), 'not valid')
+            raise TypeError("reference_channel: expected {int, str}, got %s" %
+                            type(reference_channel))
         # process
         intensity = self.channels[reference_channel_index].values.copy()
         d_intensity = self.channels[signal_channel_index].values.copy()
@@ -930,13 +940,11 @@ class Data:
             d_intensity *= 2
             out = -np.log10((intensity + d_intensity) / intensity)
         else:
-            print('method not recognized in dOD, returning')
-            return
+            raise ValueError("Method '%s' not in {'digital', 'boxcar'}" % method)
         # finish
         self.channels[signal_channel_index].give_values(out)
         self.channels[signal_channel_index].signed = True
-        self.channels[signal_channel_index].null = 0
-        self.channels[signal_channel_index]._update()
+        self.channels[signal_channel_index]._null = 0
 
     def flip(self, axis):
         """Flip direction of arrays along an axis.
@@ -954,7 +962,7 @@ class Data:
         elif isinstance(axis, string_type):
             axis_index = self.axis_names.index(axis)
         else:
-            print('axis type', type(axis), 'not valid')
+            raise TypeError("axis: expected {int, str}, got %s" % type(axis))
         axis = self.axes[axis_index]
         # flip ------------------------------------------------------------------------------------
         # axis
@@ -994,7 +1002,7 @@ class Data:
         elif isinstance(channel, string_type):
             channel_index = self.channel_names.index(channel)
         else:
-            print('channel type', type(channel), 'not valid')
+            raise TypeError("channel: expected {int, str}, got %s" % type(channel))
         channel = self.channels[channel_index]
         # get indicies
         arr = channel.values
@@ -1022,7 +1030,7 @@ class Data:
         elif isinstance(channel, string_type):
             channel_index = self.channel_names.index(channel)
         else:
-            print('channel type', type(channel), 'not valid')
+            raise TypeError("channel: expected {int, str}, got %s" % type(channel))
         channel = self.channels[channel_index]
         # get indicies
         arr = channel.values
@@ -1041,13 +1049,16 @@ class Data:
             Channel to heal. Default is 0.
         method : {'linear', 'nearest', 'cubic'} (optional)
             The interpolation method. Note that cubic interpolation is only
-            possible for 1D and 2D data. See `griddata`_ for more information.
+            possible for 1D and 2D data. See `griddata`__ for more information.
             Default is linear.
         fill_value : number-like (optional)
             The value written to pixels that cannot be filled by interpolation.
             Default is nan.
         verbose : bool (optional)
             Toggle talkback. Default is True.
+
+
+        __ http://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.griddata.html
 
 
         .. note:: Healing may take several minutes for large datasets.
@@ -1063,7 +1074,7 @@ class Data:
             elif isinstance(channel, string_type):
                 channel_index = self.channel_names.index(channel)
             else:
-                print('channel type', type(channel), 'not valid')
+                raise TypeError("channel: expected {int, str}, got %s" % type(channel))
             channel = self.channels[channel_index]
             values = self.channels[channel_index].values
             points = [axis.points for axis in self.axes]
@@ -1080,7 +1091,6 @@ class Data:
             # grid data
             out = griddata(tup, arr[-1], xi, method=method, fill_value=fill_value)
             self.channels[channel_index].values = out
-            self.channels[channel_index]._update()
         # print
         if verbose:
             print('channel {0} healed in {1} seconds'.format(
@@ -1119,7 +1129,7 @@ class Data:
         elif isinstance(channel, string_type):
             channel_index = self.channel_names.index(channel)
         else:
-            print('channel type', type(channel), 'not valid')
+                raise TypeError("channel: expected {int, str}, got %s" % type(channel))
         channel = self.channels[channel_index]
         # axis ------------------------------------------------------------------------------------
         if isinstance(axis, int):
@@ -1127,7 +1137,7 @@ class Data:
         elif isinstance(axis, string_type):
             axis_index = self.axis_names.index(axis)
         else:
-            print('axis type', type(axis), 'not valid')
+            raise TypeError("axis: expected {int, str}, got %s" % type(axis))
         # verify npts not zero --------------------------------------------------------------------
         npts = int(npts)
         if npts == 0:
@@ -1165,10 +1175,9 @@ class Data:
             print('channel', channel.name, 'offset by', axis.name, 'between',
                   int(points.min()), 'and', int(points.max()), axis.units)
 
-    def m(self, abs_data, channel=0, this_exp='TG',
-          indices=None, m=None,
-          bounds_error=True, verbose=True):
-        """Perform m-factor corrections [#carlson1989]_.
+    def m(self, abs_data, channel=0, this_exp='TG', indices=None, m=None, bounds_error=True,
+          verbose=True):
+        """Perform m-factor corrections.
 
         Assumes all absorption functions are independent, so we can
         normalize each axis individually.
@@ -1180,15 +1189,29 @@ class Data:
         channel : int or string (optional)
             Channel to correct (default is zero)
         this_exp : {'TG', 'TA'} (optional)
-            Experimental configuration. Default is TG.
+            Experimental configuration. Default is TG. Note that TG data
+            should be processed on the intensity level.
         indices : list of integers (optional)
-            axis indices
+            axis indices. If None, indices are guessed from label_seed.
+            Default is None.
         m : function (optional)
-            m-factor function
-        bounds_error : boolean (optinal)
+            m-factor function. Should take arguments a1 and a2.
+        bounds_error : boolean (optional)
             Toggle bounds_error. Default is True.
         verbose : boolean (optional)
             Toggle talkback. Default is True.
+
+        Notes
+        -----
+        m-factors originally derived by Carlson and Wright. [1]_
+
+        References
+        ----------
+        .. [1] **Absorption and Coherent Interference Effects in Multiply Resonant
+               Four-Wave Mixing Spectroscopy**
+               Roger J. Carlson, and John C. Wright
+               *Applied Spectroscopy* **1989** 43, 1195--1208
+               `doi:10.1366/0003702894203408 <http://dx.doi.org/10.1366/0003702894203408>`_
         """
         # exp_name: [i], [m_i]
         exp_types = {
@@ -1198,7 +1221,7 @@ class Data:
                     ]
                    ],
             'TA': [['2'],
-                   [lambda a2: 1 - 10**(-a2)]
+                   [lambda a2: (1 - 10**-a2) / (a2 * np.log(10))]
                    ]
         }
         # try to figure out the experiment or adopt the imported norm functions
@@ -1209,29 +1232,22 @@ class Data:
         elif m is not None and indices is not None:
             pass
         else:
-            print('m-factors for this experiment have not yet been implemented')
-            print('currently available experiments:')
-            for key in exp_types.keys():
-                print(key)
-            print('no m-factor normalization was performed')
-            return
-        # find which axes have m-factor dependence; move to the inside and
-        # operate
+            raise KeyError('experiment {0} not recognized'.format(this_exp))
+        # find which axes have m-factor dependence; move to the inside and operate
         m_axes = [axi for axi in self.axes if axi.units_kind == 'energy']
         # loop through 'indices' and find axis whole label_seeds contain indi
         for i, indi in enumerate(indices):
-            t_order = range(len(self.axes))
+            t_order = list(range(len(self.axes)))
             # find axes indices that have the correct label seed
             # and also belong to the list of axes under consideration
             # ni = [j for j in range(len(m_axes)) if indi in
-            ni = [j for j in range(len(self.axes)) if indi in
-                  self.axes[j].label_seed and self.axes[j] in m_axes]
-            # m_axes[j].label_seed]
+            ni = [j for j in range(len(self.axes)) if indi in self.axes[j].label_seed and
+                  self.axes[j] in m_axes]
             if verbose:
                 print(ni)
             # there should never be more than one axis that agrees
             if len(ni) > 1:
-                raise ValueError()
+                raise RuntimeError('axes are not unique!')
             elif len(ni) > 0:
                 ni = ni[0]
                 axi = self.axes[ni]
@@ -1242,23 +1258,22 @@ class Data:
                 if verbose:
                     print(t_order)
                 self.transpose(axes=t_order, verbose=verbose)
-                # evaluate ai ---------------------------------------------------------------------
+                # evaluate ai
                 abs_data.axes[0].convert(axi.units)
                 Ei = abs_data.axes[0].points
                 Ai = interp1d(Ei, abs_data.channels[0].values,
                               bounds_error=bounds_error)
                 ai = Ai(axi.points)
                 Mi = mi(ai)
-                # apply Mi to channel -------------------------------------------------------------
-                self.channels[i].values /= Mi
+                # apply Mi to channel
+                self.channels[channel].values /= Mi
                 # invert back out of the transpose
                 t_inv = [t_order.index(j) for j in range(len(t_order))]
                 if verbose:
                     print(t_inv)
                 self.transpose(axes=t_inv, verbose=verbose)
             else:
-                print('{0} label_seed not found'.format(indi))
-        return
+                raise RuntimeError('{0} label_seed not found'.format(indi))
 
     def map_axis(self, axis, points, input_units='same', verbose=True):
         """Map points of an axis to new points using linear interpolation.
@@ -1277,13 +1292,14 @@ class Data:
         verbose : bool (optional)
             Toggle talkback. Default is True.
         """
+        points = np.array(points)
         # get axis index --------------------------------------------------------------------------
         if isinstance(axis, int):
             axis_index = axis
         elif isinstance(axis, string_type):
             axis_index = self.axis_names.index(axis)
         else:
-            print('axis type', type(axis), 'not valid')
+            raise TypeError("axis: expected {int, str}, got %s" % type(axis))
         axis = self.axes[axis_index]
         # transform points to axis units ----------------------------------------------------------
         if input_units == 'same':
@@ -1337,7 +1353,7 @@ class Data:
         elif isinstance(channel, string_type):
             channel_index = self.channel_names.index(channel)
         else:
-            print('channel type', type(channel), 'not valid')
+                raise TypeError("channel: expected {int, str}, got %s" % type(channel))
         channel = self.channels[channel_index]
         # process axes
 
@@ -1379,10 +1395,13 @@ class Data:
             interpolation range will be written nan.
         method : {'linear', 'nearest', 'cubic'} (optional)
             The interpolation method. Note that cubic interpolation is only
-            possible for 1D and 2D data. See `griddata`_ for more information.
+            possible for 1D and 2D data. See `griddata`__ for more information.
             Default is linear.
         verbose : bool (optional)
             Toggle talkback. Default is True.
+
+
+        __ http://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.griddata.html
 
             >>> points  # an array of w1 points
             >>> offsets  # an array of d1 corrections
@@ -1390,29 +1409,24 @@ class Data:
 
         """
         # axis ------------------------------------------------------------------------------------
-
         if isinstance(along, int):
             axis_index = along
         elif isinstance(along, string_type):
             axis_index = self.axis_names.index(along)
         else:
-            print('axis type', type(along), 'not valid')
+            raise TypeError("along: expected {int, str}, got %s" % type(along))
         axis = self.axes[axis_index]
-
         # values & points -------------------------------------------------------------------------
-
         # get values, points, units
         if units == 'same':
             input_units = axis.units
         else:
             input_units = units
-
         # check offsets is 1D or 0D
         if len(offsets.shape) == 1:
             pass
         else:
             raise RuntimeError('values must be 1D or 0D in offset!')
-
         # check if units is compatible, convert
         dictionary = getattr(wt_units, axis.units_kind)
         if input_units in dictionary.keys():
@@ -1420,34 +1434,28 @@ class Data:
         else:
             raise RuntimeError('units incompatible in offset!')
         points = wt_units.converter(points, input_units, axis.units)
-
         # create correction array
         function = interp1d(points, offsets, bounds_error=False)
         corrections = function(axis.points)
-
         # remove nans
         finite_indicies = np.where(np.isfinite(corrections))[0]
         left_pad_width = finite_indicies[0]
         right_pad_width = len(corrections) - finite_indicies[-1] - 1
         corrections = np.pad(corrections[np.isfinite(corrections)],
                              (int(left_pad_width), int(right_pad_width)), mode='edge')
-
         # do correction ---------------------------------------------------------------------------
-
         # transpose so axis is last
         transpose_order = np.arange(len(self.axes))
         transpose_order[axis_index] = len(self.axes) - 1
         transpose_order[-1] = axis_index
         self.transpose(transpose_order, verbose=False)
-
         # get offset axis index
         if isinstance(offset_axis, int):
             offset_axis_index = offset_axis
         elif isinstance(offset_axis, string_type):
             offset_axis_index = self.axis_names.index(offset_axis)
         else:
-            print('offset_axis type', type(offset_axis), 'not valid')
-
+            raise TypeError("offset_axis: expected {int, str}, got %s" % type(offset_axis))
         # new points
         new_points = [a.points for a in self.axes]
         old_offset_axis_points = self.axes[offset_axis_index].points
@@ -1467,31 +1475,24 @@ class Data:
             new_offset_axis_points = np.linspace(_min, _max, n)
         new_points[offset_axis_index] = new_offset_axis_points
         new_xi = tuple(np.meshgrid(*new_points, indexing='ij'))
-
         xi = tuple(np.meshgrid(*[a.points for a in self.axes], indexing='ij'))
         for channel in self.channels:
-
             # 'undo' gridding
             arr = np.zeros((len(self.axes) + 1, channel.values.size))
             for i in range(len(self.axes)):
                 arr[i] = xi[i].flatten()
             arr[-1] = channel.values.flatten()
-
             # do corrections
             corrections = list(corrections)
             corrections = corrections * int((len(arr[0]) / len(corrections)))
             arr[offset_axis_index] += corrections
-
             # grid data
             tup = tuple([arr[i] for i in range(len(arr) - 1)])
             # note that rescale is crucial in this operation
             out = griddata(tup, arr[-1], new_xi, method=method,
                            fill_value=np.nan, rescale=True)
             channel.values = out
-            channel._update()
-
         self.axes[offset_axis_index].points = new_offset_axis_points
-
         # transpose out
         self.transpose(transpose_order, verbose=False)
         self._update()
@@ -1511,26 +1512,40 @@ class Data:
         elif isinstance(channel, string_type):
             channel_index = self.channel_names.index(channel)
         else:
-            print('channel type', type(channel), 'not valid')
+            raise TypeError("channel: expected {int, str}, got %s" % type(channel))
         # remove
         self.channels.pop(channel_index)
         # finish
         self._update()
 
-    def revert(self):
-        """Revert this data object back to its original state."""
-        for attribute_name in dir(self):
-            if attribute_name not in ['_original'] + wt_kit.get_methods(self):
-                # if attribute does not exist in original, delete it
-                try:
-                    original_attribute = getattr(self._original, attribute_name)
-                    setattr(self, attribute_name, original_attribute)
-                except AttributeError:
-                    delattr(self, attribute_name)
+    def rename_attrs(self, **kwargs):
+        """Rename a set of attributes.
+
+        Keyword Arguments
+        -----------------
+        Each argument should have the key of a current axis or channel,
+            and a value which is a string of its new name.
+
+        The name will be set to str(val), and its natural naming identifier
+        will be wt.kit.string2identifier(str(val))
+        """
+        changed = kwargs.keys()
+        for k, v in kwargs.items():
+            if getattr(self, k).__class__ not in (Channel, Axis):
+                raise TypeError("Attribute for key %s: expected {Channel, Axis}, got %s" %
+                                (k, getattr(self, k).__class__))
+            if v not in changed and hasattr(self, v):
+                raise wt_exceptions.NameNotUniqueError(v)
+        for k, v in kwargs.items():
+            axis = getattr(self, k)
+            axis.name = str(v)
+            delattr(self, k)
         self._update()
 
     def save(self, filepath=None, verbose=True):
-        """Save using the `pickle`_ module.
+        """Save using the `pickle`__ module.
+
+        __ https://docs.python.org/3/library/pickle.html
 
         Parameters
         ----------
@@ -1581,21 +1596,15 @@ class Data:
         elif isinstance(channel, string_type):
             channel_index = self.channel_names.index(channel)
         else:
-            print('channel type', type(channel), 'not valid')
+            raise TypeError("channel: expected {int, str}, got %s" % type(channel))
         channel = self.channels[channel_index]
         # do scaling
         if kind in ['amp', 'amplitude']:
-            channel_data = channel.values
-            channel_data_abs = np.sqrt(np.abs(channel_data))
-            factor = np.ones(channel_data.shape)
-            factor[channel_data < 0] = -1
-            channel_data_out = channel_data_abs * factor
-            channel.values = channel_data_out
+            channel.values = wt_kit.symmetric_sqrt(channel.values, out=channel.values)
         if kind in ['log']:
             channel.values = np.log10(channel.values)
         if kind in ['invert']:
             channel.values *= -1.
-        channel._update()
 
     def share_nans(self):
         """Share not-a-numbers between all channels.
@@ -1611,7 +1620,9 @@ class Data:
             c.values = a
 
     def smooth(self, factors, channel=None, verbose=True):
-        """Smooth a channel using an n-dimenional `kaiser window`_.
+        """Smooth a channel using an n-dimenional `kaiser window`__.
+
+        __ https://en.wikipedia.org/wiki/Kaiser_window
 
         Parameters
         ----------
@@ -1641,7 +1652,7 @@ class Data:
             elif isinstance(channel, string_type):
                 channel_index = self.channel_names.index(channel)
             else:
-                print('channel type', type(channel), 'not valid')
+                raise TypeError("channel: expected {int, str}, got %s" % type(channel))
             channels = [self.channels[channel_index]]
         # smooth ----------------------------------------------------------------------------------
         for channel in channels:
@@ -1712,7 +1723,7 @@ class Data:
         elif isinstance(axis, string_type):
             axis_index = self.axis_names.index(axis)
         else:
-            print('axis type', type(axis), 'not valid')
+            raise TypeError("axis: expected {int, str}, got %s" % type(axis))
         axis = self.axes[axis_index]
         # indicies --------------------------------------------------------------------------------
         # positions must be iterable and should be a numpy array
@@ -1833,7 +1844,7 @@ class Data:
         elif isinstance(channel, string_type):
             channel_index = self.channel_names.index(channel)
         else:
-            print('channel type', type(channel), 'not valid')
+            raise TypeError("channel: expected {int, str}, got %s" % type(channel))
         channel = self.channels[channel_index]
         # get subtrahend channel
         if isinstance(subtrahend_channel, int):
@@ -1841,11 +1852,11 @@ class Data:
         elif isinstance(subtrahend_channel, string_type):
             subtrahend_channel_index = subtrahend.channel_names.index(subtrahend_channel)
         else:
-            print('divisor channel type', type(channel), 'not valid')
+            raise TypeError("subtrahend_channel: expected {int, str}, got %s" %
+                            type(subtrahend_channel))
         subtrahend_channel = subtrahend.channels[subtrahend_channel_index]
         # do division
         channel.values -= subtrahend_channel.values
-        channel._update()
         # transpose out
         self.transpose(transpose_order, verbose=False)
 
@@ -1875,8 +1886,8 @@ class Data:
             elif key in ['method', 'factor', 'replace', 'verbose']:
                 inputs[key] = value
             else:
-                raise KeyError(
-                    'Keyword arguments to trim must be either an axis name or one of {method, factor, replace, verbose}')
+                raise KeyError('Keyword arguments to trim must be either an axis name or one of' +
+                               '{method, factor, replace, verbose}.')
         # call trim
         return channel.trim(neighborhood=neighborhood, **inputs)
 
@@ -1924,8 +1935,10 @@ class Data:
         """Zoom the data array using spline interpolation of the requested order.
 
         The number of points along each axis is increased by factor.
-        See `scipy ndimage`_ for more info.
+        See `scipy ndimage`__ for more info.
 
+        __ http://docs.scipy.org/doc/scipy/reference/
+                    generated/scipy.ndimage.interpolation.zoom.html
 
         Parameters
         ----------
@@ -1950,1309 +1963,3 @@ class Data:
         # return
         if verbose:
             print('data zoomed to new shape:', self.channels[0].values.shape)
-
-
-# --- data creation methods -----------------------------------------------------------------------
-
-
-def from_Cary50(filepath, verbose=True):
-    """Create a data object from a Cary 50 UV VIS absorbance file.
-
-    .. plot::
-
-        >>> import WrightTools as wt
-        >>> from WrightTools import datasets
-        >>> p = datasets.Cary50.CuPCtS_H2O_vis
-        >>> data = wt.data.from_Cary50(p)[0]
-        >>> artist = wt.artists.mpl_1D(data)
-        >>> artist.plot()
-
-    Parameters
-    ----------
-    filepath : string
-        Path to Cary50 output file (.csv).
-    verbose : boolean (optional)
-        Toggle talkback. Default is True.
-
-    Returns
-    -------
-    data
-        New data object.
-    """
-    # check filepath
-    if not os.path.isfile(filepath):
-        raise wt_exceptions.FileNotFound(path=filepath)
-    filesuffix = os.path.basename(filepath).split('.')[-1]
-    if filesuffix != 'csv':
-        wt_exceptions.WrongFileTypeWarning.warn(filepath, 'csv')
-    # import array
-    lines = []
-    with open(filepath, 'r') as f:
-        header = f.readline()
-        units = f.readline()
-        while True:
-            line = f.readline()
-            if line == '\n' or line == '':
-                break
-            else:
-                clean = line[:-2]  # lines end with ',/n'
-                lines.append(np.fromstring(clean, sep=','))
-    header = header.split(',')
-    lines = [i for i in lines if len(i)>0]
-    arr = np.array(lines).T
-    # chew through all scans
-    datas = []
-    indicies = np.arange(len(header) // 2) * 2
-    for i in indicies:
-        axis = Axis(arr[i], 'nm', name='wm')
-        signal = Channel(arr[i + 1], name='absorbance', label='absorbance', signed=False)
-        data = Data([axis], [signal], source='Cary 50', name=header[i])
-        datas.append(data)
-    # finish
-    if verbose:
-        print('{0} data objects successfully created from Cary 50 file:'.format(len(indicies)))
-        for i, data in enumerate(datas):
-            print('  {0}: {1}'.format(i, data.name))
-    return datas
-
-
-def from_text(filepath, name=None, verbose=True):
-    """Create a data object from plaintext tab deliminated file.
-
-    Expects one energy and one intensity value.
-
-    Parameters
-    ----------
-    filepath : string, list of strings, or array of strings
-        Path to .txt file.
-    name : string (optional)
-        Name to give to the created data object. If None, filename is used.
-        Default is None.
-    verbose : boolean (optional)
-        Toggle talkback. Default is True.
-
-    Returns
-    -------
-    data
-        New data object(s).
-    """
-    if isinstance(filepath, type([])) or isinstance(filepath, type(np.array([]))):
-        return [from_text(f) for f in filepath]
-
-    if not os.path.isfile(filepath):
-        raise wt_exceptions.FileNotFound(path=filepath)
-    if not filepath.endswith('txt') and not filepath.endswith('dpt'):
-        wt_exceptions.WrongFileTypeWarning.warn(filepath, 'txt or dpt')
-    # import array
-    lines = []
-    with open(filepath, 'r') as f:
-        while True:
-            line = f.readline()
-            if line == '\n' or line == '':
-                break
-            else:
-                clean = line[:-2]  # lines end with ',/n'
-                lines.append(np.fromstring(clean, sep=' '))
-
-    arr = np.array(lines).T
-    # chew through all scans
-    indicies = np.arange(1)
-    for i in indicies:
-        axis = Axis(arr[i], 'wn', name='wm')
-        signal = Channel(arr[i + 1], name='signal', label='units', signed=False)
-        if name:
-            data = Data([axis], [signal], source='txt file', name=name)
-        else:
-            name = filepath.split('//')[-1].split('.')[0]
-            data = Data([axis], [signal], source='txt file', name=name)
-    # finish
-    if verbose:
-        print('{0} data objects successfully created from file:'.format(len(indicies)))
-    return data
-
-
-def from_BrunoldrRaman(filepath, name=None, verbose=True):
-    """Create a data object from the Brunold rRaman instrument.
-
-    Expects one energy (in wavenumbers) and one counts value.
-
-    Parameters
-    ----------
-    filepath : string, list of strings, or array of strings
-        Path to .txt file.
-    name : string (optional)
-        Name to give to the created data object. If None, filename is used.
-        Default is None.
-    verbose : boolean (optional)
-        Toggle talkback. Default is True.
-
-    Returns
-    -------
-    data
-        New data object(s).
-    """
-    if not os.path.isfile(filepath):
-        raise wt_exceptions.FileNotFound(path=filepath)
-    if not filepath.endswith('txt'):
-        wt_exceptions.WrongFileTypeWarning.warn(filepath, 'txt')
-    # import array
-    arr = np.genfromtxt(filepath, delimiter='\t').T
-    # chew through all scans
-    axis = Axis(arr[0], 'wn', name='wm')
-    signal = Channel(arr[1], name='signal', label='counts', signed=False)
-    if name:
-        data = Data([axis], [signal], source='Brunold rRaman', name=name)
-    else:
-        name = filepath.split('//')[-1].split('.')[0]
-        data = Data([axis], [signal], source='Brunold rRaman', name=name)
-    # finish
-    if verbose:
-        print('1 data object successfully created from file')
-    return data
-
-
-def from_COLORS(
-        filepaths,
-        null=None,
-        name=None,
-        cols=None,
-        invert_d1=True,
-        color_steps_as='energy',
-        ignore=[
-            'num',
-            'w3',
-            'wa',
-            'dref',
-            'm0',
-            'm1',
-            'm2',
-            'm3',
-            'm4',
-            'm5',
-            'm6'],
-        even=True,
-        verbose=True):
-    """Read a Data object from a COLORS filetype.
-
-    color_steps_as one in 'energy', 'wavelength'
-    """
-    # do we have a list of files or just one file? ------------------------------------------------
-
-    if isinstance(filepaths, list):
-        file_example = filepaths[0]
-    else:
-        file_example = filepaths
-        filepaths = [filepaths]
-
-    # define format of dat file -------------------------------------------------------------------
-
-    if cols:
-        pass
-    else:
-        num_cols = len(np.genfromtxt(file_example).T)
-        if num_cols in [28, 35]:
-            cols = 'v2'
-        elif num_cols in [20]:
-            cols = 'v1'
-        elif num_cols in [15, 16, 19]:
-            cols = 'v0'
-        if verbose:
-            print('cols recognized as', cols, '(%d)' % num_cols)
-
-    if cols == 'v2':
-        axes = collections.OrderedDict()
-        axes['num'] = Axis(None, None, tolerance=0.5, file_idx=0,
-                           name='num', label_seed=['num'])
-        axes['w1'] = Axis(None, 'nm', tolerance=0.5, file_idx=1, name='w1', label_seed=['1'])
-        axes['w2'] = Axis(None, 'nm', tolerance=0.5, file_idx=3, name='w2', label_seed=['2'])
-        axes['w3'] = Axis(None, 'nm', tolerance=5.0, file_idx=5, name='w3', label_seed=['3'])
-        axes['wm'] = Axis(None, 'nm', tolerance=1.0, file_idx=7, name='wm', label_seed=['m'])
-        axes['wa'] = Axis(None, 'nm', tolerance=1.0, file_idx=8, name='wm', label_seed=['a'])
-        axes['dref'] = Axis(None, 'fs', tolerance=25.0, file_idx=10,
-                            name='dref', label_seed=['ref'])
-        axes['d1'] = Axis(None, 'fs', tolerance=4.0, file_idx=12,
-                          name='d1', label_seed=['22\''])
-        axes['d2'] = Axis(None, 'fs', tolerance=4.0, file_idx=14, name='d2', label_seed=['21'])
-        axes['m0'] = Axis(None, None, tolerance=10.0, file_idx=22, name='m0', label_seed=['0'])
-        axes['m1'] = Axis(None, None, tolerance=10.0, file_idx=23, name='m1', label_seed=['1'])
-        axes['m2'] = Axis(None, None, tolerance=10.0, file_idx=24, name='m2', label_seed=['2'])
-        axes['m3'] = Axis(None, None, tolerance=10.0, file_idx=25, name='m3', label_seed=['3'])
-        axes['m4'] = Axis(None, None, tolerance=15.0, file_idx=26, name='m4', label_seed=['4'])
-        axes['m5'] = Axis(None, None, tolerance=15.0, file_idx=27, name='m5', label_seed=['5'])
-        axes['m6'] = Axis(None, None, tolerance=15.0, file_idx=28, name='m6', label_seed=['6'])
-        channels = collections.OrderedDict()
-        channels['ai0'] = Channel(None, 'V', file_idx=16, name='ai0', label_seed=['0'])
-        channels['ai1'] = Channel(None, 'V', file_idx=17, name='ai1', label_seed=['1'])
-        channels['ai2'] = Channel(None, 'V', file_idx=18, name='ai2', label_seed=['2'])
-        channels['ai3'] = Channel(None, 'V', file_idx=19, name='ai3', label_seed=['3'])
-        channels['ai4'] = Channel(None, 'V', file_idx=20, name='ai4', label_seed=['4'])
-        channels['mc'] = Channel(None, None, file_idx=21, name='array', label_seed=['a'])
-    elif cols == 'v1':
-        axes = collections.OrderedDict()
-        axes['num'] = Axis(None, None, tolerance=0.5, file_idx=0,
-                           name='num', label_seed=['num'])
-        axes['w1'] = Axis(None, 'nm', tolerance=0.5, file_idx=1, name='w1', label_seed=['1'])
-        axes['w2'] = Axis(None, 'nm', tolerance=0.5, file_idx=3, name='w2', label_seed=['2'])
-        axes['wm'] = Axis(None, 'nm', tolerance=0.5, file_idx=5, name='wm', label_seed=['m'])
-        axes['d1'] = Axis(None, 'fs', tolerance=3.0, file_idx=6, name='d1', label_seed=['1'])
-        axes['d2'] = Axis(None, 'fs', tolerance=3.0, file_idx=7, name='d2', label_seed=['2'])
-        channels = collections.OrderedDict()
-        channels['ai0'] = Channel(None, 'V', file_idx=8, name='ai0', label_seed=['0'])
-        channels['ai1'] = Channel(None, 'V', file_idx=9, name='ai1', label_seed=['1'])
-        channels['ai2'] = Channel(None, 'V', file_idx=10, name='ai2', label_seed=['2'])
-        channels['ai3'] = Channel(None, 'V', file_idx=11, name='ai3', label_seed=['3'])
-    elif cols == 'v0':
-        axes = collections.OrderedDict()
-        axes['num'] = Axis(None, None, tolerance=0.5, file_idx=0,
-                           name='num', label_seed=['num'])
-        axes['w1'] = Axis(None, 'nm', tolerance=0.5, file_idx=1, name='w1', label_seed=['1'])
-        axes['w2'] = Axis(None, 'nm', tolerance=0.5, file_idx=3, name='w2', label_seed=['2'])
-        axes['wm'] = Axis(None, 'nm', tolerance=0.5, file_idx=5, name='wm', label_seed=['m'])
-        axes['d1'] = Axis(None, 'fs', tolerance=3.0, file_idx=6, name='d1', label_seed=['1'])
-        axes['d2'] = Axis(None, 'fs', tolerance=3.0, file_idx=8, name='d2', label_seed=['2'])
-        channels = collections.OrderedDict()
-        channels['ai0'] = Channel(None, 'V', file_idx=10, name='ai0', label_seed=['0'])
-        channels['ai1'] = Channel(None, 'V', file_idx=11, name='ai1', label_seed=['1'])
-        channels['ai2'] = Channel(None, 'V', file_idx=12, name='ai2', label_seed=['2'])
-        channels['ai3'] = Channel(None, 'V', file_idx=13, name='ai3', label_seed=['3'])
-
-    # import full array ---------------------------------------------------------------------------
-
-    for i in range(len(filepaths)):
-        dat = np.genfromtxt(filepaths[i]).T
-        if verbose:
-            print('dat imported:', dat.shape)
-        if i == 0:
-            arr = dat
-        else:
-            arr = np.append(arr, dat, axis=1)
-
-    if invert_d1:
-        idx = axes['d1'].file_idx
-        arr[idx] = -arr[idx]
-
-    # recognize dimensionality of data ------------------------------------------------------------
-
-    axes_discover = axes.copy()
-    for key in ignore:
-        if key in axes_discover:
-            axes_discover.pop(key)  # remove dimensions that mess up discovery
-
-    scanned, constant = discover_dimensions(arr, axes_discover)
-
-    # get axes points -----------------------------------------------------------------------------
-
-    for axis in scanned:
-
-        # generate lists from data
-        lis = sorted(arr[axis.file_idx])
-        tol = axis.tolerance
-
-        # values are binned according to their averages now, so min and max
-        #  are better represented
-        xstd = []
-        xs = []
-
-        # check to see if unique values are sufficiently unique
-        # deplete to list of values by finding points that are within
-        #  tolerance
-        while len(lis) > 0:
-            # find all the xi's that are like this one and group them
-            # after grouping, remove from the list
-            set_val = lis[0]
-            xi_lis = [xi for xi in lis if np.abs(set_val - xi) < tol]
-            # the complement of xi_lis is what remains of xlis, then
-            lis = [xi for xi in lis if not np.abs(xi_lis[0] - xi) < tol]
-            xi_lis_average = sum(xi_lis) / len(xi_lis)
-            xs.append(xi_lis_average)
-            xstdi = sum(np.abs(xi_lis - xi_lis_average)) / len(xi_lis)
-            xstd.append(xstdi)
-
-        # create uniformly spaced x and y lists for gridding
-        # infinitesimal offset used to properly interpolate on bounds; can
-        #   be a problem, especially for stepping axis
-        tol = sum(xstd) / len(xstd)
-        tol = max(tol, 0.3)
-        if even:
-            if axis.units_kind == 'energy' and color_steps_as == 'energy':
-                min_wn = 1e7 / max(xs) + tol
-                max_wn = 1e7 / min(xs) - tol
-                axis.units = 'wn'
-                axis.points = np.linspace(min_wn, max_wn, num=len(xs))
-                axis.convert('nm')
-            else:
-                axis.points = np.linspace(min(xs) + tol, max(xs) - tol, num=len(xs))
-        else:
-            axis.points = np.array(xs)
-
-    # grid data -----------------------------------------------------------------------------------
-
-    if len(scanned) == 1:
-        # 1D data
-
-        axis = scanned[0]
-        axis.points = arr[axis.file_idx]
-        scanned[0] = axis
-
-        for key in channels.keys():
-            channel = channels[key]
-            zi = arr[channel.file_idx]
-            channel.give_values(zi)
-
-    else:
-        # all other dimensionalities
-
-        points = tuple(arr[axis.file_idx] for axis in scanned)
-        # beware, meshgrid gives wrong answer with default indexing
-        # this took me many hours to figure out... - blaise
-        xi = tuple(np.meshgrid(*[axis.points for axis in scanned], indexing='ij'))
-
-        for key in channels.keys():
-            channel = channels[key]
-            zi = arr[channel.file_idx]
-            fill_value = min(zi)
-            grid_i = griddata(points, zi, xi,
-                              method='linear', fill_value=fill_value)
-            channel.give_values(grid_i)
-
-    # create data object --------------------------------------------------------------------------
-
-    data = Data(list(scanned), list(channels.values()), list(constant))
-
-    if color_steps_as == 'energy':
-        try:
-            data.convert('wn', verbose=False)
-        except BaseException:
-            pass
-
-    for axis in data.axes:
-        axis.get_label()
-    for axis in data.constants:
-        axis.get_label()
-
-    # add extra stuff to data object --------------------------------------------------------------
-
-    data.source = filepaths
-
-    if not name:
-        name = wt_kit.filename_parse(file_example)[1]
-    data.name = name
-
-    # return --------------------------------------------------------------------------------------
-
-    if verbose:
-        print('data object succesfully created')
-        print('axis names:', data.axis_names)
-        print('values shape:', data.channels[0].values.shape)
-
-    return data
-
-
-def from_JASCO(filepath, name=None, kind='absorbance', verbose=True):
-    """Create a data object from a JASCO UV-VIS NIR file.
-
-    Parameters
-    ----------
-    filepath : string
-        Path to JASCO output file (.txt).
-    name : string (optional)
-        Name to give to the created data object. If None, filename is used.
-        Default is None.
-    kind : {'absorbance', 'diffuse reflectance'} (optional)
-        Kind of data taken. Default is absorbance.
-    verbose : boolean (optional)
-        Toggle talkback. Default is True.
-
-    Returns
-    -------
-    data
-        New data object.
-    """
-    # check filepath
-    if not os.path.isfile(filepath):
-        raise wt_exceptions.FileNotFound(path=filepath)
-    filesuffix = os.path.basename(filepath).split('.')[-1]
-    if filesuffix != 'txt':
-        wt_exceptions.WrongFileTypeWarning.warn(filepath, 'txt')
-    # import array
-    arr = np.genfromtxt(filepath, skip_header=18).T
-    # name
-    if not name:
-        name = filepath
-    # construct data
-    axis = Axis(arr[0], 'nm', name='wm')
-    signal = Channel(arr[1], kind, signed=False)
-    data = Data([axis], [signal], source='JASCO', name=name)
-    # finish
-    if verbose:
-        print(data)
-    return data
-
-
-def from_KENT(filepaths, null=None, name=None, ignore=['wm'], use_norm=False,
-              delay_tolerance=0.1, frequency_tolerance=0.5, verbose=True):
-    """Read data object from KENT files."""
-    # do we have a list of files or just one file? ------------------------------------------------
-    if isinstance(filepaths, list):
-        file_example = filepaths[0]
-    else:
-        file_example = filepaths
-        filepaths = [filepaths]
-    # define format of dat file -------------------------------------------------------------------
-    # axes
-    axes = collections.OrderedDict()
-    axes['w1'] = Axis(None, 'wn', tolerance=frequency_tolerance,
-                      file_idx=0, name='w1', label_seed=['1'])
-    axes['w2'] = Axis(None, 'wn', tolerance=frequency_tolerance,
-                      file_idx=1, name='w2', label_seed=['2'])
-    axes['wm'] = Axis(None, 'wn', tolerance=frequency_tolerance,
-                      file_idx=2, name='wm', label_seed=['m'])
-    axes['d1'] = Axis(None, 'ps', tolerance=delay_tolerance,
-                      file_idx=3, name='d1', label_seed=['1'])
-    axes['d2'] = Axis(None, 'ps', tolerance=delay_tolerance,
-                      file_idx=4, name='d2', label_seed=['2'])
-    # channels
-    channels = collections.OrderedDict()
-    channels['signal'] = Channel(None, 'V', file_idx=5, name='signal', label_seed=['0'])
-    channels['OPA2'] = Channel(None, 'V', file_idx=6, name='OPA2', label_seed=['1'])
-    channels['OPA1'] = Channel(None, 'V', file_idx=7, name='OPA1', label_seed=['2'])
-    # import full array ---------------------------------------------------------------------------
-    for i in range(len(filepaths)):
-        dat = np.genfromtxt(filepaths[i]).T
-        if verbose:
-            print('file imported:', dat.shape)
-        if i == 0:
-            arr = dat
-        else:
-            arr = np.append(arr, dat, axis=1)
-    # recognize dimensionality of data ------------------------------------------------------------
-    axes_discover = axes.copy()
-    for key in ignore:
-        if key in axes_discover:
-            axes_discover.pop(key)  # remove dimensions that mess up discovery
-    scanned, constant = discover_dimensions(arr, axes_discover)
-    # get axes points -----------------------------------------------------------------------------
-    for axis in scanned:
-        # generate lists from data
-        lis = sorted(arr[axis.file_idx])
-        tol = axis.tolerance
-        # values are binned according to their averages now, so min and max
-        #  are better represented
-        xstd = []
-        xs = []
-        # check to see if unique values are sufficiently unique
-        # deplete to list of values by finding points that are within
-        #  tolerance
-        while len(lis) > 0:
-            # find all the xi's that are like this one and group them
-            # after grouping, remove from the list
-            set_val = lis[0]
-            xi_lis = [xi for xi in lis if np.abs(set_val - xi) < tol]
-            # the complement of xi_lis is what remains of xlis, then
-            lis = [xi for xi in lis if not np.abs(xi_lis[0] - xi) < tol]
-            xi_lis_average = sum(xi_lis) / len(xi_lis)
-            xs.append(xi_lis_average)
-            xstdi = sum(np.abs(xi_lis - xi_lis_average)) / len(xi_lis)
-            xstd.append(xstdi)
-        # create uniformly spaced x and y lists for gridding
-        # infinitesimal offset used to properly interpolate on bounds; can
-        #   be a problem, especially for stepping axis
-        tol = sum(xstd) / len(xstd)
-        tol = max(tol, 1e-4)
-        axis.points = np.linspace(min(xs) + tol, max(xs) - tol, num=len(xs))
-    # grid data -----------------------------------------------------------------------------------
-    # May not need, but doesnt hurt to include
-    if len(scanned) == 1:
-        # 1D data
-        axis = scanned[0]
-        axis.points = arr[axis.file_idx]
-        scanned[0] = axis
-        for key in channels.keys():
-            channel = channels[key]
-            zi = arr[channel.file_idx]
-            channel.give_values(zi)
-    else:
-        # all other dimensionalities
-        points = tuple(arr[axis.file_idx] for axis in scanned)
-        xi = tuple(np.meshgrid(*[axis.points for axis in scanned], indexing='ij'))
-        for key in channels.keys():
-            channel = channels[key]
-            zi = arr[channel.file_idx]
-            fill_value = min(zi)
-            grid_i = griddata(points, zi, xi,
-                              method='linear', fill_value=fill_value)
-            channel.give_values(grid_i)
-    # create data object --------------------------------------------------------------------------
-    data = Data(list(scanned), list(channels.values()), list(constant))
-    for axis in data.axes:
-        axis.get_label()
-    for axis in data.constants:
-        axis.get_label()
-    # add extra stuff to data object --------------------------------------------------------------
-    data.source = filepaths
-    if not name:
-        name = wt_kit.filename_parse(file_example)[1]
-    data.name = name
-    # normalize the data --------------------------------------------------------------------------
-    if use_norm:
-        # normalize the OPAs
-        OPA1 = data.channels[2].values / data.axes[0].points
-        OPA2 = data.channels[1].values / data.axes[1].points
-        # Signal normalization
-        #data_norm = data.channels[0].values*data.axes[0].points*data.axes[1].points/(OPA1*OPA2)
-        data_norm = data.channels[0].values / (OPA1 * OPA2)  # I think this is correct.
-        data.channels[0].values = data_norm
-    # return --------------------------------------------------------------------------------------
-    if verbose:
-        print('data object succesfully created')
-        print('axis names:', data.axis_names)
-        print('values shape:', data.channels[0].values.shape)
-    return data
-
-
-def from_NISE(measure_object, name='simulation', ignore_constants=['A', 'p'],
-              flip_delays=True, verbose=True):
-    """Create a Data object from a NISE Measure object.
-
-    Parameters
-    ----------
-    measure_object : NISE Measure object.
-        Measure object.
-    name : string (optional)
-        Data name. Default is 'simulation'.
-    ignore_constants : list of strings (optional)
-        Constants to ignore. Default is ['A', 'p'].
-    flip_delays : boolean (optional)
-        Toggle flipping of delay conventions. Default is True.
-    verbose : boolean (optional)
-        Toggle talkback. Default is True.
-
-    Returns
-    -------
-    WrightTools.data.Data object
-    """
-    try:
-        import NISE
-    except BaseException:
-        print('NISE is required to import scans, returning')
-        return
-    # axes ----------------------------------------------------------------------------------------
-    NISE_axes = measure_object.scan_obj.axis_objs
-    axes = []
-    for NISE_axis in NISE_axes:
-        axis_name = NISE_axis.pulse_var + str(NISE_axis.pulse_ind)
-        points = NISE_axis.points
-        units = NISE_axis.default_units
-        label_seed = NISE_axis.also
-        axis = Axis(points, units, name=axis_name, label_seed=label_seed)
-        axes.append(axis)
-    # constants -----------------------------------------------------------------------------------
-    NISE_units = {'A': 'uJ per sq. cm',
-                  's': 'FWHM',
-                  'd': 'fs',
-                  'w': 'wn',
-                  'p': 'rad'}
-    scan_object = measure_object.scan_obj
-    positions_array = scan_object.positions.T
-    pulse_class = getattr(NISE.lib.pulse, scan_object.pulse_class_name)
-    constants = []
-    for idx in range(len(positions_array)):
-        key = list(pulse_class.cols.keys())[list(pulse_class.cols.values()).index(idx)]
-        axes_sametype = [NISE_axis for NISE_axis in NISE_axes if NISE_axis.pulse_var == key]
-        # get values that were not scanned
-        indicies_scanned = []
-        for axis in axes_sametype:
-            indicies_scanned.append(axis.also)
-        vals = np.delete(positions_array[idx], [
-                         item for sublist in indicies_scanned for item in sublist])
-        # find values that are co-set
-        equal = np.zeros((len(vals), len(vals)), dtype=bool)
-        for i in range(len(vals)):  # test
-            for j in range(len(vals)):  # against
-                if vals[i] == vals[j]:
-                    equal[i, j] = True
-        # create constant Axis objects
-        vals_accounted_for = np.zeros(len(vals), dtype=bool)
-        while not all(vals_accounted_for):
-            for i in range(len(vals)):
-                if vals_accounted_for[i]:
-                    pass
-                else:
-                    cname = key + str(i)
-                    value = np.array(vals[i])
-                    units = NISE_units[key]
-                    label_seed = list(np.where(equal[i])[0])
-                    for j in label_seed:
-                        vals_accounted_for[j] = True
-                    axis = Axis(value, units, name=cname, label_seed=label_seed)
-                    if key not in ignore_constants:
-                        constants.append(axis)
-    # channels ------------------------------------------------------------------------------------
-    zi = measure_object.pol
-    channel = Channel(zi, 'au', label='amplitude', name='simulation')
-    channels = [channel]
-    # data object ---------------------------------------------------------------------------------
-    if flip_delays:
-        for lis in [axes, constants]:
-            for axis in lis:
-                if axis.units_kind == 'delay':
-                    axis.points *= -1.
-    data = Data(axes, channels, constants=constants, name=name, source='NISE')
-    return data
-
-
-def from_pickle(filepath, verbose=True):
-    """Open a pickled data object.
-
-    Parameters
-    ----------
-    filepath : path
-        Path to pickle.
-    verbose : boolean (optional)
-        Toggle talkback. Default is True.
-
-    Returns
-    -------
-    WrightTools.data.Data object
-    """
-    data = pickle.load(open(filepath, 'rb'))
-    if hasattr(data, '__version__'):
-        from . import __version__
-        if data.__version__.split('.')[0] == __version__.split('.')[0]:   # major versions agree
-            pass
-        else:
-            print('pickled data is from different major version - consider remaking:')
-            print('  current:', __version__)
-            print('  pickle:', data.__version__)
-    else:
-        print('this pickle was made before November 2015 - you MUST remake your data object')
-        return
-    if verbose:
-        print('data opened from', filepath)
-    return data
-
-
-def from_PyCMDS(filepath, name=None,
-                shots_processing_module='mean_and_std', verbose=True):
-    """Create a data object from a single PyCMDS output file.
-
-    Parameters
-    ----------
-    filepath : str
-        The file to load. Can accept .data, .fit, or .shots files.
-    name : str or None (optional)
-        The name to be applied to the new data object. If None, name is read
-        from file.
-    shots_processing_module : str (optional)
-        The module used to process .shots files, if provided. Must be the name
-        of a module in the shots_processing directory.
-    verbose : bool (optional)
-        Toggle talkback. Default is True.
-
-    Returns
-    -------
-    data
-        A Data instance.
-    """
-    # header
-    headers = wt_kit.read_headers(filepath)
-    # name
-    if name is None:  # name not given in method arguments
-        data_name = headers['data name']
-    else:
-        data_name = name
-    if data_name == '':  # name not given in PyCMDS
-        data_name = headers['data origin']
-    # array
-    arr = np.genfromtxt(filepath).T
-    # get axes
-    axes = []
-    for name, identity, units in zip(headers['axis names'],
-                                     headers['axis identities'],
-                                     headers['axis units']):
-        points = np.array(headers[name + ' points'])
-        # label seed (temporary implementation)
-        try:
-            index = headers['name'].index(name)
-            label = headers['label'][index]
-            label_seed = [label]
-        except ValueError:
-            label_seed = ['']
-        # create axis
-        kwargs = {'identity': identity}
-        if 'D' in identity:
-            kwargs['centers'] = headers[name + ' centers']
-        axis = Axis(points, units, name=name, label_seed=label_seed, **kwargs)
-        axes.append(axis)
-    # get indicies arrays
-    indicies = arr[:len(axes)].T
-    indicies = indicies.astype('int64')
-    # get interpolation toggles
-    if 'axis interpolate' in headers.keys():
-        interpolate_toggles = headers['axis interpolate']
-    else:
-        # old data files may not have interpolate toggles in headers
-        # assume no interpolation, unless the axis is the array detector
-        interpolate_toggles = [True if name == 'wa' else False for name in headers['axis names']]
-    # get assorted remaining things
-    shape = tuple([a.points.size for a in axes])
-    tols = [wt_kit.closest_pair(a.points, give='distance') / 2. for a in axes]
-    # prepare points for interpolation
-    points_dict = collections.OrderedDict()
-    for i, axis in enumerate(axes):
-        # TODO: math and proper full recognition...
-        axis_col_name = [name for name in headers['name'][::-1] if name in axis.identity][0]
-        axis_index = headers['name'].index(axis_col_name)
-        # shape array acording to recorded coordinates
-        points = np.full(shape, np.nan)
-        for j, idx in enumerate(indicies):
-            lis = arr[axis_index]
-            points[tuple(idx)] = lis[j]
-        # convert array
-        points = wt_units.converter(points, headers['units'][axis_index], axis.units)
-        # take case of scan about center
-        if axis.identity[0] == 'D':
-            # transpose so this axis is first
-            transpose_order = list(range(len(axes)))
-            transpose_order.insert(0, transpose_order.pop(i))
-            points = points.transpose(transpose_order)
-            # subtract out centers
-            centers = np.array(headers[axis.name + ' centers'])
-            points -= centers
-            # transpose out
-            transpose_order = list(range(len(axes)))
-            transpose_order.insert(i, transpose_order.pop(0))
-            points = points.transpose(transpose_order)
-        points = points.flatten()
-        points_dict[axis.name] = points
-        # check, coerce non-interpolated axes
-        if not interpolate_toggles[i]:
-            for j, idx in enumerate(indicies):
-                actual = points[j]
-                expected = axis.points[idx[i]]
-                if abs(actual - expected) > tols[i]:
-                    warnings.warn('at least one point exceded tolerance ' +
-                                  'in axis {}'.format(axis.name))
-                points[j] = expected
-    all_points = tuple(points_dict.values())
-    # prepare values for interpolation
-    values_dict = collections.OrderedDict()
-    for i, kind in enumerate(headers['kind']):
-        if kind == 'channel':
-            values_dict[headers['name'][i]] = arr[i]
-    # create grid to interpolate onto
-    if len(axes) == 1:
-        meshgrid = tuple([axes[0].points])
-    else:
-        meshgrid = tuple(np.meshgrid(*[a.points for a in axes], indexing='ij'))
-    if any(interpolate_toggles):
-        # create channels through linear interpolation
-        channels = []
-        for i in range(len(arr)):
-            if headers['kind'][i] == 'channel':
-                # unpack
-                units = headers['units'][i]
-                signed = headers['channel signed'][len(channels)]
-                name = headers['name'][i]
-                label = headers['label'][i]
-                # interpolate
-                values = values_dict[name]
-                zi = griddata(all_points, values, meshgrid, rescale=True,
-                              method='linear', fill_value=np.nan)
-                # assemble
-                channel = Channel(zi, units, signed=signed, name=name, label=label)
-                channels.append(channel)
-    else:
-        # if none of the axes are interpolated onto,
-        # simply fill zis based on recorded axis index
-        num_channels = headers['kind'].count('channel')
-        channel_indicies = [i for i, kind in enumerate(headers['kind']) if kind == 'channel']
-        zis = [np.full(shape, np.nan) for _ in range(num_channels)]
-        # iterate through each row of the array, filling zis
-        for i in range(len(arr[0])):
-            idx = tuple(indicies[i])  # yes, this MUST be a tuple >:(
-            for zi_index, arr_index in enumerate(channel_indicies):
-                zis[zi_index][idx] = arr[arr_index, i]
-        # assemble channels
-        channels = []
-        for zi_index, arr_index in zip(range(len(zis)), channel_indicies):
-            zi = zis[zi_index]
-            units = headers['units'][arr_index]
-            signed = headers['channel signed'][zi_index]
-            name = headers['name'][arr_index]
-            label = headers['label'][arr_index]
-            channel = Channel(zi, units, signed=signed, name=name, label=label)
-            channels.append(channel)
-    # get constants
-    constants = []
-    for name, identity in zip(headers['constant names'], headers['constant identities']):
-        # TODO: handle PyCMDS constants
-        pass
-    # create data object
-    data = Data(axes, channels, constants, name=data_name, source=filepath)
-    # return
-    if verbose:
-        print('data object succesfully created')
-        print('  axes:', data.axis_names)
-        print('  shape:', data.shape)
-    return data
-
-
-def from_scope(filepath, name=None, verbose=True):
-    """Create a Data object from an Ocean Optics .scope file.
-
-    Parameters
-    ----------
-    filepath : path
-        Filepath to .scope file.
-    name : string (optional)
-        Name of Data object. Default is None (filename).
-    verbose : boolean (optional)
-        Toggle talkback. Default is True.
-
-    Returns
-    -------
-    WrightTools.data.Data object
-    """
-    # check filepath
-    if os.path.isfile(filepath):
-        if verbose:
-            print('found the file!')
-    else:
-        raise wt_exceptions.FileNotFound('{0}'.format(filepath))
-    # import
-    skip_header = 14
-    skip_footer = 1
-    arr = np.genfromtxt(filepath, skip_header=skip_header,
-                        skip_footer=skip_footer, delimiter='\t').T
-    # construct data
-    a = Axis(arr[0], 'nm', name='wm')
-    c = Channel(arr[1], name='intensity', signed=False)
-    data = Data([a], [c], source='scope', name=name)
-    # finish
-    return data
-
-
-def from_shimadzu(filepath, name=None, verbose=True):
-    """Create a Data object from a Shimadzu txt file.
-
-    Parameters
-    ----------
-    filepath : path
-        Path to Shimadzu dataset.
-    name : string (optional)
-        Data name. Default is None (filename).
-    verbose : boolean (optional)
-        Toggle talkback. Default is True.
-
-    Returns
-    -------
-    WrightTools.data.Data object
-    """
-    # check filepath ------------------------------------------------------------------------------
-    if os.path.isfile(filepath):
-        if verbose:
-            print('found the file!')
-    else:
-        print('Error: filepath does not yield a file')
-        return
-    # is the file suffix one that we expect?  warn if it is not!
-    filesuffix = os.path.basename(filepath).split('.')[-1]
-    if filesuffix != 'txt':
-        wt_exceptions.WrongFileTypeWarning.warn(filepath, 'txt')
-    # import data ---------------------------------------------------------------------------------
-    # now import file as a local var--18 lines are just txt and thus discarded
-    data = np.genfromtxt(filepath, skip_header=2, delimiter=',').T
-    # construct data
-    x_axis = Axis(data[0], 'nm', name='wm')
-    signal = Channel(data[1], 'sig', file_idx=1, signed=False)
-    data = Data([x_axis], [signal], source='Shimadzu', name=name)
-    # return --------------------------------------------------------------------------------------
-    return data
-
-
-def from_spcm(filepath, name=None, delimiter=',', format=None, verbose=True):
-    """Create a data object from Becker & Hickl spcm_ software.
-
-    Parameters
-    ----------
-    filepath : string
-        Path to SPC-130 .asc file.
-    name : string (optional)
-        Name to give to the created data object. If None, filename is used.
-        Default is None.
-    delimiter : string (optional)
-        The string used to separate values. Default is ','.
-    format : {'ascii'} (optional)
-        Force file to be interpreted as a specific format. Default is None
-        (autorecognized).
-    verbose : boolean (optional)
-        Toggle talkback. Default is True.
-
-    Returns
-    -------
-    WrightTools.data.Data object
-    """
-    # check filepath
-    if not os.path.isfile(filepath):
-        raise wt_exceptions.FileNotFound(path=filepath)
-    if not filepath.endswith('asc'):
-        w = wt_exceptions.WrongFileTypeWarning.warn(filepath, 'asc')
-        warnings.warn(w)
-    # create headers dictionary
-    headers = collections.OrderedDict()
-    with open(filepath) as f:
-        while True:
-            line = f.readline().strip()
-            if len(line) == 0:
-                break
-            else:
-                key, value = line.split(':', 1)
-                if key.strip() == 'Revision':
-                    headers['resolution'] = int(value.strip(' bits ADC'))
-                else:
-                    headers[key.strip()] = value.strip()
-    # import data
-    # now import file as a local var as comma-delimited .asc file
-    arr = np.genfromtxt(filepath, skip_header=(len(headers) + 2), skip_footer=1,
-                        delimiter=delimiter).T
-    # unexpected delimiter handler
-    if np.any(np.isnan(arr)):
-        # delimiter warning dictionary
-        delim_dict = {',': 'comma',
-                      ' ': 'space',
-                      '\t': 'tab',
-                      ';': 'semicolon',
-                      ':': 'colon'}
-        warnings.warn('file is not %s-delimited! Trying other delimiters.' % delim_dict[delimiter])
-        for delimiter in delim_dict.keys():
-            arr = np.genfromtxt(filepath, skip_header=len(headers) + 2, skip_footer=1,
-                                delimiter=delimiter).T
-            if not np.any(np.isnan(arr)):
-                print('file is %s-delimited.' % delim_dict[delimiter])
-                break
-        else:
-            error = '''Unable to load data file.
-                       Data object not created!
-                       Please check that your file is formatted properly.'''
-            raise RuntimeError(error)
-    # construct data
-    x_axis = Axis(arr[0], 'ns', name='time')
-    signal = Channel(arr[1], 'sig', name='counts', signed=False)
-    data = Data([x_axis], [signal], source='SPC_130', name=name)
-    data.attrs.update(headers)
-    if verbose:
-        print('data object created!')
-    # return
-    return data
-
-
-def from_Tensor27(filepath, name=None, verbose=True):
-    """Create a data object from a Tensor27 FTIR file.
-
-    .. plot::
-
-        >>> import WrightTools as wt
-        >>> import matplotlib
-        >>> from WrightTools import datasets
-        >>> p = datasets.Tensor27.CuPCtS_powder_ATR
-        >>> data = wt.data.from_Tensor27(p)
-        >>> artist = wt.artists.mpl_1D(data)
-        >>> artist.plot()
-        >>> matplotlib.pyplot.xlim(1300,1700)
-        >>> matplotlib.pyplot.ylim(-0.005,.02)
-
-    Parameters
-    ----------
-    filepath : string
-        Path to Tensor27 output file (.dpt).
-    name : string (optional)
-        Name to give to the created data object. If None, filename is used.
-        Default is None.
-    verbose : boolean (optional)
-        Toggle talkback. Default is True.
-
-    Returns
-    -------
-    data
-        New data object.
-    """
-    # check filepath
-    if not os.path.isfile(filepath):
-        raise wt_exceptions.FileNotFound(path=filepath)
-    filesuffix = os.path.basename(filepath).split('.')[-1]
-    if filesuffix != 'dpt':
-        wt_exceptions.WrongFileTypeWarning.warn(filepath, 'dpt')
-    # import array
-    arr = np.genfromtxt(filepath, skip_header=0).T
-    # name
-    if not name:
-        name = os.path.basename(filepath)
-    # construct data
-    axis = Axis(arr[0], 'wn', name='w')
-    signal = Channel(arr[1], name='absorbance', label='absorbance', signed=False)
-    data = Data([axis], [signal], source='Tensor 27', name=name)
-    # finish
-    if verbose:
-        print('data object successfully created from Tensor 27 file')
-    return data
-
-
-def join(datas, method='first', verbose=True, **kwargs):
-    """Join a list of data objects together.
-
-    For now datas must have identical dimensionalities (order and identity).
-
-    Parameters
-    ----------
-    datas : list of data
-        The list of data objects to join together.
-    method : {'first', 'sum', 'max', 'min', 'mean'} (optional)
-        The method for how overlapping points get treated. Default is first,
-        meaning that the data object that appears first in datas will take
-        precedence.
-    verbose : bool (optional)
-        Toggle talkback. Default is True.
-
-    Keyword Arguments
-    -----------------
-    axis objects
-        The axes of the new data object. If not supplied, the points of the
-        new axis will be guessed from the given datas.
-
-    Returns
-    -------
-    data
-        A Data instance.
-    """
-    # TODO: a proper treatment of joining datas that have different dimensions
-    # with intellegent treatment of their constant dimensions. perhaps changing
-    # map_axis would be good for this. - Blaise 2015.10.31
-
-    # copy datas so original objects are not changed
-    datas = [d.copy() for d in datas]
-    # get scanned dimensions
-    axis_names = []
-    axis_units = []
-    axis_objects = []
-    for data in datas:
-        for i, axis in enumerate(data.axes):
-            if axis.name in kwargs.keys():
-                axis.convert(kwargs[axis.name].units)
-            if axis.points[0] > axis.points[-1]:
-                data.flip(i)
-            if axis.name not in axis_names:
-                axis_names.append(axis.name)
-                axis_units.append(axis.units)
-                axis_objects.append(axis)
-    # TODO: transpose to same dimension orders
-    # convert into same units
-    for data in datas:
-        for axis_name, axis_unit in zip(axis_names, axis_units):
-            for axis in data.axes:
-                if axis.name == axis_name:
-                    axis.convert(axis_unit)
-    # get axis points
-    axis_points = []  # list of 1D arrays
-    for axis_name in axis_names:
-        if axis_name in kwargs.keys():
-            axis_points.append(kwargs[axis_name].points)
-            continue
-        all_points = np.array([])
-        step_sizes = []
-        for data in datas:
-            for axis in data.axes:
-                if axis.name == axis_name:
-                    all_points = np.concatenate([all_points, axis.points])
-                    this_axis_min = np.nanmin(axis.points)
-                    this_axis_max = np.nanmax(axis.points)
-                    this_axis_number = float(axis.points.size) - 1
-                    step_size = (this_axis_max - this_axis_min) / this_axis_number
-                    step_sizes.append(step_size)
-        axis_min = np.nanmin(all_points)
-        axis_max = np.nanmax(all_points)
-        axis_step_size = min(step_sizes)
-        axis_n_points = np.ceil((axis_max - axis_min) / axis_step_size)
-        points = np.linspace(axis_min, axis_max, axis_n_points + 1)
-        axis_points.append(points)
-    # map datas to new points
-    for axis_index, axis_name in enumerate(axis_names):
-        for data in datas:
-            for axis in data.axes:
-                if axis.name == axis_name:
-                    if not np.array_equiv(axis.points, axis_points[axis_index]):
-                        data.map_axis(axis_name, axis_points[axis_index])
-    # make new channel objects
-    channel_objects = []
-    n_channels = min([len(d.channels) for d in datas])
-    for channel_index in range(n_channels):
-        full = np.array([d.channels[channel_index].values for d in datas])
-        if method == 'first':
-            zis = np.full(full.shape[1:], np.nan)
-            for idx in np.ndindex(*full.shape[1:]):
-                for data_index in range(len(full)):
-                    value = full[data_index][idx]
-                    if not np.isnan(value):
-                        zis[idx] = value
-                        break
-        elif method == 'sum':
-            zis = np.nansum(full, axis=0)
-            zis[zis == 0.] = np.nan
-        elif method == 'max':
-            zis = np.nanmax(full, axis=0)
-        elif method == 'min':
-            zis = np.nanmin(full, axis=0)
-        elif method == 'mean':
-            zis = np.nanmean(full, axis=0)
-        else:
-            print('method', method, 'not recognized in join')
-            return
-        zis[np.isnan(full).all(axis=0)] = np.nan  # if all datas NaN, zis NaN
-        channel = Channel(zis, 'V', null=0.,
-                          signed=datas[0].channels[channel_index].signed,
-                          name=datas[0].channels[channel_index].name)
-        channel_objects.append(channel)
-    # make new data object
-    out = Data(axis_objects, channel_objects)
-    # finish
-    if verbose:
-        print(len(datas), 'datas joined to create new data:')
-        print('  axes:')
-        for axis in out.axes:
-            points = axis.points
-            print('    {0} : {1} points from {2} to {3} {4}'.format(
-                axis.name, points.size, min(points), max(points), axis.units))
-        print('  channels:')
-        for channel in out.channels:
-            percent_nan = np.around(100. * (np.isnan(channel.values).sum() /
-                                            float(channel.values.size)), decimals=2)
-            print('    {0} : {1} to {2} ({3}% NaN)'.format(
-                channel.name, channel.min(), channel.max(), percent_nan))
-    return out
-
-
-# --- other ---------------------------------------------------------------------------------------
-
-
-def discover_dimensions(arr, dimension_cols, verbose=True):
-    """Discover the dimensions of array arr.
-
-    Watches the indicies contained in dimension_cols. Returns dictionaries of
-    axis objects [scanned, constant].
-    Constant objects have their points object initialized. Scanned dictionary is
-    in order of scanning (..., zi, yi, xi). Both dictionaries are condensed
-    into coscanning / setting.
-    """
-    # sorry that this method is so convoluted and unreadable - blaise
-
-    input_cols = dimension_cols
-
-    # import values -------------------------------------------------------------------------------
-
-    dc = dimension_cols
-    di = [dc[key].file_idx for key in dc.keys()]
-    dt = [dc[key].tolerance for key in dc.keys()]
-    du = [dc[key].units for key in dc.keys()]
-    dk = [key for key in dc.keys()]
-    dims = list(zip(di, dt, du, dk))
-
-    # remove nan dimensions and bad dimensions ----------------------------------------------------
-
-    to_pop = []
-    for i in range(len(dims)):
-        if np.all(np.isnan(arr[dims[i][0]])):
-            to_pop.append(i)
-
-    to_pop.reverse()
-    for i in to_pop:
-        dims.pop(i)
-
-    # which dimensions are equal ------------------------------------------------------------------
-
-    # find
-    d_equal = np.zeros((len(dims), len(dims)), dtype=bool)
-    d_equal[:, :] = True
-    for i in range(len(dims)):  # test
-        for j in range(len(dims)):  # against
-            for k in range(len(arr[0])):
-                upper_bound = arr[dims[i][0], k] + dims[i][1]
-                lower_bound = arr[dims[i][0], k] - dims[i][1]
-                test_point = arr[dims[j][0], k]
-                if upper_bound > test_point > lower_bound:
-                    pass
-                else:
-                    d_equal[i, j] = False
-                    break
-
-    # condense
-    dims_unaccounted = list(range(len(dims)))
-    dims_condensed = []
-    while dims_unaccounted:
-        dim_current = dims_unaccounted[0]
-        index = dims[dim_current][0]
-        tolerance = [dims[dim_current][1]]
-        units = dims[dim_current][2]
-        key = [dims[dim_current][3]]
-        dims_unaccounted.pop(0)
-        indicies = list(range(len(dims_unaccounted)))
-        indicies.reverse()
-        for i in indicies:
-            dim_check = dims_unaccounted[i]
-            if d_equal[dim_check, dim_current]:
-                tolerance.append(dims[dim_check][1])
-                key.append(dims[dim_check][3])
-                dims_unaccounted.pop(i)
-        tolerance = max(tolerance)
-        dims_condensed.append([index, tolerance, units, key])
-    dims = dims_condensed
-
-    # which dimensions are scanned ----------------------------------------------------------------
-
-    # find
-    scanned = []
-    constant_list = []
-    for dim in dims:
-        name = dim[3]
-        index = dim[0]
-        vals = arr[index]
-        tolerance = dim[1]
-        if vals.max() - vals.min() > tolerance:
-            scanned.append([name, index, tolerance, None])
-        else:
-            constant_list.append([name, index, tolerance, arr[index, 0]])
-
-    # order scanned dimensions (..., zi, yi, xi)
-    first_change_indicies = []
-    for axis in scanned:
-        first_point = arr[axis[1], 0]
-        for i in range(len(arr[0])):
-            upper_bound = arr[axis[1], i] + axis[2]
-            lower_bound = arr[axis[1], i] - axis[2]
-            if upper_bound > first_point > lower_bound:
-                pass
-            else:
-                first_change_indicies.append(i)
-                break
-    scanned_ordered = [scanned[i] for i in np.argsort(first_change_indicies)]
-    scanned_ordered.reverse()
-
-    # return --------------------------------------------------------------------------------------
-
-    # package back into ordered dictionary of objects
-
-    scanned = collections.OrderedDict()
-    for axis in scanned_ordered:
-        key = axis[0][0]
-        obj = input_cols[key]
-        obj.label_seed = [input_cols[_key].label_seed[0] for _key in axis[0]]
-        scanned[key] = obj
-
-    constant = collections.OrderedDict()
-    for axis in constant_list:
-        key = axis[0][0]
-        obj = input_cols[key]
-        obj.label_seed = [input_cols[_key].label_seed[0] for _key in axis[0]]
-        obj.points = axis[3]
-        constant[key] = obj
-
-    return list(scanned.values()), list(constant.values())

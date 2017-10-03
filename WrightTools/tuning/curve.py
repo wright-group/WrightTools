@@ -495,12 +495,8 @@ class Curve:
         offset_to
         """
         # get motor index
-        if type(motor) in [float, int]:
-            motor_index = motor
-        elif isinstance(motor, str):
-            motor_index = self.motor_names.index(motor)
-        else:
-            print('motor type not recognized in curve.offset_by')
+        motor_index = wt_kit.get_index(self.motor_names, motor)
+
         # offset
         self.motors[motor_index].positions += amount
         self.interpolate()
