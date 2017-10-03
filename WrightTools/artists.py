@@ -226,7 +226,7 @@ class Axes(matplotlib.axes.Axes):
         # labels
         self._apply_labels(label=kwargs.pop('label', False),
                            xlabel=kwargs.pop('xlabel', None),
-                           ylabel=kwargs.pop('xlabel', None),
+                           ylabel=kwargs.pop('ylabel', None),
                            data=data, channel_index=channel_index)
         # call parent
         return matplotlib.axes.Axes.contour(self, *args, **kwargs)  # why can't I use super?
@@ -288,7 +288,7 @@ class Axes(matplotlib.axes.Axes):
         # labels
         self._apply_labels(label=kwargs.pop('label', False),
                            xlabel=kwargs.pop('xlabel', None),
-                           ylabel=kwargs.pop('xlabel', None),
+                           ylabel=kwargs.pop('ylabel', None),
                            data=data, channel_index=channel_index)
         # Overloading contourf in an attempt to fix aliasing problems when saving vector graphics
         # see https://stackoverflow.com/questions/15822159
@@ -393,7 +393,7 @@ class Axes(matplotlib.axes.Axes):
         # labels
         self._apply_labels(label=kwargs.pop('label', False),
                            xlabel=kwargs.pop('xlabel', None),
-                           ylabel=kwargs.pop('xlabel', None),
+                           ylabel=kwargs.pop('ylabel', None),
                            data=data, channel_index=channel_index)
         # call parent
         return matplotlib.axes.Axes.pcolor(self, *args, **kwargs)  # why can't I use super?
@@ -444,7 +444,7 @@ class Axes(matplotlib.axes.Axes):
         # labels
         self._apply_labels(label=kwargs.pop('label', False),
                            xlabel=kwargs.pop('xlabel', None),
-                           ylabel=kwargs.pop('xlabel', None),
+                           ylabel=kwargs.pop('ylabel', None),
                            data=data, channel_index=channel_index)
         # call parent
         return matplotlib.axes.Axes.plot(self, *args, **kwargs)  # why can't I use super?
