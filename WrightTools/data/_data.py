@@ -1503,8 +1503,8 @@ class Data:
         changed = kwargs.keys()
         for k, v in kwargs.items():
             if type(getattr(self, k)) not in (Channel, Axis):
-                raise TypeError("Attribute for key %s: expected {Channel, Axis}, got %s" % 
-                        (k, type(getattr(self, k))))
+                raise TypeError("Attribute for key %s: expected {Channel, Axis}, got %s" %
+                                (k, type(getattr(self, k))))
             if v not in changed and hasattr(self, v):
                 raise wt_exceptions.NameNotUniqueError(v)
         for k, v in kwargs.items():
