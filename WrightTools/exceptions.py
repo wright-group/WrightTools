@@ -29,8 +29,9 @@ class FileNotFound(Exception):
 class NameNotUniqueError(Exception):
     """NameNotUniqueError."""
 
-    def __init__(self):
-        Exception.__init__(self)
+    def __init__(self, name):
+        message = 'Name {} results in a duplicate'.format(name)
+        Exception.__init__(self, message)
 
 
 # --- custom warnings -----------------------------------------------------------------------------
