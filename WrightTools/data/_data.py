@@ -330,6 +330,11 @@ class Channel:
 
     def mag(self):
         """Channel magnitude (maximum deviation from null)."""
+        return self.major_extent
+
+    @property
+    def major_extent(self):
+        """Maximum deviation from null."""
         return max((self.max() - self.null(), self.null() - self.min()))
 
     def max(self):
@@ -339,6 +344,11 @@ class Channel:
     def min(self):
         """Minimum, ignoring nans."""
         return np.nanmin(self.values)
+
+    @property
+    def minor_extent(self):
+        """Minimum deviation from null."""
+        return min((self.max() - self.null(), self.null() - self.min()))
 
     def normalize(self, axis=None):
         """Normalize a Channel, set `null` to 0 and the max to 1."""
@@ -567,19 +577,42 @@ class Data:
 
         Parameters
         ----------
-        axis : str or int
+        axis : str or int (args)
             Axes of the returned data objects. Strings refer to the names of
-            axes in this object, integers refer to their index.
-        at : dict
-            Dictonary. Keys are axis names, values are lists
-            ``[position, input units]``.
-        verbose : bool, optional
+            axes in this object, integers refer to their index. Provide multiple
+            axes to return multidimensional data objects.
+        at : dict (kwarg)
+            Choice of position along an axis. Keys are axis names, values are lists
+            ``[position, input units]``. If exact position does not exist,
+            the closest valid position is used.
+        verbose : bool, optional (kwarg)
             Toggle talkback. Default is True.
 
         Returns
         -------
-        list
-            A list of data objects.
+        list of WrightTools.data.Data
+            List of chopped data objects.
+
+        Examples
+        --------
+        >>> data.axis_names
+        ['d2', 'w1', 'w2']
+
+        Get all w1 wigners.
+
+        >>> datas = data.chop('d2', 'w1')
+        >>> len(datas)
+        51
+
+        Get 2D frequency at d2=0 fs.
+
+        >>> datas = data.chop('w1', 'w2', at={'d2': [0, 'fs']})
+        >>> len(datas)
+        0
+        >>> datas[0].axis_names
+        ['w1', 'w2']
+        >>> datas[0].d2.points
+        0.
 
         See Also
         --------
@@ -587,10 +620,6 @@ class Data:
             Collapse the dataset along one axis.
         split
             Split the dataset while maintaining its dimensionality.
-
-            >>> data.chop('w1', 'w2', at={'d2': [0, 'fs']})
-            [data]
-
         """
         # organize arguments recieved -------------------------------------------------------------
         axes_args = list(args)
