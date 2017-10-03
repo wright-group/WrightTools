@@ -260,8 +260,7 @@ class Calibration:
             wt_artists.plot_colorbar(cax=cax, ticks=ticks)
             plt.suptitle(self.name, fontsize=20)
         else:
-            print('cannot plot---dimensionality too high')
-            return
+            raise wt_exceptions.DimensionalityError("{1, 2}", self.dimensionality)
         # save
         if autosave:
             if save_directory is None:
