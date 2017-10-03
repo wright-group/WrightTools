@@ -43,6 +43,13 @@ class FileNotFound(Exception):
         message = 'no file was found at {}'.format(path)
         Exception.__init__(self, message)
 
+class NameNotUniqueError(Exception):
+    """NameNotUniqueError."""
+
+    def __init__(self, name):
+        message = 'Name {} results in a duplicate'.format(name)
+        Exception.__init__(self, message)
+
 
 # --- custom warnings -----------------------------------------------------------------------------
 
