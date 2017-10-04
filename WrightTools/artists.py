@@ -224,7 +224,7 @@ class Axes(matplotlib.axes.Axes):
         if 'alpha' not in kwargs.keys():
             kwargs['alpha'] = 0.5
         # labels
-        self._apply_labels(label=kwargs.pop('autolabel', False),
+        self._apply_labels(autolabel=kwargs.pop('autolabel', False),
                            xlabel=kwargs.pop('xlabel', None),
                            ylabel=kwargs.pop('xlabel', None),
                            data=data, channel_index=channel_index)
@@ -286,7 +286,7 @@ class Axes(matplotlib.axes.Axes):
         if 'levels' not in kwargs.keys():
             kwargs['levels'] = np.linspace(kwargs.pop('vmin'), kwargs.pop('vmax'), 256)
         # labels
-        self._apply_labels(label=kwargs.pop('autolabel', False),
+        self._apply_labels(autolabel=kwargs.pop('autolabel', False),
                            xlabel=kwargs.pop('xlabel', None),
                            ylabel=kwargs.pop('xlabel', None),
                            data=data, channel_index=channel_index)
@@ -391,7 +391,7 @@ class Axes(matplotlib.axes.Axes):
             kwargs = self._parse_limits(zi=args[2], **kwargs)
             kwargs = self._parse_cmap(**kwargs)
         # labels
-        self._apply_labels(label=kwargs.pop('autolabel', False),
+        self._apply_labels(autolabel=kwargs.pop('autolabel', False),
                            xlabel=kwargs.pop('xlabel', None),
                            ylabel=kwargs.pop('xlabel', None),
                            data=data, channel_index=channel_index)
@@ -442,7 +442,7 @@ class Axes(matplotlib.axes.Axes):
             data = None
             channel_index = 0
         # labels
-        self._apply_labels(label=kwargs.pop('autolabel', False),
+        self._apply_labels(autolabel=kwargs.pop('autolabel', False),
                            xlabel=kwargs.pop('xlabel', None),
                            ylabel=kwargs.pop('xlabel', None),
                            data=data, channel_index=channel_index)
