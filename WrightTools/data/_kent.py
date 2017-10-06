@@ -5,8 +5,8 @@
 
 
 from __future__ import absolute_import, division, print_function, unicode_literals
-
 import collections
+import warnings
 
 import numpy as np
 
@@ -230,15 +230,18 @@ def from_KENT(filepaths, null=None, name=None, ignore=['wm'], use_norm=False,
             channel.give_values(grid_i)
     # create data object --------------------------------------------------------------------------
     data = Data(list(scanned), list(channels.values()), list(constant))
-    for axis in data.axes:
-        axis.get_label()
-    for axis in data.constants:
-        axis.get_label()
     # add extra stuff to data object --------------------------------------------------------------
+    data.kind = 'KENT'
     data.source = filepaths
     if not name:
         name = wt_kit.filename_parse(file_example)[1]
     data.name = name
+    # warn if data doesn't seem like the right shape ----------------------------------------------
+    length = len(arr)
+    size = data.size
+    if not size == length:
+        message = 'array length ({0}) inconsistent with data size ({1})---is ignore correct?'
+        warnings.warn(message.format(length, size))
     # normalize the data --------------------------------------------------------------------------
     if use_norm:
         # normalize the OPAs

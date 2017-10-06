@@ -5,8 +5,8 @@
 
 
 from __future__ import absolute_import, division, print_function, unicode_literals
-
 import collections
+import warnings
 
 import numpy as np
 
@@ -323,15 +323,17 @@ def from_COLORS(
             data.convert('wn', verbose=False)
         except BaseException:
             pass
-    for axis in data.axes:
-        axis.get_label()
-    for axis in data.constants:
-        axis.get_label()
     # add extra stuff to data object --------------------------------------------------------------
     data.source = filepaths
     if not name:
         name = wt_kit.filename_parse(file_example)[1]
     data.name = name
+    # warn if data doesn't seem like the right shape ----------------------------------------------
+    length = len(arr)
+    size = data.size
+    if not size == length:
+        message = 'array length ({0}) inconsistent with data size ({1})---is ignore correct?'
+        warnings.warn(message.format(length, size))
     # return --------------------------------------------------------------------------------------
     if verbose:
         print('data object succesfully created')
