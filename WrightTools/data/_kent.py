@@ -47,7 +47,6 @@ def discover_dimensions(arr, dimension_cols, verbose=True):
     for i in range(len(dims)):
         if np.all(np.isnan(arr[dims[i][0]])):
             to_pop.append(i)
-
     to_pop.reverse()
     for i in to_pop:
         dims.pop(i)
@@ -237,10 +236,11 @@ def from_KENT(filepaths, null=None, name=None, ignore=['wm'], use_norm=False,
         name = wt_kit.filename_parse(file_example)[1]
     data.name = name
     # warn if data doesn't seem like the right shape ----------------------------------------------
-    length = len(arr)
+    length = len(arr[0])
     size = data.size
     if not size == length:
-        message = 'array length ({0}) inconsistent with data size ({1})---is ignore correct?'
+        message = 'array length ({0}) inconsistent with data size ({1})'
+        message += 'are ignore and tolerances correct?'
         warnings.warn(message.format(length, size))
     # normalize the data --------------------------------------------------------------------------
     if use_norm:

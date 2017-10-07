@@ -329,7 +329,7 @@ def from_COLORS(
         name = wt_kit.filename_parse(file_example)[1]
     data.name = name
     # warn if data doesn't seem like the right shape ----------------------------------------------
-    length = len(arr)
+    length = len(arr[0])
     size = data.size
     if not size == length:
         message = 'array length ({0}) inconsistent with data size ({1})---is ignore correct?'
