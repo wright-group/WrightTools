@@ -1,47 +1,27 @@
 """WrightTools init."""
+# flake8: noqa
 
 
 # --- import --------------------------------------------------------------------------------------
 
 
 import sys as _sys
-import os as _os
 
-import matplotlib as _matplotlib
-
-from . import artists           # noqa: F401
-from . import calibration       # noqa: F401
-from . import collection        # noqa: F401
-from . import data              # noqa: F401
-from . import diagrams          # noqa: F401
-from . import fit               # noqa: F401
-from . import google_drive      # noqa: F401
-from . import kit               # noqa: F401
-from . import tuning            # noqa: F401
-from . import units             # noqa: F401
-
-
-# --- version -------------------------------------------------------------------------------------
-
-
-# read from VERSION file
-_here = _os.path.abspath(_os.path.dirname(__file__))
-with open(_os.path.join(_os.path.dirname(_here), 'VERSION')) as _version_file:
-    __version__ = _version_file.read().strip()
-
-# add git branch, if appropriate
-_directory = _os.path.dirname(_os.path.dirname(__file__))
-_p = _os.path.join(_directory, '.git', 'HEAD')
-if _os.path.isfile(_p):
-    with open(_p) as _f:
-        __branch__ = _f.readline().rstrip().split(r'/')[-1]
-    if __branch__ != 'master':
-        __version__ += '-' + __branch__
-else:
-    __branch__ = None
+from .__version__ import *
+from . import artists
+from . import calibration
+from . import collection
+from . import data
+from . import diagrams
+from . import fit
+from . import google_drive
+from . import kit
+from . import tuning
+from . import units
 
 
 # --- rcparams ------------------------------------------------------------------------------------
 
-if int(_sys.version.split('.')[0]) > 2 and int(_matplotlib.__version__.split('.')[0]) > 1:
+
+if int(_sys.version.split('.')[0]) > 2:
     artists.apply_rcparams('fast')
