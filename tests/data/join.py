@@ -1,7 +1,17 @@
+"""Test join."""
+
+
+# --- import --------------------------------------------------------------------------------------
+
+
 import numpy as np
 
 import WrightTools as wt
 from WrightTools import datasets
+
+
+# --- test ----------------------------------------------------------------------------------------
+
 
 def test_wm_w2_w1():
     p = datasets.PyCMDS.wm_w2_w1_000
