@@ -1284,16 +1284,17 @@ class Data:
         ----------
         axis : int or str
             The axis to map onto.
-        points : 1D array-like
-            The new points.
+        points : 1D array-like or int
+            If array, the new points. If int, new points will have the same
+            limits, with int defining the number of evenly spaced points
+            between.
         input_units : str (optional)
             The units of the new points. Default is same, which assumes
             the new points have the same units as the axis.
         verbose : bool (optional)
             Toggle talkback. Default is True.
         """
-        points = np.array(points)
-        # get axis index --------------------------------------------------------------------------
+       # get axis index --------------------------------------------------------------------------
         if isinstance(axis, int):
             axis_index = axis
         elif isinstance(axis, string_type):
@@ -1301,6 +1302,12 @@ class Data:
         else:
             raise TypeError("axis: expected {int, str}, got %s" % type(axis))
         axis = self.axes[axis_index]
+        # get points ------------------------------------------------------------------------------
+        if isinstance(points, int):
+            points = np.linspace(axis.points[0], axis.points[-1], points)
+            input_units = 'same'
+        else:
+            points = np.array(points)
         # transform points to axis units ----------------------------------------------------------
         if input_units == 'same':
             pass
