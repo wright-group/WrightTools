@@ -22,6 +22,15 @@ def test_array():
     assert data.axes[0].points.all() == new.all()
 
 
+def test_edge_tolerance():
+    ps = datasets.KENT.LDS821_TRSF
+    data = wt.data.from_KENT(ps, ignore=['wm', 'd1', 'd2'])
+    new = np.linspace(1250, 1600, 101)
+    data.map_axis('w2', new, edge_tolerance=1)
+    assert data.w2.points.all() == new.all()
+    assert not np.isnan(data.channels[0].values).any()
+
+
 def test_int():
     p = datasets.PyCMDS.wm_w2_w1_000
     data = wt.data.from_PyCMDS(p)

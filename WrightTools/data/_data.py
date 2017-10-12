@@ -1275,7 +1275,7 @@ class Data:
             else:
                 raise RuntimeError('{0} label_seed not found'.format(indi))
 
-    def map_axis(self, axis, points, input_units='same', verbose=True):
+    def map_axis(self, axis, points, input_units='same', edge_tolerance=0., verbose=True):
         """Map points of an axis to new points using linear interpolation.
 
         Out-of-bounds points are written nan.
@@ -1291,10 +1291,14 @@ class Data:
         input_units : str (optional)
             The units of the new points. Default is same, which assumes
             the new points have the same units as the axis.
+        edge_tolerance : float (optional)
+            Axis edge points that are within this amount of the new edge
+            points are coerced to the new edge points before interpolation.
+            Default is 0.
         verbose : bool (optional)
             Toggle talkback. Default is True.
         """
-       # get axis index --------------------------------------------------------------------------
+        # get axis index --------------------------------------------------------------------------
         if isinstance(axis, int):
             axis_index = axis
         elif isinstance(axis, string_type):
@@ -1319,6 +1323,12 @@ class Data:
             if self.axes[i].points[0] > self.axes[i].points[-1]:
                 self.flip(i)
                 flipped[i] = True
+        # handle edge tolerance -------------------------------------------------------------------
+        for index in [0, -1]:
+            old = axis.points[index]
+            new = points[index]
+            if new - edge_tolerance < old < new + edge_tolerance:
+                axis.points[index] = new
         # interpn data ----------------------------------------------------------------------------
         old_points = [a.points for a in self.axes]
         new_points = [a.points if a is not axis else points for a in self.axes]
