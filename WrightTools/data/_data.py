@@ -1275,7 +1275,7 @@ class Data:
             else:
                 raise RuntimeError('{0} label_seed not found'.format(indi))
 
-    def map_axis(self, axis, points, input_units='same', verbose=True):
+    def map_axis(self, axis, points, input_units='same', edge_tolerance=0., verbose=True):
         """Map points of an axis to new points using linear interpolation.
 
         Out-of-bounds points are written nan.
@@ -1284,15 +1284,20 @@ class Data:
         ----------
         axis : int or str
             The axis to map onto.
-        points : 1D array-like
-            The new points.
+        points : 1D array-like or int
+            If array, the new points. If int, new points will have the same
+            limits, with int defining the number of evenly spaced points
+            between.
         input_units : str (optional)
             The units of the new points. Default is same, which assumes
             the new points have the same units as the axis.
+        edge_tolerance : float (optional)
+            Axis edge points that are within this amount of the new edge
+            points are coerced to the new edge points before interpolation.
+            Default is 0.
         verbose : bool (optional)
             Toggle talkback. Default is True.
         """
-        points = np.array(points)
         # get axis index --------------------------------------------------------------------------
         if isinstance(axis, int):
             axis_index = axis
@@ -1301,6 +1306,12 @@ class Data:
         else:
             raise TypeError("axis: expected {int, str}, got %s" % type(axis))
         axis = self.axes[axis_index]
+        # get points ------------------------------------------------------------------------------
+        if isinstance(points, int):
+            points = np.linspace(axis.points[0], axis.points[-1], points)
+            input_units = 'same'
+        else:
+            points = np.array(points)
         # transform points to axis units ----------------------------------------------------------
         if input_units == 'same':
             pass
@@ -1312,6 +1323,12 @@ class Data:
             if self.axes[i].points[0] > self.axes[i].points[-1]:
                 self.flip(i)
                 flipped[i] = True
+        # handle edge tolerance -------------------------------------------------------------------
+        for index in [0, -1]:
+            old = axis.points[index]
+            new = points[index]
+            if new - edge_tolerance < old < new + edge_tolerance:
+                axis.points[index] = new
         # interpn data ----------------------------------------------------------------------------
         old_points = [a.points for a in self.axes]
         new_points = [a.points if a is not axis else points for a in self.axes]
