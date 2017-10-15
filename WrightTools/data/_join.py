@@ -11,7 +11,9 @@ from ._data import Channel, Data
 
 # --- define --------------------------------------------------------------------------------------
 
+
 __all__ = ['join']
+
 
 # --- functions -----------------------------------------------------------------------------------
 
@@ -32,21 +34,11 @@ def join(datas, method='first', verbose=True, **kwargs):
     verbose : bool (optional)
         Toggle talkback. Default is True.
 
-    Keyword Arguments
-    -----------------
-    axis objects
-        The axes of the new data object. If not supplied, the points of the
-        new axis will be guessed from the given datas.
-
     Returns
     -------
-    data
-        A Data instance.
+    WrightTools.data.Data
+        A new Data instance.
     """
-    # TODO: a proper treatment of joining datas that have different dimensions
-    # with intellegent treatment of their constant dimensions. perhaps changing
-    # map_axis would be good for this. - Blaise 2015.10.31
-
     # copy datas so original objects are not changed
     datas = [d.copy() for d in datas]
     # get scanned dimensions
@@ -63,7 +55,6 @@ def join(datas, method='first', verbose=True, **kwargs):
                 axis_names.append(axis.name)
                 axis_units.append(axis.units)
                 axis_objects.append(axis)
-    # TODO: transpose to same dimension orders
     # convert into same units
     for data in datas:
         for axis_name, axis_unit in zip(axis_names, axis_units):
@@ -73,26 +64,11 @@ def join(datas, method='first', verbose=True, **kwargs):
     # get axis points
     axis_points = []  # list of 1D arrays
     for axis_name in axis_names:
-        if axis_name in kwargs.keys():
-            axis_points.append(kwargs[axis_name].points)
-            continue
-        all_points = np.array([])
-        step_sizes = []
+        points = np.full((0), np.nan)
         for data in datas:
-            for axis in data.axes:
-                if axis.name == axis_name:
-                    all_points = np.concatenate([all_points, axis.points])
-                    this_axis_min = np.nanmin(axis.points)
-                    this_axis_max = np.nanmax(axis.points)
-                    this_axis_number = float(axis.points.size) - 1
-                    step_size = (this_axis_max - this_axis_min) / this_axis_number
-                    step_sizes.append(step_size)
-        axis_min = np.nanmin(all_points)
-        axis_max = np.nanmax(all_points)
-        axis_step_size = min(step_sizes)
-        axis_n_points = np.ceil((axis_max - axis_min) / axis_step_size)
-        points = np.linspace(axis_min, axis_max, axis_n_points + 1)
-        axis_points.append(points)
+            index = data.axis_names.index(axis_name)
+            points = np.hstack((points, data.axes[index].points))
+        axis_points.append(np.unique(points))
     # map datas to new points
     for axis_index, axis_name in enumerate(axis_names):
         for data in datas:
