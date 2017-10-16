@@ -1744,10 +1744,10 @@ class Data:
         indicies.sort()
 
         # set direction according to units
+        flip = direction == 'above'
         if axis.points[-1] < axis.points[0]:
-            directions = ['above', 'below']
-            direction = [i for i in directions if i is not direction][0]
-        if direction == 'above':
+            flip = not flip
+        if flip:
             indicies = [i - 1 for i in indicies]
         # process ---------------------------------------------------------------------------------
         outs = []

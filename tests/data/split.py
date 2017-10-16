@@ -54,6 +54,16 @@ def test_split_close():
 def test_split_above():
     p = datasets.PyCMDS.wm_w2_w1_000
     a = wt.data.from_PyCMDS(p)
+    a.flip(0)
+    split = a.split(0, [19700], direction='above')
+    assert len(split) == 2
+    assert split[0].shape == (14, 11, 11)
+    assert split[1].shape == (21, 11, 11)
+
+
+def test_split_above_descending():
+    p = datasets.PyCMDS.wm_w2_w1_000
+    a = wt.data.from_PyCMDS(p)
     split = a.split(0, [19700], direction='above')
     assert len(split) == 2
     assert split[0].shape == (21, 11, 11)
