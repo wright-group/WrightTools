@@ -1798,6 +1798,7 @@ class Data:
                 new_data.constants.append(axis)
                 # reshape channels
                 shape = [i for i in new_data.channels[0].values.shape if not i == 1]
+                shape = tuple(shape)
                 for channel in new_data.channels:
                     channel.values.shape = shape
                 new_data.shape = shape
