@@ -1,7 +1,6 @@
-import numpy as np
-
 import WrightTools as wt
 from WrightTools import datasets
+
 
 def test_split():
     p = datasets.PyCMDS.wm_w2_w1_000
@@ -11,6 +10,7 @@ def test_split():
     assert len(split) == 2
     assert split[0].shape == (15, 11, 11)
     assert split[1].shape == (20, 11, 11)
+
 
 def test_split_descending():
     p = datasets.PyCMDS.wm_w2_w1_000
@@ -29,6 +29,7 @@ def test_split_edge():
     assert split[0] is None
     assert split[1].shape == (35, 11, 11)
 
+
 def test_split_multiple():
     p = datasets.PyCMDS.wm_w2_w1_000
     a = wt.data.from_PyCMDS(p)
@@ -37,6 +38,7 @@ def test_split_multiple():
     assert split[0].shape == (2, 11, 11)
     assert split[1].shape == (18, 11, 11)
     assert split[2].shape == (15, 11, 11)
+
 
 def test_split_close():
     p = datasets.PyCMDS.wm_w2_w1_000
@@ -47,6 +49,7 @@ def test_split_close():
     assert split[0].shape == (15, 11, 11)
     assert split[1] is None
     assert split[2].shape == (20, 11, 11)
+
 
 def test_split_above():
     p = datasets.PyCMDS.wm_w2_w1_000
