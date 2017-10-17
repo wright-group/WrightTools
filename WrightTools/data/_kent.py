@@ -134,8 +134,8 @@ def discover_dimensions(arr, dimension_cols, verbose=True):
 # --- from function -------------------------------------------------------------------------------
 
 
-def from_KENT(filepaths, null=None, name=None, ignore=['wm'], use_norm=False,
-              delay_tolerance=0.1, frequency_tolerance=0.5, verbose=True):
+def from_KENT(filepaths, null=None, name=None, ignore=['wm'], delay_tolerance=0.1,
+              frequency_tolerance=0.5, verbose=True):
     """Read data object from KENT files."""
     # do we have a list of files or just one file? ------------------------------------------------
     if isinstance(filepaths, list):
@@ -242,14 +242,6 @@ def from_KENT(filepaths, null=None, name=None, ignore=['wm'], use_norm=False,
         message = 'array length ({0}) inconsistent with data size ({1})'
         message += 'are ignore and tolerances correct?'
         warnings.warn(message.format(length, size))
-    # normalize the data --------------------------------------------------------------------------
-    if use_norm:
-        # normalize the OPAs
-        OPA1 = data.channels[2].values / data.axes[0].points
-        OPA2 = data.channels[1].values / data.axes[1].points
-        # Signal normalization
-        data_norm = data.channels[0].values / (OPA1 * OPA2)  # I think this is correct.
-        data.channels[0].values = data_norm
     # return --------------------------------------------------------------------------------------
     if verbose:
         print('data object succesfully created')
