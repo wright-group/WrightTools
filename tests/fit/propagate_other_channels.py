@@ -4,6 +4,8 @@
 # --- import --------------------------------------------------------------------------------------
 
 
+import pytest
+
 import os
 
 import WrightTools as wt
@@ -18,6 +20,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 # --- test ----------------------------------------------------------------------------------------
 
 
+@pytest.mark.xfail()
 def test_propagate_channels():
     p = os.path.join(here, 'propagate_other_channels.data')
     data = wt.data.from_PyCMDS(p)

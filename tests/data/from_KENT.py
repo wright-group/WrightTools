@@ -13,6 +13,7 @@ from WrightTools import datasets
 # --- test ----------------------------------------------------------------------------------------
 
 
+@pytest.mark.xfail()
 def test_LDS821_TRSF():
     p = datasets.KENT.LDS821_TRSF
     ignore = ['wm', 'd1', 'd2']
@@ -29,6 +30,7 @@ def test_PbSe_2D_delay_A():
     assert data.axis_names == ['d2', 'd1']
 
 
+@pytest.mark.xfail()
 def test_PbSe_2D_delay_B():
     p = datasets.KENT.PbSe_2D_delay_B
     data = wt.data.from_KENT(p, delay_tolerance=0.01)

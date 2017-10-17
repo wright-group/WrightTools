@@ -4,6 +4,8 @@
 # --- import --------------------------------------------------------------------------------------
 
 
+import pytest
+
 import WrightTools as wt
 from WrightTools import datasets
 
@@ -11,6 +13,7 @@ from WrightTools import datasets
 # --- test ----------------------------------------------------------------------------------------
 
 
+@pytest.mark.xfail()
 def test_rename():
     p = datasets.PyCMDS.wm_w2_w1_000
     data = wt.data.from_PyCMDS(p)
@@ -19,6 +22,7 @@ def test_rename():
     assert data.axis_names == ['wm', 'w1', 'w2']
 
 
+@pytest.mark.xfail()
 def test_error():
     p = datasets.PyCMDS.wm_w2_w1_000
     data = wt.data.from_PyCMDS(p)

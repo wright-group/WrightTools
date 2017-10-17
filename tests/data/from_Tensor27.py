@@ -4,6 +4,8 @@
 # --- import --------------------------------------------------------------------------------------
 
 
+import pytest
+
 import WrightTools as wt
 from WrightTools import datasets
 
@@ -11,6 +13,7 @@ from WrightTools import datasets
 # --- test ----------------------------------------------------------------------------------------
 
 
+@pytest.mark.xfail()
 def test_CuPCtS_powder_ATR():
     p = datasets.Tensor27.CuPCtS_powder_ATR
     data = wt.data.from_Tensor27(p)
