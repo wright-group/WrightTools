@@ -1939,7 +1939,7 @@ class mpl_1D:
         # defaults
         self.font_size = 15
 
-    def plot(self, channel=0, local=False, autosave=False, output_folder=None,
+    def plot(self, channel=0, local=False, autosave=False, save_directory=None,
              fname=None, lines=True, verbose=True):
         """Plot.
 
@@ -1951,7 +1951,7 @@ class mpl_1D:
             Toggle rescaling for each generated plot. Default is False.
         autosave : boolean (optional)
             Toggle saving. Default is False.
-        output_folder : path (optional)
+        save_directory : path (optional)
             Location to place generated images. If None, a new timestamped
             folder will be created. Default is None.
         fname : string (optional)
@@ -1984,11 +1984,11 @@ class mpl_1D:
                 autosave = True
         # prepare output folders
         if autosave:
-            if output_folder:
+            if save_directory:
                 pass
             else:
                 if len(self.chopped) == 1:
-                    output_folder = os.getcwd()
+                    save_directory = os.getcwd()
                     if fname:
                         pass
                     else:
@@ -1996,7 +1996,7 @@ class mpl_1D:
                 else:
                     folder_name = 'mpl_1D ' + wt_kit.TimeStamp().path
                     os.mkdir(folder_name)
-                    output_folder = folder_name
+                    save_directory = folder_name
         # chew through image generation
         outfiles = [''] * len(self.chopped)
         for i in range(len(self.chopped)):
@@ -2042,7 +2042,7 @@ class mpl_1D:
                     file_name = fname + ' ' + str(i).zfill(3)
                 else:
                     file_name = str(i).zfill(3)
-                fpath = os.path.join(output_folder, file_name + '.png')
+                fpath = os.path.join(save_directory, file_name + '.png')
                 plt.savefig(fpath, transparent=True, dpi=300, pad_inches=1.)
                 plt.close()
                 if verbose:
@@ -2178,7 +2178,7 @@ class mpl_2D:
              facecolor='w', dynamic_range=False, local=False,
              contours_local=True, normalize_slices='both', xbin=False,
              ybin=False, xlim=None, ylim=None, autosave=False,
-             output_folder=None, fname=None, verbose=True,
+             save_directory=None, fname=None, verbose=True,
              transform=None, contour_thickness=None):
         """Draw the plot(s).
 
@@ -2219,7 +2219,7 @@ class mpl_2D:
             Control limit of plot in y. Default is None (data limit).
         autosave : bool (optional)
             Autosave.
-        output_folder : str (optional)
+        save_directory : str (optional)
             Output folder.
         fname : str (optional)
             File name. If None, data name is used. Default is None.
@@ -2246,15 +2246,15 @@ class mpl_2D:
                 autosave = True
         # prepare output folder
         if autosave:
-            if output_folder:
+            if save_directory:
                 pass
             else:
                 if len(self.chopped) == 1:
-                    output_folder = os.getcwd()
+                    save_directory = os.getcwd()
                 else:
                     folder_name = 'mpl_2D ' + wt_kit.get_timestamp(style='short')
                     os.mkdir(folder_name)
-                    output_folder = folder_name
+                    save_directory = folder_name
         # chew through image generation
         outfiles = [''] * len(self.chopped)
         for i in range(len(self.chopped)):
@@ -2525,14 +2525,14 @@ class mpl_2D:
             if autosave:
                 if fname.endswith('.pdf'):
                     file_name = fname.split('.')[0] + ' ' + str(i).zfill(3) + '.pdf'
-                    fpath = os.path.join(output_folder, file_name)
+                    fpath = os.path.join(save_directory, file_name)
                     plt.savefig(fpath)
                 else:
                     if fname:
                         file_name = fname + ' ' + str(i).zfill(3)
                     else:
                         file_name = str(i).zfill(3)
-                    fpath = os.path.join(output_folder, file_name + '.png')
+                    fpath = os.path.join(save_directory, file_name + '.png')
                     plt.savefig(fpath, facecolor='none', transparent=True, dpi=300, pad_inches=1.)
                 plt.close()
                 if verbose:
@@ -2711,7 +2711,7 @@ class Diff2D():
              contours=9, pixelated=True, cmap='default', facecolor='grey',
              dynamic_range=False, local=False, contours_local=True,
              xlim=None, ylim=None,
-             autosave=False, output_folder=None, fname=None,
+             autosave=False, save_directory=None, fname=None,
              verbose=True):
         """Set contours to zero to turn off.
 
@@ -2727,11 +2727,11 @@ class Diff2D():
         # prepare output folder
         if autosave:
             plt.ioff()
-            if output_folder:
+            if save_directory:
                 pass
             else:
                 if len(self.minuend_chopped) == 1:
-                    output_folder = os.getcwd()
+                    save_directory = os.getcwd()
                     if fname:
                         pass
                     else:
@@ -2739,7 +2739,7 @@ class Diff2D():
                 else:
                     folder_name = 'difference_2D ' + wt_kit.get_timestamp()
                     os.mkdir(folder_name)
-                    output_folder = folder_name
+                    save_directory = folder_name
         # chew through image generation
         for i in range(len(self.minuend_chopped)):
             # create figure -----------------------------------------------------------------------
@@ -2857,7 +2857,7 @@ class Diff2D():
                     file_name = fname + ' ' + str(i).zfill(3)
                 else:
                     file_name = str(i).zfill(3)
-                fpath = os.path.join(output_folder, file_name + '.png')
+                fpath = os.path.join(save_directory, file_name + '.png')
                 plt.savefig(fpath, facecolor='none')
                 plt.close()
                 if verbose:
