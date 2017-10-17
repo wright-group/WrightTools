@@ -1,9 +1,9 @@
 * distribution
-** update VERSION, push to development
 ** push to master
 *** merge into master from development (requires approval)
 *** make a new release on GitHub
 *** merge back into development from master
+*** update development VERSION
 ** release to PyPI
 *** checkout master on your machine
 *** ensure twine is installed / setup on your machine

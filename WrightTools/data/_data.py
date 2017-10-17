@@ -1276,7 +1276,7 @@ class Data:
             else:
                 raise RuntimeError('{0} label_seed not found'.format(indi))
 
-    def map_axis(self, axis, points, input_units='same', verbose=True):
+    def map_axis(self, axis, points, input_units='same', edge_tolerance=0., verbose=True):
         """Map points of an axis to new points using linear interpolation.
 
         Out-of-bounds points are written nan.
@@ -1285,15 +1285,20 @@ class Data:
         ----------
         axis : int or str
             The axis to map onto.
-        points : 1D array-like
-            The new points.
+        points : 1D array-like or int
+            If array, the new points. If int, new points will have the same
+            limits, with int defining the number of evenly spaced points
+            between.
         input_units : str (optional)
             The units of the new points. Default is same, which assumes
             the new points have the same units as the axis.
+        edge_tolerance : float (optional)
+            Axis edge points that are within this amount of the new edge
+            points are coerced to the new edge points before interpolation.
+            Default is 0.
         verbose : bool (optional)
             Toggle talkback. Default is True.
         """
-        points = np.array(points)
         # get axis index --------------------------------------------------------------------------
         if isinstance(axis, int):
             axis_index = axis
@@ -1302,6 +1307,12 @@ class Data:
         else:
             raise TypeError("axis: expected {int, str}, got %s" % type(axis))
         axis = self.axes[axis_index]
+        # get points ------------------------------------------------------------------------------
+        if isinstance(points, int):
+            points = np.linspace(axis.points[0], axis.points[-1], points)
+            input_units = 'same'
+        else:
+            points = np.array(points)
         # transform points to axis units ----------------------------------------------------------
         if input_units == 'same':
             pass
@@ -1313,6 +1324,12 @@ class Data:
             if self.axes[i].points[0] > self.axes[i].points[-1]:
                 self.flip(i)
                 flipped[i] = True
+        # handle edge tolerance -------------------------------------------------------------------
+        for index in [0, -1]:
+            old = axis.points[index]
+            new = points[index]
+            if new - edge_tolerance < old < new + edge_tolerance:
+                axis.points[index] = new
         # interpn data ----------------------------------------------------------------------------
         old_points = [a.points for a in self.axes]
         new_points = [a.points if a is not axis else points for a in self.axes]
@@ -1699,7 +1716,8 @@ class Data:
             input units are identical to axis units.
         direction : {'below', 'above'} (optional)
             Choose which group of data the points at positions remains with.
-            Consider points [0, 1, 2, 3, 4, 5] and positions [3]. If direction
+            This decision is based on the value, not the index.
+            Consider points [0, 1, 2, 3, 4, 5] and split value [3]. If direction
             is above the returned objects are [0, 1, 2] and [3, 4, 5]. If
             direction is below the returned objects are [0, 1, 2, 3] and
             [4, 5]. Default is below.
@@ -1710,6 +1728,8 @@ class Data:
         -------
         list
             A list of data objects.
+            Zero-length data objects are replaced with `None`.
+            The order of the objects is such that the axis points retain their original order.
 
         See Also
         --------
@@ -1740,17 +1760,12 @@ class Data:
             idx = np.argmin(abs(axis.points - position))
             indicies.append(idx)
         indicies.sort()
-        # indicies must be unique
-        if len(indicies) == len(set(indicies)):
-            pass
-        else:
-            print('some of your positions are too close together to split!')
-            indicies = list(set(indicies))
+
         # set direction according to units
+        flip = direction == 'above'
         if axis.points[-1] < axis.points[0]:
-            directions = ['above', 'below']
-            direction = [i for i in directions if i is not direction][0]
-        if direction == 'above':
+            flip = not flip
+        if flip:
             indicies = [i - 1 for i in indicies]
         # process ---------------------------------------------------------------------------------
         outs = []
@@ -1772,10 +1787,10 @@ class Data:
             transpose_order[0] = axis_index
             new_data.transpose(transpose_order, verbose=False)
             # axis
-            new_data.axes[0].points = new_data.axes[0].points[start:stop]
+            new_data.axes[0].points = new_data.axes[0].points[start:stop + 1]
             # channels
             for channel in new_data.channels:
-                channel.values = channel.values[start:stop]
+                channel.values = channel.values[start:stop + 1]
             # transpose out
             new_data.transpose(transpose_order, verbose=False)
             outs.append(new_data)
@@ -1785,12 +1800,15 @@ class Data:
             for i in range(len(outs)):
                 new_data = outs[i]
                 new_axis = new_data.axes[axis_index]
-                print('  {0} : {1} to {2} {3} (length {4})'.format(i, new_axis.points[0],
-                                                                   new_axis.points[-1],
-                                                                   new_axis.units,
-                                                                   len(new_axis.points)))
+                if len(new_axis.points) == 0:
+                    print('  {0} : None'.format(i))
+                else:
+                    print('  {0} : {1} to {2} {3} (length {4})'.format(i, new_axis.points[0],
+                                                                       new_axis.points[-1],
+                                                                       new_axis.units,
+                                                                       len(new_axis.points)))
         # deal with cases where only one element is left
-        for new_data in outs:
+        for i, new_data in enumerate(outs):
             if len(new_data.axes[axis_index].points) == 1:
                 # remove axis
                 new_data.axis_names.pop(axis_index)
@@ -1798,9 +1816,12 @@ class Data:
                 new_data.constants.append(axis)
                 # reshape channels
                 shape = [i for i in new_data.channels[0].values.shape if not i == 1]
+                shape = tuple(shape)
                 for channel in new_data.channels:
                     channel.values.shape = shape
                 new_data.shape = shape
+            elif len(new_data.axes[axis_index].points) == 0:
+                outs[i] = None
         return outs
 
     def subtract(self, subtrahend, channel=0, subtrahend_channel=0):
