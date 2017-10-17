@@ -12,6 +12,8 @@ import matplotlib.pyplot as plt
 
 import numpy as np
 
+import warnings
+
 from . import curve as wt_curve
 from .. import artists as wt_artists
 from .. import fit as wt_fit
@@ -178,8 +180,16 @@ def tune_test(data, curve, channel_name, level=False, cutoff_factor=0.01,
     yi = outs.mean.values
     spline = wt_kit.Spline(xi, yi)
     offsets_splined = spline(xi)  # wn
-    # make curve ----------------------------------------------------------------------------------
+    # check old curve for compatability with data object make curve -------------------------------
     curve = curve.copy()
+    try:
+        assert np.array_equal(curve.colors, outs.axes[0].points)
+    except AssertionError:
+        message = 'The curve points do not match the data points.'
+        message += ' You may have the wrong .curve file.'
+        warnings.warn(message)
+        curve.map_colors(outs.axes[0].points)
+    # make curve ----------------------------------------------------------------------------------
     curve_native_units = curve.units
     curve.convert('wn')
     points = curve.colors.copy()
