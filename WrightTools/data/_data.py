@@ -1715,7 +1715,8 @@ class Data:
             input units are identical to axis units.
         direction : {'below', 'above'} (optional)
             Choose which group of data the points at positions remains with.
-            Consider points [0, 1, 2, 3, 4, 5] and positions [3]. If direction
+            This decision is based on the value, not the index.
+            Consider points [0, 1, 2, 3, 4, 5] and split value [3]. If direction
             is above the returned objects are [0, 1, 2] and [3, 4, 5]. If
             direction is below the returned objects are [0, 1, 2, 3] and
             [4, 5]. Default is below.
@@ -1726,6 +1727,8 @@ class Data:
         -------
         list
             A list of data objects.
+            Zero-length data objects are replaced with `None`.
+            The order of the objects is such that the axis points retain their original order.
 
         See Also
         --------
@@ -1756,17 +1759,12 @@ class Data:
             idx = np.argmin(abs(axis.points - position))
             indicies.append(idx)
         indicies.sort()
-        # indicies must be unique
-        if len(indicies) == len(set(indicies)):
-            pass
-        else:
-            print('some of your positions are too close together to split!')
-            indicies = list(set(indicies))
+
         # set direction according to units
+        flip = direction == 'above'
         if axis.points[-1] < axis.points[0]:
-            directions = ['above', 'below']
-            direction = [i for i in directions if i is not direction][0]
-        if direction == 'above':
+            flip = not flip
+        if flip:
             indicies = [i - 1 for i in indicies]
         # process ---------------------------------------------------------------------------------
         outs = []
@@ -1788,10 +1786,10 @@ class Data:
             transpose_order[0] = axis_index
             new_data.transpose(transpose_order, verbose=False)
             # axis
-            new_data.axes[0].points = new_data.axes[0].points[start:stop]
+            new_data.axes[0].points = new_data.axes[0].points[start:stop + 1]
             # channels
             for channel in new_data.channels:
-                channel.values = channel.values[start:stop]
+                channel.values = channel.values[start:stop + 1]
             # transpose out
             new_data.transpose(transpose_order, verbose=False)
             outs.append(new_data)
@@ -1801,12 +1799,15 @@ class Data:
             for i in range(len(outs)):
                 new_data = outs[i]
                 new_axis = new_data.axes[axis_index]
-                print('  {0} : {1} to {2} {3} (length {4})'.format(i, new_axis.points[0],
-                                                                   new_axis.points[-1],
-                                                                   new_axis.units,
-                                                                   len(new_axis.points)))
+                if len(new_axis.points) == 0:
+                    print('  {0} : None'.format(i))
+                else:
+                    print('  {0} : {1} to {2} {3} (length {4})'.format(i, new_axis.points[0],
+                                                                       new_axis.points[-1],
+                                                                       new_axis.units,
+                                                                       len(new_axis.points)))
         # deal with cases where only one element is left
-        for new_data in outs:
+        for i, new_data in enumerate(outs):
             if len(new_data.axes[axis_index].points) == 1:
                 # remove axis
                 new_data.axis_names.pop(axis_index)
@@ -1814,9 +1815,12 @@ class Data:
                 new_data.constants.append(axis)
                 # reshape channels
                 shape = [i for i in new_data.channels[0].values.shape if not i == 1]
+                shape = tuple(shape)
                 for channel in new_data.channels:
                     channel.values.shape = shape
                 new_data.shape = shape
+            elif len(new_data.axes[axis_index].points) == 0:
+                outs[i] = None
         return outs
 
     def subtract(self, subtrahend, channel=0, subtrahend_channel=0):
