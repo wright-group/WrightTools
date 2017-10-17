@@ -545,6 +545,7 @@ class Data:
         for obj in self.axes + self.channels + self.constants:
             setattr(self, obj.name, obj)
         self.shape = self.channels[0].values.shape
+        self.size = np.prod(self.shape)
         # attrs
         for key, value in self.attrs.items():
             identifier = wt_kit.string2identifier(key)
