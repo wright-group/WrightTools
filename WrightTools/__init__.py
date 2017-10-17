@@ -16,7 +16,6 @@ from . import diagrams
 from . import fit
 from . import google_drive
 from . import kit
-from . import tuning
 from . import units
 
 
