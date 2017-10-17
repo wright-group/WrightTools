@@ -21,8 +21,8 @@ dataset                                            axis names                   
 ``JASCO.PbSe_batch_4_2012_02_21`` [#kohler2014]_   ``['wm']``                    ``(1251,)``     
 ``JASCO.PbSe_batch_4_2012_03_15`` [#kohler2014]_   ``['wm']``                    ``(1251,)``    
 ``KENT.LDS821_TRSF`` [#boyle2013]_                 ``['w2', 'w1']``              ``(71, 71)``         
-``KENT.PbSe_2D_delay_A`` [#yurs2011]_              ``['d2', 'd1']``              ``(20, 30)``         
-``KENT.PbSe_2D_delay_B`` [#yurs2011]_              ``['d2', 'd1']``              ``(20, 20)``         
+``KENT.PbSe_2D_delay_A`` [#yurs2011]_              ``['d2', 'd1']``              ``(101, 151)``         
+``KENT.PbSe_2D_delay_B`` [#yurs2011]_              ``['d2', 'd1']``              ``(101, 101)``         
 ``PyCMDS.wm_w2_w1_000``                            ``['wm', 'w2', 'w1']``        ``(35, 11, 11)``
 ``PyCMDS.wm_w2_w1_001``                            ``['wm', 'w2', 'w1']``        ``(29, 11, 11)``
 ``spcm.test_data``                                 ``['time']``                  ``(1024,)``

@@ -5,8 +5,8 @@
 
 
 from __future__ import absolute_import, division, print_function, unicode_literals
-
 import collections
+import warnings
 
 import numpy as np
 
@@ -47,7 +47,6 @@ def discover_dimensions(arr, dimension_cols, verbose=True):
     for i in range(len(dims)):
         if np.all(np.isnan(arr[dims[i][0]])):
             to_pop.append(i)
-
     to_pop.reverse()
     for i in to_pop:
         dims.pop(i)
@@ -135,8 +134,8 @@ def discover_dimensions(arr, dimension_cols, verbose=True):
 # --- from function -------------------------------------------------------------------------------
 
 
-def from_KENT(filepaths, null=None, name=None, ignore=['wm'], use_norm=False,
-              delay_tolerance=0.1, frequency_tolerance=0.5, verbose=True):
+def from_KENT(filepaths, null=None, name=None, ignore=['wm'], delay_tolerance=0.1,
+              frequency_tolerance=0.5, verbose=True):
     """Read data object from KENT files."""
     # do we have a list of files or just one file? ------------------------------------------------
     if isinstance(filepaths, list):
@@ -230,23 +229,19 @@ def from_KENT(filepaths, null=None, name=None, ignore=['wm'], use_norm=False,
             channel.give_values(grid_i)
     # create data object --------------------------------------------------------------------------
     data = Data(list(scanned), list(channels.values()), list(constant))
-    for axis in data.axes:
-        axis.get_label()
-    for axis in data.constants:
-        axis.get_label()
     # add extra stuff to data object --------------------------------------------------------------
+    data.kind = 'KENT'
     data.source = filepaths
     if not name:
         name = wt_kit.filename_parse(file_example)[1]
     data.name = name
-    # normalize the data --------------------------------------------------------------------------
-    if use_norm:
-        # normalize the OPAs
-        OPA1 = data.channels[2].values / data.axes[0].points
-        OPA2 = data.channels[1].values / data.axes[1].points
-        # Signal normalization
-        data_norm = data.channels[0].values / (OPA1 * OPA2)  # I think this is correct.
-        data.channels[0].values = data_norm
+    # warn if data doesn't seem like the right shape ----------------------------------------------
+    length = len(arr[0])
+    size = data.size
+    if not size == length:
+        message = 'array length ({0}) inconsistent with data size ({1})'
+        message += 'are ignore and tolerances correct?'
+        warnings.warn(message.format(length, size))
     # return --------------------------------------------------------------------------------------
     if verbose:
         print('data object succesfully created')
