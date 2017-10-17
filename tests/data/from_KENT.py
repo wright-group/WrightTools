@@ -4,6 +4,8 @@
 # --- import --------------------------------------------------------------------------------------
 
 
+import pytest
+
 import WrightTools as wt
 from WrightTools import datasets
 
@@ -19,6 +21,7 @@ def test_LDS821_TRSF():
     assert data.axis_names == ['w2', 'w1']
 
 
+@pytest.mark.xfail(reason='unknown problems with data itself')
 def test_PbSe_2D_delay_A():
     p = datasets.KENT.PbSe_2D_delay_A
     data = wt.data.from_KENT(p, delay_tolerance=0.01)
