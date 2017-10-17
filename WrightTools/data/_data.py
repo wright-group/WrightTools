@@ -9,11 +9,14 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import os
 import sys
 import copy
+import shutil
 import collections
 import warnings
-import pickle
+import tempfile
 
 import numpy as np
+
+import h5py
 
 import scipy
 from scipy.interpolate import griddata, interp1d
@@ -40,7 +43,7 @@ __all__ = ['Axis', 'Channel', 'Data']
 # --- classes -------------------------------------------------------------------------------------
 
 
-class Axis:
+class Axis(h5py.Dataset):
     """Axis class."""
 
     def __init__(self, points, units, name, symbol_type=None, label_seed=[''], **kwargs):
@@ -187,7 +190,7 @@ class Axis:
         return self.points.min()
 
 
-class Channel:
+class Channel(h5py.Dataset):
     """Channel."""
 
     def __init__(self, values, name, units=None, null=None, signed=None,
@@ -482,11 +485,10 @@ class Channel:
         return self.null()
 
 
-class Data:
+class Data(h5py.Group):
     """Central multidimensional data class."""
 
-    def __init__(self, axes, channels, constants=[],
-                 name='', source=None, **kwargs):
+    def __init__(self, filepath=None, parent='/', name='', edit_local=False, **kwargs):
         """Create a ``Data`` object.
 
         Parameters
@@ -503,16 +505,31 @@ class Data:
             Additional keyword arguments are added to the attrs dictionary
             and to the natural namespace of the object (if possible).
         """
-        # record version
-        from .. import __version__
-        self.__version__ = __version__
+        # TODO: redo docstring
+        # parse / create file
+        if edit_local and filepath is None:
+            raise Exception  # TODO: better exception
+        if not edit_local:
+            self.filepath = tempfile.NamedTemporaryFile(suffix='.wt5').name
+            if filepath:
+                shutil.copyfile(src=filepath, dst=self.filepath)
+        elif edit_local and filepath:
+            self.filepath = filepath
+        # parse / create group
+        file = h5py.File(self.filepath, 'a')
+        file.require_group(parent + '/' + name)
+        h5py.Group.__init__(self, file[parent + '/' + name].id)  # TODO: super
         # assign
-        self.axes = axes
-        self.constants = constants
-        self.channels = channels
-        self.name = name
-        self.source = source
-        self.attrs = kwargs
+        self.source = kwargs.pop('source', None)  # TODO
+        self.attrs.update(kwargs)
+        # load from file
+        self.axes = []
+        self.constants = []
+        self.channels = []
+        for lis, names in zip([self.axes, self.constants, self.channels],
+                              [self.axis_names, self.constant_names, self.channel_names]):
+            for name in names:
+                lis.append(self[name])
         # update
         self._update()
 
@@ -527,15 +544,36 @@ class Data:
         return 'WrightTools.data.Data object \'{0}\' {1} at {2}'.format(
             self.name, str(self.axis_names), str(id(self)))
 
+    @property
+    def axis_names(self):
+        return self.attrs.get('axis_names', [])
+
+    @property
+    def constant_names(self):
+        return self.attrs.get('constant_names', [])
+
+    @property
+    def channel_names(self):
+        return self.attrs.get('channel_names', [])
+
+    @property
+    def shape(self):
+        if len(self.channels) == 0:
+            return tuple()
+        return self.channels[0].shape
+
+    @property
+    def size(self):
+        if len(self.channels) == 0:
+            return 0
+        return self.channels[0].size
+
     def _update(self):
         """Ensure that a Data Object is up to date.
 
         Ensure that the ``axis_names``, ``constant_names``, ``channel_names``,
         and ``shape`` attributes are correct.
         """
-        self.axis_names = [axis.name for axis in self.axes]
-        self.constant_names = [axis.name for axis in self.constants]
-        self.channel_names = [channel.name for channel in self.channels]
         all_names = self.axis_names + self.channel_names + self.constant_names
         if len(all_names) == len(set(all_names)):
             pass
@@ -544,13 +582,20 @@ class Data:
             return
         for obj in self.axes + self.channels + self.constants:
             setattr(self, obj.name, obj)
-        self.shape = self.channels[0].values.shape
-        self.size = np.prod(self.shape)
         # attrs
         for key, value in self.attrs.items():
             identifier = wt_kit.string2identifier(key)
             if not hasattr(self, identifier):
                 setattr(self, identifier, value)
+
+    def add_axis(self, *args, **kwargs):
+        raise NotImplementedError
+
+    def add_constant(self, *args, **kwargs):
+        raise NotImplementedError
+
+    def add_channel(self, *args, **kwargs):
+        raise NotImplementedError
 
     def bring_to_front(self, channel):
         """Bring a specific channel to the zero-indexed position in channels.
@@ -828,6 +873,10 @@ class Data:
             A deep copy of the data object.
         """
         return copy.deepcopy(self)
+
+    @property
+    def datasets(self):
+        return [v for _, v in self.items() if isinstance(v, h5py.Dataset)]
 
     @property
     def dimensionality(self):
@@ -1561,40 +1610,7 @@ class Data:
         self._update()
 
     def save(self, filepath=None, verbose=True):
-        """Save using the `pickle`__ module.
-
-        __ https://docs.python.org/3/library/pickle.html
-
-        Parameters
-        ----------
-        filepath : str (optional)
-            The savepath. '.p' extension must be included. If not defined,
-            the pickle will be saved in the current working directory with a
-            timestamp.
-        verbose : bool (optional)
-            Toggle talkback. Default is True.
-
-        Returns
-        -------
-        str
-            The filepath of the saved pickle.
-
-        See Also
-        --------
-        from_pickle
-            Generate a data object from a saved pickle.
-        """
-        # get filepath
-        if not filepath:
-            chdir = os.getcwd()
-            timestamp = wt_kit.get_timestamp()
-            filepath = os.path.join(chdir, timestamp + ' data.p')
-        # save
-        pickle.dump(self, open(filepath, 'wb'))
-        # return
-        if verbose:
-            print('data saved at', filepath)
-        return filepath
+        raise NotImplementedError
 
     def scale(self, channel=0, kind='amplitude', verbose=True):
         """Scale a channel.
