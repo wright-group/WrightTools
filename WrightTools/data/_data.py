@@ -46,7 +46,7 @@ __all__ = ['Axis', 'Channel', 'Data']
 class Axis(h5py.Dataset):
     """Axis class."""
 
-    def __init__(self, points, units, name, symbol_type=None, label_seed=[''], **kwargs):
+    def __init__(self, id, units, symbol_type=None, label_seed=[''], **kwargs):
         """Create an `Axis` object.
 
         Parameters
@@ -66,8 +66,8 @@ class Axis(h5py.Dataset):
             Additional keyword arguments are added to the attrs dictionary
             and to the natural namespace of the object (if possible).
         """
-        self.name = wt_kit.string2identifier(name)
-        self.points = np.asarray(points)
+        h5py.Dataset.__init__(self, id)
+        return
         # units
         self.units = units
         self.units_kind = None
@@ -581,15 +581,21 @@ class Data(h5py.Group):
             print('axis, constant, and channel names must all be unique')
             return
         for obj in self.axes + self.channels + self.constants:
-            setattr(self, obj.name, obj)
+            identifier = obj.name.split('/')[-1]
+            setattr(self, identifier, obj)
         # attrs
         for key, value in self.attrs.items():
             identifier = wt_kit.string2identifier(key)
             if not hasattr(self, identifier):
                 setattr(self, identifier, value)
 
-    def add_axis(self, *args, **kwargs):
-        raise NotImplementedError
+    def add_axis(self, name, points, units):
+        id = self.require_dataset(name=name, data=points, shape=points.shape,
+                                  dtype=points.dtype).id
+        axis = Axis(id, units=units)
+        self.axes.append(axis)
+        self._update()
+        return axis
 
     def add_constant(self, *args, **kwargs):
         raise NotImplementedError
