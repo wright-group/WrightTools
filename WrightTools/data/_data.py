@@ -438,6 +438,8 @@ class Data(h5py.Group):
         else:
             p = parent + '/' + name
         file = h5py.File(self.filepath, 'a')
+        if '__version__' not in file.attrs.keys():
+            file.attrs['__version__'] = '0.0.0'
         file.require_group(p)
         h5py.Group.__init__(self, file[p].id)
         # assign
@@ -453,6 +455,7 @@ class Data(h5py.Group):
                               [self.axis_names, self.constant_names, self.channel_names]):
             for name in names:
                 lis.append(self[name])
+        self.__version__  # assigns, if it doesn't already exist
         # update
         self._update()
 
@@ -461,16 +464,26 @@ class Data(h5py.Group):
             self.name, str(self.axis_names), str(id(self)))
 
     @property
+    def __version__(self):
+        return self.file.attrs['__version__']
+
+    @property
     def axis_names(self):
-        return self.attrs.get('axis_names', [])
+        if 'axis_names' not in self.attrs.keys():
+            self.attrs['axis_names'] = np.array([], dtype='S')
+        return [s.decode() for s in self.attrs['axis_names']]
 
     @property
     def constant_names(self):
-        return self.attrs.get('constant_names', [])
+        if 'constant_names' not in self.attrs.keys():
+            self.attrs['constant_names'] = np.array([], dtype='S')
+        return [s.decode() for s in self.attrs['constant_names']]
 
     @property
     def channel_names(self):
-        return self.attrs.get('channel_names', [])
+        if 'channel_names' not in self.attrs.keys():
+            self.attrs['channel_names'] = np.array([], dtype='S')
+        return [s.decode() for s in self.attrs['channel_names']]
 
     @property
     def info(self):
@@ -519,24 +532,26 @@ class Data(h5py.Group):
             if not hasattr(self, identifier):
                 setattr(self, identifier, value)
 
-    def add_axis(self, name, points, units):
+    def add_axis(self, name, points, units, **kwargs):
         # TODO: reshape extant channels
         id = self.require_dataset(name=name, data=points, shape=points.shape,
                                   dtype=points.dtype).id
-        axis = Axis(id, units=units)
+        axis = Axis(id, units=units, **kwargs)
         self.axes.append(axis)
+        self.attrs['axis_names'] = np.append(self.attrs['axis_names'], name.encode())
         self._update()
         return axis
 
     def add_constant(self, *args, **kwargs):
         raise NotImplementedError
 
-    def add_channel(self, name, values, units=None):
+    def add_channel(self, name, values, units=None, **kwargs):
         # TODO: test if channel shape is appropriate
         id = self.require_dataset(name=name, data=values, shape=values.shape,
                                   dtype=values.dtype).id
-        channel = Channel(id, units=units)
+        channel = Channel(id, units=units, **kwargs)
         self.channels.append(channel)
+        self.attrs['channel_names'] = np.append(self.attrs['channel_names'], name.encode())
         self._update()
         return channel
 

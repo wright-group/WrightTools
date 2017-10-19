@@ -13,7 +13,6 @@ from WrightTools import datasets
 # --- test ----------------------------------------------------------------------------------------
 
 
-@pytest.mark.xfail()
 def test_wm_w2_w1_000():
     p = datasets.PyCMDS.wm_w2_w1_000
     data = wt.data.from_PyCMDS(p)
@@ -21,7 +20,6 @@ def test_wm_w2_w1_000():
     assert data.axis_names == ['wm', 'w2', 'w1']
 
 
-@pytest.mark.xfail()
 def test_wm_w2_w1_001():
     p = datasets.PyCMDS.wm_w2_w1_001
     data = wt.data.from_PyCMDS(p)
