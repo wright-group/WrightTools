@@ -1560,6 +1560,9 @@ class Data(h5py.Group):
         self.file.flush()  # ensure all changes are written to file
         if filepath is None:
             filepath = os.path.join(os.getcwd(), self.natural_name + '.wt5')
+        elif len(os.path.basename(filepath).split('.')) == 1:
+            filepath += '.wt5'
+        filepath = os.path.expanduser(filepath)
         shutil.copyfile(src=self.filepath, dst=filepath)
         if verbose:
             print(filepath)
