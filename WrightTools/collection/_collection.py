@@ -16,4 +16,33 @@ __all__ = ['Collection']
 class Collection(object):
     """Nestable Collection of Data objects."""
 
-    pass
+    def __init__():
+        pass
+
+    def __getitem__():
+        pass
+    
+    def __setitem__():
+        pass
+
+    def add_data():
+        raise NotImplementedError
+
+    def add_collection():
+        raise NotImplementedError
+
+    def add_data():
+        raise NotImplementedError
+
+    def add_data():
+        raise NotImplementedError
+
+    def index():
+        raise NotImplementedError
+
+    def insert():
+        raise NotImplementedError
+
+    def flush():
+        raise NotImplementedError
+
