@@ -67,7 +67,6 @@ class Axis(h5py.Dataset):
             and to the natural namespace of the object (if possible).
         """
         h5py.Dataset.__init__(self, id)
-        return
         # units
         self.units = units
         self.units_kind = None
@@ -82,21 +81,39 @@ class Axis(h5py.Dataset):
             self.symbol_type = wt_units.get_default_symbol_type(self.units)
         self.get_label()
         # attrs
-        self.attrs = kwargs
+        self.attrs.update(kwargs)
+        self.attrs['name'] = h5py.h5i.get_name(self.id).decode().split('/')[-1]
+        self.attrs['class'] = 'Axis'
         for key, value in self.attrs.items():
             identifier = wt_kit.string2identifier(key)
             if not hasattr(self, identifier):
                 setattr(self, identifier, value)
 
     def __repr__(self):
-        """Return an unambiguous representation of the Axis.
-
-        Returns
-        -------
-        string
-            Representation.
-        """
         return 'WrightTools.data.Axis object \'{0}\' at {1}'.format(self.name, str(id(self)))
+
+    @property
+    def natural_name(self):
+        return self.attrs['name']
+
+    @property
+    def info(self):
+        """Axis info dictionary."""
+        info = collections.OrderedDict()
+        info['name'] = self.name
+        info['id'] = id(self)
+        if self.is_constant:
+            info['point'] = self.points
+        else:
+            info['range'] = '{0} - {1} ({2})'.format(self.points.min(),
+                                                     self.points.max(), self.units)
+            info['number'] = len(self.points)
+        return info
+
+    @property
+    def label(self):  # noqa: D403
+        """LaTeX formatted label."""
+        return self.get_label()
 
     def convert(self, destination_units):
         """Convert axis to destination units.
@@ -153,20 +170,6 @@ class Axis(h5py.Dataset):
         label += r'}$'
         return label
 
-    @property
-    def info(self):
-        """Axis info dictionary."""
-        info = collections.OrderedDict()
-        info['name'] = self.name
-        info['id'] = id(self)
-        if self.is_constant:
-            info['point'] = self.points
-        else:
-            info['range'] = '{0} - {1} ({2})'.format(self.points.min(),
-                                                     self.points.max(), self.units)
-            info['number'] = len(self.points)
-        return info
-
     def is_constant(self):
         """Axis constant flag."""
         try:
@@ -175,11 +178,6 @@ class Axis(h5py.Dataset):
             return False
         finally:
             return True
-
-    @property
-    def label(self):  # noqa: D403
-        """LaTeX formatted label."""
-        return self.get_label()
 
     def max(self):
         """Axis max, ignoring nans."""
@@ -193,7 +191,7 @@ class Axis(h5py.Dataset):
 class Channel(h5py.Dataset):
     """Channel."""
 
-    def __init__(self, values, name, units=None, null=None, signed=None,
+    def __init__(self, id, units=None, null=None, signed=False,
                  label=None, label_seed=None, **kwargs):
         """Construct a channel object.
 
@@ -217,37 +215,46 @@ class Channel(h5py.Dataset):
             Additional keyword arguments are added to the attrs dictionary
             and to the natural namespace of the object (if possible).
         """
-        self.name = wt_kit.string2identifier(name)
+        h5py.Dataset.__init__(self, id)
         self.label = label
         self.label_seed = label_seed
         self.units = units
-        # values
-        if values is not None:
-            self.give_values(np.asarray(values), null, signed)
-        else:
-            self._null = null
-            self.signed = signed
         # attrs
-        self.attrs = kwargs
+        self.attrs.update(kwargs)
+        self.attrs['name'] = h5py.h5i.get_name(self.id).decode().split('/')[-1]
+        self.attrs['class'] = 'Channel'
         for key, value in self.attrs.items():
             identifier = wt_kit.string2identifier(key)
             if not hasattr(self, identifier):
                 setattr(self, identifier, value)
 
     def __repr__(self):
-        """Retrun an unambiguous representation of the Channel.
-
-        Returns
-        -------
-        string
-            Representation.
-        """
         return 'WrightTools.data.Channel object \'{0}\' at {1}'.format(self.name, str(id(self)))
 
-    def _update(self):
-        """Update channel."""
-        message = '_update is no longer necessary, and will be removed in future versions'
-        warnings.warn(message, wt_exceptions.VisibleDeprecationWarning)
+    @property
+    def minor_extent(self):
+        """Minimum deviation from null."""
+        return min((self.max() - self.null(), self.null() - self.min()))
+
+    @property
+    def natural_name(self):
+        return self.attrs['name']
+
+    @property
+    def info(self):
+        """Return Channel info dictionary."""
+        info = collections.OrderedDict()
+        info['name'] = self.name
+        info['min'] = self.min()
+        info['max'] = self.max()
+        info['null'] = self.null()
+        info['signed'] = self.signed
+        return info
+
+    @property
+    def major_extent(self):
+        """Maximum deviation from null."""
+        return max((self.max() - self.null(), self.null() - self.min()))
 
     def clip(self, min=None, max=None, replace='nan'):
         """Clip (limit) the values in a channel.
@@ -258,7 +265,7 @@ class Channel(h5py.Dataset):
             New channel minimum. Default is None.
         max : number (optional)
             New channel maximum. Default is None.
-        replace : {'val', 'nan', 'mask'} (optional)
+        replace : {'val', 'nan'} (optional)
            Replace behavior. Default is nan.
         """
         # decide what min and max will actually be
@@ -268,64 +275,12 @@ class Channel(h5py.Dataset):
             min = self.min()
         # replace values
         if replace == 'val':
-            self.values.clip(min, max, out=self.values)
+            self[:].clip(min, max, out=self.values)
         elif replace == 'nan':
-            self.values[self.values < min] = np.nan
-            self.values[self.values > max] = np.nan
-        elif replace == 'mask':
-            self.values = np.ma.masked_outside(self.values, min, max, copy=False)
+            self[self.values < min] = np.nan
+            self[self.values > max] = np.nan
         else:
             print('replace not recognized in channel.clip')
-
-    def give_values(self, values, null=None, signed=None):
-        """Give values.
-
-        Parameters
-        ----------
-        values : array-like
-            Values.
-        null : number (optional)
-            Null. Default is None (0).
-        signed : boolean (optional)
-            Signed flag. Default is None (guess).
-        """
-        self.values = values
-        # null
-        if null is not None:
-            self._null = null
-        elif hasattr(self, '_null'):
-            if self._null:
-                pass
-            else:
-                self._null = 0.
-        else:
-            self._null = 0.
-        # signed
-        if signed is not None:
-            self.signed = signed
-        elif hasattr(self, 'signed'):
-            if self.signed is None:
-                if self.min() < self.null():
-                    self.signed = True
-                else:
-                    self.signed = False
-        else:
-            if self.min() < self.null():
-                self.signed = True
-            else:
-                self.signed = False
-
-    @property
-    def info(self):
-        """Return Channel info dictionary."""
-        info = collections.OrderedDict()
-        info['name'] = self.name
-        info['id'] = id(self)
-        info['min'] = self.min()
-        info['max'] = self.max()
-        info['null'] = self.null()
-        info['signed'] = self.signed
-        return info
 
     def invert(self):
         """Invert channel values."""
@@ -335,11 +290,6 @@ class Channel(h5py.Dataset):
         """Channel magnitude (maximum deviation from null)."""
         return self.major_extent
 
-    @property
-    def major_extent(self):
-        """Maximum deviation from null."""
-        return max((self.max() - self.null(), self.null() - self.min()))
-
     def max(self):
         """Maximum, ignorning nans."""
         return np.nanmax(self.values)
@@ -347,11 +297,6 @@ class Channel(h5py.Dataset):
     def min(self):
         """Minimum, ignoring nans."""
         return np.nanmin(self.values)
-
-    @property
-    def minor_extent(self):
-        """Minimum deviation from null."""
-        return min((self.max() - self.null(), self.null() - self.min()))
 
     def normalize(self, axis=None):
         """Normalize a Channel, set `null` to 0 and the max to 1."""
@@ -456,39 +401,11 @@ class Channel(h5py.Dataset):
             print('%i outliers removed' % len(outliers))
         return outliers
 
-    @ property
-    def zmag(self):
-        """Channel magnitude."""
-        message = "use mag, not zmag"
-        warnings.warn(message, wt_exceptions.VisibleDeprecationWarning)
-        return self.mag
-
-    @ property
-    def zmax(self):
-        """Channel maximum."""
-        message = "use max, not zmax"
-        warnings.warn(message, wt_exceptions.VisibleDeprecationWarning)
-        return self.max
-
-    @ property
-    def zmin(self):
-        """Channel minimum."""
-        message = "use min, not zmin"
-        warnings.warn(message, wt_exceptions.VisibleDeprecationWarning)
-        return self.min
-
-    @ property
-    def znull(self):
-        """Channel null."""
-        message = "use null, not znull"
-        warnings.warn(message, wt_exceptions.VisibleDeprecationWarning)
-        return self.null()
-
 
 class Data(h5py.Group):
     """Central multidimensional data class."""
 
-    def __init__(self, filepath=None, parent='/', name='', edit_local=False, **kwargs):
+    def __init__(self, filepath=None, parent=None, name='', edit_local=False, **kwargs):
         """Create a ``Data`` object.
 
         Parameters
@@ -510,18 +427,24 @@ class Data(h5py.Group):
         if edit_local and filepath is None:
             raise Exception  # TODO: better exception
         if not edit_local:
-            self.filepath = tempfile.NamedTemporaryFile(suffix='.wt5').name
+            self.filepath = tempfile.NamedTemporaryFile(prefix='', suffix='.wt5').name
             if filepath:
                 shutil.copyfile(src=filepath, dst=self.filepath)
         elif edit_local and filepath:
             self.filepath = filepath
         # parse / create group
+        if parent is None:
+            p = '/'
+        else:
+            p = parent + '/' + name
         file = h5py.File(self.filepath, 'a')
-        file.require_group(parent + '/' + name)
-        h5py.Group.__init__(self, file[parent + '/' + name].id)  # TODO: super
+        file.require_group(p)
+        h5py.Group.__init__(self, file[p].id)
         # assign
         self.source = kwargs.pop('source', None)  # TODO
         self.attrs.update(kwargs)
+        self.attrs['class'] = 'Data'
+        self.attrs['name'] = name
         # load from file
         self.axes = []
         self.constants = []
@@ -534,13 +457,6 @@ class Data(h5py.Group):
         self._update()
 
     def __repr__(self):
-        """Return an unambiguous representation.
-
-        Returns
-        -------
-        string
-            Representation.
-        """
         return 'WrightTools.data.Data object \'{0}\' {1} at {2}'.format(
             self.name, str(self.axis_names), str(id(self)))
 
@@ -555,6 +471,20 @@ class Data(h5py.Group):
     @property
     def channel_names(self):
         return self.attrs.get('channel_names', [])
+
+    @property
+    def info(self):
+        """Retrieve info dictionary about a Data object."""
+        info = collections.OrderedDict()
+        info['name'] = self.name
+        info['axes'] = self.axis_names
+        info['channels'] = self.channel_names
+        info['shape'] = self.shape
+        return info
+
+    @property
+    def natural_name(self):
+        return self.attrs['name']
 
     @property
     def shape(self):
@@ -590,6 +520,7 @@ class Data(h5py.Group):
                 setattr(self, identifier, value)
 
     def add_axis(self, name, points, units):
+        # TODO: reshape extant channels
         id = self.require_dataset(name=name, data=points, shape=points.shape,
                                   dtype=points.dtype).id
         axis = Axis(id, units=units)
@@ -600,8 +531,14 @@ class Data(h5py.Group):
     def add_constant(self, *args, **kwargs):
         raise NotImplementedError
 
-    def add_channel(self, *args, **kwargs):
-        raise NotImplementedError
+    def add_channel(self, name, values, units=None):
+        # TODO: test if channel shape is appropriate
+        id = self.require_dataset(name=name, data=values, shape=values.shape,
+                                  dtype=values.dtype).id
+        channel = Channel(id, units=units)
+        self.channels.append(channel)
+        self._update()
+        return channel
 
     def bring_to_front(self, channel):
         """Bring a specific channel to the zero-indexed position in channels.
@@ -1152,18 +1089,6 @@ class Data(h5py.Group):
             print('channel {0} healed in {1} seconds'.format(
                 channel.name, np.around(timer.interval, decimals=3)))
 
-    @property
-    def info(self):
-        """Retrieve info dictionary about a Data object."""
-        info = collections.OrderedDict()
-        info['name'] = self.name
-        info['id'] = id(self)
-        info['axes'] = self.axis_names
-        info['channels'] = self.channel_names
-        info['shape'] = self.shape
-        info['version'] = self.__version__
-        return info
-
     def level(self, channel, axis, npts, verbose=True):
         """For a channel, subtract the average value of several points at the edge of a given axis.
 
@@ -1616,7 +1541,14 @@ class Data(h5py.Group):
         self._update()
 
     def save(self, filepath=None, verbose=True):
-        raise NotImplementedError
+        # TODO: documentation
+        self.file.flush()  # ensure all changes are written to file
+        if filepath is None:
+            filepath = os.path.join(os.getcwd(), self.natural_name + '.wt5')
+        shutil.copyfile(src=self.filepath, dst=filepath)
+        if verbose:
+            print(filepath)
+        return filepath
 
     def scale(self, channel=0, kind='amplitude', verbose=True):
         """Scale a channel.
