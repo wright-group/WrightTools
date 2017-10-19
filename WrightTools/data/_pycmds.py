@@ -186,7 +186,7 @@ def from_PyCMDS(filepath, name=None,
         # TODO: handle PyCMDS constants
         pass
     # create data object
-    data = Data(name=name)
+    data = Data(name=data_name)
     for axis in axes:
         data.add_axis(**axis)
     for channel in channels:
