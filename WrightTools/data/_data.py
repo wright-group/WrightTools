@@ -90,7 +90,9 @@ class Axis(h5py.Dataset):
                 setattr(self, identifier, value)
 
     def __repr__(self):
-        return 'WrightTools.data.Axis object \'{0}\' at {1}'.format(self.name, str(id(self)))
+        return '<WrightTools.data.Axis \'{0}\' at {2}>'.format(self.natural_name,
+                                                               '::'.join([self.filepath,
+                                                                          self.name]))
 
     @property
     def natural_name(self):
@@ -229,7 +231,9 @@ class Channel(h5py.Dataset):
                 setattr(self, identifier, value)
 
     def __repr__(self):
-        return 'WrightTools.data.Channel object \'{0}\' at {1}'.format(self.name, str(id(self)))
+        return '<WrightTools.data.Channel \'{0}\' at {2}>'.format(self.natural_name,
+                                                                  '::'.join([self.filepath,
+                                                                             self.name]))
 
     @property
     def minor_extent(self):
@@ -405,7 +409,7 @@ class Channel(h5py.Dataset):
 class Data(h5py.Group):
     """Central multidimensional data class."""
 
-    def __init__(self, filepath=None, parent=None, name='', edit_local=False, **kwargs):
+    def __init__(self, filepath=None, parent=None, name='data', edit_local=False, **kwargs):
         """Create a ``Data`` object.
 
         Parameters
@@ -446,7 +450,6 @@ class Data(h5py.Group):
         self.source = kwargs.pop('source', None)  # TODO
         self.attrs.update(kwargs)
         self.attrs['class'] = 'Data'
-        self.attrs['name'] = name
         # load from file
         self.axes = []
         self.constants = []
@@ -460,8 +463,8 @@ class Data(h5py.Group):
         self._update()
 
     def __repr__(self):
-        return 'WrightTools.data.Data object \'{0}\' {1} at {2}'.format(
-            self.name, str(self.axis_names), str(id(self)))
+        return '<WrightTools.Data \'{0}\' {1} at {2}>'.format(
+            self.natural_name, str(self.axis_names), '::'.join([self.filepath, self.name]))
 
     @property
     def __version__(self):
