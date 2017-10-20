@@ -65,6 +65,7 @@ class Collection(h5py.Group):
         file.require_group(p)
         h5py.Group.__init__(self, file[p].id)
         # assign
+        self._n = 0
         self.source = kwargs.pop('source', None)  # TODO
         if name is None:
             name = self.attrs.get('name', 'collection')
@@ -78,17 +79,25 @@ class Collection(h5py.Group):
         self.__version__  # assigns, if it doesn't already exist
 
     def __iter__(self):
-        return iter([self[key] for key in self.item_names])
+        self._n = 0
+        return self
+
+    def __len__(self):
+        return len(self.item_names)
+
+    def __next__(self):
+        if self._n < len(self):
+            out = self[self._n]
+            self._n += 1
+        else:
+            raise StopIteration
+        return out
 
     def __repr__(self):
         return '<WrightTools.Collection \'{0}\' {1} at {2}>'.format(self.natural_name,
                                                                     self.item_names,
                                                                     '::'.join([self.filepath,
                                                                                self.name]))
-
-    @property
-    def __version__(self):
-        return self.file.attrs['__version__']
 
     def __getitem__(self, key):
         if isinstance(key, int):
@@ -102,6 +111,10 @@ class Collection(h5py.Group):
 
     #def __setitem__():
     #    pass
+
+    @property
+    def __version__(self):
+        return self.file.attrs['__version__']
 
     @property
     def natural_name(self):
@@ -128,7 +141,7 @@ class Collection(h5py.Group):
             self.attrs['item_names'] = np.insert(self.attrs['item_names'], position, collection.natural_name.encode())
         return collection
 
-    def add_data(self, position=None, **kwargs):
+    def add_data(self,  position=None, **kwargs):
         data = wt_data.Data(filepath=self.filepath, parent=self.name, edit_local=True, **kwargs)
         if position is None:
             self.items.append(data)
