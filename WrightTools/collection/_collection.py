@@ -109,8 +109,8 @@ class Collection(h5py.Group):
         else:
             return out
 
-    #def __setitem__():
-    #    pass
+    def __setitem__(self, key, value):
+        raise NotImplementedError
 
     @property
     def __version__(self):
@@ -126,29 +126,29 @@ class Collection(h5py.Group):
             self.attrs['item_names'] = np.array([], dtype='S')
         return [s.decode() for s in self.attrs['item_names']]
 
-    def add_collection(self, collection, position=None, **kwargs):
-        if isinstance(collection, h5py.Group):
-            self.copy(collection, collection.natural_name)
-            #TODO use getitem?
-            collection = Collection(self.filepath, self.name, collection.natural_name, True, **kwargs)
-        else:
-            collection = Collection(self.filepath, self.name, collection, True, **kwargs)
+    def create_collection(self, name='collection', position=None, **kwargs):
+        collection = Collection(filepath=self.filepath, parent=self.name, name=name,
+                                edit_local=True, **kwargs)
         if position is None:
             self.items.append(collection)
-            self.attrs['item_names'] = np.append(self.attrs['item_names'], collection.natural_name.encode())
+            self.attrs['item_names'] = np.append(self.attrs['item_names'],
+                                                 collection.natural_name.encode())
         else:
             self.items.insert(position, collection)
-            self.attrs['item_names'] = np.insert(self.attrs['item_names'], position, collection.natural_name.encode())
+            self.attrs['item_names'] = np.insert(self.attrs['item_names'], position,
+                                                 collection.natural_name.encode())
         return collection
 
-    def add_data(self,  position=None, **kwargs):
+    def create_data(self, name='data', position=None, **kwargs):
         data = wt_data.Data(filepath=self.filepath, parent=self.name, edit_local=True, **kwargs)
         if position is None:
             self.items.append(data)
-            self.attrs['item_names'] = np.append(self.attrs['item_names'], data.natural_name.encode())
+            self.attrs['item_names'] = np.append(self.attrs['item_names'],
+                                                 data.natural_name.encode())
         else:
             self.items.insert(position, data)
-            self.attrs['item_names'] = np.insert(self.attrs['item_names'], position, data.natural_name.encode())
+            self.attrs['item_names'] = np.insert(self.attrs['item_names'], position,
+                                                 data.natural_name.encode())
         return data
 
     def index():
