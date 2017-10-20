@@ -105,7 +105,8 @@ class Collection(h5py.Group):
         out = h5py.Group.__getitem__(self, key)
         if 'class' in out.attrs.keys():
             if out.attrs['class'] == 'Data':
-                return wt_data.Data(filepath=self.filepath, parent=self.name, name=key)
+                return wt_data.Data(filepath=self.filepath, parent=self.name, name=key,
+                                    edit_local=True)
         else:
             return out
 

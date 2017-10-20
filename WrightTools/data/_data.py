@@ -45,6 +45,7 @@ __all__ = ['Axis', 'Channel', 'Data']
 
 class Axis(h5py.Dataset):
     """Axis class."""
+    _instances = {}
 
     def __init__(self, id, units, symbol_type=None, label_seed=[''], **kwargs):
         """Create an `Axis` object.
@@ -88,6 +89,7 @@ class Axis(h5py.Dataset):
             identifier = wt_kit.string2identifier(key)
             if not hasattr(self, identifier):
                 setattr(self, identifier, value)
+        self.instances
 
     def __repr__(self):
         return '<WrightTools.data.Axis \'{0}\' at {2}>'.format(self.natural_name,
@@ -105,7 +107,7 @@ class Axis(h5py.Dataset):
         info['name'] = self.name
         info['id'] = id(self)
         if self.is_constant:
-            info['point'] = self.points
+            info['point'] = self[0]
         else:
             info['range'] = '{0} - {1} ({2})'.format(self.points.min(),
                                                      self.points.max(), self.units)
@@ -406,6 +408,26 @@ class Channel(h5py.Dataset):
         return outliers
 
 
+def hdf_singleton(cls):
+    instances = {}
+    def getinstance(*args, **kwargs):
+        # extract
+        filepath = args[0] if len(args) > 0 else kwargs['filepath']
+        parent = args[1] if len(args) > 1 else kwargs['parent']
+        name = args[2] if len(args) > 2 else kwargs['name']
+        # parse
+        if parent is None:
+            parent = ''
+            name = '/'
+        fullname = filepath + '::' + parent + name
+        # create and/or return
+        if not fullname in instances.keys():
+            instances[fullname] = cls(*args, **kwargs)
+        return instances[fullname]
+    return getinstance
+
+
+@hdf_singleton
 class Data(h5py.Group):
     """Central multidimensional data class."""
 
@@ -434,7 +456,7 @@ class Data(h5py.Group):
             self.filepath = tempfile.NamedTemporaryFile(prefix='', suffix='.wt5').name
             if filepath:
                 shutil.copyfile(src=filepath, dst=self.filepath)
-        elif edit_local and filepath:
+        elif edit_local and filepath is not None:
             self.filepath = filepath
         # parse / create group
         if parent is None:
@@ -462,6 +484,7 @@ class Data(h5py.Group):
         # update
         self._update()
 
+
     def __repr__(self):
         return '<WrightTools.Data \'{0}\' {1} at {2}>'.format(
             self.natural_name, str(self.axis_names), '::'.join([self.filepath, self.name]))
@@ -487,6 +510,10 @@ class Data(h5py.Group):
         if 'channel_names' not in self.attrs.keys():
             self.attrs['channel_names'] = np.array([], dtype='S')
         return [s.decode() for s in self.attrs['channel_names']]
+
+    @property
+    def fullpath(self):
+        return self.filepath + '::' + self.name
 
     @property
     def info(self):
