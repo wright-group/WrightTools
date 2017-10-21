@@ -7,6 +7,7 @@
 import os
 import shutil
 import tempfile
+import weakref
 
 import numpy as np
 
@@ -46,10 +47,12 @@ class Collection(h5py.Group):
         """
         # TODO: redo docstring
         # parse / create file
+        self.__tmpfile = None
         if edit_local and filepath is None:
             raise Exception  # TODO: better exception
         if not edit_local:
-            self.filepath = tempfile.NamedTemporaryFile(prefix='', suffix='.wt5').name
+            self.__tmpfile = tempfile.NamedTemporaryFile(prefix='', suffix='.wt5')
+            self.filepath = self.__tmpfile.name
             if filepath:
                 shutil.copyfile(src=filepath, dst=self.filepath)
         elif edit_local and filepath:
@@ -77,6 +80,10 @@ class Collection(h5py.Group):
         for name in self.item_names:
             self.items.append(self[name])
         self.__version__  # assigns, if it doesn't already exist
+
+        if self.__tmpfile is not None:
+            weakref.finalize(self, self.__tmpfile.close)
+
 
     def __iter__(self):
         self._n = 0
@@ -170,3 +177,11 @@ class Collection(h5py.Group):
         if verbose:
             print(filepath)
         return filepath
+
+    def close(self):
+        print("Closing: ", self.filepath)
+        try:
+            self.file.close()
+            self.__tmpfile.close()
+        except RuntimeError:
+            pass
