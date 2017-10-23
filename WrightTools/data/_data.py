@@ -45,7 +45,6 @@ __all__ = ['Axis', 'Channel', 'Data']
 
 class Axis(h5py.Dataset):
     """Axis class."""
-    _instances = {}
 
     def __init__(self, id, units, symbol_type=None, label_seed=[''], **kwargs):
         """Create an `Axis` object.
@@ -89,7 +88,6 @@ class Axis(h5py.Dataset):
             identifier = wt_kit.string2identifier(key)
             if not hasattr(self, identifier):
                 setattr(self, identifier, value)
-        self.instances
 
     def __repr__(self):
         return '<WrightTools.data.Axis \'{0}\' at {2}>'.format(self.natural_name,
@@ -409,27 +407,33 @@ class Channel(h5py.Dataset):
 
 
 def hdf_singleton(cls):
-    instances = {}
     def getinstance(*args, **kwargs):
+        print(args, kwargs)
         # extract
-        filepath = args[0] if len(args) > 0 else kwargs['filepath']
-        parent = args[1] if len(args) > 1 else kwargs['parent']
-        name = args[2] if len(args) > 2 else kwargs['name']
+        filepath = args[0] if len(args) > 0 else kwargs.get('filepath', None)
+        parent = args[1] if len(args) > 1 else kwargs.get('parent', None)
+        name = args[2] if len(args) > 2 else kwargs.get('name', 'data')
         # parse
+        if filepath is None:
+            instance = cls(*args, **kwargs)
+            cls.instances[instance.fullpath] = instance
+            filepath = instance.filepath
         if parent is None:
             parent = ''
             name = '/'
+        print('whatever', filepath, parent, name)
         fullname = filepath + '::' + parent + name
         # create and/or return
-        if not fullname in instances.keys():
-            instances[fullname] = cls(*args, **kwargs)
-        return instances[fullname]
+        if not fullname in cls.instances.keys():
+            cls.instances[fullname] = cls(*args, **kwargs)
+        return cls.instances[fullname]
     return getinstance
 
 
 @hdf_singleton
 class Data(h5py.Group):
     """Central multidimensional data class."""
+    instances = {}
 
     def __init__(self, filepath=None, parent=None, name='data', edit_local=False, **kwargs):
         """Create a ``Data`` object.
@@ -472,6 +476,7 @@ class Data(h5py.Group):
         self.source = kwargs.pop('source', None)  # TODO
         self.attrs.update(kwargs)
         self.attrs['class'] = 'Data'
+        self.attrs['name'] = name
         # load from file
         self.axes = []
         self.constants = []
@@ -483,7 +488,29 @@ class Data(h5py.Group):
         self.__version__  # assigns, if it doesn't already exist
         # update
         self._update()
+        print('hello world this is 2')
 
+#    def __new__(cls, *args, **kwargs):
+#        return cls
+#        print(cls, args, kwargs)
+#        import time
+#        time.sleep(2)
+#        filepath = args[0] if len(args) > 0 else kwargs.get('filepath', None)
+#        print('filepath', filepath)
+#        print('instances', cls.instances)
+#        if filepath is None:
+#            filepath = tempfile.NamedTemporaryFile(prefix='', suffix='.wt5').name
+#            kwargs['filepath'] = filepath
+#            print('hello world this is blaise')
+#            instance = cls.__init__(object(), *args, **kwargs)
+#            cls.instances[instance.filepath] = instance
+#            return instance
+#        elif filepath in cls.instances.keys():
+#            return cls.instances[filepath]
+#        else:
+#            instance = cls(*args, **kwargs)
+#            cls.instances[instance.filepath] = instance
+#            return instance
 
     def __repr__(self):
         return '<WrightTools.Data \'{0}\' {1} at {2}>'.format(
