@@ -40,7 +40,6 @@ except ImportError:
 
 import numpy as np
 
-from . import units  # legacy
 from . import units as wt_units
 
 

@@ -14,6 +14,8 @@ import numpy as np
 import h5py
 
 from .. import data as wt_data
+from .. import kit as wt_kit
+from .. import macros as wt_macros
 
 
 # --- define --------------------------------------------------------------------------------------
@@ -25,8 +27,10 @@ __all__ = ['Collection']
 # --- classes -------------------------------------------------------------------------------------
 
 
+@wt_macros.group_singleton
 class Collection(h5py.Group):
     """Nestable Collection of Data objects."""
+    instances = {}
 
     def __init__(self, filepath=None, parent=None, name=None, edit_local=False, **kwargs):
         """Create a ``Collection`` object.
@@ -76,9 +80,9 @@ class Collection(h5py.Group):
         self.attrs['class'] = 'Collection'
         self.attrs['name'] = name
         # load from file
-        self.items = []
+        self._items = []
         for name in self.item_names:
-            self.items.append(self[name])
+            self._items.append(self[name])
         self.__version__  # assigns, if it doesn't already exist
 
         if self.__tmpfile is not None:
@@ -134,29 +138,36 @@ class Collection(h5py.Group):
             self.attrs['item_names'] = np.array([], dtype='S')
         return [s.decode() for s in self.attrs['item_names']]
 
+    @property
+    def fullpath(self):
+        return self.filepath + '::' + self.name
+
     def create_collection(self, name='collection', position=None, **kwargs):
         collection = Collection(filepath=self.filepath, parent=self.name, name=name,
                                 edit_local=True, **kwargs)
         if position is None:
-            self.items.append(collection)
+            self._items.append(collection)
             self.attrs['item_names'] = np.append(self.attrs['item_names'],
                                                  collection.natural_name.encode())
         else:
-            self.items.insert(position, collection)
+            self._items.insert(position, collection)
             self.attrs['item_names'] = np.insert(self.attrs['item_names'], position,
                                                  collection.natural_name.encode())
+        setattr(self, name, collection)
         return collection
 
     def create_data(self, name='data', position=None, **kwargs):
-        data = wt_data.Data(filepath=self.filepath, parent=self.name, edit_local=True, **kwargs)
+        data = wt_data.Data(filepath=self.filepath, parent=self.name, name=name, edit_local=True,
+                            **kwargs)
         if position is None:
-            self.items.append(data)
+            self._items.append(data)
             self.attrs['item_names'] = np.append(self.attrs['item_names'],
                                                  data.natural_name.encode())
         else:
-            self.items.insert(position, data)
+            self._items.insert(position, data)
             self.attrs['item_names'] = np.insert(self.attrs['item_names'], position,
                                                  data.natural_name.encode())
+        setattr(self, name, data)
         return data
 
     def index():

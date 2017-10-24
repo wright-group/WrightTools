@@ -14,6 +14,8 @@ import collections
 import warnings
 import tempfile
 
+import posixpath
+
 import numpy as np
 
 import h5py
@@ -23,6 +25,7 @@ from scipy.interpolate import griddata, interp1d
 
 from .. import exceptions as wt_exceptions
 from .. import kit as wt_kit
+from .. import macros as wt_macros
 from .. import units as wt_units
 
 
@@ -46,7 +49,7 @@ __all__ = ['Axis', 'Channel', 'Data']
 class Axis(h5py.Dataset):
     """Axis class."""
 
-    def __init__(self, id, units, symbol_type=None, label_seed=[''], **kwargs):
+    def __init__(self, parent, id, units, symbol_type=None, label_seed=[''], **kwargs):
         """Create an `Axis` object.
 
         Parameters
@@ -66,6 +69,7 @@ class Axis(h5py.Dataset):
             Additional keyword arguments are added to the attrs dictionary
             and to the natural namespace of the object (if possible).
         """
+        self._parent = parent
         h5py.Dataset.__init__(self, id)
         # units
         self.units = units
@@ -90,9 +94,11 @@ class Axis(h5py.Dataset):
                 setattr(self, identifier, value)
 
     def __repr__(self):
-        return '<WrightTools.data.Axis \'{0}\' at {2}>'.format(self.natural_name,
-                                                               '::'.join([self.filepath,
-                                                                          self.name]))
+        return '<WrightTools.data.Axis \'{0}\' at {1}>'.format(self.natural_name, self.fullpath)
+
+    @property
+    def fullpath(self):
+        return self.parent.fullpath + posixpath.sep + self.natural_name
 
     @property
     def natural_name(self):
@@ -116,6 +122,10 @@ class Axis(h5py.Dataset):
     def label(self):  # noqa: D403
         """LaTeX formatted label."""
         return self.get_label()
+
+    @property
+    def parent(self):
+        return self._parent
 
     def convert(self, destination_units):
         """Convert axis to destination units.
@@ -193,7 +203,7 @@ class Axis(h5py.Dataset):
 class Channel(h5py.Dataset):
     """Channel."""
 
-    def __init__(self, id, units=None, null=None, signed=False,
+    def __init__(self, parent, id, units=None, null=None, signed=False,
                  label=None, label_seed=None, **kwargs):
         """Construct a channel object.
 
@@ -217,6 +227,7 @@ class Channel(h5py.Dataset):
             Additional keyword arguments are added to the attrs dictionary
             and to the natural namespace of the object (if possible).
         """
+        self._parent = parent
         h5py.Dataset.__init__(self, id)
         self.label = label
         self.label_seed = label_seed
@@ -231,9 +242,12 @@ class Channel(h5py.Dataset):
                 setattr(self, identifier, value)
 
     def __repr__(self):
-        return '<WrightTools.data.Channel \'{0}\' at {2}>'.format(self.natural_name,
-                                                                  '::'.join([self.filepath,
-                                                                             self.name]))
+        return '<WrightTools.data.Channel \'{0}\' at {1}>'.format(self.natural_name,
+                                                                  self.fullpath)
+
+    @property
+    def fullpath(self):
+        return self.parent.fullpath + posixpath.sep + self.natural_name
 
     @property
     def minor_extent(self):
@@ -259,6 +273,10 @@ class Channel(h5py.Dataset):
     def major_extent(self):
         """Maximum deviation from null."""
         return max((self.max() - self.null(), self.null() - self.min()))
+
+    @property
+    def parent(self):
+        return self._parent
 
     def clip(self, min=None, max=None, replace='nan'):
         """Clip (limit) the values in a channel.
@@ -406,31 +424,7 @@ class Channel(h5py.Dataset):
         return outliers
 
 
-def hdf_singleton(cls):
-    def getinstance(*args, **kwargs):
-        print(args, kwargs)
-        # extract
-        filepath = args[0] if len(args) > 0 else kwargs.get('filepath', None)
-        parent = args[1] if len(args) > 1 else kwargs.get('parent', None)
-        name = args[2] if len(args) > 2 else kwargs.get('name', 'data')
-        # parse
-        if filepath is None:
-            instance = cls(*args, **kwargs)
-            cls.instances[instance.fullpath] = instance
-            filepath = instance.filepath
-        if parent is None:
-            parent = ''
-            name = '/'
-        print('whatever', filepath, parent, name)
-        fullname = filepath + '::' + parent + name
-        # create and/or return
-        if not fullname in cls.instances.keys():
-            cls.instances[fullname] = cls(*args, **kwargs)
-        return cls.instances[fullname]
-    return getinstance
-
-
-@hdf_singleton
+@wt_macros.group_singleton
 class Data(h5py.Group):
     """Central multidimensional data class."""
     instances = {}
@@ -444,7 +438,7 @@ class Data(h5py.Group):
             A list of Channel objects. Channels are also inherited as
             attributes using the channel name: ``data.ai0``, for example.
         axes : list
-            A list of Axis objects. Axes are also inherited as attributes using
+            A list of Axis objects. Axes a. re also inherited as attributes using
             the axis name: ``data.w1``, for example.
         constants : list
             A list of Axis objects, each with exactly one point.
@@ -488,29 +482,6 @@ class Data(h5py.Group):
         self.__version__  # assigns, if it doesn't already exist
         # update
         self._update()
-        print('hello world this is 2')
-
-#    def __new__(cls, *args, **kwargs):
-#        return cls
-#        print(cls, args, kwargs)
-#        import time
-#        time.sleep(2)
-#        filepath = args[0] if len(args) > 0 else kwargs.get('filepath', None)
-#        print('filepath', filepath)
-#        print('instances', cls.instances)
-#        if filepath is None:
-#            filepath = tempfile.NamedTemporaryFile(prefix='', suffix='.wt5').name
-#            kwargs['filepath'] = filepath
-#            print('hello world this is blaise')
-#            instance = cls.__init__(object(), *args, **kwargs)
-#            cls.instances[instance.filepath] = instance
-#            return instance
-#        elif filepath in cls.instances.keys():
-#            return cls.instances[filepath]
-#        else:
-#            instance = cls(*args, **kwargs)
-#            cls.instances[instance.filepath] = instance
-#            return instance
 
     def __repr__(self):
         return '<WrightTools.Data \'{0}\' {1} at {2}>'.format(
@@ -593,7 +564,7 @@ class Data(h5py.Group):
         # TODO: reshape extant channels
         id = self.require_dataset(name=name, data=points, shape=points.shape,
                                   dtype=points.dtype).id
-        axis = Axis(id, units=units, **kwargs)
+        axis = Axis(self, id, units=units, **kwargs)
         self.axes.append(axis)
         self.attrs['axis_names'] = np.append(self.attrs['axis_names'], name.encode())
         self._update()
@@ -606,7 +577,7 @@ class Data(h5py.Group):
         # TODO: test if channel shape is appropriate
         id = self.require_dataset(name=name, data=values, shape=values.shape,
                                   dtype=values.dtype).id
-        channel = Channel(id, units=units, **kwargs)
+        channel = Channel(self, id, units=units, **kwargs)
         self.channels.append(channel)
         self.attrs['channel_names'] = np.append(self.attrs['channel_names'], name.encode())
         self._update()
