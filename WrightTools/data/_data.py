@@ -10,6 +10,7 @@ import os
 import sys
 import copy
 import shutil
+import weakref
 import collections
 import warnings
 import tempfile
@@ -451,7 +452,8 @@ class Data(h5py.Group):
         if edit_local and filepath is None:
             raise Exception  # TODO: better exception
         if not edit_local:
-            self.filepath = tempfile.NamedTemporaryFile(prefix='', suffix='.wt5').name
+            self._tempfile = tempfile.NamedTemporaryFile(prefix='', suffix='.wt5')
+            self.filepath = self._tempfile.name
             if filepath:
                 shutil.copyfile(src=filepath, dst=self.filepath)
         elif edit_local and filepath is not None:
@@ -480,6 +482,8 @@ class Data(h5py.Group):
             for name in names:
                 lis.append(self[name])
         self.__version__  # assigns, if it doesn't already exist
+        if self._tempfile:
+            weakref.finalize(self, self._tempfile.close())
         # update
         self._update()
 
