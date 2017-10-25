@@ -457,7 +457,10 @@ class Data(h5py.Group):
             if filepath:
                 shutil.copyfile(src=filepath, dst=self.filepath)
         elif edit_local and filepath is not None:
+            self._tempfile = None
             self.filepath = filepath
+        else:
+            self._tempfile = None
         # parse / create group
         if parent is None:
             p = '/'

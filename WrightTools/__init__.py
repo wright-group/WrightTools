@@ -18,8 +18,9 @@ from . import google_drive
 from . import kit
 from . import units
 
-from .data._data import *
 from .collection._collection import *
+from .data._data import *
+from .open import *
 
 
 # --- rcparams ------------------------------------------------------------------------------------

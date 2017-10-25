@@ -83,6 +83,7 @@ class Collection(h5py.Group):
         self._items = []
         for name in self.item_names:
             self._items.append(self[name])
+            setattr(self, name, self[name])
         self.__version__  # assigns, if it doesn't already exist
 
         if self.__tmpfile is not None:
