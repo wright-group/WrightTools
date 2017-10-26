@@ -21,12 +21,12 @@ __all__ = ['open']
 # --- functions ----------------------------------------------------------------------------------
 
 
-def open(filepath):
+def open(filepath, edit_local=False):
     """Open any wt5 file, returning the top-level object (data or collection).
     """
     f = h5py.File(filepath)
     class_name = f['/'].attrs['class']
     if class_name == 'Data':
-        return wt_data.Data(filepath=filepath)
+        return wt_data.Data(filepath=filepath, edit_local=edit_local)
     elif class_name == 'Collection':
-        return wt_collection.Collection(filepath=filepath)
+        return wt_collection.Collection(filepath=filepath, edit_local=edit_local)
