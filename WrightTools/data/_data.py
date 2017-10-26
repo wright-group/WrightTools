@@ -24,6 +24,7 @@ import h5py
 import scipy
 from scipy.interpolate import griddata, interp1d
 
+from .. import collection as wt_collection
 from .. import exceptions as wt_exceptions
 from .. import kit as wt_kit
 from .. import macros as wt_macros
@@ -50,7 +51,7 @@ __all__ = ['Axis', 'Channel', 'Data']
 class Axis(h5py.Dataset):
     """Axis class."""
 
-    def __init__(self, parent, id, units, symbol_type=None, label_seed=[''], **kwargs):
+    def __init__(self, parent, id, units=None, symbol_type=None, label_seed=[''], **kwargs):
         """Create an `Axis` object.
 
         Parameters
@@ -73,7 +74,8 @@ class Axis(h5py.Dataset):
         self._parent = parent
         h5py.Dataset.__init__(self, id)
         # units
-        self.units = units
+        if units is not None:
+            self.attrs['units'] = units
         self.units_kind = None
         for dic in wt_units.unit_dicts:
             if self.units in dic.keys():
@@ -95,7 +97,7 @@ class Axis(h5py.Dataset):
                 setattr(self, identifier, value)
 
     def __repr__(self):
-        return '<WrightTools.data.Axis \'{0}\' at {1}>'.format(self.natural_name, self.fullpath)
+        return '<WrightTools.Axis \'{0}\' at {1}>'.format(self.natural_name, self.fullpath)
 
     @property
     def fullpath(self):
@@ -127,6 +129,10 @@ class Axis(h5py.Dataset):
     @property
     def parent(self):
         return self._parent
+
+    @property
+    def units(self):
+        return self.attrs['units']
 
     def convert(self, destination_units):
         """Convert axis to destination units.
@@ -194,17 +200,17 @@ class Axis(h5py.Dataset):
 
     def max(self):
         """Axis max, ignoring nans."""
-        return self.points.max()
+        return np.max(self[:])
 
     def min(self):
         """Axis min, ignoring nans."""
-        return self.points.min()
+        return np.min(self[:])
 
 
 class Channel(h5py.Dataset):
     """Channel."""
 
-    def __init__(self, parent, id, units=None, null=None, signed=False,
+    def __init__(self, parent, id, units=None, null=None, signed=None,
                  label=None, label_seed=None, **kwargs):
         """Construct a channel object.
 
@@ -233,17 +239,33 @@ class Channel(h5py.Dataset):
         self.label = label
         self.label_seed = label_seed
         self.units = units
+        self.dimensionality = len(self.shape)
         # attrs
         self.attrs.update(kwargs)
         self.attrs['name'] = h5py.h5i.get_name(self.id).decode().split('/')[-1]
         self.attrs['class'] = 'Channel'
+        if signed is not None:
+            self.attrs['signed'] = signed
+        if null is not None:
+            self.attrs['null'] = null
         for key, value in self.attrs.items():
             identifier = wt_kit.string2identifier(key)
             if not hasattr(self, identifier):
                 setattr(self, identifier, value)
 
+    def __getitem__(self, i):
+        if hasattr(i, '__iter__'):
+            indices = list(i)
+        else:
+            indices = [i]
+        while len(indices) <= self.dimensionality:
+            print(indices)
+            indices.append(slice(None))
+        indices = [indices[i] for i in self.transposition]
+        return h5py.Dataset.__getitem__(self, tuple(indices)).transpose(self.transposition)
+
     def __repr__(self):
-        return '<WrightTools.data.Channel \'{0}\' at {1}>'.format(self.natural_name,
+        return '<WrightTools.Channel \'{0}\' at {1}>'.format(self.natural_name,
                                                                   self.fullpath)
 
     @property
@@ -258,6 +280,12 @@ class Channel(h5py.Dataset):
     @property
     def natural_name(self):
         return self.attrs['name']
+
+    @property
+    def null(self):
+        if not 'null' in self.attrs.keys():
+            self.attrs['null'] = 0
+        return self.attrs['null']
 
     @property
     def info(self):
@@ -278,6 +306,18 @@ class Channel(h5py.Dataset):
     @property
     def parent(self):
         return self._parent
+
+    @property
+    def signed(self):
+        if not 'signed' in self.attrs.keys():
+            self.attrs['signed'] = False
+        return self.attrs['signed']
+
+    @property
+    def transposition(self):
+        if not 'transposition' in self.attrs.keys():
+            self.attrs['transposition'] = np.arange(len(self.shape))
+        return self.attrs['transposition']
 
     def clip(self, min=None, max=None, replace='nan'):
         """Clip (limit) the values in a channel.
@@ -307,7 +347,7 @@ class Channel(h5py.Dataset):
 
     def invert(self):
         """Invert channel values."""
-        self.values = - self.values
+        self[:] *= -1
 
     def mag(self):
         """Channel magnitude (maximum deviation from null)."""
@@ -315,11 +355,11 @@ class Channel(h5py.Dataset):
 
     def max(self):
         """Maximum, ignorning nans."""
-        return np.nanmax(self.values)
+        return np.nanmax(self[:])
 
     def min(self):
         """Minimum, ignoring nans."""
-        return np.nanmin(self.values)
+        return np.nanmin(self[:])
 
     def normalize(self, axis=None):
         """Normalize a Channel, set `null` to 0 and the max to 1."""
@@ -330,7 +370,7 @@ class Channel(h5py.Dataset):
             else:  # presumably a simple number
                 axis = int(axis)
         # subtract off null
-        self.values -= self.null()
+        self[:] -= self.null()
         self._null = 0.
         # create dummy array
         dummy = self.values.copy()
@@ -341,9 +381,14 @@ class Channel(h5py.Dataset):
         self.values /= np.amax(dummy, axis=axis, keepdims=True)
         # finish
 
-    def null(self):
-        """Null value."""
-        return self._null
+    def transpose(self, axes):
+        if axes is None:
+            new = self.transposition[::-1]
+        else:
+            new = self.transposition
+            for i, axis in enumerate(axes):
+                new[i] = self.transposition[axis]
+        self.attrs['transposition'] = new
 
     def trim(self, neighborhood, method='ztest', factor=3, replace='nan',
              verbose=True):
@@ -490,6 +535,14 @@ class Data(h5py.Group):
         # update
         self._update()
 
+    def __getitem__(self, key):
+        out = h5py.Group.__getitem__(self, key)
+        if 'class' in out.attrs.keys():
+            if out.attrs['class'] == 'Channel':
+                return Channel(parent=self, id=out.id)
+            elif out.attrs['class'] == 'Axis':
+                return Axis(parent=self, id=out.id)
+
     def __repr__(self):
         return '<WrightTools.Data \'{0}\' {1} at {2}>'.format(
             self.natural_name, str(self.axis_names), '::'.join([self.filepath, self.name]))
@@ -533,6 +586,14 @@ class Data(h5py.Group):
     @property
     def natural_name(self):
         return self.attrs['name']
+
+    @property
+    def parent(self):
+        group = super().parent
+        parent = group.parent.name
+        if parent == posixpath.sep:
+            parent = None
+        return wt_collection.Collection(self.filepath, parent=parent, name=group.attrs['name'])
 
     @property
     def shape(self):
@@ -1024,6 +1085,9 @@ class Data(h5py.Group):
             # transpose out
             values = values.transpose(transpose_order)
             channel.values = values
+
+    def flush(self):
+        self.file.flush()
 
     def get_nadir(self, channel=0):
         """
@@ -1592,7 +1656,7 @@ class Data(h5py.Group):
 
     def save(self, filepath=None, verbose=True):
         # TODO: documentation
-        self.file.flush()  # ensure all changes are written to file
+        self.flush()  # ensure all changes are written to file
         if filepath is None:
             filepath = os.path.join(os.getcwd(), self.natural_name + '.wt5')
         elif len(os.path.basename(filepath).split('.')) == 1:
@@ -1920,23 +1984,6 @@ class Data(h5py.Group):
         # call trim
         return channel.trim(neighborhood=neighborhood, **inputs)
 
-    def transform(self, transform=None):
-        """Transform the dataset using arbitrary coordinates, then regrids the data.
-
-        Parameters
-        ----------
-        transform: str
-            The tranformation to perform. Str must use axis names. Only handles
-            two axes at a time.
-        """
-        # TODO: interpret strings into a function
-        # TODO: use tranform string to make new axis lables
-        # TODO: Expand to larger than 2D tranforms (dream feature)
-        # use np.griddata
-        # find code used to deal with constants
-        # possibly use to plot vs constants?
-        raise NotImplementedError
-
     def transpose(self, axes=None, verbose=True):
         """Transpose the dataset.
 
@@ -1951,14 +1998,13 @@ class Data(h5py.Group):
         if axes is not None:
             pass
         else:
-            axes = range(len(self.channels[0].values.shape))[::-1]
+            axes = range(len(self.channels[0][:].shape))[::-1]
         self.axes = [self.axes[i] for i in axes]
-        self.axis_names = [self.axis_names[i] for i in axes]
+        self.attrs['axis_names'] = [axis.natural_name.encode() for axis in self.axes]
         for channel in self.channels:
-            channel.values = np.transpose(channel.values, axes=axes)
+            channel.transpose(axes=axes)
         if verbose:
             print('data transposed to', self.axis_names)
-        self.shape = self.channels[0].values.shape
 
     def zoom(self, factor, order=1, verbose=True):
         """Zoom the data array using spline interpolation of the requested order.

@@ -9,6 +9,8 @@ import shutil
 import tempfile
 import weakref
 
+import posixpath
+
 import numpy as np
 
 import h5py
@@ -119,6 +121,9 @@ class Collection(h5py.Group):
             if out.attrs['class'] == 'Data':
                 return wt_data.Data(filepath=self.filepath, parent=self.name, name=key,
                                     edit_local=True)
+            elif out.attrs['class'] == 'Collection':
+                return Collection(filepath=self.filepath, parent=self.name, name=key,
+                                  edit_local=True)
         else:
             return out
 
@@ -130,9 +135,9 @@ class Collection(h5py.Group):
         return self.file.attrs['__version__']
 
     @property
-    def natural_name(self):
-        return self.attrs['name']
-
+    def fullpath(self):
+        return self.filepath + '::' + self.name
+   
     @property
     def item_names(self):
         if 'item_names' not in self.attrs.keys():
@@ -140,8 +145,16 @@ class Collection(h5py.Group):
         return [s.decode() for s in self.attrs['item_names']]
 
     @property
-    def fullpath(self):
-        return self.filepath + '::' + self.name
+    def natural_name(self):
+        return self.attrs['name']
+
+    @property
+    def parent(self):
+        group = super().parent
+        parent = group.parent.name
+        if parent == posixpath.sep:
+            parent = None
+        return Collection(self.filepath, parent=parent, name=group.attrs['name'])
 
     def create_collection(self, name='collection', position=None, **kwargs):
         collection = Collection(filepath=self.filepath, parent=self.name, name=name,
@@ -171,15 +184,17 @@ class Collection(h5py.Group):
         setattr(self, name, data)
         return data
 
-    def index():
+    def index(self):
         raise NotImplementedError
 
-    def flush():
+    def flush(self):
+        for item in self._items:
+            item.flush()
         self.file.flush()
 
     def save(self, filepath=None, verbose=True):
         # TODO: documentation
-        self.file.flush()  # ensure all changes are written to file
+        self.flush()  # ensure all changes are written to file
         if filepath is None:
             filepath = os.path.join(os.getcwd(), self.natural_name + '.wt5')
         elif len(os.path.basename(filepath).split('.')) == 1:
@@ -187,7 +202,7 @@ class Collection(h5py.Group):
         filepath = os.path.expanduser(filepath)
         shutil.copyfile(src=self.filepath, dst=filepath)
         if verbose:
-            print(filepath)
+            print('file saved at', filepath)
         return filepath
 
     def close(self):

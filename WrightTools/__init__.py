@@ -9,7 +9,6 @@ import sys as _sys
 
 from .__version__ import *
 from . import artists
-from . import calibration
 from . import collection
 from . import data
 from . import diagrams
