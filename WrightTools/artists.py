@@ -58,9 +58,9 @@ class Axes(matplotlib.axes.Axes):
 
     def _parse_cmap(self, data=None, channel_index=None, **kwargs):
         if 'cmap' in kwargs.keys():
-            if isinstance(cmap, string_type):
+            if isinstance(kwargs['cmap'], string_type):
                 kwargs['cmap'] = colormaps[kwargs['cmap']]
-                return kwargs
+            return kwargs
         if data:
             if data.channels[channel_index].signed:
                 kwargs['cmap'] = colormaps['signed']
