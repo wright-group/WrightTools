@@ -7,12 +7,17 @@
 import os
 import shutil
 import tempfile
+import weakref
+
+import posixpath
 
 import numpy as np
 
 import h5py
 
 from .. import data as wt_data
+from .. import kit as wt_kit
+from .. import macros as wt_macros
 
 
 # --- define --------------------------------------------------------------------------------------
@@ -24,8 +29,10 @@ __all__ = ['Collection']
 # --- classes -------------------------------------------------------------------------------------
 
 
+@wt_macros.group_singleton
 class Collection(h5py.Group):
     """Nestable Collection of Data objects."""
+    instances = {}
 
     def __init__(self, filepath=None, parent=None, name=None, edit_local=False, **kwargs):
         """Create a ``Collection`` object.
@@ -46,10 +53,12 @@ class Collection(h5py.Group):
         """
         # TODO: redo docstring
         # parse / create file
+        self.__tmpfile = None
         if edit_local and filepath is None:
             raise Exception  # TODO: better exception
         if not edit_local:
-            self.filepath = tempfile.NamedTemporaryFile(prefix='', suffix='.wt5').name
+            self.__tmpfile = tempfile.NamedTemporaryFile(prefix='', suffix='.wt5')
+            self.filepath = self.__tmpfile.name
             if filepath:
                 shutil.copyfile(src=filepath, dst=self.filepath)
         elif edit_local and filepath:
@@ -73,10 +82,15 @@ class Collection(h5py.Group):
         self.attrs['class'] = 'Collection'
         self.attrs['name'] = name
         # load from file
-        self.items = []
+        self._items = []
         for name in self.item_names:
-            self.items.append(self[name])
+            self._items.append(self[name])
+            setattr(self, name, self[name])
         self.__version__  # assigns, if it doesn't already exist
+
+        if self.__tmpfile is not None:
+            weakref.finalize(self, self.__tmpfile.close)
+
 
     def __iter__(self):
         self.__n = 0
@@ -105,7 +119,11 @@ class Collection(h5py.Group):
         out = h5py.Group.__getitem__(self, key)
         if 'class' in out.attrs.keys():
             if out.attrs['class'] == 'Data':
-                return wt_data.Data(filepath=self.filepath, parent=self.name, name=key)
+                return wt_data.Data(filepath=self.filepath, parent=self.name, name=key,
+                                    edit_local=True)
+            elif out.attrs['class'] == 'Collection':
+                return Collection(filepath=self.filepath, parent=self.name, name=key,
+                                  edit_local=True)
         else:
             return out
 
@@ -117,49 +135,66 @@ class Collection(h5py.Group):
         return self.file.attrs['__version__']
 
     @property
-    def natural_name(self):
-        return self.attrs['name']
-
+    def fullpath(self):
+        return self.filepath + '::' + self.name
+   
     @property
     def item_names(self):
         if 'item_names' not in self.attrs.keys():
             self.attrs['item_names'] = np.array([], dtype='S')
         return [s.decode() for s in self.attrs['item_names']]
 
+    @property
+    def natural_name(self):
+        return self.attrs['name']
+
+    @property
+    def parent(self):
+        group = super().parent
+        parent = group.parent.name
+        if parent == posixpath.sep:
+            parent = None
+        return Collection(self.filepath, parent=parent, name=group.attrs['name'])
+
     def create_collection(self, name='collection', position=None, **kwargs):
         collection = Collection(filepath=self.filepath, parent=self.name, name=name,
                                 edit_local=True, **kwargs)
         if position is None:
-            self.items.append(collection)
+            self._items.append(collection)
             self.attrs['item_names'] = np.append(self.attrs['item_names'],
                                                  collection.natural_name.encode())
         else:
-            self.items.insert(position, collection)
+            self._items.insert(position, collection)
             self.attrs['item_names'] = np.insert(self.attrs['item_names'], position,
                                                  collection.natural_name.encode())
+        setattr(self, name, collection)
         return collection
 
     def create_data(self, name='data', position=None, **kwargs):
-        data = wt_data.Data(filepath=self.filepath, parent=self.name, edit_local=True, **kwargs)
+        data = wt_data.Data(filepath=self.filepath, parent=self.name, name=name, edit_local=True,
+                            **kwargs)
         if position is None:
-            self.items.append(data)
+            self._items.append(data)
             self.attrs['item_names'] = np.append(self.attrs['item_names'],
                                                  data.natural_name.encode())
         else:
-            self.items.insert(position, data)
+            self._items.insert(position, data)
             self.attrs['item_names'] = np.insert(self.attrs['item_names'], position,
                                                  data.natural_name.encode())
+        setattr(self, name, data)
         return data
 
-    def index():
+    def index(self):
         raise NotImplementedError
 
-    def flush():
+    def flush(self):
+        for item in self._items:
+            item.flush()
         self.file.flush()
 
     def save(self, filepath=None, verbose=True):
         # TODO: documentation
-        self.file.flush()  # ensure all changes are written to file
+        self.flush()  # ensure all changes are written to file
         if filepath is None:
             filepath = os.path.join(os.getcwd(), self.natural_name + '.wt5')
         elif len(os.path.basename(filepath).split('.')) == 1:
@@ -167,5 +202,13 @@ class Collection(h5py.Group):
         filepath = os.path.expanduser(filepath)
         shutil.copyfile(src=self.filepath, dst=filepath)
         if verbose:
-            print(filepath)
+            print('file saved at', filepath)
         return filepath
+
+    def close(self):
+        print("Closing: ", self.filepath)
+        try:
+            self.file.close()
+            self.__tmpfile.close()
+        except RuntimeError:
+            pass

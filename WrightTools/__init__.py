@@ -9,7 +9,6 @@ import sys as _sys
 
 from .__version__ import *
 from . import artists
-from . import calibration
 from . import collection
 from . import data
 from . import diagrams
@@ -18,8 +17,9 @@ from . import google_drive
 from . import kit
 from . import units
 
-from .data._data import *
 from .collection._collection import *
+from .data._data import *
+from .open import *
 
 
 # --- rcparams ------------------------------------------------------------------------------------
