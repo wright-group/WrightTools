@@ -6,9 +6,6 @@
 
 import os
 import shutil
-import tempfile
-import weakref
-
 import posixpath
 
 import numpy as np
@@ -17,7 +14,7 @@ import h5py
 
 from .. import data as wt_data
 from .. import kit as wt_kit
-from .. import macros as wt_macros
+from .._base import Group
 
 
 # --- define --------------------------------------------------------------------------------------
@@ -29,12 +26,11 @@ __all__ = ['Collection']
 # --- classes -------------------------------------------------------------------------------------
 
 
-@wt_macros.group_singleton
-class Collection(h5py.Group):
+class Collection(Group):
     """Nestable Collection of Data objects."""
-    instances = {}
+    default_name = 'collection'
 
-    def __init__(self, filepath=None, parent=None, name=None, edit_local=False, **kwargs):
+    def __init__(self, filepath=None, parent=None, name=None, **kwargs):
         """Create a ``Collection`` object.
 
         Parameters
@@ -52,35 +48,23 @@ class Collection(h5py.Group):
             and to the natural namespace of the object (if possible).
         """
         # TODO: redo docstring
-        # parse / create file
-        self.__tmpfile = None
-        if edit_local and filepath is None:
-            raise Exception  # TODO: better exception
-        if not edit_local:
-            self.__tmpfile = tempfile.NamedTemporaryFile(prefix='', suffix='.wt5')
-            self.filepath = self.__tmpfile.name
-            if filepath:
-                shutil.copyfile(src=filepath, dst=self.filepath)
-        elif edit_local and filepath:
-            self.filepath = filepath
-        # parse / create group
-        if parent is None:
-            p = '/'
-        else:
-            p = parent + '/' + name
+        if parent == '':
+            parent = posixpath.sep
+        # file
+        self.filepath = filepath
+        print('filepath', self.filepath)
         file = h5py.File(self.filepath, 'a')
         if '__version__' not in file.attrs.keys():
             file.attrs['__version__'] = '0.0.0'
-        file.require_group(p)
-        h5py.Group.__init__(self, file[p].id)
+        file.require_group(parent)
+        Group.__init__(self, file[parent].id)
         # assign
         self._n = 0
         self.source = kwargs.pop('source', None)  # TODO
-        if name is None:
-            name = self.attrs.get('name', 'collection')
+        if name is not None:
+            self.attrs['name'] = name
         self.attrs.update(kwargs)
         self.attrs['class'] = 'Collection'
-        self.attrs['name'] = name
         # load from file
         self._items = []
         for name in self.item_names:
@@ -88,16 +72,16 @@ class Collection(h5py.Group):
             setattr(self, name, self[name])
         self.__version__  # assigns, if it doesn't already exist
 
-        if self.__tmpfile is not None:
-            weakref.finalize(self, self.__tmpfile.close)
-
-
     def __iter__(self):
         self._n = 0
         return self
 
     def __len__(self):
         return len(self.item_names)
+
+#    def __new__(cls, *args, **kwargs):
+#        print('this is Collection new')
+#        return self.__init__(*args, **kwargs)
 
     def __next__(self):
         if self._n < len(self):
@@ -131,30 +115,10 @@ class Collection(h5py.Group):
         raise NotImplementedError
 
     @property
-    def __version__(self):
-        return self.file.attrs['__version__']
-
-    @property
-    def fullpath(self):
-        return self.filepath + '::' + self.name
-   
-    @property
     def item_names(self):
         if 'item_names' not in self.attrs.keys():
             self.attrs['item_names'] = np.array([], dtype='S')
         return [s.decode() for s in self.attrs['item_names']]
-
-    @property
-    def natural_name(self):
-        return self.attrs['name']
-
-    @property
-    def parent(self):
-        group = super().parent
-        parent = group.parent.name
-        if parent == posixpath.sep:
-            parent = None
-        return Collection(self.filepath, parent=parent, name=group.attrs['name'])
 
     def create_collection(self, name='collection', position=None, **kwargs):
         collection = Collection(filepath=self.filepath, parent=self.name, name=name,

@@ -24,10 +24,10 @@ import h5py
 import scipy
 from scipy.interpolate import griddata, interp1d
 
+from .._base import Group, Dataset
 from .. import collection as wt_collection
 from .. import exceptions as wt_exceptions
 from .. import kit as wt_kit
-from .. import macros as wt_macros
 from .. import units as wt_units
 
 
@@ -48,7 +48,7 @@ __all__ = ['Axis', 'Channel', 'Data']
 # --- classes -------------------------------------------------------------------------------------
 
 
-class Axis(h5py.Dataset):
+class Axis(Dataset):
     """Axis class."""
 
     def __init__(self, parent, id, units=None, symbol_type=None, label_seed=[''], **kwargs):
@@ -207,7 +207,7 @@ class Axis(h5py.Dataset):
         return np.min(self[:])
 
 
-class Channel(h5py.Dataset):
+class Channel(Dataset):
     """Channel."""
 
     def __init__(self, parent, id, units=None, null=None, signed=None,
@@ -470,10 +470,9 @@ class Channel(h5py.Dataset):
         return outliers
 
 
-@wt_macros.group_singleton
-class Data(h5py.Group):
+class Data(Group):
     """Central multidimensional data class."""
-    instances = {}
+    default_name = 'data'
 
     def __init__(self, filepath=None, parent=None, name='data', edit_local=False, **kwargs):
         """Create a ``Data`` object.
@@ -548,10 +547,6 @@ class Data(h5py.Group):
             self.natural_name, str(self.axis_names), '::'.join([self.filepath, self.name]))
 
     @property
-    def __version__(self):
-        return self.file.attrs['__version__']
-
-    @property
     def axis_names(self):
         if 'axis_names' not in self.attrs.keys():
             self.attrs['axis_names'] = np.array([], dtype='S')
@@ -570,10 +565,6 @@ class Data(h5py.Group):
         return [s.decode() for s in self.attrs['channel_names']]
 
     @property
-    def fullpath(self):
-        return self.filepath + '::' + self.name
-
-    @property
     def info(self):
         """Retrieve info dictionary about a Data object."""
         info = collections.OrderedDict()
@@ -582,10 +573,6 @@ class Data(h5py.Group):
         info['channels'] = self.channel_names
         info['shape'] = self.shape
         return info
-
-    @property
-    def natural_name(self):
-        return self.attrs['name']
 
     @property
     def parent(self):
