@@ -59,7 +59,7 @@ class Collection(Group):
         file.require_group(parent)
         Group.__init__(self, file[parent].id)
         # assign
-        self._n = 0
+        self.__n = 0
         self.source = kwargs.pop('source', None)  # TODO
         if name is not None:
             self.attrs['name'] = name
@@ -73,7 +73,7 @@ class Collection(Group):
         self.__version__  # assigns, if it doesn't already exist
 
     def __iter__(self):
-        self._n = 0
+        self.__n = 0
         return self
 
     def __len__(self):
@@ -84,9 +84,9 @@ class Collection(Group):
 #        return self.__init__(*args, **kwargs)
 
     def __next__(self):
-        if self._n < len(self):
+        if self.__n < len(self):
             out = self[self._n]
-            self._n += 1
+            self.__n += 1
         else:
             raise StopIteration
         return out
