@@ -480,6 +480,8 @@ class Data(Group):
         self.axis_names
         self.channel_names
         self.constant_names
+        self.kind
+        self.source
 
     def __getitem__(self, key):
         out = h5py.Group.__getitem__(self, key)
@@ -543,6 +545,13 @@ class Data(Group):
         return info
 
     @property
+    def kind(self):
+        if 'kind' not in self.attrs.keys():
+            self.attrs['kind'] = 'None'
+        value = self.attrs['kind']
+        return value if not value == 'None' else None
+
+    @property
     def parent(self):
         group = super().parent
         parent = group.parent.name
@@ -561,6 +570,13 @@ class Data(Group):
         if len(self.channels) == 0:
             return 0
         return self.channels[0].size
+
+    @property
+    def source(self):
+        if 'source' not in self.attrs.keys():
+            self.attrs['source'] = 'None'
+        value = self.attrs['kind']
+        return value if not value == 'None' else None
 
     def _update(self):
         """Ensure that a Data Object is up to date.

@@ -54,10 +54,11 @@ def from_BrunoldrRaman(filepath, name=None, collection=None, verbose=True):
     if not name:
         name = os.path.basename(filepath).split('.')[0]
     # parse collection
+    kwargs = {'name': name, 'kind': 'BrunoldrRaman', 'source': filepath}
     if collection is None:
-        data = Data(name=name)
+        data = Data(**kwargs)
     else:
-        data = collection.create_data(name=name)
+        data = collection.create_data(**kwargs)
     # array
     arr = np.genfromtxt(filepath, delimiter='\t').T
     # chew through all scans
