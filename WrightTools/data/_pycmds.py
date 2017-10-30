@@ -188,9 +188,9 @@ def from_PyCMDS(filepath, name=None,
     # create data object
     data = Data(name=data_name)
     for axis in axes:
-        data.add_axis(**axis)
+        data.create_axis(**axis)
     for channel in channels:
-        data.add_channel(**channel)
+        data.create_channel(**channel)
     # return
     if verbose:
         print('data object succesfully created')

@@ -565,6 +565,15 @@ class Data(Group):
         return [s.decode() for s in self.attrs['channel_names']]
 
     @property
+    def datasets(self):
+        return [v for _, v in self.items() if isinstance(v, h5py.Dataset)]
+
+    @property
+    def dimensionality(self):
+        """Get dimensionality of Data object."""
+        return len(self.axes)
+
+    @property
     def info(self):
         """Retrieve info dictionary about a Data object."""
         info = collections.OrderedDict()
@@ -614,29 +623,6 @@ class Data(Group):
             identifier = wt_kit.string2identifier(key)
             if not hasattr(self, identifier):
                 setattr(self, identifier, value)
-
-    def add_axis(self, name, points, units, **kwargs):
-        # TODO: reshape extant channels
-        id = self.require_dataset(name=name, data=points, shape=points.shape,
-                                  dtype=points.dtype).id
-        axis = Axis(self, id, units=units, **kwargs)
-        self.axes.append(axis)
-        self.attrs['axis_names'] = np.append(self.attrs['axis_names'], name.encode())
-        self._update()
-        return axis
-
-    def add_constant(self, *args, **kwargs):
-        raise NotImplementedError
-
-    def add_channel(self, name, values, units=None, **kwargs):
-        # TODO: test if channel shape is appropriate
-        id = self.require_dataset(name=name, data=values, shape=values.shape,
-                                  dtype=values.dtype).id
-        channel = Channel(self, id, units=units, **kwargs)
-        self.channels.append(channel)
-        self.attrs['channel_names'] = np.append(self.attrs['channel_names'], name.encode())
-        self._update()
-        return channel
 
     def bring_to_front(self, channel):
         """Bring a specific channel to the zero-indexed position in channels.
@@ -915,14 +901,29 @@ class Data(Group):
         """
         return copy.deepcopy(self)
 
-    @property
-    def datasets(self):
-        return [v for _, v in self.items() if isinstance(v, h5py.Dataset)]
 
-    @property
-    def dimensionality(self):
-        """Get dimensionality of Data object."""
-        return len(self.axes)
+    def create_axis(self, name, points, units, **kwargs):
+        # TODO: reshape extant channels
+        id = self.require_dataset(name=name, data=points, shape=points.shape,
+                                  dtype=points.dtype).id
+        axis = Axis(self, id, units=units, **kwargs)
+        self.axes.append(axis)
+        self.attrs['axis_names'] = np.append(self.attrs['axis_names'], name.encode())
+        self._update()
+        return axis
+
+    def create_constant(self, *args, **kwargs):
+        raise NotImplementedError
+
+    def create_channel(self, name, values, units=None, **kwargs):
+        # TODO: test if channel shape is appropriate
+        id = self.require_dataset(name=name, data=values, shape=values.shape,
+                                  dtype=values.dtype).id
+        channel = Channel(self, id, units=units, **kwargs)
+        self.channels.append(channel)
+        self.attrs['channel_names'] = np.append(self.attrs['channel_names'], name.encode())
+        self._update()
+        return channel
 
     def divide(self, divisor, channel=0, divisor_channel=0):
         """Divide a given channel by another data object.
