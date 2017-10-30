@@ -33,8 +33,8 @@ import matplotlib.patheffects as PathEffects
 import imageio
 
 from .. import exceptions as wt_exceptions
-from .. import data as wt_data
 from .. import kit as wt_kit
+from ..data import Data
 
 
 # --- define --------------------------------------------------------------------------------------
@@ -192,7 +192,7 @@ class Axes(matplotlib.axes.Axes):
         channel = kwargs.pop('channel', 0)
         dynamic_range = kwargs.pop('dynamic_range', False)
         # unpack data object, if given
-        if isinstance(args[0], wt_data.Data):
+        if isinstance(args[0], Data):
             data = args.pop(0)
             if not data.dimensionality == 2:
                 raise wt_exceptions.DimensionalityError(2, data.dimensionality)
@@ -262,7 +262,7 @@ class Axes(matplotlib.axes.Axes):
         channel = kwargs.pop('channel', 0)
         dynamic_range = kwargs.pop('dynamic_range', False)
         # unpack data object, if given
-        if isinstance(args[0], wt_data.Data):
+        if isinstance(args[0], Data):
             data = args.pop(0)
             if not data.dimensionality == 2:
                 raise wt_exceptions.DimensionalityError(2, data.dimensionality)
@@ -369,7 +369,7 @@ class Axes(matplotlib.axes.Axes):
         channel = kwargs.pop('channel', 0)
         dynamic_range = kwargs.pop('dynamic_range', False)
         # unpack data object, if given
-        if isinstance(args[0], wt_data.Data):
+        if isinstance(args[0], Data):
             data = args.pop(0)
             if not data.dimensionality == 2:
                 raise wt_exceptions.DimensionalityError(2, data.dimensionality)
