@@ -55,7 +55,6 @@ class Group(h5py.Group):
             self._items.append(self[name])
             setattr(self, name, self[name])
         # kwargs
-        print(kwargs)
         self.attrs.update(kwargs)
         # the following are populated if not already recorded
         self.__version__

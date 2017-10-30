@@ -575,7 +575,7 @@ class Data(Group):
     def source(self):
         if 'source' not in self.attrs.keys():
             self.attrs['source'] = 'None'
-        value = self.attrs['kind']
+        value = self.attrs['source']
         return value if not value == 'None' else None
 
     def _update(self):

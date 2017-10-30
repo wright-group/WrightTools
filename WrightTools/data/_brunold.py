@@ -66,5 +66,8 @@ def from_BrunoldrRaman(filepath, name=None, collection=None, verbose=True):
     data.create_channel(name='counts', values=arr[1])
     # finish
     if verbose:
-        print('1 data object successfully created from file')
+        print('data created at {0}'.format(data.fullpath))
+        print('  kind: {0}'.format(data.kind))
+        print('  range: {0} to {1} (wn)'.format(data.wm[0], data.wm[-1]))
+        print('  size: {0}'.format(data.size))
     return data

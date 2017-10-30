@@ -27,8 +27,7 @@ __all__ = ['from_PyCMDS']
 # --- from function -------------------------------------------------------------------------------
 
 
-def from_PyCMDS(filepath, name=None,
-                shots_processing_module='mean_and_std', verbose=True):
+def from_PyCMDS(filepath, name=None, collection=None, verbose=True):
     """Create a data object from a single PyCMDS output file.
 
     Parameters
@@ -38,9 +37,8 @@ def from_PyCMDS(filepath, name=None,
     name : str or None (optional)
         The name to be applied to the new data object. If None, name is read
         from file.
-    shots_processing_module : str (optional)
-        The module used to process .shots files, if provided. Must be the name
-        of a module in the shots_processing directory.
+    collection = WrightTools.Collection (optional)
+        Collection to place new data object within. Default is None.
     verbose : bool (optional)
         Toggle talkback. Default is True.
 
@@ -186,7 +184,12 @@ def from_PyCMDS(filepath, name=None,
         # TODO: handle PyCMDS constants
         pass
     # create data object
-    data = Data(name=data_name)
+    kwargs = {'name': data_name, 'kind': 'PyCMDS', 'source': filepath}
+    if collection is not None:
+        data = collection.create_data(**kwargs)
+    else:
+        data = Data(**kwargs)
+    # add contents
     for axis in axes:
         data.create_axis(**axis)
     for channel in channels:
