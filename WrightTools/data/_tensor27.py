@@ -23,7 +23,7 @@ __all__ = ['from_Tensor27']
 # --- from function -------------------------------------------------------------------------------
 
 
-def from_Tensor27(filepath, name=None, verbose=True):
+def from_Tensor27(filepath, name=None, collection=None, verbose=True):
     """Create a data object from a Tensor27 FTIR file.
 
     .. plot::
@@ -45,6 +45,8 @@ def from_Tensor27(filepath, name=None, verbose=True):
     name : string (optional)
         Name to give to the created data object. If None, filename is used.
         Default is None.
+    collection : WrightTools.Collection (optional)
+        Collection to place new data object within. Default is None.
     verbose : boolean (optional)
         Toggle talkback. Default is True.
 
@@ -53,22 +55,30 @@ def from_Tensor27(filepath, name=None, verbose=True):
     data
         New data object.
     """
-    # check filepath
+    # parse filepath
     if not os.path.isfile(filepath):
         raise wt_exceptions.FileNotFound(path=filepath)
     filesuffix = os.path.basename(filepath).split('.')[-1]
     if filesuffix != 'dpt':
         wt_exceptions.WrongFileTypeWarning.warn(filepath, 'dpt')
-    # import array
+    # parse name
+    if name is None:
+        name = os.path.basename(filepath).split('.')[0]
+    # create data
+    kwargs = {'name': name, 'kind': 'Tensor27', 'source': filepath}
+    if collection:
+        data = collection.create_data(**kwargs)
+    else:
+        data = Data(**kwargs)
+    # array
     arr = np.genfromtxt(filepath, skip_header=0).T
-    # name
-    if not name:
-        name = os.path.basename(filepath)
     # construct data
-    axis = Axis(arr[0], 'wn', name='w')
-    signal = Channel(arr[1], name='absorbance', label='absorbance', signed=False)
-    data = Data([axis], [signal], source='Tensor 27', name=name)
+    data.create_axis(name='wm', points=arr[0], units='wn')
+    data.create_channel(name='signal', values=arr[1])
     # finish
     if verbose:
-        print('data object successfully created from Tensor 27 file')
+        print('data created at {0}'.format(data.fullpath))
+        print('  kind: {0}'.format(data.kind))
+        print('  range: {0} to {1} (wn)'.format(data.wm[0], data.wm[-1]))
+        print('  size: {0}'.format(data.size))
     return data
