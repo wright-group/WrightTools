@@ -91,8 +91,8 @@ class Group(h5py.Group):
             cls.__init__(instance, **kwargs)
             cls.instances[fullpath] = instance
             if tmpfile:
-                weakref.finalize(instance, tmpfile.close())
-                weakref.finalize
+                setattr(instance, '_tmpfile', tmpfile)
+                weakref.finalize(instance, instance.close)
             return instance
         instance = cls.instances[fullpath]
         return instance
@@ -129,6 +129,11 @@ class Group(h5py.Group):
         return Collection(self.filepath, parent=parent, name=group.attrs['name'])
 
     def close(self):
-        self.file.flush()
-        print(self.__class__.instances)
-        self.__class__.instances.pop(self.fullpath)
+        try:
+            self.__class__.instances.pop(self.fullpath)
+            self.file.flush()
+            self.file.close()
+            if hasattr(self, '_tmpfile'):
+                self._tmpfile.close()
+        except:
+            pass

@@ -36,7 +36,7 @@ def from_BrunoldrRaman(filepath, name=None, collection=None, verbose=True):
         Name to give to the created data object. If None, filename is used.
         Default is None.
     collection : WrightTools.Collection (optional)
-        Collection to place new data object into. Default is None.
+        Collection to place new data object within. Default is None.
     verbose : boolean (optional)
         Toggle talkback. Default is True.
 
@@ -53,7 +53,7 @@ def from_BrunoldrRaman(filepath, name=None, collection=None, verbose=True):
     # parse name
     if not name:
         name = os.path.basename(filepath).split('.')[0]
-    # parse collection
+    # create data
     kwargs = {'name': name, 'kind': 'BrunoldrRaman', 'source': filepath}
     if collection is None:
         data = Data(**kwargs)

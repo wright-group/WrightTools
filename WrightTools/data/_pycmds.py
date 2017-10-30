@@ -196,7 +196,7 @@ def from_PyCMDS(filepath, name=None, collection=None, verbose=True):
         data.create_channel(**channel)
     # return
     if verbose:
-        print('data object succesfully created')
-        print('  axes:', data.axis_names)
-        print('  shape:', data.shape)
+        print('data created at {0}'.format(data.fullpath))
+        print('  axes: {0}'.format(data.axis_names))
+        print('  shape: {0}'.format(data.shape))
     return data
