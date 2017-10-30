@@ -28,49 +28,7 @@ __all__ = ['Collection']
 
 class Collection(Group):
     """Nestable Collection of Data objects."""
-    default_name = 'collection'
-
-    def __init__(self, filepath=None, parent=None, name=None, **kwargs):
-        """Create a ``Collection`` object.
-
-        Parameters
-        ----------
-        channels : list
-            A list of Channel objects. Channels are also inherited as
-            attributes using the channel name: ``data.ai0``, for example.
-        axes : list
-            A list of Axis objects. Axes are also inherited as attributes using
-            the axis name: ``data.w1``, for example.
-        constants : list
-            A list of Axis objects, each with exactly one point.
-        **kwargs
-            Additional keyword arguments are added to the attrs dictionary
-            and to the natural namespace of the object (if possible).
-        """
-        # TODO: redo docstring
-        if parent == '':
-            parent = posixpath.sep
-        # file
-        self.filepath = filepath
-        print('filepath', self.filepath)
-        file = h5py.File(self.filepath, 'a')
-        if '__version__' not in file.attrs.keys():
-            file.attrs['__version__'] = '0.0.0'
-        file.require_group(parent)
-        Group.__init__(self, file[parent].id)
-        # assign
-        self.__n = 0
-        self.source = kwargs.pop('source', None)  # TODO
-        if name is not None:
-            self.attrs['name'] = name
-        self.attrs.update(kwargs)
-        self.attrs['class'] = 'Collection'
-        # load from file
-        self._items = []
-        for name in self.item_names:
-            self._items.append(self[name])
-            setattr(self, name, self[name])
-        self.__version__  # assigns, if it doesn't already exist
+    class_name = 'Collection'
 
     def __iter__(self):
         self.__n = 0
@@ -78,10 +36,6 @@ class Collection(Group):
 
     def __len__(self):
         return len(self.item_names)
-
-#    def __new__(cls, *args, **kwargs):
-#        print('this is Collection new')
-#        return self.__init__(*args, **kwargs)
 
     def __next__(self):
         if self.__n < len(self):

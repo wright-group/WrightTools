@@ -7,6 +7,7 @@
 import shutil
 import weakref
 import tempfile
+import posixpath
 
 import h5py
 
@@ -29,11 +30,29 @@ class Dataset(h5py.Dataset):
 
 class Group(h5py.Group):
     instances = {}
-    default_name = 'group'
+    class_name = 'Group'
 
-    def __init__(self, *args, **kwargs):
-        h5py.Group.__init__(self, *args, **kwargs)
-        # the following are populated if not defined
+    def __init__(self, filepath=None, parent=None, name=None, **kwargs):
+        if filepath is None:
+            return
+        if parent == '':
+            parent = posixpath.sep
+        # file
+        self.filepath = filepath
+        file = h5py.File(self.filepath, 'a')
+        file.require_group(parent)
+        h5py.Group.__init__(self, bind=file[parent].id)
+        self.__n = 0
+        if name is not None:
+            self.attrs['name'] = name
+        self.attrs.update(kwargs)
+        self.attrs['class'] = self.class_name
+        # load from file
+        self._items = []
+        for name in self.item_names:
+            self._items.append(self[name])
+            setattr(self, name, self[name])
+        # the following are populated if not already recorded
         self.__version__
         self.natural_name
 
@@ -41,7 +60,7 @@ class Group(h5py.Group):
         # extract
         filepath = args[0] if len(args) > 0 else kwargs.get('filepath', None)
         parent = args[1] if len(args) > 1 else kwargs.get('parent', None)
-        name = args[2] if len(args) > 2 else kwargs.get('name', cls.default_name)
+        name = args[2] if len(args) > 2 else kwargs.get('name', cls.class_name.lower())
         edit_local = args[3] if len(args) > 3 else kwargs.get('edit_local', False)
         # tempfile
         tmpfile = None
@@ -69,7 +88,9 @@ class Group(h5py.Group):
             cls.instances[fullpath] = instance
             if tmpfile:
                 weakref.finalize(instance, tmpfile.close())
-        return cls.instances[fullpath]
+            return instance
+        instance = cls.instances[fullpath]
+        return instance
 
     @property
     def __version__(self):
@@ -83,7 +104,7 @@ class Group(h5py.Group):
 
     @property
     def natural_name(self):
-        if not 'name' in self.attrs.keys():
+        if 'name' not in self.attrs.keys():
             self.attrs['name'] = self.__class__.default_name
         return self.attrs['name']
 
