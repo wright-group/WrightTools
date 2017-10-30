@@ -474,65 +474,12 @@ class Data(Group):
     """Central multidimensional data class."""
     default_name = 'data'
 
-    def __init__(self, filepath=None, parent=None, name='data', edit_local=False, **kwargs):
-        """Create a ``Data`` object.
-
-        Parameters
-        ----------
-        channels : list
-            A list of Channel objects. Channels are also inherited as
-            attributes using the channel name: ``data.ai0``, for example.
-        axes : list
-            A list of Axis objects. Axes a. re also inherited as attributes using
-            the axis name: ``data.w1``, for example.
-        constants : list
-            A list of Axis objects, each with exactly one point.
-        **kwargs
-            Additional keyword arguments are added to the attrs dictionary
-            and to the natural namespace of the object (if possible).
-        """
-        # TODO: redo docstring
-        # parse / create file
-        if edit_local and filepath is None:
-            raise Exception  # TODO: better exception
-        if not edit_local:
-            self._tempfile = tempfile.NamedTemporaryFile(prefix='', suffix='.wt5')
-            self.filepath = self._tempfile.name
-            if filepath:
-                shutil.copyfile(src=filepath, dst=self.filepath)
-        elif edit_local and filepath is not None:
-            self._tempfile = None
-            self.filepath = filepath
-        else:
-            self._tempfile = None
-        # parse / create group
-        if parent is None:
-            p = '/'
-        else:
-            p = parent + '/' + name
-        file = h5py.File(self.filepath, 'a')
-        if '__version__' not in file.attrs.keys():
-            file.attrs['__version__'] = '0.0.0'
-        file.require_group(p)
-        h5py.Group.__init__(self, file[p].id)
-        # assign
-        self.source = kwargs.pop('source', None)  # TODO
-        self.attrs.update(kwargs)
-        self.attrs['class'] = 'Data'
-        self.attrs['name'] = name
-        # load from file
-        self.axes = []
-        self.constants = []
-        self.channels = []
-        for lis, names in zip([self.axes, self.constants, self.channels],
-                              [self.axis_names, self.constant_names, self.channel_names]):
-            for name in names:
-                lis.append(self[name])
-        self.__version__  # assigns, if it doesn't already exist
-        if self._tempfile:
-            weakref.finalize(self, self._tempfile.close())
-        # update
-        self._update()
+    def __init__(self, *args, **kwargs):
+        Group.__init__(self, *args, **kwargs)
+        # the following are populated if not already recorded
+        self.axis_names
+        self.channel_names
+        self.constant_names
 
     def __getitem__(self, key):
         out = h5py.Group.__getitem__(self, key)
@@ -547,10 +494,24 @@ class Data(Group):
             self.natural_name, str(self.axis_names), '::'.join([self.filepath, self.name]))
 
     @property
+    def axes(self):
+        return [self[n] for n in self.axis_names]
+
+    @property
     def axis_names(self):
         if 'axis_names' not in self.attrs.keys():
             self.attrs['axis_names'] = np.array([], dtype='S')
         return [s.decode() for s in self.attrs['axis_names']]
+
+    @property
+    def channel_names(self):
+        if 'channel_names' not in self.attrs.keys():
+            self.attrs['channel_names'] = np.array([], dtype='S')
+        return [s.decode() for s in self.attrs['channel_names']]
+
+    @property
+    def channels(self):
+        return [self[n] for n in self.axis_names]
 
     @property
     def constant_names(self):
@@ -559,10 +520,8 @@ class Data(Group):
         return [s.decode() for s in self.attrs['constant_names']]
 
     @property
-    def channel_names(self):
-        if 'channel_names' not in self.attrs.keys():
-            self.attrs['channel_names'] = np.array([], dtype='S')
-        return [s.decode() for s in self.attrs['channel_names']]
+    def constants(self):
+        return [self[n] for n in self.constant_names]
 
     @property
     def datasets(self):
@@ -593,9 +552,9 @@ class Data(Group):
 
     @property
     def shape(self):
-        if len(self.channels) == 0:
+        if len(self.axis_names) == 0:
             return tuple()
-        return self.channels[0].shape
+        return tuple([a.size for a in self.axes])
 
     @property
     def size(self):

@@ -9,6 +9,8 @@ import weakref
 import tempfile
 import posixpath
 
+import numpy as np
+
 import h5py
 
 
@@ -88,6 +90,7 @@ class Group(h5py.Group):
             cls.instances[fullpath] = instance
             if tmpfile:
                 weakref.finalize(instance, tmpfile.close())
+                weakref.finalize
             return instance
         instance = cls.instances[fullpath]
         return instance
@@ -103,6 +106,12 @@ class Group(h5py.Group):
         return self.filepath + '::' + self.name
 
     @property
+    def item_names(self):
+        if 'item_names' not in self.attrs.keys():
+            self.attrs['item_names'] = np.array([], dtype='S')
+        return self.attrs['item_names']
+
+    @property
     def natural_name(self):
         if 'name' not in self.attrs.keys():
             self.attrs['name'] = self.__class__.default_name
@@ -116,3 +125,8 @@ class Group(h5py.Group):
         if parent == posixpath.sep:
             parent = None
         return Collection(self.filepath, parent=parent, name=group.attrs['name'])
+
+    def close(self):
+        self.file.flush()
+        print(self.__class__.instances)
+        self.__class__.instances.pop(self.fullpath)
