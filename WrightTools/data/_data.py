@@ -878,6 +878,24 @@ class Data(Group):
 
 
     def create_axis(self, name, points, units, **kwargs):
+        """Append a new axis, changing shape.
+
+        Extant channels are broadcast into the new shape.
+
+        Parameters
+        ----------
+        name : string
+            Unique name for this axis.
+        points : 1D array
+            Axis points.
+        units : string
+            Axis units.
+
+        Returns
+        -------
+        Axis
+            Created axis.
+        """
         # TODO: reshape extant channels
         id = self.require_dataset(name=name, data=points, shape=points.shape,
                                   dtype=points.dtype).id
@@ -890,8 +908,31 @@ class Data(Group):
     def create_constant(self, *args, **kwargs):
         raise NotImplementedError
 
-    def create_channel(self, name, values, units=None, **kwargs):
-        # TODO: test if channel shape is appropriate
+    def create_channel(self, name, values=None, units=None, **kwargs):
+        """Append a new channel.
+
+        Parameters
+        ----------
+        name : string
+            Unique name for this channel.
+        values : array (optional)
+            Array. If None, an empty array equaling the data shape is
+            created. Default is None.
+        units : string (optional)
+            Channel units. Default is None.
+
+        Returns
+        -------
+        Channel
+            Created channel.
+        """
+        if values is None:
+            shape = self.shape
+        else:
+            shape = values.shape
+            if not shape == self.shape:
+                raise Exception  # TODO: better exception
+        # create dataset
         id = self.require_dataset(name=name, data=values, shape=values.shape,
                                   dtype=values.dtype).id
         channel = Channel(self, id, units=units, **kwargs)

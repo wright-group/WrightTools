@@ -303,11 +303,9 @@ class Quick2D:
         self._onplotdata.append((xi, yi, kwargs))
 
     def plot(self, channel=0,
-             contours=0, pixelated=True, lines=True, cmap='automatic',
-             facecolor='w', dynamic_range=False, local=False,
-             contours_local=True, normalize_slices='both', xbin=False,
-             ybin=False, xlim=None, ylim=None, autosave=False,
-             save_directory=None, fname=None, verbose=True,
+             contours=0, pixelated=True, lines=True, cmap='automatic', facecolor='w',
+             dynamic_range=False, local=False, contours_local=True, xbin=False, ybin=False,
+             xlim=None, ylim=None, autosave=False, save_directory=None, fname=None, verbose=True,
              transform=None, contour_thickness=None):
         """Draw the plot(s).
 
@@ -336,8 +334,6 @@ class Quick2D:
             Toggle plotting locally. Default is False.
         contours_local : bool (optional)
             Toggle plotting contours locally. Default is True.
-        normalize_slices : {'both', 'horizontal', 'vertical'} (optional)
-            Normalization strategy. Default is both.
         xbin : bool (optional)
             Plot xbin. Default is False.
         ybin : bool (optional)
@@ -397,26 +393,6 @@ class Quick2D:
             channel = channels[channel_index]
             zi = channel[:]
             zi = np.ma.masked_invalid(zi)
-            # normalize slices --------------------------------------------------------------------
-            if normalize_slices == 'both':
-                pass
-            elif normalize_slices == 'horizontal':
-                nmin = channel.null()
-                # normalize all x traces to a common value
-                maxes = zi.max(axis=1)
-                numerator = (zi - nmin)
-                denominator = (maxes - nmin)
-                for j in range(zi.shape[0]):
-                    zi[j] = numerator[j] / denominator[j]
-                channel.attrs['null'] = 0
-            elif normalize_slices == 'vertical':
-                nmin = channel.null()
-                maxes = zi.max(axis=0)
-                numerator = (zi - nmin)
-                denominator = (maxes - nmin)
-                for j in range(zi.shape[1]):
-                    zi[:, j] = numerator[:, j] / denominator[j]
-                channel.attrs['null'] = 0
             # create figure -----------------------------------------------------------------------
             if fig and autosave:
                 plt.close(fig)
