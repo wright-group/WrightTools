@@ -22,6 +22,7 @@ def test_split():
     assert len(split) == 2
     assert split[0].shape == (15, 11, 11)
     assert split[1].shape == (20, 11, 11)
+    a.close()
 
 
 @pytest.mark.xfail()
@@ -32,6 +33,7 @@ def test_split_descending():
     assert len(split) == 2
     assert split[0].shape == (20, 11, 11)
     assert split[1].shape == (15, 11, 11)
+    a.close()
 
 
 @pytest.mark.xfail()
@@ -42,6 +44,7 @@ def test_split_edge():
     assert len(split) == 2
     assert split[0] is None
     assert split[1].shape == (35, 11, 11)
+    a.close()
 
 
 @pytest.mark.xfail()
@@ -53,6 +56,7 @@ def test_split_multiple():
     assert split[0].shape == (2, 11, 11)
     assert split[1].shape == (18, 11, 11)
     assert split[2].shape == (15, 11, 11)
+    a.close()
 
 
 @pytest.mark.xfail()
@@ -65,6 +69,7 @@ def test_split_close():
     assert split[0].shape == (15, 11, 11)
     assert split[1] is None
     assert split[2].shape == (20, 11, 11)
+    a.close()
 
 
 @pytest.mark.xfail()
@@ -76,6 +81,7 @@ def test_split_above():
     assert len(split) == 2
     assert split[0].shape == (14, 11, 11)
     assert split[1].shape == (21, 11, 11)
+    a.close()
 
 
 @pytest.mark.xfail()
@@ -86,6 +92,7 @@ def test_split_above_descending():
     assert len(split) == 2
     assert split[0].shape == (21, 11, 11)
     assert split[1].shape == (14, 11, 11)
+    a.close()
 
 
 @pytest.mark.xfail()
@@ -97,6 +104,7 @@ def test_split_units():
     assert len(split) == 2
     assert split[0].shape == (15, 11, 11)
     assert split[1].shape == (20, 11, 11)
+    a.close()
 
 
 @pytest.mark.xfail()
@@ -108,3 +116,4 @@ def test_split_axis_name():
     assert split[0].shape == (35, 10, 11)
     assert split[1].shape == (35, 11)
     assert split[1].w2.is_constant()
+    a.close()

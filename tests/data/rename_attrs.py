@@ -20,6 +20,7 @@ def test_rename():
     data.rename_attrs(w1='w2', w2='w1')
     assert data.shape == (35, 11, 11)
     assert data.axis_names == ['wm', 'w1', 'w2']
+    data.close()
 
 
 @pytest.mark.xfail()
@@ -32,3 +33,4 @@ def test_error():
         assert True
     else:
         assert False
+    data.close()

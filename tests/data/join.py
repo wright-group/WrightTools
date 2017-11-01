@@ -24,3 +24,5 @@ def test_wm_w2_w1():
     joined = wt.data.join([a, b])
     assert joined.shape == (63, 11, 11)
     assert not np.isnan(joined.channels[0].values).any()
+    a.close()
+    b.close()
