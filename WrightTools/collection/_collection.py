@@ -39,7 +39,7 @@ class Collection(Group):
 
     def __next__(self):
         if self.__n < len(self):
-            out = self[self._n]
+            out = self[self.__n]
             self.__n += 1
         else:
             raise StopIteration
@@ -61,6 +61,9 @@ class Collection(Group):
                                     edit_local=True)
             elif out.attrs['class'] == 'Collection':
                 return Collection(filepath=self.filepath, parent=self.name, name=key,
+                                  edit_local=True)
+            else:
+                return Group(filepath=self.filepath, parent=self.name, name=key,
                                   edit_local=True)
         else:
             return out

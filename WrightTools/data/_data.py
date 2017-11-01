@@ -472,7 +472,7 @@ class Channel(Dataset):
 
 class Data(Group):
     """Central multidimensional data class."""
-    default_name = 'data'
+    class_name = 'Data'
 
     def __init__(self, *args, **kwargs):
         Group.__init__(self, *args, **kwargs)
