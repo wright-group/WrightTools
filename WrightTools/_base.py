@@ -132,6 +132,7 @@ class Group(h5py.Group):
 
     def close(self):
         try:
+            print("Closing", self.fullpath)
             self.__class__.instances.pop(self.fullpath)
             self.file.flush()
             self.file.close()
