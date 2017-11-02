@@ -125,11 +125,3 @@ class Collection(Group):
         if verbose:
             print('file saved at', filepath)
         return filepath
-
-    def close(self):
-        print("Closing: ", self.filepath)
-        try:
-            self.file.close()
-            self.__tmpfile.close()
-        except RuntimeError:
-            pass

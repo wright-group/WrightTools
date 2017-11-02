@@ -13,12 +13,13 @@ from WrightTools import datasets
 # --- test ----------------------------------------------------------------------------------------
 
 
-@pytest.mark.xfail()
+@pytest.mark.skip()
 def test_split():
     p = datasets.PyCMDS.wm_w2_w1_000
     a = wt.data.from_PyCMDS(p)
     import inspect
     a.attrs['test'] = inspect.stack()[0][3]
+    print(inspect.stack()[0][3], a.filepath)
     a.flip(0)
     split = a.split(0, [19700])
     assert len(split) == 2
@@ -28,12 +29,13 @@ def test_split():
     a.close()
 
 
-@pytest.mark.xfail()
+@pytest.mark.skip()
 def test_split_descending():
     p = datasets.PyCMDS.wm_w2_w1_000
     a = wt.data.from_PyCMDS(p)
     import inspect
     a.attrs['test'] = inspect.stack()[0][3]
+    print(inspect.stack()[0][3], a.filepath)
     split = a.split(0, [19700])
     assert len(split) == 2
     assert split[0].shape == (20, 11, 11)
@@ -42,12 +44,13 @@ def test_split_descending():
     a.close()
 
 
-@pytest.mark.xfail()
+@pytest.mark.skip()
 def test_split_edge():
     p = datasets.PyCMDS.wm_w2_w1_000
     a = wt.data.from_PyCMDS(p)
     import inspect
     a.attrs['test'] = inspect.stack()[0][3]
+    print(inspect.stack()[0][3], a.filepath)
     split = a.split(0, [20700])
     assert len(split) == 2
     assert split[0] is None
@@ -56,12 +59,13 @@ def test_split_edge():
     a.close()
 
 
-@pytest.mark.xfail()
+@pytest.mark.skip()
 def test_split_multiple():
     p = datasets.PyCMDS.wm_w2_w1_000
     a = wt.data.from_PyCMDS(p)
     import inspect
     a.attrs['test'] = inspect.stack()[0][3]
+    print(inspect.stack()[0][3], a.filepath)
     split = a.split(0, [20600, 19700])
     assert len(split) == 3
     assert split[0].shape == (2, 11, 11)
@@ -71,12 +75,13 @@ def test_split_multiple():
     a.close()
 
 
-@pytest.mark.xfail()
+@pytest.mark.skip()
 def test_split_close():
     p = datasets.PyCMDS.wm_w2_w1_000
     a = wt.data.from_PyCMDS(p)
     import inspect
     a.attrs['test'] = inspect.stack()[0][3]
+    print(inspect.stack()[0][3], a.filepath)
     a.flip(0)
     split = a.split(0, [19705, 19694])
     assert len(split) == 3
@@ -87,12 +92,13 @@ def test_split_close():
     a.close()
 
 
-@pytest.mark.xfail()
+@pytest.mark.skip()
 def test_split_above():
     p = datasets.PyCMDS.wm_w2_w1_000
     a = wt.data.from_PyCMDS(p)
     import inspect
     a.attrs['test'] = inspect.stack()[0][3]
+    print(inspect.stack()[0][3], a.filepath)
     a.flip(0)
     split = a.split(0, [19700], direction='above')
     assert len(split) == 2
@@ -102,12 +108,13 @@ def test_split_above():
     a.close()
 
 
-@pytest.mark.xfail()
+@pytest.mark.skip()
 def test_split_above_descending():
     p = datasets.PyCMDS.wm_w2_w1_000
     a = wt.data.from_PyCMDS(p)
     import inspect
     a.attrs['test'] = inspect.stack()[0][3]
+    print(inspect.stack()[0][3], a.filepath)
     split = a.split(0, [19700], direction='above')
     assert len(split) == 2
     assert split[0].shape == (21, 11, 11)
@@ -116,12 +123,13 @@ def test_split_above_descending():
     a.close()
 
 
-@pytest.mark.xfail()
+@pytest.mark.skip()
 def test_split_units():
     p = datasets.PyCMDS.wm_w2_w1_000
     a = wt.data.from_PyCMDS(p)
     import inspect
     a.attrs['test'] = inspect.stack()[0][3]
+    print(inspect.stack()[0][3], a.filepath)
     a.flip(0)
     split = a.split(0, [507], units='nm')
     assert len(split) == 2
@@ -131,12 +139,13 @@ def test_split_units():
     a.close()
 
 
-@pytest.mark.xfail()
+@pytest.mark.skip()
 def test_split_axis_name():
     p = datasets.PyCMDS.wm_w2_w1_000
     a = wt.data.from_PyCMDS(p)
     import inspect
     a.attrs['test'] = inspect.stack()[0][3]
+    print(inspect.stack()[0][3], a.filepath)
     split = a.split('w2', [1500])
     assert len(split) == 2
     assert split[0].shape == (35, 10, 11)

@@ -13,7 +13,7 @@ from WrightTools import datasets
 # --- test ----------------------------------------------------------------------------------------
 
 
-@pytest.mark.xfail()
+@pytest.mark.skip()
 def test_LDS821_TRSF():
     p = datasets.KENT.LDS821_TRSF
     ignore = ['wm', 'd1', 'd2']
@@ -23,7 +23,7 @@ def test_LDS821_TRSF():
     data.close()
 
 
-@pytest.mark.xfail(reason='unknown problems with data itself')
+@pytest.mark.skip(reason='unknown problems with data itself')
 def test_PbSe_2D_delay_A():
     p = datasets.KENT.PbSe_2D_delay_A
     data = wt.data.from_KENT(p, delay_tolerance=0.01)
@@ -32,7 +32,7 @@ def test_PbSe_2D_delay_A():
     data.close()
 
 
-@pytest.mark.xfail()
+@pytest.mark.skip()
 def test_PbSe_2D_delay_B():
     p = datasets.KENT.PbSe_2D_delay_B
     data = wt.data.from_KENT(p, delay_tolerance=0.01)

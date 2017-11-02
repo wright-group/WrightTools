@@ -47,6 +47,7 @@ class Group(h5py.Group):
         file.require_group(path)
         h5py.Group.__init__(self, bind=file[path].id)
         self.__n = 0
+        self.fid = self.file.fid
         if name is not None:
             self.attrs['name'] = name
         self.attrs.update(kwargs)
@@ -131,13 +132,11 @@ class Group(h5py.Group):
         return Collection(self.filepath, parent=parent, name=group.attrs['name'])
 
     def close(self):
-        try:
-            print(self.attrs.get('test','Test attr not set'))
-            print("Closing", self.fullpath)
-            self.__class__.instances.pop(self.fullpath)
+        print("Closing", self.fullpath)
+        self.__class__.instances.pop(self.fullpath)
+
+        if(self.fid.valid > 0):
             self.file.flush()
             self.file.close()
             if hasattr(self, '_tmpfile'):
                 self._tmpfile.close()
-        except:
-            pass

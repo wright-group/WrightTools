@@ -13,7 +13,7 @@ from WrightTools import datasets
 # --- test ----------------------------------------------------------------------------------------
 
 
-@pytest.mark.xfail()
+@pytest.mark.skip()
 def test_v0p2_d1_d2_diagonal():
     p = datasets.COLORS.v0p2_d1_d2_diagonal
     data = wt.data.from_COLORS(p)
@@ -22,7 +22,7 @@ def test_v0p2_d1_d2_diagonal():
     data.close()
 
 
-@pytest.mark.xfail()
+@pytest.mark.skip()
 def test_v0p2_d1_d2_off_diagonal():
     p = datasets.COLORS.v0p2_d1_d2_off_diagonal
     data = wt.data.from_COLORS(p)
@@ -31,7 +31,7 @@ def test_v0p2_d1_d2_off_diagonal():
     data.close()
 
 
-@pytest.mark.xfail()
+@pytest.mark.skip()
 def test_v2p1_MoS2_TrEE_movie():
     ps = datasets.COLORS.v2p1_MoS2_TrEE_movie
     data = wt.data.from_COLORS(ps)
