@@ -132,10 +132,9 @@ class Group(h5py.Group):
         return Collection(self.filepath, parent=parent, name=group.attrs['name'])
 
     def close(self):
-        print("Closing", self.fullpath)
-        self.__class__.instances.pop(self.fullpath)
 
         if(self.fid.valid > 0):
+            self.__class__.instances.pop(self.fullpath)
             self.file.flush()
             self.file.close()
             if hasattr(self, '_tmpfile'):
