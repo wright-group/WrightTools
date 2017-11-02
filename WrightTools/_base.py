@@ -41,9 +41,11 @@ class Group(h5py.Group):
             parent = posixpath.sep
         # file
         self.filepath = filepath
+        path = parent + posixpath.sep + name
         file = h5py.File(self.filepath, 'a')
         file.require_group(parent)
-        h5py.Group.__init__(self, bind=file[parent].id)
+        file.require_group(path)
+        h5py.Group.__init__(self, bind=file[path].id)
         self.__n = 0
         if name is not None:
             self.attrs['name'] = name

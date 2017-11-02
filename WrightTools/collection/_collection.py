@@ -62,6 +62,9 @@ class Collection(Group):
             elif out.attrs['class'] == 'Collection':
                 return Collection(filepath=self.filepath, parent=self.name, name=key,
                                   edit_local=True)
+            else:
+                return Group(filepath=self.filepath, parent=self.name, name=key,
+                                  edit_local=True)
         else:
             return out
 
