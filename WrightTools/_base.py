@@ -130,6 +130,7 @@ class Group(h5py.Group):
 
     def close(self):
         try:
+            print(self.attrs.get('test','Test attr not set'))
             print("Closing", self.fullpath)
             self.__class__.instances.pop(self.fullpath)
             self.file.flush()
