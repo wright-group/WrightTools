@@ -17,13 +17,9 @@ from WrightTools import datasets
 def test_rename():
     p = datasets.PyCMDS.wm_w2_w1_000
     data = wt.data.from_PyCMDS(p)
-    import inspect
-    data.attrs['test'] = inspect.stack()[0][3]
-    print(inspect.stack()[0][3], data.filepath)
     data.rename_attrs(w1='w2', w2='w1')
     assert data.shape == (35, 11, 11)
     assert data.axis_names == ['wm', 'w1', 'w2']
-    data.file.flush()
     data.close()
 
 
@@ -31,9 +27,6 @@ def test_rename():
 def test_error():
     p = datasets.PyCMDS.wm_w2_w1_000
     data = wt.data.from_PyCMDS(p)
-    import inspect
-    data.attrs['test'] = inspect.stack()[0][3]
-    print(inspect.stack()[0][3], data.filepath)
     try:
         data.rename_attrs(w1='w2')
     except wt.exceptions.NameNotUniqueError:
@@ -41,5 +34,4 @@ def test_error():
     else:
         assert False
 
-    data.file.flush()
     data.close()

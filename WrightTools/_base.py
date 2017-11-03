@@ -79,7 +79,7 @@ class Group(h5py.Group):
             if filepath:
                 shutil.copyfile(src=filepath, dst=p)
         elif edit_local and filepath:
-           p = filepath
+            p = filepath
         # construct fullpath
         if parent is None:
             parent = ''
@@ -132,10 +132,12 @@ class Group(h5py.Group):
         return Collection(self.filepath, parent=parent, name=group.attrs['name'])
 
     def close(self):
-
         if(self.fid.valid > 0):
             self.__class__.instances.pop(self.fullpath)
             self.file.flush()
             self.file.close()
             if hasattr(self, '_tmpfile'):
                 self._tmpfile.close()
+
+    def flush(self):
+        self.file.flush()

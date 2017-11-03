@@ -906,8 +906,8 @@ def mono_resolution(grooves_per_mm, slit_width, focal_length, output_color, outp
     d_lambda = 1e6 * slit_width / (grooves_per_mm * focal_length)  # nm
     upper = output_color + d_lambda / 2  # nm
     lower = output_color - d_lambda / 2  # nm
-    return abs(units.converter(upper, 'nm', output_units) -
-               units.converter(lower, 'nm', output_units))
+    return abs(wt_units.converter(upper, 'nm', output_units) -
+               wt_units.converter(lower, 'nm', output_units))
 
 
 def nm_width(center, width, units='wn'):

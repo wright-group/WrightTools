@@ -200,11 +200,11 @@ class Axis(Dataset):
 
     def max(self):
         """Axis max, ignoring nans."""
-        return np.max(self[:])
+        return np.nanmax(self[:])
 
     def min(self):
         """Axis min, ignoring nans."""
-        return np.min(self[:])
+        return np.nanmin(self[:])
 
 
 class Channel(Dataset):
@@ -275,7 +275,7 @@ class Channel(Dataset):
     @property
     def minor_extent(self):
         """Minimum deviation from null."""
-        return min((self.max() - self.null(), self.null() - self.min()))
+        return min((self.max() - self.null, self.null - self.min()))
 
     @property
     def natural_name(self):
@@ -294,14 +294,14 @@ class Channel(Dataset):
         info['name'] = self.name
         info['min'] = self.min()
         info['max'] = self.max()
-        info['null'] = self.null()
+        info['null'] = self.null
         info['signed'] = self.signed
         return info
 
     @property
     def major_extent(self):
         """Maximum deviation from null."""
-        return max((self.max() - self.null(), self.null() - self.min()))
+        return max((self.max() - self.null, self.null - self.min()))
 
     @property
     def parent(self):
@@ -370,7 +370,7 @@ class Channel(Dataset):
             else:  # presumably a simple number
                 axis = int(axis)
         # subtract off null
-        self[:] -= self.null()
+        self[:] -= self.null
         self._null = 0.
         # create dummy array
         dummy = self.values.copy()
@@ -1089,9 +1089,6 @@ class Data(Group):
             # transpose out
             values = values.transpose(transpose_order)
             channel.values = values
-
-    def flush(self):
-        self.file.flush()
 
     def get_nadir(self, channel=0):
         """

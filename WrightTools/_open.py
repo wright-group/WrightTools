@@ -3,9 +3,6 @@
 
 # --- import -------------------------------------------------------------------------------------
 
-
-import os
-
 import h5py
 
 from . import collection as wt_collection
@@ -30,3 +27,5 @@ def open(filepath, edit_local=False):
         return wt_data.Data(filepath=filepath, edit_local=edit_local)
     elif class_name == 'Collection':
         return wt_collection.Collection(filepath=filepath, edit_local=edit_local)
+    else:
+        return wt_collection.Group(filepath=filepath, edit_local=edit_local)

@@ -6,14 +6,12 @@
 
 import os
 import shutil
-import posixpath
 
 import numpy as np
 
 import h5py
 
 from .. import data as wt_data
-from .. import kit as wt_kit
 from .._base import Group
 
 
@@ -64,7 +62,7 @@ class Collection(Group):
                                   edit_local=True)
             else:
                 return Group(filepath=self.filepath, parent=self.name, name=key,
-                                  edit_local=True)
+                              edit_local=True)
         else:
             return out
 

@@ -24,5 +24,4 @@ def test_CuPCtS_H2O_vis():
     data = datas[0]
     assert data.shape == (141,)
     assert data.axis_names == ['wm']
-    datas.file.flush()
     datas.close()
