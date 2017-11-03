@@ -76,7 +76,6 @@ class Group(h5py.Group):
         if not edit_local:
             tmpfile = tempfile.NamedTemporaryFile(prefix='', suffix='.wt5')
             p = tmpfile.name
-        self.__class__.instances.pop(self.fullpath)
             tmpfile.close()
             if filepath:
                 shutil.copyfile(src=filepath, dst=p)
