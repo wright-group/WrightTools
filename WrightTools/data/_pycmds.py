@@ -27,8 +27,7 @@ __all__ = ['from_PyCMDS']
 # --- from function -------------------------------------------------------------------------------
 
 
-def from_PyCMDS(filepath, name=None,
-                shots_processing_module='mean_and_std', verbose=True):
+def from_PyCMDS(filepath, name=None, collection=None, verbose=True):
     """Create a data object from a single PyCMDS output file.
 
     Parameters
@@ -38,9 +37,8 @@ def from_PyCMDS(filepath, name=None,
     name : str or None (optional)
         The name to be applied to the new data object. If None, name is read
         from file.
-    shots_processing_module : str (optional)
-        The module used to process .shots files, if provided. Must be the name
-        of a module in the shots_processing directory.
+    collection = WrightTools.Collection (optional)
+        Collection to place new data object within. Default is None.
     verbose : bool (optional)
         Toggle talkback. Default is True.
 
@@ -77,7 +75,7 @@ def from_PyCMDS(filepath, name=None,
         kwargs = {'identity': identity}
         if 'D' in identity:
             kwargs['centers'] = headers[name + ' centers']
-        axis = Axis(points, units, name=name, label_seed=label_seed, **kwargs)
+        axis = {'points': points, 'units': units, 'name': name, 'label_seed': label_seed, **kwargs}
         axes.append(axis)
     # get indicies arrays
     indicies = arr[:len(axes)].T
@@ -90,13 +88,13 @@ def from_PyCMDS(filepath, name=None,
         # assume no interpolation, unless the axis is the array detector
         interpolate_toggles = [True if name == 'wa' else False for name in headers['axis names']]
     # get assorted remaining things
-    shape = tuple([a.points.size for a in axes])
-    tols = [wt_kit.closest_pair(a.points, give='distance') / 2. for a in axes]
+    shape = tuple([a['points'].size for a in axes])
+    tols = [wt_kit.closest_pair(a['points'], give='distance') / 2. for a in axes]
     # prepare points for interpolation
     points_dict = collections.OrderedDict()
     for i, axis in enumerate(axes):
         # TODO: math and proper full recognition...
-        axis_col_name = [name for name in headers['name'][::-1] if name in axis.identity][0]
+        axis_col_name = [name for name in headers['name'][::-1] if name in axis['identity']][0]
         axis_index = headers['name'].index(axis_col_name)
         # shape array acording to recorded coordinates
         points = np.full(shape, np.nan)
@@ -104,9 +102,9 @@ def from_PyCMDS(filepath, name=None,
             lis = arr[axis_index]
             points[tuple(idx)] = lis[j]
         # convert array
-        points = wt_units.converter(points, headers['units'][axis_index], axis.units)
+        points = wt_units.converter(points, headers['units'][axis_index], axis['units'])
         # take case of scan about center
-        if axis.identity[0] == 'D':
+        if axis['identity'][0] == 'D':
             # transpose so this axis is first
             transpose_order = list(range(len(axes)))
             transpose_order.insert(0, transpose_order.pop(i))
@@ -119,12 +117,12 @@ def from_PyCMDS(filepath, name=None,
             transpose_order.insert(i, transpose_order.pop(0))
             points = points.transpose(transpose_order)
         points = points.flatten()
-        points_dict[axis.name] = points
+        points_dict[axis['name']] = points
         # check, coerce non-interpolated axes
         if not interpolate_toggles[i]:
             for j, idx in enumerate(indicies):
                 actual = points[j]
-                expected = axis.points[idx[i]]
+                expected = axis['points'][idx[i]]
                 if abs(actual - expected) > tols[i]:
                     warnings.warn('at least one point exceded tolerance ' +
                                   'in axis {}'.format(axis.name))
@@ -139,7 +137,7 @@ def from_PyCMDS(filepath, name=None,
     if len(axes) == 1:
         meshgrid = tuple([axes[0].points])
     else:
-        meshgrid = tuple(np.meshgrid(*[a.points for a in axes], indexing='ij'))
+        meshgrid = tuple(np.meshgrid(*[a['points'] for a in axes], indexing='ij'))
     if any(interpolate_toggles):
         # create channels through linear interpolation
         channels = []
@@ -155,7 +153,8 @@ def from_PyCMDS(filepath, name=None,
                 zi = griddata(all_points, values, meshgrid, rescale=True,
                               method='linear', fill_value=np.nan)
                 # assemble
-                channel = Channel(zi, units=units, signed=signed, name=name, label=label)
+                channel = {'values': zi, 'units': units, 'signed': signed, 'name': name,
+                           'label': label}
                 channels.append(channel)
     else:
         # if none of the axes are interpolated onto,
@@ -176,7 +175,8 @@ def from_PyCMDS(filepath, name=None,
             signed = headers['channel signed'][zi_index]
             name = headers['name'][arr_index]
             label = headers['label'][arr_index]
-            channel = Channel(zi, units=units, signed=signed, name=name, label=label)
+            channel = {'values': zi, 'units': units, 'signed': signed, 'name': name,
+                       'label': label}
             channels.append(channel)
     # get constants
     constants = []
@@ -184,10 +184,19 @@ def from_PyCMDS(filepath, name=None,
         # TODO: handle PyCMDS constants
         pass
     # create data object
-    data = Data(axes, channels, constants, name=data_name, source=filepath)
+    kwargs = {'name': data_name, 'kind': 'PyCMDS', 'source': filepath}
+    if collection is not None:
+        data = collection.create_data(**kwargs)
+    else:
+        data = Data(**kwargs)
+    # add contents
+    for axis in axes:
+        data.create_axis(**axis)
+    for channel in channels:
+        data.create_channel(**channel)
     # return
     if verbose:
-        print('data object succesfully created')
-        print('  axes:', data.axis_names)
-        print('  shape:', data.shape)
+        print('data created at {0}'.format(data.fullpath))
+        print('  axes: {0}'.format(data.axis_names))
+        print('  shape: {0}'.format(data.shape))
     return data
