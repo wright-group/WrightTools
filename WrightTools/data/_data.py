@@ -588,8 +588,7 @@ class Data(Group):
         if len(all_names) == len(set(all_names)):
             pass
         else:
-            print('axis, constant, and channel names must all be unique')
-            return
+            raise RuntimeError('names must be unique')
         for obj in self.axes + self.channels + self.constants:
             identifier = obj.name.split('/')[-1]
             setattr(self, identifier, obj)
@@ -928,13 +927,14 @@ class Data(Group):
         """
         if values is None:
             shape = self.shape
+            dtype = np.float64
         else:
             shape = values.shape
+            dtype = values.dtype
             if not shape == self.shape:
                 raise Exception  # TODO: better exception
         # create dataset
-        id = self.require_dataset(name=name, data=values, shape=values.shape,
-                                  dtype=values.dtype).id
+        id = self.require_dataset(name=name, data=values, shape=shape, dtype=dtype).id
         channel = Channel(self, id, units=units, **kwargs)
         self.channels.append(channel)
         self.attrs['channel_names'] = np.append(self.attrs['channel_names'], name.encode())
