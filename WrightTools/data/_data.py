@@ -588,7 +588,7 @@ class Data(Group):
         if len(all_names) == len(set(all_names)):
             pass
         else:
-            raise RuntimeError('names must be unique')
+            raise wt_exceptions.NameNotUniqueError()
         for obj in self.axes + self.channels + self.constants:
             identifier = obj.name.split('/')[-1]
             setattr(self, identifier, obj)
