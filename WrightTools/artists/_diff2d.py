@@ -9,7 +9,8 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as grd
 
 from ..WrightTools import kit as wt_kit
-from .artists import colormaps, pcolor_helper, get_constant_text
+from ._base import pcolor_helper, get_constant_text
+from ._colors import colormaps
 
 
 class Diff2D():
