@@ -15,19 +15,15 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import os
 import sys
-import datetime
-import collections
+import warnings
 
 import numpy as np
-from numpy import r_
 
 import matplotlib
 from matplotlib.axes import SubplotBase, subplot_class_factory
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import matplotlib.gridspec as grd
-import matplotlib.colors as mplcolors
-from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib.patheffects as PathEffects
 
 import imageio
@@ -35,6 +31,7 @@ import imageio
 from .. import exceptions as wt_exceptions
 from .. import kit as wt_kit
 from ..data import Data
+from .artists import colormaps
 
 
 # --- define --------------------------------------------------------------------------------------
@@ -53,6 +50,7 @@ else:
 
 class Axes(matplotlib.axes.Axes):
     """Axes."""
+
     transposed = False
     is_sideplot = False
 
@@ -428,7 +426,6 @@ class Axes(matplotlib.axes.Axes):
         """
         args = list(args)  # offer pop, append etc
         # unpack data object, if given
-        from ..data._data import Data
         if hasattr(args[0], 'id'):  # TODO: replace once class comparison works...
             data = args.pop(0)
             channel = kwargs.pop('channel', 0)

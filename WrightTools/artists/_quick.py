@@ -7,28 +7,15 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import os
-import sys
-import datetime
-import collections
 
 import numpy as np
-from numpy import r_
 
-import matplotlib
-from matplotlib.axes import SubplotBase, subplot_class_factory
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-import matplotlib.gridspec as grd
-import matplotlib.colors as mplcolors
-from matplotlib.backends.backend_pdf import PdfPages
-import matplotlib.patheffects as PathEffects
-
-import imageio
 
 from ._base import _title, create_figure, pcolor_helper, plot_colorbar, get_constant_text
+from ._base import diagonal_line
 from ._colors import colormaps
-from .. import exceptions as wt_exceptions
-from .. import data as wt_data
 from .. import kit as wt_kit
 
 
@@ -99,7 +86,7 @@ class Quick1D:
         # get channel index
         if type(channel) in [int, float]:
             channel_index = int(channel)
-        elif isinstance(channel, string_type):
+        elif isinstance(channel, str):
             channel_index = self.chopped[0].channel_names.index(channel)
         else:
             print('channel type not recognized in mpl_1D!')
@@ -354,7 +341,7 @@ class Quick2D:
         # get channel index
         if type(channel) in [int, float]:
             channel_index = int(channel)
-        elif isinstance(channel, string_type):
+        elif isinstance(channel, str):
             channel_index = self.chopped[0].channel_names.index(channel)
         else:
             print('channel type not recognized in mpl_2D!')
@@ -629,9 +616,9 @@ class Quick2D:
             # save figure -------------------------------------------------------------------------
             if autosave:
                 if fname:
-                   file_name = fname + ' ' + str(i).zfill(3)
+                    file_name = fname + ' ' + str(i).zfill(3)
                 else:
-                   file_name = str(i).zfill(3)
+                    file_name = str(i).zfill(3)
                 fpath = os.path.join(save_directory, file_name + '.png')
                 plt.savefig(fpath, facecolor='none', transparent=True, dpi=300, pad_inches=1.)
                 plt.close()

@@ -1,3 +1,17 @@
+# --- import --------------------------------------------------------------------------------------
+
+import datetime
+import os
+
+import numpy as np
+
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
+
+from .artists import _title, add_sideplot, create_figure, colormaps, pcolor_helper
+from .artists import get_constant_text, diagonal_line
+
+
 class PDF2DSlices:
     """PDF 2D slices."""
 

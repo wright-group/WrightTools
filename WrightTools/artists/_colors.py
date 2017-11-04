@@ -3,26 +3,17 @@
 
 # --- import --------------------------------------------------------------------------------------
 
-
-from __future__ import absolute_import, division, print_function, unicode_literals
-
-import os
-import sys
-import datetime
 import collections
 
 import numpy as np
 from numpy import r_
 
 import matplotlib
-from matplotlib.axes import SubplotBase, subplot_class_factory
 import matplotlib.pyplot as plt
-from mpl_toolkits.axes_grid1 import make_axes_locatable
-import matplotlib.gridspec as grd
 import matplotlib.colors as mplcolors
-from matplotlib.backends.backend_pdf import PdfPages
-import matplotlib.patheffects as PathEffects
 
+from .artists import plot_colormap_components
+#TODO: move plot_colormap_components to this file --- KFS 2017-11-03
 
 # --- define -------------------------------------------------------------------------------------
 

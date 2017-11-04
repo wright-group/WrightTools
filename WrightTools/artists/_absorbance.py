@@ -17,9 +17,9 @@ import os
 import sys
 import datetime
 import collections
+import warnings
 
 import numpy as np
-from numpy import r_
 
 import matplotlib
 from matplotlib.axes import SubplotBase, subplot_class_factory
@@ -35,17 +35,7 @@ import imageio
 from .. import exceptions as wt_exceptions
 from .. import data as wt_data
 from .. import kit as wt_kit
-
-
-# --- define --------------------------------------------------------------------------------------
-
-
-# string types
-if sys.version[0] == '2':
-    # recognize unicode and string types
-    string_type = basestring  # noqa: F821
-else:
-    string_type = str  # newer versions of python don't have unicode type
+from .artists import colormaps
 
 
 # --- classes -------------------------------------------------------------------------------------
@@ -53,12 +43,13 @@ else:
 
 class Axes(matplotlib.axes.Axes):
     """Axes."""
+
     transposed = False
     is_sideplot = False
 
     def _parse_cmap(self, data=None, channel_index=None, **kwargs):
         if 'cmap' in kwargs.keys():
-            if isinstance(kwargs['cmap'], string_type):
+            if isinstance(kwargs['cmap'], str):
                 kwargs['cmap'] = colormaps[kwargs['cmap']]
             return kwargs
         if data:
@@ -1349,7 +1340,7 @@ def plot_colorbar(cax=None, cmap='default', ticks=None, clim=None, vlim=None,
     if cax is None:
         cax = plt.gca()
     # parse cmap
-    if isinstance(cmap, string_type):
+    if isinstance(cmap, str):
         cmap = colormaps[cmap]
     # parse ticks
     if ticks is None:
@@ -1763,7 +1754,6 @@ def stitch_to_animation(images, outpath=None, duration=0.5, palettesize=256,
         interval = np.round(t.interval, 2)
         print('gif generated in {0} seconds - saved at {1}'.format(interval, outpath))
     return outpath
-
 
 
 # --- specific artists ----------------------------------------------------------------------------

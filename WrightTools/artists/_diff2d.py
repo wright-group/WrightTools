@@ -1,3 +1,17 @@
+# --- import --------------------------------------------------------------------------------------
+
+import collections
+import os
+
+import numpy as np
+
+import matplotlib.pyplot as plt
+import matplotlib.gridspec as grd
+
+from ..WrightTools import kit as wt_kit
+from .artists import colormaps, pcolor_helper, get_constant_text
+
+
 class Diff2D():
     """Diff2D."""
 
