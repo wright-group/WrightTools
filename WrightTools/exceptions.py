@@ -58,7 +58,7 @@ class NameNotUniqueError(Exception):
         if name is not None:
             message = 'Name {} results in a duplicate'.format(name)
         else:
-            message = "Names are not unique"
+            message = "Names must be unique"
         Exception.__init__(self, message)
 
 
