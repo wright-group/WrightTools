@@ -17,9 +17,9 @@ import os
 import sys
 import datetime
 import collections
+import warnings
 
 import numpy as np
-from numpy import r_
 
 import matplotlib
 from matplotlib.axes import SubplotBase, subplot_class_factory
@@ -35,17 +35,7 @@ import imageio
 from .. import exceptions as wt_exceptions
 from .. import data as wt_data
 from .. import kit as wt_kit
-
-
-# --- define --------------------------------------------------------------------------------------
-
-
-# string types
-if sys.version[0] == '2':
-    # recognize unicode and string types
-    string_type = basestring  # noqa: F821
-else:
-    string_type = str  # newer versions of python don't have unicode type
+from ._colors import colormaps, plot_colormap_components
 
 
 # --- classes -------------------------------------------------------------------------------------
@@ -53,12 +43,13 @@ else:
 
 class Axes(matplotlib.axes.Axes):
     """Axes."""
+
     transposed = False
     is_sideplot = False
 
     def _parse_cmap(self, data=None, channel_index=None, **kwargs):
         if 'cmap' in kwargs.keys():
-            if isinstance(kwargs['cmap'], string_type):
+            if isinstance(kwargs['cmap'], str):
                 kwargs['cmap'] = colormaps[kwargs['cmap']]
             return kwargs
         if data:
@@ -1349,7 +1340,7 @@ def plot_colorbar(cax=None, cmap='default', ticks=None, clim=None, vlim=None,
     if cax is None:
         cax = plt.gca()
     # parse cmap
-    if isinstance(cmap, string_type):
+    if isinstance(cmap, str):
         cmap = colormaps[cmap]
     # parse ticks
     if ticks is None:
@@ -1393,40 +1384,6 @@ def plot_colorbar(cax=None, cmap='default', ticks=None, clim=None, vlim=None,
         cbar.set_label(label, fontsize=label_fontsize)
     # finish
     return cbar
-
-
-def plot_colormap_components(cmap):
-    """Plot the components of a given colormap."""
-    plt.figure(figsize=[8, 4])
-    gs = grd.GridSpec(2, 1, height_ratios=[1, 10], hspace=0.05)
-    # colorbar
-    ax = plt.subplot(gs[0])
-    gradient = np.linspace(0, 1, 256)
-    gradient = np.vstack((gradient, gradient))
-    ax.imshow(gradient, aspect='auto', cmap=cmap, vmin=0., vmax=1.)
-    ax.set_axis_off()
-    # components
-    ax = plt.subplot(gs[1])
-    x = gradient[0]
-    r = cmap._segmentdata['red'](x)
-    g = cmap._segmentdata['green'](x)
-    b = cmap._segmentdata['blue'](x)
-    k = .3 * r + .59 * g + .11 * b
-    # truncate
-    r.clip(0, 1, out=r)
-    g.clip(0, 1, out=g)
-    b.clip(0, 1, out=b)
-    # plot
-    plt.plot(x, r, 'r', linewidth=5, alpha=0.6)
-    plt.plot(x, g, 'g', linewidth=5, alpha=0.6)
-    plt.plot(x, b, 'b', linewidth=5, alpha=0.6)
-    plt.plot(x, k, 'k:', linewidth=5, alpha=0.6)
-    ax.set_ylim(-.1, 1.1)
-    # finish
-    plt.grid()
-    plt.xlabel('value', fontsize=17)
-    plt.ylabel('intensity', fontsize=17)
-
 
 def savefig(path, fig=None, close=True, dpi=300):
     """Save a figure.
@@ -1763,7 +1720,6 @@ def stitch_to_animation(images, outpath=None, duration=0.5, palettesize=256,
         interval = np.round(t.interval, 2)
         print('gif generated in {0} seconds - saved at {1}'.format(interval, outpath))
     return outpath
-
 
 
 # --- specific artists ----------------------------------------------------------------------------

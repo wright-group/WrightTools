@@ -3,26 +3,14 @@
 
 # --- import --------------------------------------------------------------------------------------
 
-
-from __future__ import absolute_import, division, print_function, unicode_literals
-
-import os
-import sys
-import datetime
 import collections
 
 import numpy as np
 from numpy import r_
 
 import matplotlib
-from matplotlib.axes import SubplotBase, subplot_class_factory
 import matplotlib.pyplot as plt
-from mpl_toolkits.axes_grid1 import make_axes_locatable
-import matplotlib.gridspec as grd
 import matplotlib.colors as mplcolors
-from matplotlib.backends.backend_pdf import PdfPages
-import matplotlib.patheffects as PathEffects
-
 
 # --- define -------------------------------------------------------------------------------------
 
@@ -189,6 +177,39 @@ def nm_to_rgb(nm):
     return [float(int(SSS * R) / 256.),
             float(int(SSS * G) / 256.),
             float(int(SSS * B) / 256.)]
+
+
+def plot_colormap_components(cmap):
+    """Plot the components of a given colormap."""
+    plt.figure(figsize=[8, 4])
+    gs = grd.GridSpec(2, 1, height_ratios=[1, 10], hspace=0.05)
+    # colorbar
+    ax = plt.subplot(gs[0])
+    gradient = np.linspace(0, 1, 256)
+    gradient = np.vstack((gradient, gradient))
+    ax.imshow(gradient, aspect='auto', cmap=cmap, vmin=0., vmax=1.)
+    ax.set_axis_off()
+    # components
+    ax = plt.subplot(gs[1])
+    x = gradient[0]
+    r = cmap._segmentdata['red'](x)
+    g = cmap._segmentdata['green'](x)
+    b = cmap._segmentdata['blue'](x)
+    k = .3 * r + .59 * g + .11 * b
+    # truncate
+    r.clip(0, 1, out=r)
+    g.clip(0, 1, out=g)
+    b.clip(0, 1, out=b)
+    # plot
+    plt.plot(x, r, 'r', linewidth=5, alpha=0.6)
+    plt.plot(x, g, 'g', linewidth=5, alpha=0.6)
+    plt.plot(x, b, 'b', linewidth=5, alpha=0.6)
+    plt.plot(x, k, 'k:', linewidth=5, alpha=0.6)
+    ax.set_ylim(-.1, 1.1)
+    # finish
+    plt.grid()
+    plt.xlabel('value', fontsize=17)
+    plt.ylabel('intensity', fontsize=17)
 
 
 # --- color maps ----------------------------------------------------------------------------------

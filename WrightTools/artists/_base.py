@@ -15,19 +15,15 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import os
 import sys
-import datetime
-import collections
+import warnings
 
 import numpy as np
-from numpy import r_
 
 import matplotlib
 from matplotlib.axes import SubplotBase, subplot_class_factory
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import matplotlib.gridspec as grd
-import matplotlib.colors as mplcolors
-from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib.patheffects as PathEffects
 
 import imageio
@@ -35,6 +31,7 @@ import imageio
 from .. import exceptions as wt_exceptions
 from .. import kit as wt_kit
 from ..data import Data
+from ._colors import colormaps
 
 
 # --- define --------------------------------------------------------------------------------------
@@ -53,6 +50,7 @@ else:
 
 class Axes(matplotlib.axes.Axes):
     """Axes."""
+
     transposed = False
     is_sideplot = False
 
@@ -428,7 +426,6 @@ class Axes(matplotlib.axes.Axes):
         """
         args = list(args)  # offer pop, append etc
         # unpack data object, if given
-        from ..data._data import Data
         if hasattr(args[0], 'id'):  # TODO: replace once class comparison works...
             data = args.pop(0)
             channel = kwargs.pop('channel', 0)
@@ -1236,39 +1233,6 @@ def plot_colorbar(cax=None, cmap='default', ticks=None, clim=None, vlim=None,
         cbar.set_label(label, fontsize=label_fontsize)
     # finish
     return cbar
-
-
-def plot_colormap_components(cmap):
-    """Plot the components of a given colormap."""
-    plt.figure(figsize=[8, 4])
-    gs = grd.GridSpec(2, 1, height_ratios=[1, 10], hspace=0.05)
-    # colorbar
-    ax = plt.subplot(gs[0])
-    gradient = np.linspace(0, 1, 256)
-    gradient = np.vstack((gradient, gradient))
-    ax.imshow(gradient, aspect='auto', cmap=cmap, vmin=0., vmax=1.)
-    ax.set_axis_off()
-    # components
-    ax = plt.subplot(gs[1])
-    x = gradient[0]
-    r = cmap._segmentdata['red'](x)
-    g = cmap._segmentdata['green'](x)
-    b = cmap._segmentdata['blue'](x)
-    k = .3 * r + .59 * g + .11 * b
-    # truncate
-    r.clip(0, 1, out=r)
-    g.clip(0, 1, out=g)
-    b.clip(0, 1, out=b)
-    # plot
-    plt.plot(x, r, 'r', linewidth=5, alpha=0.6)
-    plt.plot(x, g, 'g', linewidth=5, alpha=0.6)
-    plt.plot(x, b, 'b', linewidth=5, alpha=0.6)
-    plt.plot(x, k, 'k:', linewidth=5, alpha=0.6)
-    ax.set_ylim(-.1, 1.1)
-    # finish
-    plt.grid()
-    plt.xlabel('value', fontsize=17)
-    plt.ylabel('intensity', fontsize=17)
 
 
 def savefig(path, fig=None, close=True, dpi=300):
