@@ -37,7 +37,7 @@ class Collection(Group):
 
     def __next__(self):
         if self.__n < len(self):
-            out = self[self.__n]
+            out = self.item_names[self.__n]
             self.__n += 1
         else:
             raise StopIteration
