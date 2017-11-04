@@ -5,6 +5,7 @@
 
 
 import shutil
+import os
 import weakref
 import tempfile
 import posixpath
@@ -74,8 +75,8 @@ class Group(h5py.Group):
         if edit_local and filepath is None:
             raise Exception  # TODO: better exception
         if not edit_local:
-            tmpfile = tempfile.NamedTemporaryFile(prefix='', suffix='.wt5')
-            p = tmpfile.name
+            tmpfile = tempfile.mkstemp(prefix='', suffix='.wt5')
+            p = tmpfile[1]
             if filepath:
                 shutil.copyfile(src=filepath, dst=p)
         elif edit_local and filepath:
@@ -137,7 +138,8 @@ class Group(h5py.Group):
             self.file.flush()
             self.file.close()
             if hasattr(self, '_tmpfile'):
-                self._tmpfile.close()
+                os.close(self._tmpfile[0])
+                os.remove(self._tmpfile[1])
 
     def flush(self):
         self.file.flush()
