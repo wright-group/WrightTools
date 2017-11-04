@@ -33,7 +33,7 @@ setup(
     packages=find_packages(),
     package_data={'': extra_files},
     setup_requires=['pytest-runner'],
-    tests_require=['pytest'],
+    tests_require=['pytest', 'pytest-cov'],
     install_requires=required,
     extras_require={'docs': ['sphinx-gallery>=0.1.9']},
     version=version,
