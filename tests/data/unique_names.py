@@ -18,7 +18,7 @@ def test_exception():
     d.create_axis(name='w1', points=points, units='eV')
     try:
         d.create_channel(name='w1') 
-    except RuntimeError:
+    except wt.exceptions.NameNotUniqueError:
         assert True
     else:
         assert False

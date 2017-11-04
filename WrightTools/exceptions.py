@@ -47,7 +47,7 @@ class FileNotFound(Exception):
 class NameNotUniqueError(Exception):
     """NameNotUniqueError."""
 
-    def __init__(self, name):
+    def __init__(self, name=None):
         """Format a Name Not Unique Error.
 
         Parameters
@@ -55,7 +55,10 @@ class NameNotUniqueError(Exception):
         name : string
             Name of an attribute which causes a duplication.
         """
-        message = 'Name {} results in a duplicate'.format(name)
+        if name is not None:
+            message = 'Name {} results in a duplicate'.format(name)
+        else:
+            message = "Names must be unique"
         Exception.__init__(self, message)
 
 
