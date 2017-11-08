@@ -126,9 +126,9 @@ def discover_dimensions(arr, dimension_cols, verbose=True):
         key = axis[0][0]
         obj = input_cols[key]
         obj.label_seed = [input_cols[_key].label_seed[0] for _key in axis[0]]
-        obj.points = axis[3]
+        obj[:] = axis[3]
         constant[key] = obj
-    return list(scanned.values()), list(constant.values())
+    return list(scanned[:]()), list(constant[:]())
 
 
 # --- from function -------------------------------------------------------------------------------
@@ -204,13 +204,13 @@ def from_KENT(filepaths, null=None, name=None, ignore=['wm'], delay_tolerance=0.
         #   be a problem, especially for stepping axis
         tol = sum(xstd) / len(xstd)
         tol = max(tol, 1e-4)
-        axis.points = np.linspace(min(xs) + tol, max(xs) - tol, num=len(xs))
+        axis[:] = np.linspace(min(xs) + tol, max(xs) - tol, num=len(xs))
     # grid data -----------------------------------------------------------------------------------
     # May not need, but doesnt hurt to include
     if len(scanned) == 1:
         # 1D data
         axis = scanned[0]
-        axis.points = arr[axis.file_idx]
+        axis[:] = arr[axis.file_idx]
         scanned[0] = axis
         for key in channels.keys():
             channel = channels[key]
@@ -219,7 +219,7 @@ def from_KENT(filepaths, null=None, name=None, ignore=['wm'], delay_tolerance=0.
     else:
         # all other dimensionalities
         points = tuple(arr[axis.file_idx] for axis in scanned)
-        xi = tuple(np.meshgrid(*[axis.points for axis in scanned], indexing='ij'))
+        xi = tuple(np.meshgrid(*[axis[:] for axis in scanned], indexing='ij'))
         for key in channels.keys():
             channel = channels[key]
             zi = arr[channel.file_idx]
@@ -228,7 +228,7 @@ def from_KENT(filepaths, null=None, name=None, ignore=['wm'], delay_tolerance=0.
                               method='linear', fill_value=fill_value)
             channel.give_values(grid_i)
     # create data object --------------------------------------------------------------------------
-    data = Data(list(scanned), list(channels.values()), list(constant))
+    data = Data(list(scanned), list(channels[:]()), list(constant))
     # add extra stuff to data object --------------------------------------------------------------
     data.kind = 'KENT'
     data.source = filepaths
@@ -246,5 +246,5 @@ def from_KENT(filepaths, null=None, name=None, ignore=['wm'], delay_tolerance=0.
     if verbose:
         print('data object succesfully created')
         print('axis names:', data.axis_names)
-        print('values shape:', data.channels[0].values.shape)
+        print('values shape:', data.channels[0][:].shape)
     return data

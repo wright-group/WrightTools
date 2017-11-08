@@ -135,7 +135,7 @@ def from_PyCMDS(filepath, name=None, collection=None, verbose=True):
             values_dict[headers['name'][i]] = arr[i]
     # create grid to interpolate onto
     if len(axes) == 1:
-        meshgrid = tuple([axes[0].points])
+        meshgrid = tuple([axes[0][:]])
     else:
         meshgrid = tuple(np.meshgrid(*[a['points'] for a in axes], indexing='ij'))
     if any(interpolate_toggles):

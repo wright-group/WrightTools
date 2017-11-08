@@ -190,9 +190,9 @@ class Axes(matplotlib.axes.Axes):
             # arrays
             channel_index = wt_kit.get_index(data.channel_names, channel)
             signed = data.channels[channel_index].signed
-            xi = data.axes[0].points
-            yi = data.axes[1].points
-            zi = data.channels[channel_index].values.T
+            xi = data.axes[0][:]
+            yi = data.axes[1][:]
+            zi = data.channels[channel_index][:].T
             args = [xi, yi, zi] + args
             # limits
             kwargs = self._parse_limits(data=data, channel_index=channel_index,
@@ -259,9 +259,9 @@ class Axes(matplotlib.axes.Axes):
                 raise wt_exceptions.DimensionalityError(2, data.dimensionality)
             # arrays
             channel_index = wt_kit.get_index(data.channel_names, channel)
-            xi = data.axes[0].points
-            yi = data.axes[1].points
-            zi = data.channels[channel_index].values.T
+            xi = data.axes[0][:]
+            yi = data.axes[1][:]
+            zi = data.channels[channel_index][:].T
             args = [xi, yi, zi] + args
             # limits
             kwargs = self._parse_limits(data=data, channel_index=channel_index,
@@ -366,9 +366,9 @@ class Axes(matplotlib.axes.Axes):
                 raise wt_exceptions.DimensionalityError(2, data.dimensionality)
             # arrays
             channel_index = wt_kit.get_index(data.channel_names, channel)
-            xi = data.axes[0].points
-            yi = data.axes[1].points
-            zi = data.channels[channel_index].values.T
+            xi = data.axes[0][:]
+            yi = data.axes[1][:]
+            zi = data.channels[channel_index][:].T
             X, Y, Z = pcolor_helper(xi, yi, zi)
             args = [X, Y, Z] + args
             # limits
@@ -426,8 +426,8 @@ class Axes(matplotlib.axes.Axes):
                 raise wt_exceptions.DimensionalityError(1, data.dimensionality)
             # arrays
             channel_index = wt_kit.get_index(data.channel_names, channel)
-            xi = data.axes[0].points
-            zi = data.channels[channel_index].values.T
+            xi = data.axes[0][:]
+            zi = data.channels[channel_index][:].T
             args = [xi, zi] + args
         else:
             data = None
@@ -496,8 +496,8 @@ class Axes(matplotlib.axes.Axes):
             else:
                 c = coloring
             # get arrays
-            xi = xaxis.points
-            yi = data.channels[channel_index].values
+            xi = xaxis[:]
+            yi = data.channels[channel_index][:]
             # plot
             if interpolate:
                 self.plot(xi, yi, c=c)
@@ -525,9 +525,9 @@ class Axes(matplotlib.axes.Axes):
             else:
                 cmap = colormaps[coloring]
             # get arrays
-            xi = xaxis.points
-            yi = yaxis.points
-            zi = channel.values.T
+            xi = xaxis[:]
+            yi = yaxis[:]
+            zi = channel[:].T
             # plot
             if interpolate:
                 # contourf
@@ -1782,8 +1782,8 @@ class Absorbance:
         plt.xticks(rotation=45)
         for data in self.data:
             # import data -------------------------------------------------------------------------
-            xi = data.axes[0].points
-            zi = data.channels[channel_index].values
+            xi = data.axes[0][:]
+            zi = data.channels[channel_index][:]
             # scale -------------------------------------------------------------------------------
             if xlim:
                 plt.xlim(xlim[0], xlim[1])
@@ -1879,7 +1879,7 @@ class Diff2D():
         # map subtrahend axes onto minuend axes
         for i in range(len(self.minuend.axes)):
             self.subtrahend.axes[i].convert(self.minuend.axes[i].units)
-            self.subtrahend.map_axis(i, self.minuend.axes[i].points)
+            self.subtrahend.map_axis(i, self.minuend.axes[i][:])
         # chop
         self.minuend_chopped = self.minuend.chop(yaxis, xaxis, at=at, verbose=False)
         self.subtrahend_chopped = self.subtrahend.chop(yaxis, xaxis, at=at, verbose=False)
@@ -1948,17 +1948,17 @@ class Diff2D():
                 xaxis = axes[1]
                 yaxis = axes[0]
                 channel = channels[channel_index]
-                zi = channel.values
+                zi = channel[:]
                 plt.subplot(gs[j])
                 # fill in main data environment
                 if pixelated:
-                    xi, yi, zi = pcolor_helper(xaxis.points, yaxis.points, zi)
+                    xi, yi, zi = pcolor_helper(xaxis[:], yaxis[:], zi)
                     cax = plt.pcolormesh(xi, yi, zi, cmap=mycm,
                                          vmin=levels.min(), vmax=levels.max())
-                    plt.xlim(xaxis.points.min(), xaxis.points.max())
-                    plt.ylim(yaxis.points.min(), yaxis.points.max())
+                    plt.xlim(xaxis[:].min(), xaxis[:].max())
+                    plt.ylim(yaxis[:].min(), yaxis[:].max())
                 else:
-                    cax = subplot_main.contourf(xaxis.points, yaxis.points, zi,
+                    cax = subplot_main.contourf(xaxis[:], yaxis[:], zi,
                                                 levels, cmap=mycm)
                 plt.xticks(rotation=45)
                 #plt.xlabel(xaxis.get_label(), fontsize = self.font_size)
@@ -1970,11 +1970,11 @@ class Diff2D():
                     if xlim:
                         x = xlim
                     else:
-                        x = xaxis.points
+                        x = xaxis[:]
                     if ylim:
                         y = ylim
                     else:
-                        y = yaxis.points
+                        y = yaxis[:]
 
                     diag_min = max(min(x), min(y))
                     diag_max = min(max(x), max(y))
@@ -1988,17 +1988,17 @@ class Diff2D():
                             channel.null() - 1e-10, np.nanmax(zi) + 1e-10, contours + 2)
                     else:
                         contours_levels = contours
-                    plt.contour(xaxis.points, yaxis.points, zi,
+                    plt.contour(xaxis[:], yaxis[:], zi,
                                 contours_levels, colors='k')
                 # finish main subplot -------------------------------------------------------------
                 if xlim:
                     subplot_main.set_xlim(xlim[0], xlim[1])
                 else:
-                    subplot_main.set_xlim(xaxis.points[0], xaxis.points[-1])
+                    subplot_main.set_xlim(xaxis[:][0], xaxis[:][-1])
                 if ylim:
                     subplot_main.set_ylim(ylim[0], ylim[1])
                 else:
-                    subplot_main.set_ylim(yaxis.points[0], yaxis.points[-1])
+                    subplot_main.set_ylim(yaxis[:][0], yaxis[:][-1])
             # colorbar ----------------------------------------------------------------------------
             subplot_cb = plt.subplot(gs[2])
             cbar_ticks = np.linspace(levels.min(), levels.max(), 11)
@@ -2008,15 +2008,15 @@ class Diff2D():
             mycm = colormaps['seismic']
             mycm.set_bad(facecolor)
             mycm.set_under(facecolor)
-            dzi = self.minuend_chopped[i].channels[0].values - \
-                self.subtrahend_chopped[i].channels[0].values
+            dzi = self.minuend_chopped[i].channels[0][:] - \
+                self.subtrahend_chopped[i].channels[0][:]
             dax = plt.subplot(gs[4])
             plt.subplot(dax)
-            X, Y, Z = pcolor_helper(xaxis.points, yaxis.points, dzi)
+            X, Y, Z = pcolor_helper(xaxis[:], yaxis[:], dzi)
             largest = np.nanmax(np.abs(dzi))
             dcax = dax.pcolor(X, Y, Z, vmin=-largest, vmax=largest, cmap=mycm)
-            dax.set_xlim(xaxis.points.min(), xaxis.points.max())
-            dax.set_ylim(yaxis.points.min(), yaxis.points.max())
+            dax.set_xlim(xaxis[:].min(), xaxis[:].max())
+            dax.set_ylim(yaxis[:].min(), yaxis[:].max())
             differenc_cb = plt.subplot(gs[5])
             dcbar = plt.colorbar(dcax, cax=differenc_cb)
             dcbar.set_label(self.minuend.channels[channel_index].name +
@@ -2078,8 +2078,8 @@ class PDF2DSlices:
 
     def _fill_plot(self, xaxis, yaxis, zi, ax, cax, title, yticks, vmin=None,
                    vmax=None):
-        xi = xaxis.points
-        yi = yaxis.points
+        xi = xaxis[:]
+        yi = yaxis[:]
         X, Y, Z = pcolor_helper(xi, yi, zi)
         if vmax is None:
             vmax = np.nanmax(Z)
@@ -2099,7 +2099,7 @@ class PDF2DSlices:
         plt.setp(ax.get_yticklabels(), visible=yticks)
         # x sideplot
         sp = add_sideplot(ax, 'x')
-        b = np.nansum(zi, axis=0) * len(yaxis.points)
+        b = np.nansum(zi, axis=0) * len(yaxis[:])
         b[b == 0] = np.nan
         b /= np.nanmax(b)
         sp.plot(xi, b, lw=2, c='b')
@@ -2107,8 +2107,8 @@ class PDF2DSlices:
         sp.set_ylim(self.sideplot_limits)
         for data, channel_index, c in self.sideplot_dictionary[xaxis.name]:
             data.convert(xaxis.units, verbose=False)
-            sp_xi = data.axes[0].points
-            sp_zi = data.channels[channel_index].values
+            sp_xi = data.axes[0][:]
+            sp_zi = data.channels[channel_index][:]
             sp_zi[sp_xi < xi.min()] = 0
             sp_zi[sp_xi > xi.max()] = 0
             sp_zi /= np.nanmax(sp_zi)
@@ -2120,7 +2120,7 @@ class PDF2DSlices:
         sp0 = sp
         # y sideplot
         sp = add_sideplot(ax, 'y')
-        b = np.nansum(zi, axis=1) * len(xaxis.points)
+        b = np.nansum(zi, axis=1) * len(xaxis[:])
         b[b == 0] = np.nan
         b /= np.nanmax(b)
         sp.plot(b, yi, lw=2, c='b')
@@ -2128,8 +2128,8 @@ class PDF2DSlices:
         sp.set_ylim([yi.min(), yi.max()])
         for data, channel_index, c in self.sideplot_dictionary[yaxis.name]:
             data.convert(xaxis.units, verbose=False)
-            sp_xi = data.axes[0].points
-            sp_zi = data.channels[channel_index].values
+            sp_xi = data.axes[0][:]
+            sp_zi = data.channels[channel_index][:]
             sp_zi[sp_xi < xi.min()] = 0
             sp_zi[sp_xi > xi.max()] = 0
             sp_zi /= np.nanmax(sp_zi)
@@ -2149,7 +2149,7 @@ class PDF2DSlices:
         # local
         ax0 = plt.subplot(gs[row_index, 0])
         cax = plt.subplot(gs[row_index, 1])
-        zi = data.channels[channel_index].values
+        zi = data.channels[channel_index][:]
         kwargs = {}
         if not self.data_signed:
             kwargs['vmin'] = vmin
@@ -2158,7 +2158,7 @@ class PDF2DSlices:
         # global
         ax1 = plt.subplot(gs[row_index, 3])
         cax = plt.subplot(gs[row_index, 4])
-        zi = data.channels[channel_index].values
+        zi = data.channels[channel_index][:]
         sps1 = self._fill_plot(xaxis, yaxis, zi, ax1, cax, title=data.name +
                                ' global', vmin=vmin, vmax=vmax, yticks=False)
         return [[ax0, ax1], [sps0, sps1]]
@@ -2246,8 +2246,8 @@ class PDF2DSlices:
                         for ax, sps in zip(axs, spss):
                             ax.axhline(0, c='k', lw=4)
                             sps[1].axhline(0, c='k', lw=4)
-                            ax.axvline(data.constants[0].points, c='k', alpha=0.5, lw=4)
-                            sps[0].axvline(data.constants[0].points, c='k', alpha=0.5, lw=4)
+                            ax.axvline(data.constants[0][:], c='k', alpha=0.5, lw=4)
+                            sps[0].axvline(data.constants[0][:], c='k', alpha=0.5, lw=4)
                     constant_text = get_constant_text(data.constants)
                     _title(fig, self.name, constant_text)
                     pdf.savefig()
@@ -2277,8 +2277,8 @@ class PDF2DSlices:
                         for ax, sps in zip(axs, spss):
                             ax.axhline(0, c='k', lw=4)
                             sps[1].axhline(0, c='k', lw=4)
-                            ax.axvline(data.constants[0].points, c='k', alpha=0.5, lw=4)
-                            sps[0].axvline(data.constants[0].points, c='k', alpha=0.5, lw=4)
+                            ax.axvline(data.constants[0][:], c='k', alpha=0.5, lw=4)
+                            sps[0].axvline(data.constants[0][:], c='k', alpha=0.5, lw=4)
                     constant_text = get_constant_text(data.constants)
                     _title(fig, self.name, constant_text)
                     pdf.savefig()
