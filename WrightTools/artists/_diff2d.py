@@ -42,7 +42,7 @@ class Diff2D():
         # map subtrahend axes onto minuend axes
         for i in range(len(self.minuend.axes)):
             self.subtrahend.axes[i].convert(self.minuend.axes[i].units)
-            self.subtrahend.map_axis(i, self.minuend.axes[i].points)
+            self.subtrahend.map_axis(i, self.minuend.axes[i][:])
         # chop
         self.minuend_chopped = self.minuend.chop(yaxis, xaxis, at=at, verbose=False)
         self.subtrahend_chopped = self.subtrahend.chop(yaxis, xaxis, at=at, verbose=False)
@@ -111,17 +111,17 @@ class Diff2D():
                 xaxis = axes[1]
                 yaxis = axes[0]
                 channel = channels[channel_index]
-                zi = channel.values
+                zi = channel[:]
                 plt.subplot(gs[j])
                 # fill in main data environment
                 if pixelated:
-                    xi, yi, zi = pcolor_helper(xaxis.points, yaxis.points, zi)
+                    xi, yi, zi = pcolor_helper(xaxis[:], yaxis[:], zi)
                     cax = plt.pcolormesh(xi, yi, zi, cmap=mycm,
                                          vmin=levels.min(), vmax=levels.max())
-                    plt.xlim(xaxis.points.min(), xaxis.points.max())
-                    plt.ylim(yaxis.points.min(), yaxis.points.max())
+                    plt.xlim(xaxis.min(), xaxis.max())
+                    plt.ylim(yaxis.min(), yaxis.max())
                 else:
-                    cax = subplot_main.contourf(xaxis.points, yaxis.points, zi,
+                    cax = subplot_main.contourf(xaxis[:], yaxis[:], zi,
                                                 levels, cmap=mycm)
                 plt.xticks(rotation=45)
                 #plt.xlabel(xaxis.get_label(), fontsize = self.font_size)
@@ -133,11 +133,11 @@ class Diff2D():
                     if xlim:
                         x = xlim
                     else:
-                        x = xaxis.points
+                        x = xaxis[:]
                     if ylim:
                         y = ylim
                     else:
-                        y = yaxis.points
+                        y = yaxis[:]
 
                     diag_min = max(min(x), min(y))
                     diag_max = min(max(x), max(y))
@@ -151,17 +151,17 @@ class Diff2D():
                             channel.null() - 1e-10, np.nanmax(zi) + 1e-10, contours + 2)
                     else:
                         contours_levels = contours
-                    plt.contour(xaxis.points, yaxis.points, zi,
+                    plt.contour(xaxis[:], yaxis[:], zi,
                                 contours_levels, colors='k')
                 # finish main subplot -------------------------------------------------------------
                 if xlim:
                     subplot_main.set_xlim(xlim[0], xlim[1])
                 else:
-                    subplot_main.set_xlim(xaxis.points[0], xaxis.points[-1])
+                    subplot_main.set_xlim(xaxis[:][0], xaxis[:][-1])
                 if ylim:
                     subplot_main.set_ylim(ylim[0], ylim[1])
                 else:
-                    subplot_main.set_ylim(yaxis.points[0], yaxis.points[-1])
+                    subplot_main.set_ylim(yaxis[:][0], yaxis[:][-1])
             # colorbar ----------------------------------------------------------------------------
             subplot_cb = plt.subplot(gs[2])
             cbar_ticks = np.linspace(levels.min(), levels.max(), 11)
@@ -171,15 +171,15 @@ class Diff2D():
             mycm = colormaps['seismic']
             mycm.set_bad(facecolor)
             mycm.set_under(facecolor)
-            dzi = self.minuend_chopped[i].channels[0].values - \
-                self.subtrahend_chopped[i].channels[0].values
+            dzi = self.minuend_chopped[i].channels[0][:] - \
+                self.subtrahend_chopped[i].channels[0][:]
             dax = plt.subplot(gs[4])
             plt.subplot(dax)
-            X, Y, Z = pcolor_helper(xaxis.points, yaxis.points, dzi)
+            X, Y, Z = pcolor_helper(xaxis[:], yaxis[:], dzi)
             largest = np.nanmax(np.abs(dzi))
             dcax = dax.pcolor(X, Y, Z, vmin=-largest, vmax=largest, cmap=mycm)
-            dax.set_xlim(xaxis.points.min(), xaxis.points.max())
-            dax.set_ylim(yaxis.points.min(), yaxis.points.max())
+            dax.set_xlim(xaxis.min(), xaxis.max())
+            dax.set_ylim(yaxis.min(), yaxis.max())
             differenc_cb = plt.subplot(gs[5])
             dcbar = plt.colorbar(dcax, cax=differenc_cb)
             dcbar.set_label(self.minuend.channels[channel_index].name +

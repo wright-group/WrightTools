@@ -124,8 +124,8 @@ class Quick1D:
             channels = current_chop.channels
             constants = current_chop.constants
             axis = axes[0]
-            xi = axes[0].points
-            zi = channels[channel_index].values
+            xi = axes[0][:]
+            zi = channels[channel_index][:]
             plt.plot(xi, zi, lw=2)
             plt.scatter(xi, zi, color='grey', alpha=0.5, edgecolor='none')
             plt.grid()
@@ -134,7 +134,7 @@ class Quick1D:
                 for constant in constants:
                     if constant.units_kind == 'energy':
                         if axis.units == constant.units:
-                            plt.axvline(constant.points, color='k', linewidth=4, alpha=0.25)
+                            plt.axvline(constant[:], color='k', linewidth=4, alpha=0.25)
             # limits
             if local:
                 pass
@@ -226,7 +226,7 @@ class Quick2D:
             y_corners = []
             for idx1 in [-1, 1]:
                 for idx2 in [-1, 1]:
-                    x, y = transform((self.xaxis.points[idx1], self.yaxis.points[idx2]))
+                    x, y = transform((self.xaxis[:][idx1], self.yaxis[:][idx2]))
                     x_corners.append(x)
                     y_corners.append(y)
             xlim = (min(x_corners), max(x_corners))
@@ -253,7 +253,7 @@ class Quick2D:
             if self.chopped[0].axes[1].units_kind == data.axes[0].units_kind:
                 data.convert(self.chopped[0].axes[1].units)
                 self._xsideplot = True
-                self._xsideplotdata.append([data.axes[0].points, data.channels[0].values])
+                self._xsideplotdata.append([data.axes[0][:], data.channels[0][:]])
             else:
                 print('given data ({0}), does not aggree with x ({1})'.format(
                     data.axes[0].units_kind, self.chopped[0].axes[1].units_kind))
@@ -261,7 +261,7 @@ class Quick2D:
             if self.chopped[0].axes[0].units_kind == data.axes[0].units_kind:
                 data.convert(self.chopped[0].axes[0].units)
                 self._ysideplot = True
-                self._ysideplotdata.append([data.axes[0].points, data.channels[0].values])
+                self._ysideplotdata.append([data.axes[0][:], data.channels[0][:]])
             else:
                 print('given data ({0}), does not aggree with y ({1})'.format(
                     data.axes[0].units_kind, self.chopped[0].axes[0].units_kind))
@@ -452,7 +452,7 @@ class Quick2D:
             plt.ylim(self.yaxis.min(), self.yaxis.max())
             # overlap with contourf if not pixelated
             if not pixelated:
-                X, Y = np.meshgrid(self.xaxis.points, self.yaxis.points)
+                X, Y = np.meshgrid(self.xaxis[:], self.yaxis[:])
                 if not isinstance(transform, type(None)):
                     for (x, y), value in np.ndenumerate(X):
                         X[x][y], Y[x][y] = transform((X[x][y], Y[x][y]))
@@ -471,17 +471,17 @@ class Quick2D:
                 if self.yaxis.units_kind == 'delay':
                     plt.axhline(0, lw=2, c='k')
                 if self.xaxis.units_kind == 'delay' and self.xaxis.units == self.yaxis.units:
-                    diagonal_line(self.xaxis.points, self.yaxis.points, c='k', lw=2, ls='-')
+                    diagonal_line(self.xaxis[:], self.yaxis[:], c='k', lw=2, ls='-')
             # variable marker lines ---------------------------------------------------------------
             if lines:
                 for constant in constants:
                     if constant.units_kind == 'energy':
                         # x axis
                         if self.xaxis.units == constant.units:
-                            plt.axvline(constant.points, color='k', linewidth=4, alpha=0.25)
+                            plt.axvline(constant[:], color='k', linewidth=4, alpha=0.25)
                         # y axis
                         if self.yaxis.units == constant.units:
-                            plt.axhline(constant.points, color='k', linewidth=4, alpha=0.25)
+                            plt.axhline(constant[:], color='k', linewidth=4, alpha=0.25)
             # grid --------------------------------------------------------------------------------
             plt.grid(b=True)
             if self.xaxis.units == self.yaxis.units:
@@ -489,18 +489,18 @@ class Quick2D:
                 if xlim:
                     x = xlim
                 else:
-                    x = self.xaxis.points
+                    x = self.xaxis[:]
                 if ylim:
                     y = ylim
                 else:
-                    y = self.yaxis.points
+                    y = self.yaxis[:]
                 diag_min = max(min(x), min(y))
                 diag_max = min(max(x), max(y))
                 plt.plot([diag_min, diag_max], [diag_min, diag_max], 'k:')
             # contour lines -----------------------------------------------------------------------
             if contours:
                 # Ensure that X, Y are that expected by contour, not pcolor
-                X, Y = np.meshgrid(self.xaxis.points, self.yaxis.points)
+                X, Y = np.meshgrid(self.xaxis[:], self.yaxis[:])
                 if contours_local:
                     # force top and bottom contour to be just outside of data range
                     # add two contours
@@ -517,11 +517,11 @@ class Quick2D:
             if xlim:
                 subplot_main.set_xlim(xlim[0], xlim[1])
             else:
-                subplot_main.set_xlim(self.xaxis.points[0], self.xaxis.points[-1])
+                subplot_main.set_xlim(self.xaxis[:][0], self.xaxis[:][-1])
             if ylim:
                 subplot_main.set_ylim(ylim[0], ylim[1])
             else:
-                subplot_main.set_ylim(self.yaxis.points[0], self.yaxis.points[-1])
+                subplot_main.set_ylim(self.yaxis[:][0], self.yaxis[:][-1])
             # sideplots ---------------------------------------------------------------------------
             divider = make_axes_locatable(subplot_main)
             if xbin or self._xsideplot:
@@ -537,13 +537,13 @@ class Quick2D:
                     axCorrx.set_ylim([0, 1.1])
                 # bin
                 if xbin:
-                    x_ax_int = np.nansum(zi, axis=0) - channel.null() * len(self.yaxis.points)
+                    x_ax_int = np.nansum(zi, axis=0) - channel.null() * len(self.yaxis[:])
                     x_ax_int[x_ax_int == 0] = np.nan
                     # normalize (min is a pixel)
                     xmax = max(np.abs(x_ax_int))
                     x_ax_int = x_ax_int / xmax
-                    axCorrx.plot(self.xaxis.points, x_ax_int, lw=2)
-                    axCorrx.set_xlim([self.xaxis.points.min(), self.xaxis.points.max()])
+                    axCorrx.plot(self.xaxis[:], x_ax_int, lw=2)
+                    axCorrx.set_xlim([self.xaxis.min(), self.xaxis.max()])
                 # data
                 if self._xsideplot:
                     for s_xi, s_zi in self._xsideplotdata:
@@ -561,7 +561,7 @@ class Quick2D:
                     for constant in constants:
                         if constant.units_kind == 'energy':
                             if self.xaxis.units == constant.units:
-                                axCorrx.axvline(constant.points, color='k',
+                                axCorrx.axvline(constant[:], color='k',
                                                 linewidth=4, alpha=0.25)
             if ybin or self._ysideplot:
                 axCorry = divider.append_axes('right', 0.75, pad=0.0, sharey=subplot_main)
@@ -576,13 +576,13 @@ class Quick2D:
                     axCorry.set_xlim([0, 1.1])
                 # bin
                 if ybin:
-                    y_ax_int = np.nansum(zi, axis=1) - channel.null() * len(self.xaxis.points)
+                    y_ax_int = np.nansum(zi, axis=1) - channel.null() * len(self.xaxis[:])
                     y_ax_int[y_ax_int == 0] = np.nan
                     # normalize (min is a pixel)
                     ymax = max(np.abs(y_ax_int))
                     y_ax_int = y_ax_int / ymax
-                    axCorry.plot(y_ax_int, self.yaxis.points, lw=2)
-                    axCorry.set_ylim([self.yaxis.points.min(), self.yaxis.points.max()])
+                    axCorry.plot(y_ax_int, self.yaxis[:], lw=2)
+                    axCorry.set_ylim([self.yaxis.min(), self.yaxis.max()])
                 # data
                 if self._ysideplot:
                     for s_xi, s_zi in self._ysideplotdata:
@@ -600,7 +600,7 @@ class Quick2D:
                     for constant in constants:
                         if constant.units_kind == 'energy':
                             if self.yaxis.units == constant.units:
-                                axCorry.axvline(constant.points, color='k',
+                                axCorry.axvline(constant[:], color='k',
                                                 linewidth=4, alpha=0.25)
             # onplot ------------------------------------------------------------------------------
             for xi, yi, kwargs in self._onplotdata:

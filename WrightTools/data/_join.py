@@ -49,7 +49,7 @@ def join(datas, method='first', verbose=True, **kwargs):
         for i, axis in enumerate(data.axes):
             if axis.name in kwargs.keys():
                 axis.convert(kwargs[axis.name].units)
-            if axis.points[0] > axis.points[-1]:
+            if axis[0] > axis[-1]:
                 data.flip(i)
             if axis.name not in axis_names:
                 axis_names.append(axis.name)
@@ -67,20 +67,20 @@ def join(datas, method='first', verbose=True, **kwargs):
         points = np.full((0), np.nan)
         for data in datas:
             index = data.axis_names.index(axis_name)
-            points = np.hstack((points, data.axes[index].points))
+            points = np.hstack((points, data.axes[index][:]))
         axis_points.append(np.unique(points))
     # map datas to new points
     for axis_index, axis_name in enumerate(axis_names):
         for data in datas:
             for axis in data.axes:
                 if axis.name == axis_name:
-                    if not np.array_equiv(axis.points, axis_points[axis_index]):
+                    if not np.array_equiv(axis[:], axis_points[axis_index]):
                         data.map_axis(axis_name, axis_points[axis_index])
     # make new channel objects
     channel_objects = []
     n_channels = min([len(d.channels) for d in datas])
     for channel_index in range(n_channels):
-        full = np.array([d.channels[channel_index].values for d in datas])
+        full = np.array([d.channels[channel_index][:] for d in datas])
         if method == 'first':
             zis = np.full(full.shape[1:], np.nan)
             for idx in np.ndindex(*full.shape[1:]):
@@ -112,13 +112,13 @@ def join(datas, method='first', verbose=True, **kwargs):
         print(len(datas), 'datas joined to create new data:')
         print('  axes:')
         for axis in out.axes:
-            points = axis.points
+            points = axis[:]
             print('    {0} : {1} points from {2} to {3} {4}'.format(
                 axis.name, points.size, min(points), max(points), axis.units))
         print('  channels:')
         for channel in out.channels:
-            percent_nan = np.around(100. * (np.isnan(channel.values).sum() /
-                                            float(channel.values.size)), decimals=2)
+            percent_nan = np.around(100. * (np.isnan(channel[:]).sum() /
+                                            float(channel.size)), decimals=2)
             print('    {0} : {1} to {2} ({3}% NaN)'.format(
                 channel.name, channel.min(), channel.max(), percent_nan))
     return out
