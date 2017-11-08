@@ -11,7 +11,7 @@ from WrightTools import datasets
 
 p = datasets.JASCO.PbSe_batch_1
 data = wt.data.from_JASCO(p)
-data.name = 'PbSe'
+data.natural_name = 'PbSe'
 
 data.convert('wn', verbose=False)
 data = data.split('wm', 10000)[0]
