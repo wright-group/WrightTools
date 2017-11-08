@@ -338,5 +338,5 @@ def from_COLORS(
     if verbose:
         print('data object succesfully created')
         print('axis names:', data.axis_names)
-        print('values shape:', data.channels[0][:].shape)
+        print('values shape:', data.shape)
     return data

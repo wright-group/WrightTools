@@ -1955,8 +1955,8 @@ class Diff2D():
                     xi, yi, zi = pcolor_helper(xaxis[:], yaxis[:], zi)
                     cax = plt.pcolormesh(xi, yi, zi, cmap=mycm,
                                          vmin=levels.min(), vmax=levels.max())
-                    plt.xlim(xaxis[:].min(), xaxis[:].max())
-                    plt.ylim(yaxis[:].min(), yaxis[:].max())
+                    plt.xlim(xaxis.min(), xaxis.max())
+                    plt.ylim(yaxis.min(), yaxis.max())
                 else:
                     cax = subplot_main.contourf(xaxis[:], yaxis[:], zi,
                                                 levels, cmap=mycm)
@@ -2015,8 +2015,8 @@ class Diff2D():
             X, Y, Z = pcolor_helper(xaxis[:], yaxis[:], dzi)
             largest = np.nanmax(np.abs(dzi))
             dcax = dax.pcolor(X, Y, Z, vmin=-largest, vmax=largest, cmap=mycm)
-            dax.set_xlim(xaxis[:].min(), xaxis[:].max())
-            dax.set_ylim(yaxis[:].min(), yaxis[:].max())
+            dax.set_xlim(xaxis.min(), xaxis.max())
+            dax.set_ylim(yaxis.min(), yaxis.max())
             differenc_cb = plt.subplot(gs[5])
             dcbar = plt.colorbar(dcax, cax=differenc_cb)
             dcbar.set_label(self.minuend.channels[channel_index].name +

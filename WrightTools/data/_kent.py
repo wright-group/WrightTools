@@ -128,7 +128,7 @@ def discover_dimensions(arr, dimension_cols, verbose=True):
         obj.label_seed = [input_cols[_key].label_seed[0] for _key in axis[0]]
         obj[:] = axis[3]
         constant[key] = obj
-    return list(scanned[:]()), list(constant[:]())
+    return list(scanned.values()), list(constant.values())
 
 
 # --- from function -------------------------------------------------------------------------------
@@ -228,7 +228,7 @@ def from_KENT(filepaths, null=None, name=None, ignore=['wm'], delay_tolerance=0.
                               method='linear', fill_value=fill_value)
             channel.give_values(grid_i)
     # create data object --------------------------------------------------------------------------
-    data = Data(list(scanned), list(channels[:]()), list(constant))
+    data = Data(list(scanned), list(channels.values()), list(constant))
     # add extra stuff to data object --------------------------------------------------------------
     data.kind = 'KENT'
     data.source = filepaths

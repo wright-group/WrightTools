@@ -49,7 +49,7 @@ def join(datas, method='first', verbose=True, **kwargs):
         for i, axis in enumerate(data.axes):
             if axis.name in kwargs.keys():
                 axis.convert(kwargs[axis.name].units)
-            if axis[:][0] > axis[:][-1]:
+            if axis[0] > axis[-1]:
                 data.flip(i)
             if axis.name not in axis_names:
                 axis_names.append(axis.name)
@@ -118,7 +118,7 @@ def join(datas, method='first', verbose=True, **kwargs):
         print('  channels:')
         for channel in out.channels:
             percent_nan = np.around(100. * (np.isnan(channel[:]).sum() /
-                                            float(channel[:].size)), decimals=2)
+                                            float(channel.size)), decimals=2)
             print('    {0} : {1} to {2} ({3}% NaN)'.format(
                 channel.name, channel.min(), channel.max(), percent_nan))
     return out

@@ -666,7 +666,7 @@ class Fitter:
         # will iterate over axes NOT fit
         self.not_fit_indicies = [self.data.axis_names.index(
             name) for name in self.data.axis_names if name not in self.axes]
-        self.fit_shape = [self.data.axes[i][:].shape[0] for i in self.not_fit_indicies]
+        self.fit_shape = [self.data.axes[i].shape[0] for i in self.not_fit_indicies]
         print('fitter recieved data to make %d fits' % np.product(self.fit_shape))
 
     def run(self, channel=0, propagate_other_channels=True, verbose=True):
@@ -730,15 +730,15 @@ class Fitter:
         with timer:
             for idx in np.ndindex(*self.fit_shape):
                 # do fit
-                values = self.data.channels[channel_index][:][idx]
+                values = self.data.channels[channel_index][idx]
                 fit_args = [values] + axes_points
                 out = self.function.fit(*fit_args)
                 # fill outs
                 for i in range(len(self.function.params)):
-                    self.outs.channels[i][:][idx] = out[i]
+                    self.outs.channels[i][idx] = out[i]
                 # fill model
                 model_data = self.function.evaluate(out, *axes_points)
-                self.model.channels[channel_index][:][idx] = model_data
+                self.model.channels[channel_index][idx] = model_data
         if verbose:
             print('fitter done in %f seconds' % timer.interval)
         # clean up --------------------------------------------------------------------------------

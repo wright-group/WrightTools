@@ -543,7 +543,7 @@ class Quick2D:
                     xmax = max(np.abs(x_ax_int))
                     x_ax_int = x_ax_int / xmax
                     axCorrx.plot(self.xaxis[:], x_ax_int, lw=2)
-                    axCorrx.set_xlim([self.xaxis[:].min(), self.xaxis[:].max()])
+                    axCorrx.set_xlim([self.xaxis.min(), self.xaxis.max()])
                 # data
                 if self._xsideplot:
                     for s_xi, s_zi in self._xsideplotdata:
@@ -582,7 +582,7 @@ class Quick2D:
                     ymax = max(np.abs(y_ax_int))
                     y_ax_int = y_ax_int / ymax
                     axCorry.plot(y_ax_int, self.yaxis[:], lw=2)
-                    axCorry.set_ylim([self.yaxis[:].min(), self.yaxis[:].max()])
+                    axCorry.set_ylim([self.yaxis.min(), self.yaxis.max()])
                 # data
                 if self._ysideplot:
                     for s_xi, s_zi in self._ysideplotdata:
