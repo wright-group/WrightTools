@@ -215,12 +215,12 @@ texinfo_documents = [
 # --- gallery ------------------------------------------------------------------------------------
 
 
-sphinx_gallery_conf = {
-    'examples_dirs': '../examples',
-    'filename_pattern': '/*.py',
-    'gallery_dirs': 'auto_examples',
-    'download_section_examples': False,
-    'backreferences_dir': os.path.join('gen_modules', 'backreferences')}
+#sphinx_gallery_conf = {
+#    'examples_dirs': '../examples',
+#    'filename_pattern': '/*.py',
+#    'gallery_dirs': 'auto_examples',
+#    'download_section_examples': False,
+#    'backreferences_dir': os.path.join('gen_modules', 'backreferences')}
 
 # --- plots --------------------------------------------------------------------------------------
 

@@ -160,28 +160,28 @@ Let's look at one of the fits now:
    from WrightTools import datasets
    # create
    ps = datasets.COLORS.v2p1_MoS2_TrEE_movie
-   data = wt.data.from_COLORS(ps)
+   #data = wt.data.from_COLORS(ps)
    # cleanup
-   data.level('ai0', 'd2', -3)
-   data.scale()
-   data.convert('eV')
-   data.name = 'MoS2'
+   #data.level('ai0', 'd2', -3)
+   #data.scale()
+   #data.convert('eV')
+   #data.name = 'MoS2'
    # isolate only relevant data
-   data = data.split('w1', 1.75)[1].split('d2', 0)[0]
+   #data = data.split('w1', 1.75)[1].split('d2', 0)[0]
    # prepare a function
-   function = wt.fit.Exponential()
-   function.limits['amplitude'] = [0, 1]
-   function.limits['offset'] = [0, 0]
-   function.limits['tau'] = [0, 2000]
+   #function = wt.fit.Exponential()
+   #function.limits['amplitude'] = [0, 1]
+   #function.limits['offset'] = [0, 0]
+   #function.limits['tau'] = [0, 2000]
    # do the fit
-   fitter = wt.fit.Fitter(function, data, 'd2')
-   outs = fitter.run()
+   #fitter = wt.fit.Fitter(function, data, 'd2')
+   #outs = fitter.run()
    # plot
-   fig, gs = wt.artists.create_figure()
-   ax = plt.subplot(gs[0, 0])
-   at = {'w1': [2.0, 'eV'], 'w2': [2.0, 'eV']}
-   ax.plot_data(fitter.model.chop('d2', at=at)[0])
-   ax.plot_data(data.chop('d2', at=at)[0])
+   #fig, gs = wt.artists.create_figure()
+   #ax = plt.subplot(gs[0, 0])
+   #at = {'w1': [2.0, 'eV'], 'w2': [2.0, 'eV']}
+   #ax.plot_data(fitter.model.chop('d2', at=at)[0])
+   #ax.plot_data(data.chop('d2', at=at)[0])
 
 Looks reasonable.
 
@@ -195,25 +195,25 @@ Since outs is just another data object, we can plot it directly using :meth:`~Wr
    from WrightTools import datasets
    # create
    ps = datasets.COLORS.v2p1_MoS2_TrEE_movie
-   data = wt.data.from_COLORS(ps)
+   #data = wt.data.from_COLORS(ps)
    # cleanup
-   data.level('ai0', 'd2', -3)
-   data.scale()
-   data.convert('eV')
-   data.name = 'MoS2'
+   #data.level('ai0', 'd2', -3)
+   #data.scale()
+   #data.convert('eV')
+   #data.name = 'MoS2'
    # isolate only relevant data
-   data = data.split('w1', 1.75)[1].split('d2', 0)[0]
+   #data = data.split('w1', 1.75)[1].split('d2', 0)[0]
    # prepare a function
-   function = wt.fit.Exponential()
-   function.limits['amplitude'] = [0, 0.75]
-   function.limits['offset'] = [0, 0]
-   function.limits['tau'] = [0, 2000]
+   #function = wt.fit.Exponential()
+   #function.limits['amplitude'] = [0, 0.75]
+   #function.limits['offset'] = [0, 0]
+   #function.limits['tau'] = [0, 2000]
    # do the fit
-   fitter = wt.fit.Fitter(function, data, 'd2')
-   outs = fitter.run()
+   #fitter = wt.fit.Fitter(function, data, 'd2')
+   #outs = fitter.run()
    # plot
-   a = wt.artists.mpl_2D(outs, 'w1', 'w2')
-   a.plot('amplitude')
-   a.plot('tau')
+   #a = wt.artists.mpl_2D(outs, 'w1', 'w2')
+   #a.plot('amplitude')
+   #a.plot('tau')
 
 We can easily see that the two large peaks decay slower than the rest of the spectra.

@@ -107,6 +107,10 @@ class Axis(Dataset):
     def natural_name(self):
         return self.attrs['name']
 
+    @natural_name.setter
+    def natural_name(self, value):
+        self.attrs['name'] = value
+
     @property
     def info(self):
         """Axis info dictionary."""
@@ -128,10 +132,6 @@ class Axis(Dataset):
     @property
     def parent(self):
         return self._parent
-
-    @property
-    def units(self):
-        return self.attrs['units']
 
     def convert(self, destination_units):
         """Convert axis to destination units.

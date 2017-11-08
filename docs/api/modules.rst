@@ -6,9 +6,7 @@ WrightTools API
 
    WrightTools.datasets
    WrightTools.diagrams
-   WrightTools.tuning
    WrightTools.artists
-   WrightTools.calibration
    WrightTools.data
    WrightTools.exceptions
    WrightTools.fit
