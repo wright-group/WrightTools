@@ -512,7 +512,7 @@ class Data(Group):
 
     @property
     def channels(self):
-        return [self[n] for n in self.axis_names]
+        return [self[n] for n in self.channel_names]
 
     @property
     def constant_names(self):
