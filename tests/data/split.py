@@ -13,7 +13,6 @@ from WrightTools import datasets
 # --- test ----------------------------------------------------------------------------------------
 
 
-@pytest.mark.skip()
 def test_split():
     p = datasets.PyCMDS.wm_w2_w1_000
     a = wt.data.from_PyCMDS(p)
@@ -25,7 +24,6 @@ def test_split():
     a.close()
 
 
-@pytest.mark.skip()
 def test_split_descending():
     p = datasets.PyCMDS.wm_w2_w1_000
     a = wt.data.from_PyCMDS(p)
@@ -36,7 +34,6 @@ def test_split_descending():
     a.close()
 
 
-@pytest.mark.skip()
 def test_split_edge():
     p = datasets.PyCMDS.wm_w2_w1_000
     a = wt.data.from_PyCMDS(p)
@@ -47,7 +44,6 @@ def test_split_edge():
     a.close()
 
 
-@pytest.mark.skip()
 def test_split_multiple():
     p = datasets.PyCMDS.wm_w2_w1_000
     a = wt.data.from_PyCMDS(p)
@@ -59,7 +55,6 @@ def test_split_multiple():
     a.close()
 
 
-@pytest.mark.skip()
 def test_split_close():
     p = datasets.PyCMDS.wm_w2_w1_000
     a = wt.data.from_PyCMDS(p)
@@ -72,7 +67,6 @@ def test_split_close():
     a.close()
 
 
-@pytest.mark.skip()
 def test_split_above():
     p = datasets.PyCMDS.wm_w2_w1_000
     a = wt.data.from_PyCMDS(p)
@@ -84,7 +78,6 @@ def test_split_above():
     a.close()
 
 
-@pytest.mark.skip()
 def test_split_above_descending():
     p = datasets.PyCMDS.wm_w2_w1_000
     a = wt.data.from_PyCMDS(p)
@@ -95,7 +88,6 @@ def test_split_above_descending():
     a.close()
 
 
-@pytest.mark.skip()
 def test_split_units():
     p = datasets.PyCMDS.wm_w2_w1_000
     a = wt.data.from_PyCMDS(p)
@@ -107,7 +99,6 @@ def test_split_units():
     a.close()
 
 
-@pytest.mark.skip()
 def test_split_axis_name():
     p = datasets.PyCMDS.wm_w2_w1_000
     a = wt.data.from_PyCMDS(p)
@@ -116,5 +107,4 @@ def test_split_axis_name():
     assert split[0].shape == (35, 10, 11)
     assert split[1].shape == (35, 11)
     assert split[1].w2.is_constant()
-
     a.close()

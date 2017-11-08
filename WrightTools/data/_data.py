@@ -1771,8 +1771,7 @@ class Data(Group):
         if verbose:
             print('smoothed data')
 
-    def split(self, axis, positions, units='same',
-              direction='below', verbose=True):
+    def split(self, axis, positions, units='same', direction='below', parent=None, verbose=True):
         """
         Split the data object along a given axis, in units.
 
@@ -1793,14 +1792,15 @@ class Data(Group):
             is above the returned objects are [0, 1, 2] and [3, 4, 5]. If
             direction is below the returned objects are [0, 1, 2, 3] and
             [4, 5]. Default is below.
+        parent : WrightTools.Collection
+            The parent collection in which to place the 'split' collection.
         verbose : bool (optional)
             Toggle talkback. Default is True.
 
         Returns
         -------
-        list
-            A list of data objects.
-            Zero-length data objects are replaced with `None`.
+        WrightTools.collection.Collection
+            A Collection of data objects.
             The order of the objects is such that the axis points retain their original order.
 
         See Also
@@ -1824,23 +1824,23 @@ class Data(Group):
             positions = [positions]
         positions = np.array(positions)
         # positions should be in the data units
-        if not units == 'same':
+        if units != 'same':
             positions = wt_units.converter(positions, units, axis.units)
         # get indicies of split
         indicies = []
         for position in positions:
-            idx = np.argmin(abs(axis.points - position))
+            idx = np.argmin(abs(axis.[:] - position))
             indicies.append(idx)
         indicies.sort()
 
         # set direction according to units
         flip = direction == 'above'
-        if axis.points[-1] < axis.points[0]:
+        if axis[:][-1] < axis[:][0]:
             flip = not flip
         if flip:
             indicies = [i - 1 for i in indicies]
         # process ---------------------------------------------------------------------------------
-        outs = []
+        outs = Collection('split')
         start = 0
         stop = -1
         for i in range(len(indicies) + 1):
