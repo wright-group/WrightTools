@@ -13,6 +13,8 @@ import numpy as np
 
 from scipy.interpolate import griddata
 
+import tidy_headers
+
 from ._data import Axis, Channel, Data
 from .. import kit as wt_kit
 from .. import units as wt_units
@@ -48,7 +50,7 @@ def from_PyCMDS(filepath, name=None, collection=None, verbose=True):
         A Data instance.
     """
     # header
-    headers = wt_kit.read_headers(filepath)
+    headers = tidy_headers.read(filepath)
     # name
     if name is None:  # name not given in method arguments
         data_name = headers['data name']
