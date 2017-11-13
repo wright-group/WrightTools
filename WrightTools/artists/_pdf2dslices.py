@@ -41,8 +41,8 @@ class PDF2DSlices:
 
     def _fill_plot(self, xaxis, yaxis, zi, ax, cax, title, yticks, vmin=None,
                    vmax=None):
-        xi = xaxis.points
-        yi = yaxis.points
+        xi = xaxis[:]
+        yi = yaxis[:]
         X, Y, Z = pcolor_helper(xi, yi, zi)
         if vmax is None:
             vmax = np.nanmax(Z)
@@ -62,7 +62,7 @@ class PDF2DSlices:
         plt.setp(ax.get_yticklabels(), visible=yticks)
         # x sideplot
         sp = add_sideplot(ax, 'x')
-        b = np.nansum(zi, axis=0) * len(yaxis.points)
+        b = np.nansum(zi, axis=0) * len(yaxis[:])
         b[b == 0] = np.nan
         b /= np.nanmax(b)
         sp.plot(xi, b, lw=2, c='b')
@@ -70,8 +70,8 @@ class PDF2DSlices:
         sp.set_ylim(self.sideplot_limits)
         for data, channel_index, c in self.sideplot_dictionary[xaxis.name]:
             data.convert(xaxis.units, verbose=False)
-            sp_xi = data.axes[0].points
-            sp_zi = data.channels[channel_index].values
+            sp_xi = data.axes[0][:]
+            sp_zi = data.channels[channel_index][:]
             sp_zi[sp_xi < xi.min()] = 0
             sp_zi[sp_xi > xi.max()] = 0
             sp_zi /= np.nanmax(sp_zi)
@@ -83,7 +83,7 @@ class PDF2DSlices:
         sp0 = sp
         # y sideplot
         sp = add_sideplot(ax, 'y')
-        b = np.nansum(zi, axis=1) * len(xaxis.points)
+        b = np.nansum(zi, axis=1) * len(xaxis[:])
         b[b == 0] = np.nan
         b /= np.nanmax(b)
         sp.plot(b, yi, lw=2, c='b')
@@ -91,8 +91,8 @@ class PDF2DSlices:
         sp.set_ylim([yi.min(), yi.max()])
         for data, channel_index, c in self.sideplot_dictionary[yaxis.name]:
             data.convert(xaxis.units, verbose=False)
-            sp_xi = data.axes[0].points
-            sp_zi = data.channels[channel_index].values
+            sp_xi = data.axes[0][:]
+            sp_zi = data.channels[channel_index][:]
             sp_zi[sp_xi < xi.min()] = 0
             sp_zi[sp_xi > xi.max()] = 0
             sp_zi /= np.nanmax(sp_zi)
@@ -112,7 +112,7 @@ class PDF2DSlices:
         # local
         ax0 = plt.subplot(gs[row_index, 0])
         cax = plt.subplot(gs[row_index, 1])
-        zi = data.channels[channel_index].values
+        zi = data.channels[channel_index][:]
         kwargs = {}
         if not self.data_signed:
             kwargs['vmin'] = vmin
@@ -121,7 +121,7 @@ class PDF2DSlices:
         # global
         ax1 = plt.subplot(gs[row_index, 3])
         cax = plt.subplot(gs[row_index, 4])
-        zi = data.channels[channel_index].values
+        zi = data.channels[channel_index][:]
         sps1 = self._fill_plot(xaxis, yaxis, zi, ax1, cax, title=data.name +
                                ' global', vmin=vmin, vmax=vmax, yticks=False)
         return [[ax0, ax1], [sps0, sps1]]
@@ -209,8 +209,8 @@ class PDF2DSlices:
                         for ax, sps in zip(axs, spss):
                             ax.axhline(0, c='k', lw=4)
                             sps[1].axhline(0, c='k', lw=4)
-                            ax.axvline(data.constants[0].points, c='k', alpha=0.5, lw=4)
-                            sps[0].axvline(data.constants[0].points, c='k', alpha=0.5, lw=4)
+                            ax.axvline(data.constants[0][:], c='k', alpha=0.5, lw=4)
+                            sps[0].axvline(data.constants[0][:], c='k', alpha=0.5, lw=4)
                     constant_text = get_constant_text(data.constants)
                     _title(fig, self.name, constant_text)
                     pdf.savefig()
@@ -240,8 +240,8 @@ class PDF2DSlices:
                         for ax, sps in zip(axs, spss):
                             ax.axhline(0, c='k', lw=4)
                             sps[1].axhline(0, c='k', lw=4)
-                            ax.axvline(data.constants[0].points, c='k', alpha=0.5, lw=4)
-                            sps[0].axvline(data.constants[0].points, c='k', alpha=0.5, lw=4)
+                            ax.axvline(data.constants[0][:], c='k', alpha=0.5, lw=4)
+                            sps[0].axvline(data.constants[0][:], c='k', alpha=0.5, lw=4)
                     constant_text = get_constant_text(data.constants)
                     _title(fig, self.name, constant_text)
                     pdf.savefig()

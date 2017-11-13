@@ -26,6 +26,19 @@ wt5_version = '0.0.0'
 
 class Dataset(h5py.Dataset):
     instances = {}
+    class_name = 'Dataset'
+
+    @property
+    def units(self):
+        return self.attrs.get('units', None)
+
+    @units.setter
+    def units(self, value):
+        if value is None:
+            if 'units' in self.attrs.keys():
+                self.attrs.pop('units')
+        else:
+            self.attrs['units'] = value.encode()
 
 
 # --- group ---------------------------------------------------------------------------------------
@@ -122,6 +135,10 @@ class Group(h5py.Group):
         if 'name' not in self.attrs.keys():
             self.attrs['name'] = self.__class__.default_name
         return self.attrs['name']
+
+    @natural_name.setter
+    def natural_name(self, value):
+        self.attrs['name'] = value
 
     @property
     def parent(self):

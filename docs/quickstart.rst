@@ -15,7 +15,7 @@ Create a data object from one of the built-in datasets.
    from WrightTools import datasets
    ps = datasets.COLORS.v2p1_MoS2_TrEE_movie  # list of filepaths
    # create data object
-   data = wt.data.from_COLORS(ps)
+   #data = wt.data.from_COLORS(ps)
 
 The data contains some helpful attributes that we can inspect now:
 
@@ -53,10 +53,10 @@ For more information, check see :ref:`artists`, or check out our `gallery`_.
    import WrightTools as wt
    from WrightTools import datasets
    ps = datasets.COLORS.v2p1_MoS2_TrEE_movie
-   data = wt.data.from_COLORS(ps)
-   artist = wt.artists.mpl_1D(data, 'w1', at={'w2': [2, 'eV'], 'd2': [-100, 'fs']})
-   artist.plot()
-   plt.show()
+   #data = wt.data.from_COLORS(ps)
+   #artist = wt.artists.mpl_1D(data, 'w1', at={'w2': [2, 'eV'], 'd2': [-100, 'fs']})
+   #artist.plot()
+   #plt.show()
 
 2D
 ^^
@@ -73,10 +73,10 @@ For more information, check see :ref:`artists`, or check out our `gallery`_.
    import WrightTools as wt
    from WrightTools import datasets
    ps = datasets.COLORS.v2p1_MoS2_TrEE_movie
-   data = wt.data.from_COLORS(ps)
-   artist = wt.artists.mpl_2D(data, 'w1', 'd2', at={'w2': [2, 'eV']})
-   artist.plot()
-   plt.show()
+   #data = wt.data.from_COLORS(ps)
+   #artist = wt.artists.mpl_2D(data, 'w1', 'd2', at={'w2': [2, 'eV']})
+   #artist.plot()
+   #plt.show()
 
 Interact with the Data
 ----------------------
@@ -126,11 +126,11 @@ Use ``clip`` to ignore points outside of a specific range.
    import WrightTools as wt
    from WrightTools import datasets
    ps = datasets.COLORS.v2p1_MoS2_TrEE_movie
-   data = wt.data.from_COLORS(ps)
-   data.clip('ai0', min=0.0, max=0.1)
-   artist = wt.artists.mpl_2D(data, 'w1', 'd2', at={'w2': [2, 'eV']})
-   artist.plot()
-   plt.show()
+   #data = wt.data.from_COLORS(ps)
+   #data.clip('ai0', min=0.0, max=0.1)
+   #artist = wt.artists.mpl_2D(data, 'w1', 'd2', at={'w2': [2, 'eV']})
+   #artist.plot()
+   #plt.show()
 
 
 .. _gallery: auto_examples/index.html

@@ -113,7 +113,7 @@ class Axes(matplotlib.axes.Axes):
                 vmin = -data.channels[channel_index].major_extent
                 vmax = +data.channels[channel_index].major_extent
             else:
-                vmin = data.channels[channel_index].null()
+                vmin = data.channels[channel_index].null
                 vmax = data.channels[channel_index].max()
         # don't overwrite
         if 'vmin' not in kwargs.keys():
@@ -197,9 +197,9 @@ class Axes(matplotlib.axes.Axes):
             # arrays
             channel_index = wt_kit.get_index(data.channel_names, channel)
             signed = data.channels[channel_index].signed
-            xi = data.axes[0].points
-            yi = data.axes[1].points
-            zi = data.channels[channel_index].values.T
+            xi = data.axes[0][:]
+            yi = data.axes[1][:]
+            zi = data.channels[channel_index][:].T
             args = [xi, yi, zi] + args
             # limits
             kwargs = self._parse_limits(data=data, channel_index=channel_index,
@@ -266,9 +266,9 @@ class Axes(matplotlib.axes.Axes):
                 raise wt_exceptions.DimensionalityError(2, data.dimensionality)
             # arrays
             channel_index = wt_kit.get_index(data.channel_names, channel)
-            xi = data.axes[0].points
-            yi = data.axes[1].points
-            zi = data.channels[channel_index].values.T
+            xi = data.axes[0][:]
+            yi = data.axes[1][:]
+            zi = data.channels[channel_index][:].T
             args = [xi, yi, zi] + args
             # limits
             kwargs = self._parse_limits(data=data, channel_index=channel_index,
@@ -373,9 +373,9 @@ class Axes(matplotlib.axes.Axes):
                 raise wt_exceptions.DimensionalityError(2, data.dimensionality)
             # arrays
             channel_index = wt_kit.get_index(data.channel_names, channel)
-            xi = data.axes[0].points
-            yi = data.axes[1].points
-            zi = data.channels[channel_index].values.T
+            xi = data.axes[0][:]
+            yi = data.axes[1][:]
+            zi = data.channels[channel_index][:].T
             X, Y, Z = pcolor_helper(xi, yi, zi)
             args = [X, Y, Z] + args
             # limits
@@ -433,8 +433,8 @@ class Axes(matplotlib.axes.Axes):
                 raise wt_exceptions.DimensionalityError(1, data.dimensionality)
             # arrays
             channel_index = wt_kit.get_index(data.channel_names, channel)
-            xi = data.axes[0].points
-            zi = data.channels[channel_index].values.T
+            xi = data.axes[0][:]
+            zi = data.channels[channel_index][:].T
             args = [xi, zi] + args
         else:
             data = None
@@ -503,8 +503,8 @@ class Axes(matplotlib.axes.Axes):
             else:
                 c = coloring
             # get arrays
-            xi = xaxis.points
-            yi = data.channels[channel_index].values
+            xi = xaxis[:]
+            yi = data.channels[channel_index][:]
             # plot
             if interpolate:
                 self.plot(xi, yi, c=c)
@@ -532,9 +532,9 @@ class Axes(matplotlib.axes.Axes):
             else:
                 cmap = colormaps[coloring]
             # get arrays
-            xi = xaxis.points
-            yi = yaxis.points
-            zi = channel.values.T
+            xi = xaxis[:]
+            yi = yaxis[:]
+            zi = channel[:].T
             # plot
             if interpolate:
                 # contourf

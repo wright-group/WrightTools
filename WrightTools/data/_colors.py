@@ -127,9 +127,9 @@ def discover_dimensions(arr, dimension_cols, verbose=True):
         key = axis[0][0]
         obj = input_cols[key]
         obj.label_seed = [input_cols[_key].label_seed[0] for _key in axis[0]]
-        obj.points = axis[3]
+        obj[:] = axis[3]
         constant[key] = obj
-    return list(scanned.values()), list(constant.values())
+    return list(scanned[:]()), list(constant[:]())
 
 
 # --- from function -------------------------------------------------------------------------------
@@ -287,17 +287,17 @@ def from_COLORS(
                 min_wn = 1e7 / max(xs) + tol
                 max_wn = 1e7 / min(xs) - tol
                 axis.units = 'wn'
-                axis.points = np.linspace(min_wn, max_wn, num=len(xs))
+                axis[:] = np.linspace(min_wn, max_wn, num=len(xs))
                 axis.convert('nm')
             else:
-                axis.points = np.linspace(min(xs) + tol, max(xs) - tol, num=len(xs))
+                axis[:] = np.linspace(min(xs) + tol, max(xs) - tol, num=len(xs))
         else:
-            axis.points = np.array(xs)
+            axis[:] = np.array(xs)
     # grid data -----------------------------------------------------------------------------------
     if len(scanned) == 1:
         # 1D data
         axis = scanned[0]
-        axis.points = arr[axis.file_idx]
+        axis[:] = arr[axis.file_idx]
         scanned[0] = axis
         for key in channels.keys():
             channel = channels[key]
@@ -308,7 +308,7 @@ def from_COLORS(
         points = tuple(arr[axis.file_idx] for axis in scanned)
         # beware, meshgrid gives wrong answer with default indexing
         # this took me many hours to figure out... - blaise
-        xi = tuple(np.meshgrid(*[axis.points for axis in scanned], indexing='ij'))
+        xi = tuple(np.meshgrid(*[axis[:] for axis in scanned], indexing='ij'))
         for key in channels.keys():
             channel = channels[key]
             zi = arr[channel.file_idx]
@@ -317,7 +317,7 @@ def from_COLORS(
                               method='linear', fill_value=fill_value)
             channel.give_values(grid_i)
     # create data object --------------------------------------------------------------------------
-    data = Data(list(scanned), list(channels.values()), list(constant))
+    data = Data(list(scanned), list(channels[:]()), list(constant))
     if color_steps_as == 'energy':
         try:
             data.convert('wn', verbose=False)
@@ -338,5 +338,5 @@ def from_COLORS(
     if verbose:
         print('data object succesfully created')
         print('axis names:', data.axis_names)
-        print('values shape:', data.channels[0].values.shape)
+        print('values shape:', data.shape)
     return data
