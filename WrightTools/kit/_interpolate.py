@@ -4,7 +4,12 @@
 # --- import --------------------------------------------------------------------------------------
 
 
+import numpy as np
+
 from scipy import ndimage
+from scipy.interpolate import UnivariateSpline
+
+from ._array imort remove_nans_1D
 
 
 # --- define --------------------------------------------------------------------------------------
@@ -84,7 +89,6 @@ class Spline:
 
         """
         # import
-        from scipy.interpolate import UnivariateSpline
         xi_internal = np.array(xi).copy()
         yi_internal = np.array(yi).copy()
         # nans

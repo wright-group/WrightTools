@@ -35,7 +35,7 @@ class FileSlicer:
     module.
     """
 
-    def __init__(self, path, skip_headers=True, header_charachter='#'):
+    def __init__(self, path, skip_headers=True, header_character='#'):
         """Create a ``FileSlicer`` object.
 
         Parameters

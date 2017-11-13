@@ -4,6 +4,11 @@
 # --- import --------------------------------------------------------------------------------------
 
 
+import configparser
+
+import tidy_headers
+
+
 
 # --- define --------------------------------------------------------------------------------------
 
@@ -26,10 +31,7 @@ class INI():
             Filepath.
         """
         self.filepath = filepath
-        if sys.version[0] == '3':
-            self.config = configparser.ConfigParser()
-        else:
-            self.config = configparser.SafeConfigParser()
+        self.config = configparser.ConfigParser()
 
     def add_section(self, section):
         """Add section.
@@ -51,10 +53,7 @@ class INI():
         """
         with open(self.filepath, "w"):
             pass
-        if sys.version[0] == '3':
-            self.config = configparser.ConfigParser()
-        else:
-            self.config = configparser.SafeConfigParser()
+        self.config = configparser.ConfigParser()
 
     @property
     def dictionary(self):
@@ -148,7 +147,7 @@ class INI():
             Value.
         """
         self.config.read(self.filepath)
-        string = item2string(value, sep=', ')
+        string = tidy_headers._parse_item.item2string(value, sep=', ')
         self.config.set(section, option, string)
         with open(self.filepath, 'w') as f:
             self.config.write(f)

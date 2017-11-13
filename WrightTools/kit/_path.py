@@ -53,7 +53,6 @@ def glob_handler(extension, folder=None, identifier=None):
     folder: string
     identifier: string
     """
-    import glob
     filepaths = []
     if folder:
         # comment out [ and ]...

@@ -6,6 +6,7 @@
 
 import os
 import string
+import inspect
 
 
 # --- define --------------------------------------------------------------------------------------
@@ -20,7 +21,6 @@ __all__ = ['get_methods', 'string2identifier', 'Suppress', 'Timer']
 def get_methods(the_class, class_only=False, instance_only=False,
                 exclude_internal=True):
     """Get a list of strings corresponding to the names of the methods of an object."""
-    import inspect
 
     def acceptMethod(tup):
         # internal function that analyzes the tuples returned by getmembers
