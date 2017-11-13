@@ -44,8 +44,8 @@ class FileSlicer:
             Path to the file.
         skip_headers : bool (optional)
             Toggle to skip headers at beginning of file. Default is True.
-        header_charachter : string (optional)
-            Charachter that appears at the beginning of header lines for this
+        header_character : string (optional)
+            Character that appears at the beginning of header lines for this
             file. Default is '#'.
         """
         self.path = path

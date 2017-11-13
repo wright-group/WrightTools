@@ -14,6 +14,8 @@ import pytz
 import dateutil
 import datetime
 
+import numpy as np
+
 
 # --- define --------------------------------------------------------------------------------------
 
@@ -37,10 +39,11 @@ def timestamp_from_RFC3339(RFC3339):
     WrightTools.kit.TimeStamp
     """
     dt = dateutil.parser.parse(RFC3339)
-    timezone = dt.tzinfo._offset.total_seconds()
-    unix = (dt - datetime.datetime(1970, 1, 1, tzinfo=pytz.utc)
-            ).total_seconds()  # could use .timestamp() in 3.3 forwards
-    timestamp = TimeStamp(at=unix, timezone=timezone)
+    if hasattr(dt.tzinfo, '_offset'):
+        timezone = dt.tzinfo._offset.total_seconds()
+    else:
+        timezone = 'utc'
+    timestamp = TimeStamp(at=dt.timestamp(), timezone=timezone)
     return timestamp
 
 
@@ -135,11 +138,6 @@ class TimeStamp:
         format_string = '%Y-%m-%d %H:%M:%S'
         out = self.datetime.strftime(format_string)
         return out
-
-    @property
-    def legacy(self):
-        """Legacy timestamp format."""
-        return self.datetime.strftime('%Y.%m.%d %H_%M_%S')
 
     @property
     def RFC3339(self):
