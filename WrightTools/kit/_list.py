@@ -52,16 +52,24 @@ def flatten_list(items, seqtypes=(list, tuple), in_place=True):
     return items
 
 
-def intersperse(lst, item):
-    """Put item between each existing item in list.
+def intersperse(lis, value):
+    """Put value between each existing item in list.
 
-    `Source`__
+    Parameters
+    ----------
+    lis : list
+        List to intersperse.
+    value : value
+        Value to insert.
 
-    __ intersperse_
+    Returns
+    -------
+    list
+        interspersed list
     """
-    result = [item] * (len(lst) * 2 - 1)
-    result[0::2] = lst
-    return result
+    out = [value] * (len(lis) * 2 - 1)
+    out[0::2] = lis
+    return out
 
 
 def get_index(lis, argument):
