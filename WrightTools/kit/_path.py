@@ -49,9 +49,18 @@ def glob_handler(extension, folder=None, identifier=None):
 
     Parameters
     ----------
-    extension: string
-    folder: string
-    identifier: string
+    extension : string
+        File extension.
+    folder : string (optional)
+        Folder to search within. Default is None (current working
+        directory).
+    identifier : string
+        Unique identifier. Default is None.
+
+    Returns
+    -------
+    list of strings
+        Full path of matching files.
     """
     filepaths = []
     if folder:
