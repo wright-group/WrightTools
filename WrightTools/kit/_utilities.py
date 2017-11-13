@@ -12,40 +12,18 @@ import inspect
 # --- define --------------------------------------------------------------------------------------
 
 
-__all__ = ['get_methods', 'string2identifier', 'Suppress', 'Timer']
+__all__ = ['string2identifier', 'Timer']
 
 
 # --- functions -----------------------------------------------------------------------------------
 
 
-def get_methods(the_class, class_only=False, instance_only=False,
-                exclude_internal=True):
-    """Get a list of strings corresponding to the names of the methods of an object."""
-
-    def acceptMethod(tup):
-        # internal function that analyzes the tuples returned by getmembers
-        # tup[1] is the actual member object
-        is_method = inspect.ismethod(tup[1])
-        if is_method:
-            bound_to = tup[1].im_self
-            internal = (tup[1].im_func.func_name[:2] == '__' and
-                        tup[1].im_func.func_name[-2:] == '__')
-            if internal and exclude_internal:
-                include = False
-            else:
-                include = (bound_to == the_class and not instance_only) or (
-                    bound_to is None and not class_only)
-        else:
-            include = False
-        return include
-
-    # filter to return results according to internal function and arguments
-    tups = filter(acceptMethod, inspect.getmembers(the_class))
-    return [tup[0] for tup in tups]
-
-
 def string2identifier(s):
     """Turn a string into a valid python identifier.
+
+    Currently only allows ASCII letters and underscore. Illegal characters
+    are replaced with underscore. This is slightly more opinionated than
+    python 3 itself, and may be refactored in future (see PEP 3131).
 
     Parameters
     ----------
@@ -58,6 +36,7 @@ def string2identifier(s):
         valid python identifier.
     """
     # https://docs.python.org/3/reference/lexical_analysis.html#identifiers
+    # https://www.python.org/dev/peps/pep-3131/
     if s[0] not in string.ascii_letters:
         s = '_' + s
     valids = string.ascii_letters + string.digits + '_'
@@ -67,53 +46,12 @@ def string2identifier(s):
             out += char
         else:
             out += '_'
+    if out[0] in string.digits:
+        out = '_' + out
     return out
 
 
 # --- classes -------------------------------------------------------------------------------------
-
-
-class Suppress(object):
-    """Context manager for doing a "deep suppression" of stdout and stderr in Python.
-
-    i.e. will suppress all print, even if the print originates in a
-    compiled C/Fortran sub-function.
-
-    This will not suppress raised exceptions, since exceptions are printed
-    to stderr just before a script exits, and after the context manager has
-    exited (at least, I think that is why it lets exceptions through).
-
-    `Source`__
-
-    __ http://stackoverflow.com/questions/11130156/suppress-stdout-stderr-print-from-python-functions
-
-
-    >>> with WrightTools.kit.Supress():
-    ...     rogue_function()
-
-    """
-
-    def __init__(self):
-        """init."""
-        # Open a pair of null files
-        self.null_fds = [os.open(os.devnull, os.O_RDWR) for x in range(2)]
-        # Save the actual stdout (1) and stderr (2) file descriptors.
-        self.save_fds = (os.dup(1), os.dup(2))
-
-    def __enter__(self):
-        """enter."""
-        # Assign the null pointers to stdout and stderr.
-        os.dup2(self.null_fds[0], 1)
-        os.dup2(self.null_fds[1], 2)
-
-    def __exit__(self, *_):
-        """exit."""
-        # Re-assign the real stdout/stderr back to (1) and (2)
-        os.dup2(self.save_fds[0], 1)
-        os.dup2(self.save_fds[1], 2)
-        # Close the null files
-        os.close(self.null_fds[0])
-        os.close(self.null_fds[1])
 
 
 class Timer:
