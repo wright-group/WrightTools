@@ -18,4 +18,3 @@ def test_5():
     arrs = wt.kit.share_nans(arrs)
     for arr in arrs:
         assert np.isnan(arr[2])
-

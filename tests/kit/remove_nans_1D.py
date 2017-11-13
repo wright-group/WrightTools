@@ -14,7 +14,7 @@ import WrightTools as wt
 
 def test_simple():
     arr = np.arange(-4, 6, dtype=float)
-    arr[arr<0] = np.nan
+    arr[arr < 0] = np.nan
     assert wt.kit.remove_nans_1D([arr])[0].all() == np.arange(0, 6, dtype=float).all()
 
 

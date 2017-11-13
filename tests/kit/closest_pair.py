@@ -20,7 +20,7 @@ def test_5():
 
 def test_5_multiple():
     arr = np.array([1, 3, 4, 11, 12])
-    assert wt.kit.closest_pair(arr) == [[(1,), (2,)], [(3,), (4,),]]
+    assert wt.kit.closest_pair(arr) == [[(1,), (2,)], [(3,), (4,)]]
     assert wt.kit.closest_pair(arr, 'distance') == 1
 
 
