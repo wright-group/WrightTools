@@ -5,6 +5,7 @@
 
 
 import os
+import time
 import string
 import inspect
 
@@ -62,16 +63,13 @@ class Timer:
     """
 
     def __init__(self, verbose=True):
-        """init."""
         self.verbose = verbose
 
     def __enter__(self, progress=None):
-        """enter."""
-        self.start = clock()
+        self.start = time.time()
 
     def __exit__(self, type, value, traceback):
-        """exit."""
-        self.end = clock()
+        self.end = time.time()
         self.interval = self.end - self.start
         if self.verbose:
             print('elapsed time: {0} sec'.format(self.interval))
