@@ -125,7 +125,7 @@ class INI():
         """
         self.config.read(self.filepath)
         raw = self.config.get(section, option)
-        out = string2item(raw, sep=', ')
+        out = tidy_headers._parse_item.string2item(raw, sep=', ')
         return out
 
     @property
