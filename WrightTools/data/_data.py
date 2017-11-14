@@ -474,6 +474,9 @@ class Data(Group):
     class_name = 'Data'
 
     def __init__(self, *args, **kwargs):
+        kwargs.pop('axis_names', None)
+        kwargs.pop('channel_names', None)
+        kwargs.pop('constant_names', None)
         Group.__init__(self, *args, **kwargs)
         # the following are populated if not already recorded
         self.axis_names
@@ -587,7 +590,6 @@ class Data(Group):
         if len(all_names) == len(set(all_names)):
             pass
         else:
-            print(all_names)
             raise wt_exceptions.NameNotUniqueError()
         for obj in self.axes + self.channels + self.constants:
             identifier = obj.name.split('/')[-1]
@@ -1831,7 +1833,6 @@ class Data(Group):
             idx = np.argmin(abs(axis[:] - position))
             indicies.append(idx)
         indicies.sort()
-
         # set direction according to units
         flip = direction == 'above'
         if axis[-1] < axis[0]:
@@ -1839,7 +1840,8 @@ class Data(Group):
         if flip:
             indicies = [i - 1 for i in indicies]
         # process ---------------------------------------------------------------------------------
-        outs = wt_collection.Collection(name='split', parent=parent)
+        outs = wt_collection.Collection(name='split', parent=parent,
+                                        edit_local=parent is not None)
         start = 0
         stop = 0
         for i in range(len(indicies) + 1):
@@ -1856,22 +1858,16 @@ class Data(Group):
             elif stop - start == 1:
                 attrs = dict(self.attrs)
                 attrs.pop('name', None)
-                attrs.pop('axis_names', None)
-                attrs.pop('channel_names', None)
-                attrs.pop('constant_names', None)
-
                 new_data = outs.create_data(new_name, **attrs)
                 #for c in self.constants:
                 #   new_data.create_constant(c.natural_name, c.value, c.units)
                 #new_data.create_constant(axis.natural_name, axis[start], axis.units)
-
                 for ax in self.axes:
                     if ax != axis:
                         attrs = dict(ax.attrs)
                         attrs.pop('name', None)
                         attrs.pop('units', None)
                         new_data.create_axis(ax.natural_name, ax[:], ax.units,  **attrs)
-
                 slc = [slice(None)] * len(self.shape)
                 slc[axis_index] = start
                 for ch in self.channels:
@@ -1882,14 +1878,9 @@ class Data(Group):
             else:
                 attrs = dict(self.attrs)
                 attrs.pop('name', None)
-                attrs.pop('axis_names', None)
-                attrs.pop('channel_names', None)
-                attrs.pop('constant_names', None)
-
                 new_data = outs.create_data(new_name, **attrs)
                 #for c in self.constants:
                 #   new_data.create_constant(c.natural_name, c.value, c.units)
-
                 for ax in self.axes:
                     if ax == axis:
                         slc = slice(start, stop)
@@ -1899,7 +1890,6 @@ class Data(Group):
                     attrs.pop('name', None)
                     attrs.pop('units', None)
                     new_data.create_axis(ax.natural_name, ax[slc], ax.units, **attrs)
-
                 slc = [slice(None)] * len(self.shape)
                 slc[axis_index] = slice(start, stop)
                 for ch in self.channels:
@@ -1907,7 +1897,6 @@ class Data(Group):
                     attrs.pop('name', None)
                     attrs.pop('units', None)
                     new_data.create_channel(ch.natural_name, ch[slc], ch.units, **attrs)
-                    
         # post process ----------------------------------------------------------------------------
         if verbose:
             print('split data into {0} pieces along {1}:'.format(len(indicies) + 1,

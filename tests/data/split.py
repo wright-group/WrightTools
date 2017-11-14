@@ -106,6 +106,26 @@ def test_split_axis_name():
     assert len(split) == 2
     assert split[0].shape == (35, 10, 11)
     assert split[1].shape == (35, 11)
-    #assert split[1].w2.is_constant()
-    # TODO: uncomment check for constant once constants work
+    a.close()
+
+
+@pytest.mark.xfail(reason="Constants required")
+def test_split_constant():
+    p = datasets.PyCMDS.wm_w2_w1_000
+    a = wt.data.from_PyCMDS(p)
+    split = a.split(1, [1500])
+    assert len(split) == 2
+    assert split[1].shape == (35, 11)
+    assert split[1].w2.is_constant()
+    a.close()
+
+
+def test_split_parent():
+    p = datasets.PyCMDS.wm_w2_w1_000
+    a = wt.data.from_PyCMDS(p)
+    parent = wt.Collection()
+    split = a.split(1, [1500], parent=parent)
+    assert 'split' in parent
+    assert split.filepath == parent.filepath
+    assert len(split) == 2
     a.close()
