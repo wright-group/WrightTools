@@ -6,6 +6,8 @@
 
 import numpy as np
 
+from .. import exceptions as wt_exceptions
+
 
 # --- define --------------------------------------------------------------------------------------
 
@@ -120,6 +122,14 @@ def fft(xi, yi, axis=0):
     yi : ND numpy.ndarray
         FFT. Has the same shape as the input array (yi).
     """
+    # xi must be 1D
+    if xi.ndim != 1:
+        raise wt_exceptions.DimensionalityError(1, xi.ndim)
+    # xi must be evenly spaced
+    spacing = np.diff(xi)
+    if not np.allclose(spacing, spacing.mean()):
+        raise RuntimeError('WrightTools.kit.fft: argument xi must be evenly spaced')
+    # fft
     yi = np.fft.fft(yi, axis=axis)
     d = (xi.max() - xi.min()) / (xi.size - 1)
     xi = np.fft.fftfreq(xi.size, d=d)
