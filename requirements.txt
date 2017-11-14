@@ -8,3 +8,4 @@ numpy
 python-dateutil
 pytz
 scipy
+tidy_headers
