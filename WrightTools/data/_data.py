@@ -474,6 +474,9 @@ class Data(Group):
     class_name = 'Data'
 
     def __init__(self, *args, **kwargs):
+        kwargs.pop('axis_names', None)
+        kwargs.pop('channel_names', None)
+        kwargs.pop('constant_names', None)
         Group.__init__(self, *args, **kwargs)
         # the following are populated if not already recorded
         self.axis_names
@@ -898,7 +901,6 @@ class Data(Group):
         id = self.require_dataset(name=name, data=points, shape=points.shape,
                                   dtype=points.dtype).id
         axis = Axis(self, id, units=units, **kwargs)
-        self.axes.append(axis)
         self.attrs['axis_names'] = np.append(self.attrs['axis_names'], name.encode())
         self._update()
         return axis
@@ -1770,8 +1772,7 @@ class Data(Group):
         if verbose:
             print('smoothed data')
 
-    def split(self, axis, positions, units='same',
-              direction='below', verbose=True):
+    def split(self, axis, positions, units='same', direction='below', parent=None, verbose=True):
         """
         Split the data object along a given axis, in units.
 
@@ -1792,14 +1793,15 @@ class Data(Group):
             is above the returned objects are [0, 1, 2] and [3, 4, 5]. If
             direction is below the returned objects are [0, 1, 2, 3] and
             [4, 5]. Default is below.
+        parent : WrightTools.Collection
+            The parent collection in which to place the 'split' collection.
         verbose : bool (optional)
             Toggle talkback. Default is True.
 
         Returns
         -------
-        list
-            A list of data objects.
-            Zero-length data objects are replaced with `None`.
+        WrightTools.collection.Collection
+            A Collection of data objects.
             The order of the objects is such that the axis points retain their original order.
 
         See Also
@@ -1823,7 +1825,7 @@ class Data(Group):
             positions = [positions]
         positions = np.array(positions)
         # positions should be in the data units
-        if not units == 'same':
+        if units != 'same':
             positions = wt_units.converter(positions, units, axis.units)
         # get indicies of split
         indicies = []
@@ -1831,68 +1833,87 @@ class Data(Group):
             idx = np.argmin(abs(axis[:] - position))
             indicies.append(idx)
         indicies.sort()
-
         # set direction according to units
         flip = direction == 'above'
-        if axis[-1] < axis[:][0]:
+        if axis[-1] < axis[0]:
             flip = not flip
         if flip:
             indicies = [i - 1 for i in indicies]
         # process ---------------------------------------------------------------------------------
-        outs = []
+        outs = wt_collection.Collection(name='split', parent=parent,
+                                        edit_local=parent is not None)
         start = 0
-        stop = -1
+        stop = 0
         for i in range(len(indicies) + 1):
             # get start and stop
-            start = stop + 1  # previous value
+            start = stop  # previous value
             if i == len(indicies):
-                stop = len(axis[:])
+                stop = len(axis) 
             else:
-                stop = indicies[i]
+                stop = indicies[i] + 1
             # new data object prepare
-            new_data = self.copy()
-            # axis of interest will be FIRST
-            transpose_order = range(len(new_data.axes))
-            # replace axis_index with zero
-            transpose_order = [0 if i == axis_index else i for i in transpose_order]
-            transpose_order[0] = axis_index
-            new_data.transpose(transpose_order, verbose=False)
-            # axis
-            new_data.axes[0][:] = new_data.axes[0][start:stop + 1]
-            # channels
-            for channel in new_data.channels:
-                channel[:] = channel[start:stop + 1]
-            # transpose out
-            new_data.transpose(transpose_order, verbose=False)
-            outs.append(new_data)
+            new_name = "split%03d"%i
+            if stop - start < 1:
+                outs.create_data("")
+            elif stop - start == 1:
+                attrs = dict(self.attrs)
+                attrs.pop('name', None)
+                new_data = outs.create_data(new_name, **attrs)
+                #for c in self.constants:
+                #   new_data.create_constant(c.natural_name, c.value, c.units)
+                #new_data.create_constant(axis.natural_name, axis[start], axis.units)
+                for ax in self.axes:
+                    if ax != axis:
+                        attrs = dict(ax.attrs)
+                        attrs.pop('name', None)
+                        attrs.pop('units', None)
+                        new_data.create_axis(ax.natural_name, ax[:], ax.units,  **attrs)
+                slc = [slice(None)] * len(self.shape)
+                slc[axis_index] = start
+                for ch in self.channels:
+                    attrs = dict(ch.attrs)
+                    attrs.pop('name', None)
+                    attrs.pop('units', None)
+                    new_data.create_channel(ch.natural_name, ch[:][slc], ch.units, **attrs)
+            else:
+                attrs = dict(self.attrs)
+                attrs.pop('name', None)
+                new_data = outs.create_data(new_name, **attrs)
+                #for c in self.constants:
+                #   new_data.create_constant(c.natural_name, c.value, c.units)
+                for ax in self.axes:
+                    if ax == axis:
+                        slc = slice(start, stop)
+                    else:
+                        slc = slice(None)
+                    attrs = dict(ax.attrs)
+                    attrs.pop('name', None)
+                    attrs.pop('units', None)
+                    new_data.create_axis(ax.natural_name, ax[slc], ax.units, **attrs)
+                slc = [slice(None)] * len(self.shape)
+                slc[axis_index] = slice(start, stop)
+                for ch in self.channels:
+                    attrs = dict(ch.attrs)
+                    attrs.pop('name', None)
+                    attrs.pop('units', None)
+                    new_data.create_channel(ch.natural_name, ch[slc], ch.units, **attrs)
         # post process ----------------------------------------------------------------------------
         if verbose:
-            print('split data into {0} pieces along {1}:'.format(len(indicies) + 1, axis.name))
+            print('split data into {0} pieces along {1}:'.format(len(indicies) + 1,
+                    axis.natural_name))
             for i in range(len(outs)):
                 new_data = outs[i]
-                new_axis = new_data.axes[axis_index]
-                if len(new_axis[:]) == 0:
+                if new_data is None:
                     print('  {0} : None'.format(i))
+                elif len(new_data.shape) < len(self.shape):
+                    print('  {0} : {1} {2}(constant)'.format(i, axis.natural_name, axis.units))
+                    #TODO: Make this print the constant value(dependent on constant system) KFS 2017-11-12
                 else:
+                    new_axis = new_data.axes[axis_index]
                     print('  {0} : {1} to {2} {3} (length {4})'.format(i, new_axis[0],
                                                                        new_axis[-1],
                                                                        new_axis.units,
                                                                        new_axis.size))
-        # deal with cases where only one element is left
-        for i, new_data in enumerate(outs):
-            if len(new_data.axes[axis_index][:]) == 1:
-                # remove axis
-                new_data.axis_names.pop(axis_index)
-                axis = new_data.axes.pop(axis_index)
-                new_data.constants.append(axis)
-                # reshape channels
-                shape = [i for i in new_data.channels[0][:].shape if not i == 1]
-                shape = tuple(shape)
-                for channel in new_data.channels:
-                    channel[:].shape = shape
-                new_data.shape = shape
-            elif len(new_data.axes[axis_index][:]) == 0:
-                outs[i] = None
         return outs
 
     def subtract(self, subtrahend, channel=0, subtrahend_channel=0):

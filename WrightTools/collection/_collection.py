@@ -52,6 +52,8 @@ class Collection(Group):
     def __getitem__(self, key):
         if isinstance(key, int):
             key = self.item_names[key]
+        if key == "":
+            return None
         out = h5py.Group.__getitem__(self, key)
         if 'class' in out.attrs.keys():
             if out.attrs['class'] == 'Data':
@@ -90,16 +92,19 @@ class Collection(Group):
         return collection
 
     def create_data(self, name='data', position=None, **kwargs):
-        data = wt_data.Data(filepath=self.filepath, parent=self.name, name=name, edit_local=True,
-                            **kwargs)
+        if name == '':
+            data = None
+            natural_name = "".encode()
+        else:
+            data = wt_data.Data(filepath=self.filepath, parent=self.name, name=name,
+                            edit_local=True, **kwargs)
+            natural_name = data.natural_name.encode()
         if position is None:
             self._items.append(data)
-            self.attrs['item_names'] = np.append(self.attrs['item_names'],
-                                                 data.natural_name.encode())
+            self.attrs['item_names'] = np.append(self.attrs['item_names'], natural_name)
         else:
             self._items.insert(position, data)
-            self.attrs['item_names'] = np.insert(self.attrs['item_names'], position,
-                                                 data.natural_name.encode())
+            self.attrs['item_names'] = np.insert(self.attrs['item_names'], position, natural_name)
         setattr(self, name, data)
         return data
 

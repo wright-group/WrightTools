@@ -83,6 +83,9 @@ class Group(h5py.Group):
         parent = args[1] if len(args) > 1 else kwargs.get('parent', None)
         name = args[2] if len(args) > 2 else kwargs.get('name', cls.class_name.lower())
         edit_local = args[3] if len(args) > 3 else kwargs.get('edit_local', False)
+        if isinstance(parent, h5py.Group):
+            filepath = parent.filepath
+            parent = parent.name
         # tempfile
         tmpfile = None
         if edit_local and filepath is None:
