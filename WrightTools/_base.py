@@ -21,12 +21,47 @@ import h5py
 wt5_version = '0.0.0'
 
 
-# --- dataset -------------------------------------------------------------------------------------
+# --- classes -------------------------------------------------------------------------------------
 
 
 class Dataset(h5py.Dataset):
     instances = {}
     class_name = 'Dataset'
+
+    def __getitem__(self, i):
+        if hasattr(i, '__iter__'):
+            indices = list(i)
+        else:
+            indices = [i]
+        while len(indices) <= self.dimensionality:
+            indices.append(slice(None))
+        indices = [indices[i] for i in self.transposition]
+        transposition = self.transposition[[not isinstance(idx, int) for idx in indices]]
+        transposition -= min(transposition)
+        # TODO: handle transposition properly
+        return super().__getitem__(tuple(indices))#.transpose(self.transposition)
+
+    def __repr__(self):
+        return '<WrightTools.{0} \'{1}\' at {2}>'.format(self.class_name, self.natural_name,
+                                                         self.fullpath)
+
+    @property
+    def fullpath(self):
+        return self.parent.fullpath + posixpath.sep + self.natural_name
+
+    @property
+    def natural_name(self):
+        return self.attrs['name']
+
+    @property
+    def parent(self):
+        return self._parent
+
+    @property
+    def transposition(self):
+        if 'transposition' not in self.attrs.keys():
+            self.attrs['transposition'] = np.arange(len(self.shape))
+        return self.attrs['transposition']
 
     @property
     def units(self):
@@ -40,8 +75,14 @@ class Dataset(h5py.Dataset):
         else:
             self.attrs['units'] = value.encode()
 
-
-# --- group ---------------------------------------------------------------------------------------
+    def transpose(self, axes):
+        if axes is None:
+            new = self.transposition[::-1]
+        else:
+            new = self.transposition
+            for i, axis in enumerate(axes):
+                new[i] = self.transposition[axis]
+        self.attrs['transposition'] = new
 
 
 class Group(h5py.Group):
@@ -76,6 +117,27 @@ class Group(h5py.Group):
         # the following are populated if not already recorded
         self.__version__
         self.natural_name
+
+    def __getitem__(self, key):
+        from .collection import Collection
+        from .data._data import Channel, Data, Variable
+        out = h5py.Group.__getitem__(self, key)
+        if 'class' in out.attrs.keys():
+            if out.attrs['class'] == 'Channel':
+                return Channel(parent=self, id=out.id)
+            elif out.attrs['class'] == 'Collection':
+                return Collection(filepath=self.filepath, parent=self.name, name=key,
+                                  edit_local=True)
+            elif out.attrs['class'] == 'Data':
+                return Data(filepath=self.filepath, parent=self.name, name=key,
+                            edit_local=True)
+            if out.attrs['class'] == 'Variable':
+                return Variable(parent=self, id=out.id)
+            else:
+                return Group(filepath=self.filepath, parent=self.name, name=key,
+                             edit_local=True)
+        else:
+            return out
 
     def __new__(cls, *args, **kwargs):
         # extract

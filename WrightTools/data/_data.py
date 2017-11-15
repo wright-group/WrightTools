@@ -42,13 +42,13 @@ else:
     string_type = str  # newer versions of python don't have unicode type
 
 
-__all__ = ['Axis', 'Channel', 'Data']
+__all__ = ['Data']
 
 
 # --- classes -------------------------------------------------------------------------------------
 
 
-class Axis(Dataset):
+class Axis(object):
     """Axis class."""
 
     def __init__(self, parent, id, units=None, symbol_type=None, label_seed=[''], **kwargs):
@@ -188,15 +188,6 @@ class Axis(Dataset):
         label += r'}$'
         return label
 
-    def is_constant(self):
-        """Axis constant flag."""
-        try:
-            len(self[:])
-        except TypeError:
-            return False
-        finally:
-            return True
-
     def max(self):
         """Axis max, ignoring nans."""
         return np.nanmax(self[:])
@@ -208,6 +199,7 @@ class Axis(Dataset):
 
 class Channel(Dataset):
     """Channel."""
+    class_name = 'Channel'
 
     def __init__(self, parent, id, units=None, null=None, signed=None,
                  label=None, label_seed=None, **kwargs):
@@ -252,33 +244,10 @@ class Channel(Dataset):
             if not hasattr(self, identifier):
                 setattr(self, identifier, value)
 
-    def __getitem__(self, i):
-        if hasattr(i, '__iter__'):
-            indices = list(i)
-        else:
-            indices = [i]
-        while len(indices) <= self.dimensionality:
-            print(indices)
-            indices.append(slice(None))
-        indices = [indices[i] for i in self.transposition]
-        return h5py.Dataset.__getitem__(self, tuple(indices)).transpose(self.transposition)
-
-    def __repr__(self):
-        return '<WrightTools.Channel \'{0}\' at {1}>'.format(self.natural_name,
-                                                                  self.fullpath)
-
-    @property
-    def fullpath(self):
-        return self.parent.fullpath + posixpath.sep + self.natural_name
-
     @property
     def minor_extent(self):
         """Minimum deviation from null."""
         return min((self.max() - self.null, self.null - self.min()))
-
-    @property
-    def natural_name(self):
-        return self.attrs['name']
 
     @property
     def null(self):
@@ -303,20 +272,10 @@ class Channel(Dataset):
         return max((self.max() - self.null, self.null - self.min()))
 
     @property
-    def parent(self):
-        return self._parent
-
-    @property
     def signed(self):
         if not 'signed' in self.attrs.keys():
             self.attrs['signed'] = False
         return self.attrs['signed']
-
-    @property
-    def transposition(self):
-        if not 'transposition' in self.attrs.keys():
-            self.attrs['transposition'] = np.arange(len(self.shape))
-        return self.attrs['transposition']
 
     def clip(self, min=None, max=None, replace='nan'):
         """Clip (limit) the values in a channel.
@@ -379,15 +338,6 @@ class Channel(Dataset):
         # divide through by max
         self[:] /= np.amax(dummy, axis=axis, keepdims=True)
         # finish
-
-    def transpose(self, axes):
-        if axes is None:
-            new = self.transposition[::-1]
-        else:
-            new = self.transposition
-            for i, axis in enumerate(axes):
-                new[i] = self.transposition[axis]
-        self.attrs['transposition'] = new
 
     def trim(self, neighborhood, method='ztest', factor=3, replace='nan',
              verbose=True):
@@ -484,14 +434,7 @@ class Data(Group):
         self.constant_names
         self.kind
         self.source
-
-    def __getitem__(self, key):
-        out = h5py.Group.__getitem__(self, key)
-        if 'class' in out.attrs.keys():
-            if out.attrs['class'] == 'Channel':
-                return Channel(parent=self, id=out.id)
-            elif out.attrs['class'] == 'Axis':
-                return Axis(parent=self, id=out.id)
+        self.variable_names
 
     def __repr__(self):
         return '<WrightTools.Data \'{0}\' {1} at {2}>'.format(
@@ -579,6 +522,16 @@ class Data(Group):
             self.attrs['source'] = 'None'
         value = self.attrs['source']
         return value if not value == 'None' else None
+
+    @property
+    def variable_names(self):
+        if 'variable_names' not in self.attrs.keys():
+            self.attrs['variable_names'] = np.array([], dtype='S')
+        return [s.decode() for s in self.attrs['variable_names']]
+
+    @property
+    def variables(self):
+        return [self[n] for n in self.variable_names]
 
     def _update(self):
         """Ensure that a Data Object is up to date.
@@ -897,6 +850,7 @@ class Data(Group):
         Axis
             Created axis.
         """
+        raise NotImplementedError
         # TODO: reshape extant channels
         id = self.require_dataset(name=name, data=points, shape=points.shape,
                                   dtype=points.dtype).id
@@ -904,9 +858,6 @@ class Data(Group):
         self.attrs['axis_names'] = np.append(self.attrs['axis_names'], name.encode())
         self._update()
         return axis
-
-    def create_constant(self, *args, **kwargs):
-        raise NotImplementedError
 
     def create_channel(self, name, values=None, units=None, **kwargs):
         """Append a new channel.
@@ -932,15 +883,34 @@ class Data(Group):
         else:
             shape = values.shape
             dtype = values.dtype
-            if not shape == self.shape:
-                raise Exception  # TODO: better exception
+            #if not shape == self.shape:
+            #    raise Exception  # TODO: better exception
         # create dataset
         id = self.require_dataset(name=name, data=values, shape=shape, dtype=dtype).id
         channel = Channel(self, id, units=units, **kwargs)
+        # finish
         self.channels.append(channel)
         self.attrs['channel_names'] = np.append(self.attrs['channel_names'], name.encode())
         self._update()
         return channel
+
+    def create_variable(self, name, values=None, units=None, **kwargs):
+        # TODO: docstring
+        if values is None:
+            shape = self.shape
+            dtype = np.float64
+        else:
+            shape = values.shape
+            dtype = values.dtype
+            #if not shape == self.shape:
+            #    raise Exception  # TODO: better exception
+        # create dataset
+        id = self.require_dataset(name=name, data=values, shape=shape, dtype=dtype).id
+        variable = Variable(self, id, units=units, **kwargs)
+        # finish
+        self.attrs['variable_names'] = np.append(self.attrs['variable_names'], name.encode())
+        self._update()
+        return variable
 
     def divide(self, divisor, channel=0, divisor_channel=0):
         """Divide a given channel by another data object.
@@ -2059,3 +2029,210 @@ class Data(Group):
         # return
         if verbose:
             print('data zoomed to new shape:', self.shape)
+
+class Channel(Dataset):
+    """Channel."""
+
+    def __init__(self, parent, id, units=None, null=None, signed=None,
+                 label=None, label_seed=None, **kwargs):
+        """Construct a channel object.
+
+        Parameters
+        ----------
+        values : array-like
+            Values.
+        name : string
+            Channel name.
+        units : string (optional)
+            Channel units. Default is None.
+        null : number (optional)
+            Channel null. Default is None (0).
+        signed : booelan (optional)
+            Channel signed flag. Default is None (guess).
+        label : string.
+            Label. Default is None.
+        label_seed : list of strings
+            Label seed. Default is None.
+        **kwargs
+            Additional keyword arguments are added to the attrs dictionary
+            and to the natural namespace of the object (if possible).
+        """
+        self._parent = parent
+        h5py.Dataset.__init__(self, id)
+        self.label = label
+        self.label_seed = label_seed
+        self.units = units
+        self.dimensionality = len(self.shape)
+        # attrs
+        self.attrs.update(kwargs)
+        self.attrs['name'] = h5py.h5i.get_name(self.id).decode().split('/')[-1]
+        self.attrs['class'] = 'Channel'
+        if signed is not None:
+            self.attrs['signed'] = signed
+        if null is not None:
+            self.attrs['null'] = null
+        for key, value in self.attrs.items():
+            identifier = wt_kit.string2identifier(key)
+            if not hasattr(self, identifier):
+                setattr(self, identifier, value)
+
+    def __repr__(self):
+        return '<WrightTools.Channel \'{0}\' at {1}>'.format(self.natural_name,
+                                                                  self.fullpath)
+
+    @property
+    def minor_extent(self):
+        """Minimum deviation from null."""
+        return min((self.max() - self.null, self.null - self.min()))
+
+    @property
+    def natural_name(self):
+        return self.attrs['name']
+
+    @property
+    def null(self):
+        if not 'null' in self.attrs.keys():
+            self.attrs['null'] = 0
+        return self.attrs['null']
+
+    @property
+    def info(self):
+        """Return Channel info dictionary."""
+        info = collections.OrderedDict()
+        info['name'] = self.name
+        info['min'] = self.min()
+        info['max'] = self.max()
+        info['null'] = self.null
+        info['signed'] = self.signed
+        return info
+
+    @property
+    def major_extent(self):
+        """Maximum deviation from null."""
+        return max((self.max() - self.null, self.null - self.min()))
+
+    @property
+    def parent(self):
+        return self._parent
+
+    @property
+    def signed(self):
+        if not 'signed' in self.attrs.keys():
+            self.attrs['signed'] = False
+        return self.attrs['signed']
+
+    @property
+    def transposition(self):
+        if not 'transposition' in self.attrs.keys():
+            self.attrs['transposition'] = np.arange(len(self.shape))
+        return self.attrs['transposition']
+
+    def clip(self, min=None, max=None, replace='nan'):
+        """Clip (limit) the values in a channel.
+
+        Parameters
+        ----------
+        min : number (optional)
+            New channel minimum. Default is None.
+        max : number (optional)
+            New channel maximum. Default is None.
+        replace : {'val', 'nan'} (optional)
+           Replace behavior. Default is nan.
+        """
+        # decide what min and max will actually be
+        if max is None:
+            max = self.max()
+        if min is None:
+            min = self.min()
+        # replace values
+        if replace == 'val':
+            self[:].clip(min, max, out=self[:])
+        elif replace == 'nan':
+            self[self[:] < min] = np.nan
+            self[self[:] > max] = np.nan
+        else:
+            print('replace not recognized in channel.clip')
+
+    def invert(self):
+        """Invert channel values."""
+        self[:] *= -1
+
+    def mag(self):
+        """Channel magnitude (maximum deviation from null)."""
+        return self.major_extent
+
+    def max(self):
+        """Maximum, ignorning nans."""
+        return np.nanmax(self[:])
+
+    def min(self):
+        """Minimum, ignoring nans."""
+        return np.nanmin(self[:])
+
+    def normalize(self, axis=None):
+        """Normalize a Channel, set `null` to 0 and the max to 1."""
+        # process axis argument
+        if axis is not None:
+            if hasattr(axis, '__contains__'):  # list, tuple or similar
+                axis = tuple((int(i) for i in axis))
+            else:  # presumably a simple number
+                axis = int(axis)
+        # subtract off null
+        self[:] -= self.null
+        self._null = 0.
+        # create dummy array
+        dummy = self[:].copy()
+        dummy[np.isnan(dummy)] = 0  # nans are propagated in np.amax
+        if self.signed:
+            dummy = np.absolute(dummy)
+        # divide through by max
+        self[:] /= np.amax(dummy, axis=axis, keepdims=True)
+        # finish
+
+
+class Variable(Dataset):
+    """Variable."""
+    class_name = 'Variable'
+
+    def __init__(self, parent, id, units=None, null=None, signed=None,
+                 label=None, label_seed=None, **kwargs):
+        """Construct a channel object.
+
+        Parameters
+        ----------
+        values : array-like
+            Values.
+        name : string
+            Channel name.
+        units : string (optional)
+            Channel units. Default is None.
+        null : number (optional)
+            Channel null. Default is None (0).
+        signed : booelan (optional)
+            Channel signed flag. Default is None (guess).
+        label : string.
+            Label. Default is None.
+        label_seed : list of strings
+            Label seed. Default is None.
+        **kwargs
+            Additional keyword arguments are added to the attrs dictionary
+            and to the natural namespace of the object (if possible).
+        """
+        self._parent = parent
+        h5py.Dataset.__init__(self, id)
+        self.label = label
+        self.label_seed = label_seed
+        self.units = units
+        self.dimensionality = len(self.shape)
+        # attrs
+        self.attrs.update(kwargs)
+        self.attrs['name'] = h5py.h5i.get_name(self.id).decode().split('/')[-1]
+        self.attrs['class'] = self.class_name
+        if signed is not None:
+            self.attrs['signed'] = signed
+        if null is not None:
+            self.attrs['null'] = null
+        for key, value in self.attrs.items():
+            identifier = wt_kit.string2identifier(key)
+            if not hasattr(self, identifier):
+                setattr(self, identifier, value)

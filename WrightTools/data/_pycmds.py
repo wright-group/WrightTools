@@ -58,6 +58,12 @@ def from_PyCMDS(filepath, name=None, collection=None, verbose=True):
         data_name = name
     if data_name == '':  # name not given in PyCMDS
         data_name = headers['data origin']
+    # create data object
+    kwargs = {'name': data_name, 'kind': 'PyCMDS', 'source': filepath}
+    if collection is not None:
+        data = collection.create_data(**kwargs)
+    else:
+        data = Data(**kwargs)
     # array
     arr = np.genfromtxt(filepath).T
     # get axes
@@ -185,15 +191,12 @@ def from_PyCMDS(filepath, name=None, collection=None, verbose=True):
     for name, identity in zip(headers['constant names'], headers['constant identities']):
         # TODO: handle PyCMDS constants
         pass
-    # create data object
-    kwargs = {'name': data_name, 'kind': 'PyCMDS', 'source': filepath}
-    if collection is not None:
-        data = collection.create_data(**kwargs)
-    else:
-        data = Data(**kwargs)
     # add contents
-    for axis in axes:
-        data.create_axis(**axis)
+    for kind, name in zip(headers['kind'], headers['name']):
+        if kind == 'hardware':
+            values = np.reshape(arr[headers['name'].index(name)], shape)
+            data.create_variable(name, values=values)
+            # TODO: units
     for channel in channels:
         data.create_channel(**channel)
     # return

@@ -54,19 +54,7 @@ class Collection(Group):
             key = self.item_names[key]
         if key == "":
             return None
-        out = h5py.Group.__getitem__(self, key)
-        if 'class' in out.attrs.keys():
-            if out.attrs['class'] == 'Data':
-                return wt_data.Data(filepath=self.filepath, parent=self.name, name=key,
-                                    edit_local=True)
-            elif out.attrs['class'] == 'Collection':
-                return Collection(filepath=self.filepath, parent=self.name, name=key,
-                                  edit_local=True)
-            else:
-                return Group(filepath=self.filepath, parent=self.name, name=key,
-                              edit_local=True)
-        else:
-            return out
+        return super().__getitem__(key)
 
     def __setitem__(self, key, value):
         raise NotImplementedError
