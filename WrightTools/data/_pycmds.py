@@ -192,13 +192,16 @@ def from_PyCMDS(filepath, name=None, collection=None, verbose=True):
         # TODO: handle PyCMDS constants
         pass
     # add contents
-    for kind, name in zip(headers['kind'], headers['name']):
+    for index, kind, name in zip(range(len(arr)), headers['kind'], headers['name']):
         if kind == 'hardware':
-            values = np.reshape(arr[headers['name'].index(name)], shape)
-            data.create_variable(name, values=values)
+            values = np.reshape(arr[index], shape)
+            units = headers['units'][index]
+            data.create_variable(name, values=values, units=units)
             # TODO: units
     for channel in channels:
         data.create_channel(**channel)
+    for axis in axes:
+        data.create_axis(axis['identity'], axis['units'])
     # return
     if verbose:
         print('data created at {0}'.format(data.fullpath))

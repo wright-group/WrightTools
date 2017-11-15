@@ -65,7 +65,8 @@ class Dataset(h5py.Dataset):
 
     @property
     def units(self):
-        return self.attrs.get('units', None)
+        if 'units' in self.attrs.keys():
+            return self.attrs['units'].decode()
 
     @units.setter
     def units(self, value):

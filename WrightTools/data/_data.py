@@ -7,6 +7,7 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import os
+import re
 import sys
 import copy
 import shutil
@@ -14,6 +15,8 @@ import weakref
 import collections
 import warnings
 import tempfile
+import operator
+import functools
 
 import posixpath
 
@@ -34,13 +37,7 @@ from .. import units as wt_units
 # --- define --------------------------------------------------------------------------------------
 
 
-# string types
-if sys.version[0] == '2':
-    # recognize unicode and string types
-    string_type = basestring  # noqa: F821
-else:
-    string_type = str  # newer versions of python don't have unicode type
-
+operators = '/=-+*'
 
 __all__ = ['Data']
 
@@ -51,87 +48,64 @@ __all__ = ['Data']
 class Axis(object):
     """Axis class."""
 
-    def __init__(self, parent, id, units=None, symbol_type=None, label_seed=[''], **kwargs):
-        """Create an `Axis` object.
-
-        Parameters
-        ----------
-        points : 1D array-like
-            Axis points.
-        units : string
-            Axis units.
-        name : string
-            Axis name. Must be unique.
-        symbol_type : string (optional)
-            Axis symbol type. If None, symbol_type is automatically
-            generated. Default is None.
-        label_seed : list of strings
-            Axis label subscripts. Default is [''].
-        **kwargs
-            Additional keyword arguments are added to the attrs dictionary
-            and to the natural namespace of the object (if possible).
-        """
-        self._parent = parent
-        h5py.Dataset.__init__(self, id)
-        # units
-        if units is not None:
-            self.attrs['units'] = units
-        self.units_kind = None
-        for dic in wt_units.unit_dicts:
-            if self.units in dic.keys():
-                self.units_kind = dic['kind']
-        # label
-        self.label_seed = label_seed
-        if symbol_type:
-            self.symbol_type = symbol_type
+    def __init__(self, parent, expression, units=None, **kwargs):
+        # TODO: docstring
+        self.parent = parent
+        self.expression = expression
+        if units is None:
+            self.units = self.variables[0].units
         else:
-            self.symbol_type = wt_units.get_default_symbol_type(self.units)
-        self.get_label()
-        # attrs
-        self.attrs.update(kwargs)
-        self.attrs['name'] = h5py.h5i.get_name(self.id).decode().split('/')[-1]
-        self.attrs['class'] = 'Axis'
-        for key, value in self.attrs.items():
-            identifier = wt_kit.string2identifier(key)
-            if not hasattr(self, identifier):
-                setattr(self, identifier, value)
+            self.units = units
+
+    def __getitem__(self, index):
+        import numexpr
+        vs = {}
+        for variable in self.variables:
+            arr = variable[index]
+            vs[variable.natural_name] = wt_units.converter(arr, variable.units, self.units)
+        return numexpr.evaluate(self.expression, local_dict=vs)
 
     def __repr__(self):
-        return '<WrightTools.Axis \'{0}\' at {1}>'.format(self.natural_name, self.fullpath)
+        return '<WrightTools.Axis {0} ({1}) at {2}>'.format(self.expression, str(self.units),
+                                                          id(self))
 
     @property
-    def fullpath(self):
-        return self.parent.fullpath + posixpath.sep + self.natural_name
+    def identity(self):
+        return self.natural_name + ' {%s}' % self.units
+
+    @property
+    def label(self):
+        raise NotImplementedError
 
     @property
     def natural_name(self):
-        return self.attrs['name']
-
-    @natural_name.setter
-    def natural_name(self, value):
-        self.attrs['name'] = value
-
-    @property
-    def info(self):
-        """Axis info dictionary."""
-        info = collections.OrderedDict()
-        info['name'] = self.name
-        info['id'] = id(self)
-        if self.is_constant:
-            info['point'] = self[0]
-        else:
-            info['range'] = '{0} - {1} ({2})'.format(self.min(), self.max(), self.units)
-            info['number'] = self.size
-        return info
+        name = self.expression.strip()
+        name = name.replace('/', '__d__')
+        name = name.replace('=', '__e__')
+        name = name.replace('-', '__m__')
+        name = name.replace('+', '__p__')
+        name = name.replace('*', '__t__')
+        return name
 
     @property
-    def label(self):  # noqa: D403
-        """LaTeX formatted label."""
-        return self.get_label()
+    def ndim(self):
+        return len(self.shape)
 
     @property
-    def parent(self):
-        return self._parent
+    def shape(self):
+        component_shapes = [v.shape for v in self.variables]
+        # TODO:
+        return component_shapes[0]
+
+    @property
+    def size(self):
+        return functools.reduce(operator.mul, self.shape)
+
+    @property
+    def variables(self):
+        pattern = '|'.join(map(re.escape, operators))
+        keys = re.split(pattern, self.expression)
+        return [self.parent.variables[self.parent.variable_names.index(key)] for key in keys]
 
     def convert(self, destination_units):
         """Convert axis to destination units.
@@ -141,9 +115,7 @@ class Axis(object):
         destination_units : string
             Destination units.
         """
-        self[:] = wt_units.converter(self[:], self.units,
-                                         destination_units)
-        self.units = destination_units
+        raise NotImplementedError
 
     def get_label(self, show_units=True, points=False, decimals=2):
         """Get a LaTeX formatted label.
@@ -157,6 +129,7 @@ class Axis(object):
         decimals : integer (optional)
             Number of decimals to show for numbers. Default is 2.
         """
+        raise NotImplementedError
         label = r'$\mathsf{'
         # label
         for part in self.label_seed:
@@ -189,12 +162,12 @@ class Axis(object):
         return label
 
     def max(self):
-        """Axis max, ignoring nans."""
-        return np.nanmax(self[:])
+        """Axis max."""
+        return np.max(self[:])
 
     def min(self):
-        """Axis min, ignoring nans."""
-        return np.nanmin(self[:])
+        """Axis min."""
+        return np.min(self[:])
 
 
 class Channel(Dataset):
@@ -428,8 +401,13 @@ class Data(Group):
         kwargs.pop('channel_names', None)
         kwargs.pop('constant_names', None)
         Group.__init__(self, *args, **kwargs)
+        self.axes = []
+        for identifier in self.attrs.get('axes', []):
+            expression, units = identifier.split('{')
+            units = units.replace('{', '')
+            axis = Axis(self, expression.strip(), units.strip())
+            self.axes = axis
         # the following are populated if not already recorded
-        self.axis_names
         self.channel_names
         self.constant_names
         self.kind
@@ -441,14 +419,12 @@ class Data(Group):
             self.natural_name, str(self.axis_names), '::'.join([self.filepath, self.name]))
 
     @property
-    def axes(self):
-        return [self[n] for n in self.axis_names]
+    def axis_expressions(self):
+        return [a.expression for a in self.axes]
 
     @property
     def axis_names(self):
-        if 'axis_names' not in self.attrs.keys():
-            self.attrs['axis_names'] = np.array([], dtype='S')
-        return [s.decode() for s in self.attrs['axis_names']]
+        return [a.natural_name for a in self.axes]
 
     @property
     def channel_names(self):
@@ -545,7 +521,7 @@ class Data(Group):
         else:
             raise wt_exceptions.NameNotUniqueError()
         for obj in self.axes + self.channels + self.constants:
-            identifier = obj.name.split('/')[-1]
+            identifier = obj.natural_name
             setattr(self, identifier, obj)
         # attrs
         for key, value in self.attrs.items():
@@ -566,7 +542,7 @@ class Data(Group):
         # get channel
         if isinstance(channel, int):
             channel_index = channel
-        elif isinstance(channel, string_type):
+        elif isinstance(channel, str):
             channel_index = self.channel_names.index(channel)
         else:
             raise TypeError("channel: expected {int, str}, got %s" % type(channel))
@@ -632,7 +608,7 @@ class Data(Group):
         # interpret arguments recieved ------------------------------------------------------------
         for i in range(len(axes_args)):
             arg = axes_args[i]
-            if isinstance(arg, string_type):
+            if isinstance(arg, str):
                 pass
             elif isinstance(arg, int):
                 arg = self.axis_names[arg]
@@ -730,7 +706,7 @@ class Data(Group):
         # get channel
         if isinstance(channel, int):
             channel_index = channel
-        elif isinstance(channel, string_type):
+        elif isinstance(channel, str):
             channel_index = self.channel_names.index(channel)
         else:
             raise TypeError("channel: expected {int, str}, got %s" % type(channel))
@@ -761,7 +737,7 @@ class Data(Group):
         # get axis index --------------------------------------------------------------------------
         if isinstance(axis, int):
             axis_index = axis
-        elif isinstance(axis, string_type):
+        elif isinstance(axis, str):
             axis_index = self.axis_names.index(axis)
         else:
             raise TypeError("axis: expected {int, str}, got %s" % type(axis))
@@ -771,7 +747,7 @@ class Data(Group):
                 methods = method
             else:
                 print('method argument incompatible in data.collapse')
-        elif isinstance(method, string_type):
+        elif isinstance(method, str):
             methods = [method for _ in self.channels]
         # collapse --------------------------------------------------------------------------------
         for method, channel in zip(methods, self.channels):
@@ -830,32 +806,10 @@ class Data(Group):
         """
         return copy.deepcopy(self)
 
-
-    def create_axis(self, name, points, units, **kwargs):
-        """Append a new axis, changing shape.
-
-        Extant channels are broadcast into the new shape.
-
-        Parameters
-        ----------
-        name : string
-            Unique name for this axis.
-        points : 1D array
-            Axis points.
-        units : string
-            Axis units.
-
-        Returns
-        -------
-        Axis
-            Created axis.
-        """
-        raise NotImplementedError
-        # TODO: reshape extant channels
-        id = self.require_dataset(name=name, data=points, shape=points.shape,
-                                  dtype=points.dtype).id
-        axis = Axis(self, id, units=units, **kwargs)
-        self.attrs['axis_names'] = np.append(self.attrs['axis_names'], name.encode())
+    def create_axis(self, expression, units, **kwargs):
+        axis = Axis(self, expression, units, **kwargs)
+        self.axes.append(axis)
+        self.flush()
         self._update()
         return axis
 
@@ -951,7 +905,7 @@ class Data(Group):
         # get own channel
         if isinstance(channel, int):
             channel_index = channel
-        elif isinstance(channel, string_type):
+        elif isinstance(channel, str):
             channel_index = self.channel_names.index(channel)
         else:
             raise TypeError("channel: expected {int, str}, got %s" % type(channel))
@@ -959,7 +913,7 @@ class Data(Group):
         # get divisor channel
         if isinstance(divisor_channel, int):
             divisor_channel_index = divisor_channel
-        elif isinstance(divisor_channel, string_type):
+        elif isinstance(divisor_channel, str):
             divisor_channel_index = divisor.channel_names.index(divisor_channel)
         else:
             raise TypeError("divisor_channel: expected {int, str}, got %s" % type(divisor_channel))
@@ -995,14 +949,14 @@ class Data(Group):
         # get signal channel
         if isinstance(signal_channel, int):
             signal_channel_index = signal_channel
-        elif isinstance(signal_channel, string_type):
+        elif isinstance(signal_channel, str):
             signal_channel_index = self.channel_names.index(signal_channel)
         else:
             raise TypeError("signal_channel: expected {int, str}, got %s" % type(signal_channel))
         # get reference channel
         if isinstance(reference_channel, int):
             reference_channel_index = reference_channel
-        elif isinstance(reference_channel, string_type):
+        elif isinstance(reference_channel, str):
             reference_channel_index = self.channel_names.index(reference_channel)
         else:
             raise TypeError("reference_channel: expected {int, str}, got %s" %
@@ -1038,7 +992,7 @@ class Data(Group):
         # axis ------------------------------------------------------------------------------------
         if isinstance(axis, int):
             axis_index = axis
-        elif isinstance(axis, string_type):
+        elif isinstance(axis, str):
             axis_index = self.axis_names.index(axis)
         else:
             raise TypeError("axis: expected {int, str}, got %s" % type(axis))
@@ -1061,6 +1015,10 @@ class Data(Group):
             values = values.transpose(transpose_order)
             channel[:] = values
 
+    def flush(self):
+        self.attrs['axes'] = [a.identity.encode() for a in self.axes]
+        super().flush()
+
     def get_nadir(self, channel=0):
         """
         Get the coordinates in units of the minimum in a channel.
@@ -1078,7 +1036,7 @@ class Data(Group):
         # get channel
         if isinstance(channel, int):
             channel_index = channel
-        elif isinstance(channel, string_type):
+        elif isinstance(channel, str):
             channel_index = self.channel_names.index(channel)
         else:
             raise TypeError("channel: expected {int, str}, got %s" % type(channel))
@@ -1106,7 +1064,7 @@ class Data(Group):
         # get channel
         if isinstance(channel, int):
             channel_index = channel
-        elif isinstance(channel, string_type):
+        elif isinstance(channel, str):
             channel_index = self.channel_names.index(channel)
         else:
             raise TypeError("channel: expected {int, str}, got %s" % type(channel))
@@ -1150,7 +1108,7 @@ class Data(Group):
             # channel
             if isinstance(channel, int):
                 channel_index = channel
-            elif isinstance(channel, string_type):
+            elif isinstance(channel, str):
                 channel_index = self.channel_names.index(channel)
             else:
                 raise TypeError("channel: expected {int, str}, got %s" % type(channel))
@@ -1193,7 +1151,7 @@ class Data(Group):
         # channel ---------------------------------------------------------------------------------
         if isinstance(channel, int):
             channel_index = channel
-        elif isinstance(channel, string_type):
+        elif isinstance(channel, str):
             channel_index = self.channel_names.index(channel)
         else:
                 raise TypeError("channel: expected {int, str}, got %s" % type(channel))
@@ -1201,7 +1159,7 @@ class Data(Group):
         # axis ------------------------------------------------------------------------------------
         if isinstance(axis, int):
             axis_index = axis
-        elif isinstance(axis, string_type):
+        elif isinstance(axis, str):
             axis_index = self.axis_names.index(axis)
         else:
             raise TypeError("axis: expected {int, str}, got %s" % type(axis))
@@ -1368,7 +1326,7 @@ class Data(Group):
         # get axis index --------------------------------------------------------------------------
         if isinstance(axis, int):
             axis_index = axis
-        elif isinstance(axis, string_type):
+        elif isinstance(axis, str):
             axis_index = self.axis_names.index(axis)
         else:
             raise TypeError("axis: expected {int, str}, got %s" % type(axis))
@@ -1434,7 +1392,7 @@ class Data(Group):
         # process channel
         if isinstance(channel, int):
             channel_index = channel
-        elif isinstance(channel, string_type):
+        elif isinstance(channel, str):
             channel_index = self.channel_names.index(channel)
         else:
                 raise TypeError("channel: expected {int, str}, got %s" % type(channel))
@@ -1442,7 +1400,7 @@ class Data(Group):
         # process axes
 
         def process(i):
-            if isinstance(channel, string_type):
+            if isinstance(channel, str):
                 return self.axis_names.index(i)
             else:
                 return int(i)
@@ -1495,7 +1453,7 @@ class Data(Group):
         # axis ------------------------------------------------------------------------------------
         if isinstance(along, int):
             axis_index = along
-        elif isinstance(along, string_type):
+        elif isinstance(along, str):
             axis_index = self.axis_names.index(along)
         else:
             raise TypeError("along: expected {int, str}, got %s" % type(along))
@@ -1536,7 +1494,7 @@ class Data(Group):
         # get offset axis index
         if isinstance(offset_axis, int):
             offset_axis_index = offset_axis
-        elif isinstance(offset_axis, string_type):
+        elif isinstance(offset_axis, str):
             offset_axis_index = self.axis_names.index(offset_axis)
         else:
             raise TypeError("offset_axis: expected {int, str}, got %s" % type(offset_axis))
@@ -1593,7 +1551,7 @@ class Data(Group):
         # get channel
         if isinstance(channel, int):
             channel_index = channel
-        elif isinstance(channel, string_type):
+        elif isinstance(channel, str):
             channel_index = self.channel_names.index(channel)
         else:
             raise TypeError("channel: expected {int, str}, got %s" % type(channel))
@@ -1654,7 +1612,7 @@ class Data(Group):
         # get channel
         if isinstance(channel, int):
             channel_index = channel
-        elif isinstance(channel, string_type):
+        elif isinstance(channel, str):
             channel_index = self.channel_names.index(channel)
         else:
             raise TypeError("channel: expected {int, str}, got %s" % type(channel))
@@ -1710,7 +1668,7 @@ class Data(Group):
         else:
             if isinstance(channel, int):
                 channel_index = channel
-            elif isinstance(channel, string_type):
+            elif isinstance(channel, str):
                 channel_index = self.channel_names.index(channel)
             else:
                 raise TypeError("channel: expected {int, str}, got %s" % type(channel))
@@ -1784,7 +1742,7 @@ class Data(Group):
         # axis ------------------------------------------------------------------------------------
         if isinstance(axis, int):
             axis_index = axis
-        elif isinstance(axis, string_type):
+        elif isinstance(axis, str):
             axis_index = self.axis_names.index(axis)
         else:
             raise TypeError("axis: expected {int, str}, got %s" % type(axis))
@@ -1925,7 +1883,7 @@ class Data(Group):
         # get own channel
         if isinstance(channel, int):
             channel_index = channel
-        elif isinstance(channel, string_type):
+        elif isinstance(channel, str):
             channel_index = self.channel_names.index(channel)
         else:
             raise TypeError("channel: expected {int, str}, got %s" % type(channel))
@@ -1933,7 +1891,7 @@ class Data(Group):
         # get subtrahend channel
         if isinstance(subtrahend_channel, int):
             subtrahend_channel_index = subtrahend_channel
-        elif isinstance(subtrahend_channel, string_type):
+        elif isinstance(subtrahend_channel, str):
             subtrahend_channel_index = subtrahend.channel_names.index(subtrahend_channel)
         else:
             raise TypeError("subtrahend_channel: expected {int, str}, got %s" %
@@ -1957,7 +1915,7 @@ class Data(Group):
         # channel
         if type(channel) in [int, float]:
             channel = self.channels[channel]
-        elif isinstance(channel, string_type):
+        elif isinstance(channel, str):
             index = self.channel_names.index(channel)
             channel = self.channels[index]
         # neighborhood
@@ -1974,6 +1932,18 @@ class Data(Group):
                                '{method, factor, replace, verbose}.')
         # call trim
         return channel.trim(neighborhood=neighborhood, **inputs)
+
+    def transform(self, axes=None, verbose=True):
+        # TODO: docstring
+        # TODO: ensure that transform does not break data
+        new = []
+        current = {a.expression: a for a in self.axes}
+        for expression in axes:
+            axis = current.get(expression, Axis(self, expression))
+            new.append(axis)
+        self.axes = new
+        self.flush()
+        self._update()
 
     def transpose(self, axes=None, verbose=True):
         """Transpose the dataset.
@@ -2030,165 +2000,6 @@ class Data(Group):
         if verbose:
             print('data zoomed to new shape:', self.shape)
 
-class Channel(Dataset):
-    """Channel."""
-
-    def __init__(self, parent, id, units=None, null=None, signed=None,
-                 label=None, label_seed=None, **kwargs):
-        """Construct a channel object.
-
-        Parameters
-        ----------
-        values : array-like
-            Values.
-        name : string
-            Channel name.
-        units : string (optional)
-            Channel units. Default is None.
-        null : number (optional)
-            Channel null. Default is None (0).
-        signed : booelan (optional)
-            Channel signed flag. Default is None (guess).
-        label : string.
-            Label. Default is None.
-        label_seed : list of strings
-            Label seed. Default is None.
-        **kwargs
-            Additional keyword arguments are added to the attrs dictionary
-            and to the natural namespace of the object (if possible).
-        """
-        self._parent = parent
-        h5py.Dataset.__init__(self, id)
-        self.label = label
-        self.label_seed = label_seed
-        self.units = units
-        self.dimensionality = len(self.shape)
-        # attrs
-        self.attrs.update(kwargs)
-        self.attrs['name'] = h5py.h5i.get_name(self.id).decode().split('/')[-1]
-        self.attrs['class'] = 'Channel'
-        if signed is not None:
-            self.attrs['signed'] = signed
-        if null is not None:
-            self.attrs['null'] = null
-        for key, value in self.attrs.items():
-            identifier = wt_kit.string2identifier(key)
-            if not hasattr(self, identifier):
-                setattr(self, identifier, value)
-
-    def __repr__(self):
-        return '<WrightTools.Channel \'{0}\' at {1}>'.format(self.natural_name,
-                                                                  self.fullpath)
-
-    @property
-    def minor_extent(self):
-        """Minimum deviation from null."""
-        return min((self.max() - self.null, self.null - self.min()))
-
-    @property
-    def natural_name(self):
-        return self.attrs['name']
-
-    @property
-    def null(self):
-        if not 'null' in self.attrs.keys():
-            self.attrs['null'] = 0
-        return self.attrs['null']
-
-    @property
-    def info(self):
-        """Return Channel info dictionary."""
-        info = collections.OrderedDict()
-        info['name'] = self.name
-        info['min'] = self.min()
-        info['max'] = self.max()
-        info['null'] = self.null
-        info['signed'] = self.signed
-        return info
-
-    @property
-    def major_extent(self):
-        """Maximum deviation from null."""
-        return max((self.max() - self.null, self.null - self.min()))
-
-    @property
-    def parent(self):
-        return self._parent
-
-    @property
-    def signed(self):
-        if not 'signed' in self.attrs.keys():
-            self.attrs['signed'] = False
-        return self.attrs['signed']
-
-    @property
-    def transposition(self):
-        if not 'transposition' in self.attrs.keys():
-            self.attrs['transposition'] = np.arange(len(self.shape))
-        return self.attrs['transposition']
-
-    def clip(self, min=None, max=None, replace='nan'):
-        """Clip (limit) the values in a channel.
-
-        Parameters
-        ----------
-        min : number (optional)
-            New channel minimum. Default is None.
-        max : number (optional)
-            New channel maximum. Default is None.
-        replace : {'val', 'nan'} (optional)
-           Replace behavior. Default is nan.
-        """
-        # decide what min and max will actually be
-        if max is None:
-            max = self.max()
-        if min is None:
-            min = self.min()
-        # replace values
-        if replace == 'val':
-            self[:].clip(min, max, out=self[:])
-        elif replace == 'nan':
-            self[self[:] < min] = np.nan
-            self[self[:] > max] = np.nan
-        else:
-            print('replace not recognized in channel.clip')
-
-    def invert(self):
-        """Invert channel values."""
-        self[:] *= -1
-
-    def mag(self):
-        """Channel magnitude (maximum deviation from null)."""
-        return self.major_extent
-
-    def max(self):
-        """Maximum, ignorning nans."""
-        return np.nanmax(self[:])
-
-    def min(self):
-        """Minimum, ignoring nans."""
-        return np.nanmin(self[:])
-
-    def normalize(self, axis=None):
-        """Normalize a Channel, set `null` to 0 and the max to 1."""
-        # process axis argument
-        if axis is not None:
-            if hasattr(axis, '__contains__'):  # list, tuple or similar
-                axis = tuple((int(i) for i in axis))
-            else:  # presumably a simple number
-                axis = int(axis)
-        # subtract off null
-        self[:] -= self.null
-        self._null = 0.
-        # create dummy array
-        dummy = self[:].copy()
-        dummy[np.isnan(dummy)] = 0  # nans are propagated in np.amax
-        if self.signed:
-            dummy = np.absolute(dummy)
-        # divide through by max
-        self[:] /= np.amax(dummy, axis=axis, keepdims=True)
-        # finish
-
 
 class Variable(Dataset):
     """Variable."""
@@ -2196,33 +2007,11 @@ class Variable(Dataset):
 
     def __init__(self, parent, id, units=None, null=None, signed=None,
                  label=None, label_seed=None, **kwargs):
-        """Construct a channel object.
-
-        Parameters
-        ----------
-        values : array-like
-            Values.
-        name : string
-            Channel name.
-        units : string (optional)
-            Channel units. Default is None.
-        null : number (optional)
-            Channel null. Default is None (0).
-        signed : booelan (optional)
-            Channel signed flag. Default is None (guess).
-        label : string.
-            Label. Default is None.
-        label_seed : list of strings
-            Label seed. Default is None.
-        **kwargs
-            Additional keyword arguments are added to the attrs dictionary
-            and to the natural namespace of the object (if possible).
-        """
+        # TODO: docstring
         self._parent = parent
         h5py.Dataset.__init__(self, id)
-        self.label = label
-        self.label_seed = label_seed
-        self.units = units
+        if units is not None:
+            self.units = units
         self.dimensionality = len(self.shape)
         # attrs
         self.attrs.update(kwargs)
