@@ -85,7 +85,7 @@ def from_Cary(filepath, parent=None, verbose=True):
         units = spl[1].lower() if len(spl) > 1 else None
         dat = datas.create_data(header[i], kind='Cary', source=filepath)
         dat.create_axis(ax, arr[i], units)
-        dat.create_channel(columns[i+1].lower(), arr[i+1])
+        dat.create_channel(columns[i+1].lower(), arr[i+1], label=columns[i+1].lower())
     # finish
     if verbose:
         print('{0} data objects successfully created from Cary file:'.format(len(datas)))
