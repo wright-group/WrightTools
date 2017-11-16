@@ -15,7 +15,7 @@ from scipy.interpolate import griddata
 
 import tidy_headers
 
-from ._data import Axis, Channel, Data
+from ._data import Data
 from .. import kit as wt_kit
 from .. import units as wt_units
 
@@ -186,20 +186,36 @@ def from_PyCMDS(filepath, name=None, collection=None, verbose=True):
             channel = {'values': zi, 'units': units, 'signed': signed, 'name': name,
                        'label': label}
             channels.append(channel)
-    # get constants
-    constants = []
-    for name, identity in zip(headers['constant names'], headers['constant identities']):
-        # TODO: handle PyCMDS constants
-        pass
-    # add contents
+    # add labtime variable
+    index = headers['name'].index('time')
+    values = np.reshape(arr[index], shape)
+    data.create_variable('labtime', values=values)
+    # add all other variables
     for index, kind, name in zip(range(len(arr)), headers['kind'], headers['name']):
         if kind == 'hardware':
             values = np.reshape(arr[index], shape)
+            for dim in range(values.ndim):
+                collapse = True
+                s = list(values.shape)
+                s.pop(dim)
+                for idx in np.ndindex(tuple(s)):
+                    idx = list(idx)
+                    idx.insert(dim, slice(None))
+                    test = values[tuple(idx)]
+                    if not (test == test[0]).all():
+                        collapse = False
+                        break
+                if collapse:
+                    idx = [slice(None)] * values.ndim
+                    idx[dim] = 0
+                    values = values[tuple(idx)]
+                    values = np.expand_dims(values, dim)
             units = headers['units'][index]
             data.create_variable(name, values=values, units=units)
-            # TODO: units
+    # add channels
     for channel in channels:
         data.create_channel(**channel)
+    # add axes
     for axis in axes:
         data.create_axis(axis['identity'], axis['units'])
     # return

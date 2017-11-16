@@ -17,7 +17,7 @@ import warnings
 import tempfile
 import operator
 import functools
-
+import numexpr
 import posixpath
 
 import numpy as np
@@ -58,7 +58,6 @@ class Axis(object):
             self.units = units
 
     def __getitem__(self, index):
-        import numexpr
         vs = {}
         for variable in self.variables:
             arr = variable[index]
@@ -68,6 +67,14 @@ class Axis(object):
     def __repr__(self):
         return '<WrightTools.Axis {0} ({1}) at {2}>'.format(self.expression, str(self.units),
                                                           id(self))
+
+    @property
+    def full(self):
+        arr = self[:]
+        for i in range(arr.ndim):
+            if arr.shape[i] == 1:
+                arr = np.repeat(arr, self.parent.shape[i], axis=i)
+        return arr
 
     @property
     def identity(self):
@@ -89,17 +96,28 @@ class Axis(object):
 
     @property
     def ndim(self):
-        return len(self.shape)
+        return self.variables[0].ndim
+
+    @property
+    def points(self):
+        return np.squeeze(self[:])
 
     @property
     def shape(self):
-        component_shapes = [v.shape for v in self.variables]
-        # TODO:
-        return component_shapes[0]
+        shape = []
+        for i in range(self.ndim):
+            shape.append(max([v.shape[i] for v in self.variables]))
+        return tuple(shape)
 
     @property
     def size(self):
         return functools.reduce(operator.mul, self.shape)
+
+    @property
+    def units_kind(self):
+        for dic in wt_units.unit_dicts:
+            if self.units in dic.keys():
+                return dic['kind']
 
     @property
     def variables(self):
@@ -108,14 +126,7 @@ class Axis(object):
         return [self.parent.variables[self.parent.variable_names.index(key)] for key in keys]
 
     def convert(self, destination_units):
-        """Convert axis to destination units.
-
-        Parameters
-        ----------
-        destination_units : string
-            Destination units.
-        """
-        raise NotImplementedError
+        self.units = destination_units
 
     def get_label(self, show_units=True, points=False, decimals=2):
         """Get a LaTeX formatted label.
@@ -473,6 +484,10 @@ class Data(Group):
         return value if not value == 'None' else None
 
     @property
+    def ndim(self):
+        return self.variables[0].ndim
+
+    @property
     def parent(self):
         group = super().parent
         parent = group.parent.name
@@ -482,9 +497,10 @@ class Data(Group):
 
     @property
     def shape(self):
-        if len(self.axis_names) == 0:
-            return tuple()
-        return tuple([a.size for a in self.axes])
+        shape = []
+        for i in range(self.ndim):
+            shape.append(max([a.shape[i] for a in self.axes]))
+        return tuple(shape)
 
     @property
     def size(self):
@@ -793,7 +809,7 @@ class Data(Group):
             if axis.units_kind == units_kind:
                 axis.convert(destination_units)
                 if verbose:
-                    print('axis', axis.name, 'converted')
+                    print('axis', axis.natural_name, 'converted')
 
     def copy(self):
         """
@@ -980,6 +996,7 @@ class Data(Group):
         self.channels[signal_channel_index]._null = 0
 
     def flip(self, axis):
+        raise NotImplementedError
         """Flip direction of arrays along an axis.
 
         Changes the index of elements without changing their correspondance to axis positions.
