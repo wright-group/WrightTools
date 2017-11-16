@@ -141,7 +141,7 @@ class Axis(object):
             Number of decimals to show for numbers. Default is 2.
         """
         raise NotImplementedError
-        label = r'$\mathsf{'
+        label= r'$\mathsf{'
         # label
         for part in self.label_seed:
             if self.units_kind is not None:
@@ -636,9 +636,10 @@ class Data(Group):
             for c in self.channels:
                 idxc = [min(s-1, i) if isinstance(i, int) else i for s, i in zip(c.shape, idx)]
                 data.create_channel(name=c.natural_name, values=c[tuple(idxc)], units=c.units)
+            i += 1
+            # axes
             for a in kept_axes:
                 data.create_axis(expression=a.expression, units=a.units)
-            i += 1
         # return
         if kwargs.pop('verbose', True):
             es = [a.expression for a in kept_axes]
@@ -655,6 +656,7 @@ class Data(Group):
         channel : int or str
             The channel to call clip on.
         """
+        raise NotImplementedError
         # get channel
         if isinstance(channel, int):
             channel_index = channel
@@ -686,6 +688,7 @@ class Data(Group):
         split
             Split the dataset while maintaining its dimensionality.
         """
+        raise NotImplementedError
         # get axis index --------------------------------------------------------------------------
         if isinstance(axis, int):
             axis_index = axis
@@ -756,7 +759,7 @@ class Data(Group):
         data
             A deep copy of the data object.
         """
-        return copy.deepcopy(self)
+        raise NotImplementedError
 
     def create_axis(self, expression, units, **kwargs):
         axis = Axis(self, expression, units, **kwargs)
