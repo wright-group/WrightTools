@@ -414,6 +414,7 @@ class Data(Group):
         Group.__init__(self, *args, **kwargs)
         self.axes = []
         for identifier in self.attrs.get('axes', []):
+            identifier = identifier.decode()
             expression, units = identifier.split('{')
             units = units.replace('{', '')
             axis = Axis(self, expression.strip(), units.strip())
@@ -615,98 +616,33 @@ class Data(Group):
         split
             Split the dataset while maintaining its dimensionality.
         """
-        # organize arguments recieved -------------------------------------------------------------
-        axes_args = list(args)
-        keys = ['at', 'verbose']
-        defaults = [{}, True]
-        at, verbose = [kwargs.pop(k) if k in kwargs.keys() else d for k, d in zip(keys, defaults)]
-        chopped_constants = at
-        # interpret arguments recieved ------------------------------------------------------------
-        for i in range(len(axes_args)):
-            arg = axes_args[i]
-            if isinstance(arg, str):
-                pass
-            elif isinstance(arg, int):
-                arg = self.axis_names[arg]
-            else:
-                message = 'argument {arg} not recognized in Data.chop'.format(arg)
-                raise TypeError(message)
-            axes_args[i] = arg
-        for arg in axes_args:
-            if arg not in self.axis_names:
-                raise Exception('axis {} not in data'.format(arg))
-        # iterate! --------------------------------------------------------------------------------
-        # find iterated dimensions
-        iterated_dimensions = []
-        iterated_shape = [1]
-        for name in self.axis_names:
-            if name not in axes_args and name not in chopped_constants.keys():
-                iterated_dimensions.append(name)
-                length = len(getattr(self, name)[:])
-                iterated_shape.append(length)
-        # make copies of channel objects for handing out
-        channels_chopped = copy.deepcopy(self.channels)
-        chopped_constants_everywhere = chopped_constants
-        out = []
-        for index in np.ndindex(tuple(iterated_shape)):
-            # get chopped_constants correct for this iteration
-            chopped_constants = chopped_constants_everywhere.copy()
-            for i in range(len(index[1:])):
-                idx = index[1:][i]
-                name = iterated_dimensions[i]
-                axis_units = getattr(self, name).units
-                position = getattr(self, name)[idx]
-                chopped_constants[name] = [position, axis_units]
-            # re-order array: [all_chopped_constants, channels, all_chopped_axes]
-            transpose_order = []
-            constant_indicies = []
-            # handle constants first
-            constants = list(self.constants)  # copy
-            for dim in chopped_constants.keys():
-                idx = [idx for idx in range(len(self.axes)) if self.axes[idx].name == dim][0]
-                transpose_order.append(idx)
-                # get index of nearest value
-                val = chopped_constants[dim][0]
-                val = wt_units.converter(val, chopped_constants[dim][1], self.axes[idx].units)
-                c_idx = np.argmin(abs(self.axes[idx][:] - val))
-                constant_indicies.append(c_idx)
-                obj = copy.copy(self.axes[idx])
-                obj[:] = self.axes[idx][c_idx]
-                constants.append(obj)
-            # now handle axes
-            axes_chopped = []
-            for dim in axes_args:
-                idx = [idx for idx in range(len(self.axes)) if self.axes[idx].name == dim][0]
-                transpose_order.append(idx)
-                axes_chopped.append(self.axes[idx])
-            # ensure that everything is kosher
-            if len(transpose_order) == len(self.channels[0].shape):
-                pass
-            else:
-                print('chop failed: not enough dimensions specified')
-                print(len(transpose_order))
-                print(len(self.dimensionality))
-                return
-            if len(transpose_order) == len(set(transpose_order)):
-                pass
-            else:
-                print('chop failed: same dimension used twice')
-                return
-            # chop
-            for i in range(len(self.channels)):
-                values = self.channels[i][:]
-                values = values.transpose(transpose_order)
-                for idx in constant_indicies:
-                    values = values[idx]
-                channels_chopped[i][:] = values
-            # finish iteration
-            data_out = Data(axes_chopped, copy.deepcopy(channels_chopped),
-                            constants=constants,
-                            name=self.name, source=self.source)
-            out.append(data_out)
-        # return ----------------------------------------------------------------------------------
-        if verbose:
-            print('chopped data into %d piece(s)' % len(out), 'in', axes_args)
+        # get output shape
+        kept_axes = [self.axes[self.axis_expressions.index(a)] for a in args]
+        removed_axes = [a for a in self.axes if a not in kept_axes]
+        removed_shape = []
+        for i in range(self.ndim):
+            removed_shape.append(max([a.shape[i] for a in removed_axes]))
+        # iterate
+        out = wt_collection.Collection()
+        i = 0
+        for idx in np.ndindex(tuple(removed_shape)):
+            idx = np.array(idx, dtype=object)
+            idx[np.array(removed_shape) == 1] = slice(None)
+            idx = tuple(idx)
+            data = out.create_data(name='chop%03i' % i)
+            for v in self.variables:
+                idxv = [min(s-1, i) if isinstance(i, int) else i for s, i in zip(v.shape, idx)]
+                data.create_variable(name=v.natural_name, values=v[tuple(idxv)], units=v.units)
+            for c in self.channels:
+                idxc = [min(s-1, i) if isinstance(i, int) else i for s, i in zip(c.shape, idx)]
+                data.create_channel(name=c.natural_name, values=c[tuple(idxc)], units=c.units)
+            for a in kept_axes:
+                data.create_axis(expression=a.expression, units=a.units)
+            i += 1
+        # return
+        if kwargs.pop('verbose', True):
+            es = [a.expression for a in kept_axes]
+            print('chopped data into %d piece(s)' % len(out), 'in', es)
         return out
 
     def clip(self, channel=0, *args, **kwargs):
