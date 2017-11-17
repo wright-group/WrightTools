@@ -96,7 +96,12 @@ class Axis(object):
 
     @property
     def ndim(self):
-        return self.variables[0].ndim
+        try:
+            assert self._ndim is not None
+        except (AssertionError, AttributeError):
+            self._ndim = self.variables[0].ndim
+        finally:
+            return self._ndim
 
     @property
     def points(self):
@@ -121,9 +126,15 @@ class Axis(object):
 
     @property
     def variables(self):
-        pattern = '|'.join(map(re.escape, operators))
-        keys = re.split(pattern, self.expression)
-        return [self.parent.variables[self.parent.variable_names.index(key)] for key in keys]
+        try:
+            assert self._variables is not None
+        except (AssertionError, AttributeError):
+            pattern = '|'.join(map(re.escape, operators))
+            keys = re.split(pattern, self.expression)
+            self._variables = [self.parent.variables[self.parent.variable_names.index(key)]
+                               for key in keys]
+        finally:
+            return self._variables
 
     def convert(self, destination_units):
         self.units = destination_units
@@ -210,7 +221,7 @@ class Channel(Dataset):
             and to the natural namespace of the object (if possible).
         """
         self._parent = parent
-        h5py.Dataset.__init__(self, id)
+        super().__init__(id)
         self.label = label
         self.label_seed = label_seed
         self.units = units
@@ -486,7 +497,12 @@ class Data(Group):
 
     @property
     def ndim(self):
-        return self.variables[0].ndim
+        try:
+            assert self._ndim is not None
+        except (AssertionError, AttributeError):
+            self._ndim = self.variables[0].ndim
+        finally:
+            return self._ndim
 
     @property
     def parent(self):
@@ -498,16 +514,20 @@ class Data(Group):
 
     @property
     def shape(self):
-        shape = []
-        for i in range(self.ndim):
-            shape.append(max([a.shape[i] for a in self.axes]))
-        return tuple(shape)
+        try:
+            assert self._shape is not None
+        except (AssertionError, AttributeError):
+            # TODO: fix---this is fragile: want joint shape of channels
+            shape = []
+            for i in range(self.ndim):
+                shape.append(max([a.shape[i] for a in self.axes]))
+            self._shape = tuple(shape)
+        finally:
+            return self._shape
 
     @property
     def size(self):
-        if len(self.channels) == 0:
-            return 0
-        return self.channels[0].size
+        return functools.reduce(operator.mul, self.shape)
 
     @property
     def source(self):
@@ -524,7 +544,12 @@ class Data(Group):
 
     @property
     def variables(self):
-        return [self[n] for n in self.variable_names]
+        try:
+            assert self._variables is not None
+        except (AssertionError, AttributeError):
+            self._variables = [self[n] for n in self.variable_names]
+        finally:
+            return self._variables
 
     def _update(self):
         """Ensure that a Data Object is up to date.

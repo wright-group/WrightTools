@@ -28,6 +28,9 @@ class Dataset(h5py.Dataset):
     instances = {}
     class_name = 'Dataset'
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
     def __getitem__(self, i):
         if hasattr(i, '__iter__'):
             indices = list(i)
@@ -51,7 +54,12 @@ class Dataset(h5py.Dataset):
 
     @property
     def natural_name(self):
-        return self.attrs['name']
+        try:
+            assert self._natural_name is not None
+        except (AssertionError, AttributeError) as _:
+            self._natural_name = self.attrs['name']
+        finally:
+            return self._natural_name
 
     @property
     def parent(self):
@@ -198,13 +206,17 @@ class Group(h5py.Group):
 
     @property
     def natural_name(self):
-        if 'name' not in self.attrs.keys():
-            self.attrs['name'] = self.__class__.default_name
-        return self.attrs['name']
+        try:
+            assert self._natural_name is not None
+        except (AssertionError, AttributeError):
+            self._natural_name = self.attrs['name']
+        finally:
+            return self._natural_name
 
     @natural_name.setter
     def natural_name(self, value):
         self.attrs['name'] = value
+        self._natural_name = None
 
     @property
     def parent(self):
