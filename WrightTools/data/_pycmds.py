@@ -211,7 +211,8 @@ def from_PyCMDS(filepath, name=None, collection=None, verbose=True):
                     values = values[tuple(idx)]
                     values = np.expand_dims(values, dim)
             units = headers['units'][index]
-            data.create_variable(name, values=values, units=units)
+            label = headers['label'][index]
+            data.create_variable(name, values=values, units=units, label=label)
     # add channels
     for channel in channels:
         data.create_channel(**channel)

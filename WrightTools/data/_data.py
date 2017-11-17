@@ -82,7 +82,31 @@ class Axis(object):
 
     @property
     def label(self):
-        raise NotImplementedError
+        label = r'$\mathsf{'
+        label_seed = [v.label for v in self.variables]
+        symbol_type = wt_units.get_default_symbol_type(self.units)
+        for part in label_seed:
+            if self.units_kind is not None:
+                units_dictionary = getattr(wt_units, self.units_kind)
+                label += getattr(wt_units, symbol_type)[self.units]
+                if part is not '':
+                    label += r'_{' + str(part) + r'}'
+            else:
+                label += self.name.replace('_', '\,\,')
+            label += r'='
+        # remove the last equals sign
+        label = label[:-1]
+        # units
+        if self.units_kind:
+            units_dictionary = getattr(wt_units, self.units_kind)
+            label += r'\,'
+            label += r'\left('
+            label += units_dictionary[self.units][2]
+            label += r'\right)'
+        else:
+            pass
+        label += r'}$'
+        return label
 
     @property
     def natural_name(self):
@@ -138,50 +162,6 @@ class Axis(object):
 
     def convert(self, destination_units):
         self.units = destination_units
-
-    def get_label(self, show_units=True, points=False, decimals=2):
-        """Get a LaTeX formatted label.
-
-        Parameters
-        ----------
-        show_units : boolean (optional)
-            Toggle showing units. Default is True.
-        points : boolean (optional)
-            Toggle showing points. Default is False.
-        decimals : integer (optional)
-            Number of decimals to show for numbers. Default is 2.
-        """
-        raise NotImplementedError
-        label= r'$\mathsf{'
-        # label
-        for part in self.label_seed:
-            if self.units_kind is not None:
-                units_dictionary = getattr(wt_units, self.units_kind)
-                label += getattr(wt_units, self.symbol_type)[self.units]
-                if part is not '':
-                    label += r'_{' + str(part) + r'}'
-            else:
-                label += self.name.replace('_', '\,\,')
-            label += r'='
-        # remove the last equals sign
-        label = label[:-1]
-        if points:
-            if self[:] is not None:
-                label += r'=\,' + str(np.round(self[:], decimals=decimals))
-        # units
-        if show_units:
-            if self.units_kind:
-                units_dictionary = getattr(wt_units, self.units_kind)
-                label += r'\,'
-                if not points:
-                    label += r'\left('
-                label += units_dictionary[self.units][2]
-                if not points:
-                    label += r'\right)'
-            else:
-                pass
-        label += r'}$'
-        return label
 
     def max(self):
         """Axis max."""
@@ -1985,8 +1965,7 @@ class Variable(Dataset):
     """Variable."""
     class_name = 'Variable'
 
-    def __init__(self, parent, id, units=None, null=None, signed=None,
-                 label=None, label_seed=None, **kwargs):
+    def __init__(self, parent, id, units=None, **kwargs):
         # TODO: docstring
         self._parent = parent
         super().__init__(id)
@@ -1996,3 +1975,7 @@ class Variable(Dataset):
         self.attrs.update(kwargs)
         self.attrs['name'] = h5py.h5i.get_name(self.id).decode().split('/')[-1]
         self.attrs['class'] = self.class_name
+
+    @property
+    def label(self):
+        return self.attrs.get('label', '')
