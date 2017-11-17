@@ -843,7 +843,6 @@ class Data(Group):
         variable = Variable(self, id, units=units, **kwargs)
         # finish
         self.attrs['variable_names'] = np.append(self.attrs['variable_names'], name.encode())
-        self._update()
         return variable
 
     def divide(self, divisor, channel=0, divisor_channel=0):
@@ -1990,19 +1989,10 @@ class Variable(Dataset):
                  label=None, label_seed=None, **kwargs):
         # TODO: docstring
         self._parent = parent
-        h5py.Dataset.__init__(self, id)
+        super().__init__(id)
         if units is not None:
             self.units = units
-        self.dimensionality = len(self.shape)
         # attrs
         self.attrs.update(kwargs)
         self.attrs['name'] = h5py.h5i.get_name(self.id).decode().split('/')[-1]
         self.attrs['class'] = self.class_name
-        if signed is not None:
-            self.attrs['signed'] = signed
-        if null is not None:
-            self.attrs['null'] = null
-        for key, value in self.attrs.items():
-            identifier = wt_kit.string2identifier(key)
-            if not hasattr(self, identifier):
-                setattr(self, identifier, value)

@@ -28,15 +28,12 @@ class Dataset(h5py.Dataset):
     instances = {}
     class_name = 'Dataset'
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
     def __getitem__(self, i):
         if hasattr(i, '__iter__'):
             indices = list(i)
         else:
             indices = [i]
-        while len(indices) <= self.dimensionality:
+        while len(indices) <= self.ndim:
             indices.append(slice(None))
         indices = [indices[i] for i in self.transposition]
         transposition = self.transposition[[not isinstance(idx, int) for idx in indices]]
@@ -56,7 +53,7 @@ class Dataset(h5py.Dataset):
     def natural_name(self):
         try:
             assert self._natural_name is not None
-        except (AssertionError, AttributeError) as _:
+        except (AssertionError, AttributeError):
             self._natural_name = self.attrs['name']
         finally:
             return self._natural_name
@@ -67,9 +64,14 @@ class Dataset(h5py.Dataset):
 
     @property
     def transposition(self):
-        if 'transposition' not in self.attrs.keys():
-            self.attrs['transposition'] = np.arange(len(self.shape))
-        return self.attrs['transposition']
+        try:
+            assert self._transposition is not None
+        except (AssertionError, AttributeError):
+            if 'transposition' not in self.attrs.keys():
+                self.attrs['transposition'] = np.arange(len(self.shape))
+            self._transposition = self.attrs['transposition']
+        finally:
+            return self._transposition
 
     @property
     def units(self):
@@ -125,7 +127,6 @@ class Group(h5py.Group):
         self.attrs.update(kwargs)
         # the following are populated if not already recorded
         self.__version__
-        self.natural_name
 
     def __getitem__(self, key):
         from .collection import Collection
