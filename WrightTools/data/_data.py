@@ -82,9 +82,9 @@ class Axis(object):
 
     @property
     def label(self):
-        label = r'$\mathsf{'
         label_seed = [v.label for v in self.variables]
         symbol_type = wt_units.get_default_symbol_type(self.units)
+        label = r'$\mathsf{'
         for part in label_seed:
             if self.units_kind is not None:
                 units_dictionary = getattr(wt_units, self.units_kind)
@@ -94,9 +94,7 @@ class Axis(object):
             else:
                 label += self.name.replace('_', '\,\,')
             label += r'='
-        # remove the last equals sign
-        label = label[:-1]
-        # units
+        label = label[:-1]  # remove the last equals sign
         if self.units_kind:
             units_dictionary = getattr(wt_units, self.units_kind)
             label += r'\,'
@@ -133,10 +131,7 @@ class Axis(object):
 
     @property
     def shape(self):
-        shape = []
-        for i in range(self.ndim):
-            shape.append(max([v.shape[i] for v in self.variables]))
-        return tuple(shape)
+        return wt_kit.joint_shape(self.variables)
 
     @property
     def size(self):
@@ -497,11 +492,7 @@ class Data(Group):
         try:
             assert self._shape is not None
         except (AssertionError, AttributeError):
-            # TODO: fix---this is fragile: want joint shape of channels
-            shape = []
-            for i in range(self.ndim):
-                shape.append(max([a.shape[i] for a in self.axes]))
-            self._shape = tuple(shape)
+            self._shape = wt_kit.joint_shape(self.channels)
         finally:
             return self._shape
 

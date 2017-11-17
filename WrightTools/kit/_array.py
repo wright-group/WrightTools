@@ -12,7 +12,8 @@ from .. import exceptions as wt_exceptions
 # --- define --------------------------------------------------------------------------------------
 
 
-__all__ = ['closest_pair', 'diff', 'fft', 'remove_nans_1D', 'share_nans', 'smooth_1D', 'unique']
+__all__ = ['closest_pair', 'diff', 'fft', 'joint_shape', 'remove_nans_1D', 'share_nans',
+           'smooth_1D', 'unique']
 
 
 # --- functions -----------------------------------------------------------------------------------
@@ -103,7 +104,8 @@ def diff(xi, yi, order=1):
 
 
 def fft(xi, yi, axis=0):
-    """Take the 1D FFT of an N-dimensional array and return "sensible" properly shifted arrays.
+    """Take the 1D FFT of an N-dimensional array and return "sensible"
+    properly shifted arrays.
 
     Parameters
     ----------
@@ -117,8 +119,8 @@ def fft(xi, yi, axis=0):
     Returns
     -------
     xi : 1D numpy.ndarray
-        1D array. Conjugate to input xi.
-        Example: if input xi is in the time domain, output xi is in frequency domain.
+        1D array. Conjugate to input xi. Example: if input xi is in the time
+        domain, output xi is in frequency domain.
     yi : ND numpy.ndarray
         FFT. Has the same shape as the input array (yi).
     """
@@ -137,6 +139,27 @@ def fft(xi, yi, axis=0):
     xi = np.fft.fftshift(xi)
     yi = np.fft.fftshift(yi, axes=axis)
     return xi, yi
+
+
+def joint_shape(arrs):
+    """Given a list of arrays, return the joint shape.
+
+    Parameters
+    ----------
+    arrs : list of array-like
+        Input arrays.
+
+    Returns
+    -------
+    tuple of int
+        Joint shape.
+    """
+    shape = []
+    shapes = [a.shape for a in arrs]
+    ndim = arrs[0].ndim
+    for i in range(ndim):
+        shape.append(max([s[i] for s in shapes]))
+    return tuple(shape)
 
 
 def remove_nans_1D(arrs):
