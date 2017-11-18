@@ -627,11 +627,9 @@ class Data(Group):
             idx = tuple(idx)
             data = out.create_data(name='chop%03i' % i)
             for v in self.variables:
-                idxv = [min(s-1, i) if isinstance(i, int) else i for s, i in zip(v.shape, idx)]
-                data.create_variable(name=v.natural_name, values=v[tuple(idxv)], units=v.units)
+                data.create_variable(name=v.natural_name, values=v[idx], units=v.units)
             for c in self.channels:
-                idxc = [min(s-1, i) if isinstance(i, int) else i for s, i in zip(c.shape, idx)]
-                data.create_channel(name=c.natural_name, values=c[tuple(idxc)], units=c.units)
+                data.create_channel(name=c.natural_name, values=c[idx], units=c.units)
             i += 1
             # axes
             for a in kept_axes:
@@ -641,28 +639,6 @@ class Data(Group):
             es = [a.expression for a in kept_axes]
             print('chopped data into %d piece(s)' % len(out), 'in', es)
         return out
-
-    def clip(self, channel=0, *args, **kwargs):
-        """Call ``Channel.clip``.
-
-        Wrapper method for ``Channel.clip``.
-
-        Parameters
-        ----------
-        channel : int or str
-            The channel to call clip on.
-        """
-        raise NotImplementedError
-        # get channel
-        if isinstance(channel, int):
-            channel_index = channel
-        elif isinstance(channel, str):
-            channel_index = self.channel_names.index(channel)
-        else:
-            raise TypeError("channel: expected {int, str}, got %s" % type(channel))
-        channel = self.channels[channel_index]
-        # call clip on channel object
-        channel.clip(*args, **kwargs)
 
     def collapse(self, axis, method='integrate'):
         """
@@ -1738,9 +1714,6 @@ class Data(Group):
                 attrs = dict(self.attrs)
                 attrs.pop('name', None)
                 new_data = outs.create_data(new_name, **attrs)
-                #for c in self.constants:
-                #   new_data.create_constant(c.natural_name, c.value, c.units)
-                #new_data.create_constant(axis.natural_name, axis[start], axis.units)
                 for ax in self.axes:
                     if ax != axis:
                         attrs = dict(ax.attrs)
@@ -1758,8 +1731,6 @@ class Data(Group):
                 attrs = dict(self.attrs)
                 attrs.pop('name', None)
                 new_data = outs.create_data(new_name, **attrs)
-                #for c in self.constants:
-                #   new_data.create_constant(c.natural_name, c.value, c.units)
                 for ax in self.axes:
                     if ax == axis:
                         slc = slice(start, stop)
@@ -1897,26 +1868,7 @@ class Data(Group):
         self._update()
 
     def transpose(self, axes=None, verbose=True):
-        """Transpose the dataset.
-
-        Parameters
-        ----------
-        axes : None or list of int (optional)
-            The permutation to perform. If None axes are simply reversed.
-            Default is None.
-        verbose : bool (optional)
-            Toggle talkback. Default is True.
-        """
-        if axes is not None:
-            pass
-        else:
-            axes = range(len(self.channels[0][:].shape))[::-1]
-        self.axes = [self.axes[i] for i in axes]
-        self.attrs['axis_names'] = [axis.natural_name.encode() for axis in self.axes]
-        for channel in self.channels:
-            channel.transpose(axes=axes)
-        if verbose:
-            print('data transposed to', self.axis_names)
+        raise NotImplementedError
 
     def zoom(self, factor, order=1, verbose=True):
         """Zoom the data array using spline interpolation of the requested order.

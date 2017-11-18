@@ -28,18 +28,11 @@ class Dataset(h5py.Dataset):
     instances = {}
     class_name = 'Dataset'
 
-    def __getitem__(self, i):
-        if hasattr(i, '__iter__'):
-            indices = list(i)
-        else:
-            indices = [i]
-        while len(indices) <= self.ndim:
-            indices.append(slice(None))
-        indices = [indices[i] for i in self.transposition]
-        transposition = self.transposition[[not isinstance(idx, int) for idx in indices]]
-        transposition -= min(transposition)
-        # TODO: handle transposition properly
-        return super().__getitem__(tuple(indices))#.transpose(self.transposition)
+    def __getitem__(self, index):
+        if not hasattr(index, '__iter__'):
+            index = [index]
+        lis = [min(s - 1, i) if isinstance(i, int) else i for s, i in zip(self.shape, index)]
+        return super().__getitem__(tuple(lis))
 
     def __repr__(self):
         return '<WrightTools.{0} \'{1}\' at {2}>'.format(self.class_name, self.natural_name,
@@ -63,17 +56,6 @@ class Dataset(h5py.Dataset):
         return self._parent
 
     @property
-    def transposition(self):
-        try:
-            assert self._transposition is not None
-        except (AssertionError, AttributeError):
-            if 'transposition' not in self.attrs.keys():
-                self.attrs['transposition'] = np.arange(len(self.shape))
-            self._transposition = self.attrs['transposition']
-        finally:
-            return self._transposition
-
-    @property
     def units(self):
         if 'units' in self.attrs.keys():
             return self.attrs['units'].decode()
@@ -85,15 +67,6 @@ class Dataset(h5py.Dataset):
                 self.attrs.pop('units')
         else:
             self.attrs['units'] = value.encode()
-
-    def transpose(self, axes):
-        if axes is None:
-            new = self.transposition[::-1]
-        else:
-            new = self.transposition
-            for i, axis in enumerate(axes):
-                new[i] = self.transposition[axis]
-        self.attrs['transposition'] = new
 
 
 class Group(h5py.Group):
