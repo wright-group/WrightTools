@@ -14,7 +14,7 @@ import WrightTools as wt
 # --- test ---------------------------------------------------------------------------------------
 
 
-@pytest.mark.xfail
+@pytest.mark.skip()
 def test_exception():
     d = wt.Data()
     points = np.linspace(0, 1, 51)
