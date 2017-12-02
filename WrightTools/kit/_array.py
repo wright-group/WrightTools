@@ -154,6 +154,8 @@ def joint_shape(arrs):
     tuple of int
         Joint shape.
     """
+    if len(arrs) == 0:
+        return ()
     shape = []
     shapes = [a.shape for a in arrs]
     ndim = arrs[0].ndim

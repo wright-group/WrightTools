@@ -563,7 +563,7 @@ class Data(Group):
         self.channels.insert(0, self.channels.pop(channel_index))
         self._update()
 
-    def chop(self, *args, at=None, parent=None, verbose=True):
+    def chop(self, *args, at={}, parent=None, verbose=True):
         """Divide the dataset into its lower-dimensionality components.
 
         Parameters
@@ -618,17 +618,25 @@ class Data(Group):
         # get output collection
         out = wt_collection.Collection(name='chop', parent=parent, edit_local=parent is not None)
         # get output shape
-        kept_axes = [self.axes[self.axis_expressions.index(a)] for a in args]
+        kept = list(args) + list(at.keys())
+        kept_axes = [self.axes[self.axis_expressions.index(a)] for a in kept]
         removed_axes = [a for a in self.axes if a not in kept_axes]
-        removed_shape = []
-        for i in range(self.ndim):
-            removed_shape.append(max([a.shape[i] for a in removed_axes]))
+        removed_shape = wt_kit.joint_shape(removed_axes)
+        if removed_shape == ():
+            removed_shape = tuple([1]*self.ndim)
         # iterate
         i = 0
         for idx in np.ndindex(tuple(removed_shape)):
             idx = np.array(idx, dtype=object)
             idx[np.array(removed_shape) == 1] = slice(None)
+            for axis, point in at.items():
+                point, units = point  # TODO: proper units support
+                axis_index = self.axis_names.index(axis)
+                axis = self.axes[axis_index]
+                arr = axis[tuple(idx)]
+                idx[axis_index] = np.argmin(np.abs(axis[tuple(idx)] - point))
             idx = tuple(idx)
+            print(idx)
             data = out.create_data(name='chop%03i' % i)
             for v in self.variables:
                 data.create_variable(name=v.natural_name, values=v[idx], units=v.units)
