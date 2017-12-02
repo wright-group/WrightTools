@@ -76,25 +76,25 @@ class Group(h5py.Group):
     def __init__(self, filepath=None, parent=None, name=None, **kwargs):
         if filepath is None:
             return
+        # parent
         if parent is None:
             parent = ''
-        if name is None:
-            name = ''
         if parent == '':
             parent = posixpath.sep
+            path = posixpath.sep
+        else:
+            path = posixpath.sep.join([parent, name])
         # file
         self.filepath = filepath
-        path = parent + posixpath.sep + name
         file = h5py.File(self.filepath, 'a')
         file.require_group(parent)
         file.require_group(path)
         h5py.Group.__init__(self, bind=file[path].id)
         self.__n = 0
         self.fid = self.file.fid
-        if name is not None:
-            self.attrs['name'] = name
-        self.attrs.update(kwargs)
+        self.natural_name = name
         self.attrs['class'] = self.class_name
+        self.attrs.update(kwargs)
         # load from file
         self._items = []
         for name in self.item_names:
@@ -130,11 +130,12 @@ class Group(h5py.Group):
         # extract
         filepath = args[0] if len(args) > 0 else kwargs.get('filepath', None)
         parent = args[1] if len(args) > 1 else kwargs.get('parent', None)
-        name = args[2] if len(args) > 2 else kwargs.get('name', cls.class_name.lower())
+        natural_name = args[2] if len(args) > 2 else kwargs.get('name', cls.class_name.lower())
         edit_local = args[3] if len(args) > 3 else kwargs.get('edit_local', False)
         if isinstance(parent, h5py.Group):
             filepath = parent.filepath
             parent = parent.name
+            edit_local = True
         # tempfile
         tmpfile = None
         if edit_local and filepath is None:
@@ -144,18 +145,22 @@ class Group(h5py.Group):
             p = tmpfile[1]
             if filepath:
                 shutil.copyfile(src=filepath, dst=p)
-        elif edit_local and filepath:
+            elif edit_local and filepath:
+                p = filepath
+        else:
             p = filepath
         # construct fullpath
         if parent is None:
             parent = ''
-            name = '/'
+            name = posixpath.sep
+        else:
+            name = natural_name
         fullpath = p + '::' + parent + name
         # create and/or return
         if fullpath not in cls.instances.keys():
             kwargs['filepath'] = p
             kwargs['parent'] = parent
-            kwargs['name'] = name
+            kwargs['name'] = natural_name
             instance = super(Group, cls).__new__(cls)
             cls.__init__(instance, **kwargs)
             cls.instances[fullpath] = instance
@@ -193,17 +198,20 @@ class Group(h5py.Group):
 
     @natural_name.setter
     def natural_name(self, value):
-        self.attrs['name'] = value
-        self._natural_name = None
+        if value is None:
+            value = ''
+        self._natural_name = self.attrs['name'] = value
 
     @property
     def parent(self):
-        from .collection import Collection
-        group = super().parent
-        parent = group.parent.name
-        if parent == posixpath.sep:
-            parent = None
-        return Collection(self.filepath, parent=parent, name=group.attrs['name'])
+        try:
+            assert self._parent is not None
+        except (AssertionError, AttributeError):
+            from .collection import Collection
+            name = super().parent.attrs['name']
+            self._parent = Collection(self.filepath, name=name, edit_local=True)
+        finally:
+            return self._parent
 
     def close(self):
         if(self.fid.valid > 0):
