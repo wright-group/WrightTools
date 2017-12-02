@@ -76,6 +76,10 @@ class Group(h5py.Group):
     def __init__(self, filepath=None, parent=None, name=None, **kwargs):
         if filepath is None:
             return
+        if parent is None:
+            parent = ''
+        if name is None:
+            name = ''
         if parent == '':
             parent = posixpath.sep
         # file

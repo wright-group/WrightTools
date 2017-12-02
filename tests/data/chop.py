@@ -43,3 +43,11 @@ def test_3D_to_2D():
         assert d.w2.size == 11
     data.close()
     chop.close()
+
+
+def test_parent():
+    p = datasets.PyCMDS.wm_w2_w1_001
+    data = wt.data.from_PyCMDS(p)
+    parent = wt.Collection()
+    chop = data.chop('wm', 'w2', parent=parent)
+    assert chop.parent is parent

@@ -563,7 +563,7 @@ class Data(Group):
         self.channels.insert(0, self.channels.pop(channel_index))
         self._update()
 
-    def chop(self, *args, **kwargs):
+    def chop(self, *args, at=None, parent=None, verbose=True):
         """Divide the dataset into its lower-dimensionality components.
 
         Parameters
@@ -572,17 +572,20 @@ class Data(Group):
             Axes of the returned data objects. Strings refer to the names of
             axes in this object, integers refer to their index. Provide multiple
             axes to return multidimensional data objects.
-        at : dict (kwarg)
+        at : dict (optional)
             Choice of position along an axis. Keys are axis names, values are lists
             ``[position, input units]``. If exact position does not exist,
             the closest valid position is used.
-        verbose : bool, optional (kwarg)
+        parent : WrightTools Collection instance (optional)
+            Collection to place the new "chop" collection within. Default is
+            None (new parent).
+        verbose : bool (optional)
             Toggle talkback. Default is True.
 
         Returns
         -------
-        list of WrightTools.data.Data
-            List of chopped data objects.
+        WrightTools Collection
+            Collection of chopped data objects.
 
         Examples
         --------
@@ -612,6 +615,8 @@ class Data(Group):
         split
             Split the dataset while maintaining its dimensionality.
         """
+        # get output collection
+        out = wt_collection.Collection(name='chop', parent=parent, edit_local=parent is not None)
         # get output shape
         kept_axes = [self.axes[self.axis_expressions.index(a)] for a in args]
         removed_axes = [a for a in self.axes if a not in kept_axes]
@@ -619,7 +624,6 @@ class Data(Group):
         for i in range(self.ndim):
             removed_shape.append(max([a.shape[i] for a in removed_axes]))
         # iterate
-        out = wt_collection.Collection()
         i = 0
         for idx in np.ndindex(tuple(removed_shape)):
             idx = np.array(idx, dtype=object)
@@ -635,7 +639,7 @@ class Data(Group):
             for a in kept_axes:
                 data.create_axis(expression=a.expression, units=a.units)
         # return
-        if kwargs.pop('verbose', True):
+        if verbose:
             es = [a.expression for a in kept_axes]
             print('chopped data into %d piece(s)' % len(out), 'in', es)
         return out
