@@ -253,4 +253,3 @@ def unique(arr, tolerance=1e-6):
         xi_lis_average = sum(lis) / len(lis)
         unique.append(xi_lis_average)
     return np.array(unique)
-
