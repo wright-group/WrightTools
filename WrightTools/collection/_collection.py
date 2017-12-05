@@ -146,7 +146,7 @@ class Collection(Group):
         filepath : string (optional)
             Filepath to write. If None, file is created using natural_name.
         verbose : boolean (optional)
-            Toggle talkbak. Default is True
+            Toggle talkback. Default is True
 
         Returns
         -------

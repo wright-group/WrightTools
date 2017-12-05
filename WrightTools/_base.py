@@ -127,7 +127,7 @@ class Group(h5py.Group):
             elif out.attrs['class'] == 'Data':
                 return Data(filepath=self.filepath, parent=self.name, name=key,
                             edit_local=True)
-            if out.attrs['class'] == 'Variable':
+            elif out.attrs['class'] == 'Variable':
                 return Variable(parent=self, id=out.id)
             else:
                 return Group(filepath=self.filepath, parent=self.name, name=key,
@@ -136,7 +136,7 @@ class Group(h5py.Group):
             return out
 
     def __new__(cls, *args, **kwargs):
-        """__new__."""
+        """New object formation handler."""
         # extract
         filepath = args[0] if len(args) > 0 else kwargs.get('filepath', None)
         parent = args[1] if len(args) > 1 else kwargs.get('parent', None)
@@ -155,9 +155,7 @@ class Group(h5py.Group):
             p = tmpfile[1]
             if filepath:
                 shutil.copyfile(src=filepath, dst=p)
-            elif edit_local and filepath:
-                p = filepath
-        else:
+        elif edit_local and filepath:
             p = filepath
         # construct fullpath
         if parent is None:

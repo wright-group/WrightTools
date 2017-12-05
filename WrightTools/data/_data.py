@@ -41,8 +41,18 @@ __all__ = ['Data']
 class Axis(object):
     """Axis class."""
 
-    def __init__(self, parent, expression, units=None, **kwargs):
-        # TODO: docstring
+    def __init__(self, parent, expression, units=None):
+        """Data axis.
+
+        Parameters
+        ----------
+        parent : WrightTools.Data
+            Parent data object.
+        expression : string
+            Axis expression.
+        units : string (optional)
+            Axis units. Default is None.
+        """
         self.parent = parent
         self.expression = expression
         if units is None:
@@ -86,6 +96,7 @@ class Axis(object):
                     label += r'_{' + str(part) + r'}'
             else:
                 label += self.name.replace('_', '\,\,')
+            # TODO: handle all operators
             label += r'='
         label = label[:-1]  # remove the last equals sign
         if self.units_kind:
@@ -155,14 +166,19 @@ class Axis(object):
             return self._variables
 
     def convert(self, destination_units):
-        """Convert.
+        """Convert axis to destination_units.
 
         Parameters
         ----------
         destination_units : string
             Destination units.
         """
-        # TODO: raise error if units incompatible
+        for dic in wt_units.unit_dicts:
+            if destination_units in dic.keys():
+                destination_units_kind = dic['kind']
+                break
+        if not self.units_kind == destination_units_kind:
+            raise wt_exceptions.UnitsError(self.units_kind, destination_units_kind)
         self.units = destination_units
 
     def max(self):
@@ -411,7 +427,7 @@ class Data(Group):
         for identifier in self.attrs.get('axes', []):
             identifier = identifier.decode()
             expression, units = identifier.split('{')
-            units = units.replace('{', '')
+            units = units.replace('}', '')
             axis = Axis(self, expression.strip(), units.strip())
             self.axes = axis
         # the following are populated if not already recorded
@@ -647,14 +663,16 @@ class Data(Group):
         removed_axes = [a for a in self.axes if a not in kept_axes]
         removed_shape = wt_kit.joint_shape(removed_axes)
         if removed_shape == ():
-            removed_shape = tuple([1] * self.ndim)
+            removed_shape = (1,) * self.ndim
         # iterate
         i = 0
-        for idx in np.ndindex(tuple(removed_shape)):
+        for idx in np.ndindex(removed_shape):
             idx = np.array(idx, dtype=object)
             idx[np.array(removed_shape) == 1] = slice(None)
             for axis, point in at.items():
-                point, units = point  # TODO: proper units support
+                point, units = point
+                destination_units = self.axes[self.axis_names.index(axis)].units
+                point = wt_units.converter(point, units, destination_units)
                 axis_index = self.axis_names.index(axis)
                 axis = self.axes[axis_index]
                 idx[axis_index] = np.argmin(np.abs(axis[tuple(idx)] - point))
@@ -817,8 +835,8 @@ class Data(Group):
             #if not shape == self.shape:
             #    raise Exception  # TODO: better exception
         # create dataset
-        id = self.require_dataset(name=name, data=values, shape=shape, dtype=dtype).id
-        channel = Channel(self, id, units=units, **kwargs)
+        dataset_id = self.require_dataset(name=name, data=values, shape=shape, dtype=dtype).id
+        channel = Channel(self, dataset_id, units=units, **kwargs)
         # finish
         self.channels.append(channel)
         self.attrs['channel_names'] = np.append(self.attrs['channel_names'], name.encode())
@@ -1927,7 +1945,19 @@ class Variable(Dataset):
     class_name = 'Variable'
 
     def __init__(self, parent, id, units=None, **kwargs):
-        # TODO: docstring
+        """Variable.
+
+        Parameters
+        ----------
+        parent : WrightTools.Data
+            Parent data object.
+        id : h5py DatasetID
+            Dataset ID.
+        units : string (optional)
+            Variable units. Default is None.
+        kwargs
+            Additional keys and values to be written into dataset attrs.
+        """
         self._parent = parent
         super().__init__(id)
         if units is not None:
