@@ -118,6 +118,7 @@ class Axis(object):
 
     @property
     def ndim(self):
+        """Get number of dimensions."""
         try:
             assert self._ndim is not None
         except (AssertionError, AttributeError):
@@ -127,24 +128,29 @@ class Axis(object):
 
     @property
     def points(self):
+        """Squeezed array."""
         return np.squeeze(self[:])
 
     @property
     def shape(self):
+        """Shape."""
         return wt_kit.joint_shape(self.variables)
 
     @property
     def size(self):
+        """Size."""
         return functools.reduce(operator.mul, self.shape)
 
     @property
     def units_kind(self):
+        """Units kind."""
         for dic in wt_units.unit_dicts:
             if self.units in dic.keys():
                 return dic['kind']
 
     @property
     def variables(self):
+        """Variables."""
         try:
             assert self._variables is not None
         except (AssertionError, AttributeError):
@@ -156,6 +162,14 @@ class Axis(object):
             return self._variables
 
     def convert(self, destination_units):
+        """Convert.
+
+        Parameters
+        ----------
+        destination_units : string
+            Destination units.
+        """
+        # TODO: raise error if units incompatible
         self.units = destination_units
 
     def max(self):
@@ -169,6 +183,7 @@ class Axis(object):
 
 class Channel(Dataset):
     """Channel."""
+
     class_name = 'Channel'
 
     def __init__(self, parent, id, units=None, null=None, signed=None,
@@ -390,7 +405,8 @@ class Channel(Dataset):
 
 
 class Data(Group):
-    """Central multidimensional data class."""
+    """Multidimensional dataset."""
+
     class_name = 'Data'
 
     def __init__(self, *args, **kwargs):
@@ -418,34 +434,41 @@ class Data(Group):
 
     @property
     def axis_expressions(self):
+        """Axis expressions."""
         return [a.expression for a in self.axes]
 
     @property
     def axis_names(self):
+        """Axis names."""
         return [a.natural_name for a in self.axes]
 
     @property
     def channel_names(self):
+        """Channel names."""
         if 'channel_names' not in self.attrs.keys():
             self.attrs['channel_names'] = np.array([], dtype='S')
         return [s.decode() for s in self.attrs['channel_names']]
 
     @property
     def channels(self):
+        """Channels."""
         return [self[n] for n in self.channel_names]
 
     @property
     def constant_names(self):
+        """Constant names."""
         if 'constant_names' not in self.attrs.keys():
             self.attrs['constant_names'] = np.array([], dtype='S')
         return [s.decode() for s in self.attrs['constant_names']]
 
     @property
     def constants(self):
+        """Constants."""
         return [self[n] for n in self.constant_names]
 
     @property
     def datasets(self):
+        """Datasets."""
         return [v for _, v in self.items() if isinstance(v, h5py.Dataset)]
 
     @property
@@ -465,6 +488,7 @@ class Data(Group):
 
     @property
     def kind(self):
+        """Kind."""
         if 'kind' not in self.attrs.keys():
             self.attrs['kind'] = 'None'
         value = self.attrs['kind']
@@ -472,6 +496,7 @@ class Data(Group):
 
     @property
     def ndim(self):
+        """Get number of dimensions."""
         try:
             assert self._ndim is not None
         except (AssertionError, AttributeError):
@@ -481,6 +506,7 @@ class Data(Group):
 
     @property
     def parent(self):
+        """Parent."""
         group = super().parent
         parent = group.parent.name
         if parent == posixpath.sep:
@@ -489,6 +515,7 @@ class Data(Group):
 
     @property
     def shape(self):
+        """Shape."""
         try:
             assert self._shape is not None
         except (AssertionError, AttributeError):
@@ -498,10 +525,12 @@ class Data(Group):
 
     @property
     def size(self):
+        """Size."""
         return functools.reduce(operator.mul, self.shape)
 
     @property
     def source(self):
+        """Source."""
         if 'source' not in self.attrs.keys():
             self.attrs['source'] = 'None'
         value = self.attrs['source']
@@ -509,12 +538,14 @@ class Data(Group):
 
     @property
     def variable_names(self):
+        """Variable names."""
         if 'variable_names' not in self.attrs.keys():
             self.attrs['variable_names'] = np.array([], dtype='S')
         return [s.decode() for s in self.attrs['variable_names']]
 
     @property
     def variables(self):
+        """Variables."""
         try:
             assert self._variables is not None
         except (AssertionError, AttributeError):
@@ -745,6 +776,22 @@ class Data(Group):
         raise NotImplementedError
 
     def create_axis(self, expression, units, **kwargs):
+        """Add new child axis.
+
+        Parameters
+        ----------
+        expressionn : string
+            Axis expression.
+        units : string
+            Axis units.
+        kwargs
+            Additional kwargs to variable instantiation.
+
+        Returns
+        -------
+        WrightTools Axis
+            New child axis.
+        """
         axis = Axis(self, expression, units, **kwargs)
         self.axes.append(axis)
         self.flush()
@@ -787,7 +834,25 @@ class Data(Group):
         return channel
 
     def create_variable(self, name, values=None, units=None, **kwargs):
-        # TODO: docstring
+        """Add new child variable.
+
+        Parameters
+        ----------
+        name : string
+            Unique identifier.
+        values : array-like (optional)
+            Array to populate variable with. If None, an variable will be filled with NaN.
+            Default is None.
+        units : string (optional)
+            Variable units. Default is None.
+        kwargs
+            Additional kwargs to variable instantiation.
+
+        Returns
+        -------
+        WrightTools Variable
+            New child variable.
+        """
         if values is None:
             shape = self.shape
             dtype = np.float64
@@ -915,47 +980,6 @@ class Data(Group):
         self.channels[signal_channel_index].give_values(out)
         self.channels[signal_channel_index].signed = True
         self.channels[signal_channel_index]._null = 0
-
-    def flip(self, axis):
-        raise NotImplementedError
-        """Flip direction of arrays along an axis.
-
-        Changes the index of elements without changing their correspondance to axis positions.
-
-        Parameters
-        ----------
-        axis : int or str
-            The axis to flip.
-        """
-        # axis ------------------------------------------------------------------------------------
-        if isinstance(axis, int):
-            axis_index = axis
-        elif isinstance(axis, str):
-            axis_index = self.axis_names.index(axis)
-        else:
-            raise TypeError("axis: expected {int, str}, got %s" % type(axis))
-        axis = self.axes[axis_index]
-        # flip ------------------------------------------------------------------------------------
-        # axis
-        axis[:] = axis[:][::-1]
-        # data
-        for channel in self.channels:
-            values = channel[:]
-            # transpose so the axis of interest is last
-            transpose_order = range(len(values.shape))
-            # replace axis_index with zero
-            transpose_order = [len(values.shape) - 1 if i ==
-                               axis_index else i for i in transpose_order]
-            transpose_order[len(values.shape) - 1] = axis_index
-            values = values.transpose(transpose_order)
-            values = values[..., ::-1]
-            # transpose out
-            values = values.transpose(transpose_order)
-            channel[:] = values
-
-    def flush(self):
-        self.attrs['axes'] = [a.identity.encode() for a in self.axes]
-        super().flush()
 
     def get_nadir(self, channel=0):
         """
@@ -1509,6 +1533,7 @@ class Data(Group):
         The name will be set to str(val), and its natural naming identifier
         will be wt.kit.string2identifier(str(val))
         """
+        raise NotImplementedError
         changed = kwargs.keys()
         for k, v in kwargs.items():
             if getattr(self, k).__class__ not in (Channel, Axis):
@@ -1522,19 +1547,6 @@ class Data(Group):
             delattr(self, k)
         self._update()
 
-    def save(self, filepath=None, verbose=True):
-        # TODO: documentation
-        self.flush()  # ensure all changes are written to file
-        if filepath is None:
-            filepath = os.path.join(os.getcwd(), self.natural_name + '.wt5')
-        elif len(os.path.basename(filepath).split('.')) == 1:
-            filepath += '.wt5'
-        filepath = os.path.expanduser(filepath)
-        shutil.copyfile(src=self.filepath, dst=filepath)
-        if verbose:
-            print(filepath)
-        return filepath
-
     def scale(self, channel=0, kind='amplitude', verbose=True):
         """Scale a channel.
 
@@ -1547,6 +1559,7 @@ class Data(Group):
         verbose : bool (optional)
             Toggle talkback. Default is True.
         """
+        raise NotImplementedError
         # get channel
         if isinstance(channel, int):
             channel_index = channel
@@ -1866,8 +1879,16 @@ class Data(Group):
         # call trim
         return channel.trim(neighborhood=neighborhood, **inputs)
 
-    def transform(self, axes=None, verbose=True):
-        # TODO: docstring
+    def transform(self, axes, verbose=True):
+        """Transform the data.
+
+        Parameters
+        ----------
+        axes : list of strings
+            List of axes.
+        verbose : boolean (optional)
+            Toggle talkback. Default is True
+        """
         # TODO: ensure that transform does not break data
         new = []
         current = {a.expression: a for a in self.axes}
@@ -1877,9 +1898,6 @@ class Data(Group):
         self.axes = new
         self.flush()
         self._update()
-
-    def transpose(self, axes=None, verbose=True):
-        raise NotImplementedError
 
     def zoom(self, factor, order=1, verbose=True):
         """Zoom the data array using spline interpolation of the requested order.
@@ -1899,6 +1917,7 @@ class Data(Group):
         verbose : bool (optional)
             Toggle talkback. Default is True.
         """
+        raise NotImplementedError
         import scipy.ndimage
         # axes
         for axis in self.axes:
@@ -1917,6 +1936,7 @@ class Data(Group):
 
 class Variable(Dataset):
     """Variable."""
+
     class_name = 'Variable'
 
     def __init__(self, parent, id, units=None, **kwargs):

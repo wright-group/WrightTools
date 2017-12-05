@@ -25,6 +25,8 @@ wt5_version = '0.0.0'
 
 
 class Dataset(h5py.Dataset):
+    """Array-like data container."""
+
     instances = {}
     class_name = 'Dataset'
 
@@ -40,10 +42,12 @@ class Dataset(h5py.Dataset):
 
     @property
     def fullpath(self):
+        """Full path: file and internal structure."""
         return self.parent.fullpath + posixpath.sep + self.natural_name
 
     @property
     def natural_name(self):
+        """Natural name of the dataset. May be different from name."""
         try:
             assert self._natural_name is not None
         except (AssertionError, AttributeError):
@@ -53,15 +57,18 @@ class Dataset(h5py.Dataset):
 
     @property
     def parent(self):
+        """Parent."""
         return self._parent
 
     @property
     def units(self):
+        """Units."""
         if 'units' in self.attrs.keys():
             return self.attrs['units'].decode()
 
     @units.setter
     def units(self, value):
+        """Set units."""
         if value is None:
             if 'units' in self.attrs.keys():
                 self.attrs.pop('units')
@@ -70,6 +77,8 @@ class Dataset(h5py.Dataset):
 
 
 class Group(h5py.Group):
+    """Container of groups and datasets."""
+
     instances = {}
     class_name = 'Group'
 
@@ -127,6 +136,7 @@ class Group(h5py.Group):
             return out
 
     def __new__(cls, *args, **kwargs):
+        """__new__."""
         # extract
         filepath = args[0] if len(args) > 0 else kwargs.get('filepath', None)
         parent = args[1] if len(args) > 1 else kwargs.get('parent', None)
@@ -179,16 +189,19 @@ class Group(h5py.Group):
 
     @property
     def fullpath(self):
+        """Full path: file and internal structure."""
         return self.filepath + '::' + self.name
 
     @property
     def item_names(self):
+        """Item names."""
         if 'item_names' not in self.attrs.keys():
             self.attrs['item_names'] = np.array([], dtype='S')
         return self.attrs['item_names']
 
     @property
     def natural_name(self):
+        """Natural name."""
         try:
             assert self._natural_name is not None
         except (AssertionError, AttributeError):
@@ -198,12 +211,14 @@ class Group(h5py.Group):
 
     @natural_name.setter
     def natural_name(self, value):
+        """Set natural name."""
         if value is None:
             value = ''
         self._natural_name = self.attrs['name'] = value
 
     @property
     def parent(self):
+        """Parent."""
         try:
             assert self._parent is not None
         except (AssertionError, AttributeError):
@@ -214,6 +229,7 @@ class Group(h5py.Group):
             return self._parent
 
     def close(self):
+        """Close the group. Tempfile will be removed, if this is the final reference."""
         if(self.fid.valid > 0):
             self.__class__.instances.pop(self.fullpath)
             self.file.flush()
@@ -223,4 +239,5 @@ class Group(h5py.Group):
                 os.remove(self._tmpfile[1])
 
     def flush(self):
+        """Ensure contents are written to file."""
         self.file.flush()

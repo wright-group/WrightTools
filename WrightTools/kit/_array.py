@@ -104,8 +104,7 @@ def diff(xi, yi, order=1):
 
 
 def fft(xi, yi, axis=0):
-    """Take the 1D FFT of an N-dimensional array and return "sensible"
-    properly shifted arrays.
+    """Take the 1D FFT of an N-dimensional array and return "sensible" properly shifted arrays.
 
     Parameters
     ----------
