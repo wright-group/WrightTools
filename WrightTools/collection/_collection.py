@@ -9,8 +9,6 @@ import shutil
 
 import numpy as np
 
-import h5py
-
 from .. import data as wt_data
 from .._base import Group
 
@@ -119,7 +117,7 @@ class Collection(Group):
             natural_name = "".encode()
         else:
             data = wt_data.Data(filepath=self.filepath, parent=self.name, name=name,
-                            edit_local=True, **kwargs)
+                                edit_local=True, **kwargs)
             natural_name = data.natural_name.encode()
         if position is None:
             self._items.append(data)

@@ -6,15 +6,8 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import os
 import re
-import sys
-import copy
-import shutil
-import weakref
 import collections
-import warnings
-import tempfile
 import operator
 import functools
 import numexpr
@@ -66,7 +59,7 @@ class Axis(object):
 
     def __repr__(self):
         return '<WrightTools.Axis {0} ({1}) at {2}>'.format(self.expression, str(self.units),
-                                                          id(self))
+                                                            id(self))
 
     @property
     def full(self):
@@ -236,7 +229,7 @@ class Channel(Dataset):
 
     @property
     def null(self):
-        if not 'null' in self.attrs.keys():
+        if 'null' not in self.attrs.keys():
             self.attrs['null'] = 0
         return self.attrs['null']
 
@@ -258,7 +251,7 @@ class Channel(Dataset):
 
     @property
     def signed(self):
-        if not 'signed' in self.attrs.keys():
+        if 'signed' not in self.attrs.keys():
             self.attrs['signed'] = False
         return self.attrs['signed']
 
@@ -654,7 +647,7 @@ class Data(Group):
         removed_axes = [a for a in self.axes if a not in kept_axes]
         removed_shape = wt_kit.joint_shape(removed_axes)
         if removed_shape == ():
-            removed_shape = tuple([1]*self.ndim)
+            removed_shape = tuple([1] * self.ndim)
         # iterate
         i = 0
         for idx in np.ndindex(tuple(removed_shape)):
@@ -664,7 +657,6 @@ class Data(Group):
                 point, units = point  # TODO: proper units support
                 axis_index = self.axis_names.index(axis)
                 axis = self.axes[axis_index]
-                arr = axis[tuple(idx)]
                 idx[axis_index] = np.argmin(np.abs(axis[tuple(idx)] - point))
             idx = tuple(idx)
             data = out.create_data(name='chop%03i' % i)
@@ -1328,9 +1320,9 @@ class Data(Group):
             for channel in self.channels:
                 values = channel[:]
                 channel[:] = scipy.interpolate.interpn(old_points, values, xi,
-                                                           method='linear',
-                                                           bounds_error=False,
-                                                           fill_value=np.nan)
+                                                       method='linear',
+                                                       bounds_error=False,
+                                                       fill_value=np.nan)
         # cleanup ---------------------------------------------------------------------------------
         for i in range(len(self.axes)):
             if not i == axis_index:
@@ -1727,11 +1719,11 @@ class Data(Group):
             # get start and stop
             start = stop  # previous value
             if i == len(indicies):
-                stop = len(axis) 
+                stop = len(axis)
             else:
                 stop = indicies[i] + 1
             # new data object prepare
-            new_name = "split%03d"%i
+            new_name = "split%03d" % i
             if stop - start < 1:
                 outs.create_data("")
             elif stop - start == 1:
@@ -1743,7 +1735,7 @@ class Data(Group):
                         attrs = dict(ax.attrs)
                         attrs.pop('name', None)
                         attrs.pop('units', None)
-                        new_data.create_axis(ax.natural_name, ax[:], ax.units,  **attrs)
+                        new_data.create_axis(ax.natural_name, ax[:], ax.units, **attrs)
                 slc = [slice(None)] * len(self.shape)
                 slc[axis_index] = start
                 for ch in self.channels:
@@ -1774,14 +1766,13 @@ class Data(Group):
         # post process ----------------------------------------------------------------------------
         if verbose:
             print('split data into {0} pieces along {1}:'.format(len(indicies) + 1,
-                    axis.natural_name))
+                  axis.natural_name))
             for i in range(len(outs)):
                 new_data = outs[i]
                 if new_data is None:
                     print('  {0} : None'.format(i))
                 elif len(new_data.shape) < len(self.shape):
                     print('  {0} : {1} {2}(constant)'.format(i, axis.natural_name, axis.units))
-                    #TODO: Make this print the constant value(dependent on constant system) KFS 2017-11-12
                 else:
                     new_axis = new_data.axes[axis_index]
                     print('  {0} : {1} to {2} {3} (length {4})'.format(i, new_axis[0],
@@ -1921,14 +1912,10 @@ class Data(Group):
         import scipy.ndimage
         # axes
         for axis in self.axes:
-            axis[:] = scipy.ndimage.interpolation.zoom(axis[:],
-                                                           factor,
-                                                           order=order)
+            axis[:] = scipy.ndimage.interpolation.zoom(axis[:], factor, order=order)
         # channels
         for channel in self.channels:
-            channel[:] = scipy.ndimage.interpolation.zoom(channel[:],
-                                                              factor,
-                                                              order=order)
+            channel[:] = scipy.ndimage.interpolation.zoom(channel[:], factor, order=order)
         # return
         if verbose:
             print('data zoomed to new shape:', self.shape)
