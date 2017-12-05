@@ -26,6 +26,7 @@ __all__ = ['Collection']
 
 class Collection(Group):
     """Nestable Collection of Data objects."""
+
     class_name = 'Collection'
 
     def __iter__(self):
@@ -61,11 +62,28 @@ class Collection(Group):
 
     @property
     def item_names(self):
+        """Item names."""
         if 'item_names' not in self.attrs.keys():
             self.attrs['item_names'] = np.array([], dtype='S')
         return [s.decode() for s in self.attrs['item_names']]
 
     def create_collection(self, name='collection', position=None, **kwargs):
+        """Create a new child colleciton.
+
+        Parameters
+        ----------
+        name : string
+            Unique identifier.
+        position : integer (optional)
+            Location to insert. Default is None (append).
+        kwargs
+            Additional arguments to child collection instantiation.
+
+        Returns
+        -------
+        WrightTools Collection
+            New child.
+        """
         collection = Collection(filepath=self.filepath, parent=self.name, name=name,
                                 edit_local=True, **kwargs)
         if position is None:
@@ -80,6 +98,22 @@ class Collection(Group):
         return collection
 
     def create_data(self, name='data', position=None, **kwargs):
+        """Create a new child data.
+
+        Parameters
+        ----------
+        name : string
+            Unique identifier.
+        position : integer (optional)
+            Location to insert. Default is None (append).
+        kwargs
+            Additional arguments to child data instantiation.
+
+        Returns
+        -------
+        WrightTools Data
+            New child.
+        """
         if name == '':
             data = None
             natural_name = "".encode()
@@ -97,15 +131,30 @@ class Collection(Group):
         return data
 
     def index(self):
+        """Index."""
         raise NotImplementedError
 
     def flush(self):
+        """Ensure contents are written to file."""
         for item in self._items:
             item.flush()
         self.file.flush()
 
     def save(self, filepath=None, verbose=True):
-        # TODO: documentation
+        """Save collection as root of a new file.
+
+        Parameters
+        ----------
+        filepath : string (optional)
+            Filepath to write. If None, file is created using natural_name.
+        verbose : boolean (optional)
+            Toggle talkbak. Default is True
+
+        Returns
+        -------
+        str
+            Written filepath.
+        """
         self.flush()  # ensure all changes are written to file
         if filepath is None:
             filepath = os.path.join(os.getcwd(), self.natural_name + '.wt5')

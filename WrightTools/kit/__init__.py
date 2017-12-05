@@ -1,3 +1,5 @@
+"""General-purpose tool kit."""
+
 from ._array import *
 from ._calculate import *
 from ._file import *

@@ -39,7 +39,6 @@ def flatten_list(items, seqtypes=(list, tuple), in_place=True):
 
     Examples
     --------
-
     >>> l = [[[1, 2, 3], [4, 5]], 6]
     >>> wt.kit.flatten_list(l)
     [1, 2, 3, 4, 5, 6]
@@ -73,8 +72,7 @@ def intersperse(lis, value):
 
 
 def get_index(lis, argument):
-    """Find the index of an item, given either the item or index as an
-    argument.
+    """Find the index of an item, given either the item or index as an argument.
 
     Particularly useful as a wrapper for arguments like channel or axis.
 
