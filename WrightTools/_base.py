@@ -31,7 +31,7 @@ class Dataset(h5py.Dataset):
     def __getitem__(self, index):
         if not hasattr(index, '__iter__'):
             index = [index]
-        lis = [min(s - 1, i) if isinstance(i, int) else i for s, i in zip(self.shape, index)]
+        lis = [min(s - 1, i) if not isinstance(i, slice) else i for s, i in zip(self.shape, index)]
         return super().__getitem__(tuple(lis))
 
     def __repr__(self):

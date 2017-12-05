@@ -616,7 +616,7 @@ class Data(Group):
             Split the dataset while maintaining its dimensionality.
         """
         # get output collection
-        out = wt_collection.Collection(name='chop', parent=parent, edit_local=parent is not None)
+        out = wt_collection.Collection(name='chop', parent=parent)
         # get output shape
         kept = list(args) + list(at.keys())
         kept_axes = [self.axes[self.axis_expressions.index(a)] for a in kept]
@@ -636,7 +636,6 @@ class Data(Group):
                 arr = axis[tuple(idx)]
                 idx[axis_index] = np.argmin(np.abs(axis[tuple(idx)] - point))
             idx = tuple(idx)
-            print(idx)
             data = out.create_data(name='chop%03i' % i)
             for v in self.variables:
                 data.create_variable(name=v.natural_name, values=v[idx], units=v.units)
