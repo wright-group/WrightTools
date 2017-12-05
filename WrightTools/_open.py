@@ -20,6 +20,19 @@ __all__ = ['open']
 
 def open(filepath, edit_local=False):
     """Open any wt5 file, returning the top-level object (data or collection).
+
+    Parameters
+    ----------
+    filepath : string
+        Path to file.
+    edit_local : boolean (optional)
+        If True, the file itself will be opened for editing. Otherwise, a
+        copy will be created. Default is False.
+
+    Returns
+    -------
+    WrightTools Collection or Data
+        Root-level object in file.
     """
     f = h5py.File(filepath)
     class_name = f['/'].attrs['class']

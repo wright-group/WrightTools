@@ -13,6 +13,7 @@ from WrightTools import datasets
 # --- test ----------------------------------------------------------------------------------------
 
 
+@pytest.mark.skip()
 def test_LDS821_514nm_80mW():
     p = datasets.BrunoldrRaman.LDS821_514nm_80mW
     data = wt.data.from_BrunoldrRaman(p)
