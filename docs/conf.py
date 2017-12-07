@@ -191,6 +191,7 @@ latex_documents = [
 
 # --- Options for manual page output -------------------------------------------------------------
 
+
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
@@ -215,12 +216,13 @@ texinfo_documents = [
 # --- gallery ------------------------------------------------------------------------------------
 
 
-#sphinx_gallery_conf = {
-#    'examples_dirs': '../examples',
-#    'filename_pattern': '/*.py',
-#    'gallery_dirs': 'auto_examples',
-#    'download_section_examples': False,
-#    'backreferences_dir': os.path.join('gen_modules', 'backreferences')}
+sphinx_gallery_conf = {
+    'examples_dirs': '../examples',
+    'filename_pattern': '/*.py',
+    'gallery_dirs': 'auto_examples',
+    'download_section_examples': False,
+    'backreferences_dir': os.path.join('gen_modules', 'backreferences')}
+
 
 # --- plots --------------------------------------------------------------------------------------
 
