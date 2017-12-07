@@ -60,7 +60,9 @@ class Axes(matplotlib.axes.Axes):
         if 'cmap' in kwargs.keys():
             if isinstance(cmap, string_type):
                 kwargs['cmap'] = colormaps[kwargs['cmap']]
-                return kwargs
+            elif 'signed' in kwargs.keys():
+                kwargs['cmap'] = colormaps['signed']
+            return kwargs
         if data:
             if data.channels[channel_index].signed:
                 kwargs['cmap'] = colormaps['signed']
@@ -104,8 +106,22 @@ class Axes(matplotlib.axes.Axes):
 
     def _parse_limits(self, zi=None, data=None, channel_index=None, dynamic_range=False, **kwargs):
         if zi is not None:
-            vmin = np.nanmin(zi)
-            vmax = np.nanmax(zi)
+            if 'null' in kwargs.keys():
+                null = kwargs['null']
+            else: null = 0. # assume zi null is zero (best guess)
+            if 'levels' in kwargs.keys():
+                levels = kwargs['levels']
+                vmin = levels.min()
+                vmax = levels.max()
+            elif 'signed' in kwargs.keys(): 
+                if kwargs['signed'] and not dynamic_range:
+                    print('is signed')
+                    mag = max(np.abs([np.nanmin(zi-null), np.nanmax(zi-null)]))
+                    vmin = null - mag
+                    vmax = null + mag
+            else:
+                vmin = np.nanmin(zi)
+                vmax = np.nanmax(zi)
         elif data is not None:
             signed = data.channels[channel_index].signed
             if signed and dynamic_range:
