@@ -35,6 +35,7 @@ Contents
 
    install
    quickstart
+   wt5
    data
    artists
    fit
