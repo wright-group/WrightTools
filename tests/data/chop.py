@@ -18,6 +18,7 @@ def test_2D_to_1D():
     assert len(chop) == 81
     for d in chop.values():
         assert d.w2.size == 81
+        assert d.axis_expressions == ['w2']
     data.close()
     chop.close()
 
@@ -29,6 +30,7 @@ def test_3D_to_1D():
     assert len(chop) == 385
     for d in chop.values():
         assert d.w2.size == 11
+        assert d.axis_expressions == ['w2']
     data.close()
     chop.close()
 
@@ -40,6 +42,7 @@ def test_3D_to_1D_at():
     assert len(chop) == 29
     for d in chop.values():
         assert d.w2.size == 11
+        assert d.axis_expressions == ['w2']
     data.close()
     chop.close()
 
@@ -52,6 +55,7 @@ def test_3D_to_2D():
     for d in chop.values():
         assert d.wm.size == 29
         assert d.w2.size == 11
+        assert d.axis_expressions == ['wm', 'w2']
     data.close()
     chop.close()
 
@@ -63,6 +67,7 @@ def test_3D_to_2D_at():
     assert len(chop) == 1
     assert chop[0].wm.size == 29
     assert chop[0].w2.size == 11
+    assert chop[0].axis_expressions == ['wm', 'w2']
     data.close()
     chop.close()
 
