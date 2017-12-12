@@ -10,7 +10,7 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 
-from ._base import create_figure, plot_colorbar
+from ._base import create_figure, plot_colorbar, savefig
 from ._colors import colormaps
 from .. import kit as wt_kit
 
@@ -81,7 +81,6 @@ def quick1D(data, axis, at={}, channel=0, local=False, autosave=False, save_dire
                 os.mkdir(folder_name)
                 save_directory = folder_name
     # chew through image generation
-    fig = None
     out = []
     for i, d in enumerate(chopped.values()):
         # unpack data -----------------------------------------------------------------------------
@@ -117,7 +116,7 @@ def quick1D(data, axis, at={}, channel=0, local=False, autosave=False, save_dire
             else:
                 file_name = str(i).zfill(3)
             fpath = os.path.join(save_directory, file_name + '.png')
-            plt.savefig(fpath, transparent=True, dpi=300, pad_inches=1.)
+            savefig(fpath, fig=fig)
             plt.close()
             if verbose:
                 print('image saved at', fpath)
@@ -202,7 +201,6 @@ def quick2D(data, xaxis=1, yaxis=0, at={}, channel=0, contours=0, pixelated=True
                 os.mkdir(folder_name)
                 save_directory = folder_name
     # loop through image generation
-    fig = None
     out = []
     for i, d in enumerate(chopped.values()):
         # unpack data -----------------------------------------------------------------------------
@@ -214,8 +212,6 @@ def quick2D(data, xaxis=1, yaxis=0, at={}, channel=0, contours=0, pixelated=True
         zi = channel[:]
         zi = np.ma.masked_invalid(zi)
         # create figure ---------------------------------------------------------------------------
-        if fig and autosave:
-            plt.close(fig)
         if xaxis.units == yaxis.units:
             xr = xlim[1] - xlim[0]
             yr = ylim[1] - ylim[0]
@@ -232,8 +228,7 @@ def quick2D(data, xaxis=1, yaxis=0, at={}, channel=0, contours=0, pixelated=True
         # levels ----------------------------------------------------------------------------------
         if channel.signed:
             if local:
-                print('signed local')
-                limit = max(abs(channel.null - np.nanmin(zi)), abs(channel.null - np.nanmax(zi)))
+                limit = channel.mag
             else:
                 if dynamic_range:
                     limit = min(abs(channel.null - channel.min()),
@@ -254,10 +249,9 @@ def quick2D(data, xaxis=1, yaxis=0, at={}, channel=0, contours=0, pixelated=True
                 else:
                     levels = np.linspace(channel.null, channel.max(), 200)
         # colors ----------------------------------------------------------------------------------
-        # always plot pcolor
-        plt.pcolor(d, cmap=cmap, vmin=levels.min(), vmax=levels.max())
-        # overlap with contourf if pixelated is False
-        if not pixelated:
+        if pixelated:
+            ax.pcolor(d, cmap=cmap)
+        else:
             ax.contourf(d, cmap=cmap)
         # contour lines ---------------------------------------------------------------------------
         if contours:
@@ -278,7 +272,7 @@ def quick2D(data, xaxis=1, yaxis=0, at={}, channel=0, contours=0, pixelated=True
             else:
                 file_name = str(i).zfill(3)
             fpath = os.path.join(save_directory, file_name + '.png')
-            plt.savefig(fpath, facecolor='none', transparent=True, dpi=300, pad_inches=1.)
+            savefig(fpath, fig=fig)
             plt.close()
             if verbose:
                 print('image saved at', fpath)

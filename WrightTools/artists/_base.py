@@ -19,6 +19,8 @@ import warnings
 
 import numpy as np
 
+from scipy.interpolate import interp2d
+
 import matplotlib
 from matplotlib.axes import SubplotBase, subplot_class_factory
 import matplotlib.pyplot as plt
@@ -1122,14 +1124,16 @@ def pcolor_helper(xi, yi, zi, transform=None):
         yi.shape = (1, yi.size)
     shape = wt_kit.joint_shape([xi, yi])
     # full
+
     def full(arr):
         for i in range(arr.ndim):
             if arr.shape[i] == 1:
                 arr = np.repeat(arr, shape[i], axis=i)
         return arr
-    xi, yi = [full(a) for a in [xi, yi]]
+
+    xi = full(xi)
+    yi = full(yi)
     # pad
-    from scipy.interpolate import interp2d
     x = np.arange(shape[0])
     y = np.arange(shape[1])
     f_xi = interp2d(x, y, xi)
