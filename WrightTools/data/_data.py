@@ -429,7 +429,7 @@ class Data(Group):
             expression, units = identifier.split('{')
             units = units.replace('}', '')
             axis = Axis(self, expression.strip(), units.strip())
-            self.axes = axis
+            self.axes.append(axis)
         # the following are populated if not already recorded
         self.channel_names
         self.constant_names
@@ -655,10 +655,15 @@ class Data(Group):
         split
             Split the dataset while maintaining its dimensionality.
         """
+        # parse args
+        args = list(args)
+        for i, arg in enumerate(args):
+            if isinstance(arg, int):
+                args[i] = self.axes[i].expression
         # get output collection
         out = wt_collection.Collection(name='chop', parent=parent)
         # get output shape
-        kept = list(args) + list(at.keys())
+        kept = args + list(at.keys())
         kept_axes = [self.axes[self.axis_expressions.index(a)] for a in kept]
         removed_axes = [a for a in self.axes if a not in kept_axes]
         removed_shape = wt_kit.joint_shape(removed_axes)
@@ -682,10 +687,11 @@ class Data(Group):
                 data.create_variable(name=v.natural_name, values=v[idx], units=v.units)
             for c in self.channels:
                 data.create_channel(name=c.natural_name, values=c[idx], units=c.units)
-            i += 1
-            # axes
             for a in kept_axes:
-                data.create_axis(expression=a.expression, units=a.units)
+                if a.expression not in at.keys():
+                    data.create_axis(expression=a.expression, units=a.units)
+            out.flush()
+            i += 1
         # return
         if verbose:
             es = [a.expression for a in kept_axes]
@@ -990,6 +996,10 @@ class Data(Group):
         self.channels[signal_channel_index].give_values(out)
         self.channels[signal_channel_index].signed = True
         self.channels[signal_channel_index]._null = 0
+
+    def flush(self):
+        self.attrs['axes'] = [a.identity.encode() for a in self.axes]
+        super().flush()
 
     def get_nadir(self, channel=0):
         """
