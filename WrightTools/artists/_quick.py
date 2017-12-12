@@ -89,8 +89,6 @@ def quick1D(data, axis, at={}, channel=0, local=False, autosave=False, save_dire
         channel = d.channels[channel_index]
         zi = channel[:]
         # create figure ---------------------------------------------------------------------------
-        if fig and autosave:
-            plt.close(fig)
         aspects = [[[0, 0], 0.5]]
         fig, gs = create_figure(width='single', nrows=1, cols=[1], aspects=aspects)
         ax = plt.subplot(gs[0, 0])
