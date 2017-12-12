@@ -63,8 +63,7 @@ def quick1D(data, axis, at={}, channel=0, local=False, autosave=False, save_dire
     fig = None
     if len(chopped) > 10:
         if not autosave:
-            print('too many images will be generated ({}): forcing autosave'.format(
-                len(chopped)))
+            print('more than 10 images will be generated: forcing autosave')
             autosave = True
     # prepare output folders
     if autosave:
@@ -82,33 +81,36 @@ def quick1D(data, axis, at={}, channel=0, local=False, autosave=False, save_dire
                 os.mkdir(folder_name)
                 save_directory = folder_name
     # chew through image generation
-    outfiles = [''] * len(chopped)
-    for i in range(len(chopped)):
+    fig = None
+    out = []
+    for i, d in enumerate(chopped.values()):
+        # unpack data -----------------------------------------------------------------------------
+        axis = d.axes[0]
+        xi = axis.full
+        channel = d.channels[channel_index]
+        zi = channel[:]
+        # create figure ---------------------------------------------------------------------------
         if fig and autosave:
             plt.close(fig)
         aspects = [[[0, 0], 0.5]]
         fig, gs = create_figure(width='single', nrows=1, cols=[1], aspects=aspects)
-        current_chop = chopped[i]
-        axes = current_chop.axes
-        channels = current_chop.channels
-        constants = current_chop.constants
-        axis = axes[0]
-        xi = axes[0][:]
-        zi = channels[channel_index][:]
+        ax = plt.subplot(gs[0, 0])
+        # plot ------------------------------------------------------------------------------------
         plt.plot(xi, zi, lw=2)
         plt.scatter(xi, zi, color='grey', alpha=0.5, edgecolor='none')
+        # decoration ------------------------------------------------------------------------------
         plt.grid()
         # limits
         if local:
             pass
         else:
-            plt.ylim(channels[channel_index].min(), channels[channel_index].max())
+            plt.ylim(channel.min(), channel.max())
         # label axes
-        plt.xlabel(axes[0].label, fontsize=18)
-        plt.ylabel(channels[channel_index].name, fontsize=18)
+        ax.set_xlabel(axis.label, fontsize=18)
+        ax.set_ylabel(channel.name, fontsize=18)
         plt.xticks(rotation=45)
         plt.xlim(xi.min(), xi.max())
-        # save
+        # save ------------------------------------------------------------------------------------
         if autosave:
             if fname:
                 file_name = fname + ' ' + str(i).zfill(3)
@@ -119,8 +121,8 @@ def quick1D(data, axis, at={}, channel=0, local=False, autosave=False, save_dire
             plt.close()
             if verbose:
                 print('image saved at', fpath)
-            outfiles[i] = fpath
-    return outfiles
+            out.append(fpath)
+    return out
 
 
 def quick2D(data, xaxis=1, yaxis=0, at={}, channel=0, contours=0, pixelated=True,
@@ -171,6 +173,15 @@ def quick2D(data, xaxis=1, yaxis=0, at={}, channel=0, contours=0, pixelated=True
     chopped = data.chop(xaxis, yaxis, at=at, verbose=False)
     # channel index
     channel_index = wt_kit.get_index(data.channel_names, channel)
+    # colormap
+    # get colormap
+    if data.channels[channel_index].signed:
+        cmap = 'signed'
+    else:
+        cmap = 'default'
+    cmap = colormaps[cmap]
+    cmap.set_bad([0.75] * 3, 1.)
+    cmap.set_under([0.75] * 3, 1.)
     # fname
     if fname is None:
         fname = data.natural_name
@@ -192,8 +203,9 @@ def quick2D(data, xaxis=1, yaxis=0, at={}, channel=0, contours=0, pixelated=True
                 save_directory = folder_name
     # loop through image generation
     fig = None
-    outfiles = [''] * len(chopped)
+    out = []
     for i, d in enumerate(chopped.values()):
+        # unpack data -----------------------------------------------------------------------------
         xaxis = d.axes[1]
         xlim = xaxis.min(), xaxis.max()
         yaxis = d.axes[0]
@@ -221,8 +233,7 @@ def quick2D(data, xaxis=1, yaxis=0, at={}, channel=0, contours=0, pixelated=True
         if channel.signed:
             if local:
                 print('signed local')
-                limit = max(abs(channel.null - np.nanmin(zi)),
-                            abs(channel.null - np.nanmax(zi)))
+                limit = max(abs(channel.null - np.nanmin(zi)), abs(channel.null - np.nanmax(zi)))
             else:
                 if dynamic_range:
                     limit = min(abs(channel.null - channel.min()),
@@ -242,29 +253,21 @@ def quick2D(data, xaxis=1, yaxis=0, at={}, channel=0, contours=0, pixelated=True
                     levels = np.linspace(channel.min(), channel.null, 200)
                 else:
                     levels = np.linspace(channel.null, channel.max(), 200)
-        # main plot -------------------------------------------------------------------------------
-        # get colormap
-        if channel.signed:
-            cmap = 'signed'
-        else:
-            cmap = 'default'
-        cmap = colormaps[cmap]
-        cmap.set_bad([0.75] * 3, 1.)
-        cmap.set_under([0.75] * 3, 1.)
-        # fill in main data environment
-        # always plot pcolormesh
+        # colors ----------------------------------------------------------------------------------
+        # always plot pcolor
         plt.pcolor(d, cmap=cmap, vmin=levels.min(), vmax=levels.max())
-        # overlap with contourf if not pixelated
+        # overlap with contourf if pixelated is False
         if not pixelated:
             ax.contourf(d, cmap=cmap)
+        # contour lines ---------------------------------------------------------------------------
+        if contours:
+            raise NotImplementedError
+        # decoration ------------------------------------------------------------------------------
         plt.xticks(rotation=45, fontsize=14)
         plt.yticks(fontsize=14)
         ax.set_xlabel(xaxis.label, fontsize=18)
         ax.set_ylabel(yaxis.label, fontsize=18)
-        # contour lines ---------------------------------------------------------------------------
-        if contours:
-            raise NotImplementedError
-        # colorbar --------------------------------------------------------------------------------
+        # colorbar
         cax = plt.subplot(gs[1])
         cbar_ticks = np.linspace(levels.min(), levels.max(), 11)
         plot_colorbar(cax=cax, ticks=cbar_ticks, label=channel.name, cmap=cmap)
@@ -279,5 +282,5 @@ def quick2D(data, xaxis=1, yaxis=0, at={}, channel=0, contours=0, pixelated=True
             plt.close()
             if verbose:
                 print('image saved at', fpath)
-            outfiles[i] = fpath
-    return outfiles
+            out.append(fpath)
+    return out
