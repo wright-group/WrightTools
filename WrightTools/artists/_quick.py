@@ -24,8 +24,8 @@ __all__ = ['quick1D', 'quick2D']
 # --- general purpose plotting functions ----------------------------------------------------------
 
 
-def quick1D(data, axis, at={}, channel=0, autosave=False, save_directory=None, fname=None,
-            verbose=True):
+def quick1D(data, axis, at={}, channel=0, local=False, autosave=False, save_directory=None,
+            fname=None, verbose=True):
     """Quickly plot 1D slice(s) of data.
 
     Parameters
@@ -34,6 +34,13 @@ def quick1D(data, axis, at={}, channel=0, autosave=False, save_directory=None, f
         Data to plot.
     axis : string or integer (optional)
         Expression or index of axis. Default is 0.
+    at : dictionary (optional)
+        Dictionary of parameters in non-plotted dimension(s). If not
+        provided, plots will be made at each coordinate.
+    channel : string or integer (optional)
+        Name or index of channel to plot. Default is 0.
+    local : boolean (optional)
+        Toggle plotting locally. Default is False.
     autosave : boolean (optional)
          Toggle autosave. Default is False.
     save_directory : string (optional)
@@ -48,7 +55,72 @@ def quick1D(data, axis, at={}, channel=0, autosave=False, save_directory=None, f
     list of strings
         List of saved image files (if any).
     """
-    raise NotImplementedError
+    # prepare data
+    chopped = data.chop(axis, at=at, verbose=False)
+    # channel index
+    channel_index = wt_kit.get_index(data.channel_names, channel)
+    # prepare figure
+    fig = None
+    if len(chopped) > 10:
+        if not autosave:
+            print('too many images will be generated ({}): forcing autosave'.format(
+                len(chopped)))
+            autosave = True
+    # prepare output folders
+    if autosave:
+        if save_directory:
+            pass
+        else:
+            if len(chopped) == 1:
+                save_directory = os.getcwd()
+                if fname:
+                    pass
+                else:
+                    fname = data.natural_name
+            else:
+                folder_name = 'mpl_1D ' + wt_kit.TimeStamp().path
+                os.mkdir(folder_name)
+                save_directory = folder_name
+    # chew through image generation
+    outfiles = [''] * len(chopped)
+    for i in range(len(chopped)):
+        if fig and autosave:
+            plt.close(fig)
+        aspects = [[[0, 0], 0.5]]
+        fig, gs = create_figure(width='single', nrows=1, cols=[1], aspects=aspects)
+        current_chop = chopped[i]
+        axes = current_chop.axes
+        channels = current_chop.channels
+        constants = current_chop.constants
+        axis = axes[0]
+        xi = axes[0][:]
+        zi = channels[channel_index][:]
+        plt.plot(xi, zi, lw=2)
+        plt.scatter(xi, zi, color='grey', alpha=0.5, edgecolor='none')
+        plt.grid()
+        # limits
+        if local:
+            pass
+        else:
+            plt.ylim(channels[channel_index].min(), channels[channel_index].max())
+        # label axes
+        plt.xlabel(axes[0].label, fontsize=18)
+        plt.ylabel(channels[channel_index].name, fontsize=18)
+        plt.xticks(rotation=45)
+        plt.xlim(xi.min(), xi.max())
+        # save
+        if autosave:
+            if fname:
+                file_name = fname + ' ' + str(i).zfill(3)
+            else:
+                file_name = str(i).zfill(3)
+            fpath = os.path.join(save_directory, file_name + '.png')
+            plt.savefig(fpath, transparent=True, dpi=300, pad_inches=1.)
+            plt.close()
+            if verbose:
+                print('image saved at', fpath)
+            outfiles[i] = fpath
+    return outfiles
 
 
 def quick2D(data, xaxis=1, yaxis=0, at={}, channel=0, contours=0, pixelated=True,

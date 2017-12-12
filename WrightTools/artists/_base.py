@@ -34,17 +34,6 @@ from ..data import Data
 from ._colors import colormaps
 
 
-# --- define --------------------------------------------------------------------------------------
-
-
-# string types
-if sys.version[0] == '2':
-    # recognize unicode and string types
-    string_type = basestring  # noqa: F821
-else:
-    string_type = str  # newer versions of python don't have unicode type
-
-
 # --- classes -------------------------------------------------------------------------------------
 
 
@@ -56,7 +45,7 @@ class Axes(matplotlib.axes.Axes):
 
     def _parse_cmap(self, data=None, channel_index=None, **kwargs):
         if 'cmap' in kwargs.keys():
-            if isinstance(kwargs['cmap'], string_type):
+            if isinstance(kwargs['cmap'], str):
                 kwargs['cmap'] = colormaps[kwargs['cmap']]
             return kwargs
         if data:
@@ -1205,7 +1194,7 @@ def plot_colorbar(cax=None, cmap='default', ticks=None, clim=None, vlim=None,
     if cax is None:
         cax = plt.gca()
     # parse cmap
-    if isinstance(cmap, string_type):
+    if isinstance(cmap, str):
         cmap = colormaps[cmap]
     # parse ticks
     if ticks is None:
