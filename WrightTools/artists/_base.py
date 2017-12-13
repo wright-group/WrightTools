@@ -49,12 +49,11 @@ class Axes(matplotlib.axes.Axes):
         if 'cmap' in kwargs.keys():
             if isinstance(kwargs['cmap'], str):
                 kwargs['cmap'] = colormaps[kwargs['cmap']]
-            return kwargs
-        if data:
+        elif data:
             if data.channels[channel_index].signed:
                 kwargs['cmap'] = colormaps['signed']
                 return kwargs
-        kwargs['cmap'] = colormaps['default']
+            kwargs['cmap'] = colormaps['default']
         return kwargs
 
     def _apply_labels(self, autolabel='none', xlabel=None, ylabel=None, data=None, channel_index=0):
@@ -93,8 +92,13 @@ class Axes(matplotlib.axes.Axes):
 
     def _parse_limits(self, zi=None, data=None, channel_index=None, dynamic_range=False, **kwargs):
         if zi is not None:
-            vmin = np.nanmin(zi)
-            vmax = np.nanmax(zi)
+            if 'levels' in kwargs.keys():
+                levels = kwargs['levels']
+                vmin = levels.min()
+                vmax = levels.max()
+            else:
+                vmin = np.nanmin(zi)
+                vmax = np.nanmax(zi)
         elif data is not None:
             signed = data.channels[channel_index].signed
             if signed and dynamic_range:
@@ -106,11 +110,11 @@ class Axes(matplotlib.axes.Axes):
             else:
                 vmin = data.channels[channel_index].null
                 vmax = data.channels[channel_index].max()
-        # don't overwrite
-        if 'vmin' not in kwargs.keys():
-            kwargs['vmin'] = vmin
-        if 'vmax' not in kwargs.keys():
-            kwargs['vmax'] = vmax
+            # don't overwrite
+            if 'vmin' not in kwargs.keys():
+                kwargs['vmin'] = vmin
+            if 'vmax' not in kwargs.keys():
+                kwargs['vmax'] = vmax
         return kwargs
 
     def add_sideplot(self, along, pad=0, height=0.75, ymin=0, ymax=1.1):
@@ -195,28 +199,28 @@ class Axes(matplotlib.axes.Axes):
             # limits
             kwargs = self._parse_limits(data=data, channel_index=channel_index,
                                         dynamic_range=dynamic_range, **kwargs)
+            # levels
+            if 'levels' not in kwargs.keys():
+                if signed:
+                    n = 11
+                else:
+                    n = 6
+                kwargs['levels'] = np.linspace(kwargs.pop('vmin'), kwargs.pop('vmax'), n)[1:-1]
+            # colors
+            if 'colors' not in kwargs.keys():
+                kwargs['colors'] = 'k'
+            if 'alpha' not in kwargs.keys():
+                kwargs['alpha'] = 0.5
+            # labels
+            self._apply_labels(autolabel=kwargs.pop('autolabel', False),
+                               xlabel=kwargs.pop('xlabel', None),
+                               ylabel=kwargs.pop('ylabel', None),
+                               data=data, channel_index=channel_index)
         else:
             data = None
             channel_index = 0
             signed = False
             kwargs = self._parse_limits(zi=args[2], dynamic_range=dynamic_range, **kwargs)
-        # levels
-        if 'levels' not in kwargs.keys():
-            if signed:
-                n = 11
-            else:
-                n = 6
-            kwargs['levels'] = np.linspace(kwargs.pop('vmin'), kwargs.pop('vmax'), n)[1:-1]
-        # colors
-        if 'colors' not in kwargs.keys():
-            kwargs['colors'] = 'k'
-        if 'alpha' not in kwargs.keys():
-            kwargs['alpha'] = 0.5
-        # labels
-        self._apply_labels(autolabel=kwargs.pop('autolabel', False),
-                           xlabel=kwargs.pop('xlabel', None),
-                           ylabel=kwargs.pop('ylabel', None),
-                           data=data, channel_index=channel_index)
         # call parent
         return matplotlib.axes.Axes.contour(self, *args, **kwargs)  # why can't I use super?
 
