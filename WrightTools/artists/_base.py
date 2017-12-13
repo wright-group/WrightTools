@@ -364,9 +364,9 @@ class Axes(matplotlib.axes.Axes):
                 raise wt_exceptions.DimensionalityError(2, data.dimensionality)
             # arrays
             channel_index = wt_kit.get_index(data.channel_names, channel)
-            xi = data.axes[0][:]
-            yi = data.axes[1][:]
-            zi = data.channels[channel_index][:].T
+            xi = data.axes[0].full
+            yi = data.axes[1].full
+            zi = data.channels[channel_index][:]
             X, Y, Z = pcolor_helper(xi, yi, zi)
             args = [X, Y, Z] + args
             # limits
@@ -1134,12 +1134,12 @@ def pcolor_helper(xi, yi, zi, transform=None):
     xi = full(xi)
     yi = full(yi)
     # pad
-    x = np.arange(shape[0])
-    y = np.arange(shape[1])
+    x = np.arange(shape[1])
+    y = np.arange(shape[0])
     f_xi = interp2d(x, y, xi)
     f_yi = interp2d(x, y, yi)
-    x_new = np.arange(-1, shape[0] + 1)
-    y_new = np.arange(-1, shape[1] + 1)
+    x_new = np.arange(-1, shape[1] + 1)
+    y_new = np.arange(-1, shape[0] + 1)
     xi = f_xi(x_new, y_new)
     yi = f_yi(x_new, y_new)
     # fill

@@ -41,7 +41,6 @@ Contents
    fit
    kit
    units
-   tuning
    diagrams
    datasets
    contributing 

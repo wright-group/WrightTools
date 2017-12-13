@@ -30,9 +30,17 @@ from .. import units as wt_units
 # --- define --------------------------------------------------------------------------------------
 
 
-operators = '/=-+*'
-
 __all__ = ['Data']
+
+
+operator_to_identifier = {}
+operator_to_identifier['/'] = '__d__'
+operator_to_identifier['='] = '__e__'
+operator_to_identifier['-'] = '__m__'
+operator_to_identifier['+'] = '__p__'
+operator_to_identifier['*'] = '__t__'
+identifier_to_operator = {value: key for key, value in operator_to_identifier.items()}
+operators = ''.join(operator_to_identifier.keys())
 
 
 # --- classes -------------------------------------------------------------------------------------
@@ -65,7 +73,7 @@ class Axis(object):
         for variable in self.variables:
             arr = variable[index]
             vs[variable.natural_name] = wt_units.converter(arr, variable.units, self.units)
-        return numexpr.evaluate(self.expression, local_dict=vs)
+        return numexpr.evaluate(self.expression.split('=')[0], local_dict=vs)
 
     def __repr__(self):
         return '<WrightTools.Axis {0} ({1}) at {2}>'.format(self.expression, str(self.units),
@@ -113,11 +121,8 @@ class Axis(object):
     @property
     def natural_name(self):
         name = self.expression.strip()
-        name = name.replace('/', '__d__')
-        name = name.replace('=', '__e__')
-        name = name.replace('-', '__m__')
-        name = name.replace('+', '__p__')
-        name = name.replace('*', '__t__')
+        for op in operators:
+            name = name.replace(op, operator_to_identifier[op])
         return name
 
     @property
@@ -160,7 +165,6 @@ class Axis(object):
         except (AssertionError, AttributeError):
             pattern = '|'.join(map(re.escape, operators))
             keys = re.split(pattern, self.expression)
-            print(keys)
             self._variables = [self.parent.variables[self.parent.variable_names.index(key)]
                                for key in keys]
         finally:
@@ -429,7 +433,10 @@ class Data(Group):
             identifier = identifier.decode()
             expression, units = identifier.split('{')
             units = units.replace('}', '')
-            axis = Axis(self, expression.strip(), units.strip())
+            for i in identifier_to_operator.keys():
+                expression = expression.replace(i, identifier_to_operator[i])
+            expression = expression.replace(' ', '')  # remove all whitespace
+            axis = Axis(self, expression, units.strip())
             self.axes.append(axis)
         # the following are populated if not already recorded
         self.channel_names
@@ -690,6 +697,7 @@ class Data(Group):
                 data.create_channel(name=c.natural_name, values=c[idx], units=c.units)
             for a in kept_axes:
                 if a.expression not in at.keys():
+                    print('expression', a.expression)
                     data.create_axis(expression=a.expression, units=a.units)
             out.flush()
             i += 1
@@ -779,7 +787,7 @@ class Data(Group):
             if axis.units_kind == units_kind:
                 axis.convert(destination_units)
                 if verbose:
-                    print('axis', axis.natural_name, 'converted')
+                    print('axis', axis.expression, 'converted')
 
     def copy(self):
         """
@@ -792,7 +800,7 @@ class Data(Group):
         """
         raise NotImplementedError
 
-    def create_axis(self, expression, units, **kwargs):
+    def create_axis(self, expression, units):
         """Add new child axis.
 
         Parameters
@@ -801,15 +809,14 @@ class Data(Group):
             Axis expression.
         units : string
             Axis units.
-        kwargs
-            Additional kwargs to variable instantiation.
 
         Returns
         -------
         WrightTools Axis
             New child axis.
         """
-        axis = Axis(self, expression, units, **kwargs)
+        print('this is create axis', expression, units)
+        axis = Axis(self, expression, units)
         self.axes.append(axis)
         self.flush()
         self._update()
@@ -1137,7 +1144,7 @@ class Data(Group):
         elif isinstance(channel, str):
             channel_index = self.channel_names.index(channel)
         else:
-                raise TypeError("channel: expected {int, str}, got %s" % type(channel))
+            raise TypeError("channel: expected {int, str}, got %s" % type(channel))
         channel = self.channels[channel_index]
         # axis ------------------------------------------------------------------------------------
         if isinstance(axis, int):

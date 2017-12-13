@@ -25,7 +25,7 @@ __all__ = ['from_COLORS']
 # --- from function -------------------------------------------------------------------------------
 
 
-def from_COLORS(filepaths, name=None, cols=None, invert_d1=True, color_steps_as='energy',
+def from_COLORS(filepaths, name=None, cols=None, invert_d1=True,
                 ignore=['num', 'w3', 'wa', 'dref', 'm0', 'm1', 'm2', 'm3', 'm4', 'm5', 'm6'],
                 parent=None, verbose=True):
     """Create data object from COLORS file(s).
