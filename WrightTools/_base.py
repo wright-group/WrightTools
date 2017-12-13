@@ -103,14 +103,12 @@ class Group(h5py.Group):
         self.fid = self.file.fid
         self.natural_name = name
         self.attrs['class'] = self.class_name
-        self.attrs.update(kwargs)
+        #self.attrs.update(kwargs)
         # load from file
         self._items = []
         for name in self.item_names:
             self._items.append(self[name])
             setattr(self, name, self[name])
-        # kwargs
-        self.attrs.update(kwargs)
         # the following are populated if not already recorded
         self.__version__
 

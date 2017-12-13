@@ -160,6 +160,7 @@ class Axis(object):
         except (AssertionError, AttributeError):
             pattern = '|'.join(map(re.escape, operators))
             keys = re.split(pattern, self.expression)
+            print(keys)
             self._variables = [self.parent.variables[self.parent.variable_names.index(key)]
                                for key in keys]
         finally:
