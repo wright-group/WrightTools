@@ -19,22 +19,27 @@ __all__ = ['discover_dimensions']
 # --- function ------------------------------------------------------------------------------------
 
 
-def discover_dimensions(arr, dimension_cols, verbose=True):
-    """Discover the dimensions of array arr.
+def discover_dimensions(arr, cols):
+    """Discover the dimensions of a flattened multidimensional array.
 
-    Watches the indicies contained in dimension_cols. Returns dictionaries of
-    axis objects [scanned, constant].
-    Constant objects have their points object initialized. Scanned dictionary is
-    in order of scanning (..., zi, yi, xi). Both dictionaries are condensed
-    into coscanning / setting.
+    Parameters
+    ----------
+    arr : 2D numpy ndarray
+        Array in [col, value].
+    cols : dictionary
+        Dictionary with column names as keys, and idx, tolerance and units
+        as values.
+
+    Returns
+    -------
+    dictionary
+        expression: points
     """
-    input_cols = dimension_cols
     # import values -------------------------------------------------------------------------------
-    dc = dimension_cols
-    di = [dc[key]['idx'] for key in dc.keys()]
-    dt = [dc[key]['tolerance'] for key in dc.keys()]
-    du = [dc[key]['units'] for key in dc.keys()]
-    dk = [key for key in dc.keys()]
+    di = [cols[key]['idx'] for key in cols.keys()]
+    dt = [cols[key]['tolerance'] for key in cols.keys()]
+    du = [cols[key]['units'] for key in cols.keys()]
+    dk = [key for key in cols.keys()]
     dims = list(zip(di, dt, du, dk))
     # remove nan dimensions and bad dimensions ----------------------------------------------------
     to_pop = []
@@ -109,9 +114,9 @@ def discover_dimensions(arr, dimension_cols, verbose=True):
     scanned_ordered.reverse()
     # shape ---------------------------------------------------------------------------------------
     out = collections.OrderedDict()
-    for a in scanned[::-1]:
+    for a in scanned_ordered:
         key = a[0][0]
-        axis = dc[key]
+        axis = cols[key]
         # generate lists from data
         lis = sorted(arr[axis['idx']])
         tol = axis['tolerance']
@@ -144,8 +149,7 @@ def discover_dimensions(arr, dimension_cols, verbose=True):
     for a in out.values():
         size *= a.size
     if not size == length:
-        message = 'array length ({0}) inconsistent with data size ({1})'
-        message += 'are ignore and tolerances correct?'
-        warnings.warn(message.format(length, size))
+        message = 'array length ({0}) inconsistent with data size ({1})'.format(length, size)
+        warnings.warn(message)
     # return --------------------------------------------------------------------------------------
     return out
