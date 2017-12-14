@@ -102,7 +102,13 @@ class Group(h5py.Group):
         self.__n = 0
         self.fid = self.file.fid
         self.natural_name = name
+        # attrs
         self.attrs['class'] = self.class_name
+        for key, value in kwargs.items():
+            try:
+                self.attrs[key] = value
+            except TypeError:
+                pass  # some values have no native HDF5 equivalent
         #self.attrs.update(kwargs)
         # load from file
         self._items = []

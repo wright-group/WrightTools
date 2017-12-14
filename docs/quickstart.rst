@@ -84,13 +84,13 @@ Convert
 
 .. code-block:: python
 
-   >>> [a.units for a in data.axes]
-   ['nm', 'nm', 'fs']
+   >>> data.units
+   ('nm', 'nm', 'fs')
    >>> data.convert('eV')
    axis w2 converted
-   axis wwm converted
-   >>> [a.units for a in data.axes]
-   ['eV', 'eV', 'fs']
+   axis w1=wm converted
+   >>> data.units
+   ('eV', 'eV', 'fs')
 
 Want fine control? You can always convert individual axes, *e.g.* ``data.w2.convert('wn')``.
 

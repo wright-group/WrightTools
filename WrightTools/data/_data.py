@@ -178,6 +178,7 @@ class Axis(object):
         destination_units : string
             Destination units.
         """
+        destination_units_kind = None
         for dic in wt_units.unit_dicts:
             if destination_units in dic.keys():
                 destination_units_kind = dic['kind']
@@ -697,7 +698,6 @@ class Data(Group):
                 data.create_channel(name=c.natural_name, values=c[idx], units=c.units)
             for a in kept_axes:
                 if a.expression not in at.keys():
-                    print('expression', a.expression)
                     data.create_axis(expression=a.expression, units=a.units)
             out.flush()
             i += 1
@@ -1917,20 +1917,31 @@ class Data(Group):
             Toggle talkback. Default is True
         """
         # TODO: ensure that transform does not break data
+        # create
         new = []
         current = {a.expression: a for a in self.axes}
         for expression in axes:
             axis = current.get(expression, Axis(self, expression))
             new.append(axis)
         self.axes = new
+        # units
+        for a in self.axes:
+            if a.units is None:
+                a.convert(a.variables[0].units)
+        # finish
         self.flush()
         self._update()
+
+    @property
+    def units(self):
+        """All axis units."""
+        return tuple(a.units for a in self.axes)
 
     def zoom(self, factor, order=1, verbose=True):
         """Zoom the data array using spline interpolation of the requested order.
 
         The number of points along each axis is increased by factor.
-        See `scipy ndimage`__ for more info.
+        See `sciipy ndimage`__ for more info.
 
         __ http://docs.scipy.org/doc/scipy/reference/
                     generated/scipy.ndimage.interpolation.zoom.html

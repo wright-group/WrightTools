@@ -101,32 +101,32 @@ def from_KENT(filepaths, name=None, ignore=['wm'], delay_tolerance=0.1, frequenc
     else:
         data = Data(**kwargs)
     # grid and fill data --------------------------------------------------------------------------
+    # variables
+    ndim = len(scanned)
+    for i, key in enumerate(scanned.keys()):
+        for name in key.split('='):
+            shape = [1] * ndim
+            a = scanned[key]
+            shape[i] = a.size
+            a.shape = tuple(shape)
+            units = axes[name]['units']
+            data.create_variable(name=name, values=a, units=units)
+    for key, dic in axes.items():
+        if key not in data.variable_names:
+            c = np.mean(arr[dic['idx']])
+            if not np.isnan(c):
+                shape = [1] * ndim
+                a = np.array([c])
+                a.shape = tuple(shape)
+                units = dic['units']
+                data.create_variable(name=key, values=a, units=units)
+    # channels
     if len(scanned) == 1:  # 1D data
-        axis = scanned[0]
-        axis[:] = arr[axis.file_idx]
-        scanned[0] = axis
         for key in channels.keys():
             channel = channels[key]
-            zi = arr[channel.file_idx]
-            channel.give_values(zi)
+            zi = arr[channel['idx']]
+            data.create_channel(name=key, values=zi)
     else:  # all other dimensionalities
-        # variables
-        ndim = len(scanned)
-        for i, key in enumerate(scanned.keys()):
-            for name in key.split('='):
-                shape = [1] * ndim
-                a = scanned[key]
-                shape[i] = a.size
-                a.shape = tuple(shape)
-                data.create_variable(name=name, values=a)
-        for key, dic in axes.items():
-            if key not in data.variable_names:
-                c = np.mean(arr[dic['idx']])
-                if not np.isnan(c):
-                    shape = [1] * ndim
-                    a = np.array([c])
-                    a.shape = tuple(shape)
-                    data.create_variable(name=key, values=a)
         # channels
         points = tuple(arr[axes[key.split('=')[0]]['idx']] for key in scanned.keys())
         xi = tuple(np.meshgrid(*scanned.values(), indexing='ij'))
@@ -137,12 +137,9 @@ def from_KENT(filepaths, name=None, ignore=['wm'], delay_tolerance=0.1, frequenc
             grid_i = griddata(points, zi, xi, method='linear', fill_value=fill_value)
             data.create_channel(name=key, values=grid_i)
     # axes
-    for expression in scanned.keys():
-        if 'w' in expression:
-            units = 'wn'
-        elif 'd' in expression:
-            units = 'ps'
-        data.create_axis(expression, units)
+    data.transform(scanned.keys())
+    # axes
+    data.transform(scanned.keys())
     # return --------------------------------------------------------------------------------------
     if verbose:
         print('data created at {0}'.format(data.fullpath))
