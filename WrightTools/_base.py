@@ -110,7 +110,7 @@ class Group(h5py.Group):
                 self.attrs[key] = value
             except TypeError:
                 # some values have no native HDF5 equivalent
-                warnings.warn("'%f' not included in attrs because its Type cannot be represented" %
+                warnings.warn("'%s' not included in attrs because its Type cannot be represented" %
                                 key)
         # load from file
         self._items = []
