@@ -15,16 +15,16 @@ Create a data object from one of the built-in datasets.
    from WrightTools import datasets
    ps = datasets.COLORS.v2p1_MoS2_TrEE_movie  # list of filepaths
    # create data object
-   #data = wt.data.from_COLORS(ps)
+   data = wt.data.from_COLORS(ps)
 
 The data contains some helpful attributes that we can inspect now:
 
 .. code-block:: python
 
    >>> data.channel_names
-   ['ai0', 'ai1', 'ai2', 'ai3', 'ai4', 'array']
-   >>> data.axis_names
-   ['w2', 'w1', 'd2']
+   ['ai0', 'ai1', 'ai2', 'ai3', 'ai4', 'mc']
+   >>> data.axis_expressions
+   ['w2', 'w1=wm', 'd2']
    >>> data.shape
    (41, 41, 23)
 
@@ -43,8 +43,7 @@ For more information, check see :ref:`artists`, or check out our `gallery`_.
 
 .. code-block:: python
 
-   artist = wt.artists.mpl_1D(data, 'w1', at={'w2': [2, 'eV'], 'd2': [-100, 'fs']})
-   artist.plot()
+   wt.artists.quick1D(data, 'w1', at={'w2': [2, 'eV'], 'd2': [-100, 'fs']})
 
 .. plot::
    :include-source: False
@@ -53,18 +52,16 @@ For more information, check see :ref:`artists`, or check out our `gallery`_.
    import WrightTools as wt
    from WrightTools import datasets
    ps = datasets.COLORS.v2p1_MoS2_TrEE_movie
-   #data = wt.data.from_COLORS(ps)
-   #artist = wt.artists.mpl_1D(data, 'w1', at={'w2': [2, 'eV'], 'd2': [-100, 'fs']})
-   #artist.plot()
-   #plt.show()
+   data = wt.data.from_COLORS(ps)
+   wt.artists.quick1D(data, 'w1=wm', at={'w2': [2, 'eV'], 'd2': [-100, 'fs']})
+   plt.show()
 
 2D
 ^^
 
 .. code-block:: python
 
-   artist = wt.artists.mpl_2D(data, 'w1', 'd2', at={'w2': [2, 'eV']})
-   artist.plot()
+   wt.artists.quick2D(data, 'w1', 'd2', at={'w2': [2, 'eV']})
 
 .. plot::
    :include-source: False
@@ -73,10 +70,9 @@ For more information, check see :ref:`artists`, or check out our `gallery`_.
    import WrightTools as wt
    from WrightTools import datasets
    ps = datasets.COLORS.v2p1_MoS2_TrEE_movie
-   #data = wt.data.from_COLORS(ps)
-   #artist = wt.artists.mpl_2D(data, 'w1', 'd2', at={'w2': [2, 'eV']})
-   #artist.plot()
-   #plt.show()
+   data = wt.data.from_COLORS(ps)
+   wt.artists.quick2D(data, 'w1=wm', 'd2', at={'w2': [2, 'eV']})
+   plt.show()
 
 Interact with the Data
 ----------------------
@@ -88,15 +84,15 @@ Convert
 
 .. code-block:: python
 
-   >>> [a.units for a in data.axes]
-   ['wn', 'wn', 'fs']
+   >>> data.units
+   ('nm', 'nm', 'fs')
    >>> data.convert('eV')
    axis w2 converted
-   axis w1 converted
-   >>> [a.units for a in data.axes]
-   ['eV', 'eV', 'fs']
+   axis w1=wm converted
+   >>> data.units
+   ('eV', 'eV', 'fs')
 
-Want fine control? You can always convert individual axes, *e.g.* ``data.w2.convert('nm')``.
+Want fine control? You can always convert individual axes, *e.g.* ``data.w2.convert('wn')``.
 
 Split
 ^^^^^
@@ -131,6 +127,5 @@ Use ``clip`` to ignore points outside of a specific range.
    #artist = wt.artists.mpl_2D(data, 'w1', 'd2', at={'w2': [2, 'eV']})
    #artist.plot()
    #plt.show()
-
 
 .. _gallery: auto_examples/index.html

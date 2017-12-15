@@ -9,6 +9,7 @@ import os
 import weakref
 import tempfile
 import posixpath
+import warnings
 
 import numpy as np
 
@@ -102,15 +103,20 @@ class Group(h5py.Group):
         self.__n = 0
         self.fid = self.file.fid
         self.natural_name = name
+        # attrs
         self.attrs['class'] = self.class_name
-        self.attrs.update(kwargs)
+        for key, value in kwargs.items():
+            try:
+                self.attrs[key] = value
+            except TypeError:
+                # some values have no native HDF5 equivalent
+                warnings.warn("'%s' not included in attrs because its Type cannot be represented" %
+                                key)
         # load from file
         self._items = []
         for name in self.item_names:
             self._items.append(self[name])
             setattr(self, name, self[name])
-        # kwargs
-        self.attrs.update(kwargs)
         # the following are populated if not already recorded
         self.__version__
 

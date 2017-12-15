@@ -202,9 +202,9 @@ def quick2D(data, xaxis=1, yaxis=0, at={}, channel=0, contours=0, pixelated=True
     out = []
     for i, d in enumerate(chopped.values()):
         # unpack data -----------------------------------------------------------------------------
-        xaxis = d.axes[1]
+        xaxis = d.axes[0]
         xlim = xaxis.min(), xaxis.max()
-        yaxis = d.axes[0]
+        yaxis = d.axes[1]
         ylim = xaxis.min(), yaxis.max()
         channel = d.channels[channel_index]
         zi = channel[:]
@@ -232,7 +232,7 @@ def quick2D(data, xaxis=1, yaxis=0, at={}, channel=0, contours=0, pixelated=True
                     limit = min(abs(channel.null - channel.min()),
                                 abs(channel.null - channel.max()))
                 else:
-                    limit = channel.mag()
+                    limit = channel.mag
             if np.isnan(limit):
                 limit = 1.
             if limit is np.ma.masked:

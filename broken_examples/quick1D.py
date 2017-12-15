@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-Simple 2D
-=========
+Quick 1D
+========
 
-A simple 2D plot.
+A quick 1D plot.
 """
 
 import WrightTools as wt
@@ -11,6 +11,4 @@ from WrightTools import datasets
 
 ps = datasets.KENT.LDS821_TRSF
 data = wt.data.from_KENT(ps, ignore=['d1', 'd2', 'wm'], verbose=False)
-
-artist = wt.artists.mpl_2D(data, verbose=False)
-artist.plot()
+wt.artists.quick1D(data, at={'w2': [1520, 'wn']}, verbose=False)

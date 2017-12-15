@@ -29,7 +29,7 @@ __all__ = ['from_PyCMDS']
 # --- from function -------------------------------------------------------------------------------
 
 
-def from_PyCMDS(filepath, name=None, collection=None, verbose=True):
+def from_PyCMDS(filepath, name=None, parent=None, verbose=True):
     """Create a data object from a single PyCMDS output file.
 
     Parameters
@@ -39,7 +39,7 @@ def from_PyCMDS(filepath, name=None, collection=None, verbose=True):
     name : str or None (optional)
         The name to be applied to the new data object. If None, name is read
         from file.
-    collection = WrightTools.Collection (optional)
+    parent : WrightTools.Collection (optional)
         Collection to place new data object within. Default is None.
     verbose : bool (optional)
         Toggle talkback. Default is True.
@@ -60,8 +60,8 @@ def from_PyCMDS(filepath, name=None, collection=None, verbose=True):
         data_name = headers['data origin']
     # create data object
     kwargs = {'name': data_name, 'kind': 'PyCMDS', 'source': filepath}
-    if collection is not None:
-        data = collection.create_data(**kwargs)
+    if parent is not None:
+        data = parent.create_data(**kwargs)
     else:
         data = Data(**kwargs)
     # array

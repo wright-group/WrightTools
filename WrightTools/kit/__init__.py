@@ -3,6 +3,7 @@
 
 from ._array import *
 from ._calculate import *
+from ._discover_dimensions import *
 from ._file import *
 from ._ini import *
 from ._interpolate import *

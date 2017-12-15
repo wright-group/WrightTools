@@ -19,7 +19,6 @@ Cary 50    Files from Varian's Cary® 50 UV-Vis                               :m
 COLORS     Files from Control Lots Of Research in Spectroscopy               :meth:`~WrightTools.data.from_COLORS`
 JASCO      Files from JASCO_ optical spectrometers.                          :meth:`~WrightTools.data.from_JASCO`
 KENT       Files from "ps control" by Kent Meyer                             :meth:`~WrightTools.data.from_KENT`
-NISE       Measure objects from NISE_.                                       :meth:`~WrightTools.data.from_NISE`
 PyCMDS     Files from PyCMDS_.                                               :meth:`~WrightTools.data.from_PyCMDS`
 scope      .scope files from ocean optics spectrometers                      :meth:`~WrightTools.data.from_scope`
 Shimadzu   Files from Shimadzu_ UV-VIS spectrophotometers.                   :meth:`~WrightTools.data.from_shimadzu`
@@ -46,15 +45,13 @@ It is possible to create data objects directly in special circumstances, as show
    yi = np.linspace(6000, 8000, 75)
    zi = my_resonance(xi, yi)
    # package into data object
-   axes = []
-   axes.append(wt.data.Axis(xi, units='wn', name='w1'))
-   axes.append(wt.data.Axis(yi, units='wn', name='w2'))
-   channels = []
-   channels.append(wt.data.Channel(zi, name='resonance'))
-   data = wt.data.Data(axes, channels, name='example')
-
-Note that channel objects are matrix (ij) indexed.
-Cartesian (xy) indexed packages like matplotlib will expect the transform.
+   data = wt.Data(name='example')
+   xi.shape = (75, 1)
+   data.add_variable(name='w1', units='wn', values=xi)
+   yi.shape = (1, 75)
+   data.add_variable(name='w2', units='wn', values=yi)
+   data.add_channel(name='signal', values=zi)
+   data.transform(['w1', 'w2'])
 
 Structure & properties
 ----------------------
