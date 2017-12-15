@@ -15,7 +15,7 @@ artist = WMEL.Artist(size=[4, 3], energies=[0., 0.4, 0.5, 0.8, 0.9, 1.],
                      state_names=['g', '1S', '1P', '2x 1S', '1S+1P', '2x 1P'])
 
 artist.label_rows([r'$\mathrm{\alpha}$', r'$\mathrm{\beta}$', r'$\mathrm{\gamma}$'])
-artist.label_columns(['diag before', 'cross before', 'diag after', 'cross after'], font_size = 8)
+artist.label_columns(['diag before', 'cross before', 'diag after', 'cross after'], font_size=8)
 
 artist.clear_diagram([1, 2])
 artist.clear_diagram([2, 2])
