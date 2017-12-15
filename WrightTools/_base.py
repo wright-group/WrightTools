@@ -9,6 +9,7 @@ import os
 import weakref
 import tempfile
 import posixpath
+import warnings
 
 import numpy as np
 
@@ -108,7 +109,8 @@ class Group(h5py.Group):
             try:
                 self.attrs[key] = value
             except TypeError:
-                pass  # some values have no native HDF5 equivalent
+                # some values have no native HDF5 equivalent
+                warnings.warn("'%f' not included in attrs because its Type cannot be represented in HDF5"%key)
         #self.attrs.update(kwargs)
         # load from file
         self._items = []

@@ -1941,7 +1941,7 @@ class Data(Group):
         """Zoom the data array using spline interpolation of the requested order.
 
         The number of points along each axis is increased by factor.
-        See `sciipy ndimage`__ for more info.
+        See `scipy ndimage`__ for more info.
 
         __ http://docs.scipy.org/doc/scipy/reference/
                     generated/scipy.ndimage.interpolation.zoom.html
