@@ -18,5 +18,3 @@ def test_LDS821_514nm_80mW():
     assert data.axis_expressions == ['energy']
     assert data.units == ('wn',)
     data.close()
-
-test_LDS821_514nm_80mW()
