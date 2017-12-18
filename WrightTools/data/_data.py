@@ -467,6 +467,11 @@ class Data(Group):
             self.attrs['channel_names'] = np.array([], dtype='S')
         return [s.decode() for s in self.attrs['channel_names']]
 
+    @channel_names.setter
+    def channel_names(self, value):
+        """Set channel names."""
+        self.attrs['channel_names'] = np.array(value, dtype='S')
+
     @property
     def channels(self):
         """Channels."""
@@ -601,16 +606,10 @@ class Data(Group):
         channel : int or str
             Channel index or name.
         """
-        # get channel
-        if isinstance(channel, int):
-            channel_index = channel
-        elif isinstance(channel, str):
-            channel_index = self.channel_names.index(channel)
-        else:
-            raise TypeError("channel: expected {int, str}, got %s" % type(channel))
-        # bring to front
-        self.channels.insert(0, self.channels.pop(channel_index))
-        self._update()
+        channel_index = wt_kit.get_index(self.channel_names, channel)
+        new = self.channel_names
+        new.insert(0, new.pop(channel_index))
+        self.channel_names = new
 
     def chop(self, *args, at={}, parent=None, verbose=True):
         """Divide the dataset into its lower-dimensionality components.
@@ -815,7 +814,6 @@ class Data(Group):
         WrightTools Axis
             New child axis.
         """
-        print('this is create axis', expression, units)
         axis = Axis(self, expression, units)
         self.axes.append(axis)
         self.flush()
