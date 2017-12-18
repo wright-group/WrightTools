@@ -23,7 +23,7 @@ __all__ = ['from_BrunoldrRaman']
 # --- from function -------------------------------------------------------------------------------
 
 
-def from_BrunoldrRaman(filepath, name=None, collection=None, verbose=True):
+def from_BrunoldrRaman(filepath, name=None, parent=None, verbose=True):
     """Create a data object from the Brunold rRaman instrument.
 
     Expects one energy (in wavenumbers) and one counts value.
@@ -35,7 +35,7 @@ def from_BrunoldrRaman(filepath, name=None, collection=None, verbose=True):
     name : string (optional)
         Name to give to the created data object. If None, filename is used.
         Default is None.
-    collection : WrightTools.Collection (optional)
+    parent : WrightTools.Collection (optional)
         Collection to place new data object within. Default is None.
     verbose : boolean (optional)
         Toggle talkback. Default is True.
@@ -55,19 +55,19 @@ def from_BrunoldrRaman(filepath, name=None, collection=None, verbose=True):
         name = os.path.basename(filepath).split('.')[0]
     # create data
     kwargs = {'name': name, 'kind': 'BrunoldrRaman', 'source': filepath}
-    if collection is None:
+    if parent is None:
         data = Data(**kwargs)
     else:
-        data = collection.create_data(**kwargs)
+        data = parent.create_data(**kwargs)
     # array
     arr = np.genfromtxt(filepath, delimiter='\t').T
     # chew through all scans
-    data.create_axis(name='wm', points=arr[0], units='wn')
-    data.create_channel(name='counts', values=arr[1])
+    data.create_variable(name='energy', values=arr[0], units='wn')
+    data.create_channel(name='signal', values=arr[1])
+    data.transform(['energy'])
     # finish
     if verbose:
         print('data created at {0}'.format(data.fullpath))
-        print('  kind: {0}'.format(data.kind))
-        print('  range: {0} to {1} (wn)'.format(data.wm[0], data.wm[-1]))
+        print('  range: {0} to {1} (wn)'.format(data.energy[0], data.energy[-1]))
         print('  size: {0}'.format(data.size))
     return data
