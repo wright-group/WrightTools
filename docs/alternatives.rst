@@ -9,6 +9,7 @@ Your project may be better served by one of them:
 - gridded_
 - hyperspy_
 - nmrglue_
+- PyTrA_
 - scikit-spectra_
 - xarray_
 
@@ -26,5 +27,6 @@ Those with general interest in array-oriented scientific data should be aware of
 .. _hdf5: https://support.hdfgroup.org/HDF5/
 .. _netcdf: https://www.unidata.ucar.edu/software/netcdf/
 .. _nmrglue: http://www.nmrglue.com/
+.. _PyTrA: http://nznano.blogspot.com/2012/06/pytra-femtosecond-transient-absorption.html
 .. _scikit-spectra: http://hugadams.github.io/scikit-spectra/
 .. _xarray: http://xarray.pydata.org/
