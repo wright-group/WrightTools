@@ -1527,7 +1527,7 @@ class Data(Group):
         self.transpose(transpose_order, verbose=False)
         self._update()
 
-    def remove_channel(self, channel):
+    def remove_channel(self, channel, verbose=True):
         """
         Remove channel from data.
 
@@ -1536,17 +1536,13 @@ class Data(Group):
         channel : int (index) or str (name)
             Channel to remove.
         """
-        # get channel
-        if isinstance(channel, int):
-            channel_index = channel
-        elif isinstance(channel, str):
-            channel_index = self.channel_names.index(channel)
-        else:
-            raise TypeError("channel: expected {int, str}, got %s" % type(channel))
-        # remove
-        self.channels.pop(channel_index)
-        # finish
-        self._update()
+        channel_index = wt_kit.get_index(self.channel_names, channel)
+        new = self.channel_names
+        name = new.pop(channel_index)
+        del self[name]
+        self.channel_names = new
+        if verbose:
+            print('channel {0} removed'.format(name))
 
     def rename_attrs(self, **kwargs):
         """Rename a set of attributes.
