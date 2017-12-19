@@ -585,6 +585,11 @@ class Data(Group):
             self.attrs['variable_names'] = np.array([], dtype='S')
         return [s.decode() for s in self.attrs['variable_names']]
 
+    @variable_names.setter
+    def variable_names(self, value):
+        """Set variable names."""
+        self.attrs['variable_names'] = np.array(value, dtype='S')
+
     @property
     def variables(self):
         """Variables."""
@@ -926,6 +931,7 @@ class Data(Group):
         divisor_channel : int or str
             The channel in the divisor object to use.
         """
+        raise NotImplementedError
         divisor = divisor.copy()
         # map points
         for name in divisor.axis_names:
@@ -990,6 +996,7 @@ class Data(Group):
 
         where I is the reference channel and dI is the signal channel.
         """
+        raise NotImplementedError
         # get signal channel
         if isinstance(signal_channel, int):
             signal_channel_index = signal_channel
@@ -1041,6 +1048,7 @@ class Data(Group):
         list of numbers
             Coordinates in units for each axis.
         """
+        raise NotImplementedError
         # get channel
         if isinstance(channel, int):
             channel_index = channel
@@ -1069,6 +1077,7 @@ class Data(Group):
         list of numbers
             Coordinates in units for each axis.
         """
+        raise NotImplementedError
         # get channel
         if isinstance(channel, int):
             channel_index = channel
@@ -1156,6 +1165,7 @@ class Data(Group):
         verbose : bool (optional)
             Toggle talkback. Default is True.
         """
+        raise NotImplementedError
         # channel ---------------------------------------------------------------------------------
         if isinstance(channel, int):
             channel_index = channel
@@ -1246,6 +1256,7 @@ class Data(Group):
                *Applied Spectroscopy* **1989** 43, 1195--1208
                `doi:10.1366/0003702894203408 <http://dx.doi.org/10.1366/0003702894203408>`_
         """
+        raise NotImplementedError
         # exp_name: [i], [m_i]
         exp_types = {
             'TG': [['1', '2'],
@@ -1331,6 +1342,7 @@ class Data(Group):
         verbose : bool (optional)
             Toggle talkback. Default is True.
         """
+        raise NotImplementedError
         # get axis index --------------------------------------------------------------------------
         if isinstance(axis, int):
             axis_index = axis
@@ -1397,6 +1409,7 @@ class Data(Group):
             Axis/axes to normalize against. If None, normalizes by the entire
             dataset. Default is None.
         """
+        raise NotImplementedError
         # process channel
         if isinstance(channel, int):
             channel_index = channel
@@ -1549,8 +1562,7 @@ class Data(Group):
         self._update()
 
     def remove_channel(self, channel, verbose=True):
-        """
-        Remove channel from data.
+        """Remove channel from data.
 
         Parameters
         ----------
@@ -1564,6 +1576,109 @@ class Data(Group):
         self.channel_names = new
         if verbose:
             print('channel {0} removed'.format(name))
+
+    def remove_variable(self, variable, verbose=True):
+        raise NotImplementedError
+
+    def rename_channels(self, *, verbose=True, **kwargs):
+        """Rename a set of channels.
+
+        Parameters
+        ----------
+        kwargs
+            Keyword arguments of the form current:'new'.
+        verbose : boolean (optional)
+            Toggle talkback. Default is True
+        """
+        # ensure that items will remain unique
+        changed = kwargs.keys()
+        for k, v in kwargs.items():
+            if v not in changed and v in self.keys():
+                raise wt_exceptions.NameNotUniqueError(v)
+        # compile references to items that are changing
+        new = {}
+        for k, v in kwargs.items():
+            obj = self[k]
+            index = self.channel_names.index(k)
+            # rename
+            new[v] = obj, index
+            obj.instances.pop(obj.fullpath, None)
+            obj.natural_name = str(v)
+            # remove old references
+            del self[k]
+        # apply new references
+        names = self.channel_names
+        for v, value in new.items():
+            obj, index = value
+            self[v] = obj
+            names[index] = v
+        self.channel_names = names
+        # finish
+        if verbose:
+            print('{0} channel(s) renamed:'.format(len(kwargs)))
+            for k, v in kwargs.items():
+                print('  {0} --> {1}'.format(k, v))
+        self._update()
+
+    def rename_variables(self, *, implied=True, verbose=True, **kwargs):
+        """Rename a set of variables.
+
+        Parameters
+        ----------
+        kwargs
+            Keyword arguments of the form current:'new'.
+        implied : boolean (optional)
+            Toggle inclusion of other variables that start with the same
+            name. Default is True.
+        verbose : boolean (optional)
+            Toggle talkback. Default is True
+        """
+        # find all of the implied variables
+        kwargs = collections.OrderedDict(kwargs)
+        if implied:
+            new = collections.OrderedDict()
+            for k, v in kwargs.items():
+                for n in self.variable_names:
+                    if n.startswith(k):
+                        new[n] = n.replace(k, v, 1)
+            kwargs = new
+        # ensure that items will remain unique
+        changed = kwargs.keys()
+        for k, v in kwargs.items():
+            if v not in changed and v in self.keys():
+                raise wt_exceptions.NameNotUniqueError(v)
+        # compile references to items that are changing
+        new = {}
+        for k, v in kwargs.items():
+            obj = self[k]
+            index = self.variable_names.index(k)
+            # rename
+            new[v] = obj, index
+            obj.instances.pop(obj.fullpath, None)
+            obj.natural_name = str(v)
+            # remove old references
+            del self[k]
+        # apply new references
+        names = self.variable_names
+        for v, value in new.items():
+            obj, index = value
+            self[v] = obj
+            names[index] = v
+        self.variable_names = names
+        # update axes
+        new = self.axis_expressions
+        for i, v in enumerate(kwargs.keys()):
+            for j, n in enumerate(new):
+                new[j] = n.replace(v, '{%i}' % i)
+        for i, n in enumerate(new):
+            new[i] = n.format(*kwargs.values())
+        self.transform(new)
+        # finish
+        if verbose:
+            print('{0} variable(s) renamed:'.format(len(kwargs)))
+            for k, v in kwargs.items():
+                print('  {0} --> {1}'.format(k, v))
+        self._update()
 
     def scale(self, channel=0, kind='amplitude', verbose=True):
         """Scale a channel.

@@ -280,7 +280,7 @@ class Group(h5py.Group):
         """
         # TODO: what happens to lists channel_names, variable_names etc?
         # maybe they are regenerated from scratch?
-        # 
+        #
         # ensure that items will remain unique
         changed = kwargs.keys()
         for k, v in kwargs.items():
