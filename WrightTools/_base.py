@@ -15,6 +15,8 @@ import numpy as np
 
 import h5py
 
+from . import exceptions as wt_exceptions
+
 
 # --- define --------------------------------------------------------------------------------------
 
@@ -37,6 +39,17 @@ class Dataset(h5py.Dataset):
         lis = [min(s - 1, i) if not isinstance(i, slice) else i for s, i in zip(self.shape, index)]
         return super().__getitem__(tuple(lis))
 
+    def __new__(cls, parent, id, **kwargs):
+        """New object formation handler."""
+        fullpath = parent.fullpath + h5py.h5i.get_name(id).decode()
+        if fullpath in cls.instances.keys():
+            return cls.instances[fullpath]
+        else:
+            instance = super(Dataset, cls).__new__(cls)
+            cls.__init__(instance, parent, id, **kwargs)
+            cls.instances[fullpath] = instance
+            return instance
+
     def __repr__(self):
         return '<WrightTools.{0} \'{1}\' at {2}>'.format(self.class_name, self.natural_name,
                                                          self.fullpath)
@@ -55,6 +68,11 @@ class Dataset(h5py.Dataset):
             self._natural_name = self.attrs['name']
         finally:
             return self._natural_name
+
+    @natural_name.setter
+    def natural_name(self, value):
+        self.attrs['name'] = value
+        self._natural_name = None
 
     @property
     def parent(self):
@@ -123,7 +141,7 @@ class Group(h5py.Group):
     def __getitem__(self, key):
         from .collection import Collection
         from .data._data import Channel, Data, Variable
-        out = h5py.Group.__getitem__(self, key)
+        out = super().__getitem__(key)
         if 'class' in out.attrs.keys():
             if out.attrs['class'] == 'Channel':
                 return Channel(parent=self, id=out.id)
@@ -191,6 +209,9 @@ class Group(h5py.Group):
             self.file.attrs['__version__'] = wt5_version
         return self.file.attrs['__version__']
 
+    def _update(self):
+        pass
+
     @property
     def fullpath(self):
         """Full path: file and internal structure."""
@@ -245,3 +266,36 @@ class Group(h5py.Group):
     def flush(self):
         """Ensure contents are written to file."""
         self.file.flush()
+
+    def rename(self, **kwargs):
+        """Rename a set of attributes.
+
+        The name will be set to str(val), and its natural naming identifier
+        will be wt.kit.string2identifier(str(val))
+
+        Keyword Arguments
+        -----------------
+        Each argument should have the key of a current axis or channel,
+            and a value which is a string of its new name.
+        """
+        # TODO: what happens to lists channel_names, variable_names etc?
+        # maybe they are regenerated from scratch?
+        # 
+        # ensure that items will remain unique
+        changed = kwargs.keys()
+        for k, v in kwargs.items():
+            if v not in changed and v in self.keys():
+                raise wt_exceptions.NameNotUniqueError(v)
+        # compile references to items that are changing
+        new = {}
+        for k, v in kwargs.items():
+            obj = self[k]
+            new[v] = obj
+            obj.instances.pop(obj.fullpath)
+            obj.natural_name = str(v)
+            del self[k]
+        # apply new references
+        for v, obj in new.items():
+            self[v] = obj
+        # finish
+        self._update()

@@ -201,8 +201,8 @@ class Channel(Dataset):
 
     class_name = 'Channel'
 
-    def __init__(self, parent, id, units=None, null=None, signed=None,
-                 label=None, label_seed=None, **kwargs):
+    def __init__(self, parent, id, *, units=None, null=None, signed=None, label=None,
+                 label_seed=None, **kwargs):
         """Construct a channel object.
 
         Parameters
@@ -248,6 +248,25 @@ class Channel(Dataset):
     def minor_extent(self):
         """Minimum deviation from null."""
         return min((self.max() - self.null, self.null - self.min()))
+
+    @property
+    def natural_name(self):
+        """Natural name of the dataset. May be different from name."""
+        try:
+            assert self._natural_name is not None
+        except (AssertionError, AttributeError):
+            self._natural_name = self.attrs['name']
+        finally:
+            return self._natural_name
+
+    @natural_name.setter
+    def natural_name(self, value):
+        index = wt_kit.get_index(self.parent.channel_names, self.natural_name)
+        new = self.parent.channel_names
+        new[index] = value
+        self.parent.channel_names = new
+        self.attrs['name'] = value
+        self._natural_name = None
 
     @property
     def null(self):
@@ -590,6 +609,7 @@ class Data(Group):
         for obj in self.axes + self.channels + self.constants:
             identifier = obj.natural_name
             setattr(self, identifier, obj)
+        super()._update()
         # attrs
         for key, value in self.attrs.items():
             identifier = wt_kit.string2identifier(key)
@@ -1438,6 +1458,7 @@ class Data(Group):
             >>> data.offset(points, offsets, 'w1', 'd1')
 
         """
+        raise NotImplementedError
         # axis ------------------------------------------------------------------------------------
         if isinstance(along, int):
             axis_index = along
@@ -1543,31 +1564,6 @@ class Data(Group):
         self.channel_names = new
         if verbose:
             print('channel {0} removed'.format(name))
-
-    def rename_attrs(self, **kwargs):
-        """Rename a set of attributes.
-
-        Keyword Arguments
-        -----------------
-        Each argument should have the key of a current axis or channel,
-            and a value which is a string of its new name.
-
-        The name will be set to str(val), and its natural naming identifier
-        will be wt.kit.string2identifier(str(val))
-        """
-        raise NotImplementedError
-        changed = kwargs.keys()
-        for k, v in kwargs.items():
-            if getattr(self, k).__class__ not in (Channel, Axis):
-                raise TypeError("Attribute for key %s: expected {Channel, Axis}, got %s" %
-                                (k, getattr(self, k).__class__))
-            if v not in changed and hasattr(self, v):
-                raise wt_exceptions.NameNotUniqueError(v)
-        for k, v in kwargs.items():
-            axis = getattr(self, k)
-            axis.name = str(v)
-            delattr(self, k)
-        self._update()
 
     def scale(self, channel=0, kind='amplitude', verbose=True):
         """Scale a channel.

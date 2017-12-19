@@ -13,7 +13,6 @@ from WrightTools import datasets
 # --- test ----------------------------------------------------------------------------------------
 
 
-@pytest.mark.skip()
 def test_rename():
     p = datasets.PyCMDS.wm_w2_w1_000
     data = wt.data.from_PyCMDS(p)
@@ -23,7 +22,6 @@ def test_rename():
     data.close()
 
 
-@pytest.mark.skip()
 def test_error():
     p = datasets.PyCMDS.wm_w2_w1_000
     data = wt.data.from_PyCMDS(p)
