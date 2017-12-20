@@ -20,7 +20,8 @@ import h5py
 import scipy
 from scipy.interpolate import griddata, interp1d
 
-from .._base import Group, Dataset
+from .._dataset import Dataset
+from .._group import Group
 from .. import collection as wt_collection
 from .. import exceptions as wt_exceptions
 from .. import kit as wt_kit
