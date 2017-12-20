@@ -1592,8 +1592,8 @@ class Data(Group):
         verbose : boolean (optional)
             Toggle talkback. Default is True.
         """
-        variable_index = wt_kit.get_index(self.variable_names, variable)
-        variable = self.variable_names[variable_index]
+        if isinstance(variable, int):
+            variable = self.variable_names[variable]
         # find all of the implied variables
         removed = []
         if implied:

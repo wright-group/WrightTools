@@ -11,13 +11,15 @@ from WrightTools import datasets
 # --- test ----------------------------------------------------------------------------------------
 
 
-def test_index():
-    p = datasets.KENT.LDS821_TRSF
-    ignore = ['wm', 'd1', 'd2']
-    data = wt.data.from_KENT(p, ignore=ignore)
-    assert data.variable_names == ['w2', 'w1', 'wm', 'd1', 'd2']
-    data.remove_variable(-2)
-    assert data.variable_names == ['w2', 'w1', 'wm', 'd2']
+def test_exception():
+    p = datasets.COLORS.v2p2_WL_wigner
+    data = wt.data.from_COLORS(p)
+    try:
+        data.remove_variable('d1')
+    except RuntimeError:
+        assert True
+    else:
+        assert False
     data.close()
 
 
@@ -32,13 +34,11 @@ def test_implied():
     data.close()
 
 
-def test_exception():
-    p = datasets.COLORS.v2p2_WL_wigner
-    data = wt.data.from_COLORS(p)
-    try:
-        data.remove_variable('d1')
-    except RuntimeError:
-        assert True
-    else:
-        assert False
+def test_index():
+    p = datasets.KENT.LDS821_TRSF
+    ignore = ['wm', 'd1', 'd2']
+    data = wt.data.from_KENT(p, ignore=ignore)
+    assert data.variable_names == ['w2', 'w1', 'wm', 'd1', 'd2']
+    data.remove_variable(-2)
+    assert data.variable_names == ['w2', 'w1', 'wm', 'd2']
     data.close()
