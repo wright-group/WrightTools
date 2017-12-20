@@ -201,8 +201,8 @@ class Channel(Dataset):
 
     class_name = 'Channel'
 
-    def __init__(self, parent, id, units=None, null=None, signed=None,
-                 label=None, label_seed=None, **kwargs):
+    def __init__(self, parent, id, *, units=None, null=None, signed=None, label=None,
+                 label_seed=None, **kwargs):
         """Construct a channel object.
 
         Parameters
@@ -248,6 +248,25 @@ class Channel(Dataset):
     def minor_extent(self):
         """Minimum deviation from null."""
         return min((self.max() - self.null, self.null - self.min()))
+
+    @property
+    def natural_name(self):
+        """Natural name of the dataset. May be different from name."""
+        try:
+            assert self._natural_name is not None
+        except (AssertionError, AttributeError):
+            self._natural_name = self.attrs['name']
+        finally:
+            return self._natural_name
+
+    @natural_name.setter
+    def natural_name(self, value):
+        index = wt_kit.get_index(self.parent.channel_names, self.natural_name)
+        new = self.parent.channel_names
+        new[index] = value
+        self.parent.channel_names = new
+        self.attrs['name'] = value
+        self._natural_name = None
 
     @property
     def null(self):
@@ -467,6 +486,11 @@ class Data(Group):
             self.attrs['channel_names'] = np.array([], dtype='S')
         return [s.decode() for s in self.attrs['channel_names']]
 
+    @channel_names.setter
+    def channel_names(self, value):
+        """Set channel names."""
+        self.attrs['channel_names'] = np.array(value, dtype='S')
+
     @property
     def channels(self):
         """Channels."""
@@ -561,6 +585,11 @@ class Data(Group):
             self.attrs['variable_names'] = np.array([], dtype='S')
         return [s.decode() for s in self.attrs['variable_names']]
 
+    @variable_names.setter
+    def variable_names(self, value):
+        """Set variable names."""
+        self.attrs['variable_names'] = np.array(value, dtype='S')
+
     @property
     def variables(self):
         """Variables."""
@@ -585,6 +614,7 @@ class Data(Group):
         for obj in self.axes + self.channels + self.constants:
             identifier = obj.natural_name
             setattr(self, identifier, obj)
+        super()._update()
         # attrs
         for key, value in self.attrs.items():
             identifier = wt_kit.string2identifier(key)
@@ -601,16 +631,10 @@ class Data(Group):
         channel : int or str
             Channel index or name.
         """
-        # get channel
-        if isinstance(channel, int):
-            channel_index = channel
-        elif isinstance(channel, str):
-            channel_index = self.channel_names.index(channel)
-        else:
-            raise TypeError("channel: expected {int, str}, got %s" % type(channel))
-        # bring to front
-        self.channels.insert(0, self.channels.pop(channel_index))
-        self._update()
+        channel_index = wt_kit.get_index(self.channel_names, channel)
+        new = self.channel_names
+        new.insert(0, new.pop(channel_index))
+        self.channel_names = new
 
     def chop(self, *args, at={}, parent=None, verbose=True):
         """Divide the dataset into its lower-dimensionality components.
@@ -815,7 +839,6 @@ class Data(Group):
         WrightTools Axis
             New child axis.
         """
-        print('this is create axis', expression, units)
         axis = Axis(self, expression, units)
         self.axes.append(axis)
         self.flush()
@@ -908,6 +931,7 @@ class Data(Group):
         divisor_channel : int or str
             The channel in the divisor object to use.
         """
+        raise NotImplementedError
         divisor = divisor.copy()
         # map points
         for name in divisor.axis_names:
@@ -972,6 +996,7 @@ class Data(Group):
 
         where I is the reference channel and dI is the signal channel.
         """
+        raise NotImplementedError
         # get signal channel
         if isinstance(signal_channel, int):
             signal_channel_index = signal_channel
@@ -1023,6 +1048,7 @@ class Data(Group):
         list of numbers
             Coordinates in units for each axis.
         """
+        raise NotImplementedError
         # get channel
         if isinstance(channel, int):
             channel_index = channel
@@ -1051,6 +1077,7 @@ class Data(Group):
         list of numbers
             Coordinates in units for each axis.
         """
+        raise NotImplementedError
         # get channel
         if isinstance(channel, int):
             channel_index = channel
@@ -1138,6 +1165,7 @@ class Data(Group):
         verbose : bool (optional)
             Toggle talkback. Default is True.
         """
+        raise NotImplementedError
         # channel ---------------------------------------------------------------------------------
         if isinstance(channel, int):
             channel_index = channel
@@ -1228,6 +1256,7 @@ class Data(Group):
                *Applied Spectroscopy* **1989** 43, 1195--1208
                `doi:10.1366/0003702894203408 <http://dx.doi.org/10.1366/0003702894203408>`_
         """
+        raise NotImplementedError
         # exp_name: [i], [m_i]
         exp_types = {
             'TG': [['1', '2'],
@@ -1313,6 +1342,7 @@ class Data(Group):
         verbose : bool (optional)
             Toggle talkback. Default is True.
         """
+        raise NotImplementedError
         # get axis index --------------------------------------------------------------------------
         if isinstance(axis, int):
             axis_index = axis
@@ -1379,6 +1409,7 @@ class Data(Group):
             Axis/axes to normalize against. If None, normalizes by the entire
             dataset. Default is None.
         """
+        raise NotImplementedError
         # process channel
         if isinstance(channel, int):
             channel_index = channel
@@ -1440,6 +1471,7 @@ class Data(Group):
             >>> data.offset(points, offsets, 'w1', 'd1')
 
         """
+        raise NotImplementedError
         # axis ------------------------------------------------------------------------------------
         if isinstance(along, int):
             axis_index = along
@@ -1529,50 +1561,165 @@ class Data(Group):
         self.transpose(transpose_order, verbose=False)
         self._update()
 
-    def remove_channel(self, channel):
-        """
-        Remove channel from data.
+    def remove_channel(self, channel, *, verbose=True):
+        """Remove channel from data.
 
         Parameters
         ----------
         channel : int (index) or str (name)
             Channel to remove.
+        verbose : boolean (optional)
+            Toggle talkback. Default is True.
         """
-        # get channel
-        if isinstance(channel, int):
-            channel_index = channel
-        elif isinstance(channel, str):
-            channel_index = self.channel_names.index(channel)
-        else:
-            raise TypeError("channel: expected {int, str}, got %s" % type(channel))
-        # remove
-        self.channels.pop(channel_index)
+        channel_index = wt_kit.get_index(self.channel_names, channel)
+        new = self.channel_names
+        name = new.pop(channel_index)
+        del self[name]
+        self.channel_names = new
+        if verbose:
+            print('channel {0} removed'.format(name))
+
+    def remove_variable(self, variable, *, implied=True, verbose=True):
+        """Remove variable from data.
+
+        Parameters
+        ----------
+        variable : int (index) or str (name)
+            Variable to remove.
+        implied : boolean (optional)
+            Toggle deletion of other variables that start with the same
+            name. Default is True.
+        verbose : boolean (optional)
+            Toggle talkback. Default is True.
+        """
+        if isinstance(variable, int):
+            variable = self.variable_names[variable]
+        # find all of the implied variables
+        removed = []
+        if implied:
+            for n in self.variable_names:
+                if n.startswith(variable):
+                    removed.append(n)
+        # check that axes will not be ruined
+        for n in removed:
+            for a in self.axes:
+                if n in a.expression:
+                    message = '{0} is contained in axis {1}'.format(n, a.expression)
+                    raise RuntimeError(message)
+        # do removal
+        for n in removed:
+            variable_index = wt_kit.get_index(self.variable_names, n)
+            new = self.variable_names
+            name = new.pop(variable_index)
+            del self[name]
+            self.variable_names = new
         # finish
-        self._update()
+        if verbose:
+            print('{0} variable(s) removed:'.format(len(removed)))
+            for n in removed:
+                print('  {0}'.format(n))
 
-    def rename_attrs(self, **kwargs):
-        """Rename a set of attributes.
+    def rename_channels(self, *, verbose=True, **kwargs):
+        """Rename a set of channels.
 
-        Keyword Arguments
-        -----------------
-        Each argument should have the key of a current axis or channel,
-            and a value which is a string of its new name.
-
-        The name will be set to str(val), and its natural naming identifier
-        will be wt.kit.string2identifier(str(val))
+        Parameters
+        ----------
+        kwargs
+            Keyword arguments of the form current:'new'.
+        verbose : boolean (optional)
+            Toggle talkback. Default is True
         """
-        raise NotImplementedError
+        # ensure that items will remain unique
         changed = kwargs.keys()
         for k, v in kwargs.items():
-            if getattr(self, k).__class__ not in (Channel, Axis):
-                raise TypeError("Attribute for key %s: expected {Channel, Axis}, got %s" %
-                                (k, getattr(self, k).__class__))
-            if v not in changed and hasattr(self, v):
+            if v not in changed and v in self.keys():
                 raise wt_exceptions.NameNotUniqueError(v)
+        # compile references to items that are changing
+        new = {}
         for k, v in kwargs.items():
-            axis = getattr(self, k)
-            axis.name = str(v)
-            delattr(self, k)
+            obj = self[k]
+            index = self.channel_names.index(k)
+            # rename
+            new[v] = obj, index
+            obj.instances.pop(obj.fullpath, None)
+            obj.natural_name = str(v)
+            # remove old references
+            del self[k]
+        # apply new references
+        names = self.channel_names
+        for v, value in new.items():
+            obj, index = value
+            self[v] = obj
+            names[index] = v
+        self.channel_names = names
+        # finish
+        if verbose:
+            print('{0} channel(s) renamed:'.format(len(kwargs)))
+            for k, v in kwargs.items():
+                print('  {0} --> {1}'.format(k, v))
+        self._update()
+
+    def rename_variables(self, *, implied=True, verbose=True, **kwargs):
+        """Rename a set of variables.
+
+        Parameters
+        ----------
+        kwargs
+            Keyword arguments of the form current:'new'.
+        implied : boolean (optional)
+            Toggle inclusion of other variables that start with the same
+            name. Default is True.
+        verbose : boolean (optional)
+            Toggle talkback. Default is True
+        """
+        # find all of the implied variables
+        kwargs = collections.OrderedDict(kwargs)
+        if implied:
+            new = collections.OrderedDict()
+            for k, v in kwargs.items():
+                for n in self.variable_names:
+                    if n.startswith(k):
+                        new[n] = n.replace(k, v, 1)
+            kwargs = new
+        # ensure that items will remain unique
+        changed = kwargs.keys()
+        for k, v in kwargs.items():
+            if v not in changed and v in self.keys():
+                raise wt_exceptions.NameNotUniqueError(v)
+        # compile references to items that are changing
+        new = {}
+        for k, v in kwargs.items():
+            obj = self[k]
+            index = self.variable_names.index(k)
+            # rename
+            new[v] = obj, index
+            obj.instances.pop(obj.fullpath, None)
+            obj.natural_name = str(v)
+            # remove old references
+            del self[k]
+        # apply new references
+        names = self.variable_names
+        for v, value in new.items():
+            obj, index = value
+            self[v] = obj
+            names[index] = v
+        self.variable_names = names
+        # update axes
+        units = self.units
+        new = self.axis_expressions
+        for i, v in enumerate(kwargs.keys()):
+            for j, n in enumerate(new):
+                new[j] = n.replace(v, '{%i}' % i)
+        for i, n in enumerate(new):
+            new[i] = n.format(*kwargs.values())
+        self.transform(new)
+        for a, u in zip(self.axes, units):
+            a.convert(u)
+        # finish
+        if verbose:
+            print('{0} variable(s) renamed:'.format(len(kwargs)))
+            for k, v in kwargs.items():
+                print('  {0} --> {1}'.format(k, v))
         self._update()
 
     def scale(self, channel=0, kind='amplitude', verbose=True):
