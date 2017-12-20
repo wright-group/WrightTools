@@ -266,36 +266,3 @@ class Group(h5py.Group):
     def flush(self):
         """Ensure contents are written to file."""
         self.file.flush()
-
-    def rename(self, **kwargs):
-        """Rename a set of attributes.
-
-        The name will be set to str(val), and its natural naming identifier
-        will be wt.kit.string2identifier(str(val))
-
-        Keyword Arguments
-        -----------------
-        Each argument should have the key of a current axis or channel,
-            and a value which is a string of its new name.
-        """
-        # TODO: what happens to lists channel_names, variable_names etc?
-        # maybe they are regenerated from scratch?
-        #
-        # ensure that items will remain unique
-        changed = kwargs.keys()
-        for k, v in kwargs.items():
-            if v not in changed and v in self.keys():
-                raise wt_exceptions.NameNotUniqueError(v)
-        # compile references to items that are changing
-        new = {}
-        for k, v in kwargs.items():
-            obj = self[k]
-            new[v] = obj
-            obj.instances.pop(obj.fullpath)
-            obj.natural_name = str(v)
-            del self[k]
-        # apply new references
-        for v, obj in new.items():
-            self[v] = obj
-        # finish
-        self._update()

@@ -1561,13 +1561,15 @@ class Data(Group):
         self.transpose(transpose_order, verbose=False)
         self._update()
 
-    def remove_channel(self, channel, verbose=True):
+    def remove_channel(self, channel, *, verbose=True):
         """Remove channel from data.
 
         Parameters
         ----------
         channel : int (index) or str (name)
             Channel to remove.
+        verbose : boolean (optional)
+            Toggle talkback. Default is True.
         """
         channel_index = wt_kit.get_index(self.channel_names, channel)
         new = self.channel_names
@@ -1577,8 +1579,45 @@ class Data(Group):
         if verbose:
             print('channel {0} removed'.format(name))
 
-    def remove_variable(self, variable, verbose=True):
-        raise NotImplementedError
+    def remove_variable(self, variable, *, implied=True, verbose=True):
+        """Remove variable from data.
+
+        Parameters
+        ----------
+        variable : int (index) or str (name)
+            Variable to remove.
+        implied : boolean (optional)
+            Toggle deletion of other variables that start with the same
+            name. Default is True.
+        verbose : boolean (optional)
+            Toggle talkback. Default is True.
+        """
+        variable_index = wt_kit.get_index(self.variable_names, variable)
+        variable = self.variable_names[variable_index]
+        # find all of the implied variables
+        removed = []
+        if implied:
+            for n in self.variable_names:
+                if n.startswith(variable):
+                    removed.append(n)
+        # check that axes will not be ruined
+        for n in removed:
+            for a in self.axes:
+                if n in a.expression:
+                    message = '{0} is contained in axis {1}'.format(n, a.expression)
+                    raise RuntimeError(message)
+        # do removal
+        for n in removed:
+            variable_index = wt_kit.get_index(self.variable_names, n)
+            new = self.variable_names
+            name = new.pop(variable_index)
+            del self[name]
+            self.variable_names = new
+        # finish
+        if verbose:
+            print('{0} variable(s) removed:'.format(len(removed)))
+            for n in removed:
+                print('  {0}'.format(n))
 
     def rename_channels(self, *, verbose=True, **kwargs):
         """Rename a set of channels.
