@@ -10,7 +10,7 @@ import shutil
 import numpy as np
 
 from .. import data as wt_data
-from .._base import Group
+from .._group import Group
 
 
 # --- define --------------------------------------------------------------------------------------
