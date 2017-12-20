@@ -36,6 +36,15 @@ def test_implied():
     data.close()
 
 
+def test_propagate_units():
+    p = datasets.PyCMDS.wm_w2_w1_001
+    data = wt.data.from_PyCMDS(p)
+    data.convert('meV')
+    data.rename_variables(wm='mono')
+    assert data.units == ('meV', 'meV', 'meV')
+    data.close()
+
+
 def test_updated_axes():
     p = datasets.COLORS.v2p2_WL_wigner
     data = wt.data.from_COLORS(p)

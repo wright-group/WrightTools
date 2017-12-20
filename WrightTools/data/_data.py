@@ -1705,6 +1705,7 @@ class Data(Group):
             names[index] = v
         self.variable_names = names
         # update axes
+        units = self.units
         new = self.axis_expressions
         for i, v in enumerate(kwargs.keys()):
             for j, n in enumerate(new):
@@ -1712,6 +1713,8 @@ class Data(Group):
         for i, n in enumerate(new):
             new[i] = n.format(*kwargs.values())
         self.transform(new)
+        for a, u in zip(self.axes, units):
+            a.convert(u)
         # finish
         if verbose:
             print('{0} variable(s) renamed:'.format(len(kwargs)))
