@@ -471,7 +471,8 @@ class Data(Group):
             #if not shape == self.shape:
             #    raise Exception  # TODO: better exception
         # create dataset
-        dataset_id = self.require_dataset(name=name, data=values, shape=shape, dtype=dtype).id
+        dataset_id = self.require_dataset(name=name, data=values, shape=shape, dtype=dtype,
+                                          chunks=True).id
         channel = Channel(self, dataset_id, units=units, **kwargs)
         # finish
         self.channels.append(channel)

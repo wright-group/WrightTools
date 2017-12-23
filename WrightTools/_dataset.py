@@ -6,6 +6,8 @@
 
 import posixpath
 
+import numpy as np
+
 import h5py
 
 
@@ -78,3 +80,20 @@ class Dataset(h5py.Dataset):
                 self.attrs.pop('units')
         else:
             self.attrs['units'] = value.encode()
+
+    def slices(self):
+        """Returns a generator yielding tuple of slice objects.
+
+        Order is not guaranteed.
+        """
+        if self.chunks is None:
+            return tuple(slice[None, s] for s in self.shape)
+        else:
+            ceilings = tuple(-(-s // c) for s, c in zip(self.shape, self.chunks))
+            for idx in np.ndindex(ceilings):  # could also use itertools.product
+                out = []
+                for i, c, s in zip(idx, self.chunks, self.shape):
+                    start = i * c
+                    stop = min(start + c, s + 1)
+                    out.append(slice(start, stop, 1))
+                yield tuple(out)
