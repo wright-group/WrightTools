@@ -147,14 +147,6 @@ class Channel(Dataset):
         """Channel magnitude (maximum deviation from null)."""
         return self.major_extent
 
-    def max(self):
-        """Maximum, ignorning nans."""
-        return np.nanmax(self[:])
-
-    def min(self):
-        """Minimum, ignoring nans."""
-        return np.nanmin(self[:])
-
     def normalize(self, axis=None):
         """Normalize a Channel, set `null` to 0 and the max to 1."""
         # process axis argument

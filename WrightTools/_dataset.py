@@ -5,6 +5,8 @@
 
 
 import posixpath
+import collections
+from concurrent.futures import ThreadPoolExecutor
 
 import numpy as np
 
@@ -80,6 +82,31 @@ class Dataset(h5py.Dataset):
                 self.attrs.pop('units')
         else:
             self.attrs['units'] = value.encode()
+
+    def chunkwise(self, func, *args, **kwargs):
+        """DOCSTRING TODO"""
+        out = collections.OrderedDict()
+        with ThreadPoolExecutor() as executor:
+            # submit for calculation
+            for s in self.slices():
+                key = tuple(sss.start for sss in s)
+                out[key] = executor.submit(func, self, s, *args, **kwargs)
+            # collect
+            for k, v in out.items():
+                out[k] = v.result()
+        return out
+
+    def max(self):
+        """Maximum, ignorning nans."""
+        def f(dataset, s):
+            return np.nanmax(dataset[s])
+        return max(self.chunkwise(f).values())
+
+    def min(self):
+        """Minimum, ignoring nans."""
+        def f(dataset, s):
+            return np.nanmin(dataset[s])
+        return min(self.chunkwise(f).values())
 
     def slices(self):
         """Returns a generator yielding tuple of slice objects.
