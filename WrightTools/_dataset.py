@@ -84,10 +84,29 @@ class Dataset(h5py.Dataset):
             self.attrs['units'] = value.encode()
 
     def chunkwise(self, func, *args, **kwargs):
-        """DOCSTRING TODO"""
+        """Execute a function for each chunk in the dataset.
+
+        Order of excecution is not guaranteed.
+
+        Parameters
+        ----------
+        func : function
+            Function to execute. First two arguments must be dataset,
+            slices.
+        args (optional)
+            Additional (unchanging) arguments passed to func.
+        kwargs (optional)
+            Additional (unchanging) keyword arguments passed to func.
+
+        Returns
+        -------
+        collections OrderedDict
+            Dictionary of index: function output. Index is to lowest corner
+            of each chunk.
+        """
         out = collections.OrderedDict()
         with ThreadPoolExecutor() as executor:
-            # submit for calculation
+            # submit
             for s in self.slices():
                 key = tuple(sss.start for sss in s)
                 out[key] = executor.submit(func, self, s, *args, **kwargs)
