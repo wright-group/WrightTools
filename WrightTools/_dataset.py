@@ -133,7 +133,7 @@ class Dataset(h5py.Dataset):
         Order is not guaranteed.
         """
         if self.chunks is None:
-            return tuple(slice[None, s] for s in self.shape)
+            yield tuple(slice(None, s) for s in self.shape)
         else:
             ceilings = tuple(-(-s // c) for s, c in zip(self.shape, self.chunks))
             for idx in np.ndindex(ceilings):  # could also use itertools.product
