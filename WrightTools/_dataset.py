@@ -43,6 +43,11 @@ class Dataset(h5py.Dataset):
         return '<WrightTools.{0} \'{1}\' at {2}>'.format(self.class_name, self.natural_name,
                                                          self.fullpath)
 
+    def __setitem__(self, index, value):
+        del self.attrs['max']
+        del self.attrs['min']
+        return super().__setitem__(index, value)
+
     @property
     def fullpath(self):
         """Full path: file and internal structure."""
@@ -117,15 +122,19 @@ class Dataset(h5py.Dataset):
 
     def max(self):
         """Maximum, ignorning nans."""
-        def f(dataset, s):
-            return np.nanmax(dataset[s])
-        return max(self.chunkwise(f).values())
+        if 'max' not in self.attrs.keys():
+            def f(dataset, s):
+                return np.nanmax(dataset[s])
+            self.attrs['max'] = max(self.chunkwise(f).values())
+        return self.attrs['max']
 
     def min(self):
         """Minimum, ignoring nans."""
-        def f(dataset, s):
-            return np.nanmin(dataset[s])
-        return min(self.chunkwise(f).values())
+        if 'min' not in self.attrs.keys():
+            def f(dataset, s):
+                return np.nanmin(dataset[s])
+            self.attrs['min'] = min(self.chunkwise(f).values())
+        return self.attrs['min']
 
     def slices(self):
         """Returns a generator yielding tuple of slice objects.
