@@ -113,8 +113,8 @@ class Dataset(h5py.Dataset):
         """
         out = collections.OrderedDict()
         for s in self.slices():
-           key = tuple(sss.start for sss in s)
-           out[key] = func(self, s, *args, **kwargs)
+            key = tuple(sss.start for sss in s)
+            out[key] = func(self, s, *args, **kwargs)
         return out
 
     def max(self):
