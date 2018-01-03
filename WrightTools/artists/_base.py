@@ -277,7 +277,9 @@ class Axes(matplotlib.axes.Axes):
             kwargs = self._parse_cmap(**kwargs)
         # levels
         if 'levels' not in kwargs.keys():
-            kwargs['levels'] = np.linspace(kwargs.pop('vmin'), kwargs.pop('vmax'), 256)
+            vmin = kwargs.pop('vmin', args[2].min())
+            vmax = kwargs.pop('vmax', args[2].max())
+            kwargs['levels'] = np.linspace(vmin, vmax, 256)
         # labels
         self._apply_labels(autolabel=kwargs.pop('autolabel', False),
                            xlabel=kwargs.pop('xlabel', None),
