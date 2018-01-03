@@ -44,8 +44,10 @@ class Dataset(h5py.Dataset):
                                                          self.fullpath)
 
     def __setitem__(self, index, value):
-        del self.attrs['max']
-        del self.attrs['min']
+        if 'max' in self.attrs.keys():
+            del self.attrs['max']
+        if 'min' in self.attrs.keys():
+            del self.attrs['min']
         return super().__setitem__(index, value)
 
     @property
@@ -110,14 +112,9 @@ class Dataset(h5py.Dataset):
             of each chunk.
         """
         out = collections.OrderedDict()
-        with ThreadPoolExecutor() as executor:
-            # submit
-            for s in self.slices():
-                key = tuple(sss.start for sss in s)
-                out[key] = executor.submit(func, self, s, *args, **kwargs)
-            # collect
-            for k, v in out.items():
-                out[k] = v.result()
+        for s in self.slices():
+           key = tuple(sss.start for sss in s)
+           out[key] = func(self, s, *args, **kwargs)
         return out
 
     def max(self):
