@@ -94,7 +94,6 @@ def join(datas, method='first', parent=None, verbose=True, **kwargs):
         for data in datas:
             old = data[channel_name]
             old /= old.max()
-            print('!!!', old.shape)
             for old_idx, value in np.ndenumerate(old):
                 new_idx = []
                 for variable_name in out.variable_names:
@@ -102,7 +101,6 @@ def join(datas, method='first', parent=None, verbose=True, **kwargs):
                     arr = out[variable_name][:]
                     i = np.argmin(np.abs(arr - p))
                     new_idx.append(i)
-                print(data.name, new_idx)
                 new[tuple(new_idx)] = old[old_idx]
     # axes
     out.transform(axis_expressions)

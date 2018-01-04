@@ -252,6 +252,24 @@ class Group(h5py.Group):
             print('{0} copied to {1}'.format(self.fullpath, new.fullpath))
         return new
 
+    def copy(self, parent, name=None, verbose=True):
+        """Create a copy under parent."""
+        # parse name
+        if name is None:
+            name = self.natural_name
+        # copy
+        src = self.name
+        self.file.copy(src, parent, name=name)
+        if 'item_names' in parent.attrs.keys():
+            new = parent.item_names + [name]
+            parent.attrs['item_names'] = np.array(new, dtype='S')
+        parent._update()
+        new = parent[name]
+        # finish
+        if verbose:
+            print('{0} copied to {1}'.format(self.fullpath, new.fullpath))
+        return new
+
     def flush(self):
         """Ensure contents are written to file."""
         self.file.flush()
