@@ -4,9 +4,12 @@
 # --- import --------------------------------------------------------------------------------------
 
 
+import collections
+
 import numpy as np
 
-from ._data import Channel, Data
+from .. import units as wt_units
+from ._data import Data
 
 
 # --- define --------------------------------------------------------------------------------------
@@ -18,7 +21,7 @@ __all__ = ['join']
 # --- functions -----------------------------------------------------------------------------------
 
 
-def join(datas, method='first', verbose=True, **kwargs):
+def join(datas, method='first', parent=None, verbose=True, **kwargs):
     """Join a list of data objects together.
 
     For now datas must have identical dimensionalities (order and identity).
@@ -39,76 +42,72 @@ def join(datas, method='first', verbose=True, **kwargs):
     WrightTools.data.Data
         A new Data instance.
     """
-    # copy datas so original objects are not changed
-    datas = [d.copy() for d in datas]
-    # get scanned dimensions
-    axis_names = []
-    axis_units = []
-    axis_objects = []
-    for data in datas:
-        for i, axis in enumerate(data.axes):
-            if axis.name in kwargs.keys():
-                axis.convert(kwargs[axis.name].units)
-            if axis[0] > axis[-1]:
-                data.flip(i)
-            if axis.name not in axis_names:
-                axis_names.append(axis.name)
-                axis_units.append(axis.units)
-                axis_objects.append(axis)
-    # convert into same units
-    for data in datas:
-        for axis_name, axis_unit in zip(axis_names, axis_units):
-            for axis in data.axes:
-                if axis.name == axis_name:
-                    axis.convert(axis_unit)
-    # get axis points
-    axis_points = []  # list of 1D arrays
-    for axis_name in axis_names:
-        points = np.full((0), np.nan)
+    # TODO: fill value
+    print('data.join! ----------------------------------------------------')
+    datas = list(datas)
+    # check if variables are valid
+    axis_expressions = datas[0].axis_expressions
+    variable_units = []
+    variable_names = []
+    for a in datas[0].axes:
+        for v in a.variables:
+            variable_names.append(a.natural_name)
+            variable_units.append(a.units)
+    # TODO: check if all other datas have the same variable names
+    # check if channels are valid
+    # TODO: this is a hack
+    channel_units = []
+    channel_names = []
+    for c in datas[0].channels:
+        channel_names.append(c.natural_name)
+        channel_units.append(c.units)
+    # get output data
+    out = Data(name='join', parent=parent)
+    # variables
+    vs = collections.OrderedDict()
+    for name, units in zip(variable_names, variable_units):
+        values = set()
         for data in datas:
-            index = data.axis_names.index(axis_name)
-            points = np.hstack((points, data.axes[index][:]))
-        axis_points.append(np.unique(points))
-    # map datas to new points
-    for axis_index, axis_name in enumerate(axis_names):
+            v = data[name]
+            arr = v[:]  # TODO: units arr = wt_units.converter(v[:], v.units, units)
+            for _, x in np.ndenumerate(arr):
+                values.add(x)
+        values = np.array(sorted(values))
+        vs[name] = {'values': values, 'units': units}
+    # TODO: the following should become a new from method
+    def from_dict(d):
+        ndim = len(d)
+        i = 0
+        for k, v in d.items():
+            values = v['values']
+            units = v['units']
+            shape = [1] * ndim
+            shape[i] = values.size
+            print(shape, values.size)
+            values.shape = tuple(shape)
+            out.create_variable(name=k, values=values, units=units)
+            i += 1
+    from_dict(vs)
+    # channels
+    for channel_name, units in zip(channel_names, channel_units):
+        new = out.create_channel(name=channel_name, units=units)
         for data in datas:
-            for axis in data.axes:
-                if axis.name == axis_name:
-                    if not np.array_equiv(axis[:], axis_points[axis_index]):
-                        data.map_axis(axis_name, axis_points[axis_index])
-    # make new channel objects
-    channel_objects = []
-    n_channels = min([len(d.channels) for d in datas])
-    for channel_index in range(n_channels):
-        full = np.array([d.channels[channel_index][:] for d in datas])
-        if method == 'first':
-            zis = np.full(full.shape[1:], np.nan)
-            for idx in np.ndindex(*full.shape[1:]):
-                for data_index in range(len(full)):
-                    value = full[data_index][idx]
-                    if not np.isnan(value):
-                        zis[idx] = value
-                        break
-        elif method == 'sum':
-            zis = np.nansum(full, axis=0)
-            zis[zis == 0.] = np.nan
-        elif method == 'max':
-            zis = np.nanmax(full, axis=0)
-        elif method == 'min':
-            zis = np.nanmin(full, axis=0)
-        elif method == 'mean':
-            zis = np.nanmean(full, axis=0)
-        else:
-            raise ValueError("method %s not recognized" % method)
-        zis[np.isnan(full).all(axis=0)] = np.nan  # if all datas NaN, zis NaN
-        channel = Channel(zis, null=0.,
-                          signed=datas[0].channels[channel_index].signed,
-                          name=datas[0].channels[channel_index].name)
-        channel_objects.append(channel)
-    # make new data object
-    out = Data(axis_objects, channel_objects)
+            old = data[channel_name]
+            old /= old.max()
+            print('!!!', old.shape)
+            for old_idx, value in np.ndenumerate(old):
+                new_idx = []
+                for variable_name in out.variable_names:
+                    p = data[variable_name][old_idx]
+                    arr = out[variable_name][:]
+                    i = np.argmin(np.abs(arr - p))
+                    new_idx.append(i)
+                print(data.name, new_idx)
+                new[tuple(new_idx)] = old[old_idx]
+    # axes
+    out.transform(axis_expressions)
     # finish
-    if verbose:
+    if verbose and False:
         print(len(datas), 'datas joined to create new data:')
         print('  axes:')
         for axis in out.axes:

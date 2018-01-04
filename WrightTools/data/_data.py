@@ -141,7 +141,10 @@ class Data(Group):
         try:
             assert self._ndim is not None
         except (AssertionError, AttributeError):
-            self._ndim = self.variables[0].ndim
+            if len(self.variables) == 0:
+                self._ndim = 0
+            else:
+                self._ndim = self.variables[0].ndim
         finally:
             return self._ndim
 
@@ -160,7 +163,7 @@ class Data(Group):
         try:
             assert self._shape is not None
         except (AssertionError, AttributeError):
-            self._shape = wt_kit.joint_shape(self.channels)
+            self._shape = wt_kit.joint_shape(self.variables)
         finally:
             return self._shape
 
@@ -462,17 +465,16 @@ class Data(Group):
         Channel
             Created channel.
         """
+        require_kwargs = {}
         if values is None:
-            shape = self.shape
-            dtype = np.float64
+            require_kwargs['shape'] = self.shape
+            require_kwargs['dtype'] = np.float64
         else:
-            shape = values.shape
-            dtype = values.dtype
-            #if not shape == self.shape:
-            #    raise Exception  # TODO: better exception
+            require_kwargs['data'] = values
+            require_kwargs['shape'] = values.shape
+            require_kwargs['dtype'] = values.dtype
         # create dataset
-        dataset_id = self.require_dataset(name=name, data=values, shape=shape, dtype=dtype,
-                                          chunks=True).id
+        dataset_id = self.require_dataset(name=name, chunks=True, **require_kwargs).id
         channel = Channel(self, dataset_id, units=units, **kwargs)
         # finish
         self.channels.append(channel)
@@ -512,6 +514,7 @@ class Data(Group):
         id = self.require_dataset(name=name, data=values, shape=shape, dtype=dtype).id
         variable = Variable(self, id, units=units, **kwargs)
         # finish
+        self.variables.append(variable)
         self.attrs['variable_names'] = np.append(self.attrs['variable_names'], name.encode())
         return variable
 
