@@ -18,3 +18,4 @@ def test_MoS2_fromCzech2015():
     assert data.axis_expressions == ['energy']
     assert data.units == ('nm',)
     data.close()
+    
