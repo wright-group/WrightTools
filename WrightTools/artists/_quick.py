@@ -24,7 +24,7 @@ __all__ = ['quick1D', 'quick2D']
 # --- general purpose plotting functions ----------------------------------------------------------
 
 
-def quick1D(data, axis, at={}, channel=0, local=False, autosave=False, save_directory=None,
+def quick1D(data, axis=0, at={}, channel=0, local=False, autosave=False, save_directory=None,
             fname=None, verbose=True):
     """Quickly plot 1D slice(s) of data.
 
