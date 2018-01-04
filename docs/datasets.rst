@@ -26,6 +26,7 @@ dataset                                            axis names                   
 ``PyCMDS.w2_w1_000`` [#morrow2017]_                ``['w2', 'w1']``              ``(81, 81)``         :ref:`sphx_glr_auto_examples_fringes_transform.py`
 ``PyCMDS.wm_w2_w1_000``                            ``['wm', 'w2', 'w1']``        ``(35, 11, 11)``
 ``PyCMDS.wm_w2_w1_001``                            ``['wm', 'w2', 'w1']``        ``(29, 11, 11)``
+``Shimadzu.MoS2_fromCzech2015`` [#czech2015]_      ``['energy']``                ``(819,)``
 ``spcm.test_data``                                 ``['time']``                  ``(1024,)``
 ``Tensor27.CuPCtS_powder_ATR``                     ``['w']``                     ``(7259,)``
 =================================================  ============================  ===================  ==============
@@ -47,7 +48,8 @@ dataset                                            axis names                   
 
 .. [#morrow2017] **Group and phase velocity mismatch fringes in triple sum-frequency spectroscopy**
                  Darien J. Morrow, Daniel D. Kohler, and John C. Wright
-                 `arXiv:1709.10476 <https://arxiv.org/abs/1709.10476>`_
+                 *Physical Review A* **2017** 96, 063835
+                 `doi:10.1103/PhysRevA.96.063835 <http://dx.doi.org/10.1103/PhysRevA.96.063835>`_
 
 .. [#yurs2011] **Multiresonant Coherent Multidimensional Electronic Spectroscopy of Colloidal PbSe Quantum Dots**
                Lena A. Yurs, Stephen B. Block, Andrei V. Pakoulev, Rachel S. Selinsky, Song Jin, and John Wright
