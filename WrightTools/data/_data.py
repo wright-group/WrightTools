@@ -149,15 +149,6 @@ class Data(Group):
             return self._ndim
 
     @property
-    def parent(self):
-        """Parent."""
-        group = super().parent
-        parent = group.parent.name
-        if parent == posixpath.sep:
-            parent = None
-        return wt_collection.Collection(self.filepath, parent=parent, name=group.attrs['name'])
-
-    @property
     def shape(self):
         """Shape."""
         try:
@@ -414,17 +405,6 @@ class Data(Group):
                 axis.convert(destination_units)
                 if verbose:
                     print('axis', axis.expression, 'converted')
-
-    def copy(self):
-        """
-        Copy the object.
-
-        Returns
-        -------
-        data
-            A deep copy of the data object.
-        """
-        raise NotImplementedError
 
     def create_axis(self, expression, units):
         """Add new child axis.

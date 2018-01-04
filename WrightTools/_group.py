@@ -140,7 +140,8 @@ class Group(h5py.Group):
         return self.file.attrs['__version__']
 
     def _update(self):
-        pass
+        for name in self.item_names:
+            setattr(self, name, self[name])
 
     @property
     def fullpath(self):
@@ -178,8 +179,8 @@ class Group(h5py.Group):
             assert self._parent is not None
         except (AssertionError, AttributeError):
             from .collection import Collection
-            name = super().parent.attrs['name']
-            self._parent = Collection(self.filepath, name=name, edit_local=True)
+            key = posixpath.dirname(self.fullpath) + posixpath.sep
+            self._parent = Collection.instances[key]
         finally:
             return self._parent
 
@@ -192,6 +193,24 @@ class Group(h5py.Group):
             if hasattr(self, '_tmpfile'):
                 os.close(self._tmpfile[0])
                 os.remove(self._tmpfile[1])
+
+    def copy(self, parent, name=None, verbose=True):
+        """Create a copy under parent."""
+        # parse name
+        if name is None:
+            name = self.natural_name
+        # copy
+        src = self.name
+        self.file.copy(src, parent, name=name)
+        if 'item_names' in parent.attrs.keys():
+            new = parent.item_names + [name]
+            parent.attrs['item_names'] = np.array(new, dtype='S')
+        parent._update()
+        new = parent[name]
+        # finish
+        if verbose:
+            print('{0} copied to {1}'.format(self.fullpath, new.fullpath))
+        return new
 
     def flush(self):
         """Ensure contents are written to file."""
