@@ -75,6 +75,9 @@ KENT._from_directory(os.path.join(here, 'KENT', 'PbSe 2D delay B'))
 PyCMDS = DatasetContainer()
 PyCMDS._from_files('PyCMDS')
 
+Shimadzu = DatasetContainer()
+Shimadzu._from_files('Shimadzu')
+
 spcm = DatasetContainer()
 spcm._from_files('spcm')
 
