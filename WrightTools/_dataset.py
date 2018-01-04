@@ -25,8 +25,13 @@ class Dataset(h5py.Dataset):
     def __getitem__(self, index):
         if not hasattr(index, '__iter__'):
             index = [index]
-        lis = [min(s - 1, i) if not isinstance(i, slice) else i for s, i in zip(self.shape, index)]
+        types = (slice, type(Ellipsis))
+        lis = [min(s - 1, i) if not isinstance(i, types) else i for s, i in zip(self.shape, index)]
         return super().__getitem__(tuple(lis))
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._dcpl.set_fill_value(np.full((1,), np.nan))  # does not work as intended
 
     def __new__(cls, parent, id, **kwargs):
         """New object formation handler."""
@@ -116,6 +121,14 @@ class Dataset(h5py.Dataset):
             key = tuple(sss.start for sss in s)
             out[key] = func(self, s, *args, **kwargs)
         return out
+
+    def evaluate(self, *args):
+        # TODO: docstring
+        if not hasattr(self, '_rgi'):
+            points = tuple(range(s) for s in self.shape)
+            from scipy import interpolate
+            self._rgi = interpolate.RegularGridInterpolator(points, self[:])
+        return self._rgi(args)
 
     def max(self):
         """Maximum, ignorning nans."""
