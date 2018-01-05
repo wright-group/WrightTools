@@ -146,15 +146,6 @@ class Data(Group):
             return self._ndim
 
     @property
-    def parent(self):
-        """Parent."""
-        group = super().parent
-        parent = group.parent.name
-        if parent == posixpath.sep:
-            parent = None
-        return wt_collection.Collection(self.filepath, parent=parent, name=group.attrs['name'])
-
-    @property
     def shape(self):
         """Shape."""
         try:
@@ -199,12 +190,7 @@ class Data(Group):
         finally:
             return self._variables
 
-    def _update(self):
-        """Ensure that a Data Object is up to date.
-
-        Ensure that the ``axis_names``, ``constant_names``, ``channel_names``,
-        and ``shape`` attributes are correct.
-        """
+    def _update_natural_namespace(self):
         all_names = self.axis_names + self.channel_names + self.constant_names
         if len(all_names) == len(set(all_names)):
             pass
@@ -213,7 +199,7 @@ class Data(Group):
         for obj in self.axes + self.channels + self.constants:
             identifier = obj.natural_name
             setattr(self, identifier, obj)
-        super()._update()
+        super()._update_natural_namespace()
         # attrs
         for key, value in self.attrs.items():
             identifier = wt_kit.string2identifier(key)
@@ -383,7 +369,7 @@ class Data(Group):
                 print('method not recognized in data.collapse')
         # cleanup ---------------------------------------------------------------------------------
         self.axes.pop(axis_index)
-        self._update()
+        self._update_natural_namespace()
 
     def convert(self, destination_units, verbose=True):
         """Convert all compatable constants and axes to given units.
@@ -412,17 +398,6 @@ class Data(Group):
                 if verbose:
                     print('axis', axis.expression, 'converted')
 
-    def copy(self):
-        """
-        Copy the object.
-
-        Returns
-        -------
-        data
-            A deep copy of the data object.
-        """
-        raise NotImplementedError
-
     def create_axis(self, expression, units):
         """Add new child axis.
 
@@ -441,7 +416,7 @@ class Data(Group):
         axis = Axis(self, expression, units)
         self.axes.append(axis)
         self.flush()
-        self._update()
+        self._update_natural_namespace()
         return axis
 
     def create_channel(self, name, values=None, units=None, **kwargs):
@@ -477,7 +452,7 @@ class Data(Group):
         # finish
         self.channels.append(channel)
         self.attrs['channel_names'] = np.append(self.attrs['channel_names'], name.encode())
-        self._update()
+        self._update_natural_namespace()
         return channel
 
     def create_variable(self, name, values=None, units=None, **kwargs):
@@ -995,7 +970,7 @@ class Data(Group):
                 if flipped[i]:
                     self.flip(i)
         axis[:] = points
-        self._update()
+        self._update_natural_namespace()
 
     def normalize(self, channel=0, axis=None):
         """
@@ -1159,7 +1134,7 @@ class Data(Group):
         self.axes[offset_axis_index][:] = new_offset_axis_points
         # transpose out
         self.transpose(transpose_order, verbose=False)
-        self._update()
+        self._update_natural_namespace()
 
     def remove_channel(self, channel, *, verbose=True):
         """Remove channel from data.
@@ -1257,7 +1232,7 @@ class Data(Group):
             print('{0} channel(s) renamed:'.format(len(kwargs)))
             for k, v in kwargs.items():
                 print('  {0} --> {1}'.format(k, v))
-        self._update()
+        self._update_natural_namespace()
 
     def rename_variables(self, *, implied=True, verbose=True, **kwargs):
         """Rename a set of variables.
@@ -1320,7 +1295,7 @@ class Data(Group):
             print('{0} variable(s) renamed:'.format(len(kwargs)))
             for k, v in kwargs.items():
                 print('  {0} --> {1}'.format(k, v))
-        self._update()
+        self._update_natural_namespace()
 
     def scale(self, channel=0, kind='amplitude', verbose=True):
         """Scale a channel.
@@ -1677,7 +1652,7 @@ class Data(Group):
                 a.convert(a.variables[0].units)
         # finish
         self.flush()
-        self._update()
+        self._update_natural_namespace()
 
     @property
     def units(self):

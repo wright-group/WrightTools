@@ -58,13 +58,6 @@ class Collection(Group):
     def __setitem__(self, key, value):
         raise NotImplementedError
 
-    @property
-    def item_names(self):
-        """Item names."""
-        if 'item_names' not in self.attrs.keys():
-            self.attrs['item_names'] = np.array([], dtype='S')
-        return [s.decode() for s in self.attrs['item_names']]
-
     def create_collection(self, name='collection', position=None, **kwargs):
         """Create a new child colleciton.
 
@@ -137,29 +130,3 @@ class Collection(Group):
         for item in self._items:
             item.flush()
         self.file.flush()
-
-    def save(self, filepath=None, verbose=True):
-        """Save collection as root of a new file.
-
-        Parameters
-        ----------
-        filepath : string (optional)
-            Filepath to write. If None, file is created using natural_name.
-        verbose : boolean (optional)
-            Toggle talkback. Default is True
-
-        Returns
-        -------
-        str
-            Written filepath.
-        """
-        self.flush()  # ensure all changes are written to file
-        if filepath is None:
-            filepath = os.path.join(os.getcwd(), self.natural_name + '.wt5')
-        elif len(os.path.basename(filepath).split('.')) == 1:
-            filepath += '.wt5'
-        filepath = os.path.expanduser(filepath)
-        shutil.copyfile(src=self.filepath, dst=filepath)
-        if verbose:
-            print('file saved at', filepath)
-        return filepath

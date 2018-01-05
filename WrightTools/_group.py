@@ -139,8 +139,9 @@ class Group(h5py.Group):
             self.file.attrs['__version__'] = wt5_version
         return self.file.attrs['__version__']
 
-    def _update(self):
-        pass
+    def _update_natural_namespace(self):
+        for name in self.item_names:
+            setattr(self, name, self[name])
 
     @property
     def fullpath(self):
@@ -152,7 +153,7 @@ class Group(h5py.Group):
         """Item names."""
         if 'item_names' not in self.attrs.keys():
             self.attrs['item_names'] = np.array([], dtype='S')
-        return self.attrs['item_names']
+        return tuple(n.decode() for n in self.attrs['item_names'])
 
     @property
     def natural_name(self):
@@ -178,21 +179,109 @@ class Group(h5py.Group):
             assert self._parent is not None
         except (AssertionError, AttributeError):
             from .collection import Collection
-            name = super().parent.attrs['name']
-            self._parent = Collection(self.filepath, name=name, edit_local=True)
+            key = posixpath.dirname(self.fullpath) + posixpath.sep
+            self._parent = Collection.instances[key]
         finally:
             return self._parent
 
     def close(self):
         """Close the group. Tempfile will be removed, if this is the final reference."""
         if(self.fid.valid > 0):
-            self.__class__.instances.pop(self.fullpath)
-            self.file.flush()
-            self.file.close()
-            if hasattr(self, '_tmpfile'):
-                os.close(self._tmpfile[0])
-                os.remove(self._tmpfile[1])
+            self.__class__.instances.pop(self.fullpath, None)
+            try:
+                self.file.flush()
+                self.file.close()
+            except:
+                pass
+            finally:
+                if hasattr(self, '_tmpfile'):
+                    os.close(self._tmpfile[0])
+                    os.remove(self._tmpfile[1])
+
+    def copy(self, parent=None, name=None, verbose=True):
+        """Create a copy under parent.
+
+        All children are copied as well.
+
+        Parameters
+        ----------
+        parent : WrightTools Collection (optional)
+            Parent to copy within. If None, copy is created in root of new
+            tempfile. Default is None.
+        name : string (optional)
+            Name of new copy at destination. If None, the current natural
+            name is used. Default is None.
+        verbose : boolean (optional)
+            Toggle talkback. Default is True.
+
+        Returns
+        -------
+        Group
+            Created copy.
+        """
+        if name is None:
+            name = self.natural_name
+        if parent is None:
+            new = Group()
+            # attrs
+            for k, v in self.attrs.items():
+                new.attrs[k] = v
+            new.natural_name = name
+            # children
+            for k in self.keys():
+                self[k].copy(new)
+        else:
+            # copy
+            self.file.copy(self.name, parent, name=name)
+            if 'item_names' in parent.attrs.keys():
+                new = parent.item_names + (name,)
+                parent.attrs['item_names'] = np.array(new, dtype='S')
+            parent._update_natural_namespace()
+            new = parent[name]
+        # finish
+        if verbose:
+            print('{0} copied to {1}'.format(self.fullpath, new.fullpath))
+        return new
 
     def flush(self):
         """Ensure contents are written to file."""
         self.file.flush()
+
+    def save(self, filepath=None, verbose=True):
+        """Save as root of a new file.
+
+        Parameters
+        ----------
+        filepath : string (optional)
+            Filepath to write. If None, file is created using natural_name.
+        verbose : boolean (optional)
+            Toggle talkback. Default is True
+
+        Returns
+        -------
+        str
+            Written filepath.
+        """
+        # parse filepath
+        if filepath is None:
+            filepath = os.path.join(os.getcwd(), self.natural_name + '.wt5')
+        elif len(os.path.basename(filepath).split('.')) == 1:
+            filepath += '.wt5'
+        filepath = os.path.expanduser(filepath)
+        # copy to new file
+        f = h5py.File(filepath)
+        new = Group(filepath=filepath)
+        # attrs
+        for k, v in self.attrs.items():
+            new.attrs[k] = v
+        # children
+        for k in self.keys():
+            self[k].copy(new, verbose=True)
+        # finish
+        import time
+        time.sleep(10)
+        new.flush()
+        del new
+        if verbose:
+            print('file saved at', filepath)
+        return filepath
