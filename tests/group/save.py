@@ -11,10 +11,9 @@ from WrightTools import datasets
 # --- test ----------------------------------------------------------------------------------------
 
 
-
 def test_simple():
     original = wt.Collection(name='blaise')
-    new = c.copy()
+    new = original.copy()
     assert original.fullpath != new.fullpath
     for k, v in original.attrs.items():
         assert new.attrs[k] == v
