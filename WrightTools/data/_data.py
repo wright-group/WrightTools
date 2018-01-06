@@ -443,8 +443,6 @@ class Data(Group):
         else:
             shape = values.shape
             dtype = values.dtype
-            #if not shape == self.shape:
-            #    raise Exception  # TODO: better exception
         # create dataset
         dataset_id = self.require_dataset(name=name, data=values, shape=shape, dtype=dtype,
                                           chunks=True).id
@@ -481,8 +479,6 @@ class Data(Group):
         else:
             shape = values.shape
             dtype = values.dtype
-            #if not shape == self.shape:
-            #    raise Exception  # TODO: better exception
         # create dataset
         id = self.require_dataset(name=name, data=values, shape=shape, dtype=dtype).id
         variable = Variable(self, id, units=units, **kwargs)

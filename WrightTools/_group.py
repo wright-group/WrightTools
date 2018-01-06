@@ -191,7 +191,7 @@ class Group(h5py.Group):
             try:
                 self.file.flush()
                 self.file.close()
-            except:
+            except SystemError:
                 pass
             finally:
                 if hasattr(self, '_tmpfile'):

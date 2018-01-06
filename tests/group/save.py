@@ -30,6 +30,24 @@ def assert_equal(a, b):
 # --- test ----------------------------------------------------------------------------------------
 
 
+def test_save_nested():
+    root = wt.Collection(name='root')
+    one = wt.Collection(name='one', parent=root)
+    wt.Collection(name='two', parent=one)
+    p = os.path.join(here, 'nested')
+    p = one.save(p)
+    assert os.path.isfile(p)
+    assert p.endswith('.wt5')
+    new = wt.open(p)
+    for k, v in one.attrs.items():
+        assert_equal(new.attrs[k], v)
+    for k, v in one.items():
+        assert_equal(new[k], v)
+    root.close()
+    new.close()
+    os.remove(p)
+
+
 def test_simple_copy():
     original = wt.Collection(name='blaise')
     new = original.copy()
