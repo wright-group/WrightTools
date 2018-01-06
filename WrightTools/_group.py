@@ -230,6 +230,10 @@ class Group(h5py.Group):
             # children
             for k in self.keys():
                 self[k].copy(new)
+            new.flush()
+            p = new.filepath
+            from ._open import open as wt_open
+            new = wt_open(p)
         else:
             # copy
             self.file.copy(self.name, parent, name=name)
@@ -269,7 +273,7 @@ class Group(h5py.Group):
             filepath += '.wt5'
         filepath = os.path.expanduser(filepath)
         # copy to new file
-        f = h5py.File(filepath)
+        h5py.File(filepath)
         new = Group(filepath=filepath)
         # attrs
         for k, v in self.attrs.items():
