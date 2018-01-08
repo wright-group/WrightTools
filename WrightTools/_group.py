@@ -188,6 +188,10 @@ class Group(h5py.Group):
         """Close the group. Tempfile will be removed, if this is the final reference."""
         if(self.fid.valid > 0):
             self.__class__.instances.pop(self.fullpath, None)
+            # for some reason, the following file operations sometimes fail
+            # this stops execution of the method, meaning that the tempfile is never removed
+            # the following try case ensures that the tempfile code is always executed
+            # ---Blaise 2018-01-08
             try:
                 self.file.flush()
                 self.file.close()
@@ -222,10 +226,9 @@ class Group(h5py.Group):
         if name is None:
             name = self.natural_name
         if parent is None:
-            new = Group()
+            new = Group()  # root of new tempfile
             # attrs
-            for k, v in self.attrs.items():
-                new.attrs[k] = v
+            new.attrs.update(self.attrs)
             new.natural_name = name
             # children
             for k in self.keys():
@@ -251,13 +254,15 @@ class Group(h5py.Group):
         """Ensure contents are written to file."""
         self.file.flush()
 
-    def save(self, filepath=None, verbose=True):
+    def save(self, filepath=None, overwrite=False, verbose=True):
         """Save as root of a new file.
 
         Parameters
         ----------
         filepath : string (optional)
             Filepath to write. If None, file is created using natural_name.
+        overwrite : boolean (optional)
+            Toggle overwrite behavior. Default is False.
         verbose : boolean (optional)
             Toggle talkback. Default is True
 
@@ -269,9 +274,15 @@ class Group(h5py.Group):
         # parse filepath
         if filepath is None:
             filepath = os.path.join(os.getcwd(), self.natural_name + '.wt5')
-        elif len(os.path.basename(filepath).split('.')) == 1:
+        elif not filepath.endswith(('.wt5', '.h5', '.hdf5')):
             filepath += '.wt5'
         filepath = os.path.expanduser(filepath)
+        # handle overwrite
+        if os.path.isfile(filepath):
+            if overwrite:
+                os.remove(filepath)
+            else:
+                raise FileExistsError(filepath)
         # copy to new file
         h5py.File(filepath)
         new = Group(filepath=filepath)
@@ -282,8 +293,6 @@ class Group(h5py.Group):
         for k in self.keys():
             self[k].copy(new, verbose=True)
         # finish
-        import time
-        time.sleep(10)
         new.flush()
         del new
         if verbose:
