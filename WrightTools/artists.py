@@ -32,6 +32,8 @@ import matplotlib.patheffects as PathEffects
 
 import imageio
 
+import warnings
+
 from . import exceptions as wt_exceptions
 from . import data as wt_data
 from . import kit as wt_kit
