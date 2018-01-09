@@ -23,7 +23,7 @@ __all__ = ['from_Cary']
 
 
 def from_Cary(filepath, parent=None, verbose=True):
-    """Create a data object from a Cary UV VIS absorbance file.
+    """Create a collection object from a Cary UV VIS absorbance file.
     
     We hope to support as many Cary instruments and datasets as possible.
     This function has been tested with data collected on a Cary50 UV/VIS spectrometer.
@@ -84,8 +84,9 @@ def from_Cary(filepath, parent=None, verbose=True):
         ax = spl[0].lower() if len(spl) > 0 else None
         units = spl[1].lower() if len(spl) > 1 else None
         dat = datas.create_data(header[i], kind='Cary', source=filepath)
-        dat.create_axis(ax, arr[i], units)
+        dat.create_variable(ax, arr[i], units)
         dat.create_channel(columns[i+1].lower(), arr[i+1], label=columns[i+1].lower())
+        dat.transform([ax])
     # finish
     if verbose:
         print('{0} data objects successfully created from Cary file:'.format(len(datas)))
