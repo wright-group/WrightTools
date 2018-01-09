@@ -312,9 +312,7 @@ class Data(Group):
                 data.create_variable(name=v.natural_name, values=v[idx], units=v.units)
             for c in self.channels:
                 data.create_channel(name=c.natural_name, values=c[idx], units=c.units)
-            for a in kept_axes:
-                if a.expression not in at.keys():
-                    data.create_axis(expression=a.expression, units=a.units)
+            data.transform([a.expression for a in kept_axes if a.expression not in at.keys()])
             out.flush()
             i += 1
         # return
@@ -404,27 +402,6 @@ class Data(Group):
                 axis.convert(destination_units)
                 if verbose:
                     print('axis', axis.expression, 'converted')
-
-    def create_axis(self, expression, units):
-        """Add new child axis.
-
-        Parameters
-        ----------
-        expressionn : string
-            Axis expression.
-        units : string
-            Axis units.
-
-        Returns
-        -------
-        WrightTools Axis
-            New child axis.
-        """
-        axis = Axis(self, expression, units)
-        self.axes.append(axis)
-        self.flush()
-        self._update_natural_namespace()
-        return axis
 
     def create_channel(self, name, values=None, units=None, **kwargs):
         """Append a new channel.
@@ -1142,35 +1119,6 @@ class Data(Group):
                 print('  {0} --> {1}'.format(k, v))
         self._update_natural_namespace()
 
-    def scale(self, channel=0, kind='amplitude', verbose=True):
-        """Scale a channel.
-
-        Parameters
-        ----------
-        channel : int or str (optional)
-            The channel to scale. Default is 0.
-        kind : {'amplitude', 'log', 'invert'} (optional)
-            The scaling operation to perform.
-        verbose : bool (optional)
-            Toggle talkback. Default is True.
-        """
-        raise NotImplementedError
-        # get channel
-        if isinstance(channel, int):
-            channel_index = channel
-        elif isinstance(channel, str):
-            channel_index = self.channel_names.index(channel)
-        else:
-            raise TypeError("channel: expected {int, str}, got %s" % type(channel))
-        channel = self.channels[channel_index]
-        # do scaling
-        if kind in ['amp', 'amplitude']:
-            channel[:] = wt_kit.symmetric_sqrt(channel[:], out=channel[:])
-        if kind in ['log']:
-            channel[:] = np.log10(channel[:])
-        if kind in ['invert']:
-            channel[:] *= -1.
-
     def share_nans(self):
         """Share not-a-numbers between all channels.
 
@@ -1285,6 +1233,7 @@ class Data(Group):
         collapse
             Collapse the dataset along one axis.
         """
+        raise NotImplementedError
         # axis ------------------------------------------------------------------------------------
         if isinstance(axis, int):
             axis_index = axis

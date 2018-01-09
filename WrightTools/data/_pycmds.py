@@ -217,8 +217,7 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True):
     for channel in channels:
         data.create_channel(**channel)
     # add axes
-    for axis in axes:
-        data.create_axis(axis['identity'], axis['units'])
+    data.transform([a['identity'] for a in axes])
     # return
     if verbose:
         print('data created at {0}'.format(data.fullpath))
