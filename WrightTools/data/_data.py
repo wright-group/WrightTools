@@ -171,6 +171,11 @@ class Data(Group):
         return value if not value == 'None' else None
 
     @property
+    def units(self):
+        """All axis units."""
+        return tuple(a.units for a in self.axes)
+
+    @property
     def variable_names(self):
         """Variable names."""
         if 'variable_names' not in self.attrs.keys():
@@ -307,9 +312,7 @@ class Data(Group):
                 data.create_variable(name=v.natural_name, values=v[idx], units=v.units)
             for c in self.channels:
                 data.create_channel(name=c.natural_name, values=c[idx], units=c.units)
-            for a in kept_axes:
-                if a.expression not in at.keys():
-                    data.create_axis(expression=a.expression, units=a.units)
+            data.transform([a.expression for a in kept_axes if a.expression not in at.keys()])
             out.flush()
             i += 1
         # return
@@ -399,27 +402,6 @@ class Data(Group):
                 axis.convert(destination_units)
                 if verbose:
                     print('axis', axis.expression, 'converted')
-
-    def create_axis(self, expression, units):
-        """Add new child axis.
-
-        Parameters
-        ----------
-        expressionn : string
-            Axis expression.
-        units : string
-            Axis units.
-
-        Returns
-        -------
-        WrightTools Axis
-            New child axis.
-        """
-        axis = Axis(self, expression, units)
-        self.axes.append(axis)
-        self.flush()
-        self._update_natural_namespace()
-        return axis
 
     def create_channel(self, name, values=None, units=None, **kwargs):
         """Append a new channel.
@@ -545,63 +527,6 @@ class Data(Group):
         channel[:] /= divisor_channel[:]
         # transpose out
         self.transpose(transpose_order, verbose=False)
-
-    def dOD(self, signal_channel, reference_channel,
-            method='digital'):
-        r"""
-        For transient absorption,  convert zi signal from dI to dOD.
-
-        Parameters
-        ----------
-        signal_channel : int or str
-            Index or name of signal (dI) channel.
-        reference_channel : int or str
-            Index or name of reference (I) channel.
-        method : {'digital', 'boxcar'} (optional)
-            Shots processing method. Default is digital.
-
-        Notes
-        -----
-        dOD is calculated as
-
-        .. math::
-             -\log_{10}\left(\frac{I+dI}{I}\right)
-
-        where I is the reference channel and dI is the signal channel.
-        """
-        raise NotImplementedError
-        # get signal channel
-        if isinstance(signal_channel, int):
-            signal_channel_index = signal_channel
-        elif isinstance(signal_channel, str):
-            signal_channel_index = self.channel_names.index(signal_channel)
-        else:
-            raise TypeError("signal_channel: expected {int, str}, got %s" % type(signal_channel))
-        # get reference channel
-        if isinstance(reference_channel, int):
-            reference_channel_index = reference_channel
-        elif isinstance(reference_channel, str):
-            reference_channel_index = self.channel_names.index(reference_channel)
-        else:
-            raise TypeError("reference_channel: expected {int, str}, got %s" %
-                            type(reference_channel))
-        # process
-        intensity = self.channels[reference_channel_index][:].copy()
-        d_intensity = self.channels[signal_channel_index][:].copy()
-        if method == 'digital':
-            out = -np.log10((intensity + d_intensity) / intensity)
-        elif method == 'boxcar':
-            # assume data collected with boxcar i.e.
-            # sig = 1/2 dT
-            # ref = T + 1/2 dT
-            d_intensity *= 2
-            out = -np.log10((intensity + d_intensity) / intensity)
-        else:
-            raise ValueError("Method '%s' not in {'digital', 'boxcar'}" % method)
-        # finish
-        self.channels[signal_channel_index].give_values(out)
-        self.channels[signal_channel_index].signed = True
-        self.channels[signal_channel_index]._null = 0
 
     def flush(self):
         self.attrs['axes'] = [a.identity.encode() for a in self.axes]
@@ -790,107 +715,6 @@ class Data(Group):
                 points = axis[npts:]
             print('channel', channel.name, 'offset by', axis.name, 'between',
                   int(points.min()), 'and', int(points.max()), axis.units)
-
-    def m(self, abs_data, channel=0, this_exp='TG', indices=None, m=None, bounds_error=True,
-          verbose=True):
-        """Perform m-factor corrections.
-
-        Assumes all absorption functions are independent, so we can
-        normalize each axis individually.
-
-        Parameters
-        ----------
-        abs_data : wt.data.Data object
-            Absorption data to normalize by
-        channel : int or string (optional)
-            Channel to correct (default is zero)
-        this_exp : {'TG', 'TA'} (optional)
-            Experimental configuration. Default is TG. Note that TG data
-            should be processed on the intensity level.
-        indices : list of integers (optional)
-            axis indices. If None, indices are guessed from label_seed.
-            Default is None.
-        m : function (optional)
-            m-factor function. Should take arguments a1 and a2.
-        bounds_error : boolean (optional)
-            Toggle bounds_error. Default is True.
-        verbose : boolean (optional)
-            Toggle talkback. Default is True.
-
-        Notes
-        -----
-        m-factors originally derived by Carlson and Wright. [1]_
-
-        References
-        ----------
-        .. [1] **Absorption and Coherent Interference Effects in Multiply Resonant
-               Four-Wave Mixing Spectroscopy**
-               Roger J. Carlson, and John C. Wright
-               *Applied Spectroscopy* **1989** 43, 1195--1208
-               `doi:10.1366/0003702894203408 <http://dx.doi.org/10.1366/0003702894203408>`_
-        """
-        raise NotImplementedError
-        # exp_name: [i], [m_i]
-        exp_types = {
-            'TG': [['1', '2'],
-                   [lambda a1: 10**-a1,
-                    lambda a2: ((1 - 10**-a2) / (a2 * np.log(10)))**2
-                    ]
-                   ],
-            'TA': [['2'],
-                   [lambda a2: (1 - 10**-a2) / (a2 * np.log(10))]
-                   ]
-        }
-        # try to figure out the experiment or adopt the imported norm functions
-        if this_exp in exp_types.keys():
-            if indices is None:
-                indices = exp_types[this_exp][0]
-            m = exp_types[this_exp][1]
-        elif m is not None and indices is not None:
-            pass
-        else:
-            raise KeyError('experiment {0} not recognized'.format(this_exp))
-        # find which axes have m-factor dependence; move to the inside and operate
-        m_axes = [axi for axi in self.axes if axi.units_kind == 'energy']
-        # loop through 'indices' and find axis whole label_seeds contain indi
-        for i, indi in enumerate(indices):
-            t_order = list(range(len(self.axes)))
-            # find axes indices that have the correct label seed
-            # and also belong to the list of axes under consideration
-            # ni = [j for j in range(len(m_axes)) if indi in
-            ni = [j for j in range(len(self.axes)) if indi in self.axes[j].label_seed and
-                  self.axes[j] in m_axes]
-            if verbose:
-                print(ni)
-            # there should never be more than one axis that agrees
-            if len(ni) > 1:
-                raise RuntimeError('axes are not unique!')
-            elif len(ni) > 0:
-                ni = ni[0]
-                axi = self.axes[ni]
-                mi = m[i]
-                # move index of interest to inside
-                t_order.pop(ni)
-                t_order.append(ni)
-                if verbose:
-                    print(t_order)
-                self.transpose(axes=t_order, verbose=verbose)
-                # evaluate ai
-                abs_data.axes[0].convert(axi.units)
-                Ei = abs_data.axes[0][:]
-                Ai = interp1d(Ei, abs_data.channels[0][:],
-                              bounds_error=bounds_error)
-                ai = Ai(axi[:])
-                Mi = mi(ai)
-                # apply Mi to channel
-                self.channels[channel][:] /= Mi
-                # invert back out of the transpose
-                t_inv = [t_order.index(j) for j in range(len(t_order))]
-                if verbose:
-                    print(t_inv)
-                self.transpose(axes=t_inv, verbose=verbose)
-            else:
-                raise RuntimeError('{0} label_seed not found'.format(indi))
 
     def map_axis(self, axis, points, input_units='same', edge_tolerance=0., verbose=True):
         """Map points of an axis to new points using linear interpolation.
@@ -1295,35 +1119,6 @@ class Data(Group):
                 print('  {0} --> {1}'.format(k, v))
         self._update_natural_namespace()
 
-    def scale(self, channel=0, kind='amplitude', verbose=True):
-        """Scale a channel.
-
-        Parameters
-        ----------
-        channel : int or str (optional)
-            The channel to scale. Default is 0.
-        kind : {'amplitude', 'log', 'invert'} (optional)
-            The scaling operation to perform.
-        verbose : bool (optional)
-            Toggle talkback. Default is True.
-        """
-        raise NotImplementedError
-        # get channel
-        if isinstance(channel, int):
-            channel_index = channel
-        elif isinstance(channel, str):
-            channel_index = self.channel_names.index(channel)
-        else:
-            raise TypeError("channel: expected {int, str}, got %s" % type(channel))
-        channel = self.channels[channel_index]
-        # do scaling
-        if kind in ['amp', 'amplitude']:
-            channel[:] = wt_kit.symmetric_sqrt(channel[:], out=channel[:])
-        if kind in ['log']:
-            channel[:] = np.log10(channel[:])
-        if kind in ['invert']:
-            channel[:] *= -1.
-
     def share_nans(self):
         """Share not-a-numbers between all channels.
 
@@ -1438,6 +1233,7 @@ class Data(Group):
         collapse
             Collapse the dataset along one axis.
         """
+        raise NotImplementedError
         # axis ------------------------------------------------------------------------------------
         if isinstance(axis, int):
             axis_index = axis
@@ -1651,11 +1447,6 @@ class Data(Group):
         # finish
         self.flush()
         self._update_natural_namespace()
-
-    @property
-    def units(self):
-        """All axis units."""
-        return tuple(a.units for a in self.axes)
 
     def zoom(self, factor, order=1, verbose=True):
         """Zoom the data array using spline interpolation of the requested order.
