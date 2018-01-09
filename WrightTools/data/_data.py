@@ -546,63 +546,6 @@ class Data(Group):
         # transpose out
         self.transpose(transpose_order, verbose=False)
 
-    def dOD(self, signal_channel, reference_channel,
-            method='digital'):
-        r"""
-        For transient absorption,  convert zi signal from dI to dOD.
-
-        Parameters
-        ----------
-        signal_channel : int or str
-            Index or name of signal (dI) channel.
-        reference_channel : int or str
-            Index or name of reference (I) channel.
-        method : {'digital', 'boxcar'} (optional)
-            Shots processing method. Default is digital.
-
-        Notes
-        -----
-        dOD is calculated as
-
-        .. math::
-             -\log_{10}\left(\frac{I+dI}{I}\right)
-
-        where I is the reference channel and dI is the signal channel.
-        """
-        raise NotImplementedError
-        # get signal channel
-        if isinstance(signal_channel, int):
-            signal_channel_index = signal_channel
-        elif isinstance(signal_channel, str):
-            signal_channel_index = self.channel_names.index(signal_channel)
-        else:
-            raise TypeError("signal_channel: expected {int, str}, got %s" % type(signal_channel))
-        # get reference channel
-        if isinstance(reference_channel, int):
-            reference_channel_index = reference_channel
-        elif isinstance(reference_channel, str):
-            reference_channel_index = self.channel_names.index(reference_channel)
-        else:
-            raise TypeError("reference_channel: expected {int, str}, got %s" %
-                            type(reference_channel))
-        # process
-        intensity = self.channels[reference_channel_index][:].copy()
-        d_intensity = self.channels[signal_channel_index][:].copy()
-        if method == 'digital':
-            out = -np.log10((intensity + d_intensity) / intensity)
-        elif method == 'boxcar':
-            # assume data collected with boxcar i.e.
-            # sig = 1/2 dT
-            # ref = T + 1/2 dT
-            d_intensity *= 2
-            out = -np.log10((intensity + d_intensity) / intensity)
-        else:
-            raise ValueError("Method '%s' not in {'digital', 'boxcar'}" % method)
-        # finish
-        self.channels[signal_channel_index].give_values(out)
-        self.channels[signal_channel_index].signed = True
-        self.channels[signal_channel_index]._null = 0
-
     def flush(self):
         self.attrs['axes'] = [a.identity.encode() for a in self.axes]
         super().flush()
