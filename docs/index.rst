@@ -35,12 +35,12 @@ Contents
 
    install
    quickstart
+   wt5
    data
    artists
    fit
    kit
    units
-   tuning
    diagrams
    datasets
    contributing 

@@ -19,6 +19,8 @@ import warnings
 
 import numpy as np
 
+from scipy.interpolate import interp2d
+
 import matplotlib
 from matplotlib.axes import SubplotBase, subplot_class_factory
 import matplotlib.pyplot as plt
@@ -34,17 +36,6 @@ from ..data import Data
 from ._colors import colormaps
 
 
-# --- define --------------------------------------------------------------------------------------
-
-
-# string types
-if sys.version[0] == '2':
-    # recognize unicode and string types
-    string_type = basestring  # noqa: F821
-else:
-    string_type = str  # newer versions of python don't have unicode type
-
-
 # --- classes -------------------------------------------------------------------------------------
 
 
@@ -56,14 +47,13 @@ class Axes(matplotlib.axes.Axes):
 
     def _parse_cmap(self, data=None, channel_index=None, **kwargs):
         if 'cmap' in kwargs.keys():
-            if isinstance(kwargs['cmap'], string_type):
+            if isinstance(kwargs['cmap'], str):
                 kwargs['cmap'] = colormaps[kwargs['cmap']]
-            return kwargs
-        if data:
+        elif data:
             if data.channels[channel_index].signed:
                 kwargs['cmap'] = colormaps['signed']
                 return kwargs
-        kwargs['cmap'] = colormaps['default']
+            kwargs['cmap'] = colormaps['default']
         return kwargs
 
     def _apply_labels(self, autolabel='none', xlabel=None, ylabel=None, data=None, channel_index=0):
@@ -102,8 +92,13 @@ class Axes(matplotlib.axes.Axes):
 
     def _parse_limits(self, zi=None, data=None, channel_index=None, dynamic_range=False, **kwargs):
         if zi is not None:
-            vmin = np.nanmin(zi)
-            vmax = np.nanmax(zi)
+            if 'levels' in kwargs.keys():
+                levels = kwargs['levels']
+                vmin = levels.min()
+                vmax = levels.max()
+            else:
+                vmin = np.nanmin(zi)
+                vmax = np.nanmax(zi)
         elif data is not None:
             signed = data.channels[channel_index].signed
             if signed and dynamic_range:
@@ -115,11 +110,11 @@ class Axes(matplotlib.axes.Axes):
             else:
                 vmin = data.channels[channel_index].null
                 vmax = data.channels[channel_index].max()
-        # don't overwrite
-        if 'vmin' not in kwargs.keys():
-            kwargs['vmin'] = vmin
-        if 'vmax' not in kwargs.keys():
-            kwargs['vmax'] = vmax
+            # don't overwrite
+            if 'vmin' not in kwargs.keys():
+                kwargs['vmin'] = vmin
+            if 'vmax' not in kwargs.keys():
+                kwargs['vmax'] = vmax
         return kwargs
 
     def add_sideplot(self, along, pad=0, height=0.75, ymin=0, ymax=1.1):
@@ -204,28 +199,28 @@ class Axes(matplotlib.axes.Axes):
             # limits
             kwargs = self._parse_limits(data=data, channel_index=channel_index,
                                         dynamic_range=dynamic_range, **kwargs)
+            # levels
+            if 'levels' not in kwargs.keys():
+                if signed:
+                    n = 11
+                else:
+                    n = 6
+                kwargs['levels'] = np.linspace(kwargs.pop('vmin'), kwargs.pop('vmax'), n)[1:-1]
+            # colors
+            if 'colors' not in kwargs.keys():
+                kwargs['colors'] = 'k'
+            if 'alpha' not in kwargs.keys():
+                kwargs['alpha'] = 0.5
+            # labels
+            self._apply_labels(autolabel=kwargs.pop('autolabel', False),
+                               xlabel=kwargs.pop('xlabel', None),
+                               ylabel=kwargs.pop('ylabel', None),
+                               data=data, channel_index=channel_index)
         else:
             data = None
             channel_index = 0
             signed = False
             kwargs = self._parse_limits(zi=args[2], dynamic_range=dynamic_range, **kwargs)
-        # levels
-        if 'levels' not in kwargs.keys():
-            if signed:
-                n = 11
-            else:
-                n = 6
-            kwargs['levels'] = np.linspace(kwargs.pop('vmin'), kwargs.pop('vmax'), n)[1:-1]
-        # colors
-        if 'colors' not in kwargs.keys():
-            kwargs['colors'] = 'k'
-        if 'alpha' not in kwargs.keys():
-            kwargs['alpha'] = 0.5
-        # labels
-        self._apply_labels(autolabel=kwargs.pop('autolabel', False),
-                           xlabel=kwargs.pop('xlabel', None),
-                           ylabel=kwargs.pop('ylabel', None),
-                           data=data, channel_index=channel_index)
         # call parent
         return matplotlib.axes.Axes.contour(self, *args, **kwargs)  # why can't I use super?
 
@@ -282,7 +277,9 @@ class Axes(matplotlib.axes.Axes):
             kwargs = self._parse_cmap(**kwargs)
         # levels
         if 'levels' not in kwargs.keys():
-            kwargs['levels'] = np.linspace(kwargs.pop('vmin'), kwargs.pop('vmax'), 256)
+            vmin = kwargs.pop('vmin', args[2].min())
+            vmax = kwargs.pop('vmax', args[2].max())
+            kwargs['levels'] = np.linspace(vmin, vmax, 256)
         # labels
         self._apply_labels(autolabel=kwargs.pop('autolabel', False),
                            xlabel=kwargs.pop('xlabel', None),
@@ -373,9 +370,9 @@ class Axes(matplotlib.axes.Axes):
                 raise wt_exceptions.DimensionalityError(2, data.dimensionality)
             # arrays
             channel_index = wt_kit.get_index(data.channel_names, channel)
-            xi = data.axes[0][:]
-            yi = data.axes[1][:]
-            zi = data.channels[channel_index][:].T
+            xi = data.axes[0].full
+            yi = data.axes[1].full
+            zi = data.channels[channel_index][:]
             X, Y, Z = pcolor_helper(xi, yi, zi)
             args = [X, Y, Z] + args
             # limits
@@ -1109,10 +1106,10 @@ def pcolor_helper(xi, yi, zi, transform=None):
 
     Parameters
     ----------
-    xi : 1D array-like
-        1D array of X-coordinates.
-    yi : 1D array-like
-        1D array of Y-coordinates.
+    xi : 1D or 2D array-like
+        Array of X-coordinates.
+    yi : 1D or 2D array-like
+        Array of Y-coordinates.
     zi : 2D array-like
         Rectangular array of Z-coordinates.
     transform : function
@@ -1127,23 +1124,41 @@ def pcolor_helper(xi, yi, zi, transform=None):
     Z : 2D ndarray
         Z dimension for pcolor
     """
-    x_points = np.zeros(len(xi) + 1)
-    y_points = np.zeros(len(yi) + 1)
-    for points, axis in [[x_points, xi], [y_points, yi]]:
-        for j in range(len(points)):
-            if j == 0:  # first point
-                points[j] = axis[0] - (axis[1] - axis[0])
-            elif j == len(points) - 1:  # last point
-                points[j] = axis[-1] + (axis[-1] - axis[-2])
-            else:
-                points[j] = np.average([axis[j], axis[j - 1]])
-    X, Y = np.meshgrid(x_points, y_points)
-    if isinstance(transform, type(None)):
-        return X, Y, zi
-    else:
-        for (x, y), value in np.ndenumerate(X):
-            X[x][y], Y[x][y] = transform((X[x][y], Y[x][y]))
-        return X, Y, zi
+    if xi.ndim == 1:
+        xi.shape = (xi.size, 1)
+    if yi.ndim == 1:
+        yi.shape = (1, yi.size)
+    shape = wt_kit.joint_shape([xi, yi])
+    # full
+
+    def full(arr):
+        for i in range(arr.ndim):
+            if arr.shape[i] == 1:
+                arr = np.repeat(arr, shape[i], axis=i)
+        return arr
+
+    xi = full(xi)
+    yi = full(yi)
+    # pad
+    x = np.arange(shape[1])
+    y = np.arange(shape[0])
+    f_xi = interp2d(x, y, xi)
+    f_yi = interp2d(x, y, yi)
+    x_new = np.arange(-1, shape[1] + 1)
+    y_new = np.arange(-1, shape[0] + 1)
+    xi = f_xi(x_new, y_new)
+    yi = f_yi(x_new, y_new)
+    # fill
+    X = np.empty([s - 1 for s in xi.shape])
+    Y = np.empty([s - 1 for s in yi.shape])
+    for orig, out in [[xi, X], [yi, Y]]:
+        for idx in np.ndindex(out.shape):
+            ul = orig[idx[0] + 1, idx[1] + 0]
+            ur = orig[idx[0] + 1, idx[1] + 1]
+            ll = orig[idx[0] + 0, idx[1] + 0]
+            lr = orig[idx[0] + 0, idx[1] + 1]
+            out[idx] = np.mean([ul, ur, ll, lr])
+    return X, Y, zi
 
 
 def plot_colorbar(cax=None, cmap='default', ticks=None, clim=None, vlim=None,
@@ -1189,7 +1204,7 @@ def plot_colorbar(cax=None, cmap='default', ticks=None, clim=None, vlim=None,
     if cax is None:
         cax = plt.gca()
     # parse cmap
-    if isinstance(cmap, string_type):
+    if isinstance(cmap, str):
         cmap = colormaps[cmap]
     # parse ticks
     if ticks is None:

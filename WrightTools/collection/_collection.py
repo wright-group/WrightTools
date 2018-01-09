@@ -9,10 +9,8 @@ import shutil
 
 import numpy as np
 
-import h5py
-
 from .. import data as wt_data
-from .._base import Group
+from .._group import Group
 
 
 # --- define --------------------------------------------------------------------------------------
@@ -26,6 +24,7 @@ __all__ = ['Collection']
 
 class Collection(Group):
     """Nestable Collection of Data objects."""
+
     class_name = 'Collection'
 
     def __iter__(self):
@@ -54,30 +53,28 @@ class Collection(Group):
             key = self.item_names[key]
         if key == "":
             return None
-        out = h5py.Group.__getitem__(self, key)
-        if 'class' in out.attrs.keys():
-            if out.attrs['class'] == 'Data':
-                return wt_data.Data(filepath=self.filepath, parent=self.name, name=key,
-                                    edit_local=True)
-            elif out.attrs['class'] == 'Collection':
-                return Collection(filepath=self.filepath, parent=self.name, name=key,
-                                  edit_local=True)
-            else:
-                return Group(filepath=self.filepath, parent=self.name, name=key,
-                              edit_local=True)
-        else:
-            return out
+        return super().__getitem__(key)
 
     def __setitem__(self, key, value):
         raise NotImplementedError
 
-    @property
-    def item_names(self):
-        if 'item_names' not in self.attrs.keys():
-            self.attrs['item_names'] = np.array([], dtype='S')
-        return [s.decode() for s in self.attrs['item_names']]
-
     def create_collection(self, name='collection', position=None, **kwargs):
+        """Create a new child colleciton.
+
+        Parameters
+        ----------
+        name : string
+            Unique identifier.
+        position : integer (optional)
+            Location to insert. Default is None (append).
+        kwargs
+            Additional arguments to child collection instantiation.
+
+        Returns
+        -------
+        WrightTools Collection
+            New child.
+        """
         collection = Collection(filepath=self.filepath, parent=self.name, name=name,
                                 edit_local=True, **kwargs)
         if position is None:
@@ -92,12 +89,28 @@ class Collection(Group):
         return collection
 
     def create_data(self, name='data', position=None, **kwargs):
+        """Create a new child data.
+
+        Parameters
+        ----------
+        name : string
+            Unique identifier.
+        position : integer (optional)
+            Location to insert. Default is None (append).
+        kwargs
+            Additional arguments to child data instantiation.
+
+        Returns
+        -------
+        WrightTools Data
+            New child.
+        """
         if name == '':
             data = None
             natural_name = "".encode()
         else:
             data = wt_data.Data(filepath=self.filepath, parent=self.name, name=name,
-                            edit_local=True, **kwargs)
+                                edit_local=True, **kwargs)
             natural_name = data.natural_name.encode()
         if position is None:
             self._items.append(data)
@@ -109,22 +122,11 @@ class Collection(Group):
         return data
 
     def index(self):
+        """Index."""
         raise NotImplementedError
 
     def flush(self):
+        """Ensure contents are written to file."""
         for item in self._items:
             item.flush()
         self.file.flush()
-
-    def save(self, filepath=None, verbose=True):
-        # TODO: documentation
-        self.flush()  # ensure all changes are written to file
-        if filepath is None:
-            filepath = os.path.join(os.getcwd(), self.natural_name + '.wt5')
-        elif len(os.path.basename(filepath).split('.')) == 1:
-            filepath += '.wt5'
-        filepath = os.path.expanduser(filepath)
-        shutil.copyfile(src=self.filepath, dst=filepath)
-        if verbose:
-            print('file saved at', filepath)
-        return filepath

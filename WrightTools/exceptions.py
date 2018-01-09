@@ -62,6 +62,23 @@ class NameNotUniqueError(Exception):
         Exception.__init__(self, message)
 
 
+class UnitsError(Exception):
+    """Units Error."""
+
+    def __init__(self, expected, recieved):
+        """Units error.
+
+        Parameters
+        ----------
+        expected : object
+            Expected units.
+        recieved : object
+            Recieved units.
+        """
+        message = "expected units of {0} (recieved {1})".format(expected, recieved)
+        Exception.__init__(self, message)
+
+
 # --- custom warnings -----------------------------------------------------------------------------
 
 
