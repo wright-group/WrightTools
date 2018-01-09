@@ -65,6 +65,7 @@ class Group(h5py.Group):
         for name in self.item_names:
             self._items.append(self[name])
             setattr(self, name, self[name])
+        self._update_natural_namespace()
         # the following are populated if not already recorded
         self.__version__
 
@@ -232,8 +233,8 @@ class Group(h5py.Group):
             new.attrs.update(self.attrs)
             new.natural_name = name
             # children
-            for k in self.keys():
-                self[k].copy(new)
+            for k, v in self.items():
+                super().copy(v, new, name=v.natural_name)
             new.flush()
             p = new.filepath
             new = wt_open(p)
@@ -245,6 +246,7 @@ class Group(h5py.Group):
                 parent.attrs['item_names'] = np.array(new, dtype='S')
             parent._update_natural_namespace()
             new = parent[name]
+            new._update_natural_namespace()
         # finish
         if verbose:
             print('{0} copied to {1}'.format(self.fullpath, new.fullpath))
@@ -290,8 +292,8 @@ class Group(h5py.Group):
         for k, v in self.attrs.items():
             new.attrs[k] = v
         # children
-        for k in self.keys():
-            self[k].copy(new, verbose=True)
+        for k, v in self.items():
+            super().copy(v, new, name=v.natural_name)
         # finish
         new.flush()
         del new

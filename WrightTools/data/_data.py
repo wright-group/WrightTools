@@ -46,8 +46,8 @@ class Data(Group):
         kwargs.pop('axis_names', None)
         kwargs.pop('channel_names', None)
         kwargs.pop('constant_names', None)
-        Group.__init__(self, *args, **kwargs)
         self.axes = []
+        Group.__init__(self, *args, **kwargs)
         for identifier in self.attrs.get('axes', []):
             identifier = identifier.decode()
             expression, units = identifier.split('{')
@@ -63,6 +63,8 @@ class Data(Group):
         self.kind
         self.source
         self.variable_names
+        # finish
+        self._update_natural_namespace()
 
     def __repr__(self):
         return '<WrightTools.Data \'{0}\' {1} at {2}>'.format(

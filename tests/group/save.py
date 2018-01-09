@@ -6,6 +6,8 @@
 
 import os
 
+import numpy as np
+
 import WrightTools as wt
 from WrightTools import datasets
 
@@ -21,13 +23,56 @@ here = os.path.abspath(os.path.dirname(__file__))
 
 def assert_equal(a, b):
     if hasattr(a, '__iter__'):
-        for ai, bi in zip(a, b):
-            assert ai == bi
+        if hasattr(a, 'dtype') and a.ndim > 1:
+            assert np.isclose(a[:].all(), b[:].all())
+        else:
+            for ai, bi in zip(a, b):
+                assert ai == bi
     else:
         assert a == b
 
 
 # --- test ----------------------------------------------------------------------------------------
+
+
+def test_copy_data():
+    root = wt.Collection()
+    p = datasets.PyCMDS.wm_w2_w1_001
+    data = wt.data.from_PyCMDS(p, parent=root, name='data')
+    new = data.copy(parent=root, name='copy')
+    for k, v in data.attrs.items():
+        if k == 'name':
+            continue
+        assert_equal(new.attrs[k], v)
+    for k, v in data.items():
+        assert_equal(new[k], v)
+    for axis in new.axes:
+        assert getattr(new, axis.natural_name) is axis
+    for channel in new.channels:
+        assert getattr(new, channel.natural_name) is channel
+    data.close()
+    new.close()
+
+
+def test_save_data():
+    p = datasets.PyCMDS.wm_w2_w1_001
+    data = wt.data.from_PyCMDS(p)
+    p = os.path.join(here, 'data')
+    p = data.save(p)
+    assert os.path.isfile(p)
+    assert p.endswith('.wt5')
+    new = wt.open(p)
+    for k, v in data.attrs.items():
+        assert_equal(new.attrs[k], v)
+    for k, v in data.items():
+        assert_equal(new[k], v)
+    for axis in new.axes:
+        assert getattr(new, axis.natural_name) is axis
+    for channel in new.channels:
+        assert getattr(new, channel.natural_name) is channel
+    data.close()
+    new.close()
+    os.remove(p)
 
 
 def test_save_nested():
@@ -74,3 +119,14 @@ def test_simple_save():
     original.close()
     new.close()
     os.remove(p)
+
+
+# --- run -----------------------------------------------------------------------------------------
+
+
+if __name__ == '__main__':
+    test_copy_data()
+    test_save_data()
+    test_save_nested()
+    test_simple_copy()
+    test_simple_save()
