@@ -11,6 +11,18 @@ from WrightTools import datasets
 # --- test ----------------------------------------------------------------------------------------
 
 
+def test_w1_000():
+    p = datasets.PyCMDS.w1_000
+    data = wt.data.from_PyCMDS(p)
+    assert data.shape == (51,)
+    assert data.axis_names == ['w1']
+    data.close()
+
+
+def test_w1_wa_000():
+    pass
+
+
 def test_w2_w1_000():
     p = datasets.PyCMDS.w2_w1_000
     data = wt.data.from_PyCMDS(p)
@@ -33,3 +45,14 @@ def test_wm_w2_w1_001():
     assert data.shape == (29, 11, 11)
     assert data.axis_names == ['wm', 'w2', 'w1']
     data.close()
+
+
+# --- run -----------------------------------------------------------------------------------------
+
+
+if __name__ == '__main__':
+    test_w1_000()
+    test_w1_wa_000()
+    test_w2_w1_000()
+    test_wm_w2_w1_000()
+    test_wm_w2_w1_001()
