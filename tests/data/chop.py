@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 """Test chop."""
 
 
@@ -78,3 +79,6 @@ def test_parent():
     parent = wt.Collection()
     chop = data.chop('wm', 'w2', parent=parent)
     assert chop.parent is parent
+
+if __name__ == "__main__":
+    test_3D_to_1D()
