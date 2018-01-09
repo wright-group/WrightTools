@@ -171,6 +171,11 @@ class Data(Group):
         return value if not value == 'None' else None
 
     @property
+    def units(self):
+        """All axis units."""
+        return tuple(a.units for a in self.axes)
+
+    @property
     def variable_names(self):
         """Variable names."""
         if 'variable_names' not in self.attrs.keys():
@@ -1493,11 +1498,6 @@ class Data(Group):
         # finish
         self.flush()
         self._update_natural_namespace()
-
-    @property
-    def units(self):
-        """All axis units."""
-        return tuple(a.units for a in self.axes)
 
     def zoom(self, factor, order=1, verbose=True):
         """Zoom the data array using spline interpolation of the requested order.
