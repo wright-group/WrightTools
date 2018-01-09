@@ -71,8 +71,11 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True):
     for name, identity, units in zip(headers['axis names'],
                                      headers['axis identities'],
                                      headers['axis units']):
+        # points and centers
         points = np.array(headers[name + ' points'])
-        # label seed (temporary implementation)
+        if 'D' in identity:
+            kwargs['centers'] = headers[name + ' centers']
+        # label seed
         try:
             index = headers['name'].index(name)
             label = headers['label'][index]
@@ -81,8 +84,6 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True):
             label_seed = ['']
         # create axis
         kwargs = {'identity': identity}
-        if 'D' in identity:
-            kwargs['centers'] = headers[name + ' centers']
         axis = {'points': points, 'units': units, 'name': name, 'label_seed': label_seed, **kwargs}
         axes.append(axis)
     # get indicies arrays
@@ -101,7 +102,6 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True):
     # prepare points for interpolation
     points_dict = collections.OrderedDict()
     for i, axis in enumerate(axes):
-        # TODO: math and proper full recognition...
         axis_col_name = [name for name in headers['name'][::-1] if name in axis['identity']][0]
         axis_index = headers['name'].index(axis_col_name)
         # shape array acording to recorded coordinates
@@ -118,7 +118,7 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True):
             transpose_order.insert(0, transpose_order.pop(i))
             points = points.transpose(transpose_order)
             # subtract out centers
-            centers = np.array(headers[axis.name + ' centers'])
+            centers = np.array(headers[axis['name'] + ' centers'])
             points -= centers
             # transpose out
             transpose_order = list(range(len(axes)))
@@ -146,7 +146,7 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True):
         meshgrid = tuple([axes[0]['points']])
     else:
         meshgrid = tuple(np.meshgrid(*[a['points'] for a in axes], indexing='ij'))
-    if any(interpolate_toggles):
+    if any(interpolate_toggles) and False:
         # create channels through linear interpolation
         channels = []
         for i in range(len(arr)):
@@ -217,7 +217,13 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True):
     for channel in channels:
         data.create_channel(**channel)
     # add axes
-    data.transform([a['identity'] for a in axes])
+    for a in axes:
+        expression = a['identity']
+        if expression.startswith('D'):
+            expression = expression[1:]
+        expression.replace('=D', '=')
+        a['expression'] = expression
+    data.transform([a['expression'] for a in axes])
     # return
     if verbose:
         print('data created at {0}'.format(data.fullpath))
