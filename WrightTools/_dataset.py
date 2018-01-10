@@ -28,6 +28,12 @@ class Dataset(h5py.Dataset):
         lis = [min(s - 1, i) if not isinstance(i, slice) else i for s, i in zip(self.shape, index)]
         return super().__getitem__(tuple(lis))
 
+    def __iadd__(self, value):
+        def f(dataset, s, value):
+            dataset[s] += value
+        self.chunkwise(f, value=value)
+        return self
+
     def __new__(cls, parent, id, **kwargs):
         """New object formation handler."""
         fullpath = parent.fullpath + h5py.h5i.get_name(id).decode()
@@ -44,11 +50,14 @@ class Dataset(h5py.Dataset):
                                                          self.fullpath)
 
     def __setitem__(self, index, value):
+        self._clear_array_attributes_cache()
+        return super().__setitem__(index, value)
+
+    def _clear_array_attributes_cache(self):
         if 'max' in self.attrs.keys():
             del self.attrs['max']
         if 'min' in self.attrs.keys():
             del self.attrs['min']
-        return super().__setitem__(index, value)
 
     @property
     def fullpath(self):
@@ -115,6 +124,7 @@ class Dataset(h5py.Dataset):
         for s in self.slices():
             key = tuple(sss.start for sss in s)
             out[key] = func(self, s, *args, **kwargs)
+        self._clear_array_attributes_cache()
         return out
 
     def max(self):
