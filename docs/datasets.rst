@@ -10,7 +10,7 @@ They're also a lot of fun!
 The following table contains every dataset distributed within WrightTools.
 
 =================================================  ============================  ===================  ==============
-dataset                                            axis names                    shape                gallery links
+dataset                                            axis expressions              shape                gallery links
 =================================================  ============================  ===================  ==============
 ``BrunoldrRaman.LDS821_514nm_80mW``                ``['wm']``                    ``(1340,)``
 ``Cary50.CuPCtS_H2O_vis``                          ``['wm']``                    ``(141,)``
@@ -22,7 +22,9 @@ dataset                                            axis names                   
 ``JASCO.PbSe_batch_4_2012_03_15`` [#kohler2014]_   ``['wm']``                    ``(1251,)``    
 ``KENT.LDS821_TRSF`` [#boyle2013]_                 ``['w2', 'w1']``              ``(71, 71)``         
 ``KENT.PbSe_2D_delay_A`` [#yurs2011]_              ``['d2', 'd1']``              ``(101, 151)``         
-``KENT.PbSe_2D_delay_B`` [#yurs2011]_              ``['d2', 'd1']``              ``(101, 101)``         
+``KENT.PbSe_2D_delay_B`` [#yurs2011]_              ``['d2', 'd1']``              ``(101, 101)``
+``PyCMDS.w1_000``                                  ``['w1']``                    ``(51,)``
+``PyCMDS.w1_wa_000``                               ``['w1=wm', 'wa']``           ``(25, 256)``
 ``PyCMDS.w2_w1_000`` [#morrow2017]_                ``['w2', 'w1']``              ``(81, 81)``         :ref:`sphx_glr_auto_examples_fringes_transform.py`
 ``PyCMDS.wm_w2_w1_000``                            ``['wm', 'w2', 'w1']``        ``(35, 11, 11)``
 ``PyCMDS.wm_w2_w1_001``                            ``['wm', 'w2', 'w1']``        ``(29, 11, 11)``
