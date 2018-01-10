@@ -313,8 +313,8 @@ class Data(Group):
             for c in self.channels:
                 data.create_channel(name=c.natural_name, values=c[idx], units=c.units)
             data.transform([a.expression for a in kept_axes if a.expression not in at.keys()])
-            out.flush()
             i += 1
+        out.flush()
         # return
         if verbose:
             es = [a.expression for a in kept_axes]
