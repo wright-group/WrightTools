@@ -80,5 +80,9 @@ def test_parent():
     chop = data.chop('wm', 'w2', parent=parent)
     assert chop.parent is parent
 
+
+# --- run -----------------------------------------------------------------------------------------
+
+
 if __name__ == "__main__":
     test_3D_to_1D()
