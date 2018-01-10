@@ -88,4 +88,4 @@ Tensor27._from_files('Tensor27')
 # --- pretty namespace ----------------------------------------------------------------------------
 
 
-__all__ = ['COLORS', 'JASCO', 'KENT', 'BrunoldrRaman', 'Cary50', 'Tensor27']
+__all__ = ['COLORS', 'JASCO', 'KENT', 'PyCMDS', 'BrunoldrRaman', 'Cary50', 'Tensor27']
