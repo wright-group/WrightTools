@@ -797,41 +797,6 @@ class Data(Group):
         axis[:] = points
         self._update_natural_namespace()
 
-    def normalize(self, channel=0, axis=None):
-        """
-        Normalize data in given channel so that null=0 and max=1.
-
-        Parameters
-        ----------
-        channel : str or int (optional)
-            Channel to normalize. Default is 0.
-        axis : str, int, or 1D list-like of str and int or None
-            Axis/axes to normalize against. If None, normalizes by the entire
-            dataset. Default is None.
-        """
-        raise NotImplementedError
-        # process channel
-        if isinstance(channel, int):
-            channel_index = channel
-        elif isinstance(channel, str):
-            channel_index = self.channel_names.index(channel)
-        else:
-                raise TypeError("channel: expected {int, str}, got %s" % type(channel))
-        channel = self.channels[channel_index]
-        # process axes
-
-        def process(i):
-            if isinstance(channel, str):
-                return self.axis_names.index(i)
-            else:
-                return int(i)
-        if axis is not None:
-            if not hasattr(axis, '__contains__'):  # NOT list, tuple or similar
-                axis = [axis]
-            axis = [process(i) for i in axis]
-        # call normalize on channel
-        channel.normalize(axis=axis)
-
     def offset(self, points, offsets, along, offset_axis,
                units='same', offset_units='same', mode='valid',
                method='linear', verbose=True):
@@ -1130,6 +1095,7 @@ class Data(Group):
 
         Uses the share_nans method found in wt.kit.
         """
+        raise NotImplementedError
         arrs = [c[:] for c in self.channels]
         outs = wt_kit.share_nans(arrs)
         for c, a, in zip(self.channels, outs):
@@ -1151,6 +1117,7 @@ class Data(Group):
         verbose : bool (optional)
             Toggle talkback. Default is True.
         """
+        raise NotImplementedError
         # get factors -----------------------------------------------------------------------------
 
         if isinstance(factors, list):
@@ -1352,6 +1319,7 @@ class Data(Group):
         subtrahend_channel : int or str
             The channel in the subtrahend object to use.
         """
+        raise NotImplementedError
         subtrahend = subtrahend.copy()
         # map points
         for name in subtrahend.axis_names:
@@ -1393,37 +1361,6 @@ class Data(Group):
         channel[:] -= subtrahend_channel[:]
         # transpose out
         self.transpose(transpose_order, verbose=False)
-
-    def trim(self, channel, **kwargs):
-        """Call ``Channel.trim``.
-
-        Wrapper method for ``Channel.trim``.
-
-        Parameters
-        ----------
-        channel : int or str
-            The channel index (or name) to trim.
-        """
-        # channel
-        if type(channel) in [int, float]:
-            channel = self.channels[channel]
-        elif isinstance(channel, str):
-            index = self.channel_names.index(channel)
-            channel = self.channels[index]
-        # neighborhood
-        inputs = {}
-        neighborhood = [0] * self.dimensionality
-        for key, value in kwargs.items():
-            if key in self.axis_names:
-                index = self.axis_names.index(key)
-                neighborhood[index] = value
-            elif key in ['method', 'factor', 'replace', 'verbose']:
-                inputs[key] = value
-            else:
-                raise KeyError('Keyword arguments to trim must be either an axis name or one of' +
-                               '{method, factor, replace, verbose}.')
-        # call trim
-        return channel.trim(neighborhood=neighborhood, **inputs)
 
     def transform(self, axes, verbose=True):
         """Transform the data.
