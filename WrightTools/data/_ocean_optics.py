@@ -39,12 +39,6 @@ def from_scope(filepath, name=None, verbose=True):
     -------
     WrightTools.data.Data object
     """
-    # check filepath
-    if os.path.isfile(filepath):
-        if verbose:
-            print('found the file!')
-    else:
-        raise wt_exceptions.FileNotFound('{0}'.format(filepath))
     # import
     skip_header = 14
     skip_footer = 1

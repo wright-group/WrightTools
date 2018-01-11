@@ -52,8 +52,6 @@ def from_spcm(filepath, name=None, delimiter=',', format=None, collection=None, 
     WrightTools.data.Data object
     """
     # check filepath
-    if not os.path.isfile(filepath):
-        raise wt_exceptions.FileNotFound(path=filepath)
     if not filepath.endswith('asc'):
         wt_exceptions.WrongFileTypeWarning.warn(filepath, 'asc')
     # parse name
