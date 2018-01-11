@@ -4,6 +4,8 @@
 # --- import --------------------------------------------------------------------------------------
 
 
+import numpy as np
+
 import h5py
 
 from .. import kit as wt_kit
@@ -94,7 +96,6 @@ class Channel(Dataset):
     @property
     def major_extent(self):
         """Maximum deviation from null."""
-        raise NotImplementedError
         return max((self.max() - self.null, self.null - self.min()))
 
     @property
@@ -107,26 +108,13 @@ class Channel(Dataset):
         """Channel magnitude (maximum deviation from null)."""
         return self.major_extent
 
-    def normalize(self, axis=None):
+    def normalize(self):
         """Normalize a Channel, set `null` to 0 and the max to 1."""
-        raise NotImplementedError
-        # process axis argument
-        if axis is not None:
-            if hasattr(axis, '__contains__'):  # list, tuple or similar
-                axis = tuple((int(i) for i in axis))
-            else:  # presumably a simple number
-                axis = int(axis)
-        # subtract off null
-        self[:] -= self.null
-        self._null = 0.
-        # create dummy array
-        dummy = self[:].copy()
-        dummy[np.isnan(dummy)] = 0  # nans are propagated in np.amax
-        if self.signed:
-            dummy = np.absolute(dummy)
-        # divide through by max
-        self[:] /= np.amax(dummy, axis=axis, keepdims=True)
-        # finish
+        def f(dataset, s, null, mag):
+            dataset[s] -= null
+            dataset[s] /= mag
+        self.chunkwise(f, null=self.null, mag=self.mag())
+        self._null = 0
 
     def trim(self, neighborhood, method='ztest', factor=3, replace='nan',
              verbose=True):
