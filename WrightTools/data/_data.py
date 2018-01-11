@@ -436,7 +436,6 @@ class Data(Group):
                                           chunks=True).id
         channel = Channel(self, dataset_id, units=units, **kwargs)
         # finish
-        #self.channels.append(channel)
         self.attrs['channel_names'] = np.append(self.attrs['channel_names'], name.encode())
         self._update_natural_namespace()
         return channel
