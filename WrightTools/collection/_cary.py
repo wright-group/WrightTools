@@ -48,8 +48,6 @@ def from_Cary50(filepath, verbose=True):
         New data object.
     """
     # check filepath
-    if not os.path.isfile(filepath):
-        raise wt_exceptions.FileNotFound(path=filepath)
     filesuffix = os.path.basename(filepath).split('.')[-1]
     if filesuffix != 'csv':
         wt_exceptions.WrongFileTypeWarning.warn(filepath, 'csv')

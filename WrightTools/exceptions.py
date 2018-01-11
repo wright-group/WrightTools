@@ -29,21 +29,6 @@ class DimensionalityError(Exception):
         Exception.__init__(self, message)
 
 
-class FileNotFound(Exception):
-    """FileNotFound."""
-
-    def __init__(self, path):
-        """Format a file not found exception.
-
-        Parameters
-        ----------
-        path : string
-            Given path.
-        """
-        message = 'no file was found at {}'.format(path)
-        Exception.__init__(self, message)
-
-
 class NameNotUniqueError(Exception):
     """NameNotUniqueError."""
 
