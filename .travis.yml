@@ -16,6 +16,7 @@ install:
   - conda info -a
   - conda create -n wrighttools --file requirements.txt
   - source activate wrighttools
+  - conda install sphinx sphinx_gallery
   - python setup.py install
 before_script:
 - "export DISPLAY=:99.0"
