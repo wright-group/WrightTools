@@ -48,6 +48,15 @@ class Dataset(h5py.Dataset):
         self.chunkwise(f, value=value)
         return self
 
+    def __ipow__(self, value):
+        def f(dataset, s, value):
+            if hasattr(value, 'shape'):
+                dataset[s] **= value[wt_kit.valid_index(s, value.shape)]
+            else:
+                dataset[s] **= value
+        self.chunkwise(f, value=value)
+        return self
+
     def __isub__(self, value):
         def f(dataset, s, value):
             if hasattr(value, 'shape'):
