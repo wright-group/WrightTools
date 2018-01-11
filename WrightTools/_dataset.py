@@ -39,6 +39,15 @@ class Dataset(h5py.Dataset):
         self.chunkwise(f, value=value)
         return self
 
+    def __imul__(self, value):
+        def f(dataset, s, value):
+            if hasattr(value, 'shape'):
+                dataset[s] *= value[wt_kit.valid_index(s, value.shape)]
+            else:
+                dataset[s] *= value
+        self.chunkwise(f, value=value)
+        return self
+
     def __new__(cls, parent, id, **kwargs):
         """New object formation handler."""
         fullpath = parent.fullpath + h5py.h5i.get_name(id).decode()
