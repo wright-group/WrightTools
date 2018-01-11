@@ -79,7 +79,7 @@ class Channel(Dataset):
     @natural_name.setter
     def natural_name(self, value):
         index = wt_kit.get_index(self.parent.channel_names, self.natural_name)
-        new = self.parent.channel_names
+        new = list(self.parent.channel_names)
         new[index] = value
         self.parent.channel_names = new
         self.attrs['name'] = value
