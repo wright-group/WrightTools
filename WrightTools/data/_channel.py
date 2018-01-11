@@ -92,19 +92,9 @@ class Channel(Dataset):
         return self.attrs['null']
 
     @property
-    def info(self):
-        """Return Channel info dictionary."""
-        info = collections.OrderedDict()
-        info['name'] = self.name
-        info['min'] = self.min()
-        info['max'] = self.max()
-        info['null'] = self.null
-        info['signed'] = self.signed
-        return info
-
-    @property
     def major_extent(self):
         """Maximum deviation from null."""
+        raise NotImplementedError
         return max((self.max() - self.null, self.null - self.min()))
 
     @property
@@ -113,42 +103,13 @@ class Channel(Dataset):
             self.attrs['signed'] = False
         return self.attrs['signed']
 
-    def clip(self, min=None, max=None, replace='nan'):
-        """Clip (limit) the values in a channel.
-
-        Parameters
-        ----------
-        min : number (optional)
-            New channel minimum. Default is None.
-        max : number (optional)
-            New channel maximum. Default is None.
-        replace : {'val', 'nan'} (optional)
-           Replace behavior. Default is nan.
-        """
-        # decide what min and max will actually be
-        if max is None:
-            max = self.max()
-        if min is None:
-            min = self.min()
-        # replace values
-        if replace == 'val':
-            self[:].clip(min, max, out=self[:])
-        elif replace == 'nan':
-            self[self[:] < min] = np.nan
-            self[self[:] > max] = np.nan
-        else:
-            print('replace not recognized in channel.clip')
-
-    def invert(self):
-        """Invert channel values."""
-        self[:] *= -1
-
     def mag(self):
         """Channel magnitude (maximum deviation from null)."""
         return self.major_extent
 
     def normalize(self, axis=None):
         """Normalize a Channel, set `null` to 0 and the max to 1."""
+        raise NotImplementedError
         # process axis argument
         if axis is not None:
             if hasattr(axis, '__contains__'):  # list, tuple or similar
@@ -213,6 +174,7 @@ class Channel(Dataset):
         clip
             Remove pixels outside of a certain range.
         """
+        raise NotImplementedError
         outliers = []
         means = []
         # find outliers

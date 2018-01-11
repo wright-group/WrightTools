@@ -168,6 +168,34 @@ class Dataset(h5py.Dataset):
         self._clear_array_attributes_cache()
         return out
 
+    def clip(self, min=None, max=None, replace=np.nan):
+        """Clip values outside of a defined range.
+
+        Parameters
+        ----------
+        min : number (optional)
+            New channel minimum. Default is None.
+        max : number (optional)
+            New channel maximum. Default is None.
+        replace : number or 'value' (optional)
+            Replace behavior. Default is nan.
+        """
+        if max is None:
+            max = self.max()
+        if min is None:
+            min = self.min()
+
+        def f(dataset, s, min, max, replace):
+            arr = dataset[s]
+            if replace == 'value':
+                dataset[s] = np.clip(arr, min, max)
+            else:
+                arr[arr < min] = replace
+                arr[arr > max] = replace
+                dataset[s] = arr
+
+        self.chunkwise(f, min=min, max=max, replace=replace)
+
     def max(self):
         """Maximum, ignorning nans."""
         if 'max' not in self.attrs.keys():
