@@ -196,6 +196,58 @@ class Dataset(h5py.Dataset):
 
         self.chunkwise(f, min=min, max=max, replace=replace)
 
+    def log(self, base=np.e, floor=None):
+        """Take the log of the entire dataset.
+
+        Parameters
+        ----------
+        base : number (optional)
+            Base of log. Default is e.
+        floor : number (optional)
+            Clip values below floor after log. Default is None.
+        """
+        def f(dataset, s, base, floor):
+            arr = dataset[s]
+            arr = np.log(arr)
+            if base != np.e:
+                arr /= np.log(base)
+            if floor is not None:
+                arr[arr < floor] = floor
+            dataset[s] = arr
+        self.chunkwise(f, base=base, floor=floor)
+
+    def log10(self, floor=None):
+        """Take the log base 10 of the entire dataset.
+
+        Parameters
+        ----------
+        floor : number (optional)
+            Clip values below floor after log. Default is None.
+        """
+        def f(dataset, s, floor):
+            arr = dataset[s]
+            arr = np.log10(arr)
+            if floor is not None:
+                arr[arr < floor] = floor
+            dataset[s] = arr
+        self.chunkwise(f, floor=floor)
+
+    def log2(self, floor=None):
+        """Take the log base 2 of the entire dataset.
+
+        Parameters
+        ----------
+        floor : number (optional)
+            Clip values below floor after log. Default is None.
+        """
+        def f(dataset, s, floor):
+            arr = dataset[s]
+            arr = np.log2(arr)
+            if floor is not None:
+                arr[arr < floor] = floor
+            dataset[s] = arr
+        self.chunkwise(f, floor=floor)
+
     def max(self):
         """Maximum, ignorning nans."""
         if 'max' not in self.attrs.keys():
