@@ -200,3 +200,9 @@ class Dataset(h5py.Dataset):
                     stop = min(start + c, s + 1)
                     out.append(slice(start, stop, 1))
                 yield tuple(out)
+
+    def symmetric_root(self, root=2):
+        def f(dataset, s, root):
+            dataset[s] = np.sign(dataset[s]) * (np.abs(dataset[s]) ** (1 / root))
+        self.chunkwise(f, root=root)
+
