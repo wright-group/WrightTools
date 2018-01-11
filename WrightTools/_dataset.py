@@ -285,4 +285,3 @@ class Dataset(h5py.Dataset):
         def f(dataset, s, root):
             dataset[s] = np.sign(dataset[s]) * (np.abs(dataset[s]) ** (1 / root))
         self.chunkwise(f, root=root)
-
