@@ -44,8 +44,6 @@ def from_JASCO(filepath, name=None, parent=None, verbose=True):
         New data object(s).
     """
     # parse filepath
-    if not os.path.isfile(filepath):
-        raise wt_exceptions.FileNotFound(path=filepath)
     if not filepath.endswith('txt'):
         wt_exceptions.WrongFileTypeWarning.warn(filepath, 'txt')
     # parse name

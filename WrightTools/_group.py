@@ -55,11 +55,15 @@ class Group(h5py.Group):
         self.attrs['class'] = self.class_name
         for key, value in kwargs.items():
             try:
+                if isinstance(value, str):
+                    value = value.encode()
+                elif isinstance(value, list) and len(value) > 0 and isinstance(value[0], str):
+                    value = np.array(value, dtype='S')
                 self.attrs[key] = value
             except TypeError:
                 # some values have no native HDF5 equivalent
-                warnings.warn("'%s' not included in attrs because its Type cannot be represented" %
-                              key)
+                warnings.warn("'%s' not included in attrs because its Type (%s) cannot be represented" %
+                              (key, type(value)))
         # load from file
         self._items = []
         for name in self.item_names:
