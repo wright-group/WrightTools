@@ -15,7 +15,7 @@ def test_simple():
     p = datasets.BrunoldrRaman.LDS821_514nm_80mW
     data = wt.data.from_BrunoldrRaman(p)
     data.rename_variables(energy='blaise')
-    assert data.variable_names == ['blaise']
+    assert data.variable_names == ('blaise',)
     assert data.variables[0].natural_name == 'blaise'
     assert 'blaise' in data.variables[0].name
     data.close()
@@ -48,7 +48,7 @@ def test_propagate_units():
 def test_updated_axes():
     p = datasets.COLORS.v2p2_WL_wigner
     data = wt.data.from_COLORS(p)
-    assert data.axis_expressions == ['wm', 'd1']
+    assert data.axis_expressions == ('wm', 'd1',)
     data.rename_variables(wm='mono')
-    assert data.axis_expressions == ['mono', 'd1']
+    assert data.axis_expressions == ('mono', 'd1',)
     data.close()

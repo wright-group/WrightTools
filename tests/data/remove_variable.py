@@ -38,7 +38,7 @@ def test_index():
     p = datasets.KENT.LDS821_TRSF
     ignore = ['wm', 'd1', 'd2']
     data = wt.data.from_KENT(p, ignore=ignore)
-    assert data.variable_names == ['w2', 'w1', 'wm', 'd1', 'd2']
+    assert data.variable_names == ('w2', 'w1', 'wm', 'd1', 'd2',)
     data.remove_variable(-2)
-    assert data.variable_names == ['w2', 'w1', 'wm', 'd2']
+    assert data.variable_names == ('w2', 'w1', 'wm', 'd2',)
     data.close()

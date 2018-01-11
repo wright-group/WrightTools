@@ -24,5 +24,5 @@ def test_remove_trailing_channels():
     data = wt.data.from_COLORS(p)
     while len(data.channel_names) > 1:
         data.remove_channel(-1)
-    assert data.channel_names == ['ai0']
+    assert data.channel_names == ('ai0',)
     data.close()
