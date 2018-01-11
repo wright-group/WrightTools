@@ -13,7 +13,7 @@ from .. import exceptions as wt_exceptions
 
 
 __all__ = ['closest_pair', 'diff', 'fft', 'joint_shape', 'remove_nans_1D', 'share_nans',
-           'smooth_1D', 'unique']
+           'smooth_1D', 'unique', 'valid_index']
 
 
 # --- functions -----------------------------------------------------------------------------------
@@ -253,3 +253,29 @@ def unique(arr, tolerance=1e-6):
         xi_lis_average = sum(lis) / len(lis)
         unique.append(xi_lis_average)
     return np.array(unique)
+
+
+def valid_index(index, shape):
+    """Get a valid index for a broadcastable shape.
+
+    Parameters
+    ----------
+    index : tuple
+        Given index.
+    shape : tuple of int
+        Shape.
+
+    Returns
+    -------
+    tuple
+        Valid index.
+    """
+    out = []
+    for i, s in zip(index[::-1], shape[::-1]):
+        if s == 1:
+            out.append(0)
+        elif isinstance(i, slice):
+            out.append(i)
+        else:
+            out.append(min(s - 1, i))
+    return tuple(out[::-1])

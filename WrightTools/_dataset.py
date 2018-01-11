@@ -12,6 +12,8 @@ import numpy as np
 
 import h5py
 
+from . import kit as wt_kit
+
 
 # --- class ---------------------------------------------------------------------------------------
 
@@ -25,12 +27,15 @@ class Dataset(h5py.Dataset):
     def __getitem__(self, index):
         if not hasattr(index, '__iter__'):
             index = [index]
-        lis = [min(s - 1, i) if not isinstance(i, slice) else i for s, i in zip(self.shape, index)]
-        return super().__getitem__(tuple(lis))
+        index = wt_kit.valid_index(index, self.shape)
+        return super().__getitem__(index)
 
     def __iadd__(self, value):
         def f(dataset, s, value):
-            dataset[s] += value
+            if hasattr(value, 'shape'):
+                dataset[s] += value[wt_kit.valid_index(s, value.shape)]
+            else:
+                dataset[s] += value
         self.chunkwise(f, value=value)
         return self
 
