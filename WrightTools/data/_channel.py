@@ -104,16 +104,24 @@ class Channel(Dataset):
             self.attrs['signed'] = False
         return self.attrs['signed']
 
+    @signed.setter
+    def signed(self, value):
+        self.attrs['signed'] = value
+
     def mag(self):
         """Channel magnitude (maximum deviation from null)."""
         return self.major_extent
 
     def normalize(self):
-        """Normalize a Channel, set `null` to 0 and the max to 1."""
+        """Normalize a Channel, set `null` to 0 and the mag to 1."""
         def f(dataset, s, null, mag):
             dataset[s] -= null
             dataset[s] /= mag
-        self.chunkwise(f, null=self.null, mag=self.mag())
+        if self.signed:
+            mag = self.mag()
+        else:
+            mag = self.max()
+        self.chunkwise(f, null=self.null, mag=mag)
         self._null = 0
 
     def trim(self, neighborhood, method='ztest', factor=3, replace='nan',
