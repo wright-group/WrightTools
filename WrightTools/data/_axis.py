@@ -79,20 +79,10 @@ class Axis(object):
 
     @property
     def label(self):
-        label_seed = [v.label for v in self.variables]
-        symbol_type = wt_units.get_default_symbol_type(self.units)
-        label = r'$\mathsf{'
-        for part in label_seed:
-            if self.units_kind is not None:
-                units_dictionary = getattr(wt_units, self.units_kind)
-                label += getattr(wt_units, symbol_type)[self.units]
-                if part is not '':
-                    label += r'_{' + str(part) + r'}'
-            else:
-                label += self.name.replace('_', '\,\,')
-            # TODO: handle all operators
-            label += r'='
-        label = label[:-1]  # remove the last equals sign
+        symbol = wt_units.get_symbol(self.units)
+        label = r'$\mathsf{' + self.expression
+        for v in self.variables:
+            label = label.replace(v.natural_name, '%s_{%s}' % (symbol, v.label))
         if self.units_kind:
             units_dictionary = getattr(wt_units, self.units_kind)
             label += r'\,'

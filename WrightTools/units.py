@@ -64,7 +64,6 @@ time = {'fs_t': ['x/1e15', 'x*1e15', r'fs'],
         'h_t': ['x*3600.', 'x/3600.', r'h'],
         'd_t': ['x*86400.', 'x/86400.', r'd']}
 
-
 dicts = collections.OrderedDict()
 dicts['angle'] = angle
 dicts['delay'] = delay
@@ -114,8 +113,40 @@ def converter(val, current_unit, destination_unit):
         pass
     else:
         warnings.warn('conversion {0} to {1} not valid: returning input'.format(
-                       current_unit, destination_unit))
+                      current_unit, destination_unit))
     return val
+
+
+def get_symbol(units):
+    """Get default symbol type.
+
+    Parameters
+    ----------
+    units_str : string
+        Units.
+
+    Returns
+    -------
+    string
+        LaTeX formatted symbol.
+    """
+    if kind(units) == 'energy':
+        d = {}
+        d['nm'] = r'\lambda'
+        d['wn'] = r'\bar\nu'
+        d['eV'] = r'\hslash\omega'
+        d['Hz'] = r'f'
+        d['THz'] = r'f'
+        d['GHz'] = r'f'
+        return d.get(units, 'E')
+    elif kind(units) == 'delay':
+        return r'\tau'
+    elif kind(units) == 'fluence':
+        return r'\mathcal{F}'
+    elif kind(units) == 'pulse_width':
+        return r'\sigma'
+    else:
+        return ''
 
 
 def get_valid_conversions(units):
@@ -150,66 +181,3 @@ def kind(units):
     for k, v in dicts.items():
         if units in v.keys():
             return k
-
-
-# --- symbol --------------------------------------------------------------------------------------
-
-
-class SymbolDict(dict):
-    """Subclass dictionary to get at __missing__ method."""
-
-    def __missing__(self, key):
-        """Define what happens when key is missing."""
-        return self['default']
-
-
-# color
-color_symbols = SymbolDict()
-color_symbols['default'] = r'E'
-color_symbols['nm'] = r'\lambda'
-color_symbols['wn'] = r'\bar\nu'
-color_symbols['eV'] = r'\hslash\omega'
-color_symbols['Hz'] = r'f'
-color_symbols['THz'] = r'f'
-color_symbols['GHz'] = r'f'
-
-# delay
-delay_symbols = SymbolDict()
-delay_symbols['default'] = r'\tau'
-
-# fluence
-fluence_symbols = SymbolDict()
-fluence_symbols['default'] = r'\mathcal{F}'
-
-# pulse width
-pulse_width_symbols = SymbolDict()
-pulse_width_symbols['default'] = r'\sigma'
-
-# catch all
-none_symbols = SymbolDict()
-none_symbols['default'] = ''
-
-
-def get_default_symbol_type(units_str):
-    """Get default symbol type.
-
-    Parameters
-    ----------
-    units_str : string
-        Units.
-
-    Returns
-    -------
-    string
-        Symbol dictionary name.
-    """
-    if units_str in ['nm', 'wn', 'eV']:
-        return 'color_symbols'
-    elif units_str in ['fs', 'ps', 'ns']:
-        return 'delay_symbols'
-    elif units_str in ['uJ per sq. cm']:
-        return 'fluence_symbols'
-    elif units_str in ['FWHM']:
-        return 'pulse_width_symbols'
-    else:
-        return 'none_symbols'
