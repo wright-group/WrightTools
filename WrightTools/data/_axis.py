@@ -139,9 +139,7 @@ class Axis(object):
     @property
     def units_kind(self):
         """Units kind."""
-        for dic in wt_units.unit_dicts:
-            if self.units in dic.keys():
-                return dic['kind']
+        return wt_units.kind(self.units)
 
     @property
     def variables(self):
@@ -164,13 +162,10 @@ class Axis(object):
         destination_units : string
             Destination units.
         """
-        destination_units_kind = None
-        for dic in wt_units.unit_dicts:
-            if destination_units in dic.keys():
-                destination_units_kind = dic['kind']
-                break
-        if not self.units_kind == destination_units_kind:
-            raise wt_exceptions.UnitsError(self.units_kind, destination_units_kind)
+        if not wt_units.is_valid_conversion(self.units, destination_units):
+            kind = wt_units.kind(self.units)
+            valid = list(wt_units.dicts[kind].keys())
+            raise wt_exceptions.UnitsError(valid, destination_units)
         self.units = destination_units
 
     def max(self):

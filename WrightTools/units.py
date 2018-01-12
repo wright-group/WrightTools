@@ -4,34 +4,31 @@
 # --- import --------------------------------------------------------------------------------------
 
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+import collections
 
 import numpy as np
 import warnings
 
 
-# --- units ---------------------------------------------------------------------------------------
+# --- define --------------------------------------------------------------------------------------
 
 
 # units are stored in dictionaries of like kind. format:
 #     unit : to native, from native, units_symbol, units_label
 
 # angle units (native: rad)
-angle = {'kind': 'angle',
-         'rad': ['x', 'x', r'rad'],
+angle = {'rad': ['x', 'x', r'rad'],
          'deg': ['x/57.2958', '57.2958*x', r'deg']}
 
 # delay units (native: fs)
 fs_per_mm = 3336.
-delay = {'kind': 'delay',
-         'fs': ['x', 'x', r'fs'],
+delay = {'fs': ['x', 'x', r'fs'],
          'ps': ['x*1e3', 'x/1e3', r'ps'],
          'ns': ['x*1e6', 'x/1e6', r'ns'],
          'mm_delay': ['x*2*fs_per_mm', 'x/(2*fs_per_mm)', r'mm']}
 
 # energy units (native: nm)
-energy = {'kind': 'energy',
-          'nm': ['x', 'x', r'nm'],
+energy = {'nm': ['x', 'x', r'nm'],
           'wn': ['1e7/x', '1e7/x', r'cm^{-1}'],
           'eV': ['1240./x', '1240./x', r'eV'],
           'meV': ['1240000./x', '1240000./x', r'meV'],
@@ -40,30 +37,24 @@ energy = {'kind': 'energy',
           'GHz': ['2.99792458e8/x', '2.99792458e8/x', r'GHz']}
 
 # fluence units (native: uJ per sq. cm)
-fluence = {'kind': 'fluence',
-           'uJ per sq. cm': ['x', 'x', r'\frac{\mu J}{cm^{2}}']}
+fluence = {'uJ per sq. cm': ['x', 'x', r'\frac{\mu J}{cm^{2}}']}
 
 # optical density units (native: od)
-od = {'kind': 'od',
-      'mOD': ['1e3*x', 'x/1e3', r'mOD'],
+od = {'mOD': ['1e3*x', 'x/1e3', r'mOD'],
       'OD': ['x', 'x', r'OD']}
 
 # position units (native: mm)
-position = {'kind': 'position',
-            # can't have same name as energy nm
-            'nm_p': ['x/1e6', '1e6/x', r'nm'],
+position = {'nm_p': ['x/1e6', '1e6/x', r'nm'],
             'um': ['x/1000.', '1000/x.', r'um'],
             'mm': ['x', 'x', r'mm'],
             'cm': ['10.*x', 'x/10.', r'cm'],
             'in': ['x*0.039370', '0.039370*x', r'in']}
 
 # pulse width units (native: FWHM)
-pulse_width = {'kind': 'pulse_width',
-               'FWHM': ['x', 'x', r'FWHM']}
+pulse_width = {'FWHM': ['x', 'x', r'FWHM']}
 
 # time units (native: s)
-time = {'kind': 'time',
-        'fs_t': ['x/1e15', 'x*1e15', r'fs'],
+time = {'fs_t': ['x/1e15', 'x*1e15', r'fs'],
         'ps_t': ['x/1e12', 'x*1e12', r'ps'],
         'ns_t': ['x/1e9', 'x*1e9', r'ns'],
         'us_t': ['x/1e6', 'x*1e6', r'us'],
@@ -73,7 +64,19 @@ time = {'kind': 'time',
         'h_t': ['x*3600.', 'x/3600.', r'h'],
         'd_t': ['x*86400.', 'x/86400.', r'd']}
 
-unit_dicts = [angle, delay, energy, time, position, pulse_width, fluence, od]
+
+dicts = collections.OrderedDict()
+dicts['angle'] = angle
+dicts['delay'] = delay
+dicts['energy'] = energy
+dicts['time'] = time
+dicts['position'] = position
+dicts['pulse_width'] = pulse_width
+dicts['fluence'] = fluence
+dicts['od'] = od
+
+
+# --- functions -----------------------------------------------------------------------------------
 
 
 def converter(val, current_unit, destination_unit):
@@ -94,7 +97,7 @@ def converter(val, current_unit, destination_unit):
         Converted value.
     """
     x = val
-    for dic in unit_dicts:
+    for dic in dicts.values():
         if current_unit in dic.keys() and destination_unit in dic.keys():
             try:
                 native = eval(dic[current_unit][0])
@@ -115,6 +118,23 @@ def converter(val, current_unit, destination_unit):
     return val
 
 
+def get_valid_conversions(units):
+    kind = kind(units)
+    valid = list(dicts[kind])
+    valid.remove(units)
+    return tuple(valid)
+
+
+def is_valid_conversion(a, b):
+    for dic in dicts.values():
+        if a in dic.keys() and b in dic.keys():
+            return True
+    if a is None and b is None:
+        return True
+    else:
+        return False
+
+
 def kind(units):
     """Find the kind of given units.
 
@@ -128,9 +148,9 @@ def kind(units):
     string
         The kind of the given units. If no match is found, returns None.
     """
-    for d in unit_dicts:
-        if units in d.keys():
-            return str(d['kind'])
+    for k, v in dicts.items():
+        if units in v.keys():
+            return k
 
 
 # --- symbol --------------------------------------------------------------------------------------

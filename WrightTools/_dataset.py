@@ -12,7 +12,9 @@ import numpy as np
 
 import h5py
 
+from . import exceptions as wt_exceptions
 from . import kit as wt_kit
+from . import units as wt_units
 
 
 # --- class ---------------------------------------------------------------------------------------
@@ -28,6 +30,7 @@ class Dataset(h5py.Dataset):
         if not hasattr(index, '__iter__'):
             index = [index]
         index = wt_kit.valid_index(index, self.shape)
+        print(index)
         return super().__getitem__(index)
 
     def __iadd__(self, value):
@@ -195,6 +198,26 @@ class Dataset(h5py.Dataset):
                 dataset[s] = arr
 
         self.chunkwise(f, min=min, max=max, replace=replace)
+
+    def convert(self, destination_units):
+        """Convert units.
+
+        Parameters
+        ----------
+        destination_units : string (optional)
+            Units to convert into.
+        """
+        if not wt_units.is_valid_conversion(self.units, destination_units):
+            kind = wt_units.kind(self.units)
+            valid = list(wt_units.unit_dicts[kind].keys())
+            valid.remove('kind')
+            raise wt_exceptions.UnitsError(valid, destination_units)
+        if self.units is None:
+            return
+        def f(dataset, s, destination_units):
+            dataset[s] = wt_units.converter(dataset[s], dataset.units, destination_units)
+        self.chunkwise(f, destination_units=destination_units)
+        self.units = destination_units
 
     def log(self, base=np.e, floor=None):
         """Take the log of the entire dataset.

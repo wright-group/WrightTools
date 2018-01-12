@@ -397,9 +397,7 @@ class Data(Group):
             axis object in data.axes or data.constants.
         """
         # get kind of units
-        for dic in wt_units.unit_dicts:
-            if destination_units in dic.keys():
-                units_kind = dic['kind']
+        units_kind = wt_units.kind(destination_units)
         # apply to all compatible axes
         for axis in self.axes + self.constants:
             if axis.units_kind == units_kind:
