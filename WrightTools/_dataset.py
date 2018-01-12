@@ -6,7 +6,6 @@
 
 import posixpath
 import collections
-from concurrent.futures import ThreadPoolExecutor
 
 import numpy as np
 
@@ -212,8 +211,10 @@ class Dataset(h5py.Dataset):
             raise wt_exceptions.UnitsError(valid, destination_units)
         if self.units is None:
             return
-        def f(dataset, s, destination_units):
+       
+       def f(dataset, s, destination_units):
             dataset[s] = wt_units.converter(dataset[s], dataset.units, destination_units)
+        
         self.chunkwise(f, destination_units=destination_units)
         self.units = destination_units
 
