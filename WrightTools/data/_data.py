@@ -380,13 +380,15 @@ class Data(Group):
         self._axes.pop(axis_index)
         self._update_natural_namespace()
 
-    def convert(self, destination_units, verbose=True):
-        """Convert all compatable constants and axes to given units.
+    def convert(self, destination_units, *, convert_variables=False, verbose=True):
+        """Convert all compatable axes to given units.
 
         Parameters
         ----------
         destination_units : str
             Destination units.
+        convert_variables : boolean (optional)
+            Toggle conversion of stored arrays. Default is False
         verbose : bool (optional)
             Toggle talkback. Default is True.
 
@@ -401,7 +403,7 @@ class Data(Group):
         # apply to all compatible axes
         for axis in self.axes + self.constants:
             if axis.units_kind == units_kind:
-                axis.convert(destination_units)
+                axis.convert(destination_units, convert_variables=convert_variables)
                 if verbose:
                     print('axis', axis.expression, 'converted')
 
