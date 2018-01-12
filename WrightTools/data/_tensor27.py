@@ -56,8 +56,6 @@ def from_Tensor27(filepath, name=None, collection=None, verbose=True):
         New data object.
     """
     # parse filepath
-    if not os.path.isfile(filepath):
-        raise wt_exceptions.FileNotFound(path=filepath)
     filesuffix = os.path.basename(filepath).split('.')[-1]
     if filesuffix != 'dpt':
         wt_exceptions.WrongFileTypeWarning.warn(filepath, 'dpt')
