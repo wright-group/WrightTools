@@ -119,8 +119,7 @@ def converter(val, current_unit, destination_unit):
 
 
 def get_valid_conversions(units):
-    kind = kind(units)
-    valid = list(dicts[kind])
+    valid = list(dicts[kind(units)])
     valid.remove(units)
     return tuple(valid)
 

@@ -273,9 +273,7 @@ def valid_index(index, shape):
     # TODO: fails in case of shape (25, 1), index slice(None)
     out = []
     for i, s in zip(index[::-1], shape[::-1]):
-        if s == 1:  # and s != slice(None)
-            out.append(0)
-        elif isinstance(i, slice):
+        if isinstance(i, slice):
             out.append(i)
         else:
             out.append(min(s - 1, i))

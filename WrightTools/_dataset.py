@@ -209,8 +209,7 @@ class Dataset(h5py.Dataset):
         """
         if not wt_units.is_valid_conversion(self.units, destination_units):
             kind = wt_units.kind(self.units)
-            valid = list(wt_units.unit_dicts[kind].keys())
-            valid.remove('kind')
+            valid = list(wt_units.dicts[kind].keys())
             raise wt_exceptions.UnitsError(valid, destination_units)
         if self.units is None:
             return
