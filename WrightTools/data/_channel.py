@@ -4,6 +4,8 @@
 # --- import --------------------------------------------------------------------------------------
 
 
+import numpy as np
+
 import h5py
 
 from .. import kit as wt_kit
@@ -92,17 +94,6 @@ class Channel(Dataset):
         return self.attrs['null']
 
     @property
-    def info(self):
-        """Return Channel info dictionary."""
-        info = collections.OrderedDict()
-        info['name'] = self.name
-        info['min'] = self.min()
-        info['max'] = self.max()
-        info['null'] = self.null
-        info['signed'] = self.signed
-        return info
-
-    @property
     def major_extent(self):
         """Maximum deviation from null."""
         return max((self.max() - self.null, self.null - self.min()))
@@ -113,59 +104,25 @@ class Channel(Dataset):
             self.attrs['signed'] = False
         return self.attrs['signed']
 
-    def clip(self, min=None, max=None, replace='nan'):
-        """Clip (limit) the values in a channel.
-
-        Parameters
-        ----------
-        min : number (optional)
-            New channel minimum. Default is None.
-        max : number (optional)
-            New channel maximum. Default is None.
-        replace : {'val', 'nan'} (optional)
-           Replace behavior. Default is nan.
-        """
-        # decide what min and max will actually be
-        if max is None:
-            max = self.max()
-        if min is None:
-            min = self.min()
-        # replace values
-        if replace == 'val':
-            self[:].clip(min, max, out=self[:])
-        elif replace == 'nan':
-            self[self[:] < min] = np.nan
-            self[self[:] > max] = np.nan
-        else:
-            print('replace not recognized in channel.clip')
-
-    def invert(self):
-        """Invert channel values."""
-        self[:] *= -1
+    @signed.setter
+    def signed(self, value):
+        self.attrs['signed'] = value
 
     def mag(self):
         """Channel magnitude (maximum deviation from null)."""
         return self.major_extent
 
-    def normalize(self, axis=None):
-        """Normalize a Channel, set `null` to 0 and the max to 1."""
-        # process axis argument
-        if axis is not None:
-            if hasattr(axis, '__contains__'):  # list, tuple or similar
-                axis = tuple((int(i) for i in axis))
-            else:  # presumably a simple number
-                axis = int(axis)
-        # subtract off null
-        self[:] -= self.null
-        self._null = 0.
-        # create dummy array
-        dummy = self[:].copy()
-        dummy[np.isnan(dummy)] = 0  # nans are propagated in np.amax
+    def normalize(self):
+        """Normalize a Channel, set `null` to 0 and the mag to 1."""
+        def f(dataset, s, null, mag):
+            dataset[s] -= null
+            dataset[s] /= mag
         if self.signed:
-            dummy = np.absolute(dummy)
-        # divide through by max
-        self[:] /= np.amax(dummy, axis=axis, keepdims=True)
-        # finish
+            mag = self.mag()
+        else:
+            mag = self.max()
+        self.chunkwise(f, null=self.null, mag=mag)
+        self._null = 0
 
     def trim(self, neighborhood, method='ztest', factor=3, replace='nan',
              verbose=True):
@@ -213,6 +170,7 @@ class Channel(Dataset):
         clip
             Remove pixels outside of a certain range.
         """
+        raise NotImplementedError
         outliers = []
         means = []
         # find outliers
