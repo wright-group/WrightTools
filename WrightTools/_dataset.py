@@ -30,7 +30,6 @@ class Dataset(h5py.Dataset):
         if not hasattr(index, '__iter__'):
             index = [index]
         index = wt_kit.valid_index(index, self.shape)
-        print(index)
         return super().__getitem__(index)
 
     def __iadd__(self, value):

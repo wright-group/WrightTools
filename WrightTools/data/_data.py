@@ -313,9 +313,19 @@ class Data(Group):
             idx = tuple(idx)
             data = out.create_data(name='chop%03i' % i)
             for v in self.variables:
-                data.create_variable(name=v.natural_name, values=v[idx], units=v.units)
+                kwargs = {}
+                kwargs['name'] = v.natural_name
+                kwargs['values'] = v[idx]
+                kwargs['units'] = v.units
+                kwargs['label'] = v.label
+                data.create_variable(**kwargs)
             for c in self.channels:
-                data.create_channel(name=c.natural_name, values=c[idx], units=c.units)
+                kwargs = {}
+                kwargs['name'] = c.natural_name
+                kwargs['values'] = c[idx]
+                kwargs['units'] = c.units
+                kwargs['label'] = c.label
+                data.create_channel(**kwargs)
             data.transform([a.expression for a in kept_axes if a.expression not in at.keys()])
             i += 1
         out.flush()
