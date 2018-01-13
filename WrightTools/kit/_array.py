@@ -75,7 +75,7 @@ def diff(xi, yi, order=1):
     """Take the numerical derivative of a 1D array.
 
     Output is mapped onto the original coordinates  using linear interpolation.
-    Expects a sequential series of points (usually means xi is monotonic).
+    Expects monotonic xi values.
 
     Parameters
     ----------
@@ -91,12 +91,20 @@ def diff(xi, yi, order=1):
     1D numpy array
         Numerical derivative. Has the same shape as the input arrays.
     """
+
     yi = np.array(yi).copy()
+    flip = False
+    if xi[-1] < xi[0]:
+        xi = np.flipud(xi.copy())
+        yi = np.flipud(yi)
+        flip = True
     midpoints = (xi[1:] + xi[:-1]) / 2
     for _ in range(order):
         d = np.diff(yi)
         d /= np.diff(xi)
         yi = np.interp(xi, midpoints, d)
+    if flip:
+        yi = np.flipud(yi)
     return yi
 
 
