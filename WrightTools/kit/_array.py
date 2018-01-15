@@ -270,11 +270,18 @@ def valid_index(index, shape):
     tuple
         Valid index.
     """
-    # TODO: fails in case of shape (25, 1), index slice(None)
+    # append slices to index
+    index = list(index)
+    while len(index) < len(shape):
+        index.append(slice(None))
+    # fill out, in reverse
     out = []
     for i, s in zip(index[::-1], shape[::-1]):
         if isinstance(i, slice):
             out.append(i)
         else:
-            out.append(min(s - 1, i))
+            if s == 1:
+                out.append(0)
+            else:
+                out.append(i)
     return tuple(out[::-1])
