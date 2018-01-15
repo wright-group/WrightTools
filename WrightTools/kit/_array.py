@@ -277,11 +277,11 @@ def valid_index(index, shape):
     # fill out, in reverse
     out = []
     for i, s in zip(index[::-1], shape[::-1]):
-        if isinstance(i, slice):
-            out.append(i)
-        else:
-            if s == 1:
-                out.append(0)
+        if s == 1:
+            if isinstance(i, slice):
+                out.append(slice(None))
             else:
-                out.append(i)
+                out.append(0)
+        else:
+            out.append(i)
     return tuple(out[::-1])
