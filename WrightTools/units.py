@@ -146,7 +146,7 @@ def get_symbol(units):
     elif kind(units) == 'pulse_width':
         return r'\sigma'
     else:
-        return ''
+        return kind(units)
 
 
 def get_valid_conversions(units):
