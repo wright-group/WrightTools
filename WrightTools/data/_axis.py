@@ -79,20 +79,10 @@ class Axis(object):
 
     @property
     def label(self):
-        label_seed = [v.label for v in self.variables]
-        symbol_type = wt_units.get_default_symbol_type(self.units)
-        label = r'$\mathsf{'
-        for part in label_seed:
-            if self.units_kind is not None:
-                units_dictionary = getattr(wt_units, self.units_kind)
-                label += getattr(wt_units, symbol_type)[self.units]
-                if part is not '':
-                    label += r'_{' + str(part) + r'}'
-            else:
-                label += self.name.replace('_', '\,\,')
-            # TODO: handle all operators
-            label += r'='
-        label = label[:-1]  # remove the last equals sign
+        symbol = wt_units.get_symbol(self.units)
+        label = r'$\mathsf{' + self.expression
+        for v in self.variables:
+            label = label.replace(v.natural_name, '%s_{%s}' % (symbol, v.label))
         if self.units_kind:
             units_dictionary = getattr(wt_units, self.units_kind)
             label += r'\,'
@@ -139,9 +129,7 @@ class Axis(object):
     @property
     def units_kind(self):
         """Units kind."""
-        for dic in wt_units.unit_dicts:
-            if self.units in dic.keys():
-                return dic['kind']
+        return wt_units.kind(self.units)
 
     @property
     def variables(self):
@@ -156,21 +144,23 @@ class Axis(object):
         finally:
             return self._variables
 
-    def convert(self, destination_units):
+    def convert(self, destination_units, *, convert_variables=False):
         """Convert axis to destination_units.
 
         Parameters
         ----------
         destination_units : string
             Destination units.
+        convert_variables : boolean (optional)
+            Toggle conversion of stored arrays. Default is False.
         """
-        destination_units_kind = None
-        for dic in wt_units.unit_dicts:
-            if destination_units in dic.keys():
-                destination_units_kind = dic['kind']
-                break
-        if not self.units_kind == destination_units_kind:
-            raise wt_exceptions.UnitsError(self.units_kind, destination_units_kind)
+        if not wt_units.is_valid_conversion(self.units, destination_units):
+            kind = wt_units.kind(self.units)
+            valid = list(wt_units.dicts[kind].keys())
+            raise wt_exceptions.UnitsError(valid, destination_units)
+        if convert_variables:
+            for v in self.variables:
+                v.convert(destination_units)
         self.units = destination_units
 
     def max(self):
