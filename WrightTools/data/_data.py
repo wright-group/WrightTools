@@ -201,6 +201,10 @@ class Data(Group):
         finally:
             return self._variables
 
+    @property
+    def _leaf(self):
+        return '{0} {1} {2}'.format(self.natural_name, self.axis_expressions, self.shape)
+
     def _update_natural_namespace(self):
         all_names = self.axis_names + self.channel_names + self.constant_names
         if len(all_names) == len(set(all_names)):
