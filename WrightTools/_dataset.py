@@ -101,6 +101,14 @@ class Dataset(h5py.Dataset):
             del self.attrs['min']
 
     @property
+    def _leaf(self):
+        out = self.natural_name
+        if self.units is not None:
+            out += ' ({0})'.format(self.units)
+        out += ' {0}'.format(self.shape)
+        return out
+
+    @property
     def fullpath(self):
         """Full path: file and internal structure."""
         return self.parent.fullpath + posixpath.sep + self.natural_name

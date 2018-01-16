@@ -66,6 +66,13 @@ class Axis(object):
                                                             id(self))
 
     @property
+    def _leaf(self):
+        out = self.expression
+        if self.units is not None:
+            out += ' ({0})'.format(self.units)
+        return out
+
+    @property
     def full(self):
         arr = self[:]
         for i in range(arr.ndim):
