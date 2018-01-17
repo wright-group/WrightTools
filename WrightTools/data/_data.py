@@ -201,6 +201,45 @@ class Data(Group):
         finally:
             return self._variables
 
+    @property
+    def _leaf(self):
+        return '{0} {1}'.format(self.natural_name, self.shape)
+
+    def _print_branch(self, prefix, level, depth, verbose):
+
+        def print_leaves(prefix, lis, vline=True):
+            for i, item in enumerate(lis):
+                if vline:
+                    a = '│   '
+                else:
+                    a = '    '
+                if i + 1 == len(lis):
+                    b = '└── '
+                else:
+                    b = '├── '
+                s = prefix + a + b + '{0}: {1}'.format(i, item._leaf)
+                print(s)
+
+        if verbose:
+            # axes
+            print(prefix + '├── axes')
+            print_leaves(prefix, self.axes)
+            # variables
+            print(prefix + '├── variables')
+            print_leaves(prefix, self.variables)
+            # channels
+            print(prefix + '└── channels')
+            print_leaves(prefix, self.channels, vline=False)
+        else:
+            # axes
+            s = 'axes: '
+            s += ', '.join(['{0} ({1})'.format(a.expression, a.units) for a in self.axes])
+            print(prefix + '├── ' + s)
+            # channels
+            s = 'channels: '
+            s += ', '.join(self.channel_names)
+            print(prefix + '└── ' + s)
+
     def _update_natural_namespace(self):
         all_names = self.axis_names + self.channel_names + self.constant_names
         if len(all_names) == len(set(all_names)):

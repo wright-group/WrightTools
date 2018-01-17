@@ -58,6 +58,22 @@ class Collection(Group):
     def __setitem__(self, key, value):
         raise NotImplementedError
 
+    @property
+    def _leaf(self):
+        return self.natural_name
+
+    def _print_branch(self, prefix, level, depth, verbose):
+        for i, item in enumerate(self._items):
+            if i + 1 == len(self._items):
+                s = prefix + '└── {0}: {1}'.format(i, item._leaf)
+                p = prefix + '    '
+            else:
+                s = prefix + '├── {0}: {1}'.format(i, item._leaf)
+                p = prefix + '│   '
+            print(s)
+            if level + 1 < depth and hasattr(item, '_print_branch'):
+                item._print_branch(p, level, depth, verbose)
+
     def create_collection(self, name='collection', position=None, **kwargs):
         """Create a new child colleciton.
 
@@ -124,6 +140,19 @@ class Collection(Group):
     def index(self):
         """Index."""
         raise NotImplementedError
+
+    def print_tree(self, depth=9, *, verbose=False):
+        """Print a ascii-formatted tree representation of the collection contents.
+
+        Parameters
+        ----------
+        depth : integer (optional)
+            Number of layers to include in the tree. Default is 9.
+        verbose : boolean (optional)
+            Toggle inclusion of extra information. Default is True.
+        """
+        print('{0} ({1})'.format(self.natural_name, self.filepath))
+        self._print_branch('', 0, depth, verbose=verbose)
 
     def flush(self):
         """Ensure contents are written to file."""
