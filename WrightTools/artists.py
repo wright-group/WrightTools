@@ -454,7 +454,6 @@ class Axes(matplotlib.axes.Axes):
                            ylabel=kwargs.pop('ylabel', None),
                            data=data, channel_index=channel_index)
         # call parent
-        print(kwargs)
         return matplotlib.axes.Axes.plot(self, *args, **kwargs)  # why can't I use super?
 
     def plot_data(self, data, channel=0, interpolate=False, coloring=None,
