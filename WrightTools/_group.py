@@ -65,10 +65,6 @@ class Group(h5py.Group):
                 warnings.warn("'%s' not included in attrs because its Type (%s) cannot be represented" %
                               (key, type(value)))
         # load from file
-        self._items = []
-        for name in self.item_names:
-            self._items.append(self[name])
-            setattr(self, name, self[name])
         self._update_natural_namespace()
         # the following are populated if not already recorded
         self.__version__

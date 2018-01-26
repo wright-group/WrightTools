@@ -63,8 +63,9 @@ class Collection(Group):
         return self.natural_name
 
     def _print_branch(self, prefix, level, depth, verbose):
-        for i, item in enumerate(self._items):
-            if i + 1 == len(self._items):
+        for i, name in enumerate(self.item_names):
+            item = self[name]
+            if i + 1 == len(self.item_names):
                 s = prefix + '└── {0}: {1}'.format(i, item._leaf)
                 p = prefix + '    '
             else:
@@ -94,11 +95,9 @@ class Collection(Group):
         collection = Collection(filepath=self.filepath, parent=self.name, name=name,
                                 edit_local=True, **kwargs)
         if position is None:
-            self._items.append(collection)
             self.attrs['item_names'] = np.append(self.attrs['item_names'],
                                                  collection.natural_name.encode())
         else:
-            self._items.insert(position, collection)
             self.attrs['item_names'] = np.insert(self.attrs['item_names'], position,
                                                  collection.natural_name.encode())
         setattr(self, name, collection)
@@ -129,10 +128,8 @@ class Collection(Group):
                                 edit_local=True, **kwargs)
             natural_name = data.natural_name.encode()
         if position is None:
-            self._items.append(data)
             self.attrs['item_names'] = np.append(self.attrs['item_names'], natural_name)
         else:
-            self._items.insert(position, data)
             self.attrs['item_names'] = np.insert(self.attrs['item_names'], position, natural_name)
         setattr(self, name, data)
         return data
@@ -156,6 +153,7 @@ class Collection(Group):
 
     def flush(self):
         """Ensure contents are written to file."""
-        for item in self._items:
+        for name in self.item_names:
+            item = self[name]
             item.flush()
         self.file.flush()
