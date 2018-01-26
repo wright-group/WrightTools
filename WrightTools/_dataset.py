@@ -6,13 +6,14 @@
 
 import posixpath
 import collections
-from concurrent.futures import ThreadPoolExecutor
 
 import numpy as np
 
 import h5py
 
+from . import exceptions as wt_exceptions
 from . import kit as wt_kit
+from . import units as wt_units
 
 
 # --- class ---------------------------------------------------------------------------------------
@@ -103,6 +104,14 @@ class Dataset(h5py.Dataset):
             del self.attrs['max']
         if 'min' in self.attrs.keys():
             del self.attrs['min']
+
+    @property
+    def _leaf(self):
+        out = self.natural_name
+        if self.units is not None:
+            out += ' ({0})'.format(self.units)
+        out += ' {0}'.format(self.shape)
+        return out
 
     @property
     def fullpath(self):
@@ -199,6 +208,27 @@ class Dataset(h5py.Dataset):
                 dataset[s] = arr
 
         self.chunkwise(f, min=min, max=max, replace=replace)
+
+    def convert(self, destination_units):
+        """Convert units.
+
+        Parameters
+        ----------
+        destination_units : string (optional)
+            Units to convert into.
+        """
+        if not wt_units.is_valid_conversion(self.units, destination_units):
+            kind = wt_units.kind(self.units)
+            valid = list(wt_units.dicts[kind].keys())
+            raise wt_exceptions.UnitsError(valid, destination_units)
+        if self.units is None:
+            return
+
+        def f(dataset, s, destination_units):
+            dataset[s] = wt_units.converter(dataset[s], dataset.units, destination_units)
+
+        self.chunkwise(f, destination_units=destination_units)
+        self.units = destination_units
 
     def log(self, base=np.e, floor=None):
         """Take the log of the entire dataset.

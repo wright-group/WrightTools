@@ -20,6 +20,8 @@ def test_2D_to_1D():
     for d in chop.values():
         assert d.w2.size == 81
         assert d.axis_expressions == ('w2',)
+        for k in data.variable_names:
+            assert d[k].label == data[k].label
     data.close()
     chop.close()
 
@@ -85,4 +87,5 @@ def test_parent():
 
 
 if __name__ == "__main__":
+    test_2D_to_1D()
     test_3D_to_1D()

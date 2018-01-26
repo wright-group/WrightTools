@@ -204,6 +204,45 @@ class Data(Group):
         finally:
             return self._variables
 
+    @property
+    def _leaf(self):
+        return '{0} {1}'.format(self.natural_name, self.shape)
+
+    def _print_branch(self, prefix, level, depth, verbose):
+
+        def print_leaves(prefix, lis, vline=True):
+            for i, item in enumerate(lis):
+                if vline:
+                    a = '│   '
+                else:
+                    a = '    '
+                if i + 1 == len(lis):
+                    b = '└── '
+                else:
+                    b = '├── '
+                s = prefix + a + b + '{0}: {1}'.format(i, item._leaf)
+                print(s)
+
+        if verbose:
+            # axes
+            print(prefix + '├── axes')
+            print_leaves(prefix, self.axes)
+            # variables
+            print(prefix + '├── variables')
+            print_leaves(prefix, self.variables)
+            # channels
+            print(prefix + '└── channels')
+            print_leaves(prefix, self.channels, vline=False)
+        else:
+            # axes
+            s = 'axes: '
+            s += ', '.join(['{0} ({1})'.format(a.expression, a.units) for a in self.axes])
+            print(prefix + '├── ' + s)
+            # channels
+            s = 'channels: '
+            s += ', '.join(self.channel_names)
+            print(prefix + '└── ' + s)
+
     def _update_natural_namespace(self):
         all_names = self.axis_names + self.channel_names + self.constant_names
         if len(all_names) == len(set(all_names)):
@@ -316,9 +355,19 @@ class Data(Group):
             idx = tuple(idx)
             data = out.create_data(name='chop%03i' % i)
             for v in self.variables:
-                data.create_variable(name=v.natural_name, values=v[idx], units=v.units)
+                kwargs = {}
+                kwargs['name'] = v.natural_name
+                kwargs['values'] = v[idx]
+                kwargs['units'] = v.units
+                kwargs['label'] = v.label
+                data.create_variable(**kwargs)
             for c in self.channels:
-                data.create_channel(name=c.natural_name, values=c[idx], units=c.units)
+                kwargs = {}
+                kwargs['name'] = c.natural_name
+                kwargs['values'] = c[idx]
+                kwargs['units'] = c.units
+                kwargs['label'] = c.label
+                data.create_channel(**kwargs)
             data.transform([a.expression for a in kept_axes if a.expression not in at.keys()])
             i += 1
         out.flush()
@@ -383,13 +432,15 @@ class Data(Group):
         self._axes.pop(axis_index)
         self._update_natural_namespace()
 
-    def convert(self, destination_units, verbose=True):
-        """Convert all compatable constants and axes to given units.
+    def convert(self, destination_units, *, convert_variables=False, verbose=True):
+        """Convert all compatable axes to given units.
 
         Parameters
         ----------
         destination_units : str
             Destination units.
+        convert_variables : boolean (optional)
+            Toggle conversion of stored arrays. Default is False
         verbose : bool (optional)
             Toggle talkback. Default is True.
 
@@ -400,13 +451,11 @@ class Data(Group):
             axis object in data.axes or data.constants.
         """
         # get kind of units
-        for dic in wt_units.unit_dicts:
-            if destination_units in dic.keys():
-                units_kind = dic['kind']
+        units_kind = wt_units.kind(destination_units)
         # apply to all compatible axes
         for axis in self.axes + self.constants:
             if axis.units_kind == units_kind:
-                axis.convert(destination_units)
+                axis.convert(destination_units, convert_variables=convert_variables)
                 if verbose:
                     print('axis', axis.expression, 'converted')
 
