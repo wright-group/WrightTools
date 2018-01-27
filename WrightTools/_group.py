@@ -25,7 +25,14 @@ wt5_version = '0.0.0'
 # --- class ---------------------------------------------------------------------------------------
 
 
-class Group(h5py.Group):
+class MetaClass(type(h5py.Group)):
+
+    def __call__(cls, *args, **kwargs):
+        """Bypass normal construction."""
+        return cls.__new__(cls, *args, **kwargs)
+
+
+class Group(h5py.Group, metaclass=MetaClass):
     """Container of groups and datasets."""
 
     instances = {}
