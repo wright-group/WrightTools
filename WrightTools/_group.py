@@ -25,7 +25,14 @@ wt5_version = '0.0.0'
 # --- class ---------------------------------------------------------------------------------------
 
 
-class Group(h5py.Group):
+class MetaClass(type(h5py.Group)):
+
+    def __call__(cls, *args, **kwargs):
+        """Bypass normal construction."""
+        return cls.__new__(cls, *args, **kwargs)
+
+
+class Group(h5py.Group, metaclass=MetaClass):
     """Container of groups and datasets."""
 
     instances = {}
@@ -287,7 +294,7 @@ class Group(h5py.Group):
                 raise FileExistsError(filepath)
         # copy to new file
         h5py.File(filepath)
-        new = Group(filepath=filepath)
+        new = Group(filepath=filepath, edit_local=True)
         # attrs
         for k, v in self.attrs.items():
             new.attrs[k] = v
