@@ -366,6 +366,8 @@ class Data(Group):
                 kwargs['label'] = c.label
                 data.create_channel(**kwargs)
             data.transform([a.expression for a in kept_axes if a.expression not in at.keys()])
+            for i, a in enumerate(kept_axes):
+                data.axes[i].convert(a.units)
             i += 1
         out.flush()
         # return
@@ -1151,7 +1153,8 @@ class Data(Group):
             c[:] = a
 
     def smooth(self, factors, channel=None, verbose=True):
-        """Smooth a channel using an n-dimenional `kaiser window`__.
+        """Smooth a channel using an n-dimenional `kaiser window`__. 
+        Note, all arrays are loaded into memory. 
 
         __ https://en.wikipedia.org/wiki/Kaiser_window
 
@@ -1166,7 +1169,7 @@ class Data(Group):
         verbose : bool (optional)
             Toggle talkback. Default is True.
         """
-        raise NotImplementedError
+        #raise NotImplementedError
         # get factors -----------------------------------------------------------------------------
 
         if isinstance(factors, list):
