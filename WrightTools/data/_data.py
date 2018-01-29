@@ -1169,7 +1169,7 @@ class Data(Group):
         verbose : bool (optional)
             Toggle talkback. Default is True.
         """
-        #raise NotImplementedError
+
         # get factors -----------------------------------------------------------------------------
 
         if isinstance(factors, list):
