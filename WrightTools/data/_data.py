@@ -365,7 +365,11 @@ class Data(Group):
                 kwargs['units'] = c.units
                 kwargs['label'] = c.label
                 data.create_channel(**kwargs)
-            data.transform([a.expression for a in kept_axes if a.expression not in at.keys()])
+            new_axes = [a.expression for a in kept_axes if a.expression not in at.keys()]
+            new_axis_units = [a.units for a in kept_axes if a.expression not in at.keys()]
+            data.transform(new_axes)
+            for j, units in enumerate(new_axis_units):
+                data.axes[j].convert(units)
             i += 1
         out.flush()
         # return
