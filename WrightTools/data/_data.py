@@ -459,6 +459,13 @@ class Data(Group):
                 axis.convert(destination_units, convert_variables=convert_variables)
                 if verbose:
                     print('axis', axis.expression, 'converted')
+        if convert_variables:
+            for var in self.variables:
+                if wt_units.kind(var.units) == units_kind:
+                    var.convert(destination_units)
+
+                    if verbose:
+                        print('variable', var.natural_name, 'converted')
 
     def create_channel(self, name, values=None, units=None, **kwargs):
         """Append a new channel.
