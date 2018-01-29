@@ -1157,6 +1157,8 @@ class Data(Group):
     def smooth(self, factors, channel=None, verbose=True):
         """Smooth a channel using an n-dimenional `kaiser window`__.
 
+        Note, all arrays are loaded into memory.
+
         __ https://en.wikipedia.org/wiki/Kaiser_window
 
         Parameters
@@ -1170,7 +1172,6 @@ class Data(Group):
         verbose : bool (optional)
             Toggle talkback. Default is True.
         """
-        raise NotImplementedError
         # get factors -----------------------------------------------------------------------------
 
         if isinstance(factors, list):
