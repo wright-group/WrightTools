@@ -70,7 +70,7 @@ class Group(h5py.Group, metaclass=MetaClass):
             except TypeError:
                 # some values have no native HDF5 equivalent
                 message = "'{}' not included in attrs because its Type ({}) cannot be represented"
-                message = message.format(key, type(value)))
+                message = message.format(key, type(value))
                 warnings.warn(message)
         # load from file
         self._update_natural_namespace()
