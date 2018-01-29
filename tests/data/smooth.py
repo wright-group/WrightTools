@@ -40,7 +40,7 @@ def test_2():
     data = root.create_data(**kwargs)
     # create test arrays
     x = np.linspace(0, 1, 100)
-    z = np.random.rand(100,100)
+    z = np.random.rand(100, 100)
     # create channels and variables
     data.create_variable(name='x1', values=x, units=None)
     data.create_variable(name='x2', values=x, units=None)
@@ -58,14 +58,13 @@ def test_3():
     data = root.create_data(**kwargs)
     # create test arrays
     x = np.linspace(0, 4*np.pi, 1000)
-    z_big = np.sin(x) 
+    z_big = np.sin(x)
     z_small = np.sin(x*50)
     z_comb = z_big + .1*z_small
     # create channels and variables
-    data.create_variable(name='x', values=x, units=None) 
+    data.create_variable(name='x', values=x, units=None)
     data.create_channel(name='z_comb', values=z_comb)
     data.transform(['x'])
     # smooth
     data.smooth(10, channel='z_comb')
     assert np.allclose(data.z_comb[:], z_big, rtol=.1, atol=.05)
- 
