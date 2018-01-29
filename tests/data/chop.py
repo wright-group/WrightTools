@@ -74,6 +74,7 @@ def test_3D_to_2D_at():
     data.close()
     chop.close()
 
+
 def test_3D_to_2D_units():
     p = datasets.PyCMDS.wm_w2_w1_001
     data = wt.data.from_PyCMDS(p)
@@ -88,6 +89,7 @@ def test_3D_to_2D_units():
     data.close()
     chop.close()
 
+
 def test_parent():
     p = datasets.PyCMDS.wm_w2_w1_001
     data = wt.data.from_PyCMDS(p)
@@ -100,6 +102,6 @@ def test_parent():
 
 
 if __name__ == "__main__":
-    #test_2D_to_1D()
-    #test_3D_to_1D()
+    test_2D_to_1D()
+    test_3D_to_1D()
     test_3D_to_2D_units()
