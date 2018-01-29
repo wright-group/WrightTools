@@ -298,7 +298,7 @@ class Group(h5py.Group, metaclass=MetaClass):
                 raise FileExistsError(filepath)
         # copy to new file
         h5py.File(filepath)
-        new = Group(filepath=filepath)
+        new = Group(filepath=filepath, edit_local=True)
         # attrs
         for k, v in self.attrs.items():
             new.attrs[k] = v
