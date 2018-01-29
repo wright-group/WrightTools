@@ -25,7 +25,6 @@ def test_convert_variables():
     assert data['w2'].units == 'meV'
     # tests that 'inactive' variable is converted
     assert data['wm'].units == 'meV'
-    
     data.close()
 
 
