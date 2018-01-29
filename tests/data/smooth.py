@@ -26,11 +26,12 @@ def test_1():
     data.create_variable(name='x', values=x, units=None)
     data.create_channel(name='y', values=y)
     data.create_channel(name='z', values=y)
-    data.transform(['x']) 
+    data.transform(['x'])
     # smooth
     data.smooth(5, channel='y')
     check_arr = data.y[:] - data.z[:]
     assert np.isclose(check_arr.all(), 0, rtol=1e-4, atol=1e-4)
+
 
 def test_2():
     # create collection
@@ -44,10 +45,11 @@ def test_2():
     data.create_variable(name='x1', values=x, units=None)
     data.create_variable(name='x2', values=x, units=None)
     data.create_channel(name='z', values=z)
-    data.transform(['x1', 'x2']) 
+    data.transform(['x1', 'x2'])
     # smooth
     data.smooth(90, channel='z')
     assert np.allclose(data.z[:], .5, rtol=.1, atol=.4)
+
 
 def test_3():
     # create collection
@@ -56,13 +58,14 @@ def test_3():
     data = root.create_data(**kwargs)
     # create test arrays
     x = np.linspace(0, 4*np.pi, 1000)
-    z_big = np.sin(x)  
+    z_big = np.sin(x) 
     z_small = np.sin(x*50)
     z_comb = z_big + .1*z_small
     # create channels and variables
-    data.create_variable(name='x', values=x, units=None)    
+    data.create_variable(name='x', values=x, units=None) 
     data.create_channel(name='z_comb', values=z_comb)
-    data.transform(['x']) 
+    data.transform(['x'])
     # smooth
     data.smooth(10, channel='z_comb')
     assert np.allclose(data.z_comb[:], z_big, rtol=.1, atol=.05)
+ 

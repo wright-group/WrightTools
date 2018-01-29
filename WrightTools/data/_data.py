@@ -1153,8 +1153,8 @@ class Data(Group):
             c[:] = a
 
     def smooth(self, factors, channel=None, verbose=True):
-        """Smooth a channel using an n-dimenional `kaiser window`__. 
-        Note, all arrays are loaded into memory. 
+        """Smooth a channel using an n-dimenional `kaiser window`__.
+        Note, all arrays are loaded into memory.
 
         __ https://en.wikipedia.org/wiki/Kaiser_window
 
