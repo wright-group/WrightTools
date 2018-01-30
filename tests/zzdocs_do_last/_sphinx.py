@@ -3,6 +3,7 @@ import sphinx
 import os
 import shutil
 
+
 def test_build_docs():
     print(dir(sphinx))
     docsdir = os.path.abspath(os.path.dirname(__file__) + '/../../docs')

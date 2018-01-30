@@ -16,15 +16,15 @@ def test_default():
 
     zi = np.sin(xi[:, None]) * np.cos(yi[None, :])
 
-    xo,yo,zo = wt.kit.zoom2D(xi, yi, zi)
+    xo, yo, zo = wt.kit.zoom2D(xi, yi, zi)
 
     zcheck = np.sin(xo[:, None]) * np.cos(yo[None, :])
-    
+
     assert xo.shape == (300,)
     assert yo.shape == (300,)
-    assert zo.shape == (300,300)
+    assert zo.shape == (300, 300)
 
-    assert np.all(np.isclose(zo, zcheck, 0.01)) # all values within 1 percent of "actual"
+    assert np.all(np.isclose(zo, zcheck, 0.01))  # all values within 1 percent of "actual"
 
 
 def test_non_default():
@@ -33,15 +33,15 @@ def test_non_default():
 
     zi = np.sin(xi[:, None]) * np.cos(yi[None, :])
 
-    xo,yo,zo = wt.kit.zoom2D(xi, yi, zi, 2, 4)
+    xo, yo, zo = wt.kit.zoom2D(xi, yi, zi, 2, 4)
 
     zcheck = np.sin(xo[:, None]) * np.cos(yo[None, :])
-    
+
     assert xo.shape == (200,)
     assert yo.shape == (400,)
-    assert zo.shape == (200,400)
+    assert zo.shape == (200, 400)
 
-    assert np.all(np.isclose(zo, zcheck, 0.01)) # all values within 1 percent of "actual"
+    assert np.all(np.isclose(zo, zcheck, 0.01))  # all values within 1 percent of "actual"
 
 
 # --- run -----------------------------------------------------------------------------------------
