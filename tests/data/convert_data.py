@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 """Test data unit conversion."""
 
 
@@ -15,13 +16,15 @@ from WrightTools import datasets
 
 def test_convert_variables():
     p = datasets.KENT.LDS821_TRSF
-    ignore = ['d1', 'd2', 'wm']
+    ignore = ['d1', 'd2']
     data = wt.data.from_KENT(p, ignore=ignore)
     data.convert('meV', convert_variables=True)
     assert data.w1.units == 'meV'
     assert data.w2.units == 'meV'
     assert data['w2'].units == 'meV'
     assert data['w2'].units == 'meV'
+    # tests that 'inactive' variable is converted
+    assert data['wm'].units == 'meV'
     data.close()
 
 
