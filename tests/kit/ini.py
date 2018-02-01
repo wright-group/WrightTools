@@ -3,6 +3,7 @@
 from WrightTools.kit import INI
 import numpy as np
 
+
 def test_create():
     ini = INI('test.ini')
     ini.add_section('section0')
@@ -15,7 +16,7 @@ def test_create():
     ini.write('section0', 'none', None)
     ini.write('section1', 'true', True)
     ini.write('section1', 'false', False)
-    ini.write('section0', 'ndarray', np.linspace(0,10,21))
+    ini.write('section0', 'ndarray', np.linspace(0, 10, 21))
 
 
 def test_has_option():
@@ -23,10 +24,12 @@ def test_has_option():
     assert ini.has_option('section0', 'integer')
     assert not ini.has_option('section0', 'nooooooooooooo')
 
+
 def test_has_section():
     ini = INI('test.ini')
     assert ini.has_section('section0')
     assert not ini.has_section('section9')
+
 
 def test_dictionary():
     ini = INI('test.ini')
@@ -34,13 +37,16 @@ def test_dictionary():
     assert isinstance(dict_, dict)
     assert dict_['section0']['integer'] == '39'
 
+
 def test_get_options():
     ini = INI('test.ini')
     assert ini.get_options('section0') == ['integer', 'string', 'none', 'ndarray']
 
+
 def test_sections():
     ini = INI('test.ini')
     assert ini.sections == ['section0', 'section1']
+
 
 def test_read():
     ini = INI('test.ini')
@@ -49,16 +55,18 @@ def test_read():
     assert ini.read('section0', 'string') == 'hello world, this is an ini file'
     assert ini.read('section1', 'list') == ['Linux', 'rocks']
     #assert ini.read('section1', 'tuple') == ('Linux', 'rocks')
-    assert ini.read('section0', 'none') is  None
+    assert ini.read('section0', 'none') is None
     assert ini.read('section1', 'true') is True
-    assert ini.read('section1', 'false') is  False
+    assert ini.read('section1', 'false') is False
     #print(ini.read('section0', 'ndarray'))
     #assert np.allclose(np.array(ini.read('section0', 'ndarray')), np.linspace(0,10,21))
+
 
 def test_clear():
     ini = INI('test.ini')
     ini.clear()
     assert ini.sections == []
+
 
 if __name__ == '__main__':
     test_create()
