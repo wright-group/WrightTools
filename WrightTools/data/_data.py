@@ -48,6 +48,7 @@ class Data(Group):
         kwargs.pop('constant_names', None)
         self._axes = []
         Group.__init__(self, *args, **kwargs)
+        # populate axes from attrs string
         for identifier in self.attrs.get('axes', []):
             identifier = identifier.decode()
             expression, units = identifier.split('{')
@@ -57,14 +58,14 @@ class Data(Group):
             expression = expression.replace(' ', '')  # remove all whitespace
             axis = Axis(self, expression, units.strip())
             self._axes.append(axis)
+        self._current_axis_identities_in_natural_namespace = []
+        self._on_axes_updated()
         # the following are populated if not already recorded
         self.channel_names
         self.constant_names
         self.kind
         self.source
         self.variable_names
-        # finish
-        self._update_natural_namespace()
 
     def __repr__(self):
         return '<WrightTools.Data \'{0}\' {1} at {2}>'.format(
@@ -206,7 +207,21 @@ class Data(Group):
         return '{0} {1}'.format(self.natural_name, self.shape)
 
     def _on_axes_updated(self):
+        """Method to run when axes are changed in any way.
+
+        Propagates updated axes properly.
+        """
+        # update attrs
         self.attrs['axes'] = [a.identity.encode() for a in self._axes]
+        # remove old attributes
+        while len(self._current_axis_identities_in_natural_namespace) > 0:
+            key = self._current_axis_identities_in_natural_namespace.pop(0)
+            self.__dict__.pop(key)
+        # populate new attributes
+        for a in self._axes:
+            key = a.natural_name
+            setattr(self, key, a)
+            self._current_axis_identities_in_natural_namespace.append(key)
 
     def _print_branch(self, prefix, level, depth, verbose):
 
@@ -242,22 +257,6 @@ class Data(Group):
             s = 'channels: '
             s += ', '.join(self.channel_names)
             print(prefix + '└── ' + s)
-
-    def _update_natural_namespace(self):
-        all_names = self.axis_names + self.channel_names + self.constant_names
-        if len(all_names) == len(set(all_names)):
-            pass
-        else:
-            raise wt_exceptions.NameNotUniqueError()
-        for obj in self.axes + self.channels + self.constants:
-            identifier = obj.natural_name
-            setattr(self, identifier, obj)
-        super()._update_natural_namespace()
-        # attrs
-        for key, value in self.attrs.items():
-            identifier = wt_kit.string2identifier(key)
-            if not hasattr(self, identifier):
-                setattr(self, identifier, value)
 
     def bring_to_front(self, channel):
         """Bring a specific channel to the zero-indexed position in channels.
@@ -434,7 +433,6 @@ class Data(Group):
                 print('method not recognized in data.collapse')
         # cleanup ---------------------------------------------------------------------------------
         self._axes.pop(axis_index)
-        self._update_natural_namespace()
 
     def convert(self, destination_units, *, convert_variables=False, verbose=True):
         """Convert all compatable axes to given units.
@@ -501,7 +499,6 @@ class Data(Group):
         channel = Channel(self, dataset_id, units=units, **kwargs)
         # finish
         self.attrs['channel_names'] = np.append(self.attrs['channel_names'], name.encode())
-        self._update_natural_namespace()
         return channel
 
     def create_variable(self, name, values=None, units=None, **kwargs):
@@ -858,7 +855,6 @@ class Data(Group):
                 if flipped[i]:
                     self.flip(i)
         axis[:] = points
-        self._update_natural_namespace()
 
     def offset(self, points, offsets, along, offset_axis,
                units='same', offset_units='same', mode='valid',
@@ -987,7 +983,6 @@ class Data(Group):
         self._axes[offset_axis_index][:] = new_offset_axis_points
         # transpose out
         self.transpose(transpose_order, verbose=False)
-        self._update_natural_namespace()
 
     def remove_channel(self, channel, *, verbose=True):
         """Remove channel from data.
@@ -1085,7 +1080,6 @@ class Data(Group):
             print('{0} channel(s) renamed:'.format(len(kwargs)))
             for k, v in kwargs.items():
                 print('  {0} --> {1}'.format(k, v))
-        self._update_natural_namespace()
 
     def rename_variables(self, *, implied=True, verbose=True, **kwargs):
         """Rename a set of variables.
@@ -1148,7 +1142,6 @@ class Data(Group):
             print('{0} variable(s) renamed:'.format(len(kwargs)))
             for k, v in kwargs.items():
                 print('  {0} --> {1}'.format(k, v))
-        self._update_natural_namespace()
 
     def share_nans(self):
         """Share not-a-numbers between all channels.
@@ -1450,7 +1443,6 @@ class Data(Group):
                 a.convert(a.variables[0].units)
         # finish
         self.flush()
-        self._update_natural_namespace()
         self._on_axes_updated()
 
     def zoom(self, factor, order=1, verbose=True):

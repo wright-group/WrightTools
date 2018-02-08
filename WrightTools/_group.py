@@ -72,10 +72,22 @@ class Group(h5py.Group, metaclass=MetaClass):
                 message = "'{}' not included in attrs because its Type ({}) cannot be represented"
                 message = message.format(key, type(value))
                 warnings.warn(message)
-        # load from file
-        self._update_natural_namespace()
         # the following are populated if not already recorded
         self.__version__
+        self.item_names
+
+    def __getattr__(self, key):
+        """Gets called if attribute not in self.__dict__.
+
+        See __getattribute__.
+        """
+        if key in self.keys():
+            value = self[key]
+            setattr(self, key, value)
+            return self[key]
+        else:
+            message = '{0} has no attribute {1}'.format(self.class_name, key)
+            raise AttributeError(message)
 
     def __getitem__(self, key):
         from .collection import Collection
@@ -147,10 +159,6 @@ class Group(h5py.Group, metaclass=MetaClass):
         if '__version__' not in self.file.attrs.keys():
             self.file.attrs['__version__'] = wt5_version
         return self.file.attrs['__version__']
-
-    def _update_natural_namespace(self):
-        for name in self.item_names:
-            setattr(self, name, self[name])
 
     @property
     def fullpath(self):
@@ -252,9 +260,7 @@ class Group(h5py.Group, metaclass=MetaClass):
             if 'item_names' in parent.attrs.keys():
                 new = parent.item_names + (name,)
                 parent.attrs['item_names'] = np.array(new, dtype='S')
-            parent._update_natural_namespace()
             new = parent[name]
-            new._update_natural_namespace()
         # finish
         if verbose:
             print('{0} copied to {1}'.format(self.fullpath, new.fullpath))
