@@ -121,6 +121,32 @@ def test_simple_save():
     os.remove(p)
 
 
+def test_propagate_units():
+    p = datasets.PyCMDS.wm_w2_w1_001
+    data = wt.data.from_PyCMDS(p)
+    data.convert('eV')
+    p = os.path.join(here, 'units')
+    p = data.save(p)
+    new = wt.open(p)
+    assert new.units == ('eV', 'eV', 'eV')
+    data.close()
+    new.close()
+    os.remove(p)
+
+
+def test_propagate_expressions():
+    p = datasets.PyCMDS.wm_w2_w1_001
+    data = wt.data.from_PyCMDS(p)
+    data.transform(['w1-wm', 'w2', 'w1'])
+    p = os.path.join(here, 'expressions')
+    p = data.save(p)
+    new = wt.open(p)
+    assert data.axis_expressions == new.axis_expressions
+    data.close()
+    new.close()
+    os.remove(p)
+
+
 # --- run -----------------------------------------------------------------------------------------
 
 
@@ -130,3 +156,5 @@ if __name__ == '__main__':
     test_save_nested()
     test_simple_copy()
     test_simple_save()
+    test_propagate_units()
+    test_propagate_expressions()
