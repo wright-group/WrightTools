@@ -205,6 +205,9 @@ class Data(Group):
     def _leaf(self):
         return '{0} {1}'.format(self.natural_name, self.shape)
 
+    def _on_axes_updated(self):
+        self.attrs['axes'] = [a.identity.encode() for a in self._axes]
+
     def _print_branch(self, prefix, level, depth, verbose):
 
         def print_leaves(prefix, lis, vline=True):
@@ -466,6 +469,7 @@ class Data(Group):
 
                     if verbose:
                         print('variable', var.natural_name, 'converted')
+        self._on_axes_updated()
 
     def create_channel(self, name, values=None, units=None, **kwargs):
         """Append a new channel.
@@ -592,7 +596,6 @@ class Data(Group):
         self.transpose(transpose_order, verbose=False)
 
     def flush(self):
-        self.attrs['axes'] = [a.identity.encode() for a in self._axes]
         super().flush()
 
     def get_nadir(self, channel=0):
@@ -1448,6 +1451,7 @@ class Data(Group):
         # finish
         self.flush()
         self._update_natural_namespace()
+        self._on_axes_updated()
 
     def zoom(self, factor, order=1, verbose=True):
         """Zoom the data array using spline interpolation of the requested order.
