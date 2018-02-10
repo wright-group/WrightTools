@@ -27,7 +27,7 @@ def from_ocean_optics(filepath, name=None, *, parent=None, verbose=True):
     Parameters
     ----------
     filepath : string, list of strings, or array of strings
-        Path to .txt file.
+        Path to an ocean optics output file.
     name : string (optional)
         Name to give to the created data object. If None, filename is used.
         Default is None.
@@ -39,7 +39,7 @@ def from_ocean_optics(filepath, name=None, *, parent=None, verbose=True):
     Returns
     -------
     data
-        New data object(s).
+        New data object.
     """
     # parse filepath
     if not filepath.endswith('scope'):
@@ -58,7 +58,7 @@ def from_ocean_optics(filepath, name=None, *, parent=None, verbose=True):
     skip_footer = 1
     arr = np.genfromtxt(filepath, skip_header=skip_header,
                         skip_footer=skip_footer, delimiter='\t').T
-    # chew through all scans
+    # construct data
     data.create_variable(name='energy', values=arr[0], units='nm')
     data.create_channel(name='signal', values=arr[1])
     data.transform(['energy'])
