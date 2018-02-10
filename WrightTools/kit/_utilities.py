@@ -36,6 +36,8 @@ def string2identifier(s):
     """
     # https://docs.python.org/3/reference/lexical_analysis.html#identifiers
     # https://www.python.org/dev/peps/pep-3131/
+    if len(s) == 0:
+        return '_'
     if s[0] not in string.ascii_letters:
         s = '_' + s
     valids = string.ascii_letters + string.digits + '_'
@@ -45,8 +47,6 @@ def string2identifier(s):
             out += char
         else:
             out += '_'
-    if out[0] in string.digits:
-        out = '_' + out
     return out
 
 

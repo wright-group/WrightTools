@@ -3,6 +3,7 @@
 
 
 from ._collection import *
+from ._cary import *
 
 
-__all__ = ['Collection']
+__all__ = ['Collection', 'from_Cary']
