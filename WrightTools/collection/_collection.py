@@ -58,6 +58,23 @@ class Collection(Group):
     def __setitem__(self, key, value):
         raise NotImplementedError
 
+    @property
+    def _leaf(self):
+        return self.natural_name
+
+    def _print_branch(self, prefix, level, depth, verbose):
+        for i, name in enumerate(self.item_names):
+            item = self[name]
+            if i + 1 == len(self.item_names):
+                s = prefix + '└── {0}: {1}'.format(i, item._leaf)
+                p = prefix + '    '
+            else:
+                s = prefix + '├── {0}: {1}'.format(i, item._leaf)
+                p = prefix + '│   '
+            print(s)
+            if level + 1 < depth and hasattr(item, '_print_branch'):
+                item._print_branch(p, level, depth, verbose)
+
     def create_collection(self, name='collection', position=None, **kwargs):
         """Create a new child colleciton.
 
@@ -78,11 +95,9 @@ class Collection(Group):
         collection = Collection(filepath=self.filepath, parent=self.name, name=name,
                                 edit_local=True, **kwargs)
         if position is None:
-            self._items.append(collection)
             self.attrs['item_names'] = np.append(self.attrs['item_names'],
                                                  collection.natural_name.encode())
         else:
-            self._items.insert(position, collection)
             self.attrs['item_names'] = np.insert(self.attrs['item_names'], position,
                                                  collection.natural_name.encode())
         setattr(self, name, collection)
@@ -113,10 +128,8 @@ class Collection(Group):
                                 edit_local=True, **kwargs)
             natural_name = data.natural_name.encode()
         if position is None:
-            self._items.append(data)
             self.attrs['item_names'] = np.append(self.attrs['item_names'], natural_name)
         else:
-            self._items.insert(position, data)
             self.attrs['item_names'] = np.insert(self.attrs['item_names'], position, natural_name)
         setattr(self, name, data)
         return data
@@ -125,8 +138,22 @@ class Collection(Group):
         """Index."""
         raise NotImplementedError
 
+    def print_tree(self, depth=9, *, verbose=False):
+        """Print a ascii-formatted tree representation of the collection contents.
+
+        Parameters
+        ----------
+        depth : integer (optional)
+            Number of layers to include in the tree. Default is 9.
+        verbose : boolean (optional)
+            Toggle inclusion of extra information. Default is True.
+        """
+        print('{0} ({1})'.format(self.natural_name, self.filepath))
+        self._print_branch('', 0, depth, verbose=verbose)
+
     def flush(self):
         """Ensure contents are written to file."""
-        for item in self._items:
+        for name in self.item_names:
+            item = self[name]
             item.flush()
         self.file.flush()

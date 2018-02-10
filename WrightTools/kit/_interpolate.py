@@ -21,8 +21,7 @@ __all__ = ['zoom2D', 'Spline']
 # --- functions -----------------------------------------------------------------------------------
 
 
-def zoom2D(xi, yi, zi, xi_zoom=3., yi_zoom=3., order=3, mode='nearest',
-           cval=0.):
+def zoom2D(xi, yi, zi, xi_zoom=3., yi_zoom=3., order=3, mode='nearest', cval=0.):
     """Zoom a 2D array, with axes.
 
     Parameters
@@ -41,12 +40,13 @@ def zoom2D(xi, yi, zi, xi_zoom=3., yi_zoom=3., order=3, mode='nearest',
         The order of the spline interpolation, between 0 and 5. Default is 3.
     mode : {'constant', 'nearest', 'reflect', or 'wrap'}
         Points outside the boundaries of the input are filled according to the
-        given mode. Default is constant.
-    cval : Value used for
+        given mode. Default is nearest.
+    cval : scalar (optional)
+        Value used for constant mode. Default is 0.0.
     """
     xi = ndimage.interpolation.zoom(xi, xi_zoom, order=order, mode='nearest')
     yi = ndimage.interpolation.zoom(yi, yi_zoom, order=order, mode='nearest')
-    zi = ndimage.interpolation.zoom(zi, (xi_zoom, yi_zoom), order=order, mode=mode)
+    zi = ndimage.interpolation.zoom(zi, (xi_zoom, yi_zoom), order=order, mode=mode, cval=cval)
     return xi, yi, zi
 
 

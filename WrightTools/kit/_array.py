@@ -13,7 +13,7 @@ from .. import exceptions as wt_exceptions
 
 
 __all__ = ['closest_pair', 'diff', 'fft', 'joint_shape', 'remove_nans_1D', 'share_nans',
-           'smooth_1D', 'unique']
+           'smooth_1D', 'unique', 'valid_index']
 
 
 # --- functions -----------------------------------------------------------------------------------
@@ -75,6 +75,7 @@ def diff(xi, yi, order=1):
     """Take the numerical derivative of a 1D array.
 
     Output is mapped onto the original coordinates  using linear interpolation.
+    Expects monotonic xi values.
 
     Parameters
     ----------
@@ -90,17 +91,21 @@ def diff(xi, yi, order=1):
     1D numpy array
         Numerical derivative. Has the same shape as the input arrays.
     """
-    xi = np.array(xi).copy()
+
     yi = np.array(yi).copy()
-    arg = np.argsort(xi)
-    xi = xi[arg]
-    yi = yi[arg]
+    flip = False
+    if xi[-1] < xi[0]:
+        xi = np.flipud(xi.copy())
+        yi = np.flipud(yi)
+        flip = True
     midpoints = (xi[1:] + xi[:-1]) / 2
     for _ in range(order):
         d = np.diff(yi)
         d /= np.diff(xi)
         yi = np.interp(xi, midpoints, d)
-    return yi[arg]
+    if flip:
+        yi = np.flipud(yi)
+    return yi
 
 
 def fft(xi, yi, axis=0):
@@ -253,3 +258,35 @@ def unique(arr, tolerance=1e-6):
         xi_lis_average = sum(lis) / len(lis)
         unique.append(xi_lis_average)
     return np.array(unique)
+
+
+def valid_index(index, shape):
+    """Get a valid index for a broadcastable shape.
+
+    Parameters
+    ----------
+    index : tuple
+        Given index.
+    shape : tuple of int
+        Shape.
+
+    Returns
+    -------
+    tuple
+        Valid index.
+    """
+    # append slices to index
+    index = list(index)
+    while len(index) < len(shape):
+        index.append(slice(None))
+    # fill out, in reverse
+    out = []
+    for i, s in zip(index[::-1], shape[::-1]):
+        if s == 1:
+            if isinstance(i, slice):
+                out.append(slice(None))
+            else:
+                out.append(0)
+        else:
+            out.append(i)
+    return tuple(out[::-1])
