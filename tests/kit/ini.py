@@ -2,6 +2,7 @@
 """Test INI file creation and parsing."""
 from WrightTools.kit import INI
 import numpy as np
+import os
 
 
 def test_create():
@@ -66,6 +67,7 @@ def test_clear():
     ini = INI('test.ini')
     ini.clear()
     assert ini.sections == []
+    os.remove('test.ini')
 
 
 if __name__ == '__main__':
