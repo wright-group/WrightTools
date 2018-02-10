@@ -72,6 +72,9 @@ KENT._from_directory(os.path.join(here, 'KENT', 'LDS821 TRSF'))
 KENT._from_directory(os.path.join(here, 'KENT', 'PbSe 2D delay A'))
 KENT._from_directory(os.path.join(here, 'KENT', 'PbSe 2D delay B'))
 
+ocean_optics = DatasetContainer()
+ocean_optics._from_files('ocean_optics')
+
 PyCMDS = DatasetContainer()
 PyCMDS._from_files('PyCMDS')
 
@@ -88,4 +91,5 @@ Tensor27._from_files('Tensor27')
 # --- pretty namespace ----------------------------------------------------------------------------
 
 
-__all__ = ['COLORS', 'JASCO', 'KENT', 'PyCMDS', 'BrunoldrRaman', 'Cary50', 'Tensor27']
+__all__ = ['COLORS', 'JASCO', 'KENT', 'ocean_optics' 'PyCMDS', 'BrunoldrRaman', 'Cary50',
+           'Tensor27']
