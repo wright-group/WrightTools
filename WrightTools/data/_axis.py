@@ -69,7 +69,7 @@ class Axis(object):
     def _leaf(self):
         out = self.expression
         if self.units is not None:
-            out += ' ({0})'.format(self.units)
+            out += ' ({0}) {1}'.format(self.units, self.shape)
         return out
 
     @property

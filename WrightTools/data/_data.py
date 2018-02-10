@@ -984,6 +984,11 @@ class Data(Group):
         # transpose out
         self.transpose(transpose_order, verbose=False)
 
+    def print_tree(self):
+        """Print a ascii-formatted tree representation of the data contents."""
+        print('{0} ({1})'.format(self.natural_name, self.filepath))
+        self._print_branch('', level=0, depth=0, verbose=True)
+
     def remove_channel(self, channel, *, verbose=True):
         """Remove channel from data.
 
