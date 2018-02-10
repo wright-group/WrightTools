@@ -73,7 +73,7 @@ class Collection(Group):
                 p = prefix + '│   '
             print(s)
             if level + 1 < depth and hasattr(item, '_print_branch'):
-                item._print_branch(p, level, depth, verbose)
+                item._print_branch(p, level+1, depth=depth, verbose=verbose)
 
     def create_collection(self, name='collection', position=None, **kwargs):
         """Create a new child colleciton.
@@ -149,7 +149,7 @@ class Collection(Group):
             Toggle inclusion of extra information. Default is True.
         """
         print('{0} ({1})'.format(self.natural_name, self.filepath))
-        self._print_branch('', 0, depth, verbose=verbose)
+        self._print_branch('', 0, depth=depth, verbose=verbose)
 
     def flush(self):
         """Ensure contents are written to file."""
