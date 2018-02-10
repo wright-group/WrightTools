@@ -223,7 +223,7 @@ class Data(Group):
             setattr(self, key, a)
             self._current_axis_identities_in_natural_namespace.append(key)
 
-    def _print_branch(self, prefix, level, depth, verbose):
+    def _print_branch(self, prefix, depth, verbose):
 
         def print_leaves(prefix, lis, vline=True):
             for i, item in enumerate(lis):
@@ -984,10 +984,10 @@ class Data(Group):
         # transpose out
         self.transpose(transpose_order, verbose=False)
 
-    def print_tree(self):
+    def print_tree(self, *, verbose=True):
         """Print a ascii-formatted tree representation of the data contents."""
         print('{0} ({1})'.format(self.natural_name, self.filepath))
-        self._print_branch('', level=0, depth=0, verbose=True)
+        self._print_branch('', depth=0, verbose=verbose)
 
     def remove_channel(self, channel, *, verbose=True):
         """Remove channel from data.

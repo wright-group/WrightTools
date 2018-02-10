@@ -62,7 +62,7 @@ class Collection(Group):
     def _leaf(self):
         return self.natural_name
 
-    def _print_branch(self, prefix, level, depth, verbose):
+    def _print_branch(self, prefix, depth, verbose):
         for i, name in enumerate(self.item_names):
             item = self[name]
             if i + 1 == len(self.item_names):
@@ -72,8 +72,8 @@ class Collection(Group):
                 s = prefix + '├── {0}: {1}'.format(i, item._leaf)
                 p = prefix + '│   '
             print(s)
-            if level + 1 < depth and hasattr(item, '_print_branch'):
-                item._print_branch(p, level+1, depth=depth, verbose=verbose)
+            if depth > 1 and hasattr(item, '_print_branch'):
+                item._print_branch(p, depth=depth - 1, verbose=verbose)
 
     def create_collection(self, name='collection', position=None, **kwargs):
         """Create a new child colleciton.
@@ -149,7 +149,7 @@ class Collection(Group):
             Toggle inclusion of extra information. Default is True.
         """
         print('{0} ({1})'.format(self.natural_name, self.filepath))
-        self._print_branch('', 0, depth=depth, verbose=verbose)
+        self._print_branch('', depth=depth, verbose=verbose)
 
     def flush(self):
         """Ensure contents are written to file."""
