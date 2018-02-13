@@ -15,6 +15,7 @@ class WrightToolsError(Exception):
     """WrightTools Base Exception."""
     pass
 
+
 class DimensionalityError(WrightToolsError):
     """DimensionalityError."""
 
@@ -50,6 +51,21 @@ class NameNotUniqueError(WrightToolsError):
         WrightToolsError.__init__(self, message)
 
 
+class MultidimensionalAxisError(WrightToolsError):
+    """Error for when operation does not support Multidimensional Axes."""
+
+    def __init__(self, axis, operation):
+        """Multidimesional Axis error.
+
+        Parameters
+        ----------
+        axis : str
+            Name of axis which causes the error.
+        operation : str
+            Name of operation which cannot handle multidimensional axes.
+        """
+        message = "{} can not handle multidimensional axis: {}".format(operation, axis)
+        WrightToolsError.__init__(self, message)
 class UnitsError(WrightToolsError):
     """Units Error."""
 
