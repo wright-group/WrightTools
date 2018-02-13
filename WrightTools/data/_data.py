@@ -550,27 +550,20 @@ class Data(Group):
         divisor_channel : int or str
             The channel in the divisor object to use.
         """
-        raise NotImplementedError
         divisor = divisor.copy()
         # map points
-        for name in divisor.axis_names:
+        for own, name in zip(self.axis_names, divisor.axis_names):
+            if own != name:
+                raise NotImplementedError('Axes must be the same for current implementation')
             if name in self.axis_names:
                 axis = getattr(self, name)
                 divisor_axis = getattr(divisor, name)
                 divisor_axis.convert(axis.units)
-                divisor.map_axis(name, axis[:])
+                if not np.allclose(axis[:], divisor_axis[:]):
+                    divisor.map_axis(name, axis[:])
             else:
                 raise RuntimeError('all axes in divisor must be contained in self')
         # divide
-        # transpose so axes of divisor are last (in order)
-        axis_indicies = [self.axis_names.index(name) for name in divisor.axis_names]
-        axis_indicies.reverse()
-        transpose_order = list(range(len(self._axes)))
-        for i in range(len(axis_indicies)):
-            ai = axis_indicies[i]
-            ri = list(range(len(self._axes)))[-(i + 1)]
-            transpose_order[ri], transpose_order[ai] = transpose_order[ai], transpose_order[ri]
-        self.transpose(transpose_order, verbose=False)
         # get own channel
         if isinstance(channel, int):
             channel_index = channel
@@ -588,9 +581,7 @@ class Data(Group):
             raise TypeError("divisor_channel: expected {int, str}, got %s" % type(divisor_channel))
         divisor_channel = divisor.channels[divisor_channel_index]
         # do division
-        channel[:] /= divisor_channel[:]
-        # transpose out
-        self.transpose(transpose_order, verbose=False)
+        channel /= divisor_channel
 
     def flush(self):
         super().flush()
