@@ -66,6 +66,8 @@ class MultidimensionalAxisError(WrightToolsError):
         """
         message = "{} can not handle multidimensional axis: {}".format(operation, axis)
         WrightToolsError.__init__(self, message)
+
+
 class UnitsError(WrightToolsError):
     """Units Error."""
 
@@ -88,6 +90,7 @@ class UnitsError(WrightToolsError):
 class WrightToolsWarning(Warning):
     """WrightTools Base Warning."""
     pass
+
 
 class VisibleDeprecationWarning(WrightToolsWarning):
     """VisibleDepreciationWarning."""
