@@ -561,10 +561,9 @@ class Data(Group):
             raise TypeError("channel: expected {int, str}, got %s" % type(channel))
         channel = self.channels[channel_index]
         # get indicies
-        arr = channel[:]
-        idxs = np.unravel_index(arr.argmin(), arr.shape)
+        idx = channel.argmin()
         # finish
-        return [a[i] for a, i in zip(self._axes, idxs)]
+        return [a[idx] for a in self._axes]
 
     def get_zenith(self, channel=0):
         """
@@ -590,10 +589,9 @@ class Data(Group):
             raise TypeError("channel: expected {int, str}, got %s" % type(channel))
         channel = self.channels[channel_index]
         # get indicies
-        arr = channel[:]
-        idxs = np.unravel_index(arr.argmax(), arr.shape)
+        idx = channel.argmax()
         # finish
-        return [a[i] for a, i in zip(self._axes, idxs)]
+        return [a[idx] for a in self._axes]
 
     def heal(self, channel=0, method='linear', fill_value=np.nan,
              verbose=True):
@@ -1098,11 +1096,11 @@ class Data(Group):
 
         Uses the share_nans method found in wt.kit.
         """
-        raise NotImplementedError
-        arrs = [c[:] for c in self.channels]
-        outs = wt_kit.share_nans(arrs)
-        for c, a, in zip(self.channels, outs):
-            c[:] = a
+        def f(_, s, channels):
+            outs = wt_kit.share_nans([c[s] for c in channels])
+            c[s] = o for c, o in zip(channels, outs)
+
+        self.channels[0].chunkwise(f, self.channels)
 
     def smooth(self, factors, channel=None, verbose=True):
         """Smooth a channel using an n-dimenional `kaiser window`__.

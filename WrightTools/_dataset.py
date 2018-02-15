@@ -149,6 +149,32 @@ class Dataset(h5py.Dataset):
         else:
             self.attrs['units'] = value.encode()
 
+    def argmax(self):
+        """Index of the maximum, ignorning nans."""
+        if 'argmax' not in self.attrs.keys():
+            def f(dataset, s):
+                return np.nanargmax(dataset[s])
+            idxs = self.chunkwise(f).values()
+            curmax = idxs[0]
+            for idx in idxs[1:]:
+                if self[idx] > self[curmax]:
+                    curmax = idx
+            self.attrs['argmax'] = curmax 
+        return self.attrs['argmax']
+
+    def argmin(self):
+        """Index of the minimum, ignoring nans."""
+        if 'argmin' not in self.attrs.keys():
+            def f(dataset, s):
+                return np.nanargmax(dataset[s])
+            idxs = self.chunkwise(f).values()
+            curmin = idxs[0]
+            for idx in idxs[1:]:
+                if self[idx] < self[curmin]:
+                    curmin = idx
+            self.attrs['argmin'] = curmin 
+        return self.attrs['argmin']
+
     def chunkwise(self, func, *args, **kwargs):
         """Execute a function for each chunk in the dataset.
 
