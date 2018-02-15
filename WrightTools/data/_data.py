@@ -1098,7 +1098,8 @@ class Data(Group):
         """
         def f(_, s, channels):
             outs = wt_kit.share_nans([c[s] for c in channels])
-            c[s] = o for c, o in zip(channels, outs)
+            for c, o in zip(channels, outs):
+                c[s] = o
 
         self.channels[0].chunkwise(f, self.channels)
 
