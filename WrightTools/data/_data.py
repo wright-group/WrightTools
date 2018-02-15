@@ -534,64 +534,6 @@ class Data(Group):
         self.attrs['variable_names'] = np.append(self.attrs['variable_names'], name.encode())
         return variable
 
-    def divide(self, divisor, channel=0, divisor_channel=0):
-        """Divide a given channel by another data object.
-
-        Divisor may be self.
-        All axes in divisor must be contained in self.
-
-        Parameters
-        ----------
-        divisor : data
-            The denominator in the division.
-        channel : int or str
-            The channel to divide into. The result will be written into this
-            channel.
-        divisor_channel : int or str
-            The channel in the divisor object to use.
-        """
-        raise NotImplementedError
-        divisor = divisor.copy()
-        # map points
-        for name in divisor.axis_names:
-            if name in self.axis_names:
-                axis = getattr(self, name)
-                divisor_axis = getattr(divisor, name)
-                divisor_axis.convert(axis.units)
-                divisor.map_axis(name, axis[:])
-            else:
-                raise RuntimeError('all axes in divisor must be contained in self')
-        # divide
-        # transpose so axes of divisor are last (in order)
-        axis_indicies = [self.axis_names.index(name) for name in divisor.axis_names]
-        axis_indicies.reverse()
-        transpose_order = list(range(len(self._axes)))
-        for i in range(len(axis_indicies)):
-            ai = axis_indicies[i]
-            ri = list(range(len(self._axes)))[-(i + 1)]
-            transpose_order[ri], transpose_order[ai] = transpose_order[ai], transpose_order[ri]
-        self.transpose(transpose_order, verbose=False)
-        # get own channel
-        if isinstance(channel, int):
-            channel_index = channel
-        elif isinstance(channel, str):
-            channel_index = self.channel_names.index(channel)
-        else:
-            raise TypeError("channel: expected {int, str}, got %s" % type(channel))
-        channel = self.channels[channel_index]
-        # get divisor channel
-        if isinstance(divisor_channel, int):
-            divisor_channel_index = divisor_channel
-        elif isinstance(divisor_channel, str):
-            divisor_channel_index = divisor.channel_names.index(divisor_channel)
-        else:
-            raise TypeError("divisor_channel: expected {int, str}, got %s" % type(divisor_channel))
-        divisor_channel = divisor.channels[divisor_channel_index]
-        # do division
-        channel[:] /= divisor_channel[:]
-        # transpose out
-        self.transpose(transpose_order, verbose=False)
-
     def flush(self):
         super().flush()
 
@@ -1364,65 +1306,6 @@ class Data(Group):
                                                                        new_axis.units,
                                                                        new_axis.size))
         return outs
-
-    def subtract(self, subtrahend, channel=0, subtrahend_channel=0):
-        """Subtract a given channel by another data object.
-
-        Subtrahend may be self.
-        All axes in subtrahend must be contained in self.
-
-        Parameters
-        ----------
-        subtrahend : data
-            The data being subtracted by. Can be self.
-        channel : int or str
-            The channel to subtract into. The result will be written into this
-            channel.
-        subtrahend_channel : int or str
-            The channel in the subtrahend object to use.
-        """
-        raise NotImplementedError
-        subtrahend = subtrahend.copy()
-        # map points
-        for name in subtrahend.axis_names:
-            if name in self.axis_names:
-                axis = getattr(self, name)
-                subtrahend_axis = getattr(subtrahend, name)
-                subtrahend_axis.convert(axis.units)
-                subtrahend.map_axis(name, axis[:])
-            else:
-                raise RuntimeError('all axes in divisor must be contained in self')
-        # divide
-        # transpose so axes of divisor are last (in order)
-        axis_indicies = [self.axis_names.index(name) for name in subtrahend.axis_names]
-        axis_indicies.reverse()
-        transpose_order = range(len(self._axes))
-        for i in range(len(axis_indicies)):
-            ai = axis_indicies[i]
-            ri = range(len(self._axes))[-(i + 1)]
-            transpose_order[ri], transpose_order[ai] = transpose_order[ai], transpose_order[ri]
-        self.transpose(transpose_order, verbose=False)
-        # get own channel
-        if isinstance(channel, int):
-            channel_index = channel
-        elif isinstance(channel, str):
-            channel_index = self.channel_names.index(channel)
-        else:
-            raise TypeError("channel: expected {int, str}, got %s" % type(channel))
-        channel = self.channels[channel_index]
-        # get subtrahend channel
-        if isinstance(subtrahend_channel, int):
-            subtrahend_channel_index = subtrahend_channel
-        elif isinstance(subtrahend_channel, str):
-            subtrahend_channel_index = subtrahend.channel_names.index(subtrahend_channel)
-        else:
-            raise TypeError("subtrahend_channel: expected {int, str}, got %s" %
-                            type(subtrahend_channel))
-        subtrahend_channel = subtrahend.channels[subtrahend_channel_index]
-        # do division
-        channel[:] -= subtrahend_channel[:]
-        # transpose out
-        self.transpose(transpose_order, verbose=False)
 
     def transform(self, axes, verbose=True):
         """Transform the data.

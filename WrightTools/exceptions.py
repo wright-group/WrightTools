@@ -11,8 +11,12 @@ import warnings
 
 # --- custom exceptions ---------------------------------------------------------------------------
 
+class WrightToolsException(Exception):
+    """WrightTools Base Exception."""
+    pass
 
-class DimensionalityError(Exception):
+
+class DimensionalityError(WrightToolsException):
     """DimensionalityError."""
 
     def __init__(self, expected, recieved):
@@ -26,10 +30,10 @@ class DimensionalityError(Exception):
             Recieved dimensionality.
         """
         message = "dimensionality must be {0} (recieved {1})".format(expected, recieved)
-        Exception.__init__(self, message)
+        super().__init__(self, message)
 
 
-class NameNotUniqueError(Exception):
+class NameNotUniqueError(WrightToolsException):
     """NameNotUniqueError."""
 
     def __init__(self, name=None):
@@ -44,10 +48,27 @@ class NameNotUniqueError(Exception):
             message = 'Name {} results in a duplicate'.format(name)
         else:
             message = "Names must be unique"
-        Exception.__init__(self, message)
+        super().__init__(self, message)
 
 
-class UnitsError(Exception):
+class MultidimensionalAxisError(WrightToolsException):
+    """Error for when operation does not support Multidimensional Axes."""
+
+    def __init__(self, axis, operation):
+        """Multidimesional Axis error.
+
+        Parameters
+        ----------
+        axis : str
+            Name of axis which causes the error.
+        operation : str
+            Name of operation which cannot handle multidimensional axes.
+        """
+        message = "{} can not handle multidimensional axis: {}".format(operation, axis)
+        super().__init__(self, message)
+
+
+class UnitsError(WrightToolsException):
     """Units Error."""
 
     def __init__(self, expected, recieved):
@@ -61,19 +82,23 @@ class UnitsError(Exception):
             Recieved units.
         """
         message = "expected units of {0} (recieved {1})".format(expected, recieved)
-        Exception.__init__(self, message)
+        super().__init__(self, message)
 
 
 # --- custom warnings -----------------------------------------------------------------------------
 
+class WrightToolsWarning(Warning):
+    """WrightTools Base Warning."""
+    pass
 
-class VisibleDeprecationWarning(Warning):
+
+class VisibleDeprecationWarning(WrightToolsWarning):
     """VisibleDepreciationWarning."""
 
     pass
 
 
-class WrongFileTypeWarning(Warning):
+class WrongFileTypeWarning(WrightToolsWarning):
     """WrongFileTypeWarning."""
 
     def warn(filepath, expected):
