@@ -11,12 +11,12 @@ import warnings
 
 # --- custom exceptions ---------------------------------------------------------------------------
 
-class WrightToolsError(Exception):
+class WrightToolsException(Exception):
     """WrightTools Base Exception."""
     pass
 
 
-class DimensionalityError(WrightToolsError):
+class DimensionalityError(WrightToolsException):
     """DimensionalityError."""
 
     def __init__(self, expected, recieved):
@@ -30,10 +30,10 @@ class DimensionalityError(WrightToolsError):
             Recieved dimensionality.
         """
         message = "dimensionality must be {0} (recieved {1})".format(expected, recieved)
-        WrightToolsError.__init__(self, message)
+        Super().__init__(self, message)
 
 
-class NameNotUniqueError(WrightToolsError):
+class NameNotUniqueError(WrightToolsException):
     """NameNotUniqueError."""
 
     def __init__(self, name=None):
@@ -48,10 +48,10 @@ class NameNotUniqueError(WrightToolsError):
             message = 'Name {} results in a duplicate'.format(name)
         else:
             message = "Names must be unique"
-        WrightToolsError.__init__(self, message)
+        Super().__init__(self, message)
 
 
-class MultidimensionalAxisError(WrightToolsError):
+class MultidimensionalAxisError(WrightToolsException):
     """Error for when operation does not support Multidimensional Axes."""
 
     def __init__(self, axis, operation):
@@ -65,10 +65,10 @@ class MultidimensionalAxisError(WrightToolsError):
             Name of operation which cannot handle multidimensional axes.
         """
         message = "{} can not handle multidimensional axis: {}".format(operation, axis)
-        WrightToolsError.__init__(self, message)
+        Super().__init__(self, message)
 
 
-class UnitsError(WrightToolsError):
+class UnitsError(WrightToolsException):
     """Units Error."""
 
     def __init__(self, expected, recieved):
@@ -82,7 +82,7 @@ class UnitsError(WrightToolsError):
             Recieved units.
         """
         message = "expected units of {0} (recieved {1})".format(expected, recieved)
-        WrightToolsError.__init__(self, message)
+        Super().__init__(self, message)
 
 
 # --- custom warnings -----------------------------------------------------------------------------
