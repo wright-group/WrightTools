@@ -30,7 +30,7 @@ class DimensionalityError(WrightToolsException):
             Recieved dimensionality.
         """
         message = "dimensionality must be {0} (recieved {1})".format(expected, recieved)
-        Super().__init__(self, message)
+        super().__init__(self, message)
 
 
 class NameNotUniqueError(WrightToolsException):
@@ -48,7 +48,7 @@ class NameNotUniqueError(WrightToolsException):
             message = 'Name {} results in a duplicate'.format(name)
         else:
             message = "Names must be unique"
-        Super().__init__(self, message)
+        super().__init__(self, message)
 
 
 class MultidimensionalAxisError(WrightToolsException):
@@ -65,7 +65,7 @@ class MultidimensionalAxisError(WrightToolsException):
             Name of operation which cannot handle multidimensional axes.
         """
         message = "{} can not handle multidimensional axis: {}".format(operation, axis)
-        Super().__init__(self, message)
+        super().__init__(self, message)
 
 
 class UnitsError(WrightToolsException):
@@ -82,7 +82,7 @@ class UnitsError(WrightToolsException):
             Recieved units.
         """
         message = "expected units of {0} (recieved {1})".format(expected, recieved)
-        Super().__init__(self, message)
+        super().__init__(self, message)
 
 
 # --- custom warnings -----------------------------------------------------------------------------
