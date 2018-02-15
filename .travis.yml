@@ -7,7 +7,6 @@ python:
 install:
   - sudo apt-get update
   - sudo apt-get install libfreetype6-dev hdf5-tools libhdf5-dev libopenblas-dev
-  - sudo python -m pip install sphinx==1.6.5 sphinx-gallery==0.1.12 sphinx_rtd_theme
   - python setup.py install
 before_script:
 - "export DISPLAY=:99.0"
