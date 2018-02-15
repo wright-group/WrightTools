@@ -7,6 +7,7 @@ python:
 install:
   - sudo apt-get update
   - sudo apt-get install libfreetype6-dev hdf5-tools libhdf5-dev libopenblas-dev
+  - pip install setuptools==38.5.1
   - python setup.py develop
 before_script:
 - "export DISPLAY=:99.0"
