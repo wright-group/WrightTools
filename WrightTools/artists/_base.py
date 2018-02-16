@@ -45,6 +45,10 @@ class Axes(matplotlib.axes.Axes):
     transposed = False
     is_sideplot = False
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.set_facecolor([0.75] * 3)
+
     def _parse_cmap(self, data=None, channel_index=None, **kwargs):
         if 'cmap' in kwargs.keys():
             if isinstance(kwargs['cmap'], str):
