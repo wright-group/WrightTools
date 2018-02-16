@@ -15,6 +15,7 @@ from . import diagrams
 from . import fit
 from . import kit
 from . import units
+from . import exceptions
 
 from ._open import *
 from .collection._collection import *
