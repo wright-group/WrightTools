@@ -329,10 +329,11 @@ class Data(Group):
         args = list(args)
         for i, arg in enumerate(args):
             if isinstance(arg, int):
-                args[i] = self._axes[i].expression
+                args[i] = self._axes[arg].expression
         # get output collection
         out = wt_collection.Collection(name='chop', parent=parent)
         # get output shape
+        print(args)
         kept = args + list(at.keys())
         kept_axes = [self._axes[self.axis_expressions.index(a)] for a in kept]
         removed_axes = [a for a in self._axes if a not in kept_axes]
@@ -351,7 +352,6 @@ class Data(Group):
                 axis_index = self.axis_names.index(axis)
                 axis = self._axes[axis_index]
                 idx[axis_index] = np.argmin(np.abs(axis[tuple(idx)] - point))
-            idx = tuple(idx)
             data = out.create_data(name='chop%03i' % i)
             for v in self.variables:
                 kwargs = {}

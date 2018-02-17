@@ -47,7 +47,6 @@ class Axes(matplotlib.axes.Axes):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.set_facecolor([0.75] * 3)
 
     def _parse_cmap(self, data=None, channel_index=None, **kwargs):
         if 'cmap' in kwargs.keys():
@@ -310,6 +309,8 @@ class Axes(matplotlib.axes.Axes):
         matplotlib.axes.Axes.contour(self, *args[:3], levels=levels,
                                      cmap=contours.cmap,
                                      zorder=zorder)
+        # decoration
+        self.set_facecolor([0.75] * 3)
         # PathCollection modifications
         for c in contours.collections:
             pass
@@ -394,6 +395,8 @@ class Axes(matplotlib.axes.Axes):
                            xlabel=kwargs.pop('xlabel', None),
                            ylabel=kwargs.pop('ylabel', None),
                            data=data, channel_index=channel_index)
+        # decoration
+        self.set_facecolor([0.75] * 3)
         # call parent
         return matplotlib.axes.Axes.pcolor(self, *args, **kwargs)  # why can't I use super?
 
