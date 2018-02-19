@@ -538,8 +538,7 @@ class Data(Group):
         super().flush()
 
     def get_nadir(self, channel=0):
-        """
-        Get the coordinates in units of the minimum in a channel.
+        """Get the coordinates in units of the minimum in a channel.
 
         Parameters
         ----------
@@ -548,10 +547,9 @@ class Data(Group):
 
         Returns
         -------
-        list of numbers
+        generator of numbers
             Coordinates in units for each axis.
         """
-        raise NotImplementedError
         # get channel
         if isinstance(channel, int):
             channel_index = channel
@@ -563,11 +561,11 @@ class Data(Group):
         # get indicies
         idx = channel.argmin()
         # finish
-        return [a[idx] for a in self._axes]
+        for a in self._axes:
+            yield a[idx]
 
     def get_zenith(self, channel=0):
-        """
-        Get the coordinates in units of the maximum in a channel.
+        """Get the coordinates in units of the maximum in a channel.
 
         Parameters
         ----------
@@ -576,10 +574,9 @@ class Data(Group):
 
         Returns
         -------
-        list of numbers
+        generator of numbers
             Coordinates in units for each axis.
         """
-        raise NotImplementedError
         # get channel
         if isinstance(channel, int):
             channel_index = channel
@@ -591,7 +588,8 @@ class Data(Group):
         # get indicies
         idx = channel.argmax()
         # finish
-        return [a[idx] for a in self._axes]
+        for a in self._axes:
+            yield a[idx]
 
     def heal(self, channel=0, method='linear', fill_value=np.nan,
              verbose=True):
