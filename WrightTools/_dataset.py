@@ -166,7 +166,7 @@ class Dataset(h5py.Dataset):
             for idx in idxs[1:]:
                 if self[idx] > self[curmax]:
                     curmax = idx
-            self.attrs['argmax'] = curmax 
+            self.attrs['argmax'] = curmax
         return tuple(self.attrs['argmax'])
 
     def argmin(self):
@@ -182,7 +182,7 @@ class Dataset(h5py.Dataset):
             for idx in idxs[1:]:
                 if self[idx] < self[curmin]:
                     curmin = idx
-            self.attrs['argmin'] = curmin 
+            self.attrs['argmin'] = curmin
         return tuple(self.attrs['argmin'])
 
     def chunkwise(self, func, *args, **kwargs):
