@@ -34,7 +34,7 @@ setup(
     setup_requires=['pytest-runner'],
     tests_require=['pytest', 'pytest-cov'],
     install_requires=required,
-    extras_require={'docs': ['sphinx-gallery>=0.1.9']},
+    extras_require={'docs': ['sphinx-gallery==0.1.12']},
     version=version,
     description='Tools for loading, processing, and plotting multidimensional spectroscopy data.',
     author='Blaise Thompson',

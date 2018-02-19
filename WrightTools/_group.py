@@ -25,7 +25,14 @@ wt5_version = '0.0.0'
 # --- class ---------------------------------------------------------------------------------------
 
 
-class Group(h5py.Group):
+class MetaClass(type(h5py.Group)):
+
+    def __call__(cls, *args, **kwargs):
+        """Bypass normal construction."""
+        return cls.__new__(cls, *args, **kwargs)
+
+
+class Group(h5py.Group, metaclass=MetaClass):
     """Container of groups and datasets."""
 
     instances = {}
@@ -62,16 +69,25 @@ class Group(h5py.Group):
                 self.attrs[key] = value
             except TypeError:
                 # some values have no native HDF5 equivalent
-                warnings.warn("'%s' not included in attrs because its Type (%s) cannot be represented" %
-                              (key, type(value)))
-        # load from file
-        self._items = []
-        for name in self.item_names:
-            self._items.append(self[name])
-            setattr(self, name, self[name])
-        self._update_natural_namespace()
+                message = "'{}' not included in attrs because its Type ({}) cannot be represented"
+                message = message.format(key, type(value))
+                warnings.warn(message)
         # the following are populated if not already recorded
         self.__version__
+        self.item_names
+
+    def __getattr__(self, key):
+        """Gets called if attribute not in self.__dict__.
+
+        See __getattribute__.
+        """
+        if key in self.keys():
+            value = self[key]
+            setattr(self, key, value)
+            return self[key]
+        else:
+            message = '{0} has no attribute {1}'.format(self.class_name, key)
+            raise AttributeError(message)
 
     def __getitem__(self, key):
         from .collection import Collection
@@ -143,10 +159,6 @@ class Group(h5py.Group):
         if '__version__' not in self.file.attrs.keys():
             self.file.attrs['__version__'] = wt5_version
         return self.file.attrs['__version__']
-
-    def _update_natural_namespace(self):
-        for name in self.item_names:
-            setattr(self, name, self[name])
 
     @property
     def fullpath(self):
@@ -248,9 +260,7 @@ class Group(h5py.Group):
             if 'item_names' in parent.attrs.keys():
                 new = parent.item_names + (name,)
                 parent.attrs['item_names'] = np.array(new, dtype='S')
-            parent._update_natural_namespace()
             new = parent[name]
-            new._update_natural_namespace()
         # finish
         if verbose:
             print('{0} copied to {1}'.format(self.fullpath, new.fullpath))
@@ -291,7 +301,7 @@ class Group(h5py.Group):
                 raise FileExistsError(filepath)
         # copy to new file
         h5py.File(filepath)
-        new = Group(filepath=filepath)
+        new = Group(filepath=filepath, edit_local=True)
         # attrs
         for k, v in self.attrs.items():
             new.attrs[k] = v

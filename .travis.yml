@@ -16,6 +16,7 @@ install:
   - conda info -a
   - conda create -n wrighttools --file requirements.txt
   - source activate wrighttools
+  - conda install sphinx=1.6.5 sphinx-gallery=0.1.12 sphinx_rtd_theme
   - python setup.py install
 before_script:
 - "export DISPLAY=:99.0"
