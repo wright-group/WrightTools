@@ -561,8 +561,7 @@ class Data(Group):
         # get indicies
         idx = channel.argmin()
         # finish
-        for a in self._axes:
-            yield a[idx]
+        return tuple(a[idx] for a in self._axes)
 
     def get_zenith(self, channel=0):
         """Get the coordinates in units of the maximum in a channel.
@@ -588,8 +587,7 @@ class Data(Group):
         # get indicies
         idx = channel.argmax()
         # finish
-        for a in self._axes:
-            yield a[idx]
+        return tuple(a[idx] for a in self._axes)
 
     def heal(self, channel=0, method='linear', fill_value=np.nan,
              verbose=True):
