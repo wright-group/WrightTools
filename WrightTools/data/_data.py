@@ -679,11 +679,12 @@ class Data(Group):
         # get subtrahend
         ss = [slice(None)] * self.ndim
         if npts > 0:
-            ss[axis] = slice(npts, None, None)
+            ss[axis] = slice(0, npts, None)
         else:
-            ss[axis] = slice(0, -npts, None)
+            ss[axis] = slice(-npts, None, None)
         subtrahend = np.mean(channel[ss], axis=axis)
-        subtrahend = subtrahend[tuple([Ellipsis]) + tuple([None] * axis)]
+        if self.ndim > 1:
+            subtrahend = np.expand_dims(subtrahend, axis=axis)
         # level
         channel[:] = channel[:] - subtrahend  # verbose
         # finish
