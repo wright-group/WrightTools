@@ -665,7 +665,8 @@ class Data(Group):
             Axis to level along.
         npts : int
             Number of points to average for each slice. Positive numbers
-            take points at high
+            take points at leading indicies and negative numbers take points
+            at trailing indicies.
         verbose : bool (optional)
             Toggle talkback. Default is True.
         """
