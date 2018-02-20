@@ -653,73 +653,43 @@ class Data(Group):
             print('channel {0} healed in {1} seconds'.format(
                 channel.name, np.around(timer.interval, decimals=3)))
 
-    def level(self, channel, axis, npts, verbose=True):
-        """For a channel, subtract the average value of several points at the edge of a given axis.
+    def level(self, channel, axis, npts, *, verbose=True):
+        """For a channel, subtract the average value of several points at
+        the edge of a given axis.
 
         Parameters
         ----------
         channel : int or str
             Channel to level.
-        axis : int or str
+        axis : int
             Axis to level along.
         npts : int
             Number of points to average for each slice. Positive numbers
-            take leading points and negative numbers take trailing points.
+            take points at high
         verbose : bool (optional)
             Toggle talkback. Default is True.
         """
-        raise NotImplementedError
-        # channel ---------------------------------------------------------------------------------
-        if isinstance(channel, int):
-            channel_index = channel
-        elif isinstance(channel, str):
-            channel_index = self.channel_names.index(channel)
-        else:
-            raise TypeError("channel: expected {int, str}, got %s" % type(channel))
-        channel = self.channels[channel_index]
-        # axis ------------------------------------------------------------------------------------
-        if isinstance(axis, int):
-            axis_index = axis
-        elif isinstance(axis, str):
-            axis_index = self.axis_names.index(axis)
-        else:
-            raise TypeError("axis: expected {int, str}, got %s" % type(axis))
-        # verify npts not zero --------------------------------------------------------------------
+        # TODO: mark as not memory-safe
+        channel_index = wt_kit.get_index(self.channel_names, channel)
+        channel = self.channels[0]
+        # verify npts not zero
         npts = int(npts)
         if npts == 0:
-            print('cannot level if no sampling range is specified')
-            return
-        # level -----------------------------------------------------------------------------------
-        channel = self.channels[channel_index]
-        values = channel[:]
-        # transpose so the axis of interest is last
-        transpose_order = range(len(values.shape))
-        # replace axis_index with zero
-        transpose_order = [len(values.shape) - 1 if i ==
-                           axis_index else i for i in transpose_order]
-        transpose_order[len(values.shape) - 1] = axis_index
-        values = values.transpose(transpose_order)
-        # subtract
-        for index in np.ndindex(values[..., 0].shape):
-            if npts > 0:
-                offset = np.nanmean(values[index][:npts])
-            elif npts < 0:
-                offset = np.nanmean(values[index][npts:])
-            values[index] = values[index] - offset
-        # transpose back
-        values = values.transpose(transpose_order)
-        # return
-        channel[:] = values
-        channel._null = 0.
-        # print
+            raise Exception  # TODO: better exception
+        # get subtrahend
+        ss = [slice(None)] * self.ndim
+        if npts > 0:
+            ss[axis] = slice(npts, None, None)
+        else:
+            ss[axis] = slice(0, -npts, None)
+        subtrahend = np.mean(channel[ss], axis=axis)
+        subtrahend = subtrahend[tuple([Ellipsis]) + tuple([None] * axis)]
+        # level
+        channel[:] = channel[:] - subtrahend  # verbose
+        # finish
+        channel._null = 0
         if verbose:
-            axis = self._axes[axis_index]
-            if npts > 0:
-                points = axis[:npts]
-            if npts < 0:
-                points = axis[npts:]
-            print('channel', channel.name, 'offset by', axis.name, 'between',
-                  int(points.min()), 'and', int(points.max()), axis.units)
+            print('channel {0} leveled along axis {1}'.format(channel.natural_name, axis))
 
     def map_axis(self, axis, points, input_units='same', edge_tolerance=0., verbose=True):
         """Map points of an axis to new points using linear interpolation.
