@@ -79,7 +79,6 @@ def join(datas, method='first', parent=None, verbose=True, **kwargs):
             units = v['units']
             shape = [1] * ndim
             shape[i] = values.size
-            print(shape, values.size)
             values.shape = tuple(shape)
             out.create_variable(name=k, values=values, units=units)
             i += 1
@@ -89,18 +88,16 @@ def join(datas, method='first', parent=None, verbose=True, **kwargs):
         out.create_channel(name=channel_name, units=units)
     # channels
     for data in datas:
-        print(data)
         new_idx = []
         for variable_name in out.variable_names:
             p = data[variable_name][:][np.newaxis, ...]
             arr = out[variable_name][:][..., np.newaxis]
-            print(arr.shape, p.shape)
             i = np.argmin(np.abs(arr - p), axis=np.argmax(arr.shape))
             new_idx.append(i)
         for channel_name, units in zip(channel_names, channel_units):
             old = data[channel_name]
             new = out[channel_name]
-            ss = old[:]
+            # These lines are needed because h5py doesn't support advanced indexing natively
             vals = new[:]
             vals[new_idx] = old[:]
             new[:] = vals
