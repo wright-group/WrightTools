@@ -61,23 +61,19 @@ def join(datas, method='first', parent=None, verbose=True, **kwargs):
     for c in datas[0].channels:
         channel_names.append(c.natural_name)
         channel_units.append(c.units)
-    # get output data
-    out = Data(name='join', parent=parent)
     # variables
     vs = collections.OrderedDict()
     for name, units in zip(variable_names, variable_units):
-        values = set()
-        for data in datas:
-            v = data[name]
-            arr = v[:]  # TODO: units arr = wt_units.converter(v[:], v.units, units)
-            for _, x in np.ndenumerate(arr):
-                values.add(x)
-        values = np.array(sorted(values))
+        values = np.concatenate([d[name][:] for d in datas])
+        rounded = values.round(8)
+        _, idxs = np.unique(rounded, True)
+        values = values.flat[idxs]
         vs[name] = {'values': values, 'units': units}
     # TODO: the following should become a new from method
-    def from_dict(d):
+    def from_dict(d, parent=None):
         ndim = len(d)
         i = 0
+        out = Data(name='join', parent=parent)
         for k, v in d.items():
             values = v['values']
             units = v['units']
@@ -87,21 +83,27 @@ def join(datas, method='first', parent=None, verbose=True, **kwargs):
             values.shape = tuple(shape)
             out.create_variable(name=k, values=values, units=units)
             i += 1
-    from_dict(vs)
-    # channels
+        return out
+    out = from_dict(vs, parent=parent)
     for channel_name, units in zip(channel_names, channel_units):
-        new = out.create_channel(name=channel_name, units=units)
-        for data in datas:
+        out.create_channel(name=channel_name, units=units)
+    # channels
+    for data in datas:
+        print(data)
+        new_idx = []
+        for variable_name in out.variable_names:
+            p = data[variable_name][:][np.newaxis, ...]
+            arr = out[variable_name][:][..., np.newaxis]
+            print(arr.shape, p.shape)
+            i = np.argmin(np.abs(arr - p), axis=np.argmax(arr.shape))
+            new_idx.append(i)
+        for channel_name, units in zip(channel_names, channel_units):
             old = data[channel_name]
-            old /= old.max()
-            for old_idx, value in np.ndenumerate(old):
-                new_idx = []
-                for variable_name in out.variable_names:
-                    p = data[variable_name][old_idx]
-                    arr = out[variable_name][:]
-                    i = np.argmin(np.abs(arr - p))
-                    new_idx.append(i)
-                new[tuple(new_idx)] = old[old_idx]
+            new = out[channel_name]
+            ss = old[:]
+            vals = new[:]
+            vals[new_idx] = old[:]
+            new[:] = vals
     # axes
     out.transform(axis_expressions)
     # finish
