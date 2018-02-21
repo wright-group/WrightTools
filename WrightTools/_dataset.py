@@ -100,6 +100,10 @@ class Dataset(h5py.Dataset):
             del self.attrs['max']
         if 'min' in self.attrs.keys():
             del self.attrs['min']
+        if 'argmax' in self.attrs.keys():
+            del self.attrs['argmax']
+        if 'argmin' in self.attrs.keys():
+            del self.attrs['argmin']
 
     @property
     def _leaf(self):
@@ -148,6 +152,38 @@ class Dataset(h5py.Dataset):
                 self.attrs.pop('units')
         else:
             self.attrs['units'] = value.encode()
+
+    def argmax(self):
+        """Index of the maximum, ignorning nans."""
+        if 'argmax' not in self.attrs.keys():
+            def f(dataset, s):
+                arr = dataset[s]
+                amin = np.nanargmax(arr)
+                idx = np.unravel_index(amin, arr.shape)
+                return tuple(i + ss.indices(0)[0] for i, ss in zip(idx, s))
+            idxs = list(self.chunkwise(f).values())
+            curmax = idxs[0]
+            for idx in idxs[1:]:
+                if self[idx] > self[curmax]:
+                    curmax = idx
+            self.attrs['argmax'] = curmax
+        return tuple(self.attrs['argmax'])
+
+    def argmin(self):
+        """Index of the minimum, ignoring nans."""
+        if 'argmin' not in self.attrs.keys():
+            def f(dataset, s):
+                arr = dataset[s]
+                amin = np.nanargmin(arr)
+                idx = np.unravel_index(amin, arr.shape)
+                return tuple(i + ss.indices(0)[0] for i, ss in zip(idx, s))
+            idxs = list(self.chunkwise(f).values())
+            curmin = idxs[0]
+            for idx in idxs[1:]:
+                if self[idx] < self[curmin]:
+                    curmin = idx
+            self.attrs['argmin'] = curmin
+        return tuple(self.attrs['argmin'])
 
     def chunkwise(self, func, *args, **kwargs):
         """Execute a function for each chunk in the dataset.
