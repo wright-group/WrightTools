@@ -94,6 +94,7 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True):
             # if this ends up being too fragile, we might have to use the points arrays
             # ---Blaise 2018-01-09
             values = np.reshape(arr[index], shape)
+            print(name, values)
             if 'w' in name and name.startswith(tuple(data.variable_names)):
                 inherited_shape = data[name.split('_')[0]].shape
                 for i, s in enumerate(inherited_shape):

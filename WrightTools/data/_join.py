@@ -51,8 +51,8 @@ def join(datas, method='first', parent=None, verbose=True, **kwargs):
     variable_names = []
     for a in datas[0].axes:
         for v in a.variables:
-            variable_names.append(a.natural_name)
-            variable_units.append(a.units)
+            variable_names.append(v.natural_name)
+            variable_units.append(v.units)
     # TODO: check if all other datas have the same variable names
     # check if channels are valid
     # TODO: this is a hack
@@ -64,7 +64,7 @@ def join(datas, method='first', parent=None, verbose=True, **kwargs):
     # variables
     vs = collections.OrderedDict()
     for name, units in zip(variable_names, variable_units):
-        values = np.concatenate([d[name][:] for d in datas])
+        values = np.concatenate([d[name][:].flat for d in datas])
         rounded = values.round(8)
         _, idxs = np.unique(rounded, True)
         values = values.flat[idxs]
