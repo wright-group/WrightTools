@@ -4,12 +4,10 @@
 # --- import --------------------------------------------------------------------------------------
 
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 import collections
 import operator
 import functools
-import posixpath
+import warnings
 
 import numpy as np
 
@@ -654,8 +652,7 @@ class Data(Group):
                 channel.name, np.around(timer.interval, decimals=3)))
 
     def level(self, channel, axis, npts, *, verbose=True):
-        """For a channel, subtract the average value of several points at
-        the edge of a given axis.
+        """Subtract the average value of npts at the edge of a given axis.
 
         Parameters
         ----------
@@ -670,20 +667,20 @@ class Data(Group):
         verbose : bool (optional)
             Toggle talkback. Default is True.
         """
-        # TODO: mark as not memory-safe
+        warnings.warn('level', category=wt_exceptions.EntireDatasetInMemoryWarning)
         channel_index = wt_kit.get_index(self.channel_names, channel)
         channel = self.channels[0]
         # verify npts not zero
         npts = int(npts)
         if npts == 0:
-            raise Exception  # TODO: better exception
+            raise wt_exceptions.ValueError('npts must not be zero')
         # get subtrahend
         ss = [slice(None)] * self.ndim
         if npts > 0:
             ss[axis] = slice(0, npts, None)
         else:
             ss[axis] = slice(-npts, None, None)
-        subtrahend = np.mean(channel[ss], axis=axis)
+        subtrahend = np.nanmean(channel[ss], axis=axis)
         if self.ndim > 1:
             subtrahend = np.expand_dims(subtrahend, axis=axis)
         # level
