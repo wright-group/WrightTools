@@ -9,6 +9,7 @@ import collections
 import numpy as np
 
 from .. import units as wt_units
+from .. import kit as wt_kit
 from ._data import Data
 
 
@@ -61,7 +62,7 @@ def join(datas, method='first', parent=None, verbose=True, **kwargs):
     for c in datas[0].channels:
         channel_names.append(c.natural_name)
         channel_units.append(c.units)
-    # variables
+    # axis variables
     vs = collections.OrderedDict()
     for name, units in zip(variable_names, variable_units):
         values = np.concatenate([d[name][:].flat for d in datas])
@@ -86,20 +87,33 @@ def join(datas, method='first', parent=None, verbose=True, **kwargs):
     out = from_dict(vs, parent=parent)
     for channel_name, units in zip(channel_names, channel_units):
         out.create_channel(name=channel_name, units=units)
+    for variable_name in datas[0].variable_names:
+        if variable_name not in vs.keys():
+            units = datas[0][variable_name].units
+            shape = tuple(1 if i == 1 else n for i, n in zip(datas[0][variable_name].shape, out.shape))
+            out.create_variable(name=variable_name, units=units, shape=shape)
     # channels
     for data in datas:
         new_idx = []
-        for variable_name in out.variable_names:
+        for variable_name in vs.keys():
             p = data[variable_name][:][np.newaxis, ...]
             arr = out[variable_name][:][..., np.newaxis]
             i = np.argmin(np.abs(arr - p), axis=np.argmax(arr.shape))
             new_idx.append(i)
-        for channel_name, units in zip(channel_names, channel_units):
+        for variable_name in out.variable_names:
+            if variable_name not in vs.keys():
+                old = data[variable_name]
+                new = out[variable_name]
+                # These lines are needed because h5py doesn't support advanced indexing natively
+                vals = new[:]
+                vals[wt_kit.valid_index(new_idx, old.shape)] = old[:]
+                new[:] = vals
+        for channel_name in channel_names:
             old = data[channel_name]
             new = out[channel_name]
             # These lines are needed because h5py doesn't support advanced indexing natively
             vals = new[:]
-            vals[new_idx] = old[:]
+            vals[wt_kit.valid_index(new_idx, old.shape)] = old[:]
             new[:] = vals
     # axes
     out.transform(axis_expressions)
