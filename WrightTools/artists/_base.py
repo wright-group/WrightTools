@@ -195,9 +195,9 @@ class Axes(matplotlib.axes.Axes):
             # arrays
             channel_index = wt_kit.get_index(data.channel_names, channel)
             signed = data.channels[channel_index].signed
-            xi = data.axes[0][:]
-            yi = data.axes[1][:]
-            zi = data.channels[channel_index][:].T
+            xi = data.axes[0].full
+            yi = data.axes[1].full
+            zi = data.channels[channel_index][:]
             args = [xi, yi, zi] + args
             # limits
             kwargs = self._parse_limits(data=data, channel_index=channel_index,
@@ -264,9 +264,9 @@ class Axes(matplotlib.axes.Axes):
                 raise wt_exceptions.DimensionalityError(2, data.dimensionality)
             # arrays
             channel_index = wt_kit.get_index(data.channel_names, channel)
-            xi = data.axes[0][:]
-            yi = data.axes[1][:]
-            zi = data.channels[channel_index][:].T
+            xi = data.axes[0].full
+            yi = data.axes[1].full
+            zi = data.channels[channel_index][:]
             args = [xi, yi, zi] + args
             # limits
             kwargs = self._parse_limits(data=data, channel_index=channel_index,
@@ -1131,6 +1131,9 @@ def pcolor_helper(xi, yi, zi, transform=None):
     Z : 2D ndarray
         Z dimension for pcolor
     """
+    xi = xi.copy()
+    yi = yi.copy()
+    zi = zi.copy()
     if xi.ndim == 1:
         xi.shape = (xi.size, 1)
     if yi.ndim == 1:
