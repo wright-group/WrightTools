@@ -4,12 +4,10 @@
 # --- import --------------------------------------------------------------------------------------
 
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 import collections
 import operator
 import functools
-import posixpath
+import warnings
 
 import numpy as np
 
@@ -538,8 +536,7 @@ class Data(Group):
         super().flush()
 
     def get_nadir(self, channel=0):
-        """
-        Get the coordinates in units of the minimum in a channel.
+        """Get the coordinates in units of the minimum in a channel.
 
         Parameters
         ----------
@@ -548,10 +545,9 @@ class Data(Group):
 
         Returns
         -------
-        list of numbers
+        generator of numbers
             Coordinates in units for each axis.
         """
-        raise NotImplementedError
         # get channel
         if isinstance(channel, int):
             channel_index = channel
@@ -561,14 +557,12 @@ class Data(Group):
             raise TypeError("channel: expected {int, str}, got %s" % type(channel))
         channel = self.channels[channel_index]
         # get indicies
-        arr = channel[:]
-        idxs = np.unravel_index(arr.argmin(), arr.shape)
+        idx = channel.argmin()
         # finish
-        return [a[i] for a, i in zip(self._axes, idxs)]
+        return tuple(a[idx] for a in self._axes)
 
     def get_zenith(self, channel=0):
-        """
-        Get the coordinates in units of the maximum in a channel.
+        """Get the coordinates in units of the maximum in a channel.
 
         Parameters
         ----------
@@ -577,10 +571,9 @@ class Data(Group):
 
         Returns
         -------
-        list of numbers
+        generator of numbers
             Coordinates in units for each axis.
         """
-        raise NotImplementedError
         # get channel
         if isinstance(channel, int):
             channel_index = channel
@@ -590,10 +583,9 @@ class Data(Group):
             raise TypeError("channel: expected {int, str}, got %s" % type(channel))
         channel = self.channels[channel_index]
         # get indicies
-        arr = channel[:]
-        idxs = np.unravel_index(arr.argmax(), arr.shape)
+        idx = channel.argmax()
         # finish
-        return [a[i] for a, i in zip(self._axes, idxs)]
+        return tuple(a[idx] for a in self._axes)
 
     def heal(self, channel=0, method='linear', fill_value=np.nan,
              verbose=True):
@@ -653,73 +645,44 @@ class Data(Group):
             print('channel {0} healed in {1} seconds'.format(
                 channel.name, np.around(timer.interval, decimals=3)))
 
-    def level(self, channel, axis, npts, verbose=True):
-        """For a channel, subtract the average value of several points at the edge of a given axis.
+    def level(self, channel, axis, npts, *, verbose=True):
+        """Subtract the average value of npts at the edge of a given axis.
 
         Parameters
         ----------
         channel : int or str
             Channel to level.
-        axis : int or str
+        axis : int
             Axis to level along.
         npts : int
             Number of points to average for each slice. Positive numbers
-            take leading points and negative numbers take trailing points.
+            take points at leading indicies and negative numbers take points
+            at trailing indicies.
         verbose : bool (optional)
             Toggle talkback. Default is True.
         """
-        raise NotImplementedError
-        # channel ---------------------------------------------------------------------------------
-        if isinstance(channel, int):
-            channel_index = channel
-        elif isinstance(channel, str):
-            channel_index = self.channel_names.index(channel)
-        else:
-            raise TypeError("channel: expected {int, str}, got %s" % type(channel))
-        channel = self.channels[channel_index]
-        # axis ------------------------------------------------------------------------------------
-        if isinstance(axis, int):
-            axis_index = axis
-        elif isinstance(axis, str):
-            axis_index = self.axis_names.index(axis)
-        else:
-            raise TypeError("axis: expected {int, str}, got %s" % type(axis))
-        # verify npts not zero --------------------------------------------------------------------
+        warnings.warn('level', category=wt_exceptions.EntireDatasetInMemoryWarning)
+        channel_index = wt_kit.get_index(self.channel_names, channel)
+        channel = self.channels[0]
+        # verify npts not zero
         npts = int(npts)
         if npts == 0:
-            print('cannot level if no sampling range is specified')
-            return
-        # level -----------------------------------------------------------------------------------
-        channel = self.channels[channel_index]
-        values = channel[:]
-        # transpose so the axis of interest is last
-        transpose_order = range(len(values.shape))
-        # replace axis_index with zero
-        transpose_order = [len(values.shape) - 1 if i ==
-                           axis_index else i for i in transpose_order]
-        transpose_order[len(values.shape) - 1] = axis_index
-        values = values.transpose(transpose_order)
-        # subtract
-        for index in np.ndindex(values[..., 0].shape):
-            if npts > 0:
-                offset = np.nanmean(values[index][:npts])
-            elif npts < 0:
-                offset = np.nanmean(values[index][npts:])
-            values[index] = values[index] - offset
-        # transpose back
-        values = values.transpose(transpose_order)
-        # return
-        channel[:] = values
-        channel._null = 0.
-        # print
+            raise wt_exceptions.ValueError('npts must not be zero')
+        # get subtrahend
+        ss = [slice(None)] * self.ndim
+        if npts > 0:
+            ss[axis] = slice(0, npts, None)
+        else:
+            ss[axis] = slice(-npts, None, None)
+        subtrahend = np.nanmean(channel[ss], axis=axis)
+        if self.ndim > 1:
+            subtrahend = np.expand_dims(subtrahend, axis=axis)
+        # level
+        channel[:] = channel[:] - subtrahend  # verbose
+        # finish
+        channel._null = 0
         if verbose:
-            axis = self._axes[axis_index]
-            if npts > 0:
-                points = axis[:npts]
-            if npts < 0:
-                points = axis[npts:]
-            print('channel', channel.name, 'offset by', axis.name, 'between',
-                  int(points.min()), 'and', int(points.max()), axis.units)
+            print('channel {0} leveled along axis {1}'.format(channel.natural_name, axis))
 
     def map_axis(self, axis, points, input_units='same', edge_tolerance=0., verbose=True):
         """Map points of an axis to new points using linear interpolation.
@@ -1098,11 +1061,12 @@ class Data(Group):
 
         Uses the share_nans method found in wt.kit.
         """
-        raise NotImplementedError
-        arrs = [c[:] for c in self.channels]
-        outs = wt_kit.share_nans(arrs)
-        for c, a, in zip(self.channels, outs):
-            c[:] = a
+        def f(_, s, channels):
+            outs = wt_kit.share_nans([c[s] for c in channels])
+            for c, o in zip(channels, outs):
+                c[s] = o
+
+        self.channels[0].chunkwise(f, self.channels)
 
     def smooth(self, factors, channel=None, verbose=True):
         """Smooth a channel using an n-dimenional `kaiser window`__.
