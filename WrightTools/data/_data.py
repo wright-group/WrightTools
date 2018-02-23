@@ -670,11 +670,15 @@ class Data(Group):
             raise wt_exceptions.ValueError('npts must not be zero')
         # get subtrahend
         ss = [slice(None)] * self.ndim
+        print(npts)
         if npts > 0:
             ss[axis] = slice(0, npts, None)
         else:
-            ss[axis] = slice(-npts, None, None)
+            ss[axis] = slice(npts, None, None)
+        print(ss)
+        print(channel[ss].shape)
         subtrahend = np.nanmean(channel[ss], axis=axis)
+        print(subtrahend.shape)
         if self.ndim > 1:
             subtrahend = np.expand_dims(subtrahend, axis=axis)
         # level
