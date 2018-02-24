@@ -22,7 +22,7 @@ __all__ = ['from_Cary']
 # --- from function -------------------------------------------------------------------------------
 
 
-def from_Cary(filepath, parent=None, verbose=True):
+def from_Cary(filepath, name=None, parent=None, verbose=True):
     """Create a collection object from a Cary UV VIS absorbance file.
     
     We hope to support as many Cary instruments and datasets as possible.
@@ -59,6 +59,8 @@ def from_Cary(filepath, parent=None, verbose=True):
     filesuffix = os.path.basename(filepath).split('.')[-1]
     if filesuffix != 'csv':
         wt_exceptions.WrongFileTypeWarning.warn(filepath, 'csv')
+    if name is None:
+        name = 'cary'
     # import array
     lines = []
     with open(filepath, 'r') as f:
@@ -76,7 +78,7 @@ def from_Cary(filepath, parent=None, verbose=True):
     #lines = [i for i in lines if len(i) > 0]
     arr = np.array(lines).T
     # chew through all scans
-    datas = Collection(name='cary', parent=parent, edit_local=parent is not None)
+    datas = Collection(name=name, parent=parent, edit_local=parent is not None)
     for i in range(0, len(header)-1, 2):
         print(columns[i], columns[i+1])
         r = re.compile("[ \t\(\)]+")
