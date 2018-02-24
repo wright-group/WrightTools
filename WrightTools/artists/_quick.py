@@ -10,7 +10,7 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 
-from ._base import create_figure, plot_colorbar, savefig
+from ._helpers import create_figure, plot_colorbar, savefig
 from ._colors import colormaps
 from .. import kit as wt_kit
 
@@ -24,7 +24,7 @@ __all__ = ['quick1D', 'quick2D']
 # --- general purpose plotting functions ----------------------------------------------------------
 
 
-def quick1D(data, axis=0, at={}, channel=0, local=False, autosave=False, save_directory=None,
+def quick1D(data, axis=0, at={}, channel=0, *, local=False, autosave=False, save_directory=None,
             fname=None, verbose=True):
     """Quickly plot 1D slice(s) of data.
 
@@ -122,7 +122,7 @@ def quick1D(data, axis=0, at={}, channel=0, local=False, autosave=False, save_di
     return out
 
 
-def quick2D(data, xaxis=1, yaxis=0, at={}, channel=0, contours=0, pixelated=True,
+def quick2D(data, xaxis=1, yaxis=0, at={}, channel=0, *, contours=0, pixelated=True,
             dynamic_range=False, local=False, contours_local=True, autosave=False,
             save_directory=None, fname=None, verbose=True):
     """Quickly plot 2D slice(s) of data.
