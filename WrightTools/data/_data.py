@@ -41,9 +41,6 @@ class Data(Group):
     class_name = 'Data'
 
     def __init__(self, *args, **kwargs):
-        kwargs.pop('axis_names', None)
-        kwargs.pop('channel_names', None)
-        kwargs.pop('constant_names', None)
         self._axes = []
         Group.__init__(self, *args, **kwargs)
         # populate axes from attrs string
