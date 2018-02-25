@@ -4,10 +4,6 @@
 # --- import --------------------------------------------------------------------------------------
 
 
-import os
-import sys
-import warnings
-
 import numpy as np
 
 import matplotlib
@@ -35,9 +31,6 @@ class Axes(matplotlib.axes.Axes):
 
     transposed = False
     is_sideplot = False
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
 
     def _parse_cmap(self, data=None, channel_index=None, **kwargs):
         if 'cmap' in kwargs.keys():
@@ -561,4 +554,4 @@ def apply_rcparams(kind='fast'):
         matplotlib.rcParams['contour.negative_linestyle'] = 'solid'
 
 
-from ._helpers import pcolor_helper  # circular import
+from ._helpers import pcolor_helper  # flake8: noqa (circular import)

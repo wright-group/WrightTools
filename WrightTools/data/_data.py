@@ -331,7 +331,6 @@ class Data(Group):
         # get output collection
         out = wt_collection.Collection(name='chop', parent=parent)
         # get output shape
-        print(args)
         kept = args + list(at.keys())
         kept_axes = [self._axes[self.axis_expressions.index(a)] for a in kept]
         removed_axes = [a for a in self._axes if a not in kept_axes]
@@ -670,15 +669,11 @@ class Data(Group):
             raise wt_exceptions.ValueError('npts must not be zero')
         # get subtrahend
         ss = [slice(None)] * self.ndim
-        print(npts)
         if npts > 0:
             ss[axis] = slice(0, npts, None)
         else:
             ss[axis] = slice(npts, None, None)
-        print(ss)
-        print(channel[ss].shape)
         subtrahend = np.nanmean(channel[ss], axis=axis)
-        print(subtrahend.shape)
         if self.ndim > 1:
             subtrahend = np.expand_dims(subtrahend, axis=axis)
         # level
