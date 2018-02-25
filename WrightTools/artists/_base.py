@@ -326,6 +326,9 @@ class Axes(matplotlib.axes.Axes):
     def pcolor(self, *args, **kwargs):
         """Create a pseudocolor plot of a 2-D array.
 
+        Uses pcolor_helper to ensure that color boundaries are drawn
+        bisecting point positions, when possible.
+
         Parameters
         ----------
         data : 2D WrightTools.data.Data object
