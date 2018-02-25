@@ -378,6 +378,11 @@ class Axes(matplotlib.axes.Axes):
             # cmap
             kwargs = self._parse_cmap(data=data, channel_index=channel_index, **kwargs)
         else:
+            xi, yi, zi = args[:3]
+            if xi.ndim == 1 and xi.size == zi.shape[1]:
+                xi, yi, zi = pcolor_helper(xi, yi, zi)
+            elif xi.ndim == 2 and xi.shape == zi.shape:
+                xi, yi, zi = pcolor_helper(xi, yi, zi)
             data = None
             channel_index = 0
             kwargs = self._parse_limits(zi=args[2], **kwargs)
