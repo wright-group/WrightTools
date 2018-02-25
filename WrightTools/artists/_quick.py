@@ -101,7 +101,8 @@ def quick1D(data, axis=0, at={}, channel=0, *, local=False, autosave=False, save
         if local:
             pass
         else:
-            plt.ylim(channel.min(), channel.max())
+            data_channel = data.channels[channel_index]
+            plt.ylim(data_channel.min(), data_channel.max())
         # label axes
         ax.set_xlabel(axis.label, fontsize=18)
         ax.set_ylabel(channel.name, fontsize=18)
@@ -195,7 +196,7 @@ def quick2D(data, xaxis=1, yaxis=0, at={}, channel=0, *, contours=0, pixelated=T
             if len(chopped) == 1:
                 save_directory = os.getcwd()
             else:
-                folder_name = 'quick2D ' + wt_kit.get_timestamp(style='short')
+                folder_name = 'quick2D ' + wt_kit.TimeStamp().path
                 os.mkdir(folder_name)
                 save_directory = folder_name
     # loop through image generation
@@ -228,11 +229,12 @@ def quick2D(data, xaxis=1, yaxis=0, at={}, channel=0, *, contours=0, pixelated=T
             if local:
                 limit = channel.mag
             else:
+                data_channel = data.channels[channel_index]
                 if dynamic_range:
-                    limit = min(abs(channel.null - channel.min()),
-                                abs(channel.null - channel.max()))
+                    limit = min(abs(data_channel.null - data_channel.min()),
+                                abs(data_channel.null - data_channel.max()))
                 else:
-                    limit = channel.mag
+                    limit = data_channel.mag
             if np.isnan(limit):
                 limit = 1.
             if limit is np.ma.masked:
@@ -242,15 +244,16 @@ def quick2D(data, xaxis=1, yaxis=0, at={}, channel=0, *, contours=0, pixelated=T
             if local:
                 levels = np.linspace(channel.null, np.nanmax(zi), 200)
             else:
-                if channel.max() < channel.null:
-                    levels = np.linspace(channel.min(), channel.null, 200)
+                data_channel = data.channels[channel_index]
+                if data_channel.max() < data_channel.null:
+                    levels = np.linspace(data_channel.min(), data_channel.null, 200)
                 else:
-                    levels = np.linspace(channel.null, channel.max(), 200)
+                    levels = np.linspace(data_channel.null, data_channel.max(), 200)
         # colors ----------------------------------------------------------------------------------
         if pixelated:
-            ax.pcolor(d, cmap=cmap)
+            ax.pcolor(d, cmap=cmap, vmin=levels.min(), vmax=levels.max())
         else:
-            ax.contourf(d, cmap=cmap)
+            ax.contourf(d, cmap=cmap, levels=levels)
         # contour lines ---------------------------------------------------------------------------
         if contours:
             raise NotImplementedError
