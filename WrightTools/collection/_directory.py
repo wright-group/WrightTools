@@ -25,12 +25,38 @@ __all__ = ['from_directory']
 
 
 def from_directory(filepath, from_methods, *, name=None,  parent=None, verbose=True):
-    """Create a WrightTools Collection from a directory of source files."""
+    """Create a WrightTools Collection from a directory of source files.
+    
+    Parameters
+    ----------
+    filepath: str
+        Path to the directory on the file system
+    from_methods: dict<str, callable>
+        Dictionary which maps patterns (using Unix-like glob wildcard patterns)
+        to functions which take a filepath, plus the keyword arguments
+        ['name', 'parent', and 'verbose'].
+        (e.g. most from_<kind> methods within WrightTools)
+        The value can be `None` which results in that item being ignored.
+        The *first* matching pattern encountered will be used.
+        Therefore, if multiple patterns will match the same file, use and `OrderedDict`.
+        Patterns are matched on the file name level, not using the full path.
+
+    Keyword Arguments
+    -----------------
+    name: str
+        Name to use for the root data object. Default is the directory name.
+    parent: Collection
+        Parent collection to insert the directory structure into. Default is a new
+        collection in temp file.
+    verbose: bool
+        Print information as objects are created. Passed to the functions.
+    
+    """
     if name is None:
         name = os.path.basename(os.path.abspath(filepath))
 
     if verbose:
-        print('Creating Collection at root:', name)
+        print('Creating Collection:', name)
 
     root = Collection(name=name, parent=parent)
 
