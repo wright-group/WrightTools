@@ -46,7 +46,6 @@ ax.pcolor(data, cmap=cmap, edgecolors='k')
 dot_pixel_centers(ax, data.d1.points, data.d2.points)
 decorate(ax)
 
-
 # tripcolor
 xi = data.d1.points
 yi = data.d2.points
@@ -85,7 +84,6 @@ ax.contourf(data)
 plot_delaunay_edges(ax, xi, yi, zi)
 dot_pixel_centers(ax, xi, yi)
 
-
 # contour
 ax = plt.subplot(gs[0, 3])
 levels = np.linspace(0, 1, 11)
@@ -98,11 +96,9 @@ decorate(ax)
 plot_delaunay_edges(ax, xi, yi, zi)
 dot_pixel_centers(ax, xi, yi)
 
-
 # label
 ticks = [-100, 0, 100]
 wt.artists.set_fig_labels(xlabel=data.d1.label, ylabel=data.d2.label, xticks=ticks, yticks=ticks)
-
 
 # colorbar
 cax = plt.subplot(gs[:, -1])

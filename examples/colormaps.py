@@ -6,8 +6,6 @@ Colorbars
 Different colorbars.
 """
 
-import numpy as np
-
 import matplotlib.pyplot as plt
 from matplotlib import cm
 
@@ -24,6 +22,7 @@ data.ai0.symmetric_root(0.5)
 data = data.chop('w1=wm', 'w2', at={'d2': [-600, 'fs']})[0]
 data.ai0.normalize()
 
+
 def fill_row(row, cmap):
     # greyscale
     ax = plt.subplot(gs[row, 0])
@@ -34,6 +33,7 @@ def fill_row(row, cmap):
     # cbar
     cax = plt.subplot(gs[row, 2])
     wt.artists.plot_colorbar(cax=cax, label='amplitude', cmap=cmap)
+
 
 cmap = wt.artists.colormaps['default']
 fill_row(0, cmap)

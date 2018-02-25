@@ -6,7 +6,6 @@ Level
 Leveling a dataset.
 """
 
-
 import matplotlib.pyplot as plt
 
 import WrightTools as wt
