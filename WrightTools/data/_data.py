@@ -500,7 +500,7 @@ class Data(Group):
         if values is None:
             if shape is None:
                 require_kwargs['shape'] = self.shape
-            else: 
+            else :
                 require_kwargs['shape'] = shape
             require_kwargs['dtype'] = np.float64
         else:

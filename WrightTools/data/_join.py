@@ -72,6 +72,7 @@ def join(datas, *, name='join',  parent=None, verbose=True):
         values = values.flat[idxs]
         vs[name] = {'values': values, 'units': units}
     # TODO: the following should become a new from method
+
     def from_dict(d, parent=None):
         ndim = len(d)
         i = 0
