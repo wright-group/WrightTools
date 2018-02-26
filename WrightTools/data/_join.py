@@ -22,19 +22,21 @@ __all__ = ['join']
 # --- functions -----------------------------------------------------------------------------------
 
 
-def join(datas, method='first', parent=None, verbose=True, **kwargs):
+def join(datas, *, name='join',  parent=None, verbose=True):
     """Join a list of data objects together.
 
     For now datas must have identical dimensionalities (order and identity).
+    Currently only supports 'last' method of handling overlapping data objects.
+    Currently limited to joining with datas that have grid-aligned, orthogonal axes.
 
     Parameters
     ----------
     datas : list of data
         The list of data objects to join together.
-    method : {'first', 'sum', 'max', 'min', 'mean'} (optional)
-        The method for how overlapping points get treated. Default is first,
-        meaning that the data object that appears first in datas will take
-        precedence.
+    name : str (optional)
+        The name for the data object which is created. Default is 'join'.
+    parent : WrightTools.Collection (optional)
+        The location to place the joined data object. Default is new temp file at root.
     verbose : bool (optional)
         Toggle talkback. Default is True.
 
@@ -44,7 +46,6 @@ def join(datas, method='first', parent=None, verbose=True, **kwargs):
         A new Data instance.
     """
     # TODO: fill value
-    print('data.join! ----------------------------------------------------')
     datas = list(datas)
     # check if variables are valid
     axis_expressions = datas[0].axis_expressions
@@ -74,7 +75,7 @@ def join(datas, method='first', parent=None, verbose=True, **kwargs):
     def from_dict(d, parent=None):
         ndim = len(d)
         i = 0
-        out = Data(name='join', parent=parent)
+        out = Data(name=name, parent=parent)
         for k, v in d.items():
             values = v['values']
             units = v['units']
@@ -90,7 +91,8 @@ def join(datas, method='first', parent=None, verbose=True, **kwargs):
     for variable_name in datas[0].variable_names:
         if variable_name not in vs.keys():
             units = datas[0][variable_name].units
-            shape = tuple(1 if i == 1 else n for i, n in zip(datas[0][variable_name].shape, out.shape))
+            shape = tuple(1 if i == 1 else n for i, n in zip(datas[0][variable_name].shape,
+                                                             out.shape))
             out.create_variable(name=variable_name, units=units, shape=shape)
     # channels
     for data in datas:
@@ -118,13 +120,13 @@ def join(datas, method='first', parent=None, verbose=True, **kwargs):
     # axes
     out.transform(axis_expressions)
     # finish
-    if verbose and False:
+    if verbose:
         print(len(datas), 'datas joined to create new data:')
         print('  axes:')
         for axis in out.axes:
             points = axis[:]
             print('    {0} : {1} points from {2} to {3} {4}'.format(
-                axis.name, points.size, min(points), max(points), axis.units))
+                axis.expression, points.size, np.min(points), np.max(points), axis.units))
         print('  channels:')
         for channel in out.channels:
             percent_nan = np.around(100. * (np.isnan(channel[:]).sum() /
