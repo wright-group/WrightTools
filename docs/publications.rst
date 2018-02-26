@@ -9,9 +9,9 @@ The authors of these publications have volunteered to appear on this page.
 Would you like your publication to appear here?
 Email a developer---or better yet, make a pull request.
 
-Orderd by date of publication, newest first.
+Ordered by date of publication, newest first.
 
-#. **Group- and phase-velocity mismatch fringes in tripple sum-frequency spectroscopy**
+#. **Group- and phase-velocity mismatch fringes in triple sum-frequency spectroscopy**
    Darien J. Morrow, Daniel D. Kohler, and John C. Wright
    *Phys. Rev. A* **2017** 96 (6)
    `doi:10.1103/PhysRevA.96.063835 <https://doi.org/10.1103/PhysRevA.96.063835>`_
