@@ -324,7 +324,7 @@ class Data(Group):
         args = list(args)
         for i, arg in enumerate(args):
             if isinstance(arg, int):
-                args[i] = self._axes[i].expression
+                args[i] = self._axes[arg].expression
         # get output collection
         out = wt_collection.Collection(name='chop', parent=parent)
         # get output shape
@@ -346,7 +346,6 @@ class Data(Group):
                 axis_index = self.axis_names.index(axis)
                 axis = self._axes[axis_index]
                 idx[axis_index] = np.argmin(np.abs(axis[tuple(idx)] - point))
-            idx = tuple(idx)
             data = out.create_data(name='chop%03i' % i)
             for v in self.variables:
                 kwargs = {}
@@ -670,7 +669,7 @@ class Data(Group):
         if npts > 0:
             ss[axis] = slice(0, npts, None)
         else:
-            ss[axis] = slice(-npts, None, None)
+            ss[axis] = slice(npts, None, None)
         subtrahend = np.nanmean(channel[ss], axis=axis)
         if self.ndim > 1:
             subtrahend = np.expand_dims(subtrahend, axis=axis)

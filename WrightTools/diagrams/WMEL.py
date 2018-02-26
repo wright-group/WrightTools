@@ -175,7 +175,7 @@ class Artist:
         state_text_buffer : number (optional)
             Size of buffer around state text. Default is 0.5.
         """
-        #create figure
+        # create figure
         figsize = [int(size[0] * ((number_of_interactions + 1.) / 6.)), size[1] * 2.5]
         fig, (subplots) = plt.subplots(size[1], size[0], figsize=figsize)
         self.fig = fig
