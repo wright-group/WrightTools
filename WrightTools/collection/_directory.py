@@ -24,9 +24,9 @@ __all__ = ['from_directory']
 # --- from function -------------------------------------------------------------------------------
 
 
-def from_directory(filepath, from_methods, *, name=None,  parent=None, verbose=True):
+def from_directory(filepath, from_methods, *, name=None, parent=None, verbose=True):
     """Create a WrightTools Collection from a directory of source files.
-    
+
     Parameters
     ----------
     filepath: str
@@ -88,5 +88,3 @@ def from_directory(filepath, from_methods, *, name=None,  parent=None, verbose=T
                 for i in os.listdir(os.path.join(path, fname)):
                     q.put((os.path.join(path, fname), i, col))
     return root
-
-

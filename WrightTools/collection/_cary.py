@@ -24,7 +24,7 @@ __all__ = ['from_Cary']
 
 def from_Cary(filepath, name=None, parent=None, verbose=True):
     """Create a collection object from a Cary UV VIS absorbance file.
-    
+
     We hope to support as many Cary instruments and datasets as possible.
     This function has been tested with data collected on a Cary50 UV/VIS spectrometer.
     If any alternate instruments are found not to work as expected, please
@@ -75,7 +75,6 @@ def from_Cary(filepath, name=None, parent=None, verbose=True):
                 lines.append(np.fromstring(clean, sep=','))
     header = header.split(',')
     columns = columns.split(',')
-    #lines = [i for i in lines if len(i) > 0]
     arr = np.array(lines).T
     # chew through all scans
     datas = Collection(name=name, parent=parent, edit_local=parent is not None)
