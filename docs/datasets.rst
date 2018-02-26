@@ -13,7 +13,7 @@ The following table contains every dataset distributed within WrightTools.
 dataset                                            axis expressions              shape                gallery links
 =================================================  ============================  ===================  ==============
 ``BrunoldrRaman.LDS821_514nm_80mW``                ``('energy',)``               ``(1340,)``
-``Cary50.CuPCtS_H2O_vis``                          ``('wavelength',)``           ``(141,)``
+``Cary.CuPCtS_H2O_vis``                            ``('wavelength',)``           ``(141,)``
 ``COLORS.v0p2_d1_d2_diagonal`` [#kohler2014]_      ``('d1', 'd2')``              ``(21, 21)``        
 ``COLORS.v0p2_d1_d2_off_diagonal`` [#kohler2014]_  ``('d1', 'd2')``              ``(21, 21)``       
 ``COLORS.v2p1_MoS2_TrEE_movie`` [#czech2015]_      ``('w2', 'w1', 'd2')``        ``(41, 41, 23)``  

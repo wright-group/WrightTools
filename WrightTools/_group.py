@@ -76,6 +76,13 @@ class Group(h5py.Group, metaclass=MetaClass):
         self.__version__
         self.item_names
 
+        parent = file[parent]
+        if parent.name == self.name:
+            pass  # at root, dont add to item_names
+        elif self.natural_name not in parent.attrs['item_names']:
+            parent.attrs['item_names'] = np.append(parent.attrs['item_names'],
+                                                   self.natural_name.encode())
+
     def __getattr__(self, key):
         """Gets called if attribute not in self.__dict__.
 

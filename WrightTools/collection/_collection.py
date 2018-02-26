@@ -94,11 +94,8 @@ class Collection(Group):
         """
         collection = Collection(filepath=self.filepath, parent=self.name, name=name,
                                 edit_local=True, **kwargs)
-        if position is None:
-            self.attrs['item_names'] = np.append(self.attrs['item_names'],
-                                                 collection.natural_name.encode())
-        else:
-            self.attrs['item_names'] = np.insert(self.attrs['item_names'], position,
+        if position is not None:
+            self.attrs['item_names'] = np.insert(self.attrs['item_names'][:-1], position,
                                                  collection.natural_name.encode())
         setattr(self, name, collection)
         return collection
@@ -127,10 +124,9 @@ class Collection(Group):
             data = wt_data.Data(filepath=self.filepath, parent=self.name, name=name,
                                 edit_local=True, **kwargs)
             natural_name = data.natural_name.encode()
-        if position is None:
-            self.attrs['item_names'] = np.append(self.attrs['item_names'], natural_name)
-        else:
-            self.attrs['item_names'] = np.insert(self.attrs['item_names'], position, natural_name)
+        if position is not None:
+            self.attrs['item_names'] = np.insert(self.attrs['item_names'][:-1], position,
+                                                 natural_name)
         setattr(self, name, data)
         return data
 
