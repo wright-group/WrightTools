@@ -11,11 +11,14 @@ from numpy import r_
 import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.colors as mplcolors
+import matplotlib.gridspec as grd
+
 
 # --- define -------------------------------------------------------------------------------------
 
 
-__all__ = ['colormaps', 'overline_colors']
+__all__ = ['colormaps', 'get_color_cycle', 'grayify_cmap', 'overline_colors',
+           'plot_colormap_components']
 
 
 # --- functions ----------------------------------------------------------------------------------
@@ -210,6 +213,143 @@ def plot_colormap_components(cmap):
     plt.grid()
     plt.xlabel('value', fontsize=17)
     plt.ylabel('intensity', fontsize=17)
+
+
+def grayify_cmap(cmap):
+    """Return a grayscale version of the colormap.
+
+    `Source`__
+
+    __ https://jakevdp.github.io/blog/2014/10/16/how-bad-is-your-colormap/
+    """
+    cmap = plt.cm.get_cmap(cmap)
+    colors = cmap(np.arange(cmap.N))
+    # convert RGBA to perceived greyscale luminance
+    # cf. http://alienryderflex.com/hsp.html
+    RGB_weight = [0.299, 0.587, 0.114]
+    luminance = np.sqrt(np.dot(colors[:, :3] ** 2, RGB_weight))
+    colors[:, :3] = luminance[:, np.newaxis]
+    return mplcolors.LinearSegmentedColormap.from_list(cmap.name + "_grayscale", colors, cmap.N)
+
+
+def get_color_cycle(n, cmap='rainbow', rotations=3):
+    """Get a list of RGBA colors following a colormap.
+
+    Useful for plotting lots of elements, keeping the color of each unique.
+
+    Parameters
+    ----------
+    n : integer
+        The number of colors to return.
+    cmap : string (optional)
+        The colormap to use in the cycle. Default is rainbow.
+    rotations : integer (optional)
+        The number of times to repeat the colormap over the cycle. Default is 3.
+
+    Returns
+    -------
+    list
+        List of RGBA lists.
+    """
+    cmap = colormaps[cmap]
+    if np.mod(n, rotations) == 0:
+        per = np.floor_divide(n, rotations)
+    else:
+        per = np.floor_divide(n, rotations) + 1
+    vals = list(np.linspace(0, 1, per))
+    vals = vals * rotations
+    vals = vals[:n]
+    out = cmap(vals)
+    return out
+
+
+def plot_colorbar(*, cax=None, cmap='default', ticks=None, clim=None, vlim=None,
+                  label=None, tick_fontsize=14, label_fontsize=18, decimals=None,
+                  orientation='vertical', ticklocation='auto'):
+    """Easily add a colormap to an axis.
+
+    Parameters
+    ----------
+    cax : matplotlib axis (optional)
+        The axis to plot the colorbar on. Finds the current axis if none is
+        given.
+    cmap : string or LinearSegmentedColormap (optional)
+        The colormap to fill the colorbar with. Strings map as keys to the
+        WrightTools colormaps dictionary. Default is `default`.
+    ticks : 1D array-like (optional)
+        Ticks. Default is None.
+    clim : two element list (optional)
+        The true limits of the colorbar, in the same units as ticks. If None,
+        streaches the colorbar over the limits of ticks. Default is None.
+    vlim : two element list-like (optional)
+        The limits of the displayed colorbar, in the same units as ticks. If
+        None, displays over clim. Default is None.
+    label : str (optional)
+        Label. Default is None.
+    tick_fontsize : number (optional)
+        Fontsize. Default is 14.
+    label_fontsize : number (optional)
+        Label fontsize. Default is 18.
+    decimals : integer (optional)
+        Number of decimals to appear in tick labels. Default is None (best guess).
+    orientation : {'vertical', 'horizontal'} (optional)
+        Colorbar orientation. Default is vertical.
+    ticklocation : {'auto', 'left', 'right', 'top', 'bottom'} (optional)
+        Tick location. Default is auto.
+
+    Returns
+    -------
+    matplotlib.colorbar.ColorbarBase object
+        The created colorbar.
+    """
+    # parse cax
+    if cax is None:
+        cax = plt.gca()
+    # parse cmap
+    if isinstance(cmap, str):
+        cmap = colormaps[cmap]
+    # parse ticks
+    if ticks is None:
+        ticks = np.linspace(0, 1, 11)
+    # parse clim
+    if clim is None:
+        clim = [min(ticks), max(ticks)]
+    # parse clim
+    if vlim is None:
+        vlim = clim
+    # parse format
+    if isinstance(decimals, int):
+        format = '%.{0}f'.format(decimals)
+    else:
+        magnitude = int(np.log10(max(vlim) - min(vlim)) - 0.99)
+        if 1 > magnitude > -3:
+            format = '%.{0}f'.format(-magnitude + 1)
+        elif magnitude in (1, 2, 3):
+            format = '%i'
+        else:
+            # scientific notation
+            def fmt(x, _):
+                return '%.1f' % (x / float(10 ** magnitude))
+            format = matplotlib.ticker.FuncFormatter(fmt)
+            magnitude_label = r'  $\mathsf{\times 10^{%d}}$' % magnitude
+            if label is None:
+                label = magnitude_label
+            else:
+                label = ' '.join([label, magnitude_label])
+    # make cbar
+    norm = matplotlib.colors.Normalize(vmin=vlim[0], vmax=vlim[1])
+    cbar = matplotlib.colorbar.ColorbarBase(ax=cax, cmap=cmap,
+                                            norm=norm, ticks=ticks,
+                                            orientation=orientation,
+                                            ticklocation=ticklocation,
+                                            format=format)
+    # coerce properties
+    cbar.set_clim(clim[0], clim[1])
+    cbar.ax.tick_params(labelsize=tick_fontsize)
+    if label:
+        cbar.set_label(label, fontsize=label_fontsize)
+    # finish
+    return cbar
 
 
 # --- color maps ----------------------------------------------------------------------------------

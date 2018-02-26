@@ -10,8 +10,8 @@ import matplotlib.pyplot as plt
 # --- label sectors -------------------------------------------------------------------------------
 
 
-def label_sectors(labels=['I', 'II', 'IV', 'VI', 'V', 'III'], ax=None,
-                  cs=None, c_zlevel=2, c_alpha=0.5):
+def label_sectors(*, labels=['I', 'II', 'IV', 'VI', 'V', 'III'], ax=None, lw=2, lc='k',
+                  cs=None, c_zlevel=2, c_alpha=0.5, fontsize=40):
     """Label the six time-orderings in a three-pulse experiment.
 
     Parameters
@@ -40,7 +40,13 @@ def label_sectors(labels=['I', 'II', 'IV', 'VI', 'V', 'III'], ax=None,
                [1 / 6, 1 / 3]]
     transform = ax.transAxes
     for label, factor in zip(labels, factors):
-        ax.text(*factor + [label], fontsize=30, va='center', ha='center', transform=transform)
+        ax.text(*factor + [label], fontsize=fontsize, va='center', ha='center',
+                transform=transform)
+    # lines
+    if lw > 0:
+        ax.axhline(0, c=lc, lw=lw)
+        ax.axvline(0, c=lc, lw=lw)
+        ax.plot([0, 1], [0, 1], c=lc, lw=lw, transform=transform)
     # colors
     if cs is None:
         cs = ['none'] * 6
@@ -73,9 +79,11 @@ if __name__ == '__main__':
 
     ax.text(-0.5, 0.5, 'I', fontsize=30, verticalalignment='center', horizontalalignment='center')
     ax.text(0.25, 0.6, 'II', fontsize=30, verticalalignment='center', horizontalalignment='center')
-    ax.text(-0.6, -0.25, 'III', fontsize=30, verticalalignment='center', horizontalalignment='center')
+    ax.text(-0.6, -0.25, 'III', fontsize=30, verticalalignment='center',
+            horizontalalignment='center')
     ax.text(0.6, 0.25, 'IV', fontsize=30, verticalalignment='center', horizontalalignment='center')
-    ax.text(-0.25, -0.6, 'V', fontsize=30, verticalalignment='center', horizontalalignment='center')
+    ax.text(-0.25, -0.6, 'V', fontsize=30, verticalalignment='center',
+            horizontalalignment='center')
     ax.text(0.5, -0.5, 'VI', fontsize=30, verticalalignment='center', horizontalalignment='center')
 
     ax.set_xlabel(r'd1 $\mathrm{(\tau_{22^{\prime}})}$', fontsize=15)
@@ -107,11 +115,15 @@ if __name__ == '__main__':
     ax.axvline(0, color='k', linewidth=2)
 
     ax.text(0.5, 0.5, 'I', fontsize=30, verticalalignment='center', horizontalalignment='center')
-    ax.text(-0.25, 0.6, 'II', fontsize=30, verticalalignment='center', horizontalalignment='center')
-    ax.text(0.6, -0.25, 'III', fontsize=30, verticalalignment='center', horizontalalignment='center')
-    ax.text(-0.6, 0.25, 'IV', fontsize=30, verticalalignment='center', horizontalalignment='center')
+    ax.text(-0.25, 0.6, 'II', fontsize=30, verticalalignment='center',
+            horizontalalignment='center')
+    ax.text(0.6, -0.25, 'III', fontsize=30, verticalalignment='center',
+            horizontalalignment='center')
+    ax.text(-0.6, 0.25, 'IV', fontsize=30, verticalalignment='center',
+            horizontalalignment='center')
     ax.text(0.25, -0.6, 'V', fontsize=30, verticalalignment='center', horizontalalignment='center')
-    ax.text(-0.5, -0.5, 'VI', fontsize=30, verticalalignment='center', horizontalalignment='center')
+    ax.text(-0.5, -0.5, 'VI', fontsize=30, verticalalignment='center',
+            horizontalalignment='center')
 
     ax.set_xlabel(r'd1 $\mathrm{(\tau_{2^{\prime}2})}$', fontsize=15)
     ax.set_ylabel(r'd2 $\mathrm{(\tau_{21})}$', fontsize=15)

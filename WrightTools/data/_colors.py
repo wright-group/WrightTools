@@ -155,7 +155,8 @@ def from_COLORS(filepaths, name=None, cols=None, invert_d1=True,
             shape[i] = a.size
             a.shape = tuple(shape)
             units = axes[name]['units']
-            data.create_variable(name=name, values=a, units=units)
+            label = axes[name]['label']
+            data.create_variable(name=name, values=a, units=units, label=label)
     for key, dic in axes.items():
         if key not in data.variable_names:
             c = np.mean(arr[dic['idx']])
@@ -164,7 +165,8 @@ def from_COLORS(filepaths, name=None, cols=None, invert_d1=True,
                 a = np.array([c])
                 a.shape = tuple(shape)
                 units = dic['units']
-                data.create_variable(name=key, values=a, units=units)
+                label = dic['label']
+                data.create_variable(name=key, values=a, units=units, label=label)
     # channels
     if len(scanned) == 1:  # 1D data
         for key in channels.keys():
