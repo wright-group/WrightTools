@@ -5,11 +5,13 @@
 
 
 import collections
+import warnings
 
 import numpy as np
 
 from .. import units as wt_units
 from .. import kit as wt_kit
+from .. import exceptions as wt_exceptions
 from ._data import Data
 
 
@@ -45,6 +47,7 @@ def join(datas, *, name='join',  parent=None, verbose=True):
     WrightTools.data.Data
         A new Data instance.
     """
+    warnings.warn('join', category=wt_exceptions.EntireDatasetInMemoryWarning)
     # TODO: fill value
     datas = list(datas)
     # check if variables are valid
