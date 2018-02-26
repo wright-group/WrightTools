@@ -17,7 +17,8 @@ import matplotlib.gridspec as grd
 # --- define -------------------------------------------------------------------------------------
 
 
-__all__ = ['colormaps', 'get_color_cycle', 'grayify_cmap', 'plot_colormap_components']
+__all__ = ['colormaps', 'get_color_cycle', 'grayify_cmap', 'overline_colors',
+           'plot_colormap_components']
 
 
 # --- functions ----------------------------------------------------------------------------------
