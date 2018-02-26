@@ -50,7 +50,14 @@ def from_directory(filepath, from_methods, *, name=None,  parent=None, verbose=T
         collection in temp file.
     verbose: bool
         Print information as objects are created. Passed to the functions.
-    
+
+    Examples
+    --------
+    >>> from_dict = {'*.data':wt.data.from_PyCMDS,
+    ...              '*.csv':wt.collections.from_Cary,
+    ...              'unused':None,
+    ...             }
+    >>> col = wt.collection.from_directory('path/to/folder', from_dict)
     """
     if name is None:
         name = os.path.basename(os.path.abspath(filepath))
