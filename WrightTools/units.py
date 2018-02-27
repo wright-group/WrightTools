@@ -45,7 +45,7 @@ od = {'mOD': ['1e3*x', 'x/1e3', r'mOD'],
 
 # position units (native: mm)
 position = {'nm_p': ['x/1e6', '1e6/x', r'nm'],
-            'um': ['x/1000.', '1000/x.', r'um'],
+            'um': ['x/1000.', '1000.*x', r'um'],
             'mm': ['x', 'x', r'mm'],
             'cm': ['10.*x', 'x/10.', r'cm'],
             'in': ['x*0.039370', '0.039370*x', r'in']}
