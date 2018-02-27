@@ -611,6 +611,7 @@ class Data(Group):
 
 
         """
+        warnings.warn('heal', category=wt_exceptions.EntireDatasetInMemoryWarning)
         timer = wt_kit.Timer(verbose=False)
         with timer:
             # channel
@@ -1082,6 +1083,7 @@ class Data(Group):
         verbose : bool (optional)
             Toggle talkback. Default is True.
         """
+        warnings.warn('smooth', category=wt_exceptions.EntireDatasetInMemoryWarning)
         # get factors -----------------------------------------------------------------------------
 
         if isinstance(factors, list):
