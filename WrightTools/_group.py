@@ -264,9 +264,6 @@ class Group(h5py.Group, metaclass=MetaClass):
         else:
             # copy
             self.file.copy(self.name, parent, name=name)
-            if 'item_names' in parent.attrs.keys():
-                new = parent.item_names + (name,)
-                parent.attrs['item_names'] = np.array(new, dtype='S')
             new = parent[name]
         # finish
         if verbose:
