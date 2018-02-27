@@ -46,6 +46,7 @@ Contents
    contributing 
    api/modules
    auto_examples/index
+   publications
    alternatives
 
 Index

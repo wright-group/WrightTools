@@ -40,6 +40,7 @@ def test_copy_data():
     p = datasets.PyCMDS.wm_w2_w1_001
     data = wt.data.from_PyCMDS(p, parent=root, name='data')
     new = data.copy(parent=root, name='copy')
+    assert len(root.item_names) == 2
     for k, v in data.attrs.items():
         if k == 'name':
             continue
