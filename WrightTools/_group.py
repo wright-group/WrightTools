@@ -79,7 +79,7 @@ class Group(h5py.Group, metaclass=MetaClass):
         parent = file[parent]
         if parent.name == self.name:
             pass  # at root, dont add to item_names
-        elif self.natural_name not in parent.attrs['item_names']:
+        elif self.natural_name.encode() not in parent.attrs['item_names']:
             parent.attrs['item_names'] = np.append(parent.attrs['item_names'],
                                                    self.natural_name.encode())
 
