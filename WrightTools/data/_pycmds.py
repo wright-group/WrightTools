@@ -105,8 +105,8 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True):
                 for i in range(len(shape)):
                     if tolerance is None:
                         break
-                    #if 'd' in name:
-                    #    tolerance = 3.
+                    if 'd' in name:
+                        tolerance = 3.
                     if 'zero' in name:
                         tolerance = 1e-10
                     mean = np.mean(values, axis=i)
