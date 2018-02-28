@@ -68,12 +68,12 @@ def join(datas, *, name='join',  parent=None, verbose=True):
         channel_units.append(c.units)
     # axis variables
     vs = collections.OrderedDict()
-    for name, units in zip(variable_names, variable_units):
-        values = np.concatenate([d[name][:].flat for d in datas])
+    for n, units in zip(variable_names, variable_units):
+        values = np.concatenate([d[n][:].flat for d in datas])
         rounded = values.round(8)
         _, idxs = np.unique(rounded, True)
         values = values.flat[idxs]
-        vs[name] = {'values': values, 'units': units}
+        vs[n] = {'values': values, 'units': units}
     # TODO: the following should become a new from method
 
     def from_dict(d, parent=None):
