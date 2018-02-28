@@ -14,7 +14,7 @@ import numpy as np
 
 
 def test_1D():
-    p = datasets.Cary50.CuPCtS_H2O_vis
+    p = datasets.Cary.CuPCtS_H2O_vis
     data = wt.collection.from_Cary(p)[0]
     data.level(0, 0, 5)
     assert np.isclose(data.abs[:5].mean(), 0.)

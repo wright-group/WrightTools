@@ -41,9 +41,6 @@ class Data(Group):
     class_name = 'Data'
 
     def __init__(self, *args, **kwargs):
-        kwargs.pop('axis_names', None)
-        kwargs.pop('channel_names', None)
-        kwargs.pop('constant_names', None)
         self._axes = []
         Group.__init__(self, *args, **kwargs)
         # populate axes from attrs string
@@ -633,6 +630,7 @@ class Data(Group):
 
 
         """
+        warnings.warn('heal', category=wt_exceptions.EntireDatasetInMemoryWarning)
         timer = wt_kit.Timer(verbose=False)
         with timer:
             # channel
@@ -1104,6 +1102,7 @@ class Data(Group):
         verbose : bool (optional)
             Toggle talkback. Default is True.
         """
+        warnings.warn('smooth', category=wt_exceptions.EntireDatasetInMemoryWarning)
         # get factors -----------------------------------------------------------------------------
 
         if isinstance(factors, list):

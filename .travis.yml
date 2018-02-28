@@ -1,22 +1,10 @@
 language: python
 python:
-  # We don't actually use the Travis Python, but this keeps it organized.
-  - "3.4"
   - "3.5"
   - "3.6"
 install:
   - sudo apt-get update
-  - wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
-  - bash miniconda.sh -b -p $HOME/miniconda
-  - export PATH="$HOME/miniconda/bin:$PATH"
-  - hash -r
-  - conda config --set always_yes yes --set changeps1 no
-  - conda config --add channels conda-forge
-  - conda update -q conda
-  - conda info -a
-  - conda create -n wrighttools --file requirements.txt
-  - source activate wrighttools
-  - conda install sphinx=1.6.5 sphinx-gallery=0.1.12 sphinx_rtd_theme
+  - sudo apt-get install libfreetype6-dev hdf5-tools libhdf5-dev libopenblas-dev
   - python setup.py install
 before_script:
 - "export DISPLAY=:99.0"

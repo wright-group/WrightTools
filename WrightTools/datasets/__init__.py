@@ -56,8 +56,8 @@ class DatasetContainer(object):
 BrunoldrRaman = DatasetContainer()
 BrunoldrRaman._from_files(os.path.join(here, 'BrunoldrRaman'))
 
-Cary50 = DatasetContainer()
-Cary50._from_files('Cary50')
+Cary = DatasetContainer()
+Cary._from_files('Cary')
 
 COLORS = DatasetContainer()
 COLORS._from_files(os.path.join(here, 'COLORS', 'v0.2'), prefix='v0p2_')
@@ -91,5 +91,5 @@ Tensor27._from_files('Tensor27')
 # --- pretty namespace ----------------------------------------------------------------------------
 
 
-__all__ = ['COLORS', 'JASCO', 'KENT', 'ocean_optics' 'PyCMDS', 'BrunoldrRaman', 'Cary50',
+__all__ = ['COLORS', 'JASCO', 'KENT', 'ocean_optics' 'PyCMDS', 'BrunoldrRaman', 'Cary',
            'Tensor27']
