@@ -143,7 +143,10 @@ class Data(Group):
         try:
             assert self._ndim is not None
         except (AssertionError, AttributeError):
-            self._ndim = self.variables[0].ndim
+            if len(self.variables) == 0:
+                self._ndim = 0
+            else:
+                self._ndim = self.variables[0].ndim
         finally:
             return self._ndim
 
@@ -153,7 +156,7 @@ class Data(Group):
         try:
             assert self._shape is not None
         except (AssertionError, AttributeError):
-            self._shape = wt_kit.joint_shape(self.channels)
+            self._shape = wt_kit.joint_shape(self.variables)
         finally:
             return self._shape
 
@@ -463,7 +466,7 @@ class Data(Group):
                         print('variable', var.natural_name, 'converted')
         self._on_axes_updated()
 
-    def create_channel(self, name, values=None, units=None, **kwargs):
+    def create_channel(self, name, values=None, shape=None, units=None, **kwargs):
         """Append a new channel.
 
         Parameters
@@ -473,29 +476,39 @@ class Data(Group):
         values : array (optional)
             Array. If None, an empty array equaling the data shape is
             created. Default is None.
+        shape : tuple of int
+            Shape to use. must broadcast with the full shape.
+            Only used if `values` is None.
+            Default is the full shape of self.
         units : string (optional)
             Channel units. Default is None.
+        kwargs : dict
+            Additional keyword arguments passed to Channel instantiation.
 
         Returns
         -------
         Channel
             Created channel.
         """
+        require_kwargs = {}
         if values is None:
-            shape = self.shape
-            dtype = np.float64
+            if shape is None:
+                require_kwargs['shape'] = self.shape
+            else:
+                require_kwargs['shape'] = shape
+            require_kwargs['dtype'] = np.float64
         else:
-            shape = values.shape
-            dtype = values.dtype
+            require_kwargs['data'] = values
+            require_kwargs['shape'] = values.shape
+            require_kwargs['dtype'] = values.dtype
         # create dataset
-        dataset_id = self.require_dataset(name=name, data=values, shape=shape, dtype=dtype,
-                                          chunks=True).id
+        dataset_id = self.require_dataset(name=name, chunks=True, **require_kwargs).id
         channel = Channel(self, dataset_id, units=units, **kwargs)
         # finish
         self.attrs['channel_names'] = np.append(self.attrs['channel_names'], name.encode())
         return channel
 
-    def create_variable(self, name, values=None, units=None, **kwargs):
+    def create_variable(self, name, values=None, shape=None, units=None, **kwargs):
         """Add new child variable.
 
         Parameters
@@ -505,6 +518,10 @@ class Data(Group):
         values : array-like (optional)
             Array to populate variable with. If None, an variable will be filled with NaN.
             Default is None.
+        shape : tuple of int
+            Shape to use. must broadcast with the full shape.
+            Only used if `values` is None.
+            Default is the full shape of self.
         units : string (optional)
             Variable units. Default is None.
         kwargs
@@ -516,7 +533,8 @@ class Data(Group):
             New child variable.
         """
         if values is None:
-            shape = self.shape
+            if shape is None:
+                shape = self.shape
             dtype = np.float64
         else:
             shape = values.shape
@@ -525,6 +543,7 @@ class Data(Group):
         id = self.require_dataset(name=name, data=values, shape=shape, dtype=dtype).id
         variable = Variable(self, id, units=units, **kwargs)
         # finish
+        self.variables.append(variable)
         self.attrs['variable_names'] = np.append(self.attrs['variable_names'], name.encode())
         return variable
 

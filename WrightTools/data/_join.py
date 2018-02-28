@@ -4,9 +4,15 @@
 # --- import --------------------------------------------------------------------------------------
 
 
+import collections
+import warnings
+
 import numpy as np
 
-from ._data import Channel, Data
+from .. import units as wt_units
+from .. import kit as wt_kit
+from .. import exceptions as wt_exceptions
+from ._data import Data
 
 
 # --- define --------------------------------------------------------------------------------------
@@ -18,19 +24,21 @@ __all__ = ['join']
 # --- functions -----------------------------------------------------------------------------------
 
 
-def join(datas, method='first', verbose=True, **kwargs):
+def join(datas, *, name='join',  parent=None, verbose=True):
     """Join a list of data objects together.
 
     For now datas must have identical dimensionalities (order and identity).
+    Currently only supports 'last' method of handling overlapping data objects.
+    Currently limited to joining with datas that have grid-aligned, orthogonal axes.
 
     Parameters
     ----------
     datas : list of data
         The list of data objects to join together.
-    method : {'first', 'sum', 'max', 'min', 'mean'} (optional)
-        The method for how overlapping points get treated. Default is first,
-        meaning that the data object that appears first in datas will take
-        precedence.
+    name : str (optional)
+        The name for the data object which is created. Default is 'join'.
+    parent : WrightTools.Collection (optional)
+        The location to place the joined data object. Default is new temp file at root.
     verbose : bool (optional)
         Toggle talkback. Default is True.
 
@@ -39,74 +47,82 @@ def join(datas, method='first', verbose=True, **kwargs):
     WrightTools.data.Data
         A new Data instance.
     """
-    # copy datas so original objects are not changed
-    datas = [d.copy() for d in datas]
-    # get scanned dimensions
-    axis_names = []
-    axis_units = []
-    axis_objects = []
+    warnings.warn('join', category=wt_exceptions.EntireDatasetInMemoryWarning)
+    # TODO: fill value
+    datas = list(datas)
+    # check if variables are valid
+    axis_expressions = datas[0].axis_expressions
+    variable_units = []
+    variable_names = []
+    for a in datas[0].axes:
+        for v in a.variables:
+            variable_names.append(v.natural_name)
+            variable_units.append(v.units)
+    # TODO: check if all other datas have the same variable names
+    # check if channels are valid
+    # TODO: this is a hack
+    channel_units = []
+    channel_names = []
+    for c in datas[0].channels:
+        channel_names.append(c.natural_name)
+        channel_units.append(c.units)
+    # axis variables
+    vs = collections.OrderedDict()
+    for name, units in zip(variable_names, variable_units):
+        values = np.concatenate([d[name][:].flat for d in datas])
+        rounded = values.round(8)
+        _, idxs = np.unique(rounded, True)
+        values = values.flat[idxs]
+        vs[name] = {'values': values, 'units': units}
+    # TODO: the following should become a new from method
+
+    def from_dict(d, parent=None):
+        ndim = len(d)
+        i = 0
+        out = Data(name=name, parent=parent)
+        for k, v in d.items():
+            values = v['values']
+            units = v['units']
+            shape = [1] * ndim
+            shape[i] = values.size
+            values.shape = tuple(shape)
+            out.create_variable(name=k, values=values, units=units)
+            i += 1
+        return out
+    out = from_dict(vs, parent=parent)
+    for channel_name, units in zip(channel_names, channel_units):
+        out.create_channel(name=channel_name, units=units)
+    for variable_name in datas[0].variable_names:
+        if variable_name not in vs.keys():
+            units = datas[0][variable_name].units
+            shape = tuple(1 if i == 1 else n for i, n in zip(datas[0][variable_name].shape,
+                                                             out.shape))
+            out.create_variable(name=variable_name, units=units, shape=shape)
+    # channels
     for data in datas:
-        for i, axis in enumerate(data.axes):
-            if axis.name in kwargs.keys():
-                axis.convert(kwargs[axis.name].units)
-            if axis[0] > axis[-1]:
-                data.flip(i)
-            if axis.name not in axis_names:
-                axis_names.append(axis.name)
-                axis_units.append(axis.units)
-                axis_objects.append(axis)
-    # convert into same units
-    for data in datas:
-        for axis_name, axis_unit in zip(axis_names, axis_units):
-            for axis in data.axes:
-                if axis.name == axis_name:
-                    axis.convert(axis_unit)
-    # get axis points
-    axis_points = []  # list of 1D arrays
-    for axis_name in axis_names:
-        points = np.full((0), np.nan)
-        for data in datas:
-            index = data.axis_names.index(axis_name)
-            points = np.hstack((points, data.axes[index][:]))
-        axis_points.append(np.unique(points))
-    # map datas to new points
-    for axis_index, axis_name in enumerate(axis_names):
-        for data in datas:
-            for axis in data.axes:
-                if axis.name == axis_name:
-                    if not np.array_equiv(axis[:], axis_points[axis_index]):
-                        data.map_axis(axis_name, axis_points[axis_index])
-    # make new channel objects
-    channel_objects = []
-    n_channels = min([len(d.channels) for d in datas])
-    for channel_index in range(n_channels):
-        full = np.array([d.channels[channel_index][:] for d in datas])
-        if method == 'first':
-            zis = np.full(full.shape[1:], np.nan)
-            for idx in np.ndindex(*full.shape[1:]):
-                for data_index in range(len(full)):
-                    value = full[data_index][idx]
-                    if not np.isnan(value):
-                        zis[idx] = value
-                        break
-        elif method == 'sum':
-            zis = np.nansum(full, axis=0)
-            zis[zis == 0.] = np.nan
-        elif method == 'max':
-            zis = np.nanmax(full, axis=0)
-        elif method == 'min':
-            zis = np.nanmin(full, axis=0)
-        elif method == 'mean':
-            zis = np.nanmean(full, axis=0)
-        else:
-            raise ValueError("method %s not recognized" % method)
-        zis[np.isnan(full).all(axis=0)] = np.nan  # if all datas NaN, zis NaN
-        channel = Channel(zis, null=0.,
-                          signed=datas[0].channels[channel_index].signed,
-                          name=datas[0].channels[channel_index].name)
-        channel_objects.append(channel)
-    # make new data object
-    out = Data(axis_objects, channel_objects)
+        new_idx = []
+        for variable_name in vs.keys():
+            p = data[variable_name][:][np.newaxis, ...]
+            arr = out[variable_name][:][..., np.newaxis]
+            i = np.argmin(np.abs(arr - p), axis=np.argmax(arr.shape))
+            new_idx.append(i)
+        for variable_name in out.variable_names:
+            if variable_name not in vs.keys():
+                old = data[variable_name]
+                new = out[variable_name]
+                # These lines are needed because h5py doesn't support advanced indexing natively
+                vals = new[:]
+                vals[wt_kit.valid_index(new_idx, old.shape)] = old[:]
+                new[:] = vals
+        for channel_name in channel_names:
+            old = data[channel_name]
+            new = out[channel_name]
+            # These lines are needed because h5py doesn't support advanced indexing natively
+            vals = new[:]
+            vals[wt_kit.valid_index(new_idx, old.shape)] = old[:]
+            new[:] = vals
+    # axes
+    out.transform(axis_expressions)
     # finish
     if verbose:
         print(len(datas), 'datas joined to create new data:')
@@ -114,7 +130,7 @@ def join(datas, method='first', verbose=True, **kwargs):
         for axis in out.axes:
             points = axis[:]
             print('    {0} : {1} points from {2} to {3} {4}'.format(
-                axis.name, points.size, min(points), max(points), axis.units))
+                axis.expression, points.size, np.min(points), np.max(points), axis.units))
         print('  channels:')
         for channel in out.channels:
             percent_nan = np.around(100. * (np.isnan(channel[:]).sum() /
