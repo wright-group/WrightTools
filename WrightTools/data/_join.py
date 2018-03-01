@@ -86,18 +86,20 @@ def join(datas, *, name='join',  parent=None, verbose=True):
             shape = [1] * ndim
             shape[i] = values.size
             values.shape = tuple(shape)
-            out.create_variable(name=k, values=values, units=units)
+            # **attrs passes the name and units as well
+            var = out.create_variable(values=values, **datas[0][k].attrs)
             i += 1
         return out
     out = from_dict(vs, parent=parent)
     for channel_name, units in zip(channel_names, channel_units):
-        out.create_channel(name=channel_name, units=units)
+        # **attrs passes the name and units as well
+        out.create_channel(**datas[0][channel_name].attrs)
     for variable_name in datas[0].variable_names:
         if variable_name not in vs.keys():
-            units = datas[0][variable_name].units
             shape = tuple(1 if i == 1 else n for i, n in zip(datas[0][variable_name].shape,
                                                              out.shape))
-            out.create_variable(name=variable_name, units=units, shape=shape)
+            # **attrs passes the name and units as well
+            out.create_variable(shape=shape, **datas[0][variable_name].attrs)
     # channels
     for data in datas:
         new_idx = []

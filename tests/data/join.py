@@ -24,6 +24,7 @@ def test_wm_w2_w1():
     joined = wt.data.join([a, b])
     assert joined.shape == (63, 11, 11)
     assert not np.isnan(joined.channels[0][:]).any()
+    assert joined['w1'].label == '1'
     joined.print_tree(verbose=True)
     a.close()
     b.close()

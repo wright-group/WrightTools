@@ -155,6 +155,7 @@ class Dataset(h5py.Dataset):
             if 'units' in self.attrs.keys():
                 self.attrs.pop('units')
         else:
+            value = str(value)
             self.attrs['units'] = value.encode()
 
     def argmax(self):
