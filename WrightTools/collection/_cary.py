@@ -84,7 +84,7 @@ def from_Cary(filepath, name=None, parent=None, verbose=True):
         ax = spl[0].lower() if len(spl) > 0 else None
         units = spl[1].lower() if len(spl) > 1 else None
         dat = datas.create_data(header[i], kind='Cary', source=filepath)
-        dat.create_variable(ax, arr[i], units)
+        dat.create_variable(ax, arr[i], units=units)
         dat.create_channel(columns[i+1].lower(), arr[i+1], label=columns[i+1].lower())
         dat.transform([ax])
     # finish
