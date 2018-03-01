@@ -123,7 +123,7 @@ def quick1D(data, axis=0, at={}, channel=0, *, local=False, autosave=False, save
     return out
 
 
-def quick2D(data, xaxis=1, yaxis=0, at={}, channel=0, *, contours=0, pixelated=True,
+def quick2D(data, xaxis=0, yaxis=1, at={}, channel=0, *, contours=0, pixelated=True,
             dynamic_range=False, local=False, contours_local=True, autosave=False,
             save_directory=None, fname=None, verbose=True):
     """Quickly plot 2D slice(s) of data.
@@ -133,9 +133,9 @@ def quick2D(data, xaxis=1, yaxis=0, at={}, channel=0, *, contours=0, pixelated=T
     data : WrightTools.Data object.
         Data to plot.
     xaxis : string or integer (optional)
-        Expression or index of horizontal axis. Default is 1.
+        Expression or index of horizontal axis. Default is 0.
     yaxis : string or integer (optional)
-        Expression or index of vertical axis. Default is 0.
+        Expression or index of vertical axis. Default is 1.
     at : dictionary (optional)
         Dictionary of parameters in non-plotted dimension(s). If not
         provided, plots will be made at each coordinate.

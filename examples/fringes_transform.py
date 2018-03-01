@@ -15,6 +15,7 @@ p = datasets.PyCMDS.w2_w1_000
 data = wt.data.from_PyCMDS(p)
 
 data.signal_mean.symmetric_root(0.5)  # to amplitude level
+data.convert('wn')
 
 fig, gs = wt.artists.create_figure(width='double', cols=[1, 1, 'cbar'])
 
