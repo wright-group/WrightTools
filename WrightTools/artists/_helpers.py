@@ -181,7 +181,8 @@ def corner_text(text, distance=0.075, *, ax=None, corner='UL', factor=200, bbox=
     # get axis
     if ax is None:
         ax = plt.gca()
-    [h_scaled, v_scaled], [va, ha] = get_scaled_bounds(ax, corner, distance, factor)
+    [h_scaled, v_scaled], [va, ha] = get_scaled_bounds(ax, corner,
+                                                       distance=distance, factor=factor)
     # get edgecolor
     if edgecolor is None:
         edgecolor = matplotlib.rcParams['legend.edgecolor']
