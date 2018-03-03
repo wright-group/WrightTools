@@ -7,10 +7,9 @@ WrightTools API
    WrightTools.datasets
    WrightTools.diagrams
    WrightTools.artists
+   WrightTools.collection
    WrightTools.data
    WrightTools.exceptions
-   WrightTools.fit
-   WrightTools.google_drive
    WrightTools.kit
    WrightTools.units
 

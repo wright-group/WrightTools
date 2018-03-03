@@ -1,3 +1,4 @@
+"""Diff2D."""
 # --- import --------------------------------------------------------------------------------------
 
 import collections
@@ -124,8 +125,6 @@ class Diff2D():
                     cax = subplot_main.contourf(xaxis[:], yaxis[:], zi,
                                                 levels, cmap=mycm)
                 plt.xticks(rotation=45)
-                #plt.xlabel(xaxis.get_label(), fontsize = self.font_size)
-                #plt.ylabel(yaxis.get_label(), fontsize = self.font_size)
                 # grid ----------------------------------------------------------------------------
                 plt.grid(b=True)
                 if xaxis.units == yaxis.units:

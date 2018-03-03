@@ -1,7 +1,5 @@
 """Timestamp class and associated.
-
-.. _RFC3339: https://www.ietf.org/rfc/rfc3339.txt
-.. _RFC5322: https://tools.ietf.org/html/rfc5322#section-3.3
+.. _rfc5322: https://tools.ietf.org/html/rfc5322#section-3.3
 """
 
 
@@ -27,7 +25,9 @@ __all__ = ['TimeStamp', 'timestamp_from_RFC3339']
 
 
 def timestamp_from_RFC3339(RFC3339):
-    """Generate a Timestamp object from a RFC3339_ formatted string.
+    """Generate a Timestamp object from a RFC3339__ formatted string.
+
+    __ https://www.ietf.org/rfc/rfc3339.txt
 
     Parameters
     ----------
@@ -78,9 +78,13 @@ class TimeStamp:
         legacy : string
             Legacy WrightTools timestamp representation.
         RFC3339 : string
-            `RFC3339`_ representation (recommended for most applications).
+            `RFC3339`__ representation (recommended for most applications).
+
+            __ https://www.ietf.org/rfc/rfc3339.txt
         RFC5322 : string
-            `RFC5322`_ representation.
+            `RFC5322`__ representation.
+
+            __ https://tools.ietf.org/html/rfc5322#section-3.3
         path : string
             Representation of the timestamp meant for inclusion in filepaths.
 
@@ -141,7 +145,10 @@ class TimeStamp:
 
     @property
     def RFC3339(self):
-        """RFC3339_."""
+        """RFC3339__.
+
+        __ https://www.ietf.org/rfc/rfc3339.txt
+        """
         # get timezone offset
         delta_sec = time.timezone
         m, s = divmod(delta_sec, 60)
@@ -165,7 +172,10 @@ class TimeStamp:
 
     @property
     def RFC5322(self):
-        """RFC5322_."""
+        """RFC5322__.
+
+        __ https://tools.ietf.org/html/rfc5322#section-3.3
+        """
         return self.datetime.astimezone(tz=pytz.utc).strftime('%a, %d %b %Y %H:%M:%S GMT')
 
     @property

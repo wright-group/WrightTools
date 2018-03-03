@@ -12,5 +12,6 @@ def test_build_docs():
     assert exitCode == 0
     shutil.rmtree(docsdir + '/__testbuild')
 
+
 if __name__ == '__main__':
     test_build_docs()

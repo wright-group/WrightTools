@@ -4,9 +4,6 @@
 # --- import --------------------------------------------------------------------------------------
 
 
-import os
-import shutil
-
 import numpy as np
 
 from .. import data as wt_data
