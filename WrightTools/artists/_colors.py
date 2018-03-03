@@ -299,7 +299,7 @@ def plot_colorbar(*, cax=None, cmap='default', ticks=None, clim=None, vlim=None,
 
     Returns
     -------
-    matplatlib.colorbar.ColorbarBase object
+    matplotlib.colorbar.ColorbarBase object
         The created colorbar.
     """
     # parse cax

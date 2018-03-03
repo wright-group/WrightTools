@@ -1,6 +1,4 @@
-"""Timestamp class and associated.
-.. _rfc5322: https://tools.ietf.org/html/rfc5322#section-3.3
-"""
+"""Timestamp class and associated."""
 
 
 # --- import --------------------------------------------------------------------------------------
