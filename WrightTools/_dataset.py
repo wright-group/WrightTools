@@ -155,7 +155,10 @@ class Dataset(h5py.Dataset):
             if 'units' in self.attrs.keys():
                 self.attrs.pop('units')
         else:
-            self.attrs['units'] = value.encode()
+            try:
+                self.attrs['units'] = value.encode()
+            except AttributeError:
+                self.attrs['units'] = value
 
     def argmax(self):
         """Index of the maximum, ignorning nans."""
