@@ -118,6 +118,14 @@ class Dataset(h5py.Dataset):
         return out
 
     @property
+    def full(self):
+        arr = self[:]
+        for i in range(arr.ndim):
+            if arr.shape[i] == 1:
+                arr = np.repeat(arr, self.parent.shape[i], axis=i)
+        return arr
+
+    @property
     def fullpath(self):
         """Full path: file and internal structure."""
         return self.parent.fullpath + posixpath.sep + self.natural_name
@@ -141,6 +149,11 @@ class Dataset(h5py.Dataset):
     def parent(self):
         """Parent."""
         return self._parent
+
+    @property
+    def points(self):
+        """Squeezed array."""
+        return np.squeeze(self[:])
 
     @property
     def units(self):

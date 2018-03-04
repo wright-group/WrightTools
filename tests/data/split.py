@@ -118,7 +118,7 @@ def test_split_axis_name():
     a.close()
 
 
-@pytest.mark.skip()  # constants required
+@pytest.mark.skip()
 def test_split_constant():
     p = datasets.PyCMDS.wm_w2_w1_000
     a = wt.data.from_PyCMDS(p)

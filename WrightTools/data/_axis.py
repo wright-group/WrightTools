@@ -126,7 +126,7 @@ class Axis(object):
     @property
     def shape(self):
         """Shape."""
-        return wt_kit.joint_shape(self.variables)
+        return wt_kit.joint_shape(*self.variables)
 
     @property
     def size(self):
@@ -146,8 +146,8 @@ class Axis(object):
         except (AssertionError, AttributeError):
             pattern = '|'.join(map(re.escape, operators))
             keys = re.split(pattern, self.expression)
-            self._variables = [self.parent.variables[self.parent.variable_names.index(key)]
-                               for key in keys]
+            indices = [self.parent.variable_names.index(key) for key in keys]
+            self._variables = [self.parent.variables[i] for i in indices]
         finally:
             return self._variables
 

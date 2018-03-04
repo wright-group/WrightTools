@@ -64,9 +64,9 @@ class Axes(matplotlib.axes.Axes):
         if autolabel in ['xy', 'both', 'x'] and not xlabel:
             xlabel = data.axes[0].label
         if autolabel in ['xy', 'both', 'y'] and not ylabel:
-            if data.dimensionality == 1:
+            if data.ndim == 1:
                 ylabel = data.channels[channel_index].label
-            elif data.dimensionality == 2:
+            elif data.ndim== 2:
                 ylabel = data.axes[1].label
         # apply
         if xlabel:
@@ -175,8 +175,8 @@ class Axes(matplotlib.axes.Axes):
         # unpack data object, if given
         if isinstance(args[0], Data):
             data = args.pop(0)
-            if not data.dimensionality == 2:
-                raise wt_exceptions.DimensionalityError(2, data.dimensionality)
+            if not data.ndim == 2:
+                raise wt_exceptions.DimensionalityError(2, data.ndim)
             # arrays
             channel_index = wt_kit.get_index(data.channel_names, channel)
             signed = data.channels[channel_index].signed
@@ -245,8 +245,8 @@ class Axes(matplotlib.axes.Axes):
         # unpack data object, if given
         if isinstance(args[0], Data):
             data = args.pop(0)
-            if not data.dimensionality == 2:
-                raise wt_exceptions.DimensionalityError(2, data.dimensionality)
+            if not data.ndim == 2:
+                raise wt_exceptions.DimensionalityError(2, data.ndim)
             # arrays
             channel_index = wt_kit.get_index(data.channel_names, channel)
             xi = data.axes[0].full
@@ -359,8 +359,8 @@ class Axes(matplotlib.axes.Axes):
         # unpack data object, if given
         if isinstance(args[0], Data):
             data = args.pop(0)
-            if not data.dimensionality == 2:
-                raise wt_exceptions.DimensionalityError(2, data.dimensionality)
+            if not data.ndim == 2:
+                raise wt_exceptions.DimensionalityError(2, data.ndim)
             # arrays
             channel_index = wt_kit.get_index(data.channel_names, channel)
             xi = data.axes[0].full
@@ -426,8 +426,8 @@ class Axes(matplotlib.axes.Axes):
         if hasattr(args[0], 'id'):  # TODO: replace once class comparison works...
             data = args.pop(0)
             channel = kwargs.pop('channel', 0)
-            if not data.dimensionality == 1:
-                raise wt_exceptions.DimensionalityError(1, data.dimensionality)
+            if not data.ndim == 1:
+                raise wt_exceptions.DimensionalityError(1, data.ndim)
             # arrays
             channel_index = wt_kit.get_index(data.channel_names, channel)
             xi = data.axes[0][:]

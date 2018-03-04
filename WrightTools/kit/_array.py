@@ -12,8 +12,16 @@ from .. import exceptions as wt_exceptions
 # --- define --------------------------------------------------------------------------------------
 
 
-__all__ = ['closest_pair', 'diff', 'fft', 'joint_shape', 'remove_nans_1D', 'share_nans',
-           'smooth_1D', 'unique', 'valid_index']
+__all__ = ['closest_pair',
+           'diff',
+           'fft',
+           'joint_shape',
+           'orthogonal',
+           'remove_nans_1D',
+           'share_nans',
+           'smooth_1D',
+           'unique',
+           'valid_index']
 
 
 # --- functions -----------------------------------------------------------------------------------
@@ -145,56 +153,75 @@ def fft(xi, yi, axis=0):
     return xi, yi
 
 
-def joint_shape(arrs):
-    """Given a list of arrays, return the joint shape.
+def joint_shape(*args):
+    """Given a set of arrays, return the joint shape.
 
     Parameters
     ----------
-    arrs : list of array-like
-        Input arrays.
+    args : array-likes
 
     Returns
     -------
     tuple of int
         Joint shape.
     """
-    if len(arrs) == 0:
+    if len(args) == 0:
         return ()
     shape = []
-    shapes = [a.shape for a in arrs]
-    ndim = arrs[0].ndim
+    shapes = [a.shape for a in args]
+    ndim = args[0].ndim
     for i in range(ndim):
         shape.append(max([s[i] for s in shapes]))
     return tuple(shape)
 
 
-def remove_nans_1D(arrs):
-    """Remove nans in a list of 1D arrays.
+def orthogonal(*args):
+    """Determine if a set of arrays are orthogonal.
+
+    Parameters
+    ----------
+    args : array-likes or array shapes
+
+    Returns
+    -------
+    bool
+        Array orthogonality condition.
+    """
+    for i, arg in enumerate(args):
+        if hasattr(arg, 'shape'):
+            args[i] = arg.shape
+    for s in zip(*args):
+        if np.product(s) != max(s):
+            return False
+    return True
+
+
+def remove_nans_1D(*args):
+    """Remove nans in a set of 1D arrays.
 
     Removes indicies in all arrays if any array is nan at that index.
     All input arrays must have the same size.
 
     Parameters
     ----------
-    arrs : list of 1D arrays
-        The arrays to remove nans from
+    args : 1D arrays
 
     Returns
     -------
-    list
-        List of 1D arrays in same order as given, with nan indicies removed.
+    tuple
+        Tuple of 1D arrays in same order as given, with nan indicies removed.
     """
     # find all indicies to keep
     bads = np.array([])
-    for arr in arrs:
+    for arr in args:
         bad = np.array(np.where(np.isnan(arr))).flatten()
         bads = np.hstack((bad, bads))
-    if hasattr(arrs, 'shape') and len(arrs.shape) == 1:
-        goods = [i for i in np.arange(arrs.shape[0]) if i not in bads]
+    if hasattr(args, 'shape') and len(args.shape) == 1:
+        goods = [i for i in np.arange(args.shape[0]) if i not in bads]
     else:
-        goods = [i for i in np.arange(len(arrs[0])) if i not in bads]
+        goods = [i for i in np.arange(len(args[0])) if i not in bads]
     # apply
-    return [a[goods] for a in arrs]
+    return tuple(a[goods] for a in args)
 
 
 def share_nans(arrs):

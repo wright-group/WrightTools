@@ -57,8 +57,6 @@ class Data(Group):
         self._on_axes_updated()
         # the following are populated if not already recorded
         self.channel_names
-        self.constant_names
-        self.kind
         self.source
         self.variable_names
 
@@ -98,26 +96,9 @@ class Data(Group):
         return tuple(self[n] for n in self.channel_names)
 
     @property
-    def constant_names(self):
-        """Constant names."""
-        if 'constant_names' not in self.attrs.keys():
-            self.attrs['constant_names'] = np.array([], dtype='S')
-        return tuple(s.decode() for s in self.attrs['constant_names'])
-
-    @property
-    def constants(self):
-        """Constants."""
-        return tuple(self[n] for n in self.constant_names)
-
-    @property
     def datasets(self):
         """Datasets."""
         return tuple(v for _, v in self.items() if isinstance(v, h5py.Dataset))
-
-    @property
-    def dimensionality(self):
-        """Get dimensionality of Data object."""
-        return len(self._axes)
 
     @property
     def info(self):
@@ -156,7 +137,7 @@ class Data(Group):
         try:
             assert self._shape is not None
         except (AssertionError, AttributeError):
-            self._shape = wt_kit.joint_shape(self.variables)
+            self._shape = wt_kit.joint_shape(*self.variables)
         finally:
             return self._shape
 
@@ -334,7 +315,7 @@ class Data(Group):
         kept = args + list(at.keys())
         kept_axes = [self._axes[self.axis_expressions.index(a)] for a in kept]
         removed_axes = [a for a in self._axes if a not in kept_axes]
-        removed_shape = wt_kit.joint_shape(removed_axes)
+        removed_shape = wt_kit.joint_shape(*removed_axes)
         if removed_shape == ():
             removed_shape = (1,) * self.ndim
         # iterate
@@ -447,12 +428,12 @@ class Data(Group):
         --------
         Axis.convert
             Convert a single axis object to compatable units. Call on an
-            axis object in data.axes or data.constants.
+            axis object in data.axes.
         """
         # get kind of units
         units_kind = wt_units.kind(destination_units)
         # apply to all compatible axes
-        for axis in self.axes + self.constants:
+        for axis in self.axes:
             if axis.units_kind == units_kind:
                 axis.convert(destination_units, convert_variables=convert_variables)
                 if verbose:
@@ -700,82 +681,103 @@ class Data(Group):
         if verbose:
             print('channel {0} leveled along axis {1}'.format(channel.natural_name, axis))
 
-    def map_axis(self, axis, points, input_units='same', edge_tolerance=0., verbose=True):
+    def map_variable(self, variable, points, input_units='same', *, name=None, parent=None,
+                     verbose=True):
         """Map points of an axis to new points using linear interpolation.
 
         Out-of-bounds points are written nan.
 
         Parameters
         ----------
-        axis : int or str
-            The axis to map onto.
-        points : 1D array-like or int
+        variable : string
+            The variable to map onto.
+        points : array-like or int
             If array, the new points. If int, new points will have the same
             limits, with int defining the number of evenly spaced points
             between.
         input_units : str (optional)
             The units of the new points. Default is same, which assumes
             the new points have the same units as the axis.
-        edge_tolerance : float (optional)
-            Axis edge points that are within this amount of the new edge
-            points are coerced to the new edge points before interpolation.
-            Default is 0.
+        name : string (optional)
+            The name of the new data object. If None, generated from
+            natural_name. Default is None.
+        parent : WrightTools.Collection (optional)
+            Parent of new data object. If None, data is made at root of a
+            new temporary file.
         verbose : bool (optional)
             Toggle talkback. Default is True.
+
+        Returns
+        -------
+        WrightTools.Data
+            New data object.
         """
-        raise NotImplementedError
-        # get axis index --------------------------------------------------------------------------
-        if isinstance(axis, int):
-            axis_index = axis
-        elif isinstance(axis, str):
-            axis_index = self.axis_names.index(axis)
-        else:
-            raise TypeError("axis: expected {int, str}, got %s" % type(axis))
-        axis = self._axes[axis_index]
-        # get points ------------------------------------------------------------------------------
+        # get variable index
+        variable_index = wt_kit.get_index(self.variable_names, variable)
+        variable = self.variables[variable_index]
+        # get points
         if isinstance(points, int):
-            points = np.linspace(axis[0], axis[-1], points)
-            input_units = 'same'
-        else:
-            points = np.array(points)
-        # transform points to axis units ----------------------------------------------------------
+            points = np.linspace(variable.min(), variable.max(), points)
+        points = np.array(points)
+        # points dimensionality
+        if points.ndim < variable.ndim:
+            for i, d in enumerate(variable.shape):
+                if d == 1:
+                    points = np.expand_dims(points, axis=i)
+        # convert points
         if input_units == 'same':
             pass
         else:
-            points = wt_units.converter(points, input_units, axis.units)
-        # points must be ascending ----------------------------------------------------------------
-        flipped = np.zeros(len(self._axes), dtype=np.bool)
-        for i in range(len(self._axes)):
-            if self._axes[i][0] > self._axes[i][-1]:
-                self.flip(i)
-                flipped[i] = True
-        # handle edge tolerance -------------------------------------------------------------------
-        for index in [0, -1]:
-            old = axis[index]
-            new = points[index]
-            if new - edge_tolerance < old < new + edge_tolerance:
-                axis[index] = new
-        # interpn data ----------------------------------------------------------------------------
-        old_points = [a[:] for a in self._axes]
-        new_points = [a[:] if a is not axis else points for a in self._axes]
-        if len(self._axes) == 1:
-            for channel in self.channels:
-                function = scipy.interpolate.interp1d(self._axes[0][:], channel[:])
-                channel[:] = function(new_points[0])
+            points = wt_units.converter(points, input_units, variable.units)
+        # construct new data object
+        special = ['name', 'axes', 'channel_names', 'variable_names']
+        kwargs = {k: v for k, v in self.attrs.items() if k not in special}
+        if name is None:
+            name = '{0}_{1}_mapped'.format(self.natural_name, variable.natural_name)
+        kwargs['name'] = name
+        if parent:
+            out = parent.create_data(**kwargs)
         else:
-            xi = tuple(np.meshgrid(*new_points, indexing='ij'))
-            for channel in self.channels:
-                values = channel[:]
-                channel[:] = scipy.interpolate.interpn(old_points, values, xi,
-                                                       method='linear',
-                                                       bounds_error=False,
-                                                       fill_value=np.nan)
-        # cleanup ---------------------------------------------------------------------------------
-        for i in range(len(self._axes)):
-            if not i == axis_index:
-                if flipped[i]:
-                    self.flip(i)
-        axis[:] = points
+            out = Data(**kwargs)
+        # mapped variable
+        name = variable.natural_name
+        values = points
+        units = variable.units
+        out.create_variable(name=name, values=values, units=units)
+        # orthogonal variables
+        for v in self.variables:
+            if wt_kit.orthogonal(v.shape, variable.shape):
+                out.create_variable(values=v[:], **v.attrs)
+        out.transform(self.axis_expressions)
+        # interpolate
+        if self.ndim == 1:
+
+            def interpolate(dataset, points):
+                function = scipy.interpolate.interp1d(variable[:], dataset[:])
+                return function(points)
+
+        else:
+            pts = np.array([a.full.flatten() for a in self.axes]).T
+            out_pts = np.array([a.full.flatten() for a in out.axes]).T
+
+            def interpolate(dataset, points):
+                values = dataset.full.flatten()
+                function = scipy.interpolate.LinearNDInterpolator(pts, values)
+                new = function(out_pts)
+                new.shape = out.shape
+                return new
+
+        for v in self.variables:
+            if v.natural_name not in out.variable_names:
+                out.create_variable(values=interpolate(v, points), **v.attrs)
+        out.variable_names = self.variable_names
+        out._variables = None
+        for channel in self.channels:
+            out.create_channel(values=interpolate(channel, points), **channel.attrs)
+        # finish
+        if verbose:
+            print('data mapped from {0} to {1}'.format(self.shape, out.shape))
+        return out
 
     def offset(self, points, offsets, along, offset_axis,
                units='same', offset_units='same', mode='valid',
