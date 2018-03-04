@@ -85,7 +85,7 @@ def from_Cary(filepath, name=None, parent=None, verbose=True):
         dat = datas.create_data(header[i], kind='Cary', source=filepath)
         dat.create_variable(ax, arr[i], units=units)
         dat.create_channel(columns[i + 1].lower(), arr[i + 1], label=columns[i + 1].lower())
-        dat.transform([ax])
+        dat.transform(ax)
     # finish
     if verbose:
         print('{0} data objects successfully created from Cary file:'.format(len(datas)))

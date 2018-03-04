@@ -124,7 +124,7 @@ def join(datas, *, name='join',  parent=None, verbose=True):
             vals[wt_kit.valid_index(new_idx, old.shape)] = old[:]
             new[:] = vals
     # axes
-    out.transform(axis_expressions)
+    out.transform(*axis_expressions)
     # finish
     if verbose:
         print(len(datas), 'datas joined to create new data:')
