@@ -223,7 +223,7 @@ def remove_nans_1D(*args):
     return tuple(a[goods] for a in args)
 
 
-def share_nans(arrs):
+def share_nans(*arrs):
     """Take a list of nD arrays and return a new list of nD arrays.
 
     The new list is in the same order as the old list.
@@ -232,8 +232,7 @@ def share_nans(arrs):
 
     Parameters
     ----------
-    arrs : list of nD arrays
-        The arrays to syncronize nans from
+    *arrs : nD arrays.
 
     Returns
     -------
@@ -243,7 +242,7 @@ def share_nans(arrs):
     nans = np.zeros((arrs[0].shape))
     for arr in arrs:
         nans *= arr
-    return [a + nans for a in arrs]
+    return tuple([a + nans for a in arrs])
 
 
 def smooth_1D(arr, n=10):
