@@ -14,6 +14,7 @@ import warnings
 
 class WrightToolsException(Exception):
     """WrightTools Base Exception."""
+
     pass
 
 
@@ -71,6 +72,7 @@ class MultidimensionalAxisError(WrightToolsException):
 
 class ValueError(ValueError, WrightToolsException):
     """Raised when an argument has the right type but an inappropriate value."""
+
     pass
 
 
@@ -96,6 +98,7 @@ class UnitsError(WrightToolsException):
 
 class WrightToolsWarning(Warning):
     """WrightTools Base Warning."""
+
     pass
 
 
@@ -104,7 +107,9 @@ class EntireDatasetInMemoryWarning(WrightToolsWarning):
 
     Such operations may lead to memory overflow errors for large datasets.
 
-    Warning ignored by default."""
+    Warning ignored by default.
+    """
+
     pass
 
 
@@ -113,6 +118,7 @@ warnings.simplefilter("ignore", category=EntireDatasetInMemoryWarning)  # ignore
 
 class VisibleDeprecationWarning(WrightToolsWarning):
     """VisibleDepreciationWarning."""
+
     pass
 
 

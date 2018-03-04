@@ -1,11 +1,4 @@
-"""Tools for visualizing data.
-
-.. _gridspec: http://matplotlib.org/users/gridspec.html#gridspec-and-subplotspec
-.. _grayify: https://jakevdp.github.io/blog/2014/10/16/how-bad-is-your-colormap/
-.. _cubehelix: http://arxiv.org/abs/1108.5083.
-.. _colormap: http://nbviewer.ipython.org/gist/anonymous/a4fa0adb08f9e9ea4f94
-.. _nmtorgb: http://www.physics.sfasu.edu/astro/color/spectra.html
-"""
+"""Tools for visualizing data."""
 
 
 # --- import --------------------------------------------------------------------------------------
@@ -104,8 +97,6 @@ class Absorbance:
                 self.ax2.plot(xi2, diff, lw=2)
                 self.ax2.grid(b=True)
                 plt.xlabel(data.axes[0].get_label(), fontsize=18)
-        # legend ----------------------------------------------------------------------------------
-        #self.ax1.legend([data.name for data in self.data])
         # ticks -----------------------------------------------------------------------------------
         if not yticks:
             self.ax1.get_yaxis().set_ticks([])

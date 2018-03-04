@@ -9,9 +9,6 @@ import queue
 import os
 import posixpath
 
-import numpy as np
-
-from .. import exceptions as wt_exceptions
 from ._collection import Collection
 
 

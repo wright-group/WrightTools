@@ -15,11 +15,14 @@ import numpy as np
 
 import h5py
 
+from . import kit as wt_kit
+from . import __wt5_version__
+
 
 # --- define --------------------------------------------------------------------------------------
 
 
-wt5_version = '0.0.0'
+wt5_version = __wt5_version__
 
 
 # --- class ---------------------------------------------------------------------------------------
@@ -60,6 +63,8 @@ class Group(h5py.Group, metaclass=MetaClass):
         self.natural_name = name
         # attrs
         self.attrs['class'] = self.class_name
+        if 'created' not in self.attrs.keys():
+            self.attrs['created'] = wt_kit.TimeStamp().RFC3339.encode()
         for key, value in kwargs.items():
             try:
                 if isinstance(value, str):
@@ -166,6 +171,10 @@ class Group(h5py.Group, metaclass=MetaClass):
         if '__version__' not in self.file.attrs.keys():
             self.file.attrs['__version__'] = wt5_version
         return self.file.attrs['__version__']
+
+    @property
+    def created(self):
+        return wt_kit.timestamp_from_RFC3339(self.attrs['created'].decode())
 
     @property
     def fullpath(self):

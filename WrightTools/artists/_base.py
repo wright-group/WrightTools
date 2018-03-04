@@ -163,7 +163,7 @@ class Axes(matplotlib.axes.Axes):
         **kwargs
             matplotlib.axes.Axes.contour__ optional keyword arguments.
 
-        __ https://matplotlib.org/api/_as_gen/matplotlib.axes.Axes.contour.html
+            __ https://matplotlib.org/api/_as_gen/matplotlib.axes.Axes.contour.html
 
         Returns
         -------
@@ -233,7 +233,7 @@ class Axes(matplotlib.axes.Axes):
         **kwargs
             matplotlib.axes.Axes.contourf__ optional keyword arguments.
 
-        __ https://matplotlib.org/api/_as_gen/matplotlib.axes.Axes.contourf.html
+            __ https://matplotlib.org/api/_as_gen/matplotlib.axes.Axes.contourf.html
 
         Returns
         -------
@@ -347,7 +347,7 @@ class Axes(matplotlib.axes.Axes):
         **kwargs
             matplotlib.axes.Axes.pcolor__ optional keyword arguments.
 
-        __ https://matplotlib.org/api/_as_gen/matplotlib.axes.Axes.pcolor.html
+            __ https://matplotlib.org/api/_as_gen/matplotlib.axes.Axes.pcolor.html
 
         Returns
         -------
@@ -412,9 +412,9 @@ class Axes(matplotlib.axes.Axes):
         ylabel : string (optional)
             ylabel. Default is None.
         **kwargs
-            matplotlib.axes.Axes.pcolor__ optional keyword arguments.
+            matplotlib.axes.Axes.plot__ optional keyword arguments.
 
-        __ https://matplotlib.org/api/_as_gen/matplotlib.axes.Axes.plot.html
+            __ https://matplotlib.org/api/_as_gen/matplotlib.axes.Axes.plot.html
 
         Returns
         -------
@@ -521,6 +521,7 @@ class Figure(matplotlib.figure.Figure):
 
 class GridSpec(matplotlib.gridspec.GridSpec):
     """GridSpec."""
+
     pass
 
 

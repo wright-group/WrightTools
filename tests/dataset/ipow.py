@@ -20,7 +20,6 @@ def test_d1_d2():
     data = wt.data.from_COLORS(p)
     value = random.randint(0, 5)
     original_max = data.ai0.max()
-    original_min = data.ai0.min()
     data.ai0 **= value
     assert data.ai0.max() == original_max ** value
     data.close()
@@ -41,7 +40,6 @@ def test_w1():
     data = wt.data.from_PyCMDS(p)
     value = random.randint(0, 5)
     original_max = data.signal.max()
-    original_min = data.signal.min()
     data.signal **= value
     assert data.signal.max() == original_max ** value
     data.close()
@@ -62,7 +60,6 @@ def test_w1_wa():
     data = wt.data.from_PyCMDS(p)
     value = random.randint(0, 5)
     original_max = data.array_signal.max()
-    original_min = data.array_signal.min()
     data.array_signal **= value
     assert data.array_signal.max() == original_max ** value
     data.close()

@@ -257,7 +257,9 @@ def create_figure(*, width='single', nrows=1, cols=[1], margin=1.,
         contains SubplotSpec objects that can have axes placed into them.
         The SubplotSpec objects can be accessed through indexing: [row, col].
         Slicing works, for example ``cax = plt.subplot(gs[:, -1])``. See
-        matplotlib gridspec_ documentation for more information.
+        matplotlib gridspec__ documentation for more information.
+
+        __ http://matplotlib.org/users/gridspec.html#gridspec-and-subplotspec
 
 
     Notes
@@ -499,6 +501,7 @@ def plot_colorbar(cax=None, cmap='default', ticks=None, clim=None, vlim=None,
                   label=None, tick_fontsize=14, label_fontsize=18, decimals=None,
                   orientation='vertical', ticklocation='auto'):
     """Easily add a colormap to an axis.
+
     Parameters
     ----------
     cax : matplotlib axis (optional)
@@ -527,6 +530,7 @@ def plot_colorbar(cax=None, cmap='default', ticks=None, clim=None, vlim=None,
         Colorbar orientation. Default is vertical.
     ticklocation : {'auto', 'left', 'right', 'top', 'bottom'} (optional)
         Tick location. Default is auto.
+
     Returns
     -------
     matplotlib.colorbar.ColorbarBase object

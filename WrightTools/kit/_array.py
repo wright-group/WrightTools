@@ -99,7 +99,6 @@ def diff(xi, yi, order=1):
     1D numpy array
         Numerical derivative. Has the same shape as the input arrays.
     """
-
     yi = np.array(yi).copy()
     flip = False
     if xi[-1] < xi[0]:

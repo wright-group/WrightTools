@@ -4,13 +4,14 @@ import os
 import WrightTools as wt
 from WrightTools import datasets
 
+
 def test_from_directory():
-    from_dict = {'*.data':wt.data.from_PyCMDS,
-                 '*.csv':wt.collection.from_Cary,
-                 'KENT':None,
-                 'COLORS':None,
-                }
-    p = wt.datasets.PyCMDS.w1_000
+    from_dict = {'*.data': wt.data.from_PyCMDS,
+                 '*.csv': wt.collection.from_Cary,
+                 'KENT': None,
+                 'COLORS': None,
+                 }
+    p = datasets.PyCMDS.w1_000
     p = os.path.dirname(p)
     p = os.path.dirname(p)
     col = wt.collection.from_directory(p, from_dict)
