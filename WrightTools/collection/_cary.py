@@ -30,16 +30,15 @@ def from_Cary(filepath, name=None, parent=None, verbose=True):
     If any alternate instruments are found not to work as expected, please
     submit a bug report on our `issue tracker`__.
 
-    __issue tracker: github.com/wright-group/WrightTools/issues
+    __ github.com/wright-group/WrightTools/issues
 
     .. plot::
 
         >>> import WrightTools as wt
         >>> from WrightTools import datasets
         >>> p = datasets.Cary.CuPCtS_H2O_vis
-        >>> data = wt.data.from_Cary(p)[0]
-        >>> artist = wt.artists.Quick1D(data)
-        >>> artist.plot()
+        >>> data = wt.collection.from_Cary(p)[0]
+        >>> wt.artists.quick1D(data)
 
     Parameters
     ----------
@@ -78,14 +77,14 @@ def from_Cary(filepath, name=None, parent=None, verbose=True):
     arr = np.array(lines).T
     # chew through all scans
     datas = Collection(name=name, parent=parent, edit_local=parent is not None)
-    for i in range(0, len(header)-1, 2):
+    for i in range(0, len(header) - 1, 2):
         r = re.compile("[ \t\(\)]+")
         spl = r.split(columns[i])
         ax = spl[0].lower() if len(spl) > 0 else None
         units = spl[1].lower() if len(spl) > 1 else None
         dat = datas.create_data(header[i], kind='Cary', source=filepath)
         dat.create_variable(ax, arr[i], units=units)
-        dat.create_channel(columns[i+1].lower(), arr[i+1], label=columns[i+1].lower())
+        dat.create_channel(columns[i + 1].lower(), arr[i + 1], label=columns[i + 1].lower())
         dat.transform([ax])
     # finish
     if verbose:

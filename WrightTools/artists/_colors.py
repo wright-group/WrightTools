@@ -29,7 +29,7 @@ def make_cubehelix(gamma=0.5, s=0.25, r=-1, h=1.3, reverse=False, darkest=0.7):
 
     Look `here`__ for more information.
 
-    __ cubehelix_
+    __ http://arxiv.org/abs/1108.5083
 
 
     Parameters
@@ -103,7 +103,7 @@ def make_colormap(seq, name='CustomMap', plot=False):
 
     `Source`__
 
-    __ colormap_
+    __ http://nbviewer.ipython.org/gist/anonymous/a4fa0adb08f9e9ea4f94
     """
     seq = [(None,) * 3, 0.0] + list(seq) + [1.0, (None,) * 3]
     cdict = {'red': [], 'green': [], 'blue': []}
@@ -135,7 +135,7 @@ def nm_to_rgb(nm):
 
     `original code`__
 
-    __ nmtorgb_
+    __ http://www.physics.sfasu.edu/astro/color/spectra.html
     """
     w = int(nm)
     # color ---------------------------------------------------------------------------------------
