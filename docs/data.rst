@@ -58,32 +58,35 @@ Structure & properties
 
 So what is a data object anyway?
 To put it simply, ``Data`` is a collection of ``Axis`` and ``Channel`` objects.
+``Axis`` objects are composed of ``Variable`` objects.
 
 ===============  ============================
-attribute        contains
+attribute        list of...
 ---------------  ----------------------------
 data.axes        wt.data.Axis objects
 data.channels    wt.data.Channel objects
+data.variables   wt.data.Variable objects
 ===============  ============================
+
+See also `Data.axis_expressions`, `Data.channel_names` and `Data.variable_names`.
 
 Axis
 ````
 
 Axes are the coordinates of the dataset. They have the following key attributes:
 
-===============  ==========================================================
-attribute        description
----------------  ----------------------------------------------------------
-axis.label       LaTeX-formatted label, appropriate for plotting
-axis.min         coordinates minimum, in current units
-axis.max         coordinates maximum, in current units
-axis.name        axis name
-axis.points      coordinates array, in current units
-axis.units       current axis units (change with ``axis.convert``)
-===============  ==========================================================
-
-Axes can also be constants (data.constants), in which case they contain a single value in points.
-This is crucial for keeping track of low dimensional data within a high dimensional experimental space.
+=================  ==========================================================
+attribute          description
+-----------------  ----------------------------------------------------------
+axis.label         LaTeX-formatted label, appropriate for plotting
+axis.min()         coordinates minimum, in current units
+axis.max()         coordinates maximum, in current units
+axis.natural_name  axis name
+axis.points        coordinates array, in current units
+axis.units         current axis units (change with ``axis.convert``)
+axis.variables     component variables
+axis.expression    expression
+=================  ==========================================================
 
 Channel
 ```````
@@ -94,13 +97,12 @@ Channels contain the n-dimensional data itself. They have the following key attr
 attribute        description
 ---------------  ----------------------------------------------------------
 channel.label    LaTeX-formatted label, appropriate for plotting
-channel.mag      channel magnitude (furthest deviation from null)
-channel.max      channel maximum
-channel.min      channel minimum
+channel.mag()    channel magnitude (furthest deviation from null)
+channel.max()    channel maximum
+channel.min()    channel minimum
 channel.name     channel name
 channel.null     channel null (value of zero signal)
 channel.signed   flag to indicate if channel is signed
-channel.values   n-dimensional array
 ===============  ==========================================================
 
 Data
@@ -121,14 +123,9 @@ The natural syntax is recommended, as it tends to result in more readable code.
    >>> data.pyro2 == data.channels[2]
    True
 
-The order of the ``data.axes`` list is crucial, as the coordinate arrays must be kept aligned with the shape of the corresponding n-dimensional data arrays.
-
-In contrast, the order of ``data.channels`` is arbitrary.
+The order of axes and channels is arbitrary.
 However many methods within WrightTools operate on the zero-indexed channel by default.
 For this reason, you can bring your favorite channel to zero-index using :meth:`~WrightTools.data.Data.bring_to_front`.
-
-At many points throughout WrightTools you will need to refer to a particular axis or channel.
-In such a case, you can always refer by name (string) or index (integer).
 
 Units aware & interpolation ready
 ---------------------------------
@@ -144,12 +141,10 @@ Here we list some of the capabilities that are enabled by this behavior.
 ==================================================  ================================================================================
 method                                              description
 --------------------------------------------------  --------------------------------------------------------------------------------
-:meth:`~WrightTools.data.Data.divide`               divide one channel by another, interpolating the divisor
 :meth:`~WrightTools.data.Data.heal`                 use interpolation to guess the value of NaNs within a channel
 :meth:`~WrightTools.data.join`                      join together multiple data objects, accounting for dimensionality and overlap
-:meth:`~WrightTools.data.Data.map_axis`             re-map axis coordinates
+:meth:`~WrightTools.data.Data.map_variable`         re-map data coordinates
 :meth:`~WrightTools.data.Data.offset`               offset one axis based on another
-:meth:`~WrightTools.data.Data.subtract`             subtract one channel from another, interpolating the subtrahend
 ==================================================  ================================================================================
 
 Dimensionality without the cursing
@@ -169,7 +164,6 @@ method                                              description
 :meth:`~WrightTools.data.Data.chop`                 chop data into a list of lower dimensional data
 :meth:`~WrightTools.data.Data.collapse`             destroy one dimension of data using a mathematical strategy
 :meth:`~WrightTools.data.Data.split`                split data at a series of coordinates, without reducing dimensionality
-:meth:`~WrightTools.data.Data.transpose`            change the order of data axes
 ==================================================  ================================================================================
 
 WrightTools seamlessly handles dimensionality throughout.
@@ -186,9 +180,7 @@ A selection of important methods follows.
 method                                              description
 --------------------------------------------------  --------------------------------------------------------------------------------
 :meth:`~WrightTools.data.Data.clip`                 clip values outside of a given range
-:meth:`~WrightTools.data.Data.dOD`                  transform into dOD units
 :meth:`~WrightTools.data.Data.level`                level the edge of data along a certain axis
-:meth:`~WrightTools.data.Data.m`                    apply m-factor corrections [#carlson1989]_
 :meth:`~WrightTools.data.Data.normalize`            normalize a channel such that mag --> 1 and null --> 0
 :meth:`~WrightTools.data.Data.revert`               revert the data object to an earlier state
 :meth:`~WrightTools.data.Data.scale`                apply a scaling to a channel, such as square root or log
@@ -198,14 +190,6 @@ method                                              description
 ==================================================  ================================================================================
 
 .. _JASCO: https://jascoinc.com/products/spectroscopy/
-
 .. _NISE: https://github.com/wright-group/NISE
-
 .. _PyCMDS: https://github.com/wright-group/PyCMDS
-
 .. _Shimadzu: http://www.ssi.shimadzu.com/products/productgroup.cfm?subcatlink=uvvisspectro
-
-.. [#carlson1989] **Absorption and Coherent Interference Effects in Multiply Resonant Four-Wave Mixing Spectroscopy**
-                  Roger J. Carlson, and John C. Wright
-                  *Applied Spectroscopy* **1989** 43, 1195--1208
-                  `doi:10.1366/0003702894203408 <http://dx.doi.org/10.1366/0003702894203408>`_
