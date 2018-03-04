@@ -57,7 +57,9 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True):
     if data_name == '':  # name not given in PyCMDS
         data_name = headers['data origin']
     # create data object
-    kwargs = {'name': data_name, 'kind': 'PyCMDS', 'source': filepath}
+    kwargs = {'name': data_name, 'kind': 'PyCMDS', 'source': filepath,
+              'created': headers['file created'],
+              }
     if parent is not None:
         data = parent.create_data(**kwargs)
     else:
