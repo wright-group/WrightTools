@@ -1293,8 +1293,8 @@ class Data(Group):
 
         Parameters
         ----------
-        axes : list of strings
-            List of axes.
+        axes : strings
+            Expressions for the new set of axes.
         verbose : boolean (optional)
             Toggle talkback. Default is True
         """
