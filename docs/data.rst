@@ -59,7 +59,7 @@ To put it simply, ``Data`` is a collection of ``Axis`` and ``Channel`` objects.
 ``Axis`` objects are composed of ``Variable`` objects.
 
 ===============  ============================
-attribute        list of...
+attribute        tuple of...
 ---------------  ----------------------------
 data.axes        wt.data.Axis objects
 data.channels    wt.data.Channel objects
@@ -80,7 +80,6 @@ axis.label         LaTeX-formatted label, appropriate for plotting
 axis.min()         coordinates minimum, in current units
 axis.max()         coordinates maximum, in current units
 axis.natural_name  axis name
-axis.points        coordinates array, in current units
 axis.units         current axis units (change with ``axis.convert``)
 axis.variables     component variables
 axis.expression    expression
