@@ -16,12 +16,13 @@ import numpy as np
 import h5py
 
 from . import kit as wt_kit
+from . import __wt5_version__
 
 
 # --- define --------------------------------------------------------------------------------------
 
 
-wt5_version = '0.0.0'
+wt5_version = __wt5_version__
 
 
 # --- class ---------------------------------------------------------------------------------------

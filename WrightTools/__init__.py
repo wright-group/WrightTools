@@ -8,6 +8,7 @@
 import sys as _sys
 
 from .__version__ import *
+from .__wt5_version__ import *
 from . import artists
 from . import collection
 from . import data
