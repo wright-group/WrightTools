@@ -126,7 +126,7 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True):
             expression = expression[1:]
         expression.replace('=D', '=')
         a['expression'] = expression
-    data.transform([a['expression'] for a in axes])
+    data.transform(*[a['expression'] for a in axes])
     # return
     if verbose:
         print('data created at {0}'.format(data.fullpath))

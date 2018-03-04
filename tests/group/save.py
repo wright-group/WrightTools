@@ -138,7 +138,7 @@ def test_propagate_units():
 def test_propagate_expressions():
     p = datasets.PyCMDS.wm_w2_w1_001
     data = wt.data.from_PyCMDS(p)
-    data.transform(['w1-wm', 'w2', 'w1'])
+    data.transform('w1-wm', 'w2', 'w1')
     p = os.path.join(here, 'expressions')
     p = data.save(p)
     new = wt.open(p)

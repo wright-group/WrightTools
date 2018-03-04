@@ -137,9 +137,7 @@ def from_KENT(filepaths, name=None, ignore=['wm'], delay_tolerance=0.1, frequenc
             grid_i = griddata(points, zi, xi, method='linear', fill_value=fill_value)
             data.create_channel(name=key, values=grid_i)
     # axes
-    data.transform(scanned.keys())
-    # axes
-    data.transform(scanned.keys())
+    data.transform(*scanned.keys())
     # return --------------------------------------------------------------------------------------
     if verbose:
         print('data created at {0}'.format(data.fullpath))
