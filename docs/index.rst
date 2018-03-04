@@ -38,10 +38,10 @@ Contents
    wt5
    data
    artists
-   fit
+   .. fit
    kit
    units
-   diagrams
+   .. diagrams
    datasets
    contributing 
    api/modules
