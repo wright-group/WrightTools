@@ -184,7 +184,7 @@ def from_COLORS(filepaths, name=None, cols=None, invert_d1=True,
             grid_i = griddata(points, zi, xi, method='linear', fill_value=fill_value)
             data.create_channel(name=key, values=grid_i)
     # axes
-    data.transform(scanned.keys())
+    data.transform(*scanned.keys())
     # return --------------------------------------------------------------------------------------
     if verbose:
         print('data created at {0}'.format(data.fullpath))

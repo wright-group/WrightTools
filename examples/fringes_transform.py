@@ -28,7 +28,7 @@ ax.set_title('as taken', fontsize=20)
 
 # transformed
 ax = plt.subplot(gs[0, 1])
-data.transform(['wm', 'w1'])
+data.transform('wm', 'w1')
 data.convert('wn')
 ax.pcolor(data)
 wt.artists.set_ax_labels(xlabel=data.wm.label, yticks=False)

@@ -100,7 +100,7 @@ def from_spcm(filepath, name=None, *, delimiter=',', format=None, parent=None, v
     # construct data
     data.create_variable(name='time', values=arr[0], units='ns')
     data.create_channel(name='counts', values=arr[1])
-    data.transform(['time'])
+    data.transform('time')
     # finish
     if verbose:
         print('data created at {0}'.format(data.fullpath))

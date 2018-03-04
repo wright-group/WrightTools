@@ -58,7 +58,7 @@ def from_JASCO(filepath, name=None, parent=None, verbose=True):
     # chew through all scans
     data.create_variable(name='energy', values=arr[0], units='nm')
     data.create_channel(name='signal', values=arr[1])
-    data.transform(['energy'])
+    data.transform('energy')
     # finish
     if verbose:
         print('data created at {0}'.format(data.fullpath))

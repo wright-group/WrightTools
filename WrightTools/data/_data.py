@@ -347,7 +347,7 @@ class Data(Group):
                 data.create_channel(**kwargs)
             new_axes = [a.expression for a in kept_axes if a.expression not in at.keys()]
             new_axis_units = [a.units for a in kept_axes if a.expression not in at.keys()]
-            data.transform(new_axes)
+            data.transform(*new_axes)
             for j, units in enumerate(new_axis_units):
                 data.axes[j].convert(units)
             i += 1
@@ -1058,7 +1058,7 @@ class Data(Group):
                 new[j] = n.replace(v, '{%i}' % i)
         for i, n in enumerate(new):
             new[i] = n.format(*kwargs.values())
-        self.transform(new)
+        self.transform(*new)
         for a, u in zip(self._axes, units):
             a.convert(u)
         # finish
@@ -1286,13 +1286,13 @@ class Data(Group):
                                                                        new_axis.size))
         return outs
 
-    def transform(self, axes, verbose=True):
+    def transform(self, *axes, verbose=True):
         """Transform the data.
 
         Parameters
         ----------
-        axes : list of strings
-            List of axes.
+        axes : strings
+            Expressions for the new set of axes.
         verbose : boolean (optional)
             Toggle talkback. Default is True
         """

@@ -26,7 +26,7 @@ def test_1():
     data.create_variable(name='x', values=x, units=None)
     data.create_channel(name='y', values=y)
     data.create_channel(name='z', values=y)
-    data.transform(['x'])
+    data.transform('x')
     # smooth
     data.smooth(5, channel='y')
     check_arr = data.y[:] - data.z[:]
@@ -45,7 +45,7 @@ def test_2():
     data.create_variable(name='x1', values=x, units=None)
     data.create_variable(name='x2', values=x, units=None)
     data.create_channel(name='z', values=z)
-    data.transform(['x1', 'x2'])
+    data.transform('x1', 'x2')
     # smooth
     data.smooth(90, channel='z')
     assert np.allclose(data.z[:], .5, rtol=.1, atol=.4)
@@ -64,7 +64,7 @@ def test_3():
     # create channels and variables
     data.create_variable(name='x', values=x, units=None)
     data.create_channel(name='z_comb', values=z_comb)
-    data.transform(['x'])
+    data.transform('x')
     # smooth
     data.smooth(10, channel='z_comb')
     assert np.allclose(data.z_comb[:], z_big, rtol=.1, atol=.05)
