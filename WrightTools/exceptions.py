@@ -12,7 +12,13 @@ import warnings
 # --- custom exceptions ---------------------------------------------------------------------------
 
 
-class DimensionalityError(Exception):
+class WrightToolsException(Exception):
+    """WrightTools Base Exception."""
+
+    pass
+
+
+class DimensionalityError(WrightToolsException):
     """DimensionalityError."""
 
     def __init__(self, expected, recieved):
@@ -26,28 +32,13 @@ class DimensionalityError(Exception):
             Recieved dimensionality.
         """
         message = "dimensionality must be {0} (recieved {1})".format(expected, recieved)
-        Exception.__init__(self, message)
+        super().__init__(self, message)
 
 
-class FileNotFound(Exception):
-    """FileNotFound."""
-
-    def __init__(self, path):
-        """Format a file not found exception.
-
-        Parameters
-        ----------
-        path : string
-            Given path.
-        """
-        message = 'no file was found at {}'.format(path)
-        Exception.__init__(self, message)
-
-
-class NameNotUniqueError(Exception):
+class NameNotUniqueError(WrightToolsException):
     """NameNotUniqueError."""
 
-    def __init__(self, name):
+    def __init__(self, name=None):
         """Format a Name Not Unique Error.
 
         Parameters
@@ -55,20 +46,83 @@ class NameNotUniqueError(Exception):
         name : string
             Name of an attribute which causes a duplication.
         """
-        message = 'Name {} results in a duplicate'.format(name)
-        Exception.__init__(self, message)
+        if name is not None:
+            message = 'Name {} results in a duplicate'.format(name)
+        else:
+            message = "Names must be unique"
+        super().__init__(self, message)
+
+
+class MultidimensionalAxisError(WrightToolsException):
+    """Error for when operation does not support Multidimensional Axes."""
+
+    def __init__(self, axis, operation):
+        """Multidimesional Axis error.
+
+        Parameters
+        ----------
+        axis : str
+            Name of axis which causes the error.
+        operation : str
+            Name of operation which cannot handle multidimensional axes.
+        """
+        message = "{} can not handle multidimensional axis: {}".format(operation, axis)
+        super().__init__(self, message)
+
+
+class ValueError(ValueError, WrightToolsException):
+    """Raised when an argument has the right type but an inappropriate value."""
+
+    pass
+
+
+class UnitsError(WrightToolsException):
+    """Units Error."""
+
+    def __init__(self, expected, recieved):
+        """Units error.
+
+        Parameters
+        ----------
+        expected : object
+            Expected units.
+        recieved : object
+            Recieved units.
+        """
+        message = "expected units of {0} (recieved {1})".format(expected, recieved)
+        super().__init__(self, message)
 
 
 # --- custom warnings -----------------------------------------------------------------------------
 
 
-class VisibleDeprecationWarning(Warning):
+class WrightToolsWarning(Warning):
+    """WrightTools Base Warning."""
+
+    pass
+
+
+class EntireDatasetInMemoryWarning(WrightToolsWarning):
+    """Warn when an entire dataset is taken into memory at once.
+
+    Such operations may lead to memory overflow errors for large datasets.
+
+    Warning ignored by default.
+    """
+
+    pass
+
+
+warnings.simplefilter("ignore", category=EntireDatasetInMemoryWarning)  # ignore by default
+
+
+class VisibleDeprecationWarning(WrightToolsWarning):
     """VisibleDepreciationWarning."""
 
     pass
 
 
-class WrongFileTypeWarning(Warning):
+class WrongFileTypeWarning(WrightToolsWarning):
     """WrongFileTypeWarning."""
 
     def warn(filepath, expected):

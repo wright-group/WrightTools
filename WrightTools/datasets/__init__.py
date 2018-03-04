@@ -56,11 +56,12 @@ class DatasetContainer(object):
 BrunoldrRaman = DatasetContainer()
 BrunoldrRaman._from_files(os.path.join(here, 'BrunoldrRaman'))
 
-Cary50 = DatasetContainer()
-Cary50._from_files('Cary50')
+Cary = DatasetContainer()
+Cary._from_files('Cary')
 
 COLORS = DatasetContainer()
 COLORS._from_files(os.path.join(here, 'COLORS', 'v0.2'), prefix='v0p2_')
+COLORS._from_files(os.path.join(here, 'COLORS', 'v2.2'), prefix='v2p2_')
 COLORS._from_directory(os.path.join(here, 'COLORS', 'v2.1', 'MoS2 TrEE movie'), prefix='v2p1_')
 
 JASCO = DatasetContainer()
@@ -71,8 +72,14 @@ KENT._from_directory(os.path.join(here, 'KENT', 'LDS821 TRSF'))
 KENT._from_directory(os.path.join(here, 'KENT', 'PbSe 2D delay A'))
 KENT._from_directory(os.path.join(here, 'KENT', 'PbSe 2D delay B'))
 
+ocean_optics = DatasetContainer()
+ocean_optics._from_files('ocean_optics')
+
 PyCMDS = DatasetContainer()
 PyCMDS._from_files('PyCMDS')
+
+Shimadzu = DatasetContainer()
+Shimadzu._from_files('Shimadzu')
 
 spcm = DatasetContainer()
 spcm._from_files('spcm')
@@ -84,4 +91,5 @@ Tensor27._from_files('Tensor27')
 # --- pretty namespace ----------------------------------------------------------------------------
 
 
-__all__ = ['COLORS', 'JASCO', 'KENT', 'BrunoldrRaman', 'Cary50', 'Tensor27']
+__all__ = ['COLORS', 'JASCO', 'KENT', 'ocean_optics', 'PyCMDS', 'BrunoldrRaman', 'Cary',
+           'Tensor27']

@@ -4,7 +4,9 @@ appdirs
 h5py>=2.7.0
 imageio
 matplotlib>=2.0
+numexpr
 numpy
 python-dateutil
 pytz
 scipy
+tidy_headers

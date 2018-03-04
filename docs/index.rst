@@ -35,17 +35,18 @@ Contents
 
    install
    quickstart
+   wt5
    data
    artists
-   fit
+   .. fit
    kit
    units
-   tuning
-   diagrams
+   .. diagrams
    datasets
    contributing 
    api/modules
    auto_examples/index
+   publications
    alternatives
 
 Index

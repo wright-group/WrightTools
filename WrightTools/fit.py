@@ -666,7 +666,7 @@ class Fitter:
         # will iterate over axes NOT fit
         self.not_fit_indicies = [self.data.axis_names.index(
             name) for name in self.data.axis_names if name not in self.axes]
-        self.fit_shape = [self.data.axes[i].points.shape[0] for i in self.not_fit_indicies]
+        self.fit_shape = [self.data.axes[i].shape[0] for i in self.not_fit_indicies]
         print('fitter recieved data to make %d fits' % np.product(self.fit_shape))
 
     def run(self, channel=0, propagate_other_channels=True, verbose=True):
@@ -725,20 +725,20 @@ class Fitter:
         else:
             self.outs.channels = params_channels
         # do all fitting operations ---------------------------------------------------------------
-        axes_points = [axis.points for axis in self.data.axes if axis.name in self.axes]
+        axes_points = [axis[:] for axis in self.data.axes if axis.name in self.axes]
         timer = wt_kit.Timer(verbose=False)
         with timer:
             for idx in np.ndindex(*self.fit_shape):
                 # do fit
-                values = self.data.channels[channel_index].values[idx]
+                values = self.data.channels[channel_index][idx]
                 fit_args = [values] + axes_points
                 out = self.function.fit(*fit_args)
                 # fill outs
                 for i in range(len(self.function.params)):
-                    self.outs.channels[i].values[idx] = out[i]
+                    self.outs.channels[i][idx] = out[i]
                 # fill model
                 model_data = self.function.evaluate(out, *axes_points)
-                self.model.channels[channel_index].values[idx] = model_data
+                self.model.channels[channel_index][idx] = model_data
         if verbose:
             print('fitter done in %f seconds' % timer.interval)
         # clean up --------------------------------------------------------------------------------
@@ -749,7 +749,7 @@ class Fitter:
         for i in range(len(self.function.params)):
             # give the data all at once
             channel = self.outs.channels[i]
-            values = channel.values
+            values = channel[:]
             channel._null = 0
         self.outs._update()
         return self.outs
@@ -799,8 +799,8 @@ class MultiPeakFitter:
         else:
             print('channel type', type(channel), 'not valid')
         # get diff of data
-        self.zi = self.data.channels[self.channel_index].values
-        self.diff = wt_kit.diff(self.data.axes[0].points, self.zi, order=self.fittype)
+        self.zi = self.data.channels[self.channel_index][:]
+        self.diff = wt_kit.diff(self.data.axes[0][:], self.zi, order=self.fittype)
 
     def build_funcs(self, x, params, kinds, diff_order=0):
         """Build a new 1D function of many 1D function of various kinds.
@@ -907,8 +907,8 @@ class MultiPeakFitter:
             array offering the remainder (actual - fit) in the native space of the spectra
         """
         # generate arrays for fitting
-        zi_diff = wt_kit.diff(self.data.axes[0].points,
-                              self.data.channels[self.channel_index].values,
+        zi_diff = wt_kit.diff(self.data.axes[0][:],
+                              self.data.channels[self.channel_index][:],
                               order=self.fittype)
         names, kinds, p0 = self.extract_params(self.guesses)
         # define error function
@@ -918,16 +918,16 @@ class MultiPeakFitter:
         # perform fit
         timer = wt_kit.Timer(verbose=False)
         with timer:
-            out = scipy_optimize.leastsq(error, p0, args=(self.data.axes[0].points, zi_diff))
+            out = scipy_optimize.leastsq(error, p0, args=(self.data.axes[0][:], zi_diff))
             # write results in dictionary
             self.fit_results = self.encode_params(names, kinds, out[0])
         if verbose:
             print('fitting done in %f seconds' % timer.interval)
         # generate model
         self.diff_model = self.build_funcs(
-            self.data.axes[0].points, out[0], kinds, diff_order=self.fittype)
-        self.remainder = self.data.channels[self.channel_index].values - \
-            self.build_funcs(self.data.axes[0].points, out[0], kinds, diff_order=0)
+            self.data.axes[0][:], out[0], kinds, diff_order=self.fittype)
+        self.remainder = self.data.channels[self.channel_index][:] - \
+            self.build_funcs(self.data.axes[0][:], out[0], kinds, diff_order=0)
 
     def function(self, x, kind, FWHM, intensity, x0, diff_order=0):
         """Return a peaked distribution over array x.
@@ -1013,7 +1013,7 @@ class MultiPeakFitter:
         # as-taken
         ax = plt.subplot(gs[0, 0])
         ax.set_title(self.name + ' fittype = ' + str(self.fittype), fontsize=20)
-        xi = self.data.axes[0].points
+        xi = self.data.axes[0][:]
         ax.plot(xi, self.zi, color='k', linewidth=2)
         plt.setp(ax.get_xticklabels(), visible=False)
         ax.set_ylim(0, self.zi.max() + .005)

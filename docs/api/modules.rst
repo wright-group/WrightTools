@@ -6,13 +6,10 @@ WrightTools API
 
    WrightTools.datasets
    WrightTools.diagrams
-   WrightTools.tuning
    WrightTools.artists
-   WrightTools.calibration
+   WrightTools.collection
    WrightTools.data
    WrightTools.exceptions
-   WrightTools.fit
-   WrightTools.google_drive
    WrightTools.kit
    WrightTools.units
 

@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 
 import os
 from setuptools import setup, find_packages
@@ -20,7 +20,7 @@ extra_files.append(os.path.join(here, 'LICENSE'))
 extra_files.append(os.path.join(here, 'README.rst'))
 extra_files.append(os.path.join(here, 'requirements.txt'))
 extra_files.append(os.path.join(here, 'VERSION'))
-extra_files.append(os.path.join(here, 'WrightTools', 'client_secrets.json'))
+extra_files.append(os.path.join(here, 'WT5_VERSION'))
 
 with open(os.path.join(here, 'requirements.txt')) as f:
     required = f.read().splitlines()
@@ -33,9 +33,10 @@ setup(
     packages=find_packages(),
     package_data={'': extra_files},
     setup_requires=['pytest-runner'],
-    tests_require=['pytest'],
+    tests_require=['pytest', 'pytest-cov',
+                   'sphinx==1.6.5', 'sphinx-gallery==0.1.12', 'sphinx-rtd-theme'],
     install_requires=required,
-    extras_require={'docs': ['sphinx-gallery>=0.1.9']},
+    extras_require={'docs': ['sphinx-gallery==0.1.12']},
     version=version,
     description='Tools for loading, processing, and plotting multidimensional spectroscopy data.',
     author='Blaise Thompson',
