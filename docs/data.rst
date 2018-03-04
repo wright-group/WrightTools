@@ -40,18 +40,16 @@ It is possible to create data objects directly in special circumstances, as show
    def my_resonance(xi, yi, intensity=1, FWHM=500, x0=7000):
        def single(arr, intensity=intensity, FWHM=FWHM, x0=x0):
            return intensity*(0.5*FWHM)**2/((xi-x0)**2+(0.5*FWHM)**2)
-       return single(xi)[:, None] * single(yi)[None, :]
-   xi = np.linspace(6000, 8000, 75)
-   yi = np.linspace(6000, 8000, 75)
+       return single(xi) * single(yi)
+   xi = np.linspace(6000, 8000, 75)[:, None]
+   yi = np.linspace(6000, 8000, 75)[None, :]
    zi = my_resonance(xi, yi)
    # package into data object
    data = wt.Data(name='example')
-   xi.shape = (75, 1)
-   data.add_variable(name='w1', units='wn', values=xi)
-   yi.shape = (1, 75)
-   data.add_variable(name='w2', units='wn', values=yi)
-   data.add_channel(name='signal', values=zi)
-   data.transform(['w1', 'w2'])
+   data.create_variable(name='w1', units='wn', values=xi)
+   data.create_variable(name='w2', units='wn', values=yi)
+   data.create_channel(name='signal', values=zi)
+   data.transform('w1', 'w2')
 
 Structure & properties
 ----------------------
