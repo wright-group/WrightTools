@@ -735,15 +735,11 @@ class Data(Group):
         if name is None:
             name = '{0}_{1}_mapped'.format(self.natural_name, variable.natural_name)
         kwargs['name'] = name
-        if parent:
-            out = parent.create_data(**kwargs)
-        else:
-            out = Data(**kwargs)
+        kwargs['parent'] = parent
+        out = Data(**kwargs)
         # mapped variable
-        name = variable.natural_name
         values = points
-        units = variable.units
-        out.create_variable(name=name, values=values, units=units)
+        out.create_variable(values=values, **variable.attrs)
         # orthogonal variables
         for v in self.variables:
             if wt_kit.orthogonal(v.shape, variable.shape):
@@ -762,7 +758,7 @@ class Data(Group):
 
             def interpolate(dataset, points):
                 values = dataset.full.flatten()
-                function = scipy.interpolate.LinearNDInterpolator(pts, values)
+                function = scipy.interpolate.LinearNDInterpolator(pts, values, rescale=True)
                 new = function(out_pts)
                 new.shape = out.shape
                 return new
@@ -770,8 +766,8 @@ class Data(Group):
         for v in self.variables:
             if v.natural_name not in out.variable_names:
                 out.create_variable(values=interpolate(v, points), **v.attrs)
-        out.variable_names = self.variable_names
-        out._variables = None
+        out.variable_names = self.variable_names  # enforce old order
+        out._variables = None  # force regeneration of variables @property
         for channel in self.channels:
             out.create_channel(values=interpolate(channel, points), **channel.attrs)
         # finish
@@ -1080,7 +1076,7 @@ class Data(Group):
         Uses the share_nans method found in wt.kit.
         """
         def f(_, s, channels):
-            outs = wt_kit.share_nans([c[s] for c in channels])
+            outs = wt_kit.share_nans(*[c[s] for c in channels])
             for c, o in zip(channels, outs):
                 c[s] = o
 
