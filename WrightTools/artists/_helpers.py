@@ -464,7 +464,7 @@ def pcolor_helper(xi, yi, zi):
         xi.shape = (xi.size, 1)
     if yi.ndim == 1:
         yi.shape = (1, yi.size)
-    shape = wt_kit.joint_shape([xi, yi])
+    shape = wt_kit.joint_shape(xi, yi)
     # full
 
     def full(arr):
