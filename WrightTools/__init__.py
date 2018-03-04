@@ -12,7 +12,6 @@ from . import artists
 from . import collection
 from . import data
 from . import diagrams
-from . import fit
 from . import kit
 from . import units
 from . import exceptions
