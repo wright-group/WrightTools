@@ -12,7 +12,7 @@ You can use it directly, if you wish.
    >>> wt.units.converter(2., 'eV', 'nm')
    620.0
 
-This same units system enables the units-aware properties throughout WrightTools, as in ``Axis`` and ``Curve``.
+This same units system enables the units-aware properties throughout WrightTools.
 
 In WrightTools, units are organized into kinds.
 It is always possible to convert between units of the same kind, and never possible to convert between kinds.
