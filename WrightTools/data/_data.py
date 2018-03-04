@@ -744,7 +744,7 @@ class Data(Group):
         for v in self.variables:
             if wt_kit.orthogonal(v.shape, variable.shape):
                 out.create_variable(values=v[:], **v.attrs)
-        out.transform(self.axis_expressions)
+        out.transform(*self.axis_expressions)
         # interpolate
         if self.ndim == 1:
 
