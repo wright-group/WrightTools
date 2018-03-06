@@ -913,8 +913,8 @@ class Data(Group):
 
         Parameters
         ----------
-        channel : int (index) or str (name)
-            Channel to remove.
+        channel : int or str
+            Channel index or name to remove.
         verbose : boolean (optional)
             Toggle talkback. Default is True.
         """
@@ -931,8 +931,8 @@ class Data(Group):
 
         Parameters
         ----------
-        variable : int (index) or str (name)
-            Variable to remove.
+        variable : int or str
+            Variable index or name to remove.
         implied : boolean (optional)
             Toggle deletion of other variables that start with the same
             name. Default is True.
