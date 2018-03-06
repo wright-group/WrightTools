@@ -27,6 +27,7 @@ def test_multiple():
     for arr in arrs:
         assert arr.size == 19
 
+
 def test_list():
     assert np.all(wt.kit.remove_nans_1D([np.nan, 1, 2, 3])[0] == np.array([1, 2, 3]))
 
