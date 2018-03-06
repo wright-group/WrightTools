@@ -58,7 +58,7 @@ def intersperse(lis, value):
     ----------
     lis : list
         List to intersperse.
-    value : value
+    value : object
         Value to insert.
 
     Returns
