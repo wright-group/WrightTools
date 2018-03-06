@@ -3,12 +3,14 @@
 
 
 from ._axis import *
-from ._brunold import *
 from ._channel import *
+from ._join import *
+from ._variable import *
+
+from ._brunold import *
 from ._colors import *
 from ._data import *
 from ._jasco import *
-from ._join import *
 from ._kent import *
 from ._ocean_optics import *
 from ._pycmds import *
@@ -21,6 +23,7 @@ __all__ = ['Data',
            'join',
            'Axis',
            'Channel',
+           'Variable',
 
            # From methods in alphabetic order
            'from_BrunoldrRaman',
