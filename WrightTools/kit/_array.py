@@ -210,17 +210,10 @@ def remove_nans_1D(*args):
     tuple
         Tuple of 1D arrays in same order as given, with nan indicies removed.
     """
-    # find all indicies to keep
-    bads = np.array([])
-    for arr in args:
-        bad = np.array(np.where(np.isnan(arr))).flatten()
-        bads = np.hstack((bad, bads))
-    if hasattr(args, 'shape') and len(args.shape) == 1:
-        goods = [i for i in np.arange(args.shape[0]) if i not in bads]
-    else:
-        goods = [i for i in np.arange(len(args[0])) if i not in bads]
-    # apply
-    return tuple(a[goods] for a in args)
+    vals = np.isnan(args[0])
+    for a in args:
+        vals |= np.isnan(a)
+    return tuple(np.array(a)[vals == False] for a in args)
 
 
 def share_nans(*arrs):
