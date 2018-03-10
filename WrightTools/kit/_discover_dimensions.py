@@ -9,6 +9,8 @@ import collections
 
 import numpy as np
 
+from .. import units as wt_units
+
 
 # --- define --------------------------------------------------------------------------------------
 
@@ -140,7 +142,13 @@ def discover_dimensions(arr, cols):
             xstd.append(xstdi)
         tol = sum(xstd) / len(xstd)
         tol = max(tol, 1e-4)
-        points = np.linspace(min(xs) + tol, max(xs) - tol, num=len(xs))
+        if axis['units'] == 'nm':
+            min_wn = 1e7 / max(xs) + tol
+            max_wn = 1e7 / min(xs) - tol
+            points = np.linspace(min_wn, max_wn, num=len(xs))
+            points = wt_units.converter(points, 'wn', 'nm')
+        else:
+            points = np.linspace(min(xs) + tol, max(xs) - tol, num=len(xs))
         key = '='.join(a[0])
         out[key] = points
     # warn if data doesn't seem like the right shape ----------------------------------------------

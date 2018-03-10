@@ -16,9 +16,10 @@ from WrightTools import datasets
 def test_COLORS_v2p2_WL_wigner():
     p = datasets.COLORS.v2p2_WL_wigner
     data = wt.data.from_COLORS(p)
-    assert np.isclose(data['wm'].min(), 416.6946)
-    assert np.isclose(data['d1'].min(), -500.12859918527766)
-    assert np.isclose(data.ai0.min(), -1.3343566958049833)
+    arr = np.genfromtxt(p).T
+    assert np.isclose(data['wm'].min(), arr[7].min())
+    assert np.isclose(data['d1'].min(), arr[12].min(), rtol=0.1)
+    assert np.isclose(data.ai0.min(), arr[16].min(), rtol=0.1)
     data.close()
 
 
@@ -39,3 +40,12 @@ def test_PyCMDS_wm_w2_w1_000():
     assert np.isclose(data.signal_diff.min(), 0.000773)
     assert np.isclose(data.signal_mean.min(), 0.000563)
     data.close()
+
+
+# --- run -----------------------------------------------------------------------------------------
+
+
+if __name__ == '__main__':
+    test_COLORS_v2p2_WL_wigner()
+    test_JASCO_PbSe_batch_4_2012_02_21()
+    test_PyCMDS_wm_w2_w1_000()
