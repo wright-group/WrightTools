@@ -48,17 +48,6 @@ def test_LDS821_TRSF():
     data.close()
 
 
-@pytest.mark.skip(reason='unknown problems with data itself')
-def test_PbSe_2D_delay_A():
-    p = datasets.KENT.PbSe_2D_delay_A
-    data = wt.data.from_KENT(p, delay_tolerance=0.01)
-    assert data.shape == (101, 151)
-    assert data.axis_names == ('d2', 'd1',)
-    assert data.units == ('ps', 'ps')
-    isclose(p, data)
-    data.close()
-
-
 def test_PbSe_2D_delay_B():
     p = datasets.KENT.PbSe_2D_delay_B
     data = wt.data.from_KENT(p, delay_tolerance=0.01)

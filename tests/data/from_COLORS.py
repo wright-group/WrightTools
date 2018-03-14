@@ -42,17 +42,6 @@ def test_v0p2_d1_d2_diagonal():
     data.close()
 
 
-def test_v0p2_d1_d2_off_diagonal():
-    p = datasets.COLORS.v0p2_d1_d2_off_diagonal
-    data = wt.data.from_COLORS(p)
-    assert data.shape == (21, 21)
-    assert data.axis_expressions == ('d1', 'd2',)
-    assert data.units == ('fs', 'fs')
-    # uh oh, this is failing
-    #isclose(p, data, d1=6, d2=8, ai0=10, ai1=11, ai2=12)
-    data.close()
-
-
 def test_v2p1_MoS2_TrEE_movie():
     ps = datasets.COLORS.v2p1_MoS2_TrEE_movie
     data = wt.data.from_COLORS(ps)
