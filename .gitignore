@@ -41,6 +41,7 @@ flycheck_*.el
 .cache
 coverage.xml
 *,cover
+.pytest_cache/*
 
 # vim
 *.sw?
