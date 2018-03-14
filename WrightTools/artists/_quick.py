@@ -246,10 +246,12 @@ def quick2D(data, xaxis=0, yaxis=1, at={}, channel=0, *, contours=0, pixelated=T
                 else:
                     levels = np.linspace(data_channel.null, data_channel.max(), 200)
         # colors ----------------------------------------------------------------------------------
+        print(channel.min(), channel.max(), )
         if pixelated:
-            ax.pcolor(d, cmap=cmap, vmin=levels.min(), vmax=levels.max())
+            #print(channel.name, d.channel_names, channel, channel_index)
+            ax.pcolor(d, channel=channel_index, cmap=cmap, vmin=levels.min(), vmax=levels.max())
         else:
-            ax.contourf(d, cmap=cmap, levels=levels)
+            ax.contourf(d, channel=channel_index, cmap=cmap, levels=levels)
         # contour lines ---------------------------------------------------------------------------
         if contours:
             raise NotImplementedError
