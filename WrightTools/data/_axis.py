@@ -106,7 +106,7 @@ class Axis(object):
         name = self.expression.strip()
         for op in operators:
             name = name.replace(op, operator_to_identifier[op])
-        return name
+        return wt_kit.string2identifier(name)
 
     @property
     def ndim(self):
