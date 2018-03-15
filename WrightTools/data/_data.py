@@ -318,7 +318,6 @@ class Data(Group):
         removed_shape = wt_kit.joint_shape(*removed_axes)
         if removed_shape == ():
             removed_shape = (1,) * self.ndim
-            
         # iterate
         i = 0
         for idx in np.ndindex(removed_shape):
@@ -338,6 +337,7 @@ class Data(Group):
                 kwargs['values'] = v[idx]
                 kwargs['units'] = v.units
                 kwargs['label'] = v.label
+                kwargs.update(v.attrs)
                 data.create_variable(**kwargs)
             for c in self.channels:
                 kwargs = {}
@@ -346,6 +346,7 @@ class Data(Group):
                 kwargs['units'] = c.units
                 kwargs['label'] = c.label
                 kwargs['signed'] = c.signed
+                kwargs.update(c.attrs)
                 data.create_channel(**kwargs)
             new_axes = [a.expression for a in kept_axes if a.expression not in at.keys()]
             new_axis_units = [a.units for a in kept_axes if a.expression not in at.keys()]
