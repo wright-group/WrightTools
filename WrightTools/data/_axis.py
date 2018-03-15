@@ -106,7 +106,7 @@ class Axis(object):
         name = self.expression.strip()
         for op in operators:
             name = name.replace(op, operator_to_identifier[op])
-        return name
+        return wt_kit.string2identifier(name)
 
     @property
     def ndim(self):
@@ -146,7 +146,10 @@ class Axis(object):
         except (AssertionError, AttributeError):
             pattern = '|'.join(map(re.escape, operators))
             keys = re.split(pattern, self.expression)
-            indices = [self.parent.variable_names.index(key) for key in keys]
+            indices = []
+            for key in keys:
+                if key in self.parent.variable_names:
+                    indices.append(self.parent.variable_names.index(key))
             self._variables = [self.parent.variables[i] for i in indices]
         finally:
             return self._variables
