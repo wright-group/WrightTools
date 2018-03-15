@@ -15,13 +15,11 @@ dataset                                            axis expressions             
 ``BrunoldrRaman.LDS821_514nm_80mW``                ``('energy',)``               ``(1340,)``
 ``Cary.CuPCtS_H2O_vis``                            ``('wavelength',)``           ``(141,)``
 ``COLORS.v0p2_d1_d2_diagonal`` [#kohler2014]_      ``('d1', 'd2')``              ``(21, 21)``        
-``COLORS.v0p2_d1_d2_off_diagonal`` [#kohler2014]_  ``('d1', 'd2')``              ``(21, 21)``       
 ``COLORS.v2p1_MoS2_TrEE_movie`` [#czech2015]_      ``('w2', 'w1', 'd2')``        ``(41, 41, 23)``  
 ``JASCO.PbSe_batch_1`` [#yurs2011]_                ``('energy',)``               ``(1801,)``      
 ``JASCO.PbSe_batch_4_2012_02_21`` [#kohler2014]_   ``('energy',)``               ``(1251,)``     
 ``JASCO.PbSe_batch_4_2012_03_15`` [#kohler2014]_   ``('energy',)``               ``(1251,)``    
 ``KENT.LDS821_TRSF`` [#boyle2013]_                 ``('w2', 'w1')``              ``(71, 71)``         
-``KENT.PbSe_2D_delay_A`` [#yurs2011]_              ``('d2', 'd1')``              ``(101, 151)``         
 ``KENT.PbSe_2D_delay_B`` [#yurs2011]_              ``('d2', 'd1')``              ``(101, 101)``
 ``PyCMDS.w1_000``                                  ``('w1',)``                   ``(51,)``
 ``PyCMDS.w1_wa_000``                               ``('w1=wm', 'wa')``           ``(25, 256)``
