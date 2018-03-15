@@ -67,6 +67,5 @@ def test_v2p2_WL_wigner():
 
 if __name__ == '__main__':
     test_v0p2_d1_d2_diagonal()
-    test_v0p2_d1_d2_off_diagonal()
     test_v2p1_MoS2_TrEE_movie()
     test_v2p2_WL_wigner()

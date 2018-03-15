@@ -78,14 +78,7 @@ def from_KENT(filepaths, name=None, ignore=['wm'], delay_tolerance=0.1, frequenc
         file_example = filepaths
         filepaths = [filepaths]
     # import full array ---------------------------------------------------------------------------
-    for i in range(len(filepaths)):
-        dat = np.genfromtxt(filepaths[i]).T
-        if verbose:
-            print('file imported:', dat.shape)
-        if i == 0:
-            arr = dat
-        else:
-            arr = np.append(arr, dat, axis=1)
+    arr = np.concatenate([np.genfromtxt(f).T for f in filepaths], axis=1)
     # recognize dimensionality of data ------------------------------------------------------------
     axes_discover = axes.copy()
     for key in ignore:
