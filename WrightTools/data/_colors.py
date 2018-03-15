@@ -120,14 +120,7 @@ def from_COLORS(filepaths, name=None, cols=None, invert_d1=True,
         channels['ai2'] = {'idx': 12, 'label': '2'}
         channels['ai3'] = {'idx': 13, 'label': '3'}
     # import full array ---------------------------------------------------------------------------
-    for i in range(len(filepaths)):
-        dat = np.genfromtxt(filepaths[i]).T
-        if verbose:
-            print('dat imported:', dat.shape)
-        if i == 0:
-            arr = dat
-        else:
-            arr = np.append(arr, dat, axis=1)
+    arr = np.concatenate([np.genfromtxt(f).T for f in filepaths], axis=1)
     if invert_d1:
         idx = axes['d1']['idx']
         arr[idx] = -arr[idx]
