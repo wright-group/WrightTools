@@ -18,7 +18,7 @@ Every HDF5 file contains a top-level root group, signified by ``/``.
 
 Datasets are specialty containers for raw data values.
 Think of datasets like multidimensional arrays, similar to the numpy `ndarray <https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html>`_.
-Each dataset has a specific data type, such as integer, float, or charachter.
+Each dataset has a specific data type, such as integer, float, or character.
 
 Groups and datasets can contain additional `metadata <https://en.wikipedia.org/wiki/Metadata>`_.
 This metadata is stored in a key: value pair system called ``attrs``, similar to a python dictionary.
