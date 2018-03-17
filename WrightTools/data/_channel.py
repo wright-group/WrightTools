@@ -93,6 +93,10 @@ class Channel(Dataset):
             self.attrs['null'] = 0
         return self.attrs['null']
 
+    @null.setter
+    def null(self, value):
+        self.attrs['null'] = value
+
     @property
     def major_extent(self):
         """Maximum deviation from null."""
