@@ -101,16 +101,6 @@ class Data(Group):
         return tuple(v for _, v in self.items() if isinstance(v, h5py.Dataset))
 
     @property
-    def info(self):
-        """Retrieve info dictionary about a Data object."""
-        info = collections.OrderedDict()
-        info['name'] = self.name
-        info['axes'] = self.axis_names
-        info['channels'] = self.channel_names
-        info['shape'] = self.shape
-        return info
-
-    @property
     def kind(self):
         """Kind."""
         if 'kind' not in self.attrs.keys():
