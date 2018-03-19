@@ -86,9 +86,19 @@ spcm._from_files('spcm')
 Tensor27 = DatasetContainer()
 Tensor27._from_files('Tensor27')
 
+wt5 = DatasetContainer()
+wt5._from_files(os.path.join(here, 'wt5', 'v1.0.0'), prefix='v1p0p0_')
+
 
 # --- pretty namespace ----------------------------------------------------------------------------
 
 
-__all__ = ['COLORS', 'JASCO', 'KENT', 'ocean_optics', 'PyCMDS', 'BrunoldrRaman', 'Cary',
-           'Tensor27']
+__all__ = ['COLORS',
+           'JASCO',
+           'KENT',
+           'ocean_optics',
+           'PyCMDS',
+           'BrunoldrRaman',
+           'Cary',
+           'Tensor27',
+           'wt5']
