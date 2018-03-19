@@ -64,28 +64,14 @@ class Channel(Dataset):
                 setattr(self, identifier, value)
 
     @property
+    def major_extent(self):
+        """Maximum deviation from null."""
+        return max((self.max() - self.null, self.null - self.min()))
+
+    @property
     def minor_extent(self):
         """Minimum deviation from null."""
         return min((self.max() - self.null, self.null - self.min()))
-
-    @property
-    def natural_name(self):
-        """Natural name of the dataset. May be different from name."""
-        try:
-            assert self._natural_name is not None
-        except (AssertionError, AttributeError):
-            self._natural_name = self.attrs['name']
-        finally:
-            return self._natural_name
-
-    @natural_name.setter
-    def natural_name(self, value):
-        index = wt_kit.get_index(self.parent.channel_names, self.natural_name)
-        new = list(self.parent.channel_names)
-        new[index] = value
-        self.parent.channel_names = new
-        self.attrs['name'] = value
-        self._natural_name = None
 
     @property
     def null(self):
@@ -96,11 +82,6 @@ class Channel(Dataset):
     @null.setter
     def null(self, value):
         self.attrs['null'] = value
-
-    @property
-    def major_extent(self):
-        """Maximum deviation from null."""
-        return max((self.max() - self.null, self.null - self.min()))
 
     @property
     def signed(self):

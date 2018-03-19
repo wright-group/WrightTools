@@ -82,6 +82,7 @@ class Axis(object):
 
     @property
     def identity(self):
+        """Complete identifier written to disk in data.attrs['axes']."""
         return self.natural_name + ' {%s}' % self.units
 
     @property
