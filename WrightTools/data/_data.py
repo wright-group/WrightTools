@@ -650,7 +650,7 @@ class Data(Group):
         """
         warnings.warn('level', category=wt_exceptions.EntireDatasetInMemoryWarning)
         channel_index = wt_kit.get_index(self.channel_names, channel)
-        channel = self.channels[0]
+        channel = self.channels[channel_index]
         # verify npts not zero
         npts = int(npts)
         if npts == 0:
