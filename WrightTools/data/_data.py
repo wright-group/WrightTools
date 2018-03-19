@@ -327,6 +327,7 @@ class Data(Group):
                 kwargs['values'] = v[idx]
                 kwargs['units'] = v.units
                 kwargs['label'] = v.label
+                kwargs.update(v.attrs)
                 data.create_variable(**kwargs)
             for c in self.channels:
                 kwargs = {}
@@ -334,6 +335,8 @@ class Data(Group):
                 kwargs['values'] = c[idx]
                 kwargs['units'] = c.units
                 kwargs['label'] = c.label
+                kwargs['signed'] = c.signed
+                kwargs.update(c.attrs)
                 data.create_channel(**kwargs)
             new_axes = [a.expression for a in kept_axes if a.expression not in at.keys()]
             new_axis_units = [a.units for a in kept_axes if a.expression not in at.keys()]

@@ -75,6 +75,30 @@ def test_3D_to_2D_at():
     chop.close()
 
 
+def test_3D_to_2D_propagate_channel_attrs():
+    p = datasets.PyCMDS.wm_w2_w1_001
+    data = wt.data.from_PyCMDS(p)
+    data.signal_diff.attrs['some_random_attr_key'] = 1989
+    chop = data.chop('wm', 'w2')
+    assert len(chop) == 11
+    for d in chop.values():
+        assert data.signal_diff.attrs['some_random_attr_key'] == 1989
+    data.close()
+    chop.close()
+
+
+def test_3D_to_2D_signed():
+    p = datasets.PyCMDS.wm_w2_w1_001
+    data = wt.data.from_PyCMDS(p)
+    data.signal_diff.signed = True
+    chop = data.chop('wm', 'w2')
+    assert len(chop) == 11
+    for d in chop.values():
+        assert data.signal_diff.signed
+    data.close()
+    chop.close()
+
+
 def test_3D_to_2D_units():
     p = datasets.PyCMDS.wm_w2_w1_001
     data = wt.data.from_PyCMDS(p)
@@ -104,4 +128,6 @@ def test_parent():
 if __name__ == "__main__":
     test_2D_to_1D()
     test_3D_to_1D()
+    test_3D_to_2D_propagate_channel_attrs()
+    test_3D_to_2D_signed()
     test_3D_to_2D_units()

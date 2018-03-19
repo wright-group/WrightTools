@@ -227,18 +227,14 @@ def quick2D(data, xaxis=0, yaxis=1, at={}, channel=0, *, contours=0, pixelated=T
         # levels ----------------------------------------------------------------------------------
         if channel.signed:
             if local:
-                limit = channel.mag
+                limit = channel.mag()
             else:
                 data_channel = data.channels[channel_index]
                 if dynamic_range:
                     limit = min(abs(data_channel.null - data_channel.min()),
                                 abs(data_channel.null - data_channel.max()))
                 else:
-                    limit = data_channel.mag
-            if np.isnan(limit):
-                limit = 1.
-            if limit is np.ma.masked:
-                limit = 1.
+                    limit = data_channel.mag()
             levels = np.linspace(-limit + channel.null, limit + channel.null, 200)
         else:
             if local:
@@ -251,9 +247,10 @@ def quick2D(data, xaxis=0, yaxis=1, at={}, channel=0, *, contours=0, pixelated=T
                     levels = np.linspace(data_channel.null, data_channel.max(), 200)
         # colors ----------------------------------------------------------------------------------
         if pixelated:
-            ax.pcolor(d, cmap=cmap, vmin=levels.min(), vmax=levels.max())
+            #print(channel.name, d.channel_names, channel, channel_index)
+            ax.pcolor(d, channel=channel_index, cmap=cmap, vmin=levels.min(), vmax=levels.max())
         else:
-            ax.contourf(d, cmap=cmap, levels=levels)
+            ax.contourf(d, channel=channel_index, cmap=cmap, levels=levels)
         # contour lines ---------------------------------------------------------------------------
         if contours:
             raise NotImplementedError
