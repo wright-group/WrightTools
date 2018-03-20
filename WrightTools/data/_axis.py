@@ -91,8 +91,9 @@ class Axis(object):
         label = r'$\mathsf{' + self.expression
         for v in self.variables:
             vl = '%s_{%s}' % (symbol, v.label)
-            vl = vl.rstrip('_{}')  # label can be empty, should not propagate trailing underscore
+            vl = vl.replace('_{}', '')  # label can be empty, no empty subscripts
             label = label.replace(v.natural_name, vl)
+        label += '}'
         if self.units_kind:
             units_dictionary = getattr(wt_units, self.units_kind)
             label += r'\,'
