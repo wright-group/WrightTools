@@ -90,7 +90,9 @@ class Axis(object):
         symbol = wt_units.get_symbol(self.units)
         label = r'$\mathsf{' + self.expression
         for v in self.variables:
-            label = label.replace(v.natural_name, '%s_{%s}' % (symbol, v.label))
+            vl = '%s_{%s}' % (symbol, v.label)
+            vl = vl.rstrip('_{}')  # label can be empty, should not propagate trailing underscore
+            label = label.replace(v.natural_name, vl)
         if self.units_kind:
             units_dictionary = getattr(wt_units, self.units_kind)
             label += r'\,'
