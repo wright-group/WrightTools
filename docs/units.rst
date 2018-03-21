@@ -32,8 +32,8 @@ ns         nanoseconds           delay                 :math:`\tau`
 mm_delay   mm                    delay                 :math:`\tau`
 nm         nanometers            energy                :math:`\lambda`
 wn         wavenumbers           energy                :math:`\bar{\nu}`
-eV         electron volts        energy                :math:`\hslash\omega`
-meV        milla electron volts  energy                :math:`E`
+eV         electronvolts         energy                :math:`\hslash\omega`
+meV        millielectronvolts    energy                :math:`E`
 Hz         hertz                 energy                :math:`f`
 THz        terahertz             energy                :math:`f`
 GHz        gigahertz             energy                :math:`f`
