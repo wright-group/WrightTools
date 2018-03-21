@@ -742,7 +742,7 @@ class Data(Group):
         if self.ndim == 1:
 
             def interpolate(dataset, points):
-                function = scipy.interpolate.interp1d(variable[:], dataset[:])
+                function = scipy.interpolate.interp1d(variable[:], dataset[:], bounds_error=False)
                 return function(points)
 
         else:

@@ -64,12 +64,10 @@ class Group(h5py.Group, metaclass=MetaClass):
         # attrs
         self.attrs['class'] = self.class_name
         if 'created' not in self.attrs.keys():
-            self.attrs['created'] = wt_kit.TimeStamp().RFC3339.encode()
+            self.attrs['created'] = wt_kit.TimeStamp().RFC3339
         for key, value in kwargs.items():
             try:
-                if isinstance(value, str):
-                    value = value.encode()
-                elif isinstance(value, list) and len(value) > 0 and isinstance(value[0], str):
+                if isinstance(value, list) and len(value) > 0 and isinstance(value[0], str):
                     value = np.array(value, dtype='S')
                 self.attrs[key] = value
             except TypeError:
@@ -128,7 +126,7 @@ class Group(h5py.Group, metaclass=MetaClass):
         filepath = args[0] if len(args) > 0 else kwargs.get('filepath', None)
         parent = args[1] if len(args) > 1 else kwargs.get('parent', None)
         natural_name = args[2] if len(args) > 2 else kwargs.get('name', cls.class_name.lower())
-        edit_local = args[3] if len(args) > 3 else kwargs.get('edit_local', False)
+        edit_local = args[3] if len(args) > 3 else kwargs.pop('edit_local', False)
         if isinstance(parent, h5py.Group):
             filepath = parent.filepath
             parent = parent.name
@@ -174,7 +172,7 @@ class Group(h5py.Group, metaclass=MetaClass):
 
     @property
     def created(self):
-        return wt_kit.timestamp_from_RFC3339(self.attrs['created'].decode())
+        return wt_kit.timestamp_from_RFC3339(self.attrs['created'])
 
     @property
     def fullpath(self):
