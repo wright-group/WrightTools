@@ -110,7 +110,7 @@ class TimeStamp:
 
     def __repr__(self):
         """Unambiguous representation."""
-        return str(self.unix)
+        return "<WrightTools.kit.TimeStamp object '%s'>" % self.human
 
     def __str__(self):
         """Readable representation."""
