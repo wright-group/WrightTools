@@ -159,7 +159,13 @@ class Dataset(h5py.Dataset):
     def units(self):
         """Units."""
         if 'units' in self.attrs.keys():
+            # This try-except here for compatibility with v1.0.0 of WT5 format
+            try:
+                self.attrs['units'] = self.attrs['units'].decode()
+            except AttributeError:
+                pass # already a string, not bytes
             return self.attrs['units']
+        return None
 
     @units.setter
     def units(self, value):
