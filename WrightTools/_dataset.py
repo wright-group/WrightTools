@@ -163,7 +163,7 @@ class Dataset(h5py.Dataset):
             try:
                 self.attrs['units'] = self.attrs['units'].decode()
             except AttributeError:
-                pass # already a string, not bytes
+                pass  # already a string, not bytes
             return self.attrs['units']
         return None
 
