@@ -177,3 +177,16 @@ Shell
 `h5ls <https://support.hdfgroup.org/HDF5/doc/RM/Tools.html#Tools-Ls>`_: print information about one or more HDF5 files.
 
 `Complete list of official HDF5 tools <https://support.hdfgroup.org/HDF5/doc/RM/Tools.html>`_
+
+Changes
+-------
+
+Version 1.0.0
+^^^^^^^^^^^^^
+
+Initial release of the format.
+
+Version 1.0.1
+^^^^^^^^^^^^^
+
+Changes internal handling of strings. Bare strings are no longer call ``encode()`` before storing.
