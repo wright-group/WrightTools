@@ -231,7 +231,10 @@ class Group(h5py.Group, metaclass=MetaClass):
             finally:
                 if hasattr(self, '_tmpfile'):
                     os.close(self._tmpfile[0])
-                    os.remove(self._tmpfile[1])
+                    try:
+                        os.remove(self._tmpfile[1])
+                    except OSError:
+                        pass  # Windows, this line fails sometimes
 
     def copy(self, parent=None, name=None, verbose=True):
         """Create a copy under parent.
