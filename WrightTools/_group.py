@@ -145,7 +145,7 @@ class Group(h5py.Group, metaclass=MetaClass):
         elif edit_local and filepath:
             p = filepath
         for i in cls.instances.keys():
-            if i.startswith(os.path.abspath(filepath) + '::'):
+            if i.startswith(os.path.abspath(p) + '::'):
                 file = cls.instances[i].file
                 break
         if file is None:
