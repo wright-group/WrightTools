@@ -93,7 +93,6 @@ class Axis(object):
             vl = '%s_{%s}' % (symbol, v.label)
             vl = vl.replace('_{}', '')  # label can be empty, no empty subscripts
             label = label.replace(v.natural_name, vl)
-        label += '}'
         if self.units_kind:
             units_dictionary = getattr(wt_units, self.units_kind)
             label += r'\,'
