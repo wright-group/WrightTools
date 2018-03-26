@@ -41,8 +41,8 @@ class Group(h5py.Group, metaclass=MetaClass):
     instances = {}
     class_name = 'Group'
 
-    def __init__(self, filepath=None, parent=None, name=None, **kwargs):
-        if filepath is None:
+    def __init__(self, file=None, parent=None, name=None, **kwargs):
+        if file is None:
             return
         # parent
         if parent is None:
@@ -53,8 +53,8 @@ class Group(h5py.Group, metaclass=MetaClass):
         else:
             path = posixpath.sep.join([parent, name])
         # file
-        self.filepath = filepath
-        file = h5py.File(self.filepath, 'a')
+        self.filepath = file.filename
+        #file = h5py.File(self.filepath, 'a')
         file.require_group(parent)
         file.require_group(path)
         h5py.Group.__init__(self, bind=file[path].id)
@@ -127,8 +127,10 @@ class Group(h5py.Group, metaclass=MetaClass):
         parent = args[1] if len(args) > 1 else kwargs.get('parent', None)
         natural_name = args[2] if len(args) > 2 else kwargs.get('name', cls.class_name.lower())
         edit_local = args[3] if len(args) > 3 else kwargs.pop('edit_local', False)
+        file = None
         if isinstance(parent, h5py.Group):
             filepath = parent.filepath
+            file = parent.file
             parent = parent.name
             edit_local = True
         # tempfile
@@ -142,6 +144,12 @@ class Group(h5py.Group, metaclass=MetaClass):
                 shutil.copyfile(src=filepath, dst=p)
         elif edit_local and filepath:
             p = filepath
+        for i in cls.instances.keys():
+            if i.startswith(os.path.abspath(filepath) + '::'):
+                file = cls.instances[i].file
+                break
+        if file is None:
+            file = h5py.File(p, 'a')
         # construct fullpath
         if parent is None:
             parent = ''
@@ -151,7 +159,7 @@ class Group(h5py.Group, metaclass=MetaClass):
         fullpath = p + '::' + parent + name
         # create and/or return
         if fullpath not in cls.instances.keys():
-            kwargs['filepath'] = p
+            kwargs['file'] = file
             kwargs['parent'] = parent
             kwargs['name'] = natural_name
             instance = super(Group, cls).__new__(cls)
