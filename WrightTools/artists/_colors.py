@@ -24,8 +24,7 @@ __all__ = ['colormaps', 'get_color_cycle', 'grayify_cmap', 'overline_colors',
 # --- functions ----------------------------------------------------------------------------------
 
 
-def make_cubehelix(name='WrightTools',
-                   gamma=0.5, s=0.25, r=-1, h=1.3, reverse=False, darkest=0.7):
+def make_cubehelix(name='WrightTools', gamma=0.5, s=0.25, r=-1, h=1.3, reverse=False, darkest=0.7):
     """Define cubehelix type colorbars.
 
     Look `here`__ for more information.
@@ -35,6 +34,8 @@ def make_cubehelix(name='WrightTools',
 
     Parameters
     ----------
+    name : string (optional)
+        Name of new cmap. Default is WrightTools.
     gamma : number (optional)
         Intensity factor. Default is 0.5
     s : number (optional)
@@ -77,6 +78,7 @@ def make_cubehelix(name='WrightTools',
             out = lum + a * (p0 * np.cos(phi) + p1 * np.sin(phi))
             return out
         return color
+
     rgb_dict = {'red': get_color_function(-0.14861 * rr, 1.78277 * rr),
                 'green': get_color_function(-0.29227 * rg, -0.90649 * rg),
                 'blue': get_color_function(1.97294 * rb, 0.0)}
@@ -185,8 +187,9 @@ def nm_to_rgb(nm):
 
 def plot_colormap_components(cmap):
     """Plot the components of a given colormap."""
+    from ._helpers import set_ax_labels  # recursive import protection
     plt.figure(figsize=[8, 4])
-    gs = grd.GridSpec(2, 1, height_ratios=[1, 10], hspace=0.05)
+    gs = grd.GridSpec(3, 1, height_ratios=[1, 10, 1], hspace=0.05)
     # colorbar
     ax = plt.subplot(gs[0])
     gradient = np.linspace(0, 1, 256)
@@ -203,11 +206,9 @@ def plot_colormap_components(cmap):
     b = colors[:, 2]
     RGB_weight = [0.299, 0.587, 0.114]
     k = np.sqrt(np.dot(colors[:, :3] ** 2, RGB_weight))
-    # truncate
     r.clip(0, 1, out=r)
     g.clip(0, 1, out=g)
     b.clip(0, 1, out=b)
-    # plot
     xi = np.linspace(0, 1, x.size)
     plt.plot(xi, r, 'r', linewidth=5, alpha=0.6)
     plt.plot(xi, g, 'g', linewidth=5, alpha=0.6)
@@ -215,9 +216,14 @@ def plot_colormap_components(cmap):
     plt.plot(xi, k, 'k', linewidth=5, alpha=0.6)
     ax.set_xlim(0, 1)
     ax.set_ylim(-0.1, 1.1)
-    # finish
-    from ._helpers import set_ax_labels  # recursive import protection
     set_ax_labels(ax=ax, xlabel=None, xticks=False, ylabel='intensity')
+    # grayified colorbar
+    cmap = grayify_cmap(cmap)
+    ax = plt.subplot(gs[2])
+    gradient = np.linspace(0, 1, 256)
+    gradient = np.vstack((gradient, gradient))
+    ax.imshow(gradient, aspect='auto', cmap=cmap, vmin=0., vmax=1.)
+    ax.set_axis_off()
 
 
 def grayify_cmap(cmap):
