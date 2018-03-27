@@ -238,13 +238,19 @@ class Group(h5py.Group, metaclass=MetaClass):
             try:
                 print("closing", repr(self))
                 self.file.flush()
-                self.file.close()
+                print('closed file', self.fid.id)
                 try:
                     fd = self.fid.get_vfd_handle()
-                    os.close(fd)
                 except (NotImplementedError, ValueError):
                     # only available with certain h5py drivers
                     # not needed if not available
+                    pass
+
+                self.file.close()
+                try:
+                    if fd:
+                        os.close(fd)
+                except OSError:
                     pass
             except SystemError:
                 pass
