@@ -34,6 +34,19 @@ def test_implied():
     data.close()
 
 
+def test_not_implied():
+    p = datasets.PyCMDS.w2_w1_000
+    data = wt.data.from_PyCMDS(p)
+    names = data.variable_names
+    data.remove_variable('d0', implied=False)
+    for n in names:
+        if n != 'd0':
+            assert n in data.variable_names
+        else:
+            assert n not in data.variable_names
+    data.close()
+
+
 def test_index():
     p = datasets.KENT.LDS821_TRSF
     ignore = ['wm', 'd1', 'd2']
