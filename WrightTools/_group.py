@@ -242,7 +242,7 @@ class Group(h5py.Group, metaclass=MetaClass):
                 try:
                     fd = self.fid.get_vfd_handle()
                     os.close(fd)
-                except NotImplementedError:
+                except (NotImplementedError, ValueError):
                     # only available with certain h5py drivers
                     # not needed if not available
                     pass
@@ -342,6 +342,7 @@ class Group(h5py.Group, metaclass=MetaClass):
             super().copy(v, new, name=v.natural_name)
         # finish
         new.flush()
+        new.close()
         del new
         if verbose:
             print('file saved at', filepath)
