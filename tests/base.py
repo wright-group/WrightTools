@@ -50,6 +50,7 @@ def test_tempfile_cleanup():
     c.close()
     assert not os.path.isfile(path)
 
+
 def test_nested():
     c = wt.Collection()
     cc = c.create_collection()
