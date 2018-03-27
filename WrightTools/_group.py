@@ -52,9 +52,7 @@ class Group(h5py.Group, metaclass=MetaClass):
             path = posixpath.sep
         else:
             path = posixpath.sep.join([parent, name])
-        # file
         self.filepath = file.filename
-        #file = h5py.File(self.filepath, 'a')
         file.require_group(parent)
         file.require_group(path)
         h5py.Group.__init__(self, bind=file[path].id)
@@ -171,7 +169,6 @@ class Group(h5py.Group, metaclass=MetaClass):
             cls.__init__(instance, **kwargs)
             cls.instances[fullpath] = instance
         if tmpfile:
-            print('setting weakref finalize for ', tmpfile)
             setattr(instance, '_tmpfile', tmpfile)
             weakref.finalize(instance, instance.close)
         return instance
@@ -236,10 +233,9 @@ class Group(h5py.Group, metaclass=MetaClass):
             # the following try case ensures that the tempfile code is always executed
             # ---Blaise 2018-01-08
             try:
-                print("closing", repr(self))
                 self.file.flush()
-                print('closed file', self.fid.id)
                 try:
+                    # Obtaining the file descriptor must be done prior to closing
                     fd = self.fid.get_vfd_handle()
                 except (NotImplementedError, ValueError):
                     # only available with certain h5py drivers
@@ -251,12 +247,12 @@ class Group(h5py.Group, metaclass=MetaClass):
                     if fd:
                         os.close(fd)
                 except OSError:
+                    # File already closed, e.g.
                     pass
             except SystemError:
                 pass
             finally:
                 if hasattr(self, '_tmpfile'):
-                    print("removing file", self._tmpfile)
                     os.close(self._tmpfile[0])
                     os.remove(self._tmpfile[1])
 
