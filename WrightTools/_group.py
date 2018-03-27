@@ -128,13 +128,14 @@ class Group(h5py.Group, metaclass=MetaClass):
         natural_name = args[2] if len(args) > 2 else kwargs.get('name', cls.class_name.lower())
         edit_local = args[3] if len(args) > 3 else kwargs.pop('edit_local', False)
         file = None
+        tmpfile = None
         if isinstance(parent, h5py.Group):
             filepath = parent.filepath
             file = parent.file
+            if hasattr(parent, '_tmpfile'):
+                tmpfile = parent._tmpfile
             parent = parent.name
             edit_local = True
-        # tempfile
-        tmpfile = None
         if edit_local and filepath is None:
             raise Exception  # TODO: better exception
         if not edit_local:
@@ -147,6 +148,8 @@ class Group(h5py.Group, metaclass=MetaClass):
         for i in cls.instances.keys():
             if i.startswith(os.path.abspath(p) + '::'):
                 file = cls.instances[i].file
+                if hasattr(cls.instances[i], '_tmpfile'):
+                    tmpfile = cls.instances[i]._tmpfile
                 break
         if file is None:
             file = h5py.File(p, 'a')
@@ -158,18 +161,19 @@ class Group(h5py.Group, metaclass=MetaClass):
             name = natural_name
         fullpath = p + '::' + parent + name
         # create and/or return
-        if fullpath not in cls.instances.keys():
+        try:
+            instance = cls.instances[fullpath]
+        except KeyError:
             kwargs['file'] = file
             kwargs['parent'] = parent
             kwargs['name'] = natural_name
             instance = super(Group, cls).__new__(cls)
             cls.__init__(instance, **kwargs)
             cls.instances[fullpath] = instance
-            if tmpfile:
-                setattr(instance, '_tmpfile', tmpfile)
-                weakref.finalize(instance, instance.close)
-            return instance
-        instance = cls.instances[fullpath]
+        if tmpfile:
+            print('setting weakref finalize for ', tmpfile)
+            setattr(instance, '_tmpfile', tmpfile)
+            weakref.finalize(instance, instance.close)
         return instance
 
     @property
@@ -232,12 +236,14 @@ class Group(h5py.Group, metaclass=MetaClass):
             # the following try case ensures that the tempfile code is always executed
             # ---Blaise 2018-01-08
             try:
+                print("closing", repr(self))
                 self.file.flush()
                 self.file.close()
             except SystemError:
                 pass
             finally:
                 if hasattr(self, '_tmpfile'):
+                    print("removing file", self._tmpfile)
                     os.close(self._tmpfile[0])
                     os.remove(self._tmpfile[1])
 
