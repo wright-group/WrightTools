@@ -240,7 +240,7 @@ class Group(h5py.Group, metaclass=MetaClass):
                     rm.append(key)
             for key in rm:
                 kind.instances.pop(key, None)
-(
+
         if(self.fid.valid > 0):
             # for some reason, the following file operations sometimes fail
             # this stops execution of the method, meaning that the tempfile is never removed
