@@ -5,7 +5,6 @@
 
 
 import os
-import time
 
 import numpy as np
 
@@ -92,7 +91,7 @@ def test_save_nested():
         assert_equal(new[k], v)
     root.close()
     new.close()
-    #os.remove(p)
+    os.remove(p)
 
 
 def test_simple_copy():
@@ -120,7 +119,6 @@ def test_simple_save():
         assert_equal(new[k], v)
     original.close()
     new.close()
-    time.sleep(1)
     os.remove(p)
 
 
