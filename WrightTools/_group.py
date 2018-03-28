@@ -225,9 +225,22 @@ class Group(h5py.Group, metaclass=MetaClass):
             return self._parent
 
     def close(self):
-        """Close the group. Tempfile will be removed, if this is the final reference."""
+        """Close the file that contains the Group.
+
+        All groups which are in the file will be closed and removed from the instances dictionaries.
+        Tempfiles, if they exist, will be removed.
+        """
+        from .collection import Collection
+        from .data._data import Channel, Data, Variable
+        for kind in (Collection, Channel, Data, Variable, Group):
+            rm = []
+            for key in kind.instances.keys():
+                if key.startswith(path):
+                    rm.append(key)
+            for key in rm:
+                kind.instances.pop(key, None)
+
         if(self.fid.valid > 0):
-            self.__class__.instances.pop(self.fullpath, None)
             # for some reason, the following file operations sometimes fail
             # this stops execution of the method, meaning that the tempfile is never removed
             # the following try case ensures that the tempfile code is always executed
@@ -249,15 +262,12 @@ class Group(h5py.Group, metaclass=MetaClass):
                 except OSError:
                     # File already closed, e.g.
                     pass
-            except SystemError:
-                pass
+            except SystemError as e:
+                warnings.warn('SystemError: {0}'.format(e))
             finally:
                 if hasattr(self, '_tmpfile'):
                     os.close(self._tmpfile[0])
-                    try:
-                        os.remove(self._tmpfile[1])
-                    except OSError:
-                        pass  # Windows, this line fails sometimes
+                    os.remove(self._tmpfile[1])
 
     def copy(self, parent=None, name=None, verbose=True):
         """Create a copy under parent.
