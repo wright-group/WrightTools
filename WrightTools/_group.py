@@ -232,6 +232,7 @@ class Group(h5py.Group, metaclass=MetaClass):
         """
         from .collection import Collection
         from .data._data import Channel, Data, Variable
+        path = os.path.abspath(self.filepath) + '::'
         for kind in (Collection, Channel, Data, Variable, Group):
             rm = []
             for key in kind.instances.keys():
@@ -239,7 +240,7 @@ class Group(h5py.Group, metaclass=MetaClass):
                     rm.append(key)
             for key in rm:
                 kind.instances.pop(key, None)
-
+(
         if(self.fid.valid > 0):
             # for some reason, the following file operations sometimes fail
             # this stops execution of the method, meaning that the tempfile is never removed
