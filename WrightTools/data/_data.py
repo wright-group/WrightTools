@@ -940,6 +940,8 @@ class Data(Group):
             for n in self.variable_names:
                 if n.startswith(variable):
                     removed.append(n)
+        else:
+            removed = [variable]
         # check that axes will not be ruined
         for n in removed:
             for a in self._axes:
