@@ -3,11 +3,11 @@
 
 environment:
   matrix:
-    - PYTHON: "C:\\Python35"
+    #- PYTHON: "C:\\Python35"
 
-    - PYTHON: "C:\\Python35-x64"
+    #- PYTHON: "C:\\Python35-x64"
 
-    - PYTHON: "C:\\Python36"
+    #- PYTHON: "C:\\Python36"
 
     - PYTHON: "C:\\Python36-x64"
 
@@ -18,9 +18,9 @@ init:
   - "%PYTHON%/python -c \"import struct;print(8 * struct.calcsize(\'P\'))\""
 
 install:
-  - "%PYTHON%/python setup.py install"
+  - "%PYTHON%\\Scripts\\pip3 install -e ."
 
 build: false  # Not a C# project, build stuff at the test step instead.
 
 test_script:
-  - "%PYTHON%/python setyup.py test"
+  - "%PYTHON%/python setup.py test"
