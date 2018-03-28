@@ -168,9 +168,9 @@ class Group(h5py.Group, metaclass=MetaClass):
             instance = super(Group, cls).__new__(cls)
             cls.__init__(instance, **kwargs)
             cls.instances[fullpath] = instance
-        if tmpfile:
-            setattr(instance, '_tmpfile', tmpfile)
-            weakref.finalize(instance, instance.close)
+            if tmpfile:
+                setattr(instance, '_tmpfile', tmpfile)
+                weakref.finalize(instance, instance.close)
         return instance
 
     @property
