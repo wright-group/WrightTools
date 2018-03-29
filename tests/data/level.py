@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 """Test level."""
 
 
@@ -36,7 +37,7 @@ def test_3D():
     data.level('ai0', 1, 1)
     assert np.allclose(data.ai0[:, :1], [0.], atol=1e-3)
     data.close()
-    
+
 
 def test_channels():
     p = datasets.PyCMDS.wm_w2_w1_001
