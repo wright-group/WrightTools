@@ -347,23 +347,23 @@ def create_figure(*, width='single', nrows=1, cols=[1], margin=1.,
     return fig, gs
 
 
-def diagonal_line(xi, yi, *, ax=None, c='k', ls=':', lw=1, zorder=3):
+def diagonal_line(xi=None, yi=None, *, ax=None, c=None, ls=None, lw=None, zorder=3):
     """Plot a diagonal line.
 
     Parameters
     ----------
-    xi : 1D array-like
-        The x axis points.
+    xi : 1D array-like (optional)
+        The x axis points. If None, taken from axis limits. Default is None.
     yi : 1D array-like
-        The y axis points.
+        The y axis points. If None, taken from axis limits. Default is None.
     ax : axis (optional)
         Axis to plot on. If none is supplied, the current axis is used.
     c : string (optional)
-        Line color. Default is k.
+        Line color. Default derives from rcParams grid color.
     ls : string (optional)
-        Line style. Default is : (dotted).
+        Line style. Default derives from rcParams linestyle.
     lw : float (optional)
-        Line width. Default is 1.
+        Line width. Default derives from rcParams linewidth.
     zorder : number (optional)
         Matplotlib zorder. Default is 3.
 
@@ -372,6 +372,20 @@ def diagonal_line(xi, yi, *, ax=None, c='k', ls=':', lw=1, zorder=3):
     matplotlib.lines.Line2D object
         The plotted line.
     """
+    if ax is None:
+        ax = plt.gca()
+    # parse xi, yi
+    if xi is None:
+        xi = ax.get_xlim()
+    if yi is None:
+        yi = ax.get_ylim()
+    # parse style
+    if c is None:
+        c = matplotlib.rcParams['grid.color']
+    if ls is None:
+        ls = matplotlib.rcParams['grid.linestyle']
+    if lw is None:
+        lw = matplotlib.rcParams['grid.linewidth']
     # get axis
     if ax is None:
         ax = plt.gca()
