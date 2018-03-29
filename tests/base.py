@@ -49,3 +49,12 @@ def test_tempfile_cleanup():
     assert os.path.isfile(path)
     c.close()
     assert not os.path.isfile(path)
+
+
+def test_nested():
+    c = wt.Collection()
+    cc = c.create_collection()
+    assert c.fid.id == cc.fid.id
+    c.file.close()
+    assert c.id.valid == 0
+    assert cc.id.valid == 0

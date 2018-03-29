@@ -41,8 +41,8 @@ class Group(h5py.Group, metaclass=MetaClass):
     instances = {}
     class_name = 'Group'
 
-    def __init__(self, filepath=None, parent=None, name=None, **kwargs):
-        if filepath is None:
+    def __init__(self, file=None, parent=None, name=None, **kwargs):
+        if file is None:
             return
         # parent
         if parent is None:
@@ -52,9 +52,7 @@ class Group(h5py.Group, metaclass=MetaClass):
             path = posixpath.sep
         else:
             path = posixpath.sep.join([parent, name])
-        # file
-        self.filepath = filepath
-        file = h5py.File(self.filepath, 'a')
+        self.filepath = file.filename
         file.require_group(parent)
         file.require_group(path)
         h5py.Group.__init__(self, bind=file[path].id)
@@ -127,12 +125,15 @@ class Group(h5py.Group, metaclass=MetaClass):
         parent = args[1] if len(args) > 1 else kwargs.get('parent', None)
         natural_name = args[2] if len(args) > 2 else kwargs.get('name', cls.class_name.lower())
         edit_local = args[3] if len(args) > 3 else kwargs.pop('edit_local', False)
+        file = None
+        tmpfile = None
         if isinstance(parent, h5py.Group):
             filepath = parent.filepath
+            file = parent.file
+            if hasattr(parent, '_tmpfile'):
+                tmpfile = parent._tmpfile
             parent = parent.name
             edit_local = True
-        # tempfile
-        tmpfile = None
         if edit_local and filepath is None:
             raise Exception  # TODO: better exception
         if not edit_local:
@@ -142,6 +143,14 @@ class Group(h5py.Group, metaclass=MetaClass):
                 shutil.copyfile(src=filepath, dst=p)
         elif edit_local and filepath:
             p = filepath
+        for i in cls.instances.keys():
+            if i.startswith(os.path.abspath(p) + '::'):
+                file = cls.instances[i].file
+                if hasattr(cls.instances[i], '_tmpfile'):
+                    tmpfile = cls.instances[i]._tmpfile
+                break
+        if file is None:
+            file = h5py.File(p, 'a')
         # construct fullpath
         if parent is None:
             parent = ''
@@ -150,8 +159,10 @@ class Group(h5py.Group, metaclass=MetaClass):
             name = natural_name
         fullpath = p + '::' + parent + name
         # create and/or return
-        if fullpath not in cls.instances.keys():
-            kwargs['filepath'] = p
+        try:
+            instance = cls.instances[fullpath]
+        except KeyError:
+            kwargs['file'] = file
             kwargs['parent'] = parent
             kwargs['name'] = natural_name
             instance = super(Group, cls).__new__(cls)
@@ -160,8 +171,6 @@ class Group(h5py.Group, metaclass=MetaClass):
             if tmpfile:
                 setattr(instance, '_tmpfile', tmpfile)
                 weakref.finalize(instance, instance.close)
-            return instance
-        instance = cls.instances[fullpath]
         return instance
 
     @property
@@ -216,18 +225,46 @@ class Group(h5py.Group, metaclass=MetaClass):
             return self._parent
 
     def close(self):
-        """Close the group. Tempfile will be removed, if this is the final reference."""
+        """Close the file that contains the Group.
+
+        All groups which are in the file will be closed and removed from the instances dictionaries.
+        Tempfiles, if they exist, will be removed.
+        """
+        from .collection import Collection
+        from .data._data import Channel, Data, Variable
+        path = os.path.abspath(self.filepath) + '::'
+        for kind in (Collection, Channel, Data, Variable, Group):
+            rm = []
+            for key in kind.instances.keys():
+                if key.startswith(path):
+                    rm.append(key)
+            for key in rm:
+                kind.instances.pop(key, None)
+
         if(self.fid.valid > 0):
-            self.__class__.instances.pop(self.fullpath, None)
             # for some reason, the following file operations sometimes fail
             # this stops execution of the method, meaning that the tempfile is never removed
             # the following try case ensures that the tempfile code is always executed
             # ---Blaise 2018-01-08
             try:
                 self.file.flush()
+                try:
+                    # Obtaining the file descriptor must be done prior to closing
+                    fd = self.fid.get_vfd_handle()
+                except (NotImplementedError, ValueError):
+                    # only available with certain h5py drivers
+                    # not needed if not available
+                    pass
+
                 self.file.close()
-            except SystemError:
-                pass
+                try:
+                    if fd:
+                        os.close(fd)
+                except OSError:
+                    # File already closed, e.g.
+                    pass
+            except SystemError as e:
+                warnings.warn('SystemError: {0}'.format(e))
             finally:
                 if hasattr(self, '_tmpfile'):
                     os.close(self._tmpfile[0])
@@ -321,6 +358,7 @@ class Group(h5py.Group, metaclass=MetaClass):
             super().copy(v, new, name=v.natural_name)
         # finish
         new.flush()
+        new.close()
         del new
         if verbose:
             print('file saved at', filepath)
