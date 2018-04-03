@@ -121,7 +121,7 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True):
                         values = mean
             if name in headers['axis names']:
                 points = np.array(headers[name + ' points'])
-                pointsshape = [1,] * len(values.shape)
+                pointsshape = [1, ] * len(values.shape)
                 for i, ax in enumerate(axes):
                     if ax['name'] == name:
                         pointsshape[i] = len(points)

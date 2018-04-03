@@ -20,6 +20,7 @@ def test_5():
     for arr in arrs:
         assert np.isnan(arr[2])
 
+
 def test_broadcast():
     a = np.array([[1, 2], [3, 4]])
     b = np.array([[5, np.nan]])
