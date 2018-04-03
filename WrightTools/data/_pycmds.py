@@ -85,15 +85,18 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True):
     # get assorted remaining things
     # variables and channels
     for index, kind, name in zip(range(len(arr)), headers['kind'], headers['name']):
+        values = np.full(np.prod(shape), np.nan)
+        values[:len(arr[index])] = arr[index]
+        values.shape = shape
         if name == 'time':
-            values = np.reshape(arr[index], shape)
             data.create_variable(name='labtime', values=values)
         if kind == 'hardware':
             # sadly, recorded tolerances are not reliable
             # so a bit of hard-coded hacking is needed
             # if this ends up being too fragile, we might have to use the points arrays
             # ---Blaise 2018-01-09
-            values = np.reshape(arr[index], shape)
+            units = headers['units'][index]
+            label = headers['label'][index]
             if 'w' in name and name.startswith(tuple(data.variable_names)):
                 inherited_shape = data[name.split('_')[0]].shape
                 for i, s in enumerate(inherited_shape):
@@ -109,15 +112,27 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True):
                         tolerance = 3.
                     if 'zero' in name:
                         tolerance = 1e-10
-                    mean = np.mean(values, axis=i)
+                    if name in headers['axis names']:
+                        tolerance = 1e-5
+                    mean = np.nanmean(values, axis=i)
                     mean = np.expand_dims(mean, i)
-                    if np.allclose(mean, values, atol=tolerance):
+                    values, meanexp = wt_kit.share_nans(values, mean)
+                    if np.allclose(meanexp, values, atol=tolerance, equal_nan=True):
                         values = mean
-            units = headers['units'][index]
-            label = headers['label'][index]
+            if name in headers['axis names']:
+                points = np.array(headers[name + ' points'])
+                pointsshape = [1, ] * len(values.shape)
+                for i, ax in enumerate(axes):
+                    if ax['name'] == name:
+                        pointsshape[i] = len(points)
+                        break
+                points.shape = pointsshape
+                for i in range(points.ndim):
+                    if points.shape[i] == 1:
+                        points = np.repeat(points, values.shape[i], axis=i)
+                values[np.isnan(values)] = points[np.isnan(values)]
             data.create_variable(name, values=values, units=units, label=label)
         if kind == 'channel':
-            values = np.reshape(arr[index], shape)
             data.create_channel(name=name, values=values, shape=values.shape)
     # axes
     for a in axes:
