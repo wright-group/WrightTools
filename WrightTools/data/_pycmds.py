@@ -113,8 +113,8 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True):
                         tolerance = 3.
                     if 'zero' in name:
                         tolerance = 1e-10
-                    if name in headers['axis_names']:
-                        tolerance = 0
+                    if name in headers['axis names']:
+                        tolerance = 1e-5
                     mean = np.mean(values, axis=i)
                     mean = np.expand_dims(mean, i)
                     values, meanexp = wt_kit.share_nans(values, mean)
