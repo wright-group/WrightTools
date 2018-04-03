@@ -85,8 +85,7 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True):
     # get assorted remaining things
     # variables and channels
     for index, kind, name in zip(range(len(arr)), headers['kind'], headers['name']):
-        values = np.empty(np.prod(shape))
-        values[:] = np.nan
+        values = np.full(np.prod(shape), np.nan)
         values[:len(arr[index])] = arr[index]
         values.shape = shape
         if name == 'time':
@@ -115,11 +114,23 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True):
                         tolerance = 1e-10
                     if name in headers['axis names']:
                         tolerance = 1e-5
-                    mean = np.mean(values, axis=i)
+                    mean = np.nanmean(values, axis=i)
                     mean = np.expand_dims(mean, i)
                     values, meanexp = wt_kit.share_nans(values, mean)
                     if np.allclose(meanexp, values, atol=tolerance, equal_nan=True):
                         values = mean
+            if name in headers['axis names']:
+                points = np.array(headers[name + ' points'])
+                pointsshape = [1,] * len(values.shape)
+                for i, ax in enumerate(axes):
+                    if ax['name'] == name:
+                        pointsshape[i] = len(points)
+                        break
+                points.shape = pointsshape
+                for i in range(points.ndim):
+                    if points.shape[i] == 1:
+                        points = np.repeat(points, values.shape[i], axis=i)
+                values[np.isnan(values)] = points[np.isnan(values)]
             data.create_variable(name, values=values, units=units, label=label)
         if kind == 'channel':
             data.create_channel(name=name, values=values, shape=values.shape)
