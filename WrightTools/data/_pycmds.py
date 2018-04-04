@@ -112,8 +112,11 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True):
                         tolerance = 3.
                     if 'zero' in name:
                         tolerance = 1e-10
-                    if name in headers['axis names']:
-                        tolerance = 1e-5
+                    try:
+                        assert i == headers['axis names'].index(name)
+                        tolerance = 0
+                    except (ValueError, AssertionError):
+                        pass  # Keep previous tolerance
                     mean = np.nanmean(values, axis=i)
                     mean = np.expand_dims(mean, i)
                     values, meanexp = wt_kit.share_nans(values, mean)
