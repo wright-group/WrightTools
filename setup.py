@@ -14,6 +14,11 @@ def package_files(directory):
 
 here = os.path.abspath(os.path.dirname(__file__))
 
+
+def read(fname):
+    return open(os.path.join(here, fname)).read()
+
+
 extra_files = package_files(os.path.join(here, 'WrightTools', 'datasets'))
 extra_files.append(os.path.join(here, 'CONTRIBUTORS'))
 extra_files.append(os.path.join(here, 'LICENSE'))
@@ -39,8 +44,8 @@ setup(
     extras_require={'docs': ['sphinx-gallery==0.1.12']},
     version=version,
     description='Tools for loading, processing, and plotting multidimensional spectroscopy data.',
-    author='Blaise Thompson',
-    author_email='blaise@untzag.com',
+    long_description=read('README.rst'),
+    author='WrightTools Developers',
     license='MIT',
     url='http://wright.tools',
     keywords='spectroscopy science multidimensional visualization',
