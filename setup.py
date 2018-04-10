@@ -37,6 +37,7 @@ setup(
     name='WrightTools',
     packages=find_packages(),
     package_data={'': extra_files},
+    python_requires='>=3.5',
     setup_requires=['pytest-runner'],
     tests_require=['pytest', 'pytest-cov',
                    'sphinx==1.6.5', 'sphinx-gallery==0.1.12', 'sphinx-rtd-theme'],
