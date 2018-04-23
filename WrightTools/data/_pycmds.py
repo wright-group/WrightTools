@@ -116,7 +116,8 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True):
                         assert i == headers['axis names'].index(name)
                         tolerance = 0
                     except (ValueError, AssertionError):
-                        pass  # Keep previous tolerance
+                        if name in headers['axis names']:
+                            tolerance = np.inf
                     mean = np.nanmean(values, axis=i)
                     mean = np.expand_dims(mean, i)
                     values, meanexp = wt_kit.share_nans(values, mean)
