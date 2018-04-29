@@ -8,6 +8,7 @@ import collections
 import operator
 import functools
 import warnings
+import itertools
 
 import numpy as np
 
@@ -294,6 +295,8 @@ class Data(Group):
         split
             Split the dataset while maintaining its dimensionality.
         """
+        # TODO: recover "at" behavior
+        # TODO: reshape after advanced indexing...
         # parse args
         args = list(args)
         for i, arg in enumerate(args):
@@ -301,30 +304,26 @@ class Data(Group):
                 args[i] = self._axes[arg].expression
         # get output collection
         out = wt_collection.Collection(name='chop', parent=parent)
-        # get output shape
-        kept = args + list(at.keys())
-        kept_axes = [self._axes[self.axis_expressions.index(a)] for a in kept]
-        removed_axes = [a for a in self._axes if a not in kept_axes]
-        removed_shape = wt_kit.joint_shape(*removed_axes)
-        if removed_shape == ():
-            removed_shape = (1,) * self.ndim
-        # iterate
-        i = 0
-        for idx in np.ndindex(removed_shape):
-            idx = np.array(idx, dtype=object)
-            idx[np.array(removed_shape) == 1] = slice(None)
-            for axis, point in at.items():
-                point, units = point
-                destination_units = self._axes[self.axis_names.index(axis)].units
-                point = wt_units.converter(point, units, destination_units)
-                axis_index = self.axis_names.index(axis)
-                axis = self._axes[axis_index]
-                idx[axis_index] = np.argmin(np.abs(axis[tuple(idx)] - point))
+
+        # kept axes
+        kept_axis_indices = [self.axis_expressions.index(a) for a in args]
+        kept_axes = [self.axes[i] for i in kept_axis_indices]
+
+        # removed_axes
+        removed = [e for e in self.axis_expressions if e not in args]
+        removed_indices = [self.axis_expressions.index(r) for r in removed]
+        removed_axes = [self.axes[i] for i in removed_indices]
+        uniques = [np.unique(self.axes[i].points) for i in removed_indices]
+        print(uniques)
+        for unq in itertools.product(*uniques):
+            idxs = [a.full == u for a, u in zip(removed_axes, unq)]
+            # TODO: only propagate points where ALL idxs are true....
+            #   (take product of idxs)
             data = out.create_data(name='chop%03i' % i)
             for v in self.variables:
                 kwargs = {}
                 kwargs['name'] = v.natural_name
-                kwargs['values'] = v[idx]
+                kwargs['values'] = v.full[idxs]
                 kwargs['units'] = v.units
                 kwargs['label'] = v.label
                 kwargs.update(v.attrs)
@@ -332,7 +331,7 @@ class Data(Group):
             for c in self.channels:
                 kwargs = {}
                 kwargs['name'] = c.natural_name
-                kwargs['values'] = c[idx]
+                kwargs['values'] = c.full[idxs]
                 kwargs['units'] = c.units
                 kwargs['label'] = c.label
                 kwargs['signed'] = c.signed
@@ -344,12 +343,13 @@ class Data(Group):
             for j, units in enumerate(new_axis_units):
                 data.axes[j].convert(units)
             i += 1
-        out.flush()
-        # return
+        # finish
         if verbose:
-            es = [a.expression for a in kept_axes]
-            print('chopped data into %d piece(s)' % len(out), 'in', es)
+            print('THIS IS CHOP VERBOSE')
         return out
+
+
+
 
     def collapse(self, axis, method='integrate'):
         """
