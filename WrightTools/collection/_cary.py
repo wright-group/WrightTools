@@ -70,8 +70,13 @@ def from_Cary(filepath, name=None, parent=None, verbose=True):
             if line == '\n' or line == '':
                 break
             else:
+                line = line.replace(',,', ',nan,')
+                line = line.replace(',,', ',nan,')
+                if line[0] == ',':
+                    line = 'nan' + line
                 clean = line[:-2]  # lines end with ',/n'
                 lines.append(np.fromstring(clean, sep=','))
+    lines = [line for line in lines if len(line) > 0]
     header = header.split(',')
     columns = columns.split(',')
     arr = np.array(lines).T
