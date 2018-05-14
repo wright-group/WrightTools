@@ -10,7 +10,7 @@ conda-forge
 
 Conda_ is a multilingual package/environment manager.
 It seamlessly handles non-Python library dependencies which many scientific Python tools rely upon.
-Conda is reccomended, especially for Windows users.
+Conda is recommended, especially for Windows users.
 If you don't have Python yet, start by `installing Anaconda`_ or `miniconda`_.
 
 `conda-forge`_ is a community-driven conda channel. `conda-forge contains a WrightTools feedstock`_.
