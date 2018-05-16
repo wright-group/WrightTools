@@ -14,6 +14,7 @@ def test_CuPCtS_H2O_vis():
     assert data.shape == (141,)
     col.close()
 
+
 def test_filters():
     p = datasets.Cary.filters
     col = wt.collection.from_Cary(p)
@@ -22,6 +23,7 @@ def test_filters():
         assert d.axis_names == ('wavelength',)
         assert d.channels[0].natural_name in ('abs', '%t')
         assert d.shape == (sh,)
+
 
 if __name__ == '__main__':
     test_CuPCtS_H2O_vis()
