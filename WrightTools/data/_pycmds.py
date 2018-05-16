@@ -116,7 +116,7 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True):
                         assert i == headers['axis names'].index(name)
                         tolerance = 0
                     except (ValueError, AssertionError):
-                        if name in headers['axis names']:
+                        if name in headers['axis names'] and 'd' in name:
                             tolerance = np.inf
                     mean = np.nanmean(values, axis=i)
                     mean = np.expand_dims(mean, i)
