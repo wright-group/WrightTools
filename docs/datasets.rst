@@ -14,6 +14,7 @@ dataset                                            axis expressions             
 =================================================  ============================  ===================  ==============
 ``BrunoldrRaman.LDS821_514nm_80mW``                ``('energy',)``               ``(1340,)``
 ``Cary.CuPCtS_H2O_vis``                            ``('wavelength',)``           ``(141,)``
+``Cary.filters (collection)``                      ``('wavelength',)``           ``multiple``         :ref:`sphx_glr_auto_examples_filters.py`
 ``COLORS.v0p2_d1_d2_diagonal`` [#kohler2014]_      ``('d1', 'd2')``              ``(21, 21)``        
 ``COLORS.v2p1_MoS2_TrEE_movie`` [#czech2015]_      ``('w2', 'w1', 'd2')``        ``(41, 41, 23)``  
 ``JASCO.PbSe_batch_1`` [#yurs2011]_                ``('energy',)``               ``(1801,)``      
