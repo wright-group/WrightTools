@@ -70,8 +70,11 @@ def from_Cary(filepath, name=None, parent=None, verbose=True):
             if line == '\n' or line == '':
                 break
             else:
+                # Note, it is necessary to call this twice, as a single call will 
+                # result in something like ',,,,' > ',nan,,nan,'.
                 line = line.replace(',,', ',nan,')
                 line = line.replace(',,', ',nan,')
+                # Ensure that the first column has nan, if necessary
                 if line[0] == ',':
                     line = 'nan' + line
                 clean = line[:-2]  # lines end with ',/n'
