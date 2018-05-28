@@ -73,8 +73,10 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True):
                                      headers['axis units']):
         # points and centers
         points = np.array(headers[name + ' points'])
+        data.create_variable(name=name + '_points', values = points)
         if name + ' centers' in headers.keys():
             centers = headers[name + ' centers']
+            data.create_variable(name=name + '_centers', values = centers)
         else:
             centers = None
         # create
@@ -116,7 +118,7 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True):
                         assert i == headers['axis names'].index(name)
                         tolerance = 0
                     except (ValueError, AssertionError):
-                        if name in headers['axis names'] and 'd' in name:
+                        if name in headers['axis names'] and name + '_centers' not in data.variable_names:
                             tolerance = np.inf
                     mean = np.nanmean(values, axis=i)
                     mean = np.expand_dims(mean, i)
