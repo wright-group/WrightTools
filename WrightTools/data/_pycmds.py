@@ -4,18 +4,12 @@
 # --- import --------------------------------------------------------------------------------------
 
 
-import collections
-import warnings
-
 import numpy as np
-
-from scipy.interpolate import griddata
 
 import tidy_headers
 
 from ._data import Data
 from .. import kit as wt_kit
-from .. import units as wt_units
 
 
 # --- define --------------------------------------------------------------------------------------
