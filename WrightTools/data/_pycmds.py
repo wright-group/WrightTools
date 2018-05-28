@@ -86,13 +86,13 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True):
         sh = [1] * len(shape)
         sh[i] = len(ax['points'])
         data.create_variable(name=ax['name'] + '_points',
-                             values = np.array(ax['points']).reshape(sh))
+                             values=np.array(ax['points']).reshape(sh))
         if ax['centers'] is not None:
             if ax['name'] == 'wa':
                 sh = [1] * len(shape)
                 sh[i - 1] = len(axes[i - 1]['points'])
             data.create_variable(name=ax['name'] + '_centers',
-                                 values = np.array(ax['centers']).reshape(sh))
+                                 values=np.array(ax['centers']).reshape(sh))
     # get assorted remaining things
     # variables and channels
     for index, kind, name in zip(range(len(arr)), headers['kind'], headers['name']):
