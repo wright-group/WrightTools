@@ -73,10 +73,8 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True):
                                      headers['axis units']):
         # points and centers
         points = np.array(headers[name + ' points'])
-        data.create_variable(name=name + '_points', values = points)
         if name + ' centers' in headers.keys():
             centers = headers[name + ' centers']
-            data.create_variable(name=name + '_centers', values = centers)
         else:
             centers = None
         # create
@@ -84,6 +82,17 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True):
                 'centers': centers}
         axes.append(axis)
     shape = tuple([a['points'].size for a in axes])
+    for i, ax in enumerate(axes):
+        sh = [1] * len(shape)
+        sh[i] = len(ax['points'])
+        data.create_variable(name=ax['name'] + '_points',
+                             values = np.array(ax['points']).reshape(sh))
+        if ax['centers'] is not None:
+            if ax['name'] == 'wa':
+                sh = [1] * len(shape)
+                sh[i - 1] = len(axes[i - 1]['points'])
+            data.create_variable(name=ax['name'] + '_centers',
+                                 values = np.array(ax['centers']).reshape(sh))
     # get assorted remaining things
     # variables and channels
     for index, kind, name in zip(range(len(arr)), headers['kind'], headers['name']):
@@ -118,7 +127,7 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True):
                         assert i == headers['axis names'].index(name)
                         tolerance = 0
                     except (ValueError, AssertionError):
-                        if name in headers['axis names'] and name + '_centers' not in data.variable_names:
+                        if name in headers['axis names'] and '%s_centers' % name not in data.variable_names:
                             tolerance = np.inf
                     mean = np.nanmean(values, axis=i)
                     mean = np.expand_dims(mean, i)
