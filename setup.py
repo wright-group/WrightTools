@@ -35,7 +35,7 @@ with open(os.path.join(here, 'VERSION')) as version_file:
 
 setup(
     name='WrightTools',
-    packages=find_packages(),
+    packages=find_packages(exclude=('tests', 'tests.*')),
     package_data={'': extra_files},
     python_requires='>=3.5',
     setup_requires=['pytest-runner'],
