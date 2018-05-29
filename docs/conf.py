@@ -263,4 +263,3 @@ intersphinx_mapping = {
     'matplotlib': ('http://matplotlib.org', None),
     'numpy': ('https://docs.scipy.org/doc/numpy/', None)
 }
-

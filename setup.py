@@ -4,19 +4,12 @@ import os
 from setuptools import setup, find_packages
 
 
-def package_files(directory):
-    paths = []
-    for (path, directories, filenames) in os.walk(directory):
-        for filename in filenames:
-            paths.append(os.path.join('..', path, filename))
-    return paths
-
-
 here = os.path.abspath(os.path.dirname(__file__))
 
 
 def read(fname):
     return open(os.path.join(here, fname)).read()
+
 
 extra_files = {'WrightTools': ['datasets', 'datasets/*', 'datasets/*/*', 'datasets/*/*/*',
                                'VERSION', 'WT5_VERSION']}
@@ -52,5 +45,5 @@ setup(
                  'Programming Language :: Python :: 3.5',
                  'Programming Language :: Python :: 3.6',
                  'Topic :: Scientific/Engineering',
-                ]
+                 ]
 )
