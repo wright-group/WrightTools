@@ -20,5 +20,5 @@ __all__ = ['__wt5_version__']
 
 
 # read from VERSION file
-with open(os.path.join(os.path.dirname(here), 'WT5_VERSION')) as f:
+with open(os.path.join(here, 'WT5_VERSION')) as f:
     __wt5_version__ = f.read().strip()
