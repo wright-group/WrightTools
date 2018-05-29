@@ -70,8 +70,16 @@ def from_Cary(filepath, name=None, parent=None, verbose=True):
             if line == '\n' or line == '':
                 break
             else:
+                # Note, it is necessary to call this twice, as a single call will 
+                # result in something like ',,,,' > ',nan,,nan,'.
+                line = line.replace(',,', ',nan,')
+                line = line.replace(',,', ',nan,')
+                # Ensure that the first column has nan, if necessary
+                if line[0] == ',':
+                    line = 'nan' + line
                 clean = line[:-2]  # lines end with ',/n'
                 lines.append(np.fromstring(clean, sep=','))
+    lines = [line for line in lines if len(line) > 0]
     header = header.split(',')
     columns = columns.split(',')
     arr = np.array(lines).T
@@ -83,8 +91,9 @@ def from_Cary(filepath, name=None, parent=None, verbose=True):
         ax = spl[0].lower() if len(spl) > 0 else None
         units = spl[1].lower() if len(spl) > 1 else None
         dat = datas.create_data(header[i], kind='Cary', source=filepath)
-        dat.create_variable(ax, arr[i], units=units)
-        dat.create_channel(columns[i + 1].lower(), arr[i + 1], label=columns[i + 1].lower())
+        dat.create_variable(ax, arr[i][~np.isnan(arr[i])], units=units)
+        dat.create_channel(columns[i + 1].lower(), arr[i + 1][~np.isnan(arr[i + 1])],
+                           label=columns[i + 1].lower())
         dat.transform(ax)
     # finish
     if verbose:
