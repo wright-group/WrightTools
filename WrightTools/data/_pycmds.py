@@ -82,9 +82,8 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True):
         data.create_variable(name=ax['name'] + '_points',
                              values=np.array(ax['points']).reshape(sh))
         if ax['centers'] is not None:
-            if ax['name'] == 'wa':
-                sh = [1] * len(shape)
-                sh[i - 1] = len(axes[i - 1]['points'])
+            sh = [1] * len(shape)
+            sh[i - 1] = len(axes[i - 1]['points'])
             data.create_variable(name=ax['name'] + '_centers',
                                  values=np.array(ax['centers']).reshape(sh))
     # get assorted remaining things
