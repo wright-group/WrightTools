@@ -20,7 +20,7 @@ __all__ = ['__version__', '__branch__']
 
 
 # read from VERSION file
-with open(os.path.join(os.path.dirname(here), 'VERSION')) as f:
+with open(os.path.join(here, 'VERSION')) as f:
     __version__ = f.read().strip()
 
 

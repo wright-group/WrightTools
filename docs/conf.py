@@ -28,7 +28,7 @@ import math
 
 here = os.path.abspath(os.path.dirname(__file__))
 
-with open(os.path.join(os.path.dirname(here), 'VERSION')) as version_file:
+with open(os.path.join(os.path.dirname(here), 'WrightTools', 'VERSION')) as version_file:
     version = version_file.read().strip()
 
 
@@ -263,4 +263,3 @@ intersphinx_mapping = {
     'matplotlib': ('http://matplotlib.org', None),
     'numpy': ('https://docs.scipy.org/doc/numpy/', None)
 }
-
