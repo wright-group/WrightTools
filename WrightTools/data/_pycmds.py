@@ -4,18 +4,12 @@
 # --- import --------------------------------------------------------------------------------------
 
 
-import collections
-import warnings
-
 import numpy as np
-
-from scipy.interpolate import griddata
 
 import tidy_headers
 
 from ._data import Data
 from .. import kit as wt_kit
-from .. import units as wt_units
 
 
 # --- define --------------------------------------------------------------------------------------
@@ -82,6 +76,16 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True):
                 'centers': centers}
         axes.append(axis)
     shape = tuple([a['points'].size for a in axes])
+    for i, ax in enumerate(axes):
+        sh = [1] * len(shape)
+        sh[i] = len(ax['points'])
+        data.create_variable(name=ax['name'] + '_points',
+                             values=np.array(ax['points']).reshape(sh))
+        if ax['centers'] is not None:
+            sh = [1] * len(shape)
+            sh[i - 1] = len(axes[i - 1]['points'])
+            data.create_variable(name=ax['name'] + '_centers',
+                                 values=np.array(ax['centers']).reshape(sh))
     # get assorted remaining things
     # variables and channels
     for index, kind, name in zip(range(len(arr)), headers['kind'], headers['name']):
@@ -112,8 +116,13 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True):
                         tolerance = 3.
                     if 'zero' in name:
                         tolerance = 1e-10
-                    if name in headers['axis names']:
-                        tolerance = 1e-5
+                    try:
+                        assert i == headers['axis names'].index(name)
+                        tolerance = 0
+                    except (ValueError, AssertionError):
+                        if (name in headers['axis names'] and
+                                '%s_centers' % name not in data.variable_names):
+                            tolerance = np.inf
                     mean = np.nanmean(values, axis=i)
                     mean = np.expand_dims(mean, i)
                     values, meanexp = wt_kit.share_nans(values, mean)

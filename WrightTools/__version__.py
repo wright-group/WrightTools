@@ -20,7 +20,7 @@ __all__ = ['__version__', '__branch__']
 
 
 # read from VERSION file
-with open(os.path.join(os.path.dirname(here), 'VERSION')) as f:
+with open(os.path.join(here, 'VERSION')) as f:
     __version__ = f.read().strip()
 
 
@@ -30,6 +30,6 @@ if os.path.isfile(p):
     with open(p) as f:
         __branch__ = f.readline().rstrip().split(r'/')[-1]
     if __branch__ != 'master':
-        __version__ += '-' + __branch__
+        __version__ += '+' + __branch__
 else:
     __branch__ = None

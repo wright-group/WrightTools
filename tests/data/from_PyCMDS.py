@@ -22,6 +22,7 @@ def test_w1_000():
     data = wt.data.from_PyCMDS(p)
     assert data.shape == (51,)
     assert data.axis_expressions == ('w1',)
+    assert 'w1_points' in data.variable_names
     data.close()
 
 
@@ -30,6 +31,8 @@ def test_w1_wa_000():
     data = wt.data.from_PyCMDS(p)
     assert data.shape == (25, 256)
     assert data.axis_expressions == ('w1=wm', 'wa',)
+    assert data.wa_centers.shape == (25, 1)
+    assert data.wa_points.shape == (1, 256)
     data.close()
 
 
@@ -75,6 +78,15 @@ def test_ps_delay():
     data.close()
 
 
+def test_tolerance():
+    p = os.path.join(here, 'test_data', 'tolerance.data')
+    data = wt.data.from_PyCMDS(p)
+    assert data.d1.shape == (4, 1, 1)
+    assert data.shape == (4, 36, 36)
+    assert data.axis_expressions == ('d1', 'w2', 'w1=wm')
+    data.close()
+
+
 # --- run -----------------------------------------------------------------------------------------
 
 
@@ -86,3 +98,4 @@ if __name__ == '__main__':
     test_wm_w2_w1_001()
     test_incomplete()
     test_ps_delay()
+    test_tolerance()

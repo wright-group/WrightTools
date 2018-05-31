@@ -2,8 +2,12 @@
 cd "$(dirname "$0")"
 cd ..
 # test
+if [ -z "$PYTHON" ];
+then
+    export PYTHON=python3
+fi
 printf "\033[1;35mtesting...\033[0m\n"
-if python setup.py test
+if [ -n $TEST ] || $PYTHON setup.py test
 then
     printf "\033[1;35mtesting successful\033[0m\n"
 else
@@ -12,8 +16,8 @@ else
 fi
 # build
 printf "\033[1;35mbuilding...\033[0m\n"
-python setup.py sdist
-python setup.py bdist_wheel --universal
+$PYTHON setup.py sdist
+$PYTHON setup.py bdist_wheel --universal
 # upload
 printf "\033[1;35muploading...\033[0m\n"
 while true; do
