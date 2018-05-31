@@ -12,7 +12,7 @@ def read(fname):
 
 
 extra_files = {'WrightTools': ['datasets', 'datasets/*', 'datasets/*/*', 'datasets/*/*/*',
-                               'VERSION', 'WT5_VERSION']}
+                               'datasets/*/*/*/*', 'VERSION', 'WT5_VERSION']}
 
 with open(os.path.join(here, 'requirements.txt')) as f:
     required = f.read().splitlines()
