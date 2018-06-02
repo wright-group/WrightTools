@@ -17,7 +17,7 @@ Documentation at `wright.tools <http://wright.tools>`_.
 .. image:: https://readthedocs.org/projects/wrighttools/badge/?version=development
    :target: http://wright.tools/en/development/?badge=development
 
-.. image:: ./logo/logo.png
+.. image:: https://raw.githubusercontent.com/wright-group/WrightTools/master/logo/logo.png
    :scale: 25 %
    :alt: WrightTools
    :align: center
