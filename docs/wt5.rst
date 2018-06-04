@@ -170,7 +170,7 @@ We reccomend the amazing `h5py package <http://www.h5py.org/>`_.
 Shell
 ^^^^^
 
-`h5cli <https://github.com/ksunden/h5cli>`_: bash-like interface to interacting with HDF5 files.
+`h5cli <https://gitlab.com/h5cli/h5cli>`_: bash-like interface to interacting with HDF5 files.
 
 `h5diff <https://support.hdfgroup.org/HDF5/doc/RM/Tools.html#Tools-Diff>`_: compare two HDF5 files, reporting the differences.
 
