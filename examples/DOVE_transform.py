@@ -15,7 +15,7 @@ p = datasets.KENT.LDS821_DOVE
 data = wt.data.from_KENT(p, ignore=['d1', 'd2', 'wm'], verbose=False)
 
 fig, gs = wt.artists.create_figure(width='double', cols=[1, 1, 'cbar'],
-                                   wspace=.7)
+                                   wspace=0.7)
 
 # as taken
 ax = plt.subplot(gs[0, 0])
