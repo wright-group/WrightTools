@@ -69,6 +69,7 @@ JASCO._from_files('JASCO')
 
 KENT = DatasetContainer()
 KENT._from_directory(os.path.join(here, 'KENT', 'LDS821 TRSF'))
+KENT._from_directory(os.path.join(here, 'KENT', 'LDS821 DOVE'))
 KENT._from_directory(os.path.join(here, 'KENT', 'PbSe 2D delay B'))
 
 ocean_optics = DatasetContainer()
