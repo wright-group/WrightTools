@@ -35,6 +35,7 @@ setup(
     tests_require=[
         "pytest",
         "pytest-cov",
+        "pytest-mp",
         "sphinx==1.6.5",
         "sphinx-gallery==0.1.12",
         "sphinx-rtd-theme",
