@@ -19,4 +19,4 @@ here = os.path.abspath(os.path.dirname(__file__))
 
 
 def test_here():
-    wt.kit.glob_handler('.py', here)  # exception will be raised if broken
+    wt.kit.glob_handler(".py", here)  # exception will be raised if broken

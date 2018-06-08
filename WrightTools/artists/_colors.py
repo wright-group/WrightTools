@@ -17,14 +17,19 @@ import matplotlib.gridspec as grd
 # --- define -------------------------------------------------------------------------------------
 
 
-__all__ = ['colormaps', 'get_color_cycle', 'grayify_cmap', 'overline_colors',
-           'plot_colormap_components']
+__all__ = [
+    "colormaps",
+    "get_color_cycle",
+    "grayify_cmap",
+    "overline_colors",
+    "plot_colormap_components",
+]
 
 
 # --- functions ----------------------------------------------------------------------------------
 
 
-def make_cubehelix(name='WrightTools', gamma=0.5, s=0.25, r=-1, h=1.3, reverse=False, darkest=0.7):
+def make_cubehelix(name="WrightTools", gamma=0.5, s=0.25, r=-1, h=1.3, reverse=False, darkest=0.7):
     """Define cubehelix type colorbars.
 
     Look `here`__ for more information.
@@ -59,15 +64,15 @@ def make_cubehelix(name='WrightTools', gamma=0.5, s=0.25, r=-1, h=1.3, reverse=F
     plot_colormap_components
         Displays RGB components of colormaps.
     """
-    rr = (.213 / .30)
-    rg = (.715 / .99)
-    rb = (.072 / .11)
+    rr = .213 / .30
+    rg = .715 / .99
+    rb = .072 / .11
 
     def get_color_function(p0, p1):
         def color(x):
             # Calculate amplitude and angle of deviation from the black to
             # white diagonal in the plane of constant perceived intensity.
-            xg = darkest * x**gamma
+            xg = darkest * x ** gamma
             lum = 1 - xg  # starts at 1
             if reverse:
                 lum = lum[::-1]
@@ -77,16 +82,19 @@ def make_cubehelix(name='WrightTools', gamma=0.5, s=0.25, r=-1, h=1.3, reverse=F
             phi = 2 * np.pi * (s / 3 + r * x)
             out = lum + a * (p0 * np.cos(phi) + p1 * np.sin(phi))
             return out
+
         return color
 
-    rgb_dict = {'red': get_color_function(-0.14861 * rr, 1.78277 * rr),
-                'green': get_color_function(-0.29227 * rg, -0.90649 * rg),
-                'blue': get_color_function(1.97294 * rb, 0.0)}
+    rgb_dict = {
+        "red": get_color_function(-0.14861 * rr, 1.78277 * rr),
+        "green": get_color_function(-0.29227 * rg, -0.90649 * rg),
+        "blue": get_color_function(1.97294 * rb, 0.0),
+    }
     cmap = matplotlib.colors.LinearSegmentedColormap(name, rgb_dict)
     return cmap
 
 
-def make_colormap(seq, name='CustomMap', plot=False):
+def make_colormap(seq, name="CustomMap", plot=False):
     """Generate a LinearSegmentedColormap.
 
     Parameters
@@ -109,14 +117,14 @@ def make_colormap(seq, name='CustomMap', plot=False):
     __ http://nbviewer.ipython.org/gist/anonymous/a4fa0adb08f9e9ea4f94
     """
     seq = [(None,) * 3, 0.0] + list(seq) + [1.0, (None,) * 3]
-    cdict = {'red': [], 'green': [], 'blue': []}
+    cdict = {"red": [], "green": [], "blue": []}
     for i, item in enumerate(seq):
         if isinstance(item, float):
             r1, g1, b1 = seq[i - 1]
             r2, g2, b2 = seq[i + 1]
-            cdict['red'].append([item, r1, r2])
-            cdict['green'].append([item, g1, g2])
-            cdict['blue'].append([item, b1, b2])
+            cdict["red"].append([item, r1, r2])
+            cdict["green"].append([item, g1, g2])
+            cdict["blue"].append([item, b1, b2])
     cmap = mplcolors.LinearSegmentedColormap(name, cdict)
     if plot:
         plot_colormap_components(cmap)
@@ -180,21 +188,20 @@ def nm_to_rgb(nm):
     else:
         SSS = 0.0
     SSS *= 255
-    return [float(int(SSS * R) / 256.),
-            float(int(SSS * G) / 256.),
-            float(int(SSS * B) / 256.)]
+    return [float(int(SSS * R) / 256.), float(int(SSS * G) / 256.), float(int(SSS * B) / 256.)]
 
 
 def plot_colormap_components(cmap):
     """Plot the components of a given colormap."""
     from ._helpers import set_ax_labels  # recursive import protection
+
     plt.figure(figsize=[8, 4])
     gs = grd.GridSpec(3, 1, height_ratios=[1, 10, 1], hspace=0.05)
     # colorbar
     ax = plt.subplot(gs[0])
     gradient = np.linspace(0, 1, 256)
     gradient = np.vstack((gradient, gradient))
-    ax.imshow(gradient, aspect='auto', cmap=cmap, vmin=0., vmax=1.)
+    ax.imshow(gradient, aspect="auto", cmap=cmap, vmin=0., vmax=1.)
     ax.set_title(cmap.name, fontsize=20)
     ax.set_axis_off()
     # components
@@ -210,19 +217,19 @@ def plot_colormap_components(cmap):
     g.clip(0, 1, out=g)
     b.clip(0, 1, out=b)
     xi = np.linspace(0, 1, x.size)
-    plt.plot(xi, r, 'r', linewidth=5, alpha=0.6)
-    plt.plot(xi, g, 'g', linewidth=5, alpha=0.6)
-    plt.plot(xi, b, 'b', linewidth=5, alpha=0.6)
-    plt.plot(xi, k, 'k', linewidth=5, alpha=0.6)
+    plt.plot(xi, r, "r", linewidth=5, alpha=0.6)
+    plt.plot(xi, g, "g", linewidth=5, alpha=0.6)
+    plt.plot(xi, b, "b", linewidth=5, alpha=0.6)
+    plt.plot(xi, k, "k", linewidth=5, alpha=0.6)
     ax.set_xlim(0, 1)
     ax.set_ylim(-0.1, 1.1)
-    set_ax_labels(ax=ax, xlabel=None, xticks=False, ylabel='intensity')
+    set_ax_labels(ax=ax, xlabel=None, xticks=False, ylabel="intensity")
     # grayified colorbar
     cmap = grayify_cmap(cmap)
     ax = plt.subplot(gs[2])
     gradient = np.linspace(0, 1, 256)
     gradient = np.vstack((gradient, gradient))
-    ax.imshow(gradient, aspect='auto', cmap=cmap, vmin=0., vmax=1.)
+    ax.imshow(gradient, aspect="auto", cmap=cmap, vmin=0., vmax=1.)
     ax.set_axis_off()
 
 
@@ -243,7 +250,7 @@ def grayify_cmap(cmap):
     return mplcolors.LinearSegmentedColormap.from_list(cmap.name + "_grayscale", colors, cmap.N)
 
 
-def get_color_cycle(n, cmap='rainbow', rotations=3):
+def get_color_cycle(n, cmap="rainbow", rotations=3):
     """Get a list of RGBA colors following a colormap.
 
     Useful for plotting lots of elements, keeping the color of each unique.
@@ -274,9 +281,20 @@ def get_color_cycle(n, cmap='rainbow', rotations=3):
     return out
 
 
-def plot_colorbar(*, cax=None, cmap='default', ticks=None, clim=None, vlim=None,
-                  label=None, tick_fontsize=14, label_fontsize=18, decimals=None,
-                  orientation='vertical', ticklocation='auto'):
+def plot_colorbar(
+    *,
+    cax=None,
+    cmap="default",
+    ticks=None,
+    clim=None,
+    vlim=None,
+    label=None,
+    tick_fontsize=14,
+    label_fontsize=18,
+    decimals=None,
+    orientation="vertical",
+    ticklocation="auto"
+):
     """Easily add a colormap to an axis.
 
     Parameters
@@ -330,30 +348,35 @@ def plot_colorbar(*, cax=None, cmap='default', ticks=None, clim=None, vlim=None,
         vlim = clim
     # parse format
     if isinstance(decimals, int):
-        format = '%.{0}f'.format(decimals)
+        format = "%.{0}f".format(decimals)
     else:
         magnitude = int(np.log10(max(vlim) - min(vlim)) - 0.99)
         if 1 > magnitude > -3:
-            format = '%.{0}f'.format(-magnitude + 1)
+            format = "%.{0}f".format(-magnitude + 1)
         elif magnitude in (1, 2, 3):
-            format = '%i'
+            format = "%i"
         else:
             # scientific notation
             def fmt(x, _):
-                return '%.1f' % (x / float(10 ** magnitude))
+                return "%.1f" % (x / float(10 ** magnitude))
+
             format = matplotlib.ticker.FuncFormatter(fmt)
-            magnitude_label = r'  $\mathsf{\times 10^{%d}}$' % magnitude
+            magnitude_label = r"  $\mathsf{\times 10^{%d}}$" % magnitude
             if label is None:
                 label = magnitude_label
             else:
-                label = ' '.join([label, magnitude_label])
+                label = " ".join([label, magnitude_label])
     # make cbar
     norm = matplotlib.colors.Normalize(vmin=vlim[0], vmax=vlim[1])
-    cbar = matplotlib.colorbar.ColorbarBase(ax=cax, cmap=cmap,
-                                            norm=norm, ticks=ticks,
-                                            orientation=orientation,
-                                            ticklocation=ticklocation,
-                                            format=format)
+    cbar = matplotlib.colorbar.ColorbarBase(
+        ax=cax,
+        cmap=cmap,
+        norm=norm,
+        ticks=ticks,
+        orientation=orientation,
+        ticklocation=ticklocation,
+        format=format,
+    )
     # coerce properties
     cbar.set_clim(clim[0], clim[1])
     cbar.ax.tick_params(labelsize=tick_fontsize)
@@ -368,135 +391,178 @@ def plot_colorbar(*, cax=None, cmap='default', ticks=None, clim=None, vlim=None,
 
 cubehelix = make_cubehelix()
 
-experimental = ['#FFFFFF',
-                '#0000FF',
-                '#0080FF',
-                '#00FFFF',
-                '#00FF00',
-                '#FFFF00',
-                '#FF8000',
-                '#FF0000',
-                '#881111']
+experimental = [
+    "#FFFFFF",
+    "#0000FF",
+    "#0080FF",
+    "#00FFFF",
+    "#00FF00",
+    "#FFFF00",
+    "#FF8000",
+    "#FF0000",
+    "#881111",
+]
 
-greenscale = ['#000000',  # black
-              '#00FF00']  # green
+greenscale = ["#000000", "#00FF00"]  # black  # green
 
-greyscale = ['#FFFFFF',  # white
-             '#000000']  # black
+greyscale = ["#FFFFFF", "#000000"]  # white  # black
 
-invisible = ['#FFFFFF',  # white
-             '#FFFFFF']  # white
+invisible = ["#FFFFFF", "#FFFFFF"]  # white  # white
 
 # isoluminant colorbar based on the research of Kindlmann et al.
 # http://dx.doi.org/10.1109/VISUAL.2002.1183788
 c = mplcolors.ColorConverter().to_rgb
-isoluminant1 = make_colormap([
-    c(r_[1.000, 1.000, 1.000]), c(r_[0.847, 0.057, 0.057]), 1 / 6.,
-    c(r_[0.847, 0.057, 0.057]), c(r_[0.527, 0.527, 0.000]), 2 / 6.,
-    c(r_[0.527, 0.527, 0.000]), c(r_[0.000, 0.592, 0.000]), 3 / 6.,
-    c(r_[0.000, 0.592, 0.000]), c(r_[0.000, 0.559, 0.559]), 4 / 6.,
-    c(r_[0.000, 0.559, 0.559]), c(r_[0.316, 0.316, 0.991]), 5 / 6.,
-    c(r_[0.316, 0.316, 0.991]), c(r_[0.718, 0.000, 0.718])],
-    name='isoluminant`')
+isoluminant1 = make_colormap(
+    [
+        c(r_[1.000, 1.000, 1.000]),
+        c(r_[0.847, 0.057, 0.057]),
+        1 / 6.,
+        c(r_[0.847, 0.057, 0.057]),
+        c(r_[0.527, 0.527, 0.000]),
+        2 / 6.,
+        c(r_[0.527, 0.527, 0.000]),
+        c(r_[0.000, 0.592, 0.000]),
+        3 / 6.,
+        c(r_[0.000, 0.592, 0.000]),
+        c(r_[0.000, 0.559, 0.559]),
+        4 / 6.,
+        c(r_[0.000, 0.559, 0.559]),
+        c(r_[0.316, 0.316, 0.991]),
+        5 / 6.,
+        c(r_[0.316, 0.316, 0.991]),
+        c(r_[0.718, 0.000, 0.718]),
+    ],
+    name="isoluminant`",
+)
 
-isoluminant2 = make_colormap([
-    c(r_[1.000, 1.000, 1.000]), c(r_[0.718, 0.000, 0.718]), 1 / 6.,
-    c(r_[0.718, 0.000, 0.718]), c(r_[0.316, 0.316, 0.991]), 2 / 6.,
-    c(r_[0.316, 0.316, 0.991]), c(r_[0.000, 0.559, 0.559]), 3 / 6.,
-    c(r_[0.000, 0.559, 0.559]), c(r_[0.000, 0.592, 0.000]), 4 / 6.,
-    c(r_[0.000, 0.592, 0.000]), c(r_[0.527, 0.527, 0.000]), 5 / 6.,
-    c(r_[0.527, 0.527, 0.000]), c(r_[0.847, 0.057, 0.057])],
-    name='isoluminant2')
+isoluminant2 = make_colormap(
+    [
+        c(r_[1.000, 1.000, 1.000]),
+        c(r_[0.718, 0.000, 0.718]),
+        1 / 6.,
+        c(r_[0.718, 0.000, 0.718]),
+        c(r_[0.316, 0.316, 0.991]),
+        2 / 6.,
+        c(r_[0.316, 0.316, 0.991]),
+        c(r_[0.000, 0.559, 0.559]),
+        3 / 6.,
+        c(r_[0.000, 0.559, 0.559]),
+        c(r_[0.000, 0.592, 0.000]),
+        4 / 6.,
+        c(r_[0.000, 0.592, 0.000]),
+        c(r_[0.527, 0.527, 0.000]),
+        5 / 6.,
+        c(r_[0.527, 0.527, 0.000]),
+        c(r_[0.847, 0.057, 0.057]),
+    ],
+    name="isoluminant2",
+)
 
-isoluminant3 = make_colormap([
-    c(r_[1.000, 1.000, 1.000]), c(r_[0.316, 0.316, 0.991]), 1 / 5.,
-    c(r_[0.316, 0.316, 0.991]), c(r_[0.000, 0.559, 0.559]), 2 / 5.,
-    c(r_[0.000, 0.559, 0.559]), c(r_[0.000, 0.592, 0.000]), 3 / 5.,
-    c(r_[0.000, 0.592, 0.000]), c(r_[0.527, 0.527, 0.000]), 4 / 5.,
-    c(r_[0.527, 0.527, 0.000]), c(r_[0.847, 0.057, 0.057])],
-    name='isoluminant3')
+isoluminant3 = make_colormap(
+    [
+        c(r_[1.000, 1.000, 1.000]),
+        c(r_[0.316, 0.316, 0.991]),
+        1 / 5.,
+        c(r_[0.316, 0.316, 0.991]),
+        c(r_[0.000, 0.559, 0.559]),
+        2 / 5.,
+        c(r_[0.000, 0.559, 0.559]),
+        c(r_[0.000, 0.592, 0.000]),
+        3 / 5.,
+        c(r_[0.000, 0.592, 0.000]),
+        c(r_[0.527, 0.527, 0.000]),
+        4 / 5.,
+        c(r_[0.527, 0.527, 0.000]),
+        c(r_[0.847, 0.057, 0.057]),
+    ],
+    name="isoluminant3",
+)
 
-signed = ['#0000FF',  # blue
-          '#002AFF',
-          '#0055FF',
-          '#007FFF',
-          '#00AAFF',
-          '#00D4FF',
-          '#00FFFF',
-          '#FFFFFF',  # white
-          '#FFFF00',
-          '#FFD400',
-          '#FFAA00',
-          '#FF7F00',
-          '#FF5500',
-          '#FF2A00',
-          '#FF0000']  # red
+signed = [
+    "#0000FF",  # blue
+    "#002AFF",
+    "#0055FF",
+    "#007FFF",
+    "#00AAFF",
+    "#00D4FF",
+    "#00FFFF",
+    "#FFFFFF",  # white
+    "#FFFF00",
+    "#FFD400",
+    "#FFAA00",
+    "#FF7F00",
+    "#FF5500",
+    "#FF2A00",
+    "#FF0000",
+]  # red
 
-signed_old = ['#0000FF',  # blue
-              '#00BBFF',  # blue-aqua
-              '#00FFFF',  # aqua
-              '#FFFFFF',  # white
-              '#FFFF00',  # yellow
-              '#FFBB00',  # orange
-              '#FF0000']  # red
+signed_old = [
+    "#0000FF",  # blue
+    "#00BBFF",  # blue-aqua
+    "#00FFFF",  # aqua
+    "#FFFFFF",  # white
+    "#FFFF00",  # yellow
+    "#FFBB00",  # orange
+    "#FF0000",
+]  # red
 
-skyebar = ['#FFFFFF',  # white
-           '#000000',  # black
-           '#0000FF',  # blue
-           '#00FFFF',  # cyan
-           '#64FF00',  # light green
-           '#FFFF00',  # yellow
-           '#FF8000',  # orange
-           '#FF0000',  # red
-           '#800000']  # dark red
+skyebar = [
+    "#FFFFFF",  # white
+    "#000000",  # black
+    "#0000FF",  # blue
+    "#00FFFF",  # cyan
+    "#64FF00",  # light green
+    "#FFFF00",  # yellow
+    "#FF8000",  # orange
+    "#FF0000",  # red
+    "#800000",
+]  # dark red
 
-skyebar_d = ['#000000',  # black
-             '#0000FF',  # blue
-             '#00FFFF',  # cyan
-             '#64FF00',  # light green
-             '#FFFF00',  # yellow
-             '#FF8000',  # orange
-             '#FF0000',  # red
-             '#800000']  # dark red
+skyebar_d = [
+    "#000000",  # black
+    "#0000FF",  # blue
+    "#00FFFF",  # cyan
+    "#64FF00",  # light green
+    "#FFFF00",  # yellow
+    "#FF8000",  # orange
+    "#FF0000",  # red
+    "#800000",
+]  # dark red
 
-skyebar_i = ['#000000',  # black
-             '#FFFFFF',  # white
-             '#0000FF',  # blue
-             '#00FFFF',  # cyan
-             '#64FF00',  # light green
-             '#FFFF00',  # yellow
-             '#FF8000',  # orange
-             '#FF0000',  # red
-             '#800000']  # dark red
+skyebar_i = [
+    "#000000",  # black
+    "#FFFFFF",  # white
+    "#0000FF",  # blue
+    "#00FFFF",  # cyan
+    "#64FF00",  # light green
+    "#FFFF00",  # yellow
+    "#FF8000",  # orange
+    "#FF0000",  # red
+    "#800000",
+]  # dark red
 
-wright = ['#FFFFFF',
-          '#0000FF',
-          '#00FFFF',
-          '#00FF00',
-          '#FFFF00',
-          '#FF0000',
-          '#881111']
+wright = ["#FFFFFF", "#0000FF", "#00FFFF", "#00FF00", "#FFFF00", "#FF0000", "#881111"]
 
 colormaps = collections.OrderedDict()
-colormaps['coolwarm'] = plt.get_cmap('coolwarm')
-colormaps['cubehelix'] = plt.get_cmap('cubehelix_r')
-colormaps['default'] = cubehelix
-colormaps['flag'] = plt.get_cmap('flag')
-colormaps['greenscale'] = mplcolors.LinearSegmentedColormap.from_list('greenscale', greenscale)
-colormaps['greyscale'] = mplcolors.LinearSegmentedColormap.from_list('greyscale', greyscale)
-colormaps['invisible'] = mplcolors.LinearSegmentedColormap.from_list('invisible', invisible)
-colormaps['isoluminant1'] = isoluminant1
-colormaps['isoluminant2'] = isoluminant2
-colormaps['isoluminant3'] = isoluminant3
-colormaps['prism'] = plt.get_cmap('prism')
-colormaps['rainbow'] = plt.get_cmap('rainbow')
-colormaps['seismic'] = plt.get_cmap('seismic')
-colormaps['signed'] = plt.get_cmap('bwr')
-colormaps['signed_old'] = mplcolors.LinearSegmentedColormap.from_list('signed', signed_old)
-colormaps['skyebar1'] = mplcolors.LinearSegmentedColormap.from_list('skyebar', skyebar)
-colormaps['skyebar2'] = mplcolors.LinearSegmentedColormap.from_list('skyebar dark', skyebar_d)
-colormaps['skyebar3'] = mplcolors.LinearSegmentedColormap.from_list('skyebar inverted', skyebar_i)
-colormaps['wright'] = mplcolors.LinearSegmentedColormap.from_list('wright', wright)
+colormaps["coolwarm"] = plt.get_cmap("coolwarm")
+colormaps["cubehelix"] = plt.get_cmap("cubehelix_r")
+colormaps["default"] = cubehelix
+colormaps["flag"] = plt.get_cmap("flag")
+colormaps["greenscale"] = mplcolors.LinearSegmentedColormap.from_list("greenscale", greenscale)
+colormaps["greyscale"] = mplcolors.LinearSegmentedColormap.from_list("greyscale", greyscale)
+colormaps["invisible"] = mplcolors.LinearSegmentedColormap.from_list("invisible", invisible)
+colormaps["isoluminant1"] = isoluminant1
+colormaps["isoluminant2"] = isoluminant2
+colormaps["isoluminant3"] = isoluminant3
+colormaps["prism"] = plt.get_cmap("prism")
+colormaps["rainbow"] = plt.get_cmap("rainbow")
+colormaps["seismic"] = plt.get_cmap("seismic")
+colormaps["signed"] = plt.get_cmap("bwr")
+colormaps["signed_old"] = mplcolors.LinearSegmentedColormap.from_list("signed", signed_old)
+colormaps["skyebar1"] = mplcolors.LinearSegmentedColormap.from_list("skyebar", skyebar)
+colormaps["skyebar2"] = mplcolors.LinearSegmentedColormap.from_list("skyebar dark", skyebar_d)
+colormaps["skyebar3"] = mplcolors.LinearSegmentedColormap.from_list("skyebar inverted", skyebar_i)
+colormaps["wright"] = mplcolors.LinearSegmentedColormap.from_list("wright", wright)
 
 
 # enforce grey as 'bad' value for colormaps
@@ -505,4 +571,4 @@ for cmap in colormaps.values():
 
 
 # a nice set of line colors
-overline_colors = ['#CCFF00', '#FE4EDA', '#FF6600', '#00FFBF', '#00B7EB']
+overline_colors = ["#CCFF00", "#FE4EDA", "#FF6600", "#00FFBF", "#00B7EB"]

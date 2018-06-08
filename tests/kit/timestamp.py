@@ -15,16 +15,16 @@ def test_now():
 
 
 def test_utc():
-    wt.kit.timestamp_from_RFC3339('2017-11-13 16:09:17Z')  # exception will be raised upon failure
+    wt.kit.timestamp_from_RFC3339("2017-11-13 16:09:17Z")  # exception will be raised upon failure
 
 
 def test_date():
-    ts = wt.kit.timestamp_from_RFC3339('2017-11-13 16:09:17-6')
+    ts = wt.kit.timestamp_from_RFC3339("2017-11-13 16:09:17-6")
     assert len(ts.date) == 10
 
 
 def test_hms():
-    ts = wt.kit.timestamp_from_RFC3339('2017-11-13 16:33:44-6')
+    ts = wt.kit.timestamp_from_RFC3339("2017-11-13 16:33:44-6")
     assert len(ts.hms) == 8
 
 

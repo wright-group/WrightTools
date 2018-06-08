@@ -12,13 +12,13 @@ import tidy_headers
 # --- define --------------------------------------------------------------------------------------
 
 
-__all__ = ['INI']
+__all__ = ["INI"]
 
 
 # --- class ---------------------------------------------------------------------------------------
 
 
-class INI():
+class INI:
     """Handle communication with an INI file."""
 
     def __init__(self, filepath):
@@ -42,7 +42,7 @@ class INI():
         """
         self.config.read(self.filepath)
         self.config.add_section(section)
-        with open(self.filepath, 'w') as f:
+        with open(self.filepath, "w") as f:
             self.config.write(f)
 
     def clear(self):
@@ -124,7 +124,7 @@ class INI():
         """
         self.config.read(self.filepath)
         raw = self.config.get(section, option)
-        out = tidy_headers._parse_item.string2item(raw, sep=', ')
+        out = tidy_headers._parse_item.string2item(raw, sep=", ")
         return out
 
     @property
@@ -146,7 +146,7 @@ class INI():
             Value.
         """
         self.config.read(self.filepath)
-        string = tidy_headers._parse_item.item2string(value, sep=', ')
+        string = tidy_headers._parse_item.item2string(value, sep=", ")
         self.config.set(section, option, string)
-        with open(self.filepath, 'w') as f:
+        with open(self.filepath, "w") as f:
             self.config.write(f)

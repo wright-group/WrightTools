@@ -14,11 +14,10 @@ from ._base import pcolor_helper, get_constant_text
 from ._colors import colormaps
 
 
-class Diff2D():
+class Diff2D:
     """Diff2D."""
 
-    def __init__(self, minuend, subtrahend, xaxis=1, yaxis=0, at={},
-                 verbose=True):
+    def __init__(self, minuend, subtrahend, xaxis=1, yaxis=0, at={}, verbose=True):
         """Plot the difference between exactly two datasets in 2D.
 
         both data objects must have the same axes with the same name
@@ -32,13 +31,14 @@ class Diff2D():
         if minuend_counter == subrahend_counter:
             pass
         else:
-            print('axes are not equivalent - difference_2D cannot initialize')
-            print('  minuhend axes -', self.minuend.axis_names)
-            print('  subtrahend axes -', self.subtrahend.axis_names)
-            raise RuntimeError('axes incompataible')
+            print("axes are not equivalent - difference_2D cannot initialize")
+            print("  minuhend axes -", self.minuend.axis_names)
+            print("  subtrahend axes -", self.subtrahend.axis_names)
+            raise RuntimeError("axes incompataible")
         # transpose subrahend to agree with minuend
-        transpose_order = [self.minuend.axis_names.index(
-            name) for name in self.subtrahend.axis_names]
+        transpose_order = [
+            self.minuend.axis_names.index(name) for name in self.subtrahend.axis_names
+        ]
         self.subtrahend.transpose(transpose_order, verbose=False)
         # map subtrahend axes onto minuend axes
         for i in range(len(self.minuend.axes)):
@@ -48,16 +48,27 @@ class Diff2D():
         self.minuend_chopped = self.minuend.chop(yaxis, xaxis, at=at, verbose=False)
         self.subtrahend_chopped = self.subtrahend.chop(yaxis, xaxis, at=at, verbose=False)
         if verbose:
-            print('difference_2D recieved data to make %d plots' % len(self.minuend_chopped))
+            print("difference_2D recieved data to make %d plots" % len(self.minuend_chopped))
         # defaults
         self.font_size = 18
 
-    def plot(self, channel_index=0,
-             contours=9, pixelated=True, cmap='default', facecolor='grey',
-             dynamic_range=False, local=False, contours_local=True,
-             xlim=None, ylim=None,
-             autosave=False, save_directory=None, fname=None,
-             verbose=True):
+    def plot(
+        self,
+        channel_index=0,
+        contours=9,
+        pixelated=True,
+        cmap="default",
+        facecolor="grey",
+        dynamic_range=False,
+        local=False,
+        contours_local=True,
+        xlim=None,
+        ylim=None,
+        autosave=False,
+        save_directory=None,
+        fname=None,
+        verbose=True,
+    ):
         """Set contours to zero to turn off.
 
         dynamic_range forces the colorbar to use all of its colors (only matters
@@ -67,7 +78,7 @@ class Diff2D():
         fig = None
         if len(self.minuend_chopped) > 10:
             if not autosave:
-                print('too many images will be generated: forcing autosave')
+                print("too many images will be generated: forcing autosave")
                 autosave = True
         # prepare output folder
         if autosave:
@@ -82,7 +93,7 @@ class Diff2D():
                     else:
                         fname = self.minuend.name
                 else:
-                    folder_name = 'difference_2D ' + wt_kit.get_timestamp()
+                    folder_name = "difference_2D " + wt_kit.get_timestamp()
                     os.mkdir(folder_name)
                     save_directory = folder_name
         # chew through image generation
@@ -117,13 +128,13 @@ class Diff2D():
                 # fill in main data environment
                 if pixelated:
                     xi, yi, zi = pcolor_helper(xaxis[:], yaxis[:], zi)
-                    cax = plt.pcolormesh(xi, yi, zi, cmap=mycm,
-                                         vmin=levels.min(), vmax=levels.max())
+                    cax = plt.pcolormesh(
+                        xi, yi, zi, cmap=mycm, vmin=levels.min(), vmax=levels.max()
+                    )
                     plt.xlim(xaxis.min(), xaxis.max())
                     plt.ylim(yaxis.min(), yaxis.max())
                 else:
-                    cax = subplot_main.contourf(xaxis[:], yaxis[:], zi,
-                                                levels, cmap=mycm)
+                    cax = subplot_main.contourf(xaxis[:], yaxis[:], zi, levels, cmap=mycm)
                 plt.xticks(rotation=45)
                 # grid ----------------------------------------------------------------------------
                 plt.grid(b=True)
@@ -140,18 +151,18 @@ class Diff2D():
 
                     diag_min = max(min(x), min(y))
                     diag_max = min(max(x), max(y))
-                    plt.plot([diag_min, diag_max], [diag_min, diag_max], 'k:')
+                    plt.plot([diag_min, diag_max], [diag_min, diag_max], "k:")
                 # contour lines -------------------------------------------------------------------
                 if contours:
                     if contours_local:
                         # force top and bottom contour to be just outside of data range
                         # add two contours
                         contours_levels = np.linspace(
-                            channel.null() - 1e-10, np.nanmax(zi) + 1e-10, contours + 2)
+                            channel.null() - 1e-10, np.nanmax(zi) + 1e-10, contours + 2
+                        )
                     else:
                         contours_levels = contours
-                    plt.contour(xaxis[:], yaxis[:], zi,
-                                contours_levels, colors='k')
+                    plt.contour(xaxis[:], yaxis[:], zi, contours_levels, colors="k")
                 # finish main subplot -------------------------------------------------------------
                 if xlim:
                     subplot_main.set_xlim(xlim[0], xlim[1])
@@ -167,11 +178,12 @@ class Diff2D():
             plt.colorbar(cax, cax=subplot_cb, ticks=cbar_ticks)
             # difference --------------------------------------------------------------------------
             # get colormap
-            mycm = colormaps['seismic']
+            mycm = colormaps["seismic"]
             mycm.set_bad(facecolor)
             mycm.set_under(facecolor)
-            dzi = self.minuend_chopped[i].channels[0][:] - \
-                self.subtrahend_chopped[i].channels[0][:]
+            dzi = (
+                self.minuend_chopped[i].channels[0][:] - self.subtrahend_chopped[i].channels[0][:]
+            )
             dax = plt.subplot(gs[4])
             plt.subplot(dax)
             X, Y, Z = pcolor_helper(xaxis[:], yaxis[:], dzi)
@@ -181,15 +193,19 @@ class Diff2D():
             dax.set_ylim(yaxis.min(), yaxis.max())
             differenc_cb = plt.subplot(gs[5])
             dcbar = plt.colorbar(dcax, cax=differenc_cb)
-            dcbar.set_label(self.minuend.channels[channel_index].name +
-                            ' - ' + self.subtrahend.channels[channel_index].name)
+            dcbar.set_label(
+                self.minuend.channels[channel_index].name
+                + " - "
+                + self.subtrahend.channels[channel_index].name
+            )
             # title -------------------------------------------------------------------------------
-            title_text = self.minuend.name + ' - ' + self.subtrahend.name
-            constants_text = '\n' + get_constant_text(constants)
+            title_text = self.minuend.name + " - " + self.subtrahend.name
+            constants_text = "\n" + get_constant_text(constants)
             plt.suptitle(title_text + constants_text, fontsize=self.font_size)
             plt.figtext(0.03, 0.5, yaxis.get_label(), fontsize=self.font_size, rotation=90)
-            plt.figtext(0.5, 0.01, xaxis.get_label(),
-                        fontsize=self.font_size, horizontalalignment='center')
+            plt.figtext(
+                0.5, 0.01, xaxis.get_label(), fontsize=self.font_size, horizontalalignment="center"
+            )
             # cleanup -----------------------------------------------------------------------------
             fig.subplots_adjust(left=0.075, right=1 - 0.075, top=0.90, bottom=0.15)
             plt.setp(plt.subplot(gs[1]).get_yticklabels(), visible=False)
@@ -197,12 +213,12 @@ class Diff2D():
             # save figure -------------------------------------------------------------------------
             if autosave:
                 if fname:
-                    file_name = fname + ' ' + str(i).zfill(3)
+                    file_name = fname + " " + str(i).zfill(3)
                 else:
                     file_name = str(i).zfill(3)
-                fpath = os.path.join(save_directory, file_name + '.png')
-                plt.savefig(fpath, facecolor='none')
+                fpath = os.path.join(save_directory, file_name + ".png")
+                plt.savefig(fpath, facecolor="none")
                 plt.close()
                 if verbose:
-                    print('image saved at', fpath)
+                    print("image saved at", fpath)
         plt.ion()
