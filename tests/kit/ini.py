@@ -5,7 +5,8 @@ import numpy as np
 import os
 import pytest
 
-@pytest.mark.mp_group(group='ini', strategy='serial')
+
+@pytest.mark.mp_group(group="ini", strategy="serial")
 def test_create():
     ini = INI("test.ini")
     ini.add_section("section0")
@@ -21,21 +22,21 @@ def test_create():
     ini.write("section0", "ndarray", np.linspace(0, 10, 21))
 
 
-@pytest.mark.mp_group(group='ini')
+@pytest.mark.mp_group(group="ini")
 def test_has_option():
     ini = INI("test.ini")
     assert ini.has_option("section0", "integer")
     assert not ini.has_option("section0", "nooooooooooooo")
 
 
-@pytest.mark.mp_group(group='ini')
+@pytest.mark.mp_group(group="ini")
 def test_has_section():
     ini = INI("test.ini")
     assert ini.has_section("section0")
     assert not ini.has_section("section9")
 
 
-@pytest.mark.mp_group(group='ini')
+@pytest.mark.mp_group(group="ini")
 def test_dictionary():
     ini = INI("test.ini")
     dict_ = ini.dictionary
@@ -43,19 +44,19 @@ def test_dictionary():
     assert dict_["section0"]["integer"] == "39"
 
 
-@pytest.mark.mp_group(group='ini')
+@pytest.mark.mp_group(group="ini")
 def test_get_options():
     ini = INI("test.ini")
     assert ini.get_options("section0") == ["integer", "string", "none", "ndarray"]
 
 
-@pytest.mark.mp_group(group='ini')
+@pytest.mark.mp_group(group="ini")
 def test_sections():
     ini = INI("test.ini")
     assert ini.sections == ["section0", "section1"]
 
 
-@pytest.mark.mp_group(group='ini')
+@pytest.mark.mp_group(group="ini")
 def test_read():
     ini = INI("test.ini")
     assert ini.read("section0", "integer") == 39
@@ -70,7 +71,7 @@ def test_read():
     # assert np.allclose(np.array(ini.read('section0', 'ndarray')), np.linspace(0,10,21))
 
 
-@pytest.mark.mp_group(group='ini')
+@pytest.mark.mp_group(group="ini")
 def test_clear():
     ini = INI("test.ini")
     ini.clear()
