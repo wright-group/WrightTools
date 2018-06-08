@@ -6,6 +6,7 @@ install:
   - sudo apt-get update
   - sudo apt-get install libfreetype6-dev hdf5-tools libhdf5-dev libopenblas-dev
   - python setup.py install
+  - pip install -U pytest
 before_script:
 - "export DISPLAY=:99.0"
 - "sh -e /etc/init.d/xvfb start"
