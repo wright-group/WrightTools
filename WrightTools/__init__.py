@@ -25,5 +25,5 @@ from .data._data import *
 # --- rcparams ------------------------------------------------------------------------------------
 
 
-if int(_sys.version.split('.')[0]) > 2:
-    artists.apply_rcparams('fast')
+if int(_sys.version.split(".")[0]) > 2:
+    artists.apply_rcparams("fast")

@@ -15,7 +15,7 @@ from .. import exceptions as wt_exceptions
 # --- define --------------------------------------------------------------------------------------
 
 
-__all__ = ['from_ocean_optics']
+__all__ = ["from_ocean_optics"]
 
 
 # --- from function -------------------------------------------------------------------------------
@@ -42,13 +42,13 @@ def from_ocean_optics(filepath, name=None, *, parent=None, verbose=True):
         New data object.
     """
     # parse filepath
-    if not filepath.endswith('scope'):
-        wt_exceptions.WrongFileTypeWarning.warn(filepath, 'scope')
+    if not filepath.endswith("scope"):
+        wt_exceptions.WrongFileTypeWarning.warn(filepath, "scope")
     # parse name
     if not name:
-        name = os.path.basename(filepath).split('.')[0]
+        name = os.path.basename(filepath).split(".")[0]
     # create data
-    kwargs = {'name': name, 'kind': 'Ocean Optics', 'source': filepath}
+    kwargs = {"name": name, "kind": "Ocean Optics", "source": filepath}
     if parent is None:
         data = Data(**kwargs)
     else:
@@ -56,15 +56,16 @@ def from_ocean_optics(filepath, name=None, *, parent=None, verbose=True):
     # array
     skip_header = 14
     skip_footer = 1
-    arr = np.genfromtxt(filepath, skip_header=skip_header,
-                        skip_footer=skip_footer, delimiter='\t').T
+    arr = np.genfromtxt(
+        filepath, skip_header=skip_header, skip_footer=skip_footer, delimiter="\t"
+    ).T
     # construct data
-    data.create_variable(name='energy', values=arr[0], units='nm')
-    data.create_channel(name='signal', values=arr[1])
-    data.transform('energy')
+    data.create_variable(name="energy", values=arr[0], units="nm")
+    data.create_channel(name="signal", values=arr[1])
+    data.transform("energy")
     # finish
     if verbose:
-        print('data created at {0}'.format(data.fullpath))
-        print('  range: {0} to {1} (nm)'.format(data.energy[0], data.energy[-1]))
-        print('  size: {0}'.format(data.size))
+        print("data created at {0}".format(data.fullpath))
+        print("  range: {0} to {1} (nm)".format(data.energy[0], data.energy[-1]))
+        print("  size: {0}".format(data.size))
     return data

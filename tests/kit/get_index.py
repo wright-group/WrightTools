@@ -11,8 +11,8 @@ import WrightTools as wt
 
 
 def test_string():
-    assert wt.kit.get_index(['w1', 'd1', 'd2'], 'd2') == 2
+    assert wt.kit.get_index(["w1", "d1", "d2"], "d2") == 2
 
 
 def test_int():
-    assert wt.kit.get_index(['w1', 'w2', 'w3'], 1) == 1
+    assert wt.kit.get_index(["w1", "w2", "w3"], 1) == 1

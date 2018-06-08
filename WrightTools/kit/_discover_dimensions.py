@@ -15,7 +15,7 @@ from .. import units as wt_units
 # --- define --------------------------------------------------------------------------------------
 
 
-__all__ = ['discover_dimensions']
+__all__ = ["discover_dimensions"]
 
 
 # --- function ------------------------------------------------------------------------------------
@@ -38,9 +38,9 @@ def discover_dimensions(arr, cols):
         expression: points
     """
     # import values -------------------------------------------------------------------------------
-    di = [cols[key]['idx'] for key in cols.keys()]
-    dt = [cols[key]['tolerance'] for key in cols.keys()]
-    du = [cols[key]['units'] for key in cols.keys()]
+    di = [cols[key]["idx"] for key in cols.keys()]
+    dt = [cols[key]["tolerance"] for key in cols.keys()]
+    du = [cols[key]["units"] for key in cols.keys()]
     dk = [key for key in cols.keys()]
     dims = list(zip(di, dt, du, dk))
     # remove nan dimensions and bad dimensions ----------------------------------------------------
@@ -120,8 +120,8 @@ def discover_dimensions(arr, cols):
         key = a[0][0]
         axis = cols[key]
         # generate lists from data
-        lis = sorted(arr[axis['idx']])
-        tol = axis['tolerance']
+        lis = sorted(arr[axis["idx"]])
+        tol = axis["tolerance"]
         # values are binned according to their averages now, so min and max
         #  are better represented
         xstd = []
@@ -142,14 +142,14 @@ def discover_dimensions(arr, cols):
             xstd.append(xstdi)
         tol = sum(xstd) / len(xstd)
         tol = max(tol, 1e-4)
-        if axis['units'] == 'nm':
+        if axis["units"] == "nm":
             min_wn = 1e7 / max(xs) + tol
             max_wn = 1e7 / min(xs) - tol
             points = np.linspace(min_wn, max_wn, num=len(xs))
-            points = wt_units.converter(points, 'wn', 'nm')
+            points = wt_units.converter(points, "wn", "nm")
         else:
             points = np.linspace(min(xs) + tol, max(xs) - tol, num=len(xs))
-        key = '='.join(a[0])
+        key = "=".join(a[0])
         out[key] = points
     # warn if data doesn't seem like the right shape ----------------------------------------------
     length = len(arr[0])
@@ -157,7 +157,7 @@ def discover_dimensions(arr, cols):
     for a in out.values():
         size *= a.size
     if not size == length:
-        message = 'array length ({0}) inconsistent with data size ({1})'.format(length, size)
+        message = "array length ({0}) inconsistent with data size ({1})".format(length, size)
         warnings.warn(message)
     # return --------------------------------------------------------------------------------------
     return out

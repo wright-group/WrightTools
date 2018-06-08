@@ -13,20 +13,20 @@ import WrightTools as wt
 
 
 def test_named_root_collection():
-    c = wt.Collection(name='blaise')
-    assert c.natural_name == 'blaise'
-    assert c.attrs['name'] == 'blaise'
+    c = wt.Collection(name="blaise")
+    assert c.natural_name == "blaise"
+    assert c.attrs["name"] == "blaise"
 
 
 def test_named_root_data():
-    d = wt.Data(name='blaise')
-    assert d.natural_name == 'blaise'
-    assert d.attrs['name'] == 'blaise'
+    d = wt.Data(name="blaise")
+    assert d.natural_name == "blaise"
+    assert d.attrs["name"] == "blaise"
 
 
 def test_parent_child():
-    parent = wt.Collection(name='mother')
-    child = wt.Collection(parent=parent, name='goose')
+    parent = wt.Collection(name="mother")
+    child = wt.Collection(parent=parent, name="goose")
     assert child.filepath == parent.filepath
     assert child.parent is parent
 

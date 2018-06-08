@@ -90,13 +90,15 @@ def leastsqfitter(p0, datax, datay, function, verbose=False, cov_verbose=False):
         # define error function
         def errfunc(p, x, y):
             return y - function(p, x)
+
         # run optimization
         pfit_leastsq, pcov, infodict, errmsg, success = scipy_optimize.leastsq(
-            errfunc, p0, args=(datax, datay), full_output=1, epsfcn=0.0001)
+            errfunc, p0, args=(datax, datay), full_output=1, epsfcn=0.0001
+        )
         # calculate covarience matrix
         # original idea https://stackoverflow.com/a/21844726
         if (len(datay) > len(p0)) and pcov is not None:
-            s_sq = (errfunc(pfit_leastsq, datax, datay)**2).sum() / (len(datay) - len(p0))
+            s_sq = (errfunc(pfit_leastsq, datax, datay) ** 2).sum() / (len(datay) - len(p0))
             pcov = pcov * s_sq
             if cov_verbose:
                 print(pcov)
@@ -106,15 +108,15 @@ def leastsqfitter(p0, datax, datay, function, verbose=False, cov_verbose=False):
         error = []
         for i in range(len(pfit_leastsq)):
             try:
-                error.append(np.absolute(pcov[i][i])**0.5)
+                error.append(np.absolute(pcov[i][i]) ** 0.5)
             except BaseException:
                 error.append(0.00)
         perr_leastsq = np.array(error)
     # exit
     if verbose:
-        print('fit params:       ', pfit_leastsq)
-        print('fit params error: ', perr_leastsq)
-        print('fitting done in %f seconds' % timer.interval)
+        print("fit params:       ", pfit_leastsq)
+        print("fit params error: ", perr_leastsq)
+        print("fitting done in %f seconds" % timer.interval)
     return pfit_leastsq, perr_leastsq
 
 
@@ -163,8 +165,8 @@ class Function:
             args = tuple(wt_kit.remove_nans_1D(args))
             if len(args[0]) == 0:
                 return [np.nan] * len(self.params)
-        if 'p0' in kwargs:
-            p0 = kwargs['p0']
+        if "p0" in kwargs:
+            p0 = kwargs["p0"]
         else:
             p0 = self.guess(*args)
         out = scipy_optimize.leastsq(self.residuals, p0, args=args)
@@ -180,11 +182,12 @@ class ExpectationValue(Function):
         """Initialization."""
         Function.__init__(self)
         self.dimensionality = 1
-        self.params = ['value']
+        self.params = ["value"]
         self.limits = {}
         self.global_cutoff = None
-        warnings.warn('ExpectationValue depreciated---use Moments',
-                      DeprecationWarning, stacklevel=2)
+        warnings.warn(
+            "ExpectationValue depreciated---use Moments", DeprecationWarning, stacklevel=2
+        )
 
     def evaluate(self, p, xi):
         """Evaluate the function.
@@ -267,7 +270,7 @@ class Exponential(Function):
         """Initialization."""
         Function.__init__(self)
         self.dimensionality = 1
-        self.params = ['amplitude', 'tau', 'offset']
+        self.params = ["amplitude", "tau", "offset"]
         self.limits = {}
 
     def evaluate(self, p, xi):
@@ -328,8 +331,8 @@ class Gaussian(Function):
         """Initialization."""
         Function.__init__(self)
         self.dimensionality = 1
-        self.params = ['mean', 'width', 'amplitude', 'baseline']
-        self.limits = {'width': [0, np.inf]}
+        self.params = ["mean", "width", "amplitude", "baseline"]
+        self.limits = {"width": [0, np.inf]}
 
     def evaluate(self, p, xi):
         """Evaluate the function.
@@ -352,7 +355,7 @@ class Gaussian(Function):
                 p[i] = np.clip(p[i], *self.limits[name])
         # evaluate
         m, w, amp, baseline = p
-        out = amp * np.exp(-(xi - m)**2 / (2 * (w**2))) + baseline
+        out = amp * np.exp(-(xi - m) ** 2 / (2 * (w ** 2))) + baseline
         return out
 
     def guess(self, values, xi):
@@ -380,7 +383,7 @@ class Gaussian(Function):
             baseline = min(values)
         values -= baseline
         mean = sum(np.multiply(xi, values)) / sum(values)
-        width = np.sqrt(abs(sum((xi - mean)**2 * values) / sum(values)))
+        width = np.sqrt(abs(sum((xi - mean) ** 2 * values) / sum(values)))
         amp = max(values)
         p0 = [mean, width, amp, baseline]
         return p0
@@ -393,8 +396,8 @@ class TwoD_Gaussian(Function):
         """Initialization."""
         Function.__init__(self)
         self.dimensionality = 2
-        self.params = ['amplitude', 'x0', 'y0', 'sigma_x', 'sigma_y', 'theta', 'baseline']
-        self.limits = {'sigma_x': [0, np.inf], 'sigma_y': [0, np.inf]}
+        self.params = ["amplitude", "x0", "y0", "sigma_x", "sigma_y", "theta", "baseline"]
+        self.limits = {"sigma_x": [0, np.inf], "sigma_y": [0, np.inf]}
 
     def _Format_input(self, values, x, y):
         """Make sure the values and axis are in an ok format for fitting and free of nans.
@@ -427,12 +430,12 @@ class TwoD_Gaussian(Function):
             yi = yi.flatten()
         elif len(xi.shape) == 1 and len(yi.shape) == 1:
             if v.shape == (xi.shape[0], yi.shape[0]):
-                xi, yi = np.meshgrid(xi, yi, indexing='ij')
+                xi, yi = np.meshgrid(xi, yi, indexing="ij")
                 v = v.flatten()
                 xi = xi.flatten()
                 yi = yi.flatten()
             elif len(v.shape) == 1 and v.shape[0] == xi.shape[0] * yi.shape[0]:
-                xi, yi = np.meshgrid(xi, yi, indexing='ij')
+                xi, yi = np.meshgrid(xi, yi, indexing="ij")
                 xi = xi.flatten()
                 yi = yi.flatten()
             elif v.shape == xi.shape:
@@ -486,11 +489,14 @@ class TwoD_Gaussian(Function):
                 p[i] = np.clip(p[i], *self.limits[name])
         # evaluate
         amp, xo, yo, sigma_x, sigma_y, theta, baseline = p
-        a = (np.cos(theta)**2) / (2 * sigma_x**2) + (np.sin(theta)**2) / (2 * sigma_y**2)
-        b = -(np.sin(2 * theta)) / (4 * sigma_x**2) + (np.sin(2 * theta)) / (4 * sigma_y**2)
-        c = (np.sin(theta)**2) / (2 * sigma_x**2) + (np.cos(theta)**2) / (2 * sigma_y**2)
-        return amp * np.exp(-(a * ((x - xo)**2) + 2 * b * (x - xo) *
-                              (y - yo) + c * ((y - yo)**2))) + baseline
+        a = (np.cos(theta) ** 2) / (2 * sigma_x ** 2) + (np.sin(theta) ** 2) / (2 * sigma_y ** 2)
+        b = -(np.sin(2 * theta)) / (4 * sigma_x ** 2) + (np.sin(2 * theta)) / (4 * sigma_y ** 2)
+        c = (np.sin(theta) ** 2) / (2 * sigma_x ** 2) + (np.cos(theta) ** 2) / (2 * sigma_y ** 2)
+        return (
+            amp
+            * np.exp(-(a * ((x - xo) ** 2) + 2 * b * (x - xo) * (y - yo) + c * ((y - yo) ** 2)))
+            + baseline
+        )
 
     def guess(self, v, x, y):
         """Guess.
@@ -524,8 +530,8 @@ class TwoD_Gaussian(Function):
         values -= baseline
         x0 = (min(xi) + max(xi)) / 2.0  # sum(np.multiply(xi, values))/sum(values)
         y0 = (min(yi) + max(yi)) / 2.0  # sum(np.multiply(yi, values))/sum(values)
-        sigma_x = np.sqrt(abs(sum((xi - x0)**2 * values) / sum(values)))
-        sigma_y = np.sqrt(abs(sum((yi - y0)**2 * values) / sum(values)))
+        sigma_x = np.sqrt(abs(sum((xi - x0) ** 2 * values) / sum(values)))
+        sigma_y = np.sqrt(abs(sum((yi - y0) ** 2 * values) / sum(values)))
         theta = 0.0
         amp = max(values)
         p0 = [amp, x0, y0, sigma_x, sigma_y, theta, baseline]
@@ -539,8 +545,8 @@ class TwoD_Gaussian(Function):
         *args
         **kwargs
         """
-        if 'p0' in kwargs:
-            p0 = kwargs['p0']
+        if "p0" in kwargs:
+            p0 = kwargs["p0"]
         else:
             p0 = self.guess(values, x, y)
         # Makes sure xi and yi are already the right size and shape & remove nans
@@ -562,7 +568,7 @@ class Moments(Function):
         """Initialization."""
         Function.__init__(self)
         self.dimensionality = 1
-        self.params = ['integral', 'one', 'two', 'three', 'four', 'baseline']
+        self.params = ["integral", "one", "two", "three", "four", "baseline"]
         self.limits = {}
         self.subtract_baseline = subtract_baseline
 
@@ -616,8 +622,9 @@ class Moments(Function):
         sdev = np.sqrt(outs[2])
         # third and fourth moment (standardized)
         for n in range(3, 5):
-            mu = np.nansum(((x_internal - outs[1])**n) *
-                           y_internal) / (np.nansum(y_internal) * (sdev**n))
+            mu = np.nansum(((x_internal - outs[1]) ** n) * y_internal) / (
+                np.nansum(y_internal) * (sdev ** n)
+            )
             outs.append(mu)
         # finish
         outs.append(baseline)
@@ -664,10 +671,13 @@ class Fitter:
         self.axes = args
         self.axis_indicies = [self.data.axis_names.index(name) for name in self.axes]
         # will iterate over axes NOT fit
-        self.not_fit_indicies = [self.data.axis_names.index(
-            name) for name in self.data.axis_names if name not in self.axes]
+        self.not_fit_indicies = [
+            self.data.axis_names.index(name)
+            for name in self.data.axis_names
+            if name not in self.axes
+        ]
         self.fit_shape = [self.data.axes[i].shape[0] for i in self.not_fit_indicies]
-        print('fitter recieved data to make %d fits' % np.product(self.fit_shape))
+        print("fitter recieved data to make %d fits" % np.product(self.fit_shape))
 
     def run(self, channel=0, propagate_other_channels=True, verbose=True):
         """Run.
@@ -692,7 +702,7 @@ class Fitter:
         elif isinstance(channel, str):
             channel_index = self.data.channel_names.index(channel)
         else:
-            print('channel type', type(channel), 'not valid')
+            print("channel type", type(channel), "not valid")
         # transpose data --------------------------------------------------------------------------
         # fitted axes will be LAST
         transpose_order = list(range(len(self.data.axes)))
@@ -700,20 +710,20 @@ class Fitter:
         for i in range(len(self.axes)):
             ai = self.axis_indicies[i]
             ri = list(range(len(self.data.axes)))[-(i + 1)]
-            transpose_order[ri], transpose_order[ai] = transpose_order[ai], transpose_order[ri]
+            transpose_order[ri], transpose_order[ai] = (transpose_order[ai], transpose_order[ri])
         self.axis_indicies.reverse()
         self.data.transpose(transpose_order, verbose=False)
         # create output objects -------------------------------------------------------------------
         # model
         self.model = self.data.copy()
         if self.data.name:
-            self.model.name = self.data.name + ' model'
+            self.model.name = self.data.name + " model"
         # outs
         self.outs = self.data.copy()
         for a in self.axes:
-            self.outs.collapse(a, method='integrate')
+            self.outs.collapse(a, method="integrate")
         if self.data.name:
-            self.outs.name = self.data.name + ' outs'
+            self.outs.name = self.data.name + " outs"
         self.outs.channels.pop(channel_index)
         params_channels = []
         for param in self.function.params:
@@ -740,7 +750,7 @@ class Fitter:
                 model_data = self.function.evaluate(out, *axes_points)
                 self.model.channels[channel_index][idx] = model_data
         if verbose:
-            print('fitter done in %f seconds' % timer.interval)
+            print("fitter done in %f seconds" % timer.interval)
         # clean up --------------------------------------------------------------------------------
         # model
         self.model.transpose(transpose_order, verbose=False)
@@ -769,7 +779,7 @@ class MultiPeakFitter:
     fittype = 0 may be used to fit a spectrum to minimize amplitude of model remainder.
     """
 
-    def __init__(self, data, channel=0, name='', fittype=2, intensity_label='OD'):
+    def __init__(self, data, channel=0, name="", fittype=2, intensity_label="OD"):
         """Create a `MultiPeakFitter object`.
 
         Parameters
@@ -787,17 +797,17 @@ class MultiPeakFitter:
         self.fittype = fittype
         self.intensity_label = intensity_label
         # assertions
-        if not data.axes[0].units_kind == 'energy':
-            raise Exception('Yo, your axes is/are not of the correct kind. Hand me some energy.')
+        if not data.axes[0].units_kind == "energy":
+            raise Exception("Yo, your axes is/are not of the correct kind. Hand me some energy.")
         if len(data.axes) > 1:
-            raise Exception('Yo, your data must be 1D. Try again homey.')
+            raise Exception("Yo, your data must be 1D. Try again homey.")
         # get channel
         if isinstance(channel, int):
             self.channel_index = channel
         elif isinstance(channel, str):
             self.channel_index = self.data.channel_names.index(channel)
         else:
-            print('channel type', type(channel), 'not valid')
+            print("channel type", type(channel), "not valid")
         # get diff of data
         self.zi = self.data.channels[self.channel_index][:]
         self.diff = wt_kit.diff(self.data.axes[0][:], self.zi, order=self.fittype)
@@ -824,8 +834,14 @@ class MultiPeakFitter:
         z = np.zeros(x.size)
         # loop through kinds and add functions to array
         for i, kind in enumerate(kinds):
-            z += self.function(x, kind, params[i * 3 + 0], params[i * 3 + 1],
-                               params[i * 3 + 2], diff_order=diff_order)
+            z += self.function(
+                x,
+                kind,
+                params[i * 3 + 0],
+                params[i * 3 + 1],
+                params[i * 3 + 2],
+                diff_order=diff_order,
+            )
         return z
 
     def convert(self, destination_units):
@@ -855,8 +871,12 @@ class MultiPeakFitter:
         """
         dic = OrderedDict()
         for i in range(len(names)):
-            dic[names[i]] = {'kind': kinds[i], 'FWHM': params[i * 3 + 0],
-                             'intensity': params[i * 3 + 1], 'x0': params[i * 3 + 2]}
+            dic[names[i]] = {
+                "kind": kinds[i],
+                "FWHM": params[i * 3 + 0],
+                "intensity": params[i * 3 + 1],
+                "x0": params[i * 3 + 2],
+            }
         return dic
 
     def extract_params(self, dic):
@@ -880,11 +900,11 @@ class MultiPeakFitter:
         i = 0
         for key, value in dic.items():
             names.append(key)
-            p0[i] = value['FWHM']
-            p0[i + 1] = value['intensity']
-            p0[i + 2] = value['x0']
+            p0[i] = value["FWHM"]
+            p0[i + 1] = value["intensity"]
+            p0[i + 2] = value["x0"]
             i += 3
-            kinds.append(value['kind'])
+            kinds.append(value["kind"])
         return names, kinds, p0
 
     def fit(self, verbose=True):
@@ -907,14 +927,15 @@ class MultiPeakFitter:
             array offering the remainder (actual - fit) in the native space of the spectra
         """
         # generate arrays for fitting
-        zi_diff = wt_kit.diff(self.data.axes[0][:],
-                              self.data.channels[self.channel_index][:],
-                              order=self.fittype)
+        zi_diff = wt_kit.diff(
+            self.data.axes[0][:], self.data.channels[self.channel_index][:], order=self.fittype
+        )
         names, kinds, p0 = self.extract_params(self.guesses)
         # define error function
 
         def error(p, x, z):
             return z - self.build_funcs(x, p, kinds, diff_order=self.fittype)
+
         # perform fit
         timer = wt_kit.Timer(verbose=False)
         with timer:
@@ -922,12 +943,14 @@ class MultiPeakFitter:
             # write results in dictionary
             self.fit_results = self.encode_params(names, kinds, out[0])
         if verbose:
-            print('fitting done in %f seconds' % timer.interval)
+            print("fitting done in %f seconds" % timer.interval)
         # generate model
         self.diff_model = self.build_funcs(
-            self.data.axes[0][:], out[0], kinds, diff_order=self.fittype)
-        self.remainder = self.data.channels[self.channel_index][:] - \
-            self.build_funcs(self.data.axes[0][:], out[0], kinds, diff_order=0)
+            self.data.axes[0][:], out[0], kinds, diff_order=self.fittype
+        )
+        self.remainder = self.data.channels[self.channel_index][:] - self.build_funcs(
+            self.data.axes[0][:], out[0], kinds, diff_order=0
+        )
 
     def function(self, x, kind, FWHM, intensity, x0, diff_order=0):
         """Return a peaked distribution over array x.
@@ -952,31 +975,46 @@ class MultiPeakFitter:
             order of differentiation to return. diff_order = 0 returns merely the function.
         """
         # TODO for order > 2, offer numerical derivatives.
-        if kind == 'lorentzian':
+        if kind == "lorentzian":
             if diff_order == 0:
-                return intensity * (0.5 * FWHM)**2 / ((x - x0)**2 + (.5 * FWHM)**2)
+                return intensity * (0.5 * FWHM) ** 2 / ((x - x0) ** 2 + (.5 * FWHM) ** 2)
             elif diff_order == 1:
-                return intensity * (0.5 * FWHM)**2 * (-1) * \
-                    (((x - x0)**2 + (0.5 * FWHM)**2))**-2 * (2 * (x - x0))
+                return (
+                    intensity
+                    * (0.5 * FWHM) ** 2
+                    * (-1)
+                    * (((x - x0) ** 2 + (0.5 * FWHM) ** 2)) ** -2
+                    * (2 * (x - x0))
+                )
             elif diff_order == 2:
-                return intensity * (0.5 * FWHM)**2 * \
-                    (2 * ((((x - x0)**2 + (0.5 * FWHM)**2))**-3) *
-                        (2 * (x - x0))**2 + (-2) * (((x - x0)**2 + (0.5 * FWHM)**2))**-2)
+                return (
+                    intensity
+                    * (0.5 * FWHM) ** 2
+                    * (
+                        2 * ((((x - x0) ** 2 + (0.5 * FWHM) ** 2)) ** -3) * (2 * (x - x0)) ** 2
+                        + (-2) * (((x - x0) ** 2 + (0.5 * FWHM) ** 2)) ** -2
+                    )
+                )
             else:
-                print('analytic derivative not pre-calculated')
-        elif kind == 'gaussian':
+                print("analytic derivative not pre-calculated")
+        elif kind == "gaussian":
             sigma = FWHM / 2.35482
             if diff_order == 0:
-                return intensity * np.exp(-0.5 * ((x - x0) / sigma)**2)
+                return intensity * np.exp(-0.5 * ((x - x0) / sigma) ** 2)
             elif diff_order == 1:
-                return intensity * np.exp(-0.5 * ((x - x0) / sigma)**2) * (-(x - x0) / (sigma**2))
+                return (
+                    intensity * np.exp(-0.5 * ((x - x0) / sigma) ** 2) * (-(x - x0) / (sigma ** 2))
+                )
             elif diff_order == 2:
-                return intensity * np.exp(-0.5 * ((x - x0) / sigma)**2) * \
-                    (((x - x0)**2 / (sigma**4)) - sigma**-2)
+                return (
+                    intensity
+                    * np.exp(-0.5 * ((x - x0) / sigma) ** 2)
+                    * (((x - x0) ** 2 / (sigma ** 4)) - sigma ** -2)
+                )
             else:
-                print('analytic derivative not pre-calculated')
+                print("analytic derivative not pre-calculated")
         else:
-            raise Exception('kind not recognized!')
+            raise Exception("kind not recognized!")
 
     def guess(self, guesses):
         """Create guess library for use in fitting.
@@ -989,7 +1027,7 @@ class MultiPeakFitter:
             The contents of guesses are used in the fit method.
         """
         if not isinstance(guesses, OrderedDict):
-            raise Exception('guesses must be an OrderedDict')
+            raise Exception("guesses must be an OrderedDict")
         self.guesses = guesses
 
     def intensity_label_change(self, intensity_label):
@@ -1007,46 +1045,47 @@ class MultiPeakFitter:
         names, kinds, params = self.extract_params(self.fit_results)
         num_funcs = len(kinds)
         # get color map for trace colors
-        cm = wt_artists.colormaps['default']
+        cm = wt_artists.colormaps["default"]
         # create figure
-        fig, gs = wt_artists.create_figure(width='single', cols=[1], nrows=2, default_aspect=.5)
+        fig, gs = wt_artists.create_figure(width="single", cols=[1], nrows=2, default_aspect=.5)
         # as-taken
         ax = plt.subplot(gs[0, 0])
-        ax.set_title(self.name + ' fittype = ' + str(self.fittype), fontsize=20)
+        ax.set_title(self.name + " fittype = " + str(self.fittype), fontsize=20)
         xi = self.data.axes[0][:]
-        ax.plot(xi, self.zi, color='k', linewidth=2)
+        ax.plot(xi, self.zi, color="k", linewidth=2)
         plt.setp(ax.get_xticklabels(), visible=False)
         ax.set_ylim(0, self.zi.max() + .005)
         ax.set_xlim(xi.min(), xi.max())
         ax.set_ylabel(self.intensity_label, fontsize=18)
         ax.grid()
         # fit results
-        ax.plot(xi, self.remainder, color='k', linestyle='--', linewidth=2)
+        ax.plot(xi, self.remainder, color="k", linestyle="--", linewidth=2)
         for i, kind in enumerate(kinds):
-            ax.plot(xi,
-                    self.function(xi,
-                                  kind,
-                                  params[i * 3 + 0],
-                                  params[i * 3 + 1],
-                                  params[i * 3 + 2],
-                                  diff_order=0),
-                    color=cm((i + 1) / num_funcs),
-                    linewidth=2)
+            ax.plot(
+                xi,
+                self.function(
+                    xi, kind, params[i * 3 + 0], params[i * 3 + 1], params[i * 3 + 2], diff_order=0
+                ),
+                color=cm((i + 1) / num_funcs),
+                linewidth=2,
+            )
             ax.axvline(x=params[i * 3 + 2], color=cm((i + 1) / num_funcs), linewidth=1)
         # diff
         ax = plt.subplot(gs[1, 0])
         # as-taken
-        ax.plot(xi, self.diff, color='k', linewidth=2)
+        ax.plot(xi, self.diff, color="k", linewidth=2)
         ax.set_xlim(xi.min(), xi.max())
         ax.grid()
-        label = r'$\mathsf{\frac{d^%i \mathrm{OD}}{d (\hslash \omega)^%i}}$' % (
-            self.fittype, self.fittype)
+        label = r"$\mathsf{\frac{d^%i \mathrm{OD}}{d (\hslash \omega)^%i}}$" % (
+            self.fittype,
+            self.fittype,
+        )
         ax.set_ylabel(label, fontsize=18)
         plt.setp(ax.get_yticklabels(), visible=False)
         ax.set_ylabel(label, fontsize=18)
         ax.set_xlabel(self.data.axes[0].get_label())
         # fit results
-        ax.plot(xi, self.diff_model, color='b', linewidth=2)
+        ax.plot(xi, self.diff_model, color="b", linewidth=2)
         for i, kind in enumerate(kinds):
             ax.axvline(x=params[i * 3 + 2], color=cm((i + 1) / num_funcs), linewidth=1)
 
@@ -1069,19 +1108,20 @@ class MultiPeakFitter:
         # instantiate timestamp object
         timestamp = wt_kit.TimeStamp()
         if fit_params:
-            params_path = os.path.join(path, ' '.join(
-                (self.name, timestamp.path, 'fit_params.txt')))
+            params_path = os.path.join(
+                path, " ".join((self.name, timestamp.path, "fit_params.txt"))
+            )
             headers = collections.OrderedDict()
-            headers['transition names'] = list(self.fit_results.keys())
+            headers["transition names"] = list(self.fit_results.keys())
             for state, d in self.fit_results.items():
                 for prop, value in d.items():
-                    headers[' '.join([state, prop])] = value
+                    headers[" ".join([state, prop])] = value
             write = wt_kit.write_headers(params_path, headers)
             if verbose:
-                print('Parameters saved to:', write)
+                print("Parameters saved to:", write)
         if figure:
             fig = self.plot()
-            fig_path = os.path.join(path, ' '.join((self.name, timestamp.path, 'fits.png')))
+            fig_path = os.path.join(path, " ".join((self.name, timestamp.path, "fits.png")))
             write = wt_artists.savefig(fig_path, fig=fig, close=True)
             if verbose:
-                print('Figure saved to:', write)
+                print("Figure saved to:", write)

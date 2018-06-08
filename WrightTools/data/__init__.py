@@ -19,20 +19,20 @@ from ._spcm import *
 from ._tensor27 import *
 
 
-__all__ = ['Data',
-           'join',
-           'Axis',
-           'Channel',
-           'Variable',
-
-           # From methods in alphabetic order
-           'from_BrunoldrRaman',
-           'from_COLORS',
-           'from_JASCO',
-           'from_KENT',
-           'from_PyCMDS',
-           'from_ocean_optics',
-           'from_shimadzu',
-           'from_spcm',
-           'from_Tensor27',
-           ]
+__all__ = [
+    "Data",
+    "join",
+    "Axis",
+    "Channel",
+    "Variable",
+    # From methods in alphabetic order
+    "from_BrunoldrRaman",
+    "from_COLORS",
+    "from_JASCO",
+    "from_KENT",
+    "from_PyCMDS",
+    "from_ocean_optics",
+    "from_shimadzu",
+    "from_spcm",
+    "from_Tensor27",
+]

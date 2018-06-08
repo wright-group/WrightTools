@@ -13,7 +13,7 @@ from .._group import Group
 # --- define --------------------------------------------------------------------------------------
 
 
-__all__ = ['Collection']
+__all__ = ["Collection"]
 
 
 # --- classes -------------------------------------------------------------------------------------
@@ -22,7 +22,7 @@ __all__ = ['Collection']
 class Collection(Group):
     """Nestable Collection of Data objects."""
 
-    class_name = 'Collection'
+    class_name = "Collection"
 
     def __iter__(self):
         self.__n = 0
@@ -40,10 +40,9 @@ class Collection(Group):
         return out
 
     def __repr__(self):
-        return '<WrightTools.Collection \'{0}\' {1} at {2}>'.format(self.natural_name,
-                                                                    self.item_names,
-                                                                    '::'.join([self.filepath,
-                                                                               self.name]))
+        return "<WrightTools.Collection '{0}' {1} at {2}>".format(
+            self.natural_name, self.item_names, "::".join([self.filepath, self.name])
+        )
 
     def __getitem__(self, key):
         if isinstance(key, int):
@@ -63,16 +62,16 @@ class Collection(Group):
         for i, name in enumerate(self.item_names):
             item = self[name]
             if i + 1 == len(self.item_names):
-                s = prefix + '└── {0}: {1}'.format(i, item._leaf)
-                p = prefix + '    '
+                s = prefix + "└── {0}: {1}".format(i, item._leaf)
+                p = prefix + "    "
             else:
-                s = prefix + '├── {0}: {1}'.format(i, item._leaf)
-                p = prefix + '│   '
+                s = prefix + "├── {0}: {1}".format(i, item._leaf)
+                p = prefix + "│   "
             print(s)
-            if depth > 1 and hasattr(item, '_print_branch'):
+            if depth > 1 and hasattr(item, "_print_branch"):
                 item._print_branch(p, depth=depth - 1, verbose=verbose)
 
-    def create_collection(self, name='collection', position=None, **kwargs):
+    def create_collection(self, name="collection", position=None, **kwargs):
         """Create a new child colleciton.
 
         Parameters
@@ -89,15 +88,17 @@ class Collection(Group):
         WrightTools Collection
             New child.
         """
-        collection = Collection(filepath=self.filepath, parent=self.name, name=name,
-                                edit_local=True, **kwargs)
+        collection = Collection(
+            filepath=self.filepath, parent=self.name, name=name, edit_local=True, **kwargs
+        )
         if position is not None:
-            self.attrs['item_names'] = np.insert(self.attrs['item_names'][:-1], position,
-                                                 collection.natural_name.encode())
+            self.attrs["item_names"] = np.insert(
+                self.attrs["item_names"][:-1], position, collection.natural_name.encode()
+            )
         setattr(self, name, collection)
         return collection
 
-    def create_data(self, name='data', position=None, **kwargs):
+    def create_data(self, name="data", position=None, **kwargs):
         """Create a new child data.
 
         Parameters
@@ -114,16 +115,18 @@ class Collection(Group):
         WrightTools Data
             New child.
         """
-        if name == '':
+        if name == "":
             data = None
             natural_name = "".encode()
         else:
-            data = wt_data.Data(filepath=self.filepath, parent=self.name, name=name,
-                                edit_local=True, **kwargs)
+            data = wt_data.Data(
+                filepath=self.filepath, parent=self.name, name=name, edit_local=True, **kwargs
+            )
             natural_name = data.natural_name.encode()
         if position is not None:
-            self.attrs['item_names'] = np.insert(self.attrs['item_names'][:-1], position,
-                                                 natural_name)
+            self.attrs["item_names"] = np.insert(
+                self.attrs["item_names"][:-1], position, natural_name
+            )
         setattr(self, name, data)
         return data
 
@@ -141,8 +144,8 @@ class Collection(Group):
         verbose : boolean (optional)
             Toggle inclusion of extra information. Default is True.
         """
-        print('{0} ({1})'.format(self.natural_name, self.filepath))
-        self._print_branch('', depth=depth, verbose=verbose)
+        print("{0} ({1})".format(self.natural_name, self.filepath))
+        self._print_branch("", depth=depth, verbose=verbose)
 
     def flush(self):
         """Ensure contents are written to file."""

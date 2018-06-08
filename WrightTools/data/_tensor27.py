@@ -15,7 +15,7 @@ from .. import exceptions as wt_exceptions
 # --- define --------------------------------------------------------------------------------------
 
 
-__all__ = ['from_Tensor27']
+__all__ = ["from_Tensor27"]
 
 
 # --- from function -------------------------------------------------------------------------------
@@ -53,13 +53,13 @@ def from_Tensor27(filepath, name=None, parent=None, verbose=True):
         New data object.
     """
     # parse filepath
-    if not filepath.endswith('dpt'):
-        wt_exceptions.WrongFileTypeWarning.warn(filepath, 'dpt')
+    if not filepath.endswith("dpt"):
+        wt_exceptions.WrongFileTypeWarning.warn(filepath, "dpt")
     # parse name
     if not name:
-        name = os.path.basename(filepath).split('.')[0]
+        name = os.path.basename(filepath).split(".")[0]
     # create data
-    kwargs = {'name': name, 'kind': 'Tensor27', 'source': filepath}
+    kwargs = {"name": name, "kind": "Tensor27", "source": filepath}
     if parent is None:
         data = Data(**kwargs)
     else:
@@ -67,12 +67,12 @@ def from_Tensor27(filepath, name=None, parent=None, verbose=True):
     # array
     arr = np.genfromtxt(filepath, skip_header=0).T
     # chew through all scans
-    data.create_variable(name='energy', values=arr[0], units='wn')
-    data.create_channel(name='signal', values=arr[1])
-    data.transform('energy')
+    data.create_variable(name="energy", values=arr[0], units="wn")
+    data.create_channel(name="signal", values=arr[1])
+    data.transform("energy")
     # finish
     if verbose:
-        print('data created at {0}'.format(data.fullpath))
-        print('  range: {0} to {1} (wn)'.format(data.energy[0], data.energy[-1]))
-        print('  size: {0}'.format(data.size))
+        print("data created at {0}".format(data.fullpath))
+        print("  range: {0} to {1} (wn)".format(data.energy[0], data.energy[-1]))
+        print("  size: {0}".format(data.size))
     return data

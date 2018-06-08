@@ -15,5 +15,5 @@ def test_created():
     assert int(copy.created.unix) == 1487860880
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     test_created()

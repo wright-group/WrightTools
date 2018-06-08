@@ -82,7 +82,7 @@ def test_log_strange_base():
 # --- run -----------------------------------------------------------------------------------------
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     test_log()
     test_log_floor()
     test_log10()
