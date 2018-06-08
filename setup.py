@@ -50,7 +50,10 @@ setup(
         "scipy",
         "tidy_headers",
     ],
-    extras_require={"docs": ["sphinx-gallery==0.1.12"]},
+    extras_require={
+        "docs": ["sphinx-gallery==0.1.12"],
+        "dev": ["black", "pre-commit", "pydocstyle"],
+    },
     version=version,
     description="Tools for loading, processing, and plotting multidimensional spectroscopy data.",
     long_description=read("README.rst"),
