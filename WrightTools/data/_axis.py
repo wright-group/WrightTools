@@ -20,13 +20,13 @@ from .. import units as wt_units
 
 
 operator_to_identifier = {}
-operator_to_identifier['/'] = '__d__'
-operator_to_identifier['='] = '__e__'
-operator_to_identifier['-'] = '__m__'
-operator_to_identifier['+'] = '__p__'
-operator_to_identifier['*'] = '__t__'
+operator_to_identifier["/"] = "__d__"
+operator_to_identifier["="] = "__e__"
+operator_to_identifier["-"] = "__m__"
+operator_to_identifier["+"] = "__p__"
+operator_to_identifier["*"] = "__t__"
 identifier_to_operator = {value: key for key, value in operator_to_identifier.items()}
-operators = ''.join(operator_to_identifier.keys())
+operators = "".join(operator_to_identifier.keys())
 
 
 # --- class ---------------------------------------------------------------------------------------
@@ -59,17 +59,18 @@ class Axis(object):
         for variable in self.variables:
             arr = variable[index]
             vs[variable.natural_name] = wt_units.converter(arr, variable.units, self.units)
-        return numexpr.evaluate(self.expression.split('=')[0], local_dict=vs)
+        return numexpr.evaluate(self.expression.split("=")[0], local_dict=vs)
 
     def __repr__(self):
-        return '<WrightTools.Axis {0} ({1}) at {2}>'.format(self.expression, str(self.units),
-                                                            id(self))
+        return "<WrightTools.Axis {0} ({1}) at {2}>".format(
+            self.expression, str(self.units), id(self)
+        )
 
     @property
     def _leaf(self):
         out = self.expression
         if self.units is not None:
-            out += ' ({0}) {1}'.format(self.units, self.shape)
+            out += " ({0}) {1}".format(self.units, self.shape)
         return out
 
     @property
@@ -83,25 +84,25 @@ class Axis(object):
     @property
     def identity(self):
         """Complete identifier written to disk in data.attrs['axes']."""
-        return self.natural_name + ' {%s}' % self.units
+        return self.natural_name + " {%s}" % self.units
 
     @property
     def label(self):
         symbol = wt_units.get_symbol(self.units)
-        label = r'$\mathsf{' + self.expression
+        label = r"$\mathsf{" + self.expression
         for v in self.variables:
-            vl = '%s_{%s}' % (symbol, v.label)
-            vl = vl.replace('_{}', '')  # label can be empty, no empty subscripts
+            vl = "%s_{%s}" % (symbol, v.label)
+            vl = vl.replace("_{}", "")  # label can be empty, no empty subscripts
             label = label.replace(v.natural_name, vl)
         if self.units_kind:
             units_dictionary = getattr(wt_units, self.units_kind)
-            label += r'\,'
-            label += r'\left('
+            label += r"\,"
+            label += r"\left("
             label += units_dictionary[self.units][2]
-            label += r'\right)'
+            label += r"\right)"
         else:
             pass
-        label += r'}$'
+        label += r"}$"
         return label
 
     @property
@@ -147,7 +148,7 @@ class Axis(object):
         try:
             assert self._variables is not None
         except (AssertionError, AttributeError):
-            pattern = '|'.join(map(re.escape, operators))
+            pattern = "|".join(map(re.escape, operators))
             keys = re.split(pattern, self.expression)
             indices = []
             for key in keys:

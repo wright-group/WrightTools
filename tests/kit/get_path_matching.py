@@ -19,4 +19,4 @@ here = os.path.abspath(os.path.dirname(__file__))
 
 
 def test_WrightTools():
-    wt.kit.get_path_matching('WrightTools')  # exception will be raised if broken
+    wt.kit.get_path_matching("WrightTools")  # exception will be raised if broken
