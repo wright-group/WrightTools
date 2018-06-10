@@ -87,8 +87,8 @@ Convert
    >>> data.units
    ('nm', 'nm', 'fs')
    >>> data.convert('eV')
-   axis w2 converted
-   axis w1=wm converted
+   axis w2 converted from nm to eV
+   axis w1=wm converted from nm to eV
    >>> data.units
    ('eV', 'eV', 'fs')
 

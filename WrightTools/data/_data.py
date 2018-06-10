@@ -428,16 +428,18 @@ class Data(Group):
         # apply to all compatible axes
         for axis in self.axes:
             if axis.units_kind == units_kind:
-                axis.convert(destination_units, convert_variables=convert_variables)
                 if verbose:
-                    print('axis', axis.expression, 'converted')
+                    print('axis {} converted from {} to {}'.format(axis.expression, axis.units, 
+                                                                   destination_units))
+                axis.convert(destination_units, convert_variables=convert_variables)
         if convert_variables:
             for var in self.variables:
                 if wt_units.kind(var.units) == units_kind:
-                    var.convert(destination_units)
-
                     if verbose:
-                        print('variable', var.natural_name, 'converted')
+                        print('variable {} converted from {} to {}'.format(var.natural_name, 
+                                                                           var.units, 
+                                                                           destination_units))
+                    var.convert(destination_units)
         self._on_axes_updated()
 
     def create_channel(self, name, values=None, shape=None, units=None, **kwargs):
