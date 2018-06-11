@@ -17,13 +17,13 @@ from .. import exceptions as wt_exceptions
 # --- define --------------------------------------------------------------------------------------
 
 
-__all__ = ['from_spcm']
+__all__ = ["from_spcm"]
 
 
 # --- from function -------------------------------------------------------------------------------
 
 
-def from_spcm(filepath, name=None, *, delimiter=',', format=None, parent=None, verbose=True):
+def from_spcm(filepath, name=None, *, delimiter=",", format=None, parent=None, verbose=True):
     """Create a data object from Becker & Hickl `spcm`__ software.
 
     __ http://www.becker-hickl.com/software/spcm.htm
@@ -50,13 +50,13 @@ def from_spcm(filepath, name=None, *, delimiter=',', format=None, parent=None, v
     WrightTools.data.Data object
     """
     # check filepath
-    if not filepath.endswith('asc'):
-        wt_exceptions.WrongFileTypeWarning.warn(filepath, 'asc')
+    if not filepath.endswith("asc"):
+        wt_exceptions.WrongFileTypeWarning.warn(filepath, "asc")
     # parse name
     if not name:
-        name = os.path.basename('filepath').split('.')[0]
+        name = os.path.basename("filepath").split(".")[0]
     # create data
-    kwargs = {'name': name, 'kind': 'spcm', 'source': filepath}
+    kwargs = {"name": name, "kind": "spcm", "source": filepath}
     if parent:
         data = parent.create_data(**kwargs)
     else:
@@ -69,42 +69,40 @@ def from_spcm(filepath, name=None, *, delimiter=',', format=None, parent=None, v
             if len(line) == 0:
                 break
             else:
-                key, value = line.split(':', 1)
-                if key.strip() == 'Revision':
-                    headers['resolution'] = int(value.strip(' bits ADC'))
+                key, value = line.split(":", 1)
+                if key.strip() == "Revision":
+                    headers["resolution"] = int(value.strip(" bits ADC"))
                 else:
                     headers[key.strip()] = value.strip()
     # import data
-    arr = np.genfromtxt(filepath, skip_header=(len(headers) + 2), skip_footer=1,
-                        delimiter=delimiter).T
+    arr = np.genfromtxt(
+        filepath, skip_header=(len(headers) + 2), skip_footer=1, delimiter=delimiter
+    ).T
     # unexpected delimiter handler
     if np.any(np.isnan(arr)):
         # delimiter warning dictionary
-        delim_dict = {',': 'comma',
-                      ' ': 'space',
-                      '\t': 'tab',
-                      ';': 'semicolon',
-                      ':': 'colon'}
-        warnings.warn('file is not %s-delimited! Trying other delimiters.' % delim_dict[delimiter])
+        delim_dict = {",": "comma", " ": "space", "\t": "tab", ";": "semicolon", ":": "colon"}
+        warnings.warn("file is not %s-delimited! Trying other delimiters." % delim_dict[delimiter])
         for delimiter in delim_dict.keys():
-            arr = np.genfromtxt(filepath, skip_header=len(headers) + 2, skip_footer=1,
-                                delimiter=delimiter).T
+            arr = np.genfromtxt(
+                filepath, skip_header=len(headers) + 2, skip_footer=1, delimiter=delimiter
+            ).T
             if not np.any(np.isnan(arr)):
-                print('file is %s-delimited.' % delim_dict[delimiter])
+                print("file is %s-delimited." % delim_dict[delimiter])
                 break
         else:
-            error = '''Unable to load data file.
+            error = """Unable to load data file.
                        Data object not created!
-                       Please check that your file is formatted properly.'''
+                       Please check that your file is formatted properly."""
             raise RuntimeError(error)
     # construct data
-    data.create_variable(name='time', values=arr[0], units='ns')
-    data.create_channel(name='counts', values=arr[1])
-    data.transform('time')
+    data.create_variable(name="time", values=arr[0], units="ns")
+    data.create_channel(name="counts", values=arr[1])
+    data.transform("time")
     # finish
     if verbose:
-        print('data created at {0}'.format(data.fullpath))
-        print('  kind: {0}'.format(data.kind))
-        print('  range: {0} to {1} (ns)'.format(data.time[0], data.time[-1]))
-        print('  size: {0}'.format(data.size))
+        print("data created at {0}".format(data.fullpath))
+        print("  kind: {0}".format(data.kind))
+        print("  range: {0} to {1} (ns)".format(data.time[0], data.time[-1]))
+        print("  size: {0}".format(data.size))
     return data

@@ -15,7 +15,7 @@ from . import data as wt_data
 # --- define -------------------------------------------------------------------------------------
 
 
-__all__ = ['open']
+__all__ = ["open"]
 
 
 # --- functions ----------------------------------------------------------------------------------
@@ -38,11 +38,11 @@ def open(filepath, edit_local=False):
         Root-level object in file.
     """
     f = h5py.File(filepath)
-    class_name = f[posixpath.sep].attrs['class']
-    name = f[posixpath.sep].attrs['name']
-    if class_name == 'Data':
+    class_name = f[posixpath.sep].attrs["class"]
+    name = f[posixpath.sep].attrs["name"]
+    if class_name == "Data":
         return wt_data.Data(filepath=filepath, name=name, edit_local=edit_local)
-    elif class_name == 'Collection':
+    elif class_name == "Collection":
         return wt_collection.Collection(filepath=filepath, name=name, edit_local=edit_local)
     else:
         return wt_collection.Group(filepath=filepath, name=name, edit_local=edit_local)

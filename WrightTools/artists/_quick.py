@@ -18,14 +18,24 @@ from .. import kit as wt_kit
 # --- define --------------------------------------------------------------------------------------
 
 
-__all__ = ['quick1D', 'quick2D']
+__all__ = ["quick1D", "quick2D"]
 
 
 # --- general purpose plotting functions ----------------------------------------------------------
 
 
-def quick1D(data, axis=0, at={}, channel=0, *, local=False, autosave=False, save_directory=None,
-            fname=None, verbose=True):
+def quick1D(
+    data,
+    axis=0,
+    at={},
+    channel=0,
+    *,
+    local=False,
+    autosave=False,
+    save_directory=None,
+    fname=None,
+    verbose=True
+):
     """Quickly plot 1D slice(s) of data.
 
     Parameters
@@ -63,7 +73,7 @@ def quick1D(data, axis=0, at={}, channel=0, *, local=False, autosave=False, save
     fig = None
     if len(chopped) > 10:
         if not autosave:
-            print('more than 10 images will be generated: forcing autosave')
+            print("more than 10 images will be generated: forcing autosave")
             autosave = True
     # prepare output folders
     if autosave:
@@ -77,7 +87,7 @@ def quick1D(data, axis=0, at={}, channel=0, *, local=False, autosave=False, save
                 else:
                     fname = data.natural_name
             else:
-                folder_name = 'mpl_1D ' + wt_kit.TimeStamp().path
+                folder_name = "mpl_1D " + wt_kit.TimeStamp().path
                 os.mkdir(folder_name)
                 save_directory = folder_name
     # chew through image generation
@@ -90,11 +100,11 @@ def quick1D(data, axis=0, at={}, channel=0, *, local=False, autosave=False, save
         zi = channel[:]
         # create figure ---------------------------------------------------------------------------
         aspects = [[[0, 0], 0.5]]
-        fig, gs = create_figure(width='single', nrows=1, cols=[1], aspects=aspects)
+        fig, gs = create_figure(width="single", nrows=1, cols=[1], aspects=aspects)
         ax = plt.subplot(gs[0, 0])
         # plot ------------------------------------------------------------------------------------
         plt.plot(xi, zi, lw=2)
-        plt.scatter(xi, zi, color='grey', alpha=0.5, edgecolor='none')
+        plt.scatter(xi, zi, color="grey", alpha=0.5, edgecolor="none")
         # decoration ------------------------------------------------------------------------------
         plt.grid()
         # limits
@@ -111,21 +121,35 @@ def quick1D(data, axis=0, at={}, channel=0, *, local=False, autosave=False, save
         # save ------------------------------------------------------------------------------------
         if autosave:
             if fname:
-                file_name = fname + ' ' + str(i).zfill(3)
+                file_name = fname + " " + str(i).zfill(3)
             else:
                 file_name = str(i).zfill(3)
-            fpath = os.path.join(save_directory, file_name + '.png')
+            fpath = os.path.join(save_directory, file_name + ".png")
             savefig(fpath, fig=fig)
             plt.close()
             if verbose:
-                print('image saved at', fpath)
+                print("image saved at", fpath)
             out.append(fpath)
     return out
 
 
-def quick2D(data, xaxis=0, yaxis=1, at={}, channel=0, *, contours=0, pixelated=True,
-            dynamic_range=False, local=False, contours_local=True, autosave=False,
-            save_directory=None, fname=None, verbose=True):
+def quick2D(
+    data,
+    xaxis=0,
+    yaxis=1,
+    at={},
+    channel=0,
+    *,
+    contours=0,
+    pixelated=True,
+    dynamic_range=False,
+    local=False,
+    contours_local=True,
+    autosave=False,
+    save_directory=None,
+    fname=None,
+    verbose=True
+):
     """Quickly plot 2D slice(s) of data.
 
     Parameters
@@ -174,9 +198,9 @@ def quick2D(data, xaxis=0, yaxis=1, at={}, channel=0, *, contours=0, pixelated=T
     # colormap
     # get colormap
     if data.channels[channel_index].signed:
-        cmap = 'signed'
+        cmap = "signed"
     else:
-        cmap = 'default'
+        cmap = "default"
     cmap = colormaps[cmap]
     cmap.set_bad([0.75] * 3, 1.)
     cmap.set_under([0.75] * 3, 1.)
@@ -186,7 +210,7 @@ def quick2D(data, xaxis=0, yaxis=1, at={}, channel=0, *, contours=0, pixelated=T
     # autosave
     if len(chopped) > 10:
         if not autosave:
-            print('more than 10 images will be generated: forcing autosave')
+            print("more than 10 images will be generated: forcing autosave")
             autosave = True
     # output folder
     if autosave:
@@ -196,7 +220,7 @@ def quick2D(data, xaxis=0, yaxis=1, at={}, channel=0, *, contours=0, pixelated=T
             if len(chopped) == 1:
                 save_directory = os.getcwd()
             else:
-                folder_name = 'quick2D ' + wt_kit.TimeStamp().path
+                folder_name = "quick2D " + wt_kit.TimeStamp().path
                 os.mkdir(folder_name)
                 save_directory = folder_name
     # loop through image generation
@@ -220,10 +244,11 @@ def quick2D(data, xaxis=0, yaxis=1, at={}, channel=0, *, contours=0, pixelated=T
                 aspect = np.clip(aspect, 1 / 3., 3.)
         else:
             aspect = 1
-        fig, gs = create_figure(width='single', nrows=1, cols=[1, 'cbar'],
-                                aspects=[[[0, 0], aspect]])
+        fig, gs = create_figure(
+            width="single", nrows=1, cols=[1, "cbar"], aspects=[[[0, 0], aspect]]
+        )
         ax = plt.subplot(gs[0])
-        ax.patch.set_facecolor('w')
+        ax.patch.set_facecolor("w")
         # levels ----------------------------------------------------------------------------------
         if channel.signed:
             if local:
@@ -231,8 +256,10 @@ def quick2D(data, xaxis=0, yaxis=1, at={}, channel=0, *, contours=0, pixelated=T
             else:
                 data_channel = data.channels[channel_index]
                 if dynamic_range:
-                    limit = min(abs(data_channel.null - data_channel.min()),
-                                abs(data_channel.null - data_channel.max()))
+                    limit = min(
+                        abs(data_channel.null - data_channel.min()),
+                        abs(data_channel.null - data_channel.max()),
+                    )
                 else:
                     limit = data_channel.mag()
             levels = np.linspace(-limit + channel.null, limit + channel.null, 200)
@@ -247,7 +274,7 @@ def quick2D(data, xaxis=0, yaxis=1, at={}, channel=0, *, contours=0, pixelated=T
                     levels = np.linspace(data_channel.null, data_channel.max(), 200)
         # colors ----------------------------------------------------------------------------------
         if pixelated:
-            #print(channel.name, d.channel_names, channel, channel_index)
+            # print(channel.name, d.channel_names, channel, channel_index)
             ax.pcolor(d, channel=channel_index, cmap=cmap, vmin=levels.min(), vmax=levels.max())
         else:
             ax.contourf(d, channel=channel_index, cmap=cmap, levels=levels)
@@ -266,13 +293,13 @@ def quick2D(data, xaxis=0, yaxis=1, at={}, channel=0, *, contours=0, pixelated=T
         # save figure -----------------------------------------------------------------------------
         if autosave:
             if fname:
-                file_name = fname + ' ' + str(i).zfill(3)
+                file_name = fname + " " + str(i).zfill(3)
             else:
                 file_name = str(i).zfill(3)
-            fpath = os.path.join(save_directory, file_name + '.png')
+            fpath = os.path.join(save_directory, file_name + ".png")
             savefig(fpath, fig=fig)
             plt.close()
             if verbose:
-                print('image saved at', fpath)
+                print("image saved at", fpath)
             out.append(fpath)
     return out

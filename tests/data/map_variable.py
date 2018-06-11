@@ -18,7 +18,7 @@ def test_array():
     data = wt.data.from_JASCO(p)
     assert data.shape == (1801,)
     new = np.linspace(6000, 8000, 55)
-    mapped = data.map_variable('energy', new, 'wn')
+    mapped = data.map_variable("energy", new, "wn")
     assert data.axes[0][:].all() == new.all()
     data.close()
 
@@ -27,9 +27,9 @@ def test_int():
     p = datasets.PyCMDS.wm_w2_w1_000
     data = wt.data.from_PyCMDS(p)
     assert data.shape == (35, 11, 11)
-    mapped = data.map_variable('w2', 5)
+    mapped = data.map_variable("w2", 5)
     assert mapped.shape == (35, 5, 11)
-    mapped = data.map_variable('w1', 25)
+    mapped = data.map_variable("w1", 25)
     assert mapped.shape == (35, 11, 25)
     data.close()
 
@@ -37,6 +37,6 @@ def test_int():
 # --- run -----------------------------------------------------------------------------------------
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     test_array()
     test_int()

@@ -25,7 +25,7 @@ def test_1D():
 def test_2D():
     p = datasets.COLORS.v2p2_WL_wigner
     data = wt.data.from_COLORS(p)
-    data.level('ai0', 1, -3)
+    data.level("ai0", 1, -3)
     print(data.ai0[:, -3:].max())
     assert np.allclose(data.ai0[:, -3:], [0.], atol=5)  # very noisy data
     data.close()
@@ -34,7 +34,7 @@ def test_2D():
 def test_3D():
     p = datasets.COLORS.v2p1_MoS2_TrEE_movie
     data = wt.data.from_COLORS(p)
-    data.level('ai0', 1, 1)
+    data.level("ai0", 1, 1)
     assert np.allclose(data.ai0[:, :1], [0.], atol=1e-3)
     data.close()
 
@@ -56,7 +56,7 @@ def test_channels():
 # --- run -----------------------------------------------------------------------------------------
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     test_1D()
     test_2D()
     test_3D()

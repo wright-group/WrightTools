@@ -12,13 +12,13 @@ from .. import units as wt_units
 # --- define --------------------------------------------------------------------------------------
 
 
-__all__ = ['mono_resolution', 'nm_width', 'symmetric_sqrt']
+__all__ = ["mono_resolution", "nm_width", "symmetric_sqrt"]
 
 
 # --- functions -----------------------------------------------------------------------------------
 
 
-def mono_resolution(grooves_per_mm, slit_width, focal_length, output_color, output_units='wn'):
+def mono_resolution(grooves_per_mm, slit_width, focal_length, output_color, output_units="wn"):
     """Calculate the resolution of a monochromator.
 
     Parameters
@@ -42,11 +42,13 @@ def mono_resolution(grooves_per_mm, slit_width, focal_length, output_color, outp
     d_lambda = 1e6 * slit_width / (grooves_per_mm * focal_length)  # nm
     upper = output_color + d_lambda / 2  # nm
     lower = output_color - d_lambda / 2  # nm
-    return abs(wt_units.converter(upper, 'nm', output_units) -
-               wt_units.converter(lower, 'nm', output_units))
+    return abs(
+        wt_units.converter(upper, "nm", output_units)
+        - wt_units.converter(lower, "nm", output_units)
+    )
 
 
-def nm_width(center, width, units='wn'):
+def nm_width(center, width, units="wn"):
     """Given a center and width, in energy units, get back a width in nm.
 
     Parameters
@@ -63,8 +65,8 @@ def nm_width(center, width, units='wn'):
     number
         Width in nm.
     """
-    red = wt_units.converter(center - width / 2., units, 'nm')
-    blue = wt_units.converter(center + width / 2., units, 'nm')
+    red = wt_units.converter(center - width / 2., units, "nm")
+    blue = wt_units.converter(center + width / 2., units, "nm")
     return red - blue
 
 

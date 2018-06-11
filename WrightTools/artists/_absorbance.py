@@ -30,8 +30,9 @@ class Absorbance:
             data = [data]
         self.data = data
 
-    def plot(self, channel_index=0, xlim=None, ylim=None,
-             yticks=True, derivative=True, n_smooth=10,):
+    def plot(
+        self, channel_index=0, xlim=None, ylim=None, yticks=True, derivative=True, n_smooth=10
+    ):
         """Plot.
 
         Parameters
@@ -54,20 +55,21 @@ class Absorbance:
         if derivative:
             aspects = [[[0, 0], 0.35], [[1, 0], 0.35]]
             hspace = 0.1
-            fig, gs = create_figure(width='single', cols=[
-                                    1], hspace=hspace, nrows=2, aspects=aspects)
+            fig, gs = create_figure(
+                width="single", cols=[1], hspace=hspace, nrows=2, aspects=aspects
+            )
             self.ax1 = plt.subplot(gs[0])
-            plt.ylabel('OD', fontsize=18)
+            plt.ylabel("OD", fontsize=18)
             plt.grid()
             plt.setp(self.ax1.get_xticklabels(), visible=False)
             self.ax2 = plt.subplot(gs[1], sharex=self.ax1)
             plt.grid()
-            plt.ylabel('2nd der.', fontsize=18)
+            plt.ylabel("2nd der.", fontsize=18)
         else:
             aspects = [[[0, 0], 0.35]]
-            fig, gs = create_figure(width='single', cols=[1], aspects=aspects)
+            fig, gs = create_figure(width="single", cols=[1], aspects=aspects)
             self.ax1 = plt.subplot(111)
-            plt.ylabel('OD', fontsize=18)
+            plt.ylabel("OD", fontsize=18)
             plt.grid()
         plt.xticks(rotation=45)
         for data in self.data:
@@ -79,9 +81,9 @@ class Absorbance:
                 plt.xlim(xlim[0], xlim[1])
                 min_index = np.argmin(abs(xi - min(xlim)))
                 max_index = np.argmin(abs(xi - max(xlim)))
-                zi_truncated = zi[min(min_index, max_index):max(min_index, max_index)]
+                zi_truncated = zi[min(min_index, max_index) : max(min_index, max_index)]
                 zi -= zi_truncated.min()
-                zi_truncated = zi[min(min_index, max_index):max(min_index, max_index)]
+                zi_truncated = zi[min(min_index, max_index) : max(min_index, max_index)]
                 zi /= zi_truncated.max()
             else:
                 xlim = xi.min(), xi.max()
@@ -102,7 +104,7 @@ class Absorbance:
             self.ax1.get_yaxis().set_ticks([])
         if derivative:
             self.ax2.get_yaxis().set_ticks([])
-            self.ax2.axhline(0, color='k', ls=':')
+            self.ax2.axhline(0, color="k", ls=":")
         # title -----------------------------------------------------------------------------------
         if len(self.data) == 1:  # only attempt this if we are plotting one data object
             title_text = self.data[0].name
@@ -119,7 +121,7 @@ class Absorbance:
         if ylim:
             self.ax1.set_ylim(ylim)
 
-    def _smooth(self, dat1, n=20, window_type='default'):
+    def _smooth(self, dat1, n=20, window_type="default"):
         """Smooth to prevent 2nd derivative from being too noisy.
 
         Parameters
@@ -133,6 +135,6 @@ class Absorbance:
         """
         for i in range(n, len(dat1[1]) - n):
             # change the x value to the average
-            window = dat1[1][i - n:i + n].copy()
+            window = dat1[1][i - n : i + n].copy()
             dat1[1][i] = window.mean()
         return dat1[:][:, n:-n]

@@ -47,7 +47,7 @@ class NameNotUniqueError(WrightToolsException):
             Name of an attribute which causes a duplication.
         """
         if name is not None:
-            message = 'Name {} results in a duplicate'.format(name)
+            message = "Name {} results in a duplicate".format(name)
         else:
             message = "Names must be unique"
         super().__init__(self, message)
@@ -135,6 +135,6 @@ class WrongFileTypeWarning(WrightToolsWarning):
         expected : string
             Expected file suffix.
         """
-        filesuffix = os.path.basename(filepath).split('.')[-1]
-        message = 'file {0} has type {1} (expected {2})'.format(filepath, filesuffix, 'txt')
+        filesuffix = os.path.basename(filepath).split(".")[-1]
+        message = "file {0} has type {1} (expected {2})".format(filepath, filesuffix, "txt")
         warnings.warn(message, WrongFileTypeWarning)

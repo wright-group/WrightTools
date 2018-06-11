@@ -16,7 +16,7 @@ from ._collection import Collection
 # --- define --------------------------------------------------------------------------------------
 
 
-__all__ = ['from_Cary']
+__all__ = ["from_Cary"]
 
 
 # --- from function -------------------------------------------------------------------------------
@@ -55,33 +55,33 @@ def from_Cary(filepath, name=None, parent=None, verbose=True):
         New data object.
     """
     # check filepath
-    filesuffix = os.path.basename(filepath).split('.')[-1]
-    if filesuffix != 'csv':
-        wt_exceptions.WrongFileTypeWarning.warn(filepath, 'csv')
+    filesuffix = os.path.basename(filepath).split(".")[-1]
+    if filesuffix != "csv":
+        wt_exceptions.WrongFileTypeWarning.warn(filepath, "csv")
     if name is None:
-        name = 'cary'
+        name = "cary"
     # import array
     lines = []
-    with open(filepath, 'r') as f:
+    with open(filepath, "r") as f:
         header = f.readline()
         columns = f.readline()
         while True:
             line = f.readline()
-            if line == '\n' or line == '':
+            if line == "\n" or line == "":
                 break
             else:
-                # Note, it is necessary to call this twice, as a single call will 
+                # Note, it is necessary to call this twice, as a single call will
                 # result in something like ',,,,' > ',nan,,nan,'.
-                line = line.replace(',,', ',nan,')
-                line = line.replace(',,', ',nan,')
+                line = line.replace(",,", ",nan,")
+                line = line.replace(",,", ",nan,")
                 # Ensure that the first column has nan, if necessary
-                if line[0] == ',':
-                    line = 'nan' + line
+                if line[0] == ",":
+                    line = "nan" + line
                 clean = line[:-2]  # lines end with ',/n'
-                lines.append(np.fromstring(clean, sep=','))
+                lines.append(np.fromstring(clean, sep=","))
     lines = [line for line in lines if len(line) > 0]
-    header = header.split(',')
-    columns = columns.split(',')
+    header = header.split(",")
+    columns = columns.split(",")
     arr = np.array(lines).T
     # chew through all scans
     datas = Collection(name=name, parent=parent, edit_local=parent is not None)
@@ -90,14 +90,15 @@ def from_Cary(filepath, name=None, parent=None, verbose=True):
         spl = r.split(columns[i])
         ax = spl[0].lower() if len(spl) > 0 else None
         units = spl[1].lower() if len(spl) > 1 else None
-        dat = datas.create_data(header[i], kind='Cary', source=filepath)
+        dat = datas.create_data(header[i], kind="Cary", source=filepath)
         dat.create_variable(ax, arr[i][~np.isnan(arr[i])], units=units)
-        dat.create_channel(columns[i + 1].lower(), arr[i + 1][~np.isnan(arr[i + 1])],
-                           label=columns[i + 1].lower())
+        dat.create_channel(
+            columns[i + 1].lower(), arr[i + 1][~np.isnan(arr[i + 1])], label=columns[i + 1].lower()
+        )
         dat.transform(ax)
     # finish
     if verbose:
-        print('{0} data objects successfully created from Cary file:'.format(len(datas)))
+        print("{0} data objects successfully created from Cary file:".format(len(datas)))
         for i, data in enumerate(datas):
-            print('  {0}: {1}'.format(i, data))
+            print("  {0}: {1}".format(i, data))
     return datas

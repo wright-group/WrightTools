@@ -44,7 +44,7 @@ def test_negative_wigner():
 # --- run -----------------------------------------------------------------------------------------
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     test_LDS821()
     test_wigner()
     test_negative_wigner()
