@@ -61,7 +61,6 @@ Cary._from_files("Cary")
 COLORS = DatasetContainer()
 COLORS._from_files(os.path.join(here, "COLORS", "v0.2"), prefix="v0p2_")
 COLORS._from_files(os.path.join(here, "COLORS", "v2.2"), prefix="v2p2_")
-COLORS._from_directory(os.path.join(here, "COLORS", "v2.1", "MoS2 TrEE movie"), prefix="v2p1_")
 
 JASCO = DatasetContainer()
 JASCO._from_files("JASCO")
