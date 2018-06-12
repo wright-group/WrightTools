@@ -428,7 +428,7 @@ class Data(Group):
         for axis in self.axes:
             if axis.units_kind == units_kind:
                 if verbose:
-                    print('axis {} converted from {} to {}'.format(axis.expression, axis.units, 
+                    print('axis {} converted from {} to {}'.format(axis.expression, axis.units,
                                                                    destination_units))
                 axis.convert(destination_units, convert_variables=convert_variables)
                     print("axis", axis.expression, "converted")
@@ -436,8 +436,8 @@ class Data(Group):
             for var in self.variables:
                 if wt_units.kind(var.units) == units_kind:
                     if verbose:
-                        print('variable {} converted from {} to {}'.format(var.natural_name, 
-                                                                           var.units, 
+                        print('variable {} converted from {} to {}'.format(var.natural_name,
+                                                                           var.units,
                                                                            destination_units))
                     var.convert(destination_units)
                         print("variable", var.natural_name, "converted")
