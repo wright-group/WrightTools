@@ -3,8 +3,8 @@ import WrightTools as wt
 from WrightTools import datasets
 
 # create
-ps = datasets.COLORS.v2p1_MoS2_TrEE_movie
-data = wt.data.from_COLORS(ps)
+p = datasets.wt5.v1p0p1_MoS2_TrEE_movie
+data = wt.open(p)
 # cleanup
 data.level("ai0", "d2", -3)
 data.scale()

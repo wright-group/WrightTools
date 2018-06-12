@@ -32,8 +32,8 @@ def test_2D():
 
 
 def test_3D():
-    p = datasets.COLORS.v2p1_MoS2_TrEE_movie
-    data = wt.data.from_COLORS(p)
+    p = datasets.wt5.v1p0p1_MoS2_TrEE_movie
+    data = wt.open(p)
     data.level("ai0", 1, 1)
     assert np.allclose(data.ai0[:, :1], [0.], atol=1e-3)
     data.close()

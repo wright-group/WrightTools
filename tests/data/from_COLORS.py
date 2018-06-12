@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 """test from_COLORS"""
 
 
@@ -5,6 +6,8 @@
 
 
 import numpy as np
+import glob
+import os
 
 import WrightTools as wt
 from WrightTools import datasets
@@ -29,6 +32,8 @@ def isclose(p, data, **kwargs):
         assert np.isclose(raw.all(), data[key].full.all())
 
 
+__here__ = os.path.abspath(os.path.dirname(__file__))
+
 # --- test ----------------------------------------------------------------------------------------
 
 
@@ -43,7 +48,11 @@ def test_v0p2_d1_d2_diagonal():
 
 
 def test_v2p1_MoS2_TrEE_movie():
-    ps = datasets.COLORS.v2p1_MoS2_TrEE_movie
+    ps = sorted(
+        glob.glob(
+            os.path.join(__here__, "test_data", "COLORS", "v2.1", "MoS2 TrEE movie", "*.dat")
+        )
+    )
     data = wt.data.from_COLORS(ps)
     assert data.shape == (41, 41, 23)
     assert data.axis_expressions == ("w2", "w1=wm", "d2")
