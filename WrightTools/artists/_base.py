@@ -20,7 +20,7 @@ from ._colors import colormaps
 # --- define -------------------------------------------------------------------------------------
 
 
-__all__ = ['Axes', 'Figure', 'GridSpec', 'apply_rcparams']
+__all__ = ["Axes", "Figure", "GridSpec", "apply_rcparams"]
 
 
 # --- classes -------------------------------------------------------------------------------------
@@ -33,18 +33,19 @@ class Axes(matplotlib.axes.Axes):
     is_sideplot = False
 
     def _parse_cmap(self, data=None, channel_index=None, **kwargs):
-        if 'cmap' in kwargs.keys():
-            if isinstance(kwargs['cmap'], str):
-                kwargs['cmap'] = colormaps[kwargs['cmap']]
+        if "cmap" in kwargs.keys():
+            if isinstance(kwargs["cmap"], str):
+                kwargs["cmap"] = colormaps[kwargs["cmap"]]
         elif data:
             if data.channels[channel_index].signed:
-                kwargs['cmap'] = colormaps['signed']
+                kwargs["cmap"] = colormaps["signed"]
                 return kwargs
-            kwargs['cmap'] = colormaps['default']
+            kwargs["cmap"] = colormaps["default"]
         return kwargs
 
-    def _apply_labels(self, autolabel='none', xlabel=None, ylabel=None, data=None,
-                      channel_index=0):
+    def _apply_labels(
+        self, autolabel="none", xlabel=None, ylabel=None, data=None, channel_index=0
+    ):
         """Apply x and y labels to axes.
 
         Parameters
@@ -61,9 +62,9 @@ class Axes(matplotlib.axes.Axes):
             Channel index. Default is 0.
         """
         # read from data
-        if autolabel in ['xy', 'both', 'x'] and not xlabel:
+        if autolabel in ["xy", "both", "x"] and not xlabel:
             xlabel = data.axes[0].label
-        if autolabel in ['xy', 'both', 'y'] and not ylabel:
+        if autolabel in ["xy", "both", "y"] and not ylabel:
             if data.ndim == 1:
                 ylabel = data.channels[channel_index].label
             elif data.ndim == 2:
@@ -80,8 +81,8 @@ class Axes(matplotlib.axes.Axes):
 
     def _parse_limits(self, zi=None, data=None, channel_index=None, dynamic_range=False, **kwargs):
         if zi is not None:
-            if 'levels' in kwargs.keys():
-                levels = kwargs['levels']
+            if "levels" in kwargs.keys():
+                levels = kwargs["levels"]
                 vmin = levels.min()
                 vmax = levels.max()
             else:
@@ -99,10 +100,10 @@ class Axes(matplotlib.axes.Axes):
                 vmin = data.channels[channel_index].null
                 vmax = data.channels[channel_index].max()
             # don't overwrite
-            if 'vmin' not in kwargs.keys():
-                kwargs['vmin'] = vmin
-            if 'vmax' not in kwargs.keys():
-                kwargs['vmax'] = vmax
+            if "vmin" not in kwargs.keys():
+                kwargs["vmin"] = vmin
+            if "vmax" not in kwargs.keys():
+                kwargs["vmax"] = vmax
         return kwargs
 
     def add_sideplot(self, along, pad=0, height=0.75, ymin=0, ymax=1.1):
@@ -118,28 +119,28 @@ class Axes(matplotlib.axes.Axes):
             Side axis height. Default is 0.
         """
         # divider should only be created once
-        if hasattr(self, 'divider'):
+        if hasattr(self, "divider"):
             divider = self.divider
         else:
             divider = make_axes_locatable(self)
-            setattr(self, 'divider', divider)
+            setattr(self, "divider", divider)
         # create
-        if along == 'x':
-            ax = self.sidex = divider.append_axes('top', height, pad=pad, sharex=self)
-        elif along == 'y':
-            ax = self.sidey = divider.append_axes('right', height, pad=pad, sharey=self)
+        if along == "x":
+            ax = self.sidex = divider.append_axes("top", height, pad=pad, sharex=self)
+        elif along == "y":
+            ax = self.sidey = divider.append_axes("right", height, pad=pad, sharey=self)
             ax.transposed = True
         # beautify
-        if along == 'x':
+        if along == "x":
             ax.set_ylim(ymin, ymax)
-        elif along == 'y':
+        elif along == "y":
             ax.set_xlim(ymin, ymax)
         ax.autoscale(enable=False)
-        ax.set_adjustable('box-forced')
+        ax.set_adjustable("box-forced")
         ax.is_sideplot = True
         plt.setp(ax.get_xticklabels(), visible=False)
         plt.setp(ax.get_yticklabels(), visible=False)
-        ax.tick_params(axis='both', which='both', length=0)
+        ax.tick_params(axis="both", which="both", length=0)
         return ax
 
     def contour(self, *args, **kwargs):
@@ -170,8 +171,8 @@ class Axes(matplotlib.axes.Axes):
         matplotlib.contour.QuadContourSet
         """
         args = list(args)  # offer pop, append etc
-        channel = kwargs.pop('channel', 0)
-        dynamic_range = kwargs.pop('dynamic_range', False)
+        channel = kwargs.pop("channel", 0)
+        dynamic_range = kwargs.pop("dynamic_range", False)
         # unpack data object, if given
         if isinstance(args[0], Data):
             data = args.pop(0)
@@ -185,25 +186,29 @@ class Axes(matplotlib.axes.Axes):
             zi = data.channels[channel_index][:]
             args = [xi, yi, zi] + args
             # limits
-            kwargs = self._parse_limits(data=data, channel_index=channel_index,
-                                        dynamic_range=dynamic_range, **kwargs)
+            kwargs = self._parse_limits(
+                data=data, channel_index=channel_index, dynamic_range=dynamic_range, **kwargs
+            )
             # levels
-            if 'levels' not in kwargs.keys():
+            if "levels" not in kwargs.keys():
                 if signed:
                     n = 11
                 else:
                     n = 6
-                kwargs['levels'] = np.linspace(kwargs.pop('vmin'), kwargs.pop('vmax'), n)[1:-1]
+                kwargs["levels"] = np.linspace(kwargs.pop("vmin"), kwargs.pop("vmax"), n)[1:-1]
             # colors
-            if 'colors' not in kwargs.keys():
-                kwargs['colors'] = 'k'
-            if 'alpha' not in kwargs.keys():
-                kwargs['alpha'] = 0.5
+            if "colors" not in kwargs.keys():
+                kwargs["colors"] = "k"
+            if "alpha" not in kwargs.keys():
+                kwargs["alpha"] = 0.5
             # labels
-            self._apply_labels(autolabel=kwargs.pop('autolabel', False),
-                               xlabel=kwargs.pop('xlabel', None),
-                               ylabel=kwargs.pop('ylabel', None),
-                               data=data, channel_index=channel_index)
+            self._apply_labels(
+                autolabel=kwargs.pop("autolabel", False),
+                xlabel=kwargs.pop("xlabel", None),
+                ylabel=kwargs.pop("ylabel", None),
+                data=data,
+                channel_index=channel_index,
+            )
         else:
             data = None
             channel_index = 0
@@ -240,8 +245,8 @@ class Axes(matplotlib.axes.Axes):
         matplotlib.contour.QuadContourSet
         """
         args = list(args)  # offer pop, append etc
-        channel = kwargs.pop('channel', 0)
-        dynamic_range = kwargs.pop('dynamic_range', False)
+        channel = kwargs.pop("channel", 0)
+        dynamic_range = kwargs.pop("dynamic_range", False)
         # unpack data object, if given
         if isinstance(args[0], Data):
             data = args.pop(0)
@@ -254,8 +259,9 @@ class Axes(matplotlib.axes.Axes):
             zi = data.channels[channel_index][:]
             args = [xi, yi, zi] + args
             # limits
-            kwargs = self._parse_limits(data=data, channel_index=channel_index,
-                                        dynamic_range=dynamic_range, **kwargs)
+            kwargs = self._parse_limits(
+                data=data, channel_index=channel_index, dynamic_range=dynamic_range, **kwargs
+            )
             # cmap
             kwargs = self._parse_cmap(data=data, channel_index=channel_index, **kwargs)
         else:
@@ -264,15 +270,18 @@ class Axes(matplotlib.axes.Axes):
             kwargs = self._parse_limits(zi=args[2], dynamic_range=dynamic_range, **kwargs)
             kwargs = self._parse_cmap(**kwargs)
         # levels
-        if 'levels' not in kwargs.keys():
-            vmin = kwargs.pop('vmin', args[2].min())
-            vmax = kwargs.pop('vmax', args[2].max())
-            kwargs['levels'] = np.linspace(vmin, vmax, 256)
+        if "levels" not in kwargs.keys():
+            vmin = kwargs.pop("vmin", args[2].min())
+            vmax = kwargs.pop("vmax", args[2].max())
+            kwargs["levels"] = np.linspace(vmin, vmax, 256)
         # labels
-        self._apply_labels(autolabel=kwargs.pop('autolabel', False),
-                           xlabel=kwargs.pop('xlabel', None),
-                           ylabel=kwargs.pop('ylabel', None),
-                           data=data, channel_index=channel_index)
+        self._apply_labels(
+            autolabel=kwargs.pop("autolabel", False),
+            xlabel=kwargs.pop("xlabel", None),
+            ylabel=kwargs.pop("ylabel", None),
+            data=data,
+            channel_index=channel_index,
+        )
         # Overloading contourf in an attempt to fix aliasing problems when saving vector graphics
         # see https://stackoverflow.com/questions/15822159
         # also see https://stackoverflow.com/a/32911283
@@ -285,15 +294,15 @@ class Axes(matplotlib.axes.Axes):
         # I anticipate that this method will be tinkered with in the future
         # so I've left the things I have tried and abandoned as comments---good luck!
         # ---Blaise 2017-07-30
-        kwargs['antialiased'] = False
-        kwargs['extend'] = 'both'
+        kwargs["antialiased"] = False
+        kwargs["extend"] = "both"
         contours = super().contourf(*args, **kwargs)
         # fill lines
         zorder = contours.collections[0].zorder - 0.1
         levels = (contours.levels[1:] + contours.levels[:-1]) / 2
-        matplotlib.axes.Axes.contour(self, *args[:3], levels=levels,
-                                     cmap=contours.cmap,
-                                     zorder=zorder)
+        matplotlib.axes.Axes.contour(
+            self, *args[:3], levels=levels, cmap=contours.cmap, zorder=zorder
+        )
         # decoration
         self.set_facecolor([0.75] * 3)
         # PathCollection modifications
@@ -317,10 +326,10 @@ class Axes(matplotlib.axes.Axes):
         -------
         legend
         """
-        if 'fancybox' not in kwargs.keys():
-            kwargs['fancybox'] = False
-        if 'framealpha' not in kwargs.keys():
-            kwargs['framealpha'] = 1.
+        if "fancybox" not in kwargs.keys():
+            kwargs["fancybox"] = False
+        if "framealpha" not in kwargs.keys():
+            kwargs["framealpha"] = 1.
         return super().legend(*args, **kwargs)
 
     def pcolor(self, *args, **kwargs):
@@ -354,8 +363,8 @@ class Axes(matplotlib.axes.Axes):
         matplotlib.collections.PolyCollection
         """
         args = list(args)  # offer pop, append etc
-        channel = kwargs.pop('channel', 0)
-        dynamic_range = kwargs.pop('dynamic_range', False)
+        channel = kwargs.pop("channel", 0)
+        dynamic_range = kwargs.pop("dynamic_range", False)
         # unpack data object, if given
         if isinstance(args[0], Data):
             data = args.pop(0)
@@ -369,8 +378,9 @@ class Axes(matplotlib.axes.Axes):
             X, Y, Z = pcolor_helper(xi, yi, zi)
             args = [X, Y, Z] + args
             # limits
-            kwargs = self._parse_limits(data=data, channel_index=channel_index,
-                                        dynamic_range=dynamic_range, **kwargs)
+            kwargs = self._parse_limits(
+                data=data, channel_index=channel_index, dynamic_range=dynamic_range, **kwargs
+            )
             # cmap
             kwargs = self._parse_cmap(data=data, channel_index=channel_index, **kwargs)
         else:
@@ -384,10 +394,13 @@ class Axes(matplotlib.axes.Axes):
             kwargs = self._parse_limits(zi=args[2], **kwargs)
             kwargs = self._parse_cmap(**kwargs)
         # labels
-        self._apply_labels(autolabel=kwargs.pop('autolabel', False),
-                           xlabel=kwargs.pop('xlabel', None),
-                           ylabel=kwargs.pop('ylabel', None),
-                           data=data, channel_index=channel_index)
+        self._apply_labels(
+            autolabel=kwargs.pop("autolabel", False),
+            xlabel=kwargs.pop("xlabel", None),
+            ylabel=kwargs.pop("ylabel", None),
+            data=data,
+            channel_index=channel_index,
+        )
         # decoration
         self.set_facecolor([0.75] * 3)
         # call parent
@@ -423,9 +436,9 @@ class Axes(matplotlib.axes.Axes):
         """
         args = list(args)  # offer pop, append etc
         # unpack data object, if given
-        if hasattr(args[0], 'id'):  # TODO: replace once class comparison works...
+        if hasattr(args[0], "id"):  # TODO: replace once class comparison works...
             data = args.pop(0)
-            channel = kwargs.pop('channel', 0)
+            channel = kwargs.pop("channel", 0)
             if not data.ndim == 1:
                 raise wt_exceptions.DimensionalityError(1, data.ndim)
             # arrays
@@ -437,10 +450,13 @@ class Axes(matplotlib.axes.Axes):
             data = None
             channel_index = 0
         # labels
-        self._apply_labels(autolabel=kwargs.pop('autolabel', False),
-                           xlabel=kwargs.pop('xlabel', None),
-                           ylabel=kwargs.pop('ylabel', None),
-                           data=data, channel_index=channel_index)
+        self._apply_labels(
+            autolabel=kwargs.pop("autolabel", False),
+            xlabel=kwargs.pop("xlabel", None),
+            ylabel=kwargs.pop("ylabel", None),
+            data=data,
+            channel_index=channel_index,
+        )
         # call parent
         super().plot(*args, **kwargs)
 
@@ -464,10 +480,10 @@ class Figure(matplotlib.figure.Figure):
         # --- Blaise 2018-02-24
         #
         # projection
-        if 'projection' not in kwargs.keys():
-            projection = 'wright'
+        if "projection" not in kwargs.keys():
+            projection = "wright"
         else:
-            projection = kwargs['projection']
+            projection = kwargs["projection"]
         # must be arguments
         if not len(args):
             return
@@ -475,22 +491,24 @@ class Figure(matplotlib.figure.Figure):
         if len(args) == 1 and isinstance(args[0], int):
             args = tuple([int(c) for c in str(args[0])])
             if len(args) != 3:
-                raise ValueError("Integer subplot specification must " +
-                                 "be a three digit number.  " +
-                                 "Not {n:d}".format(n=len(args)))
+                raise ValueError(
+                    "Integer subplot specification must "
+                    + "be a three digit number.  "
+                    + "Not {n:d}".format(n=len(args))
+                )
         # subplotbase args
         if isinstance(args[0], SubplotBase):
             a = args[0]
             if a.get_figure() is not self:
-                msg = ("The Subplot must have been created in the present"
-                       " figure")
+                msg = "The Subplot must have been created in the present" " figure"
                 raise ValueError(msg)
             # make a key for the subplot (which includes the axes object id
             # in the hash)
             key = self._make_key(*args, **kwargs)
         else:
             projection_class, kwargs, key = matplotlib.figure.process_projection_requirements(
-                self, *args, **kwargs)
+                self, *args, **kwargs
+            )
             # try to find the axes with this key in the stack
             ax = self._axstack.get(key)
             if ax is not None:
@@ -505,13 +523,13 @@ class Figure(matplotlib.figure.Figure):
                     # Without this, add_subplot would be simpler and
                     # more similar to add_axes.
                     self._axstack.remove(ax)
-            if projection == 'wright':
+            if projection == "wright":
                 a = subplot_class_factory(Axes)(self, *args, **kwargs)
             else:
                 a = subplot_class_factory(projection_class)(self, *args, **kwargs)
         self._axstack.add(key, a)
         self.sca(a)
-        if int(matplotlib.__version__.split('.')[0]) > 1:
+        if int(matplotlib.__version__.split(".")[0]) > 1:
             a._remove_method = self.__remove_ax
             self.stale = True
             a.stale_callback = matplotlib.figure._stale_figure_callback
@@ -528,7 +546,7 @@ class GridSpec(matplotlib.gridspec.GridSpec):
 # --- artist helpers ------------------------------------------------------------------------------
 
 
-def apply_rcparams(kind='fast'):
+def apply_rcparams(kind="fast"):
     """Quickly apply rcparams for given purposes.
 
     Parameters
@@ -536,27 +554,27 @@ def apply_rcparams(kind='fast'):
     kind: {'default', 'fast', 'publication'} (optional)
         Settings to use. Default is 'fast'.
     """
-    if kind == 'default':
+    if kind == "default":
         matplotlib.rcdefaults()
-    elif kind == 'fast':
-        matplotlib.rcParams['text.usetex'] = False
-        matplotlib.rcParams['mathtext.fontset'] = 'cm'
-        matplotlib.rcParams['font.family'] = 'sans-serif'
-        matplotlib.rcParams['font.size'] = 14
-        matplotlib.rcParams['legend.edgecolor'] = 'grey'
-        matplotlib.rcParams['contour.negative_linestyle'] = 'solid'
-    elif kind == 'publication':
-        matplotlib.rcParams['text.usetex'] = True
-        matplotlib.rcParams['text.latex.unicode'] = True
-        preamble = '\\usepackage[cm]{sfmath}\\usepackage{amssymb}'
-        matplotlib.rcParams['text.latex.preamble'] = preamble
-        matplotlib.rcParams['mathtext.fontset'] = 'cm'
-        matplotlib.rcParams['font.family'] = 'sans-serif'
-        matplotlib.rcParams['font.serif'] = 'cm'
-        matplotlib.rcParams['font.sans-serif'] = 'cm'
-        matplotlib.rcParams['font.size'] = 14
-        matplotlib.rcParams['legend.edgecolor'] = 'grey'
-        matplotlib.rcParams['contour.negative_linestyle'] = 'solid'
+    elif kind == "fast":
+        matplotlib.rcParams["text.usetex"] = False
+        matplotlib.rcParams["mathtext.fontset"] = "cm"
+        matplotlib.rcParams["font.family"] = "sans-serif"
+        matplotlib.rcParams["font.size"] = 14
+        matplotlib.rcParams["legend.edgecolor"] = "grey"
+        matplotlib.rcParams["contour.negative_linestyle"] = "solid"
+    elif kind == "publication":
+        matplotlib.rcParams["text.usetex"] = True
+        matplotlib.rcParams["text.latex.unicode"] = True
+        preamble = "\\usepackage[cm]{sfmath}\\usepackage{amssymb}"
+        matplotlib.rcParams["text.latex.preamble"] = preamble
+        matplotlib.rcParams["mathtext.fontset"] = "cm"
+        matplotlib.rcParams["font.family"] = "sans-serif"
+        matplotlib.rcParams["font.serif"] = "cm"
+        matplotlib.rcParams["font.sans-serif"] = "cm"
+        matplotlib.rcParams["font.size"] = 14
+        matplotlib.rcParams["legend.edgecolor"] = "grey"
+        matplotlib.rcParams["contour.negative_linestyle"] = "solid"
 
 
 from ._helpers import pcolor_helper  # flake8: noqa (circular import)

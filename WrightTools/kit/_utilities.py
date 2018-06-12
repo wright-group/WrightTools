@@ -11,7 +11,7 @@ import string
 # --- define --------------------------------------------------------------------------------------
 
 
-__all__ = ['string2identifier', 'Timer']
+__all__ = ["string2identifier", "Timer"]
 
 
 # --- functions -----------------------------------------------------------------------------------
@@ -37,16 +37,16 @@ def string2identifier(s):
     # https://docs.python.org/3/reference/lexical_analysis.html#identifiers
     # https://www.python.org/dev/peps/pep-3131/
     if len(s) == 0:
-        return '_'
+        return "_"
     if s[0] not in string.ascii_letters:
-        s = '_' + s
-    valids = string.ascii_letters + string.digits + '_'
-    out = ''
+        s = "_" + s
+    valids = string.ascii_letters + string.digits + "_"
+    out = ""
     for i, char in enumerate(s):
         if char in valids:
             out += char
         else:
-            out += '_'
+            out += "_"
     return out
 
 
@@ -70,4 +70,4 @@ class Timer:
         self.end = time.time()
         self.interval = self.end - self.start
         if self.verbose:
-            print('elapsed time: {0} sec'.format(self.interval))
+            print("elapsed time: {0} sec".format(self.interval))

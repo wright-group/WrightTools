@@ -30,13 +30,13 @@ def test__s__23():
 
 def test__s__1_25():
     index = (slice(None),)
-    shape = (1, 25,)
+    shape = (1, 25)
     assert wt.kit.valid_index(index, shape) == (slice(None), slice(None))
 
 
 def test__ss_ss__1_25():
     index = (slice(20, None, 1), slice(20, None, 1))
-    shape = (1, 25,)
+    shape = (1, 25)
     assert wt.kit.valid_index(index, shape) == (slice(None), slice(20, None, 1))
 
 
@@ -55,7 +55,7 @@ def test__s_s__51():
 # --- run -----------------------------------------------------------------------------------------
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     test__1_5__7()
     test__4_2_12__1_25_1()
     test__s__23()

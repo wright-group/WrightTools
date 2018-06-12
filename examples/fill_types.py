@@ -14,9 +14,9 @@ import numpy as np
 import WrightTools as wt
 from WrightTools import datasets
 
-cmap = wt.artists.colormaps['default']
+cmap = wt.artists.colormaps["default"]
 
-fig, gs = wt.artists.create_figure(width='double', nrows=2, cols=[1, 1, 1, 1, 'cbar'])
+fig, gs = wt.artists.create_figure(width="double", nrows=2, cols=[1, 1, 1, 1, "cbar"])
 
 # get data
 p = datasets.COLORS.v0p2_d1_d2_diagonal
@@ -28,7 +28,7 @@ data.ai0.normalize()
 
 def dot_pixel_centers(ax, xi, yi):
     for x in xi:
-        ax.scatter([x] * len(xi), yi, edgecolor=None, s=5, color='k')
+        ax.scatter([x] * len(xi), yi, edgecolor=None, s=5, color="k")
 
 
 def decorate(ax):
@@ -39,10 +39,10 @@ def decorate(ax):
 # pcolor
 ax = plt.subplot(gs[0, 0])
 ax.pcolor(data, cmap=cmap)
-ax.set_title('pcolor', fontsize=20)
+ax.set_title("pcolor", fontsize=20)
 decorate(ax)
 ax = plt.subplot(gs[1, 0])
-ax.pcolor(data, cmap=cmap, edgecolors='k')
+ax.pcolor(data, cmap=cmap, edgecolors="k")
 dot_pixel_centers(ax, data.d1.points, data.d2.points)
 decorate(ax)
 
@@ -52,23 +52,23 @@ yi = data.d2.points
 zi = data.channels[0][:].T
 ax = plt.subplot(gs[0, 1])
 points = [xi, yi]
-x, y = tuple(np.meshgrid(*points, indexing='ij'))
+x, y = tuple(np.meshgrid(*points, indexing="ij"))
 ax.tripcolor(x.flatten(), y.flatten(), zi.T.flatten(), cmap=cmap, vmin=0, vmax=1)
 decorate(ax)
-ax.set_title('tripcolor', fontsize=20)
+ax.set_title("tripcolor", fontsize=20)
 ax = plt.subplot(gs[1, 1])
-ax.tripcolor(x.flatten(), y.flatten(), zi.T.flatten(), edgecolor='k', cmap=cmap, vmin=0, vmax=1)
+ax.tripcolor(x.flatten(), y.flatten(), zi.T.flatten(), edgecolor="k", cmap=cmap, vmin=0, vmax=1)
 decorate(ax)
 dot_pixel_centers(ax, xi, yi)
 
 
 def plot_delaunay_edges(ax, xi, yi, zi):
-    x, y = tuple(np.meshgrid(xi, yi, indexing='ij'))
+    x, y = tuple(np.meshgrid(xi, yi, indexing="ij"))
     tri = matplotlib.tri.Triangulation(x.flatten(), y.flatten())
     for i, j in tri.edges:
-        plt.plot([x.flatten()[i], x.flatten()[j]],
-                 [y.flatten()[i], y.flatten()[j]],
-                 c='k', lw=0.25)
+        plt.plot(
+            [x.flatten()[i], x.flatten()[j]], [y.flatten()[i], y.flatten()[j]], c="k", lw=0.25
+        )
         ax.set_xlim(-125, 125)
         ax.set_ylim(-125, 125)
 
@@ -78,7 +78,7 @@ ax = plt.subplot(gs[0, 2])
 levels = np.linspace(0, 1, 200)
 ax.contourf(data)
 decorate(ax)
-ax.set_title('contourf', fontsize=20)
+ax.set_title("contourf", fontsize=20)
 ax = plt.subplot(gs[1, 2])
 ax.contourf(data)
 plot_delaunay_edges(ax, xi, yi, zi)
@@ -89,7 +89,7 @@ ax = plt.subplot(gs[0, 3])
 levels = np.linspace(0, 1, 11)
 ax.contour(data)
 decorate(ax)
-ax.set_title('contour', fontsize=20)
+ax.set_title("contour", fontsize=20)
 ax = plt.subplot(gs[1, 3])
 ax.contour(data)
 decorate(ax)
@@ -102,4 +102,4 @@ wt.artists.set_fig_labels(xlabel=data.d1.label, ylabel=data.d2.label, xticks=tic
 
 # colorbar
 cax = plt.subplot(gs[:, -1])
-wt.artists.plot_colorbar(cax=cax, label='amplitude')
+wt.artists.plot_colorbar(cax=cax, label="amplitude")

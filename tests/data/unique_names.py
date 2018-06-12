@@ -18,9 +18,9 @@ import WrightTools as wt
 def test_exception():
     d = wt.Data()
     points = np.linspace(0, 1, 51)
-    d.create_axis(name='w1', points=points, units='eV')
+    d.create_axis(name="w1", points=points, units="eV")
     try:
-        d.create_channel(name='w1')
+        d.create_channel(name="w1")
     except wt.exceptions.NameNotUniqueError:
         assert True
     else:

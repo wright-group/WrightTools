@@ -22,8 +22,8 @@ here = os.path.abspath(os.path.dirname(__file__))
 
 
 def assert_equal(a, b):
-    if hasattr(a, '__iter__'):
-        if hasattr(a, 'dtype') and a.ndim > 1:
+    if hasattr(a, "__iter__"):
+        if hasattr(a, "dtype") and a.ndim > 1:
             assert np.isclose(a[:].all(), b[:].all())
         else:
             for ai, bi in zip(a, b):
@@ -38,11 +38,11 @@ def assert_equal(a, b):
 def test_copy_data():
     root = wt.Collection()
     p = datasets.PyCMDS.wm_w2_w1_001
-    data = wt.data.from_PyCMDS(p, parent=root, name='data')
-    new = data.copy(parent=root, name='copy')
+    data = wt.data.from_PyCMDS(p, parent=root, name="data")
+    new = data.copy(parent=root, name="copy")
     assert len(root.item_names) == 2
     for k, v in data.attrs.items():
-        if k == 'name':
+        if k == "name":
             continue
         assert_equal(new.attrs[k], v)
     for k, v in data.items():
@@ -58,10 +58,10 @@ def test_copy_data():
 def test_save_data():
     p = datasets.PyCMDS.wm_w2_w1_001
     data = wt.data.from_PyCMDS(p)
-    p = os.path.join(here, 'data')
+    p = os.path.join(here, "data")
     p = data.save(p)
     assert os.path.isfile(p)
-    assert p.endswith('.wt5')
+    assert p.endswith(".wt5")
     new = wt.open(p)
     for k, v in data.attrs.items():
         assert_equal(new.attrs[k], v)
@@ -77,13 +77,13 @@ def test_save_data():
 
 
 def test_save_nested():
-    root = wt.Collection(name='root')
-    one = wt.Collection(name='one', parent=root)
-    wt.Collection(name='two', parent=one)
-    p = os.path.join(here, 'nested')
+    root = wt.Collection(name="root")
+    one = wt.Collection(name="one", parent=root)
+    wt.Collection(name="two", parent=one)
+    p = os.path.join(here, "nested")
     p = one.save(p)
     assert os.path.isfile(p)
-    assert p.endswith('.wt5')
+    assert p.endswith(".wt5")
     new = wt.open(p)
     for k, v in one.attrs.items():
         assert_equal(new.attrs[k], v)
@@ -95,7 +95,7 @@ def test_save_nested():
 
 
 def test_simple_copy():
-    original = wt.Collection(name='blaise')
+    original = wt.Collection(name="blaise")
     new = original.copy()
     assert original.fullpath != new.fullpath
     for k, v in original.attrs.items():
@@ -107,11 +107,11 @@ def test_simple_copy():
 
 
 def test_simple_save():
-    original = wt.Collection(name='blaise')
-    p = os.path.join(here, 'simple')
+    original = wt.Collection(name="blaise")
+    p = os.path.join(here, "simple")
     p = original.save(p)
     assert os.path.isfile(p)
-    assert p.endswith('.wt5')
+    assert p.endswith(".wt5")
     new = wt.open(p)
     for k, v in original.attrs.items():
         assert_equal(new.attrs[k], v)
@@ -125,11 +125,11 @@ def test_simple_save():
 def test_propagate_units():
     p = datasets.PyCMDS.wm_w2_w1_001
     data = wt.data.from_PyCMDS(p)
-    data.convert('eV')
-    p = os.path.join(here, 'units')
+    data.convert("eV")
+    p = os.path.join(here, "units")
     p = data.save(p)
     new = wt.open(p)
-    assert new.units == ('eV', 'eV', 'eV')
+    assert new.units == ("eV", "eV", "eV")
     data.close()
     new.close()
     os.remove(p)
@@ -138,8 +138,8 @@ def test_propagate_units():
 def test_propagate_expressions():
     p = datasets.PyCMDS.wm_w2_w1_001
     data = wt.data.from_PyCMDS(p)
-    data.transform('w1-wm', 'w2', 'w1')
-    p = os.path.join(here, 'expressions')
+    data.transform("w1-wm", "w2", "w1")
+    p = os.path.join(here, "expressions")
     p = data.save(p)
     new = wt.open(p)
     assert data.axis_expressions == new.axis_expressions
@@ -151,7 +151,7 @@ def test_propagate_expressions():
 # --- run -----------------------------------------------------------------------------------------
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     test_copy_data()
     test_save_data()
     test_save_nested()

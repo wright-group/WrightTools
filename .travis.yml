@@ -11,6 +11,7 @@ addons:
             - libopenblas-dev
 install:
   - python setup.py install
+  - pip install -U pytest
 before_script:
 - "export DISPLAY=:99.0"
 - "sh -e /etc/init.d/xvfb start"

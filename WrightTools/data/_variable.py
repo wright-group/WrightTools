@@ -15,7 +15,7 @@ from .._dataset import Dataset
 class Variable(Dataset):
     """Variable."""
 
-    class_name = 'Variable'
+    class_name = "Variable"
 
     def __init__(self, parent, id, units=None, **kwargs):
         """Variable.
@@ -37,13 +37,13 @@ class Variable(Dataset):
             self.units = units
         # attrs
         self.attrs.update(kwargs)
-        self.attrs['name'] = h5py.h5i.get_name(self.id).decode().split('/')[-1]
-        self.attrs['class'] = self.class_name
+        self.attrs["name"] = h5py.h5i.get_name(self.id).decode().split("/")[-1]
+        self.attrs["class"] = self.class_name
 
     @property
     def label(self):
-        return self.attrs.get('label', '')
+        return self.attrs.get("label", "")
 
     @label.setter
     def label(self, label):
-        self.attrs['label'] = label
+        self.attrs["label"] = label

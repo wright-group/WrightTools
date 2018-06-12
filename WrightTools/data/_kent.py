@@ -19,14 +19,21 @@ from .. import kit as wt_kit
 # --- define --------------------------------------------------------------------------------------
 
 
-__all__ = ['from_KENT']
+__all__ = ["from_KENT"]
 
 
 # --- from function -------------------------------------------------------------------------------
 
 
-def from_KENT(filepaths, name=None, ignore=['wm'], delay_tolerance=0.1, frequency_tolerance=0.5,
-              parent=None, verbose=True):
+def from_KENT(
+    filepaths,
+    name=None,
+    ignore=["wm"],
+    delay_tolerance=0.1,
+    frequency_tolerance=0.5,
+    parent=None,
+    verbose=True,
+):
     """Create data object from KENT file(s).
 
     Parameters
@@ -56,21 +63,21 @@ def from_KENT(filepaths, name=None, ignore=['wm'], delay_tolerance=0.1, frequenc
     # define columns ------------------------------------------------------------------------------
     # axes
     axes = collections.OrderedDict()
-    axes['w1'] = {'units': 'wn', 'idx': 0, 'label': '1'}
-    axes['w2'] = {'units': 'wn', 'idx': 1, 'label': '2'}
-    axes['wm'] = {'units': 'wn', 'idx': 2, 'label': 'm'}
-    axes['d1'] = {'units': 'ps', 'idx': 3, 'label': '1'}
-    axes['d2'] = {'units': 'ps', 'idx': 4, 'label': '2'}
+    axes["w1"] = {"units": "wn", "idx": 0, "label": "1"}
+    axes["w2"] = {"units": "wn", "idx": 1, "label": "2"}
+    axes["wm"] = {"units": "wn", "idx": 2, "label": "m"}
+    axes["d1"] = {"units": "ps", "idx": 3, "label": "1"}
+    axes["d2"] = {"units": "ps", "idx": 4, "label": "2"}
     for key in axes.keys():
-        if 'w' in key:
-            axes[key]['tolerance'] = frequency_tolerance
-        elif 'd' in key:
-            axes[key]['tolerance'] = delay_tolerance
+        if "w" in key:
+            axes[key]["tolerance"] = frequency_tolerance
+        elif "d" in key:
+            axes[key]["tolerance"] = delay_tolerance
     # channels
     channels = collections.OrderedDict()
-    channels['signal'] = {'idx': 5}
-    channels['OPA1'] = {'idx': 6}
-    channels['OPA2'] = {'idx': 7}
+    channels["signal"] = {"idx": 5}
+    channels["OPA1"] = {"idx": 6}
+    channels["OPA2"] = {"idx": 7}
     # do we have a list of files or just one file? ------------------------------------------------
     if isinstance(filepaths, list):
         file_example = filepaths[0]
@@ -88,7 +95,7 @@ def from_KENT(filepaths, name=None, ignore=['wm'], delay_tolerance=0.1, frequenc
     # create data object --------------------------------------------------------------------------
     if name is None:
         name = wt_kit.string2identifier(os.path.basename(filepaths[0]))
-    kwargs = {'name': name, 'kind': 'KENT', 'source': filepaths}
+    kwargs = {"name": name, "kind": "KENT", "source": filepaths}
     if parent is not None:
         data = parent.create_data(**kwargs)
     else:
@@ -97,45 +104,45 @@ def from_KENT(filepaths, name=None, ignore=['wm'], delay_tolerance=0.1, frequenc
     # variables
     ndim = len(scanned)
     for i, key in enumerate(scanned.keys()):
-        for name in key.split('='):
+        for name in key.split("="):
             shape = [1] * ndim
             a = scanned[key]
             shape[i] = a.size
             a.shape = tuple(shape)
-            units = axes[name]['units']
-            label = axes[name]['label']
+            units = axes[name]["units"]
+            label = axes[name]["label"]
             data.create_variable(name=name, values=a, units=units, label=label)
     for key, dic in axes.items():
         if key not in data.variable_names:
-            c = np.mean(arr[dic['idx']])
+            c = np.mean(arr[dic["idx"]])
             if not np.isnan(c):
                 shape = [1] * ndim
                 a = np.array([c])
                 a.shape = tuple(shape)
-                units = dic['units']
-                label = dic['label']
+                units = dic["units"]
+                label = dic["label"]
                 data.create_variable(name=key, values=a, units=units, label=label)
     # channels
     if len(scanned) == 1:  # 1D data
         for key in channels.keys():
             channel = channels[key]
-            zi = arr[channel['idx']]
+            zi = arr[channel["idx"]]
             data.create_channel(name=key, values=zi)
     else:  # all other dimensionalities
         # channels
-        points = tuple(arr[axes[key.split('=')[0]]['idx']] for key in scanned.keys())
-        xi = tuple(np.meshgrid(*scanned.values(), indexing='ij'))
+        points = tuple(arr[axes[key.split("=")[0]]["idx"]] for key in scanned.keys())
+        xi = tuple(np.meshgrid(*scanned.values(), indexing="ij"))
         for key in channels.keys():
             channel = channels[key]
-            zi = arr[channel['idx']]
+            zi = arr[channel["idx"]]
             fill_value = min(zi)
-            grid_i = griddata(points, zi, xi, method='linear', fill_value=fill_value)
+            grid_i = griddata(points, zi, xi, method="linear", fill_value=fill_value)
             data.create_channel(name=key, values=grid_i)
     # axes
     data.transform(*scanned.keys())
     # return --------------------------------------------------------------------------------------
     if verbose:
-        print('data created at {0}'.format(data.fullpath))
-        print('  axes: {0}'.format(data.axis_names))
-        print('  shape: {0}'.format(data.shape))
+        print("data created at {0}".format(data.fullpath))
+        print("  axes: {0}".format(data.axis_names))
+        print("  shape: {0}".format(data.shape))
     return data
