@@ -6,6 +6,7 @@ from ._calculate import *
 from ._discover_dimensions import *
 from ._ini import *
 from ._interpolate import *
+from ._leastsq import *
 from ._list import *
 from ._path import *
 from ._timestamp import *
