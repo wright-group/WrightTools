@@ -13,9 +13,9 @@ Create a data object from one of the built-in datasets.
    import WrightTools as wt
    # get some example files
    from WrightTools import datasets
-   ps = datasets.COLORS.v2p1_MoS2_TrEE_movie  # list of filepaths
-   # create data object
-   data = wt.data.from_COLORS(ps)
+   p = datasets.wt5.v1p0p1_MoS2_TrEE_movie  # list of filepaths
+   # open data object
+   data = wt.open(p)
 
 The data contains some helpful attributes that we can inspect now:
 
@@ -51,8 +51,8 @@ For more information, check see :ref:`artists`, or check out our `gallery`_.
    import matplotlib.pyplot as plt
    import WrightTools as wt
    from WrightTools import datasets
-   ps = datasets.COLORS.v2p1_MoS2_TrEE_movie
-   data = wt.data.from_COLORS(ps)
+   ps = datasets.wt5.v1p0p1_MoS2_TrEE_movie
+   data = wt.open(ps)
    wt.artists.quick1D(data, 'w1=wm', at={'w2': [2, 'eV'], 'd2': [-100, 'fs']})
    plt.show()
 
@@ -69,8 +69,8 @@ For more information, check see :ref:`artists`, or check out our `gallery`_.
    import matplotlib.pyplot as plt
    import WrightTools as wt
    from WrightTools import datasets
-   ps = datasets.COLORS.v2p1_MoS2_TrEE_movie
-   data = wt.data.from_COLORS(ps)
+   p = datasets.wt5.v1p0p1_MoS2_TrEE_movie
+   data = wt.open(p)
    wt.artists.quick2D(data, 'w1=wm', 'd2', at={'w2': [2, 'eV']})
    plt.show()
 
@@ -121,8 +121,8 @@ Use ``clip`` to ignore points outside of a specific range.
    import matplotlib.pyplot as plt
    import WrightTools as wt
    from WrightTools import datasets
-   ps = datasets.COLORS.v2p1_MoS2_TrEE_movie
-   #data = wt.data.from_COLORS(ps)
+   p = datasets.wt5.v1p0p1_MoS2_TrEE_movie
+   #data = wt.open(p)
    #data.clip('ai0', min=0.0, max=0.1)
    #artist = wt.artists.mpl_2D(data, 'w1', 'd2', at={'w2': [2, 'eV']})
    #artist.plot()

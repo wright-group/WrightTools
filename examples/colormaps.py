@@ -14,8 +14,8 @@ from WrightTools import datasets
 
 fig, gs = wt.artists.create_figure(width="double", cols=[1, 1, "cbar"], nrows=3)
 
-p = datasets.COLORS.v2p1_MoS2_TrEE_movie
-data = wt.data.from_COLORS(p, verbose=False)
+p = datasets.wt5.v1p0p1_MoS2_TrEE_movie
+data = wt.open(p)
 data.level(0, 2, -3)
 data.convert("eV")
 data.ai0.symmetric_root(0.5)
