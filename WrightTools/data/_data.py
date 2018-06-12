@@ -431,7 +431,6 @@ class Data(Group):
                     print('axis {} converted from {} to {}'.format(axis.expression, axis.units,
                                                                    destination_units))
                 axis.convert(destination_units, convert_variables=convert_variables)
-                    print("axis", axis.expression, "converted")
         if convert_variables:
             for var in self.variables:
                 if wt_units.kind(var.units) == units_kind:
@@ -440,7 +439,6 @@ class Data(Group):
                                                                            var.units,
                                                                            destination_units))
                     var.convert(destination_units)
-                        print("variable", var.natural_name, "converted")
         self._on_axes_updated()
 
     def create_channel(self, name, values=None, shape=None, units=None, **kwargs):
