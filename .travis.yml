@@ -2,9 +2,14 @@ language: python
 python:
   - "3.5"
   - "3.6"
+addons:
+    apt:
+        packages:
+            - libfreetype6-dev
+            - hdf5-tools
+            - libhdf5-dev
+            - libopenblas-dev
 install:
-  - sudo apt-get update
-  - sudo apt-get install libfreetype6-dev hdf5-tools libhdf5-dev libopenblas-dev
   - python setup.py install
 before_script:
 - "export DISPLAY=:99.0"
