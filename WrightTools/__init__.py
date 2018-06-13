@@ -7,6 +7,7 @@
 
 import sys as _sys
 
+from .__citation__ import *
 from .__version__ import *
 from .__wt5_version__ import *
 from . import artists

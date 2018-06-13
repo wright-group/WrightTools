@@ -1,7 +1,33 @@
 .. _publications:
 
+Citing WrightTools
+==================
+
+When publishing research which used WrightTools, please provide credit to WrightTools
+developers through citation or acknowledgement.
+
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.1198904.svg
+   :target: https://doi.org/10.5281/zenodo.1198904
+
+BibTex citation:
+
+::
+
+  @misc{WrightTools,
+    author =       {Blaise J. Thompson and Kyle F. Sunden and Darien J. Morrow and Nathan Andrew
+                    Neff-Mallon and Kyle J. Czech and Daniel D. Kohler and Tom Parker and Rachel
+                    Swedin},
+    doi =          {10.5281/zenodo.1198904},
+    title =        {WrightTools},
+  }
+
+Also see ``WrightTools.__citation__``.
+
+In addition to the main WrightTools citation, each released version of WrightTools has its own
+DOI through zenodo. Refer there to cite a particular version: `<https://zenodo.org/record/1198904>`_.
+
 Publications
-============
+------------
 
 The following publications were enabled, to some extent, by WrightTools.
 The authors of these publications have volunteered to appear on this page.
