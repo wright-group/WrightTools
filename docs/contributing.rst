@@ -31,6 +31,14 @@ Preparing
 
         $ python setup.py test
 
+   Note: On ``*nix`` machines (unfortunately this does not work on Windows),
+   the tests may be multiprocessed using `pytest-mp <https://github.com/ansible/pytest-mp>`_:
+
+   .. code-block:: bash
+       
+       $ pip install pytest-mp
+       $ python setup.py test --addopts "--mp"
+
 
 Contributing
 ------------
