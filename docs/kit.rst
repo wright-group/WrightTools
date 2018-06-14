@@ -13,7 +13,6 @@ Some of the useful classes that kit contains include:
 Class         Use
 ============  =====================================================================
 TimeStamp     Represents a moment in time in many different ways.
-FileSlicer    Allows access to lines of a file without loading the entire file.
 INI           Interacts with .ini files.
 Spline        Less picky paramaterization of scipy.UnivariateSpline
 Timer         Allows controlled execution of code while offering timing abilities.

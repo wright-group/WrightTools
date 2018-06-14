@@ -94,8 +94,8 @@ Convert
 
 Want fine control? You can always convert individual axes, *e.g.* ``data.w2.convert('wn')``.
 
-Split
-^^^^^
+Split (Coming soon)
+^^^^^^^^^^^^^^^^^^^
 
 Use ``split`` to break your dataset into smaller pieces.
 
@@ -106,8 +106,8 @@ Use ``split`` to break your dataset into smaller pieces.
      0 : -599.79 to -40.06 fs (length 15)
      1 : 39.91 to 279.70 fs (length 7)
 
-Clip
-^^^^
+Clip (Coming soon)
+^^^^^^^^^^^^^^^^^^
 
 Use ``clip`` to ignore points outside of a specific range.
 
