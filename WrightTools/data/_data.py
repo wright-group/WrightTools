@@ -168,9 +168,9 @@ class Data(Group):
         try:
             assert self._variables is not None
         except (AssertionError, AttributeError):
-            self._variables = tuple([self[n] for n in self.variable_names])
+            self._variables = [self[n] for n in self.variable_names]
         finally:
-            return self._variables
+            return tuple(self._variables)
 
     @property
     def _leaf(self):
