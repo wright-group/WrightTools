@@ -281,111 +281,6 @@ def get_color_cycle(n, cmap="rainbow", rotations=3):
     return out
 
 
-def plot_colorbar(
-    *,
-    cax=None,
-    cmap="default",
-    ticks=None,
-    clim=None,
-    vlim=None,
-    label=None,
-    tick_fontsize=14,
-    label_fontsize=18,
-    decimals=None,
-    orientation="vertical",
-    ticklocation="auto"
-):
-    """Easily add a colormap to an axis.
-
-    Parameters
-    ----------
-    cax : matplotlib axis (optional)
-        The axis to plot the colorbar on. Finds the current axis if none is
-        given.
-    cmap : string or LinearSegmentedColormap (optional)
-        The colormap to fill the colorbar with. Strings map as keys to the
-        WrightTools colormaps dictionary. Default is `default`.
-    ticks : 1D array-like (optional)
-        Ticks. Default is None.
-    clim : two element list (optional)
-        The true limits of the colorbar, in the same units as ticks. If None,
-        streaches the colorbar over the limits of ticks. Default is None.
-    vlim : two element list-like (optional)
-        The limits of the displayed colorbar, in the same units as ticks. If
-        None, displays over clim. Default is None.
-    label : str (optional)
-        Label. Default is None.
-    tick_fontsize : number (optional)
-        Fontsize. Default is 14.
-    label_fontsize : number (optional)
-        Label fontsize. Default is 18.
-    decimals : integer (optional)
-        Number of decimals to appear in tick labels. Default is None (best guess).
-    orientation : {'vertical', 'horizontal'} (optional)
-        Colorbar orientation. Default is vertical.
-    ticklocation : {'auto', 'left', 'right', 'top', 'bottom'} (optional)
-        Tick location. Default is auto.
-
-    Returns
-    -------
-    matplotlib.colorbar.ColorbarBase object
-        The created colorbar.
-    """
-    # parse cax
-    if cax is None:
-        cax = plt.gca()
-    # parse cmap
-    if isinstance(cmap, str):
-        cmap = colormaps[cmap]
-    # parse ticks
-    if ticks is None:
-        ticks = np.linspace(0, 1, 11)
-    # parse clim
-    if clim is None:
-        clim = [min(ticks), max(ticks)]
-    # parse clim
-    if vlim is None:
-        vlim = clim
-    # parse format
-    if isinstance(decimals, int):
-        format = "%.{0}f".format(decimals)
-    else:
-        magnitude = int(np.log10(max(vlim) - min(vlim)) - 0.99)
-        if 1 > magnitude > -3:
-            format = "%.{0}f".format(-magnitude + 1)
-        elif magnitude in (1, 2, 3):
-            format = "%i"
-        else:
-            # scientific notation
-            def fmt(x, _):
-                return "%.1f" % (x / float(10 ** magnitude))
-
-            format = matplotlib.ticker.FuncFormatter(fmt)
-            magnitude_label = r"  $\mathsf{\times 10^{%d}}$" % magnitude
-            if label is None:
-                label = magnitude_label
-            else:
-                label = " ".join([label, magnitude_label])
-    # make cbar
-    norm = matplotlib.colors.Normalize(vmin=vlim[0], vmax=vlim[1])
-    cbar = matplotlib.colorbar.ColorbarBase(
-        ax=cax,
-        cmap=cmap,
-        norm=norm,
-        ticks=ticks,
-        orientation=orientation,
-        ticklocation=ticklocation,
-        format=format,
-    )
-    # coerce properties
-    cbar.set_clim(clim[0], clim[1])
-    cbar.ax.tick_params(labelsize=tick_fontsize)
-    if label:
-        cbar.set_label(label, fontsize=label_fontsize)
-    # finish
-    return cbar
-
-
 # --- color maps ----------------------------------------------------------------------------------
 
 
@@ -568,6 +463,12 @@ colormaps["wright"] = mplcolors.LinearSegmentedColormap.from_list("wright", wrig
 # enforce grey as 'bad' value for colormaps
 for cmap in colormaps.values():
     cmap.set_bad([0.75] * 3, 1)
+# enforce under and over for default colormap
+colormaps["default"].set_under([0.50] * 3, 1)
+colormaps["default"].set_over("m")
+# enforce under and over for signed colormap
+colormaps["signed"].set_under("c")
+colormaps["signed"].set_over("m")
 
 
 # a nice set of line colors

@@ -62,9 +62,7 @@ class Data(Group):
 
     def __repr__(self):
         return "<WrightTools.Data '{0}' {1} at {2}>".format(
-            self.natural_name,
-            str(self.axis_names),
-            "::".join([self.filepath, self.name]),
+            self.natural_name, str(self.axis_names), "::".join([self.filepath, self.name])
         )
 
     @property
@@ -222,9 +220,7 @@ class Data(Group):
         else:
             # axes
             s = "axes: "
-            s += ", ".join(
-                ["{0} ({1})".format(a.expression, a.units) for a in self.axes]
-            )
+            s += ", ".join(["{0} ({1})".format(a.expression, a.units) for a in self.axes])
             print(prefix + "├── " + s)
             # channels
             s = "channels: "
@@ -342,12 +338,8 @@ class Data(Group):
                 kwargs["signed"] = c.signed
                 kwargs.update(c.attrs)
                 data.create_channel(**kwargs)
-            new_axes = [
-                a.expression for a in kept_axes if a.expression not in at.keys()
-            ]
-            new_axis_units = [
-                a.units for a in kept_axes if a.expression not in at.keys()
-            ]
+            new_axes = [a.expression for a in kept_axes if a.expression not in at.keys()]
+            new_axis_units = [a.units for a in kept_axes if a.expression not in at.keys()]
             data.transform(*new_axes)
             for j, units in enumerate(new_axis_units):
                 data.axes[j].convert(units)
@@ -398,9 +390,7 @@ class Data(Group):
         # collapse --------------------------------------------------------------------------------
         for method, channel in zip(methods, self.channels):
             if method in ["int", "integrate"]:
-                channel[:] = np.trapz(
-                    y=channel[:], x=self._axes[axis_index][:], axis=axis_index
-                )
+                channel[:] = np.trapz(y=channel[:], x=self._axes[axis_index][:], axis=axis_index)
             elif method == "sum":
                 channel[:] = np.nansum(channel[:], axis=axis_index)
             elif method in ["max", "maximum"]:
@@ -497,9 +487,7 @@ class Data(Group):
         dataset_id = self.require_dataset(name=name, chunks=True, **require_kwargs).id
         channel = Channel(self, dataset_id, units=units, **kwargs)
         # finish
-        self.attrs["channel_names"] = np.append(
-            self.attrs["channel_names"], name.encode()
-        )
+        self.attrs["channel_names"] = np.append(self.attrs["channel_names"], name.encode())
         return channel
 
     def create_variable(self, name, values=None, shape=None, units=None, **kwargs):
@@ -538,9 +526,7 @@ class Data(Group):
         variable = Variable(self, id, units=units, **kwargs)
         # finish
         self.variables.append(variable)
-        self.attrs["variable_names"] = np.append(
-            self.attrs["variable_names"], name.encode()
-        )
+        self.attrs["variable_names"] = np.append(self.attrs["variable_names"], name.encode())
         return variable
 
     def flush(self):
@@ -696,19 +682,10 @@ class Data(Group):
         # finish
         channel._null = 0
         if verbose:
-            print(
-                "channel {0} leveled along axis {1}".format(channel.natural_name, axis)
-            )
+            print("channel {0} leveled along axis {1}".format(channel.natural_name, axis))
 
     def map_variable(
-        self,
-        variable,
-        points,
-        input_units="same",
-        *,
-        name=None,
-        parent=None,
-        verbose=True
+        self, variable, points, input_units="same", *, name=None, parent=None, verbose=True
     ):
         """Map points of an axis to new points using linear interpolation.
 
@@ -776,9 +753,7 @@ class Data(Group):
         if self.ndim == 1:
 
             def interpolate(dataset, points):
-                function = scipy.interpolate.interp1d(
-                    variable[:], dataset[:], bounds_error=False
-                )
+                function = scipy.interpolate.interp1d(variable[:], dataset[:], bounds_error=False)
                 return function(points)
 
         else:
@@ -787,9 +762,7 @@ class Data(Group):
 
             def interpolate(dataset, points):
                 values = dataset.full.flatten()
-                function = scipy.interpolate.LinearNDInterpolator(
-                    pts, values, rescale=True
-                )
+                function = scipy.interpolate.LinearNDInterpolator(pts, values, rescale=True)
                 new = function(out_pts)
                 new.shape = out.shape
                 return new
@@ -905,9 +878,7 @@ class Data(Group):
         elif isinstance(offset_axis, str):
             offset_axis_index = self.axis_names.index(offset_axis)
         else:
-            raise TypeError(
-                "offset_axis: expected {int, str}, got %s" % type(offset_axis)
-            )
+            raise TypeError("offset_axis: expected {int, str}, got %s" % type(offset_axis))
         # new points
         new_points = [a[:] for a in self._axes]
         old_offset_axis_points = self._axes[offset_axis_index][:]
@@ -943,9 +914,7 @@ class Data(Group):
             # grid data
             tup = tuple([arr[i] for i in range(len(arr) - 1)])
             # note that rescale is crucial in this operation
-            out = griddata(
-                tup, arr[-1], new_xi, method=method, fill_value=np.nan, rescale=True
-            )
+            out = griddata(tup, arr[-1], new_xi, method=method, fill_value=np.nan, rescale=True)
             channel[:] = out
         self._axes[offset_axis_index][:] = new_offset_axis_points
         # transpose out
@@ -1180,8 +1149,7 @@ class Data(Group):
                 transpose_order = range(len(values.shape))
                 # replace axis_index with zero
                 transpose_order = [
-                    len(values.shape) - 1 if i == axis_index else i
-                    for i in transpose_order
+                    len(values.shape) - 1 if i == axis_index else i for i in transpose_order
                 ]
                 transpose_order[len(values.shape) - 1] = axis_index
                 values = values.transpose(transpose_order)
@@ -1192,9 +1160,7 @@ class Data(Group):
                 for index in np.ndindex(values[..., 0].shape):
                     current_slice = values[index]
                     temp_slice = np.pad(current_slice, int(factor), mode=str("edge"))
-                    values[index] = np.convolve(
-                        temp_slice, w / w.sum(), mode=str("valid")
-                    )
+                    values[index] = np.convolve(temp_slice, w / w.sum(), mode=str("valid"))
                 # transpose out
                 values = values.transpose(transpose_order)
             # return array to channel object
@@ -1202,15 +1168,7 @@ class Data(Group):
         if verbose:
             print("smoothed data")
 
-    def split(
-        self,
-        axis,
-        positions,
-        units="same",
-        direction="below",
-        parent=None,
-        verbose=True,
-    ):
+    def split(self, axis, positions, units="same", direction="below", parent=None, verbose=True):
         """
         Split the data object along a given axis, in units.
 
@@ -1279,9 +1237,7 @@ class Data(Group):
         if flip:
             indicies = [i - 1 for i in indicies]
         # process ---------------------------------------------------------------------------------
-        outs = wt_collection.Collection(
-            name="split", parent=parent, edit_local=parent is not None
-        )
+        outs = wt_collection.Collection(name="split", parent=parent, edit_local=parent is not None)
         start = 0
         stop = 0
         for i in range(len(indicies) + 1):
@@ -1311,9 +1267,7 @@ class Data(Group):
                     attrs = dict(ch.attrs)
                     attrs.pop("name", None)
                     attrs.pop("units", None)
-                    new_data.create_channel(
-                        ch.natural_name, ch[:][slc], ch.units, **attrs
-                    )
+                    new_data.create_channel(ch.natural_name, ch[:][slc], ch.units, **attrs)
             else:
                 attrs = dict(self.attrs)
                 attrs.pop("name", None)
@@ -1346,11 +1300,7 @@ class Data(Group):
                 if new_data is None:
                     print("  {0} : None".format(i))
                 elif len(new_data.shape) < len(self.shape):
-                    print(
-                        "  {0} : {1} {2}(constant)".format(
-                            i, axis.natural_name, axis.units
-                        )
-                    )
+                    print("  {0} : {1} {2}(constant)".format(i, axis.natural_name, axis.units))
                 else:
                     new_axis = new_data.axes[axis_index]
                     print(
@@ -1412,9 +1362,7 @@ class Data(Group):
             axis[:] = scipy.ndimage.interpolation.zoom(axis[:], factor, order=order)
         # channels
         for channel in self.channels:
-            channel[:] = scipy.ndimage.interpolation.zoom(
-                channel[:], factor, order=order
-            )
+            channel[:] = scipy.ndimage.interpolation.zoom(channel[:], factor, order=order)
         # return
         if verbose:
             print("data zoomed to new shape:", self.shape)
