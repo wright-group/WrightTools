@@ -10,7 +10,7 @@ These methods come in two flavors: ``data`` from methods and ``collection`` from
 
 Data from methods create a single data object.
 If multiple data objects would be generated, they should be wrapped in a collection, and be placed
-in the :package:``WrightTools.collection`` package instead.
+in the :py:mod:`WrightTools.collection` package instead.
 The process is much the same, other than the wrapper object.
 Here, we will focus on the more common ``data`` flavor of from method.
 
@@ -21,16 +21,18 @@ then be placed in a ``collection`` from method which returns both the raw form a
 Ideally any processing steps can be performed with methods of ``data``, not in the import stage.
 Additional processing is more tolerated in ``collection`` from methods.
 
+We will walk through by way of example, using :meth:`~WrightTools.data.from_JASCO`:
+
 .. code-block:: python
 
-    # --- import --------------------------------------------------------------------------------------
+    # --- import --------------------------------------------------------------
     import os
     import numpy as np
     from ._data import Axis, Channel, Data
     from .. import exceptions as wt_exceptions
-    # --- define --------------------------------------------------------------------------------------
+    # --- define ---------------------------------------------------------------
     __all__ = ["from_JASCO"]
-    # --- from function -------------------------------------------------------------------------------
+    # --- from function --------------------------------------------------------
     def from_JASCO(filepath, name=None, parent=None, *, verbose=True):
         """Create a data object from JASCO UV-Vis spectrometers.
 
@@ -65,7 +67,7 @@ Additional processing is more tolerated in ``collection`` from methods.
             data = parent.create_data(**kwargs)
         # array
         arr = np.genfromtxt(filepath, skip_header=18).T
-        # chew through all scans
+        # add variable and channels
         data.create_variable(name="energy", values=arr[0], units="nm")
         data.create_channel(name="signal", values=arr[1])
         data.transform("energy")
@@ -81,7 +83,7 @@ Additional processing is more tolerated in ``collection`` from methods.
 Method Signature and Docstring
 ------------------------------
 
-By convention, the function name should be ``from_<source>``.
+By convention, the function name should be ``from_<kind>``.
 The first argument should be a file path to the data file being read in.
 If possible, this should be the only required argument to the function.
 Ideally, ``from_`` methods are free of additional processing, except what is needed to 
@@ -94,7 +96,7 @@ such as the :class:`WrightTools.data.Data` class.
 The other standard, optional arguments are ``name``, ``parent``, and ``verbose``.
 Where possible, the default ``name`` should be derived from metadata in the file itself.
 If that is not possible, it should derive from the ``filename`` itself.
-Consider using :meth:`~WrightTools.kit.strin2identifier` to ensure that the name is a valid
+Consider using :meth:`~WrightTools.kit.string2identifier` to ensure that the name is a valid
 python identifier.
 
 By default, a brand new data object should be created at root of a new ``wt5`` file.
@@ -137,7 +139,7 @@ Validation
 ----------
 
 A few simple validation checks can be performed.
-If it is not possible to read a data object, it should raise a ``WrightTools`` exception. See :module:`~WrightTools.exceptions`.
+If it is not possible to read a data object, it should raise a ``WrightTools`` exception. See :mod:`~WrightTools.exceptions`.
 If it is simply an unexpected feature, such as unusual file extension, it should raise a warning.
 ``WrightTools`` includes a specific warning for unexpected file type: :class:`~WrightTools.exceptions.WrongFileTypeWarning`.
 You should also validate the name, and extract the default in this step.
@@ -212,11 +214,11 @@ Create Variables and Channels
 -----------------------------
 
 Creating variables (things you set) and channels (things you measure) is painless.
-Once you have a ``numpy`` array, (see tools such as :meth:`~numpy.genfromtxt`), all you have to
+Once you have a ``numpy`` array, (see tools such as :meth:`numpy.genfromtxt`), all you have to
 do is add a name, and (optionally) units.
 
 Units are supported for both variables and channels, though tend to be more common on variables.
-Supported units can be found in :module:`~WrightTools.units`.
+Supported units can be found in :mod:`~WrightTools.units`.
 If there are units important to you that are not yet supported, please file an issue_.
 
 .. _issue: https://github.com/wright-group/WrightTools/issues
@@ -238,7 +240,7 @@ All variables and channels must be the same rank (``ndim``) and broadcast togeth
 If variables in particular can be collapsed to a lower dimension, they should be, placing a ``1`` in the shape.
 
 For particularly complex parsing, see :meth:`~WrightTools.data.from_PyCMDS`,
-:meth:`~WrightTools.data.from_PyCMDS`, and :meth:`~WrightTools.data.from_PyCMDS`.
+:meth:`~WrightTools.data.from_KENT`, and :meth:`~WrightTools.data.from_COLORS`.
 These are existing multidimensional formats used by the Wright Group, and can provide some insights.
 Feel free to reach out to the maintainers (via our `issue tracker`_) if you have any questions.
 
@@ -294,7 +296,7 @@ Contributing for Others to Use
 Once you have the method, it is useful to share your code for others to use.
 If you wish for your method to be included in the upstream code, take the following steps:
 
-- Read our contributing_ page to learn how to submit a Pull Request.
+- Read our :ref:`contributing` page to learn how to submit a Pull Request.
 - Place your function in the ``WrightTools/data`` folder with the filename ``_<lowercase kind>.py``
 - Add ``__all__ = ["from_<kind>"]`` to the file.
 - Import your file and add a line to the ``__all__`` defined in ``WrightTools/data/__init__.py``
@@ -309,6 +311,6 @@ If you wish for your method to be included in the upstream code, take the follow
 - Add your data kind to ``__all__`` in ``datasets/__init__.py``
 - Add your dataset (with citation, if appropriate) to the table in ``docs/datasets.rst``
 - Write a test which calls your ``from_<kind>`` method at ``tests/data/from_<kind>.py`` (See examples in that directory)
-- Submit a Pull Request
+- Submit your Pull Request
 
 If you have any questions, feel free to contact us via our `issue tracker`_.
