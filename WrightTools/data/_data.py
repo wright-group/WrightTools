@@ -525,7 +525,7 @@ class Data(Group):
         id = self.require_dataset(name=name, data=values, shape=shape, dtype=dtype).id
         variable = Variable(self, id, units=units, **kwargs)
         # finish
-        self.variables.append(variable)
+        self._variables = None
         self.attrs["variable_names"] = np.append(self.attrs["variable_names"], name.encode())
         return variable
 
