@@ -465,10 +465,10 @@ for cmap in colormaps.values():
     cmap.set_bad([0.75] * 3, 1)
 # enforce under and over for default colormap
 colormaps["default"].set_under([0.50] * 3, 1)
-colormaps["default"].set_over("m")    
+colormaps["default"].set_over("m")
 # enforce under and over for signed colormap
-colormaps["signed"].set_under("c")  
-colormaps["signed"].set_over("m")   
+colormaps["signed"].set_under("c")
+colormaps["signed"].set_over("m")
 
 
 # a nice set of line colors

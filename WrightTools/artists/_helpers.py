@@ -666,7 +666,7 @@ def plot_colorbar(
         format=format,
         extend=extend,
         extendfrac=extendfrac,
-        extendrect=extendrect,        
+        extendrect=extendrect,
     )
     # coerce properties
     cbar.set_clim(clim[0], clim[1])
