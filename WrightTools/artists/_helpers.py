@@ -596,22 +596,22 @@ def plot_colorbar(
     ticklocation : {'auto', 'left', 'right', 'top', 'bottom'} (optional)
         Tick location. Default is auto.
     extend : {‘neither’, ‘both’, ‘min’, ‘max’} (optional)
-        If not ‘neither’, make pointed end(s) for out-of- range values. 
+        If not ‘neither’, make pointed end(s) for out-of- range values.
         These are set for a given colormap using the colormap set_under and set_over methods.
     extendfrac :	{None, ‘auto’, length, lengths} (optional)
-        If set to None, both the minimum and maximum triangular colorbar extensions 
-        have a length of 5% of the interior colorbar length (this is the default setting). 
-        If set to ‘auto’, makes the triangular colorbar extensions the same lengths 
-        as the interior boxes 
-        (when spacing is set to ‘uniform’) or the same lengths as the respective adjacent 
-        interior boxes (when spacing is set to ‘proportional’). 
-        If a scalar, indicates the length of both the minimum and maximum triangular 
-        colorbar extensions as a fraction of the interior colorbar length. 
-        A two-element sequence of fractions may also be given, indicating the lengths 
-        of the minimum and maximum colorbar extensions respectively as a fraction 
+        If set to None, both the minimum and maximum triangular colorbar extensions
+        have a length of 5% of the interior colorbar length (this is the default setting).
+        If set to ‘auto’, makes the triangular colorbar extensions the same lengths
+        as the interior boxes
+        (when spacing is set to ‘uniform’) or the same lengths as the respective adjacent
+        interior boxes (when spacing is set to ‘proportional’).
+        If a scalar, indicates the length of both the minimum and maximum triangular
+        colorbar extensions as a fraction of the interior colorbar length.
+        A two-element sequence of fractions may also be given, indicating the lengths
+        of the minimum and maximum colorbar extensions respectively as a fraction
         of the interior colorbar length.
-    extendrect :	bool (optional) 
-        If False the minimum and maximum colorbar extensions will be triangular (the default). 
+    extendrect :	bool (optional)
+        If False the minimum and maximum colorbar extensions will be triangular (the default).
         If True the extensions will be rectangular.
 
     Returns
