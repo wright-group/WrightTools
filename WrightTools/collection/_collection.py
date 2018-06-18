@@ -7,6 +7,7 @@
 import numpy as np
 
 from .. import data as wt_data
+from .. import exceptions as wt_exceptions
 from .._group import Group
 
 
@@ -88,6 +89,9 @@ class Collection(Group):
         WrightTools Collection
             New child.
         """
+        if name in self.item_names:
+            wt_exceptions.ObjectExistsWarning.warn(name)
+            return self[name]
         collection = Collection(
             filepath=self.filepath, parent=self.name, name=name, edit_local=True, **kwargs
         )
@@ -115,6 +119,10 @@ class Collection(Group):
         WrightTools Data
             New child.
         """
+        if name in self.item_names:
+            wt_exceptions.ObjectExistsWarning.warn(name)
+            return self[name]
+
         if name == "":
             data = None
             natural_name = "".encode()
