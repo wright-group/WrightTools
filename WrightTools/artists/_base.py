@@ -215,7 +215,7 @@ class Axes(matplotlib.axes.Axes):
             signed = False
             kwargs = self._parse_limits(zi=args[2], dynamic_range=dynamic_range, **kwargs)
         # call parent
-        super().contour(*args, **kwargs)
+        return super().contour(*args, **kwargs)
 
     def contourf(self, *args, **kwargs):
         """Plot contours.
@@ -458,7 +458,7 @@ class Axes(matplotlib.axes.Axes):
             channel_index=channel_index,
         )
         # call parent
-        super().plot(*args, **kwargs)
+        return super().plot(*args, **kwargs)
 
 
 class Figure(matplotlib.figure.Figure):
