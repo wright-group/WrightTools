@@ -472,7 +472,7 @@ class Data(Group):
         Channel
             Created channel.
         """
-        if name in self.item_names:
+        if name in self.channel_names:
             wt_exceptions.ObjectExistsWarning.warn(name)
             return self[name]
 
@@ -518,10 +518,9 @@ class Data(Group):
         WrightTools Variable
             New child variable.
         """
-        if name in self.item_names:
+        if name in self.variable_names:
             wt_exceptions.ObjectExistsWarning.warn(name)
             return self[name]
-
         if values is None:
             if shape is None:
                 shape = self.shape
