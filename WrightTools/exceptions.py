@@ -136,5 +136,13 @@ class WrongFileTypeWarning(WrightToolsWarning):
             Expected file suffix.
         """
         filesuffix = os.path.basename(filepath).split(".")[-1]
-        message = "file {0} has type {1} (expected {2})".format(filepath, filesuffix, "txt")
+        message = "file {0} has type {1} (expected {2})".format(filepath, filesuffix, expected)
         warnings.warn(message, WrongFileTypeWarning)
+
+
+class ObjectExistsWarning(WrightToolsWarning):
+    """Warn that an HDF5 object already exists when a new one is requested."""
+
+    def warn(name):
+        message = "object '{0}' already exists, returning existing copy".format(name)
+        warnings.warn(message, ObjectExistsWarning)
