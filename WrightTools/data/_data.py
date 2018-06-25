@@ -422,29 +422,47 @@ class Data(Group):
         elif isinstance(method, str):
             methods = [method for _ in self.channels]
 
-        wt_exceptions.EntireDatasetInMemoryWarning.warn()
+        warnings.warn("collapse", category=wt_exceptions.EntireDatasetInMemoryWarning)
 
         # collapse --------------------------------------------------------------------------------
-        for method, channel in zip(methods, self.channels):
+        for method, channel in zip(methods, self.channel_names):
             if method is None:
                 continue
 
+            if self[channel].shape[axis_index] == 1:
+                continue  # Cannot collapse any further, don't clutter data object
+
+            new_shape = list(self[channel].shape)
+            new_shape[axis_index] = 1
+
             new = self.create_channel(
-                "{}_{}_{}".format(channel.natural_name, self.axes_names[axis_index], method),
-                shape=newshape,
-                units=channel.units,
+                "{}_{}_{}".format(channel, self.axis_names[axis_index], method),
+                shape=new_shape,
+                units=self[channel].units,
             )
 
+            channel = self[channel]
+
             if method == "sum":
-                new[:] = np.nansum(channel[:], axis=axis_index)
+                res = np.nansum(channel[:], axis=axis_index)
+                res.shape = new_shape
+                new[:] = res
             elif method in ["max", "maximum"]:
-                new[:] = np.nanmax(channel[:], axis=axis_index)
+                res = np.nanmax(channel[:], axis=axis_index)
+                res.shape = new_shape
+                new[:] = res
             elif method in ["min", "minimum"]:
-                new[:] = np.nanmin(channel[:], axis=axis_index)
+                res = np.nanmin(channel[:], axis=axis_index)
+                res.shape = new_shape
+                new[:] = res
             elif method in ["ave", "average", "mean"]:
-                new[:] = np.nanmean(channel[:], axis=axis_index)
+                res = np.nanmean(channel[:], axis=axis_index)
+                res.shape = new_shape
+                new[:] = res
             elif method in ["int", "integrate"]:
-                new[:] = np.trapz(y=channel[:], x=self._axes[axis_index][:], axis=axis_index)
+                res = np.trapz(y=channel[:], x=self._axes[axis_index][:], axis=axis_index)
+                res.shape = new_shape
+                new[:] = res
             else:
                 raise wt_exceptions.ValueError("method '{}' not recognized".format(m))
 
@@ -517,7 +535,7 @@ class Data(Group):
             Created channel.
         """
         if name in self.channel_names:
-            wt_exceptions.ObjectExistsWarning.warn(name)
+            warnings.warn(name, wt_exceptions.ObjectExistsWarning)
             return self[name]
 
         require_kwargs = {}
@@ -563,7 +581,7 @@ class Data(Group):
             New child variable.
         """
         if name in self.variable_names:
-            wt_exceptions.ObjectExistsWarning.warn(name)
+            warnings.warn(name, wt_exceptions.ObjectExistsWarning)
             return self[name]
         if values is None:
             if shape is None:
