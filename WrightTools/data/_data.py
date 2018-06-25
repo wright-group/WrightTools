@@ -364,7 +364,7 @@ class Data(Group):
             If given as an integer, the axis in the underlying array is used.
             If given as a string, the axis must exist, and be a 1D array-aligned axis.
             (i.e. have a shape with a single value which is not ``1``)
-            The axis to collapse along is inferred from the shape of the axis. 
+            The axis to collapse along is inferred from the shape of the axis.
         method : {'integrate', 'average', 'sum', 'max', 'min'} (optional)
             The method of collapsing the given axis. Method may also be list
             of methods corresponding to the channels of the object. Default
