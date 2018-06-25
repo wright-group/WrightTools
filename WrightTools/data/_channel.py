@@ -107,7 +107,7 @@ class Channel(Dataset):
         """Channel magnitude (maximum deviation from null)."""
         return self.major_extent
 
-    def normalize(self):
+    def normalize(self, factor=1):
         """Normalize a Channel, set `null` to 0 and the mag to 1."""
 
         def f(dataset, s, null, mag):
@@ -115,9 +115,11 @@ class Channel(Dataset):
             dataset[s] /= mag
 
         if self.signed:
-            mag = self.mag()
+            mag = self.mag() / factor
         else:
-            mag = self.max()
+            mag = self.max() / factor
+
+        print(mag, "2@@@@@@@@@@@@@@@@@@@@@")
         self.chunkwise(f, null=self.null, mag=mag)
         self._null = 0
 
