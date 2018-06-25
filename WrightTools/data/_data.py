@@ -436,7 +436,7 @@ class Data(Group):
             new_shape[axis_index] = 1
 
             new = self.create_channel(
-                "{}_{}_{}".format(channel, self.axis_names[axis_index], method),
+                "{}_{}_{}".format(channel, axis, method),
                 shape=new_shape,
                 units=self[channel].units,
             )
