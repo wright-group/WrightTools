@@ -76,6 +76,15 @@ class ValueError(ValueError, WrightToolsException):
     pass
 
 
+class TypeError(TypeError, WrightToolsException):
+    """Raised when an operation or function is applied to an object of inappropriate type.
+
+    The associated value is a string giving details about the type mismatch.
+    """
+
+    pass
+
+
 class UnitsError(WrightToolsException):
     """Units Error."""
 
