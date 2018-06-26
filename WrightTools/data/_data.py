@@ -353,16 +353,24 @@ class Data(Group):
 
     def collapse(self, axis, method="integrate"):
         """
-        Collapse the dataset along one axis.
+        Collapse the dataset along one axis, adding lower rank channels.
+
+        New channels have names <channel name>_<axis name>_<method>.
 
         Parameters
         ----------
         axis : int or str
             The axis to collapse along.
+            If given as an integer, the axis in the underlying array is used.
+            If given as a string, the axis must exist, and be a 1D array-aligned axis.
+            (i.e. have a shape with a single value which is not ``1``)
+            The axis to collapse along is inferred from the shape of the axis.
         method : {'integrate', 'average', 'sum', 'max', 'min'} (optional)
             The method of collapsing the given axis. Method may also be list
             of methods corresponding to the channels of the object. Default
             is integrate. All methods but integrate disregard NANs.
+            Can also be a list, allowing for different treatment for varied channels.
+            In this case, None indicates that no change to that channel should occur.
 
         See Also
         --------
@@ -371,38 +379,92 @@ class Data(Group):
         split
             Split the dataset while maintaining its dimensionality.
         """
-        raise NotImplementedError
         # get axis index --------------------------------------------------------------------------
         if isinstance(axis, int):
             axis_index = axis
         elif isinstance(axis, str):
-            axis_index = self.axis_names.index(axis)
+            index = self.axis_names.index(axis)
+            axes = [i for i in range(self.ndim) if self.axes[index].shape[i] > 1]
+            if len(axes) > 1:
+                raise wt_exceptions.MultidimensionalAxisError(axis, "collapse")
+            elif len(axes) == 0:
+                raise wt_exceptions.ValueError(
+                    "Axis {} is a single point, cannot collapse".format(axis)
+                )
+            axis_index = axes[0]
         else:
-            raise TypeError("axis: expected {int, str}, got %s" % type(axis))
+            raise wt_exceptions.TypeError("axis: expected {int, str}, got %s" % type(axis))
+
+        new_shape = list(self.shape)
+        new_shape[axis_index] = 1
         # methods ---------------------------------------------------------------------------------
         if isinstance(method, list):
             if len(method) == len(self.channels):
                 methods = method
             else:
-                print("method argument incompatible in data.collapse")
+                raise wt_exceptions.ValueError(
+                    "method argument must have same number of elements as there are channels"
+                )
+            for m in methods:
+                if m not in [
+                    "sum",
+                    "max",
+                    "maximum",
+                    "min",
+                    "minimum",
+                    "ave",
+                    "average",
+                    "mean",
+                    "int",
+                    "integrate",
+                ]:
+                    raise wt_exceptions.ValueError("method '{}' not recognized".format(m))
         elif isinstance(method, str):
             methods = [method for _ in self.channels]
+
+        warnings.warn("collapse", category=wt_exceptions.EntireDatasetInMemoryWarning)
+
         # collapse --------------------------------------------------------------------------------
-        for method, channel in zip(methods, self.channels):
-            if method in ["int", "integrate"]:
-                channel[:] = np.trapz(y=channel[:], x=self._axes[axis_index][:], axis=axis_index)
-            elif method == "sum":
-                channel[:] = np.nansum(channel[:], axis=axis_index)
+        for method, channel in zip(methods, self.channel_names):
+            if method is None:
+                continue
+
+            if self[channel].shape[axis_index] == 1:
+                continue  # Cannot collapse any further, don't clutter data object
+
+            new_shape = list(self[channel].shape)
+            new_shape[axis_index] = 1
+
+            new = self.create_channel(
+                "{}_{}_{}".format(channel, axis, method),
+                shape=new_shape,
+                units=self[channel].units,
+            )
+
+            channel = self[channel]
+
+            if method == "sum":
+                res = np.nansum(channel[:], axis=axis_index)
+                res.shape = new_shape
+                new[:] = res
             elif method in ["max", "maximum"]:
-                channel[:] = np.nanmax(channel[:], axis=axis_index)
+                res = np.nanmax(channel[:], axis=axis_index)
+                res.shape = new_shape
+                new[:] = res
             elif method in ["min", "minimum"]:
-                channel[:] = np.nanmin(channel[:], axis=axis_index)
+                res = np.nanmin(channel[:], axis=axis_index)
+                res.shape = new_shape
+                new[:] = res
             elif method in ["ave", "average", "mean"]:
-                channel[:] = np.nanmean(channel[:], axis=axis_index)
+                res = np.nanmean(channel[:], axis=axis_index)
+                res.shape = new_shape
+                new[:] = res
+            elif method in ["int", "integrate"]:
+                res = np.trapz(y=channel[:], x=self._axes[axis_index][:], axis=axis_index)
+                res.shape = new_shape
+                new[:] = res
             else:
-                print("method not recognized in data.collapse")
-        # cleanup ---------------------------------------------------------------------------------
-        self._axes.pop(axis_index)
+                raise wt_exceptions.ValueError("method '{}' not recognized".format(m))
 
     def convert(self, destination_units, *, convert_variables=False, verbose=True):
         """Convert all compatable axes to given units.
@@ -473,7 +535,7 @@ class Data(Group):
             Created channel.
         """
         if name in self.channel_names:
-            wt_exceptions.ObjectExistsWarning.warn(name)
+            warnings.warn(name, wt_exceptions.ObjectExistsWarning)
             return self[name]
 
         require_kwargs = {}
@@ -519,7 +581,7 @@ class Data(Group):
             New child variable.
         """
         if name in self.variable_names:
-            wt_exceptions.ObjectExistsWarning.warn(name)
+            warnings.warn(name, wt_exceptions.ObjectExistsWarning)
             return self[name]
         if values is None:
             if shape is None:
