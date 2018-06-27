@@ -143,7 +143,7 @@ ASCII
 
 Export an HDF5 file to a human-readable ASCII file using `h5dump <https://support.hdfgroup.org/HDF5/doc/RM/Tools.html#Tools-Dump>`_.
 
-See also `HDF to Excell <https://support.hdfgroup.org/HDF5/HDF5-FAQ.html#toexcel>`_.
+See also `HDF to Excel <https://support.hdfgroup.org/HDF5/HDF5-FAQ.html#toexcel>`_.
 
 Fortran
 ^^^^^^^

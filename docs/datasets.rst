@@ -13,15 +13,19 @@ The following table contains every dataset distributed within WrightTools.
 dataset                                            axis expressions              shape                gallery links
 =================================================  ============================  ===================  ==============
 ``BrunoldrRaman.LDS821_514nm_80mW``                ``('energy',)``               ``(1340,)``          :ref:`sphx_glr_auto_examples_rRaman.py` 
-``Cary.CuPCtS_H2O_vis``                            ``('wavelength',)``           ``(141,)``
+``Cary.CuPCtS_H2O_vis (collection)``               ``('wavelength',)``           ``(141,)``
 ``Cary.filters (collection)``                      ``('wavelength',)``           ``multiple``         :ref:`sphx_glr_auto_examples_filters.py`
 ``COLORS.v0p2_d1_d2_diagonal`` [#kohler2014]_      ``('d1', 'd2')``              ``(21, 21)``         :ref:`sphx_glr_auto_examples_fill_types.py`
+``COLORS.v2p2_WL_wigner``                          ``('wm', 'd1')``              ``(241, 51)``        
 ``JASCO.PbSe_batch_1`` [#yurs2011]_                ``('energy',)``               ``(1801,)``      
 ``JASCO.PbSe_batch_4_2012_02_21`` [#kohler2014]_   ``('energy',)``               ``(1251,)``     
 ``JASCO.PbSe_batch_4_2012_03_15`` [#kohler2014]_   ``('energy',)``               ``(1251,)``    
 ``KENT.LDS821_DOVE`` [#neffmallon2017]_            ``('w2', 'w1')``              ``(60, 60)``         :ref:`sphx_glr_auto_examples_DOVE_transform.py`
 ``KENT.LDS821_TRSF`` [#boyle2013]_                 ``('w2', 'w1')``              ``(71, 71)``         :ref:`sphx_glr_auto_examples_quick2D.py`, :ref:`sphx_glr_auto_examples_quick1D.py` 
 ``KENT.PbSe_2D_delay_B`` [#yurs2011]_              ``('d2', 'd1')``              ``(101, 101)``
+``ocean_optics.tsunami``                           ``('energy',)``               ``(2048,)``
+``PyCMDS.d1_d2_000``                               ``('d1', 'd2')``              ``(101, 101)``       :ref:`sphx_glr_auto_examples_label_delay_space.py`
+``PyCMDS.d1_d2_001``                               ``('d1', 'd2')``              ``(101, 101)``       :ref:`sphx_glr_auto_examples_label_delay_space.py`
 ``PyCMDS.w1_000``                                  ``('w1',)``                   ``(51,)``
 ``PyCMDS.w1_wa_000``                               ``('w1=wm', 'wa')``           ``(25, 256)``        :ref:`sphx_glr_auto_examples_tune_test.py`
 ``PyCMDS.w2_w1_000`` [#morrow2017]_                ``('w2', 'w1')``              ``(81, 81)``         :ref:`sphx_glr_auto_examples_fringes_transform.py`
