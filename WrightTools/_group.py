@@ -153,13 +153,13 @@ class Group(h5py.Group, metaclass=MetaClass):
                 shutil.copyfile(src=str(filepath), dst=p)
         elif edit_local and filepath:
             p = filepath
+        p = str(p)
         for i in cls.instances.keys():
             if i.startswith(os.path.abspath(p) + "::"):
                 file = cls.instances[i].file
                 if hasattr(cls.instances[i], "_tmpfile"):
                     tmpfile = cls.instances[i]._tmpfile
                 break
-        p = str(p)
         if file is None:
             file = h5py.File(p, "a")
         # construct fullpath
