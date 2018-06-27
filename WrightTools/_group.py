@@ -18,6 +18,7 @@ import numpy as np
 import h5py
 
 from . import kit as wt_kit
+from . import exceptions as wt_exceptions
 from . import __wt5_version__
 
 
@@ -149,7 +150,7 @@ class Group(h5py.Group, metaclass=MetaClass):
             tmpfile = tempfile.mkstemp(prefix="", suffix=".wt5")
             p = tmpfile[1]
             if filepath:
-                shutil.copyfile(src=filepath, dst=p)
+                shutil.copyfile(src=str(filepath), dst=p)
         elif edit_local and filepath:
             p = filepath
         for i in cls.instances.keys():
@@ -166,7 +167,7 @@ class Group(h5py.Group, metaclass=MetaClass):
             name = posixpath.sep
         else:
             name = natural_name
-        fullpath = p + "::" + parent + name
+        fullpath = str(p) + "::" + parent + name
         # create and/or return
         try:
             instance = cls.instances[fullpath]
@@ -335,7 +336,7 @@ class Group(h5py.Group, metaclass=MetaClass):
 
         Parameters
         ----------
-        filepath : string (optional)
+        filepath : Path-like object (optional)
             Filepath to write. If None, file is created using natural_name.
         overwrite : boolean (optional)
             Toggle overwrite behavior. Default is False.
@@ -347,22 +348,18 @@ class Group(h5py.Group, metaclass=MetaClass):
         str
             Written filepath.
         """
-        # parse filepath
-        if sys.version_info >= (3, 6):
-            filepath = os.fspath(filepath)
-        if isinstance(filepath, pathlib.Path):
-            filepath = str(filepath)
         if filepath is None:
-            filepath = os.path.join(os.getcwd(), self.natural_name + ".wt5")
-        elif not filepath.endswith((".wt5", ".h5", ".hdf5")):
-            filepath += ".wt5"
-        filepath = os.path.expanduser(filepath)
-        # handle overwrite
-        if os.path.isfile(filepath):
+            filepath = pathlib.Path("." / self.natural_name)
+        else:
+            filepath = pathlib.Path(filepath)
+        filepath = filepath.with_suffix(".wt5")
+        filepath = filepath.absolute().expanduser()
+        if filepath.exists():
             if overwrite:
-                os.remove(filepath)
+                filepath.unlink()
             else:
-                raise FileExistsError(filepath)
+                raise wt_exceptions.FileExistsError(filepath)
+
         # copy to new file
         h5py.File(filepath)
         new = Group(filepath=filepath, edit_local=True)
@@ -378,4 +375,4 @@ class Group(h5py.Group, metaclass=MetaClass):
         del new
         if verbose:
             print("file saved at", filepath)
-        return filepath
+        return str(filepath)
