@@ -7,7 +7,7 @@
 # --- define --------------------------------------------------------------------------------------
 
 
-__all__ = ['flatten_list', 'intersperse', 'get_index']
+__all__ = ["flatten_list", "intersperse", "get_index"]
 
 
 # --- functions -----------------------------------------------------------------------------------
@@ -47,7 +47,7 @@ def flatten_list(items, seqtypes=(list, tuple), in_place=True):
         items = items[:]
     for i, _ in enumerate(items):
         while i < len(items) and isinstance(items[i], seqtypes):
-            items[i:i + 1] = items[i]
+            items[i : i + 1] = items[i]
     return items
 
 
@@ -93,6 +93,6 @@ def get_index(lis, argument):
         if -len(lis) <= argument < len(lis):
             return argument
         else:
-            raise IndexError('index {0} incompatible with length {1}'.format(argument, len(lis)))
+            raise IndexError("index {0} incompatible with length {1}".format(argument, len(lis)))
     else:
         return lis.index(argument)

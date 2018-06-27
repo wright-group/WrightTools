@@ -15,5 +15,5 @@ def test_share_nans():
         assert np.all(np.isnan(ch[3]))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     test_share_nans()

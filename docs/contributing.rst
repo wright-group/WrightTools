@@ -19,17 +19,25 @@ Preparing
         $ git clone <your fork>
 
 
-#. in the cloned directory: 
+#. in the cloned directory (note, to install to system python, you may need to use ``sudo`` for this command): 
 
     .. code-block:: bash
 
-        $ python setup.py develop
+        $ pip install -e .[dev]
 
 #. run tests
 
     .. code-block:: bash
 
         $ python setup.py test
+
+   Note: On ``*nix`` machines (unfortunately this does not work on Windows),
+   the tests may be multiprocessed using `pytest-mp <https://github.com/ansible/pytest-mp>`_:
+
+   .. code-block:: bash
+       
+       $ pip install pytest-mp
+       $ python setup.py test --addopts "--mp"
 
 
 Contributing
@@ -124,12 +132,24 @@ We use `flake8 <http://flake8.pycqa.org/en/latest/>`_ for automated code style e
      $ flake8
      $ pydocstyle
 
-Consider using `autopep8 <https://pypi.python.org/pypi/autopep8>`_ for automated code corrections --- Make sure to confirm that the output is expected
+Consider using `black <https://pypi.org/project/black/>`_ for automated code corrections.
+Black is an opinionated code formatter for unambiguous standardization.
 
 .. code-block:: bash
 
      $ git commit -m "Describe changes"
-     $ autopep8 --max-line-length=99 file.py 
+     $ black file.py 
      $ git diff # review changes
      $ git add file.py
-     $ git commit -m "Autopep8 style fixes"
+     $ git commit -m "black style fixes"
+
+We also provide a configuration to use git hooks to automatically apply ``black`` style to edited files.
+This hook can be installed using ``pre-commit``:
+
+.. code-block:: bash
+     
+     $ pre-commit install
+
+When committing, it will automatically apply the style, and prevent the commit from completing if changes are made.
+If that is the case, simply re-add the changed files and then commit again.
+This prevents noisy commit logs with changes that are purely style conformity.

@@ -23,56 +23,61 @@ class Dataset(h5py.Dataset):
     """Array-like data container."""
 
     instances = {}
-    class_name = 'Dataset'
+    class_name = "Dataset"
 
     def __getitem__(self, index):
-        if not hasattr(index, '__iter__'):
+        if not hasattr(index, "__iter__"):
             index = [index]
         index = wt_kit.valid_index(index, self.shape)
         return super().__getitem__(index)
 
     def __iadd__(self, value):
         def f(dataset, s, value):
-            if hasattr(value, 'shape'):
+            if hasattr(value, "shape"):
                 dataset[s] += value[wt_kit.valid_index(s, value.shape)]
             else:
                 dataset[s] += value
+
         self.chunkwise(f, value=value)
         return self
 
     def __imul__(self, value):
         def f(dataset, s, value):
-            if hasattr(value, 'shape'):
+            if hasattr(value, "shape"):
                 dataset[s] *= value[wt_kit.valid_index(s, value.shape)]
             else:
                 dataset[s] *= value
+
         self.chunkwise(f, value=value)
         return self
 
     def __ipow__(self, value):
         def f(dataset, s, value):
-            if hasattr(value, 'shape'):
+            if hasattr(value, "shape"):
                 dataset[s] **= value[wt_kit.valid_index(s, value.shape)]
             else:
                 dataset[s] **= value
+
         self.chunkwise(f, value=value)
         return self
 
     def __isub__(self, value):
         def f(dataset, s, value):
-            if hasattr(value, 'shape'):
+            if hasattr(value, "shape"):
                 dataset[s] -= value[wt_kit.valid_index(s, value.shape)]
             else:
                 dataset[s] -= value
+
         self.chunkwise(f, value=value)
         return self
 
     def __itruediv__(self, value):
         def f(dataset, s, value):
-            if hasattr(value, 'shape'):
+            if hasattr(value, "shape"):
                 dataset[s] /= value[wt_kit.valid_index(s, value.shape)]
             else:
                 dataset[s] /= value
+
         self.chunkwise(f, value=value)
         return self
 
@@ -92,29 +97,30 @@ class Dataset(h5py.Dataset):
             return instance
 
     def __repr__(self):
-        return '<WrightTools.{0} \'{1}\' at {2}>'.format(self.class_name, self.natural_name,
-                                                         self.fullpath)
+        return "<WrightTools.{0} '{1}' at {2}>".format(
+            self.class_name, self.natural_name, self.fullpath
+        )
 
     def __setitem__(self, index, value):
         self._clear_array_attributes_cache()
         return super().__setitem__(index, value)
 
     def _clear_array_attributes_cache(self):
-        if 'max' in self.attrs.keys():
-            del self.attrs['max']
-        if 'min' in self.attrs.keys():
-            del self.attrs['min']
-        if 'argmax' in self.attrs.keys():
-            del self.attrs['argmax']
-        if 'argmin' in self.attrs.keys():
-            del self.attrs['argmin']
+        if "max" in self.attrs.keys():
+            del self.attrs["max"]
+        if "min" in self.attrs.keys():
+            del self.attrs["min"]
+        if "argmax" in self.attrs.keys():
+            del self.attrs["argmax"]
+        if "argmin" in self.attrs.keys():
+            del self.attrs["argmin"]
 
     @property
     def _leaf(self):
         out = self.natural_name
         if self.units is not None:
-            out += ' ({0})'.format(self.units)
-        out += ' {0}'.format(self.shape)
+            out += " ({0})".format(self.units)
+        out += " {0}".format(self.shape)
         return out
 
     @property
@@ -136,13 +142,13 @@ class Dataset(h5py.Dataset):
         try:
             assert self._natural_name is not None
         except (AssertionError, AttributeError):
-            self._natural_name = self.attrs['name']
+            self._natural_name = self.attrs["name"]
         finally:
             return self._natural_name
 
     @natural_name.setter
     def natural_name(self, value):
-        self.attrs['name'] = value
+        self.attrs["name"] = value
         self._natural_name = None
 
     @property
@@ -158,58 +164,62 @@ class Dataset(h5py.Dataset):
     @property
     def units(self):
         """Units."""
-        if 'units' in self.attrs.keys():
+        if "units" in self.attrs.keys():
             # This try-except here for compatibility with v1.0.0 of WT5 format
             try:
-                self.attrs['units'] = self.attrs['units'].decode()
+                self.attrs["units"] = self.attrs["units"].decode()
             except AttributeError:
                 pass  # already a string, not bytes
-            return self.attrs['units']
+            return self.attrs["units"]
         return None
 
     @units.setter
     def units(self, value):
         """Set units."""
         if value is None:
-            if 'units' in self.attrs.keys():
-                self.attrs.pop('units')
+            if "units" in self.attrs.keys():
+                self.attrs.pop("units")
         else:
             try:
-                self.attrs['units'] = value
+                self.attrs["units"] = value
             except AttributeError:
-                self.attrs['units'] = value
+                self.attrs["units"] = value
 
     def argmax(self):
         """Index of the maximum, ignorning nans."""
-        if 'argmax' not in self.attrs.keys():
+        if "argmax" not in self.attrs.keys():
+
             def f(dataset, s):
                 arr = dataset[s]
                 amin = np.nanargmax(arr)
                 idx = np.unravel_index(amin, arr.shape)
                 return tuple(i + ss.indices(0)[0] for i, ss in zip(idx, s))
+
             idxs = list(self.chunkwise(f).values())
             curmax = idxs[0]
             for idx in idxs[1:]:
                 if self[idx] > self[curmax]:
                     curmax = idx
-            self.attrs['argmax'] = curmax
-        return tuple(self.attrs['argmax'])
+            self.attrs["argmax"] = curmax
+        return tuple(self.attrs["argmax"])
 
     def argmin(self):
         """Index of the minimum, ignoring nans."""
-        if 'argmin' not in self.attrs.keys():
+        if "argmin" not in self.attrs.keys():
+
             def f(dataset, s):
                 arr = dataset[s]
                 amin = np.nanargmin(arr)
                 idx = np.unravel_index(amin, arr.shape)
                 return tuple(i + ss.indices(0)[0] for i, ss in zip(idx, s))
+
             idxs = list(self.chunkwise(f).values())
             curmin = idxs[0]
             for idx in idxs[1:]:
                 if self[idx] < self[curmin]:
                     curmin = idx
-            self.attrs['argmin'] = curmin
-        return tuple(self.attrs['argmin'])
+            self.attrs["argmin"] = curmin
+        return tuple(self.attrs["argmin"])
 
     def chunkwise(self, func, *args, **kwargs):
         """Execute a function for each chunk in the dataset.
@@ -258,7 +268,7 @@ class Dataset(h5py.Dataset):
 
         def f(dataset, s, min, max, replace):
             arr = dataset[s]
-            if replace == 'value':
+            if replace == "value":
                 dataset[s] = np.clip(arr, min, max)
             else:
                 arr[arr < min] = replace
@@ -298,6 +308,7 @@ class Dataset(h5py.Dataset):
         floor : number (optional)
             Clip values below floor after log. Default is None.
         """
+
         def f(dataset, s, base, floor):
             arr = dataset[s]
             arr = np.log(arr)
@@ -306,6 +317,7 @@ class Dataset(h5py.Dataset):
             if floor is not None:
                 arr[arr < floor] = floor
             dataset[s] = arr
+
         self.chunkwise(f, base=base, floor=floor)
 
     def log10(self, floor=None):
@@ -316,12 +328,14 @@ class Dataset(h5py.Dataset):
         floor : number (optional)
             Clip values below floor after log. Default is None.
         """
+
         def f(dataset, s, floor):
             arr = dataset[s]
             arr = np.log10(arr)
             if floor is not None:
                 arr[arr < floor] = floor
             dataset[s] = arr
+
         self.chunkwise(f, floor=floor)
 
     def log2(self, floor=None):
@@ -332,29 +346,35 @@ class Dataset(h5py.Dataset):
         floor : number (optional)
             Clip values below floor after log. Default is None.
         """
+
         def f(dataset, s, floor):
             arr = dataset[s]
             arr = np.log2(arr)
             if floor is not None:
                 arr[arr < floor] = floor
             dataset[s] = arr
+
         self.chunkwise(f, floor=floor)
 
     def max(self):
         """Maximum, ignorning nans."""
-        if 'max' not in self.attrs.keys():
+        if "max" not in self.attrs.keys():
+
             def f(dataset, s):
                 return np.nanmax(dataset[s])
-            self.attrs['max'] = max(self.chunkwise(f).values())
-        return self.attrs['max']
+
+            self.attrs["max"] = max(self.chunkwise(f).values())
+        return self.attrs["max"]
 
     def min(self):
         """Minimum, ignoring nans."""
-        if 'min' not in self.attrs.keys():
+        if "min" not in self.attrs.keys():
+
             def f(dataset, s):
                 return np.nanmin(dataset[s])
-            self.attrs['min'] = min(self.chunkwise(f).values())
-        return self.attrs['min']
+
+            self.attrs["min"] = min(self.chunkwise(f).values())
+        return self.attrs["min"]
 
     def slices(self):
         """Returns a generator yielding tuple of slice objects.
@@ -376,4 +396,5 @@ class Dataset(h5py.Dataset):
     def symmetric_root(self, root=2):
         def f(dataset, s, root):
             dataset[s] = np.sign(dataset[s]) * (np.abs(dataset[s]) ** (1 / root))
+
         self.chunkwise(f, root=root)

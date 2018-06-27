@@ -18,10 +18,20 @@ from .._dataset import Dataset
 class Channel(Dataset):
     """Channel."""
 
-    class_name = 'Channel'
+    class_name = "Channel"
 
-    def __init__(self, parent, id, *, units=None, null=None, signed=None, label=None,
-                 label_seed=None, **kwargs):
+    def __init__(
+        self,
+        parent,
+        id,
+        *,
+        units=None,
+        null=None,
+        signed=None,
+        label=None,
+        label_seed=None,
+        **kwargs
+    ):
         """Construct a channel object.
 
         Parameters
@@ -52,12 +62,12 @@ class Channel(Dataset):
         self.dimensionality = len(self.shape)
         # attrs
         self.attrs.update(kwargs)
-        self.attrs['name'] = h5py.h5i.get_name(self.id).decode().split('/')[-1]
-        self.attrs['class'] = 'Channel'
+        self.attrs["name"] = h5py.h5i.get_name(self.id).decode().split("/")[-1]
+        self.attrs["class"] = "Channel"
         if signed is not None:
-            self.attrs['signed'] = signed
+            self.attrs["signed"] = signed
         if null is not None:
-            self.attrs['null'] = null
+            self.attrs["null"] = null
         for key, value in self.attrs.items():
             identifier = wt_kit.string2identifier(key)
             if not hasattr(self, identifier):
@@ -75,42 +85,49 @@ class Channel(Dataset):
 
     @property
     def null(self):
-        if 'null' not in self.attrs.keys():
-            self.attrs['null'] = 0
-        return self.attrs['null']
+        if "null" not in self.attrs.keys():
+            self.attrs["null"] = 0
+        return self.attrs["null"]
 
     @null.setter
     def null(self, value):
-        self.attrs['null'] = value
+        self.attrs["null"] = value
 
     @property
     def signed(self):
-        if 'signed' not in self.attrs.keys():
-            self.attrs['signed'] = False
-        return self.attrs['signed']
+        if "signed" not in self.attrs.keys():
+            self.attrs["signed"] = False
+        return self.attrs["signed"]
 
     @signed.setter
     def signed(self, value):
-        self.attrs['signed'] = value
+        self.attrs["signed"] = value
 
     def mag(self):
         """Channel magnitude (maximum deviation from null)."""
         return self.major_extent
 
-    def normalize(self):
-        """Normalize a Channel, set `null` to 0 and the mag to 1."""
+    def normalize(self, mag=1.):
+        """Normalize a Channel, set `null` to 0 and the mag to given value.
+
+        Parameters
+        ----------
+        mag : float (optional)
+            New value of mag. Default is 1.
+        """
+
         def f(dataset, s, null, mag):
             dataset[s] -= null
             dataset[s] /= mag
+
         if self.signed:
-            mag = self.mag()
+            mag = self.mag() / mag
         else:
-            mag = self.max()
+            mag = self.max() / mag
         self.chunkwise(f, null=self.null, mag=mag)
         self._null = 0
 
-    def trim(self, neighborhood, method='ztest', factor=3, replace='nan',
-             verbose=True):
+    def trim(self, neighborhood, method="ztest", factor=3, replace="nan", verbose=True):
         """Remove outliers from the dataset.
 
         Identifies outliers by comparing each point to its
@@ -173,18 +190,18 @@ class Channel(Dataset):
                 means.append(mean)
         # replace outliers
         i = tuple(zip(*outliers))
-        if replace == 'nan':
+        if replace == "nan":
             self[i] = np.nan
-        elif replace == 'mean':
+        elif replace == "mean":
             self[i] = means
-        elif replace == 'mask':
+        elif replace == "mask":
             self[:] = np.ma.array(self[:])
             self[i] = np.ma.masked
         elif type(replace) in [int, float]:
             self[i] = replace
         else:
-            raise KeyError('replace must be one of {nan, mean, mask} or some number')
+            raise KeyError("replace must be one of {nan, mean, mask} or some number")
         # finish
         if verbose:
-            print('%i outliers removed' % len(outliers))
+            print("%i outliers removed" % len(outliers))
         return outliers

@@ -16,7 +16,7 @@ import numpy as np
 # --- define --------------------------------------------------------------------------------------
 
 
-__all__ = ['TimeStamp', 'timestamp_from_RFC3339']
+__all__ = ["TimeStamp", "timestamp_from_RFC3339"]
 
 
 # --- functions -----------------------------------------------------------------------------------
@@ -37,10 +37,10 @@ def timestamp_from_RFC3339(RFC3339):
     WrightTools.kit.TimeStamp
     """
     dt = dateutil.parser.parse(RFC3339)
-    if hasattr(dt.tzinfo, '_offset'):
+    if hasattr(dt.tzinfo, "_offset"):
         timezone = dt.tzinfo._offset.total_seconds()
     else:
-        timezone = 'utc'
+        timezone = "utc"
     timestamp = TimeStamp(at=dt.timestamp(), timezone=timezone)
     return timestamp
 
@@ -51,7 +51,7 @@ def timestamp_from_RFC3339(RFC3339):
 class TimeStamp:
     """Class for representing a moment in time."""
 
-    def __init__(self, at=None, timezone='local'):
+    def __init__(self, at=None, timezone="local"):
         """Create a ``TimeStamp`` object.
 
         Parameters
@@ -89,9 +89,9 @@ class TimeStamp:
 
         """
         # get timezone
-        if timezone == 'local':
+        if timezone == "local":
             self.tz = dateutil.tz.tzlocal()
-        elif timezone == 'utc':
+        elif timezone == "utc":
             self.tz = pytz.utc
         elif type(timezone) in [int, float]:
             self.tz = dateutil.tz.tzoffset(None, timezone)
@@ -119,7 +119,7 @@ class TimeStamp:
     @property
     def date(self):
         """year-month-day."""
-        return self.datetime.strftime('%Y-%m-%d')
+        return self.datetime.strftime("%Y-%m-%d")
 
     @property
     def hms(self):
@@ -127,7 +127,7 @@ class TimeStamp:
 
         ``HH:MM:SS``
         """
-        return self.datetime.strftime('%H:%M:%S')
+        return self.datetime.strftime("%H:%M:%S")
 
     @property
     def human(self):
@@ -137,7 +137,7 @@ class TimeStamp:
         m, s = divmod(delta_sec, 60)
         h, m = divmod(m, 60)
         # create output
-        format_string = '%Y-%m-%d %H:%M:%S'
+        format_string = "%Y-%m-%d %H:%M:%S"
         out = self.datetime.strftime(format_string)
         return out
 
@@ -152,20 +152,21 @@ class TimeStamp:
         m, s = divmod(delta_sec, 60)
         h, m = divmod(m, 60)
         # timestamp
-        format_string = '%Y-%m-%dT%H:%M:%S.%f'
+        format_string = "%Y-%m-%dT%H:%M:%S.%f"
         out = self.datetime.strftime(format_string)
         # timezone
         if delta_sec == 0.:
-            out += 'Z'
+            out += "Z"
         else:
             if delta_sec > 0:
-                sign = '+'
+                sign = "+"
             elif delta_sec < 0:
-                sign = '-'
+                sign = "-"
 
             def as_string(num):
                 return str(np.abs(int(num))).zfill(2)
-            out += sign + as_string(h) + ':' + as_string(m)
+
+            out += sign + as_string(h) + ":" + as_string(m)
         return out
 
     @property
@@ -174,19 +175,15 @@ class TimeStamp:
 
         __ https://tools.ietf.org/html/rfc5322#section-3.3
         """
-        return self.datetime.astimezone(tz=pytz.utc).strftime('%a, %d %b %Y %H:%M:%S GMT')
+        return self.datetime.astimezone(tz=pytz.utc).strftime("%a, %d %b %Y %H:%M:%S GMT")
 
     @property
     def path(self):
         """Timestamp for placing into filepaths."""
-        out = self.datetime.strftime('%Y-%m-%d')
-        out += ' '
+        out = self.datetime.strftime("%Y-%m-%d")
+        out += " "
         ssm = (
-            self.datetime -
-            self.datetime.replace(
-                hour=0,
-                minute=0,
-                second=0,
-                microsecond=0)).total_seconds()
+            self.datetime - self.datetime.replace(hour=0, minute=0, second=0, microsecond=0)
+        ).total_seconds()
         out += str(int(ssm)).zfill(5)
         return out

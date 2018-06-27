@@ -29,7 +29,7 @@ from ._variable import Variable
 # --- define --------------------------------------------------------------------------------------
 
 
-__all__ = ['Data']
+__all__ = ["Data"]
 
 
 # --- class ---------------------------------------------------------------------------------------
@@ -38,19 +38,19 @@ __all__ = ['Data']
 class Data(Group):
     """Multidimensional dataset."""
 
-    class_name = 'Data'
+    class_name = "Data"
 
     def __init__(self, *args, **kwargs):
         self._axes = []
         Group.__init__(self, *args, **kwargs)
         # populate axes from attrs string
-        for identifier in self.attrs.get('axes', []):
+        for identifier in self.attrs.get("axes", []):
             identifier = identifier.decode()
-            expression, units = identifier.split('{')
-            units = units.replace('}', '')
+            expression, units = identifier.split("{")
+            units = units.replace("}", "")
             for i in identifier_to_operator.keys():
                 expression = expression.replace(i, identifier_to_operator[i])
-            expression = expression.replace(' ', '')  # remove all whitespace
+            expression = expression.replace(" ", "")  # remove all whitespace
             axis = Axis(self, expression, units.strip())
             self._axes.append(axis)
         self._current_axis_identities_in_natural_namespace = []
@@ -61,8 +61,9 @@ class Data(Group):
         self.variable_names
 
     def __repr__(self):
-        return '<WrightTools.Data \'{0}\' {1} at {2}>'.format(
-            self.natural_name, str(self.axis_names), '::'.join([self.filepath, self.name]))
+        return "<WrightTools.Data '{0}' {1} at {2}>".format(
+            self.natural_name, str(self.axis_names), "::".join([self.filepath, self.name])
+        )
 
     @property
     def axes(self):
@@ -81,14 +82,14 @@ class Data(Group):
     @property
     def channel_names(self):
         """Channel names."""
-        if 'channel_names' not in self.attrs.keys():
-            self.attrs['channel_names'] = np.array([], dtype='S')
-        return tuple(s.decode() for s in self.attrs['channel_names'])
+        if "channel_names" not in self.attrs.keys():
+            self.attrs["channel_names"] = np.array([], dtype="S")
+        return tuple(s.decode() for s in self.attrs["channel_names"])
 
     @channel_names.setter
     def channel_names(self, value):
         """Set channel names."""
-        self.attrs['channel_names'] = np.array(value, dtype='S')
+        self.attrs["channel_names"] = np.array(value, dtype="S")
 
     @property
     def channels(self):
@@ -103,10 +104,10 @@ class Data(Group):
     @property
     def kind(self):
         """Kind."""
-        if 'kind' not in self.attrs.keys():
-            self.attrs['kind'] = 'None'
-        value = self.attrs['kind']
-        return value if not value == 'None' else None
+        if "kind" not in self.attrs.keys():
+            self.attrs["kind"] = "None"
+        value = self.attrs["kind"]
+        return value if not value == "None" else None
 
     @property
     def ndim(self):
@@ -139,10 +140,10 @@ class Data(Group):
     @property
     def source(self):
         """Source."""
-        if 'source' not in self.attrs.keys():
-            self.attrs['source'] = 'None'
-        value = self.attrs['source']
-        return value if not value == 'None' else None
+        if "source" not in self.attrs.keys():
+            self.attrs["source"] = "None"
+        value = self.attrs["source"]
+        return value if not value == "None" else None
 
     @property
     def units(self):
@@ -152,14 +153,14 @@ class Data(Group):
     @property
     def variable_names(self):
         """Variable names."""
-        if 'variable_names' not in self.attrs.keys():
-            self.attrs['variable_names'] = np.array([], dtype='S')
-        return tuple(s.decode() for s in self.attrs['variable_names'])
+        if "variable_names" not in self.attrs.keys():
+            self.attrs["variable_names"] = np.array([], dtype="S")
+        return tuple(s.decode() for s in self.attrs["variable_names"])
 
     @variable_names.setter
     def variable_names(self, value):
         """Set variable names."""
-        self.attrs['variable_names'] = np.array(value, dtype='S')
+        self.attrs["variable_names"] = np.array(value, dtype="S")
 
     @property
     def variables(self):
@@ -169,11 +170,11 @@ class Data(Group):
         except (AssertionError, AttributeError):
             self._variables = [self[n] for n in self.variable_names]
         finally:
-            return self._variables
+            return tuple(self._variables)
 
     @property
     def _leaf(self):
-        return '{0} {1}'.format(self.natural_name, self.shape)
+        return "{0} {1}".format(self.natural_name, self.shape)
 
     def _on_axes_updated(self):
         """Method to run when axes are changed in any way.
@@ -181,7 +182,7 @@ class Data(Group):
         Propagates updated axes properly.
         """
         # update attrs
-        self.attrs['axes'] = [a.identity.encode() for a in self._axes]
+        self.attrs["axes"] = [a.identity.encode() for a in self._axes]
         # remove old attributes
         while len(self._current_axis_identities_in_natural_namespace) > 0:
             key = self._current_axis_identities_in_natural_namespace.pop(0)
@@ -193,39 +194,38 @@ class Data(Group):
             self._current_axis_identities_in_natural_namespace.append(key)
 
     def _print_branch(self, prefix, depth, verbose):
-
         def print_leaves(prefix, lis, vline=True):
             for i, item in enumerate(lis):
                 if vline:
-                    a = '│   '
+                    a = "│   "
                 else:
-                    a = '    '
+                    a = "    "
                 if i + 1 == len(lis):
-                    b = '└── '
+                    b = "└── "
                 else:
-                    b = '├── '
-                s = prefix + a + b + '{0}: {1}'.format(i, item._leaf)
+                    b = "├── "
+                s = prefix + a + b + "{0}: {1}".format(i, item._leaf)
                 print(s)
 
         if verbose:
             # axes
-            print(prefix + '├── axes')
+            print(prefix + "├── axes")
             print_leaves(prefix, self.axes)
             # variables
-            print(prefix + '├── variables')
+            print(prefix + "├── variables")
             print_leaves(prefix, self.variables)
             # channels
-            print(prefix + '└── channels')
+            print(prefix + "└── channels")
             print_leaves(prefix, self.channels, vline=False)
         else:
             # axes
-            s = 'axes: '
-            s += ', '.join(['{0} ({1})'.format(a.expression, a.units) for a in self.axes])
-            print(prefix + '├── ' + s)
+            s = "axes: "
+            s += ", ".join(["{0} ({1})".format(a.expression, a.units) for a in self.axes])
+            print(prefix + "├── " + s)
             # channels
-            s = 'channels: '
-            s += ', '.join(self.channel_names)
-            print(prefix + '└── ' + s)
+            s = "channels: "
+            s += ", ".join(self.channel_names)
+            print(prefix + "└── " + s)
 
     def bring_to_front(self, channel):
         """Bring a specific channel to the zero-indexed position in channels.
@@ -300,7 +300,7 @@ class Data(Group):
             if isinstance(arg, int):
                 args[i] = self._axes[arg].expression
         # get output collection
-        out = wt_collection.Collection(name='chop', parent=parent)
+        out = wt_collection.Collection(name="chop", parent=parent)
         # get output shape
         kept = args + list(at.keys())
         kept_axes = [self._axes[self.axis_expressions.index(a)] for a in kept]
@@ -320,22 +320,22 @@ class Data(Group):
                 axis_index = self.axis_names.index(axis)
                 axis = self._axes[axis_index]
                 idx[axis_index] = np.argmin(np.abs(axis[tuple(idx)] - point))
-            data = out.create_data(name='chop%03i' % i)
+            data = out.create_data(name="chop%03i" % i)
             for v in self.variables:
                 kwargs = {}
-                kwargs['name'] = v.natural_name
-                kwargs['values'] = v[idx]
-                kwargs['units'] = v.units
-                kwargs['label'] = v.label
+                kwargs["name"] = v.natural_name
+                kwargs["values"] = v[idx]
+                kwargs["units"] = v.units
+                kwargs["label"] = v.label
                 kwargs.update(v.attrs)
                 data.create_variable(**kwargs)
             for c in self.channels:
                 kwargs = {}
-                kwargs['name'] = c.natural_name
-                kwargs['values'] = c[idx]
-                kwargs['units'] = c.units
-                kwargs['label'] = c.label
-                kwargs['signed'] = c.signed
+                kwargs["name"] = c.natural_name
+                kwargs["values"] = c[idx]
+                kwargs["units"] = c.units
+                kwargs["label"] = c.label
+                kwargs["signed"] = c.signed
                 kwargs.update(c.attrs)
                 data.create_channel(**kwargs)
             new_axes = [a.expression for a in kept_axes if a.expression not in at.keys()]
@@ -348,21 +348,29 @@ class Data(Group):
         # return
         if verbose:
             es = [a.expression for a in kept_axes]
-            print('chopped data into %d piece(s)' % len(out), 'in', es)
+            print("chopped data into %d piece(s)" % len(out), "in", es)
         return out
 
-    def collapse(self, axis, method='integrate'):
+    def collapse(self, axis, method="integrate"):
         """
-        Collapse the dataset along one axis.
+        Collapse the dataset along one axis, adding lower rank channels.
+
+        New channels have names <channel name>_<axis name>_<method>.
 
         Parameters
         ----------
         axis : int or str
             The axis to collapse along.
+            If given as an integer, the axis in the underlying array is used.
+            If given as a string, the axis must exist, and be a 1D array-aligned axis.
+            (i.e. have a shape with a single value which is not ``1``)
+            The axis to collapse along is inferred from the shape of the axis.
         method : {'integrate', 'average', 'sum', 'max', 'min'} (optional)
             The method of collapsing the given axis. Method may also be list
             of methods corresponding to the channels of the object. Default
             is integrate. All methods but integrate disregard NANs.
+            Can also be a list, allowing for different treatment for varied channels.
+            In this case, None indicates that no change to that channel should occur.
 
         See Also
         --------
@@ -371,39 +379,92 @@ class Data(Group):
         split
             Split the dataset while maintaining its dimensionality.
         """
-        raise NotImplementedError
         # get axis index --------------------------------------------------------------------------
         if isinstance(axis, int):
             axis_index = axis
         elif isinstance(axis, str):
-            axis_index = self.axis_names.index(axis)
+            index = self.axis_names.index(axis)
+            axes = [i for i in range(self.ndim) if self.axes[index].shape[i] > 1]
+            if len(axes) > 1:
+                raise wt_exceptions.MultidimensionalAxisError(axis, "collapse")
+            elif len(axes) == 0:
+                raise wt_exceptions.ValueError(
+                    "Axis {} is a single point, cannot collapse".format(axis)
+                )
+            axis_index = axes[0]
         else:
-            raise TypeError("axis: expected {int, str}, got %s" % type(axis))
+            raise wt_exceptions.TypeError("axis: expected {int, str}, got %s" % type(axis))
+
+        new_shape = list(self.shape)
+        new_shape[axis_index] = 1
         # methods ---------------------------------------------------------------------------------
         if isinstance(method, list):
             if len(method) == len(self.channels):
                 methods = method
             else:
-                print('method argument incompatible in data.collapse')
+                raise wt_exceptions.ValueError(
+                    "method argument must have same number of elements as there are channels"
+                )
+            for m in methods:
+                if m not in [
+                    "sum",
+                    "max",
+                    "maximum",
+                    "min",
+                    "minimum",
+                    "ave",
+                    "average",
+                    "mean",
+                    "int",
+                    "integrate",
+                ]:
+                    raise wt_exceptions.ValueError("method '{}' not recognized".format(m))
         elif isinstance(method, str):
             methods = [method for _ in self.channels]
+
+        warnings.warn("collapse", category=wt_exceptions.EntireDatasetInMemoryWarning)
+
         # collapse --------------------------------------------------------------------------------
-        for method, channel in zip(methods, self.channels):
-            if method in ['int', 'integrate']:
-                channel[:] = np.trapz(
-                    y=channel[:], x=self._axes[axis_index][:], axis=axis_index)
-            elif method == 'sum':
-                channel[:] = np.nansum(channel[:], axis=axis_index)
-            elif method in ['max', 'maximum']:
-                channel[:] = np.nanmax(channel[:], axis=axis_index)
-            elif method in ['min', 'minimum']:
-                channel[:] = np.nanmin(channel[:], axis=axis_index)
-            elif method in ['ave', 'average', 'mean']:
-                channel[:] = np.nanmean(channel[:], axis=axis_index)
+        for method, channel in zip(methods, self.channel_names):
+            if method is None:
+                continue
+
+            if self[channel].shape[axis_index] == 1:
+                continue  # Cannot collapse any further, don't clutter data object
+
+            new_shape = list(self[channel].shape)
+            new_shape[axis_index] = 1
+
+            new = self.create_channel(
+                "{}_{}_{}".format(channel, axis, method),
+                shape=new_shape,
+                units=self[channel].units,
+            )
+
+            channel = self[channel]
+
+            if method == "sum":
+                res = np.nansum(channel[:], axis=axis_index)
+                res.shape = new_shape
+                new[:] = res
+            elif method in ["max", "maximum"]:
+                res = np.nanmax(channel[:], axis=axis_index)
+                res.shape = new_shape
+                new[:] = res
+            elif method in ["min", "minimum"]:
+                res = np.nanmin(channel[:], axis=axis_index)
+                res.shape = new_shape
+                new[:] = res
+            elif method in ["ave", "average", "mean"]:
+                res = np.nanmean(channel[:], axis=axis_index)
+                res.shape = new_shape
+                new[:] = res
+            elif method in ["int", "integrate"]:
+                res = np.trapz(y=channel[:], x=self._axes[axis_index][:], axis=axis_index)
+                res.shape = new_shape
+                new[:] = res
             else:
-                print('method not recognized in data.collapse')
-        # cleanup ---------------------------------------------------------------------------------
-        self._axes.pop(axis_index)
+                raise wt_exceptions.ValueError("method '{}' not recognized".format(m))
 
     def convert(self, destination_units, *, convert_variables=False, verbose=True):
         """Convert all compatable axes to given units.
@@ -428,16 +489,25 @@ class Data(Group):
         # apply to all compatible axes
         for axis in self.axes:
             if axis.units_kind == units_kind:
+                orig = axis.units
                 axis.convert(destination_units, convert_variables=convert_variables)
                 if verbose:
-                    print('axis', axis.expression, 'converted')
+                    print(
+                        "axis {} converted from {} to {}".format(
+                            axis.expression, orig, destination_units
+                        )
+                    )
         if convert_variables:
             for var in self.variables:
                 if wt_units.kind(var.units) == units_kind:
+                    orig = var.units
                     var.convert(destination_units)
-
                     if verbose:
-                        print('variable', var.natural_name, 'converted')
+                        print(
+                            "variable {} converted from {} to {}".format(
+                                var.natural_name, orig, destination_units
+                            )
+                        )
         self._on_axes_updated()
 
     def create_channel(self, name, values=None, shape=None, units=None, **kwargs):
@@ -464,22 +534,26 @@ class Data(Group):
         Channel
             Created channel.
         """
+        if name in self.channel_names:
+            warnings.warn(name, wt_exceptions.ObjectExistsWarning)
+            return self[name]
+
         require_kwargs = {}
         if values is None:
             if shape is None:
-                require_kwargs['shape'] = self.shape
+                require_kwargs["shape"] = self.shape
             else:
-                require_kwargs['shape'] = shape
-            require_kwargs['dtype'] = np.float64
+                require_kwargs["shape"] = shape
+            require_kwargs["dtype"] = np.float64
         else:
-            require_kwargs['data'] = values
-            require_kwargs['shape'] = values.shape
-            require_kwargs['dtype'] = values.dtype
+            require_kwargs["data"] = values
+            require_kwargs["shape"] = values.shape
+            require_kwargs["dtype"] = values.dtype
         # create dataset
         dataset_id = self.require_dataset(name=name, chunks=True, **require_kwargs).id
         channel = Channel(self, dataset_id, units=units, **kwargs)
         # finish
-        self.attrs['channel_names'] = np.append(self.attrs['channel_names'], name.encode())
+        self.attrs["channel_names"] = np.append(self.attrs["channel_names"], name.encode())
         return channel
 
     def create_variable(self, name, values=None, shape=None, units=None, **kwargs):
@@ -506,6 +580,9 @@ class Data(Group):
         WrightTools Variable
             New child variable.
         """
+        if name in self.variable_names:
+            warnings.warn(name, wt_exceptions.ObjectExistsWarning)
+            return self[name]
         if values is None:
             if shape is None:
                 shape = self.shape
@@ -517,8 +594,8 @@ class Data(Group):
         id = self.require_dataset(name=name, data=values, shape=shape, dtype=dtype).id
         variable = Variable(self, id, units=units, **kwargs)
         # finish
-        self.variables.append(variable)
-        self.attrs['variable_names'] = np.append(self.attrs['variable_names'], name.encode())
+        self._variables = None
+        self.attrs["variable_names"] = np.append(self.attrs["variable_names"], name.encode())
         return variable
 
     def flush(self):
@@ -576,8 +653,7 @@ class Data(Group):
         # finish
         return tuple(a[idx] for a in self._axes)
 
-    def heal(self, channel=0, method='linear', fill_value=np.nan,
-             verbose=True):
+    def heal(self, channel=0, method="linear", fill_value=np.nan, verbose=True):
         """
         Remove nans from channel using interpolation.
 
@@ -604,7 +680,7 @@ class Data(Group):
 
 
         """
-        warnings.warn('heal', category=wt_exceptions.EntireDatasetInMemoryWarning)
+        warnings.warn("heal", category=wt_exceptions.EntireDatasetInMemoryWarning)
         timer = wt_kit.Timer(verbose=False)
         with timer:
             # channel
@@ -617,7 +693,7 @@ class Data(Group):
             channel = self.channels[channel_index]
             values = self.channels[channel_index][:]
             points = [axis[:] for axis in self._axes]
-            xi = tuple(np.meshgrid(*points, indexing='ij'))
+            xi = tuple(np.meshgrid(*points, indexing="ij"))
             # 'undo' gridding
             arr = np.zeros((len(self._axes) + 1, values.size))
             for i in range(len(self._axes)):
@@ -632,8 +708,11 @@ class Data(Group):
             self.channels[channel_index][:] = out
         # print
         if verbose:
-            print('channel {0} healed in {1} seconds'.format(
-                channel.name, np.around(timer.interval, decimals=3)))
+            print(
+                "channel {0} healed in {1} seconds".format(
+                    channel.name, np.around(timer.interval, decimals=3)
+                )
+            )
 
     def level(self, channel, axis, npts, *, verbose=True):
         """Subtract the average value of npts at the edge of a given axis.
@@ -651,13 +730,13 @@ class Data(Group):
         verbose : bool (optional)
             Toggle talkback. Default is True.
         """
-        warnings.warn('level', category=wt_exceptions.EntireDatasetInMemoryWarning)
+        warnings.warn("level", category=wt_exceptions.EntireDatasetInMemoryWarning)
         channel_index = wt_kit.get_index(self.channel_names, channel)
         channel = self.channels[channel_index]
         # verify npts not zero
         npts = int(npts)
         if npts == 0:
-            raise wt_exceptions.ValueError('npts must not be zero')
+            raise wt_exceptions.ValueError("npts must not be zero")
         # get subtrahend
         ss = [slice(None)] * self.ndim
         if npts > 0:
@@ -672,10 +751,11 @@ class Data(Group):
         # finish
         channel._null = 0
         if verbose:
-            print('channel {0} leveled along axis {1}'.format(channel.natural_name, axis))
+            print("channel {0} leveled along axis {1}".format(channel.natural_name, axis))
 
-    def map_variable(self, variable, points, input_units='same', *, name=None, parent=None,
-                     verbose=True):
+    def map_variable(
+        self, variable, points, input_units="same", *, name=None, parent=None, verbose=True
+    ):
         """Map points of an axis to new points using linear interpolation.
 
         Out-of-bounds points are written nan.
@@ -718,17 +798,17 @@ class Data(Group):
                 if d == 1:
                     points = np.expand_dims(points, axis=i)
         # convert points
-        if input_units == 'same':
+        if input_units == "same":
             pass
         else:
             points = wt_units.converter(points, input_units, variable.units)
         # construct new data object
-        special = ['name', 'axes', 'channel_names', 'variable_names']
+        special = ["name", "axes", "channel_names", "variable_names"]
         kwargs = {k: v for k, v in self.attrs.items() if k not in special}
         if name is None:
-            name = '{0}_{1}_mapped'.format(self.natural_name, variable.natural_name)
-        kwargs['name'] = name
-        kwargs['parent'] = parent
+            name = "{0}_{1}_mapped".format(self.natural_name, variable.natural_name)
+        kwargs["name"] = name
+        kwargs["parent"] = parent
         out = Data(**kwargs)
         # mapped variable
         values = points
@@ -765,12 +845,21 @@ class Data(Group):
             out.create_channel(values=interpolate(channel, points), **channel.attrs)
         # finish
         if verbose:
-            print('data mapped from {0} to {1}'.format(self.shape, out.shape))
+            print("data mapped from {0} to {1}".format(self.shape, out.shape))
         return out
 
-    def offset(self, points, offsets, along, offset_axis,
-               units='same', offset_units='same', mode='valid',
-               method='linear', verbose=True):
+    def offset(
+        self,
+        points,
+        offsets,
+        along,
+        offset_axis,
+        units="same",
+        offset_units="same",
+        mode="valid",
+        method="linear",
+        verbose=True,
+    ):
         """Offset one axis based on another axis' values.
 
         Useful for correcting instrumental artifacts such as zerotune.
@@ -818,7 +907,7 @@ class Data(Group):
         axis = self._axes[axis_index]
         # values & points -------------------------------------------------------------------------
         # get values, points, units
-        if units == 'same':
+        if units == "same":
             input_units = axis.units
         else:
             input_units = units
@@ -826,13 +915,13 @@ class Data(Group):
         if len(offsets.shape) == 1:
             pass
         else:
-            raise RuntimeError('values must be 1D or 0D in offset!')
+            raise RuntimeError("values must be 1D or 0D in offset!")
         # check if units is compatible, convert
         dictionary = getattr(wt_units, axis.units_kind)
         if input_units in dictionary.keys():
             pass
         else:
-            raise RuntimeError('units incompatible in offset!')
+            raise RuntimeError("units incompatible in offset!")
         points = wt_units.converter(points, input_units, axis.units)
         # create correction array
         function = interp1d(points, offsets, bounds_error=False)
@@ -841,8 +930,11 @@ class Data(Group):
         finite_indicies = np.where(np.isfinite(corrections))[0]
         left_pad_width = finite_indicies[0]
         right_pad_width = len(corrections) - finite_indicies[-1] - 1
-        corrections = np.pad(corrections[np.isfinite(corrections)],
-                             (int(left_pad_width), int(right_pad_width)), mode='edge')
+        corrections = np.pad(
+            corrections[np.isfinite(corrections)],
+            (int(left_pad_width), int(right_pad_width)),
+            mode="edge",
+        )
         # do correction ---------------------------------------------------------------------------
         # transpose so axis is last
         transpose_order = np.arange(len(self._axes))
@@ -859,23 +951,25 @@ class Data(Group):
         # new points
         new_points = [a[:] for a in self._axes]
         old_offset_axis_points = self._axes[offset_axis_index][:]
-        spacing = abs((old_offset_axis_points.max() - old_offset_axis_points.min()) /
-                      float(len(old_offset_axis_points)))
-        if mode == 'old':
+        spacing = abs(
+            (old_offset_axis_points.max() - old_offset_axis_points.min())
+            / float(len(old_offset_axis_points))
+        )
+        if mode == "old":
             new_offset_axis_points = old_offset_axis_points
-        elif mode == 'valid':
+        elif mode == "valid":
             _max = old_offset_axis_points.max() + corrections.min()
             _min = old_offset_axis_points.min() + corrections.max()
             n = int(abs(np.ceil((_max - _min) / spacing)))
             new_offset_axis_points = np.linspace(_min, _max, n)
-        elif mode == 'full':
+        elif mode == "full":
             _max = old_offset_axis_points.max() + corrections.max()
             _min = old_offset_axis_points.min() + corrections.min()
             n = np.ceil((_max - _min) / spacing)
             new_offset_axis_points = np.linspace(_min, _max, n)
         new_points[offset_axis_index] = new_offset_axis_points
-        new_xi = tuple(np.meshgrid(*new_points, indexing='ij'))
-        xi = tuple(np.meshgrid(*[a[:] for a in self._axes], indexing='ij'))
+        new_xi = tuple(np.meshgrid(*new_points, indexing="ij"))
+        xi = tuple(np.meshgrid(*[a[:] for a in self._axes], indexing="ij"))
         for channel in self.channels:
             # 'undo' gridding
             arr = np.zeros((len(self._axes) + 1, channel[:].size))
@@ -889,8 +983,7 @@ class Data(Group):
             # grid data
             tup = tuple([arr[i] for i in range(len(arr) - 1)])
             # note that rescale is crucial in this operation
-            out = griddata(tup, arr[-1], new_xi, method=method,
-                           fill_value=np.nan, rescale=True)
+            out = griddata(tup, arr[-1], new_xi, method=method, fill_value=np.nan, rescale=True)
             channel[:] = out
         self._axes[offset_axis_index][:] = new_offset_axis_points
         # transpose out
@@ -898,8 +991,8 @@ class Data(Group):
 
     def print_tree(self, *, verbose=True):
         """Print a ascii-formatted tree representation of the data contents."""
-        print('{0} ({1})'.format(self.natural_name, self.filepath))
-        self._print_branch('', depth=0, verbose=verbose)
+        print("{0} ({1})".format(self.natural_name, self.filepath))
+        self._print_branch("", depth=0, verbose=verbose)
 
     def remove_channel(self, channel, *, verbose=True):
         """Remove channel from data.
@@ -917,7 +1010,7 @@ class Data(Group):
         del self[name]
         self.channel_names = new
         if verbose:
-            print('channel {0} removed'.format(name))
+            print("channel {0} removed".format(name))
 
     def remove_variable(self, variable, *, implied=True, verbose=True):
         """Remove variable from data.
@@ -946,7 +1039,7 @@ class Data(Group):
         for n in removed:
             for a in self._axes:
                 if n in a.expression:
-                    message = '{0} is contained in axis {1}'.format(n, a.expression)
+                    message = "{0} is contained in axis {1}".format(n, a.expression)
                     raise RuntimeError(message)
         # do removal
         for n in removed:
@@ -957,9 +1050,9 @@ class Data(Group):
             self.variable_names = new
         # finish
         if verbose:
-            print('{0} variable(s) removed:'.format(len(removed)))
+            print("{0} variable(s) removed:".format(len(removed)))
             for n in removed:
-                print('  {0}'.format(n))
+                print("  {0}".format(n))
 
     def rename_channels(self, *, verbose=True, **kwargs):
         """Rename a set of channels.
@@ -996,9 +1089,9 @@ class Data(Group):
         self.channel_names = names
         # finish
         if verbose:
-            print('{0} channel(s) renamed:'.format(len(kwargs)))
+            print("{0} channel(s) renamed:".format(len(kwargs)))
             for k, v in kwargs.items():
-                print('  {0} --> {1}'.format(k, v))
+                print("  {0} --> {1}".format(k, v))
 
     def rename_variables(self, *, implied=True, verbose=True, **kwargs):
         """Rename a set of variables.
@@ -1050,7 +1143,7 @@ class Data(Group):
         new = list(self.axis_expressions)
         for i, v in enumerate(kwargs.keys()):
             for j, n in enumerate(new):
-                new[j] = n.replace(v, '{%i}' % i)
+                new[j] = n.replace(v, "{%i}" % i)
         for i, n in enumerate(new):
             new[i] = n.format(*kwargs.values())
         self.transform(*new)
@@ -1058,9 +1151,9 @@ class Data(Group):
             a.convert(u)
         # finish
         if verbose:
-            print('{0} variable(s) renamed:'.format(len(kwargs)))
+            print("{0} variable(s) renamed:".format(len(kwargs)))
             for k, v in kwargs.items():
-                print('  {0} --> {1}'.format(k, v))
+                print("  {0} --> {1}".format(k, v))
 
     def share_nans(self):
         """Share not-a-numbers between all channels.
@@ -1070,6 +1163,7 @@ class Data(Group):
 
         Uses the share_nans method found in wt.kit.
         """
+
         def f(_, s, channels):
             outs = wt_kit.share_nans(*[c[s] for c in channels])
             for c, o in zip(channels, outs):
@@ -1095,7 +1189,7 @@ class Data(Group):
         verbose : bool (optional)
             Toggle talkback. Default is True.
         """
-        warnings.warn('smooth', category=wt_exceptions.EntireDatasetInMemoryWarning)
+        warnings.warn("smooth", category=wt_exceptions.EntireDatasetInMemoryWarning)
         # get factors -----------------------------------------------------------------------------
 
         if isinstance(factors, list):
@@ -1123,8 +1217,9 @@ class Data(Group):
                 # transpose so the axis of interest is last
                 transpose_order = range(len(values.shape))
                 # replace axis_index with zero
-                transpose_order = [len(values.shape) - 1 if i ==
-                                   axis_index else i for i in transpose_order]
+                transpose_order = [
+                    len(values.shape) - 1 if i == axis_index else i for i in transpose_order
+                ]
                 transpose_order[len(values.shape) - 1] = axis_index
                 values = values.transpose(transpose_order)
                 # get kaiser window
@@ -1133,16 +1228,16 @@ class Data(Group):
                 # for all slices...
                 for index in np.ndindex(values[..., 0].shape):
                     current_slice = values[index]
-                    temp_slice = np.pad(current_slice, int(factor), mode=str('edge'))
-                    values[index] = np.convolve(temp_slice, w / w.sum(), mode=str('valid'))
+                    temp_slice = np.pad(current_slice, int(factor), mode=str("edge"))
+                    values[index] = np.convolve(temp_slice, w / w.sum(), mode=str("valid"))
                 # transpose out
                 values = values.transpose(transpose_order)
             # return array to channel object
             channel[:] = values
         if verbose:
-            print('smoothed data')
+            print("smoothed data")
 
-    def split(self, axis, positions, units='same', direction='below', parent=None, verbose=True):
+    def split(self, axis, positions, units="same", direction="below", parent=None, verbose=True):
         """
         Split the data object along a given axis, in units.
 
@@ -1196,7 +1291,7 @@ class Data(Group):
             positions = [positions]
         positions = np.array(positions)
         # positions should be in the data units
-        if units != 'same':
+        if units != "same":
             positions = wt_units.converter(positions, units, axis.units)
         # get indicies of split
         indicies = []
@@ -1205,14 +1300,13 @@ class Data(Group):
             indicies.append(idx)
         indicies.sort()
         # set direction according to units
-        flip = direction == 'above'
+        flip = direction == "above"
         if axis[-1] < axis[0]:
             flip = not flip
         if flip:
             indicies = [i - 1 for i in indicies]
         # process ---------------------------------------------------------------------------------
-        outs = wt_collection.Collection(name='split', parent=parent,
-                                        edit_local=parent is not None)
+        outs = wt_collection.Collection(name="split", parent=parent, edit_local=parent is not None)
         start = 0
         stop = 0
         for i in range(len(indicies) + 1):
@@ -1228,24 +1322,24 @@ class Data(Group):
                 outs.create_data("")
             elif stop - start == 1:
                 attrs = dict(self.attrs)
-                attrs.pop('name', None)
+                attrs.pop("name", None)
                 new_data = outs.create_data(new_name, **attrs)
                 for ax in self._axes:
                     if ax != axis:
                         attrs = dict(ax.attrs)
-                        attrs.pop('name', None)
-                        attrs.pop('units', None)
+                        attrs.pop("name", None)
+                        attrs.pop("units", None)
                         new_data.create_axis(ax.natural_name, ax[:], ax.units, **attrs)
                 slc = [slice(None)] * len(self.shape)
                 slc[axis_index] = start
                 for ch in self.channels:
                     attrs = dict(ch.attrs)
-                    attrs.pop('name', None)
-                    attrs.pop('units', None)
+                    attrs.pop("name", None)
+                    attrs.pop("units", None)
                     new_data.create_channel(ch.natural_name, ch[:][slc], ch.units, **attrs)
             else:
                 attrs = dict(self.attrs)
-                attrs.pop('name', None)
+                attrs.pop("name", None)
                 new_data = outs.create_data(new_name, **attrs)
                 for ax in self._axes:
                     if ax == axis:
@@ -1253,32 +1347,36 @@ class Data(Group):
                     else:
                         slc = slice(None)
                     attrs = dict(ax.attrs)
-                    attrs.pop('name', None)
-                    attrs.pop('units', None)
+                    attrs.pop("name", None)
+                    attrs.pop("units", None)
                     new_data.create_axis(ax.natural_name, ax[slc], ax.units, **attrs)
                 slc = [slice(None)] * len(self.shape)
                 slc[axis_index] = slice(start, stop)
                 for ch in self.channels:
                     attrs = dict(ch.attrs)
-                    attrs.pop('name', None)
-                    attrs.pop('units', None)
+                    attrs.pop("name", None)
+                    attrs.pop("units", None)
                     new_data.create_channel(ch.natural_name, ch[slc], ch.units, **attrs)
         # post process ----------------------------------------------------------------------------
         if verbose:
-            print('split data into {0} pieces along {1}:'.format(len(indicies) + 1,
-                  axis.natural_name))
+            print(
+                "split data into {0} pieces along {1}:".format(
+                    len(indicies) + 1, axis.natural_name
+                )
+            )
             for i in range(len(outs)):
                 new_data = outs[i]
                 if new_data is None:
-                    print('  {0} : None'.format(i))
+                    print("  {0} : None".format(i))
                 elif len(new_data.shape) < len(self.shape):
-                    print('  {0} : {1} {2}(constant)'.format(i, axis.natural_name, axis.units))
+                    print("  {0} : {1} {2}(constant)".format(i, axis.natural_name, axis.units))
                 else:
                     new_axis = new_data.axes[axis_index]
-                    print('  {0} : {1} to {2} {3} (length {4})'.format(i, new_axis[0],
-                                                                       new_axis[-1],
-                                                                       new_axis.units,
-                                                                       new_axis.size))
+                    print(
+                        "  {0} : {1} to {2} {3} (length {4})".format(
+                            i, new_axis[0], new_axis[-1], new_axis.units, new_axis.size
+                        )
+                    )
         return outs
 
     def transform(self, *axes, verbose=True):
@@ -1327,6 +1425,7 @@ class Data(Group):
         """
         raise NotImplementedError
         import scipy.ndimage
+
         # axes
         for axis in self._axes:
             axis[:] = scipy.ndimage.interpolation.zoom(axis[:], factor, order=order)
@@ -1335,4 +1434,4 @@ class Data(Group):
             channel[:] = scipy.ndimage.interpolation.zoom(channel[:], factor, order=order)
         # return
         if verbose:
-            print('data zoomed to new shape:', self.shape)
+            print("data zoomed to new shape:", self.shape)

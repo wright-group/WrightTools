@@ -12,22 +12,24 @@ from .. import exceptions as wt_exceptions
 # --- define --------------------------------------------------------------------------------------
 
 
-__all__ = ['closest_pair',
-           'diff',
-           'fft',
-           'joint_shape',
-           'orthogonal',
-           'remove_nans_1D',
-           'share_nans',
-           'smooth_1D',
-           'unique',
-           'valid_index']
+__all__ = [
+    "closest_pair",
+    "diff",
+    "fft",
+    "joint_shape",
+    "orthogonal",
+    "remove_nans_1D",
+    "share_nans",
+    "smooth_1D",
+    "unique",
+    "valid_index",
+]
 
 
 # --- functions -----------------------------------------------------------------------------------
 
 
-def closest_pair(arr, give='indicies'):
+def closest_pair(arr, give="indicies"):
     """Find the pair of indices corresponding to the closest elements in an array.
 
     If multiple pairs are equally close, both pairs of indicies are returned.
@@ -71,12 +73,12 @@ def closest_pair(arr, give='indicies'):
             elif dist < min_dist:
                 min_dist = dist
                 outs = [[idxa, idxb]]
-    if give == 'indicies':
+    if give == "indicies":
         return outs
-    elif give == 'distance':
+    elif give == "distance":
         return min_dist
     else:
-        raise KeyError('give not recognized in closest_pair')
+        raise KeyError("give not recognized in closest_pair")
 
 
 def diff(xi, yi, order=1):
@@ -141,7 +143,7 @@ def fft(xi, yi, axis=0):
     # xi must be evenly spaced
     spacing = np.diff(xi)
     if not np.allclose(spacing, spacing.mean()):
-        raise RuntimeError('WrightTools.kit.fft: argument xi must be evenly spaced')
+        raise RuntimeError("WrightTools.kit.fft: argument xi must be evenly spaced")
     # fft
     yi = np.fft.fft(yi, axis=axis)
     d = (xi.max() - xi.min()) / (xi.size - 1)
@@ -187,7 +189,7 @@ def orthogonal(*args):
         Array orthogonality condition.
     """
     for i, arg in enumerate(args):
-        if hasattr(arg, 'shape'):
+        if hasattr(arg, "shape"):
             args[i] = arg.shape
     for s in zip(*args):
         if np.product(s) != max(s):
@@ -247,7 +249,7 @@ def smooth_1D(arr, n=10):
         number of points to average
     """
     for i in range(n, len(arr) - n):
-        window = arr[i - n:i + n].copy()
+        window = arr[i - n : i + n].copy()
         arr[i] = window.mean()
     return arr
 

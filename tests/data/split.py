@@ -77,7 +77,7 @@ def test_split_above():
     p = datasets.PyCMDS.wm_w2_w1_000
     a = wt.data.from_PyCMDS(p)
     a.flip(0)
-    split = a.split(0, [19700], direction='above')
+    split = a.split(0, [19700], direction="above")
     assert len(split) == 2
     assert split[0].shape == (14, 11, 11)
     assert split[1].shape == (21, 11, 11)
@@ -88,7 +88,7 @@ def test_split_above():
 def test_split_above_descending():
     p = datasets.PyCMDS.wm_w2_w1_000
     a = wt.data.from_PyCMDS(p)
-    split = a.split(0, [19700], direction='above')
+    split = a.split(0, [19700], direction="above")
     assert len(split) == 2
     assert split[0].shape == (21, 11, 11)
     assert split[1].shape == (14, 11, 11)
@@ -100,7 +100,7 @@ def test_split_units():
     p = datasets.PyCMDS.wm_w2_w1_000
     a = wt.data.from_PyCMDS(p)
     a.flip(0)
-    split = a.split(0, [507], units='nm')
+    split = a.split(0, [507], units="nm")
     assert len(split) == 2
     assert split[0].shape == (15, 11, 11)
     assert split[1].shape == (20, 11, 11)
@@ -111,7 +111,7 @@ def test_split_units():
 def test_split_axis_name():
     p = datasets.PyCMDS.wm_w2_w1_000
     a = wt.data.from_PyCMDS(p)
-    split = a.split('w2', [1500])
+    split = a.split("w2", [1500])
     assert len(split) == 2
     assert split[0].shape == (35, 10, 11)
     assert split[1].shape == (35, 11)
@@ -135,7 +135,7 @@ def test_split_parent():
     a = wt.data.from_PyCMDS(p)
     parent = wt.Collection()
     split = a.split(1, [1500], parent=parent)
-    assert 'split' in parent
+    assert "split" in parent
     assert split.filepath == parent.filepath
     assert len(split) == 2
     a.close()

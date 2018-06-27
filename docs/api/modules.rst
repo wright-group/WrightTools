@@ -5,6 +5,7 @@ WrightTools API
    :maxdepth: 6
 
    WrightTools.diagrams
+   WrightTools.datasets
    WrightTools.artists
    WrightTools.collection
    WrightTools.data

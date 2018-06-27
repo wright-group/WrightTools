@@ -28,7 +28,7 @@ import math
 
 here = os.path.abspath(os.path.dirname(__file__))
 
-with open(os.path.join(os.path.dirname(here), 'WrightTools', 'VERSION')) as version_file:
+with open(os.path.join(os.path.dirname(here), "WrightTools", "VERSION")) as version_file:
     version = version_file.read().strip()
 
 
@@ -36,8 +36,8 @@ with open(os.path.join(os.path.dirname(here), 'WrightTools', 'VERSION')) as vers
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 
-sys.path.insert(0, os.path.abspath('.'))
-sys.path.insert(0, os.path.abspath('../WrightTools'))
+sys.path.insert(0, os.path.abspath("."))
+sys.path.insert(0, os.path.abspath("../WrightTools"))
 
 
 # --- general configuration ----------------------------------------------------------------------
@@ -50,35 +50,37 @@ sys.path.insert(0, os.path.abspath('../WrightTools'))
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinx.ext.autodoc',
-              'sphinx.ext.doctest',
-              'sphinx.ext.autosummary',
-              'sphinx.ext.intersphinx',
-              'sphinx.ext.todo',
-              'sphinx.ext.coverage',
-              'sphinx.ext.mathjax',
-              'sphinx.ext.ifconfig',
-              'sphinx.ext.viewcode',
-              'matplotlib.sphinxext.plot_directive',
-              'sphinx_gallery.gen_gallery',
-              'sphinx.ext.napoleon']
+extensions = [
+    "sphinx.ext.autodoc",
+    "sphinx.ext.doctest",
+    "sphinx.ext.autosummary",
+    "sphinx.ext.intersphinx",
+    "sphinx.ext.todo",
+    "sphinx.ext.coverage",
+    "sphinx.ext.mathjax",
+    "sphinx.ext.ifconfig",
+    "sphinx.ext.viewcode",
+    "matplotlib.sphinxext.plot_directive",
+    "sphinx_gallery.gen_gallery",
+    "sphinx.ext.napoleon",
+]
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ["_templates"]
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 #
 # source_suffix = ['.rst', '.md']
-source_suffix = '.rst'
+source_suffix = ".rst"
 
 # The master toctree document.
-master_doc = 'index'
+master_doc = "index"
 
 # General information about the project.
-project = 'WrightTools'
-copyright = '2016-2017, WrightTools Developers'
-author = 'WrightTools Developers'
+project = "WrightTools"
+copyright = "2016-2018, WrightTools Developers"
+author = "WrightTools Developers"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -99,10 +101,10 @@ language = None
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This patterns also effect to html_static_path and html_extra_path
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = "sphinx"
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = True
@@ -114,7 +116,7 @@ todo_include_todos = True
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'sphinx_rtd_theme'
+html_theme = "sphinx_rtd_theme"
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -134,7 +136,7 @@ html_context = {
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+html_static_path = ["_static"]
 
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.
@@ -142,12 +144,12 @@ html_static_path = ['_static']
 # This is required for the alabaster theme
 # refs: http://alabaster.readthedocs.io/en/latest/installation.html#sidebars
 html_sidebars = {
-    '**': [
-        'about.html',
-        'navigation.html',
-        'relations.html',  # needs 'show_related': True theme option to display
-        'searchbox.html',
-        'donate.html',
+    "**": [
+        "about.html",
+        "navigation.html",
+        "relations.html",  # needs 'show_related': True theme option to display
+        "searchbox.html",
+        "donate.html",
     ]
 }
 
@@ -156,7 +158,7 @@ html_sidebars = {
 
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'WrightToolsdoc'
+htmlhelp_basename = "WrightToolsdoc"
 
 
 # --- Options for LaTeX output -------------------------------------------------------------------
@@ -166,15 +168,12 @@ latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
     #
     # 'papersize': 'letterpaper',
-
     # The font size ('10pt', '11pt' or '12pt').
     #
     # 'pointsize': '10pt',
-
     # Additional stuff for the LaTeX preamble.
     #
     # 'preamble': '',
-
     # Latex figure (float) alignment
     #
     # 'figure_align': 'htbp',
@@ -184,8 +183,13 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'WrightTools.tex', 'WrightTools Documentation',
-     'WrightTools Developers', 'manual'),
+    (
+        master_doc,
+        "WrightTools.tex",
+        "WrightTools Documentation",
+        "WrightTools Developers",
+        "manual",
+    )
 ]
 
 
@@ -194,10 +198,7 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [
-    (master_doc, 'wrighttools', 'WrightTools Documentation',
-     [author], 1)
-]
+man_pages = [(master_doc, "wrighttools", "WrightTools Documentation", [author], 1)]
 
 
 # --- Options for Texinfo output -----------------------------------------------------------------
@@ -207,9 +208,15 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'WrightTools', 'WrightTools Documentation',
-     author, 'WrightTools', 'One line description of project.',
-     'Miscellaneous'),
+    (
+        master_doc,
+        "WrightTools",
+        "WrightTools Documentation",
+        author,
+        "WrightTools",
+        "One line description of project.",
+        "Miscellaneous",
+    )
 ]
 
 
@@ -217,11 +224,12 @@ texinfo_documents = [
 
 
 sphinx_gallery_conf = {
-    'examples_dirs': '../examples',
-    'filename_pattern': '/*.py',
-    'gallery_dirs': 'auto_examples',
-    'download_section_examples': False,
-    'backreferences_dir': os.path.join('gen_modules', 'backreferences')}
+    "examples_dirs": "../examples",
+    "filename_pattern": "/*.py",
+    "gallery_dirs": "auto_examples",
+    "download_section_examples": False,
+    "backreferences_dir": os.path.join("gen_modules", "backreferences"),
+}
 
 
 # --- plots --------------------------------------------------------------------------------------
@@ -233,24 +241,24 @@ np.random.seed(0)
 """
 
 plot_include_source = True
-plot_formats = [('png', 100), 'pdf']
+plot_formats = [("png", 100), "pdf"]
 
 phi = (math.sqrt(5) + 1) / 2
 
 plot_rcparams = {
-    'font.size': 8,
-    'axes.titlesize': 8,
-    'axes.labelsize': 8,
-    'xtick.labelsize': 8,
-    'ytick.labelsize': 8,
-    'legend.fontsize': 8,
-    'figure.figsize': (3 * phi, 3),
-    'figure.subplot.bottom': 0.2,
-    'figure.subplot.left': 0.2,
-    'figure.subplot.right': 0.9,
-    'figure.subplot.top': 0.85,
-    'figure.subplot.wspace': 0.4,
-    'text.usetex': False,
+    "font.size": 8,
+    "axes.titlesize": 8,
+    "axes.labelsize": 8,
+    "xtick.labelsize": 8,
+    "ytick.labelsize": 8,
+    "legend.fontsize": 8,
+    "figure.figsize": (3 * phi, 3),
+    "figure.subplot.bottom": 0.2,
+    "figure.subplot.left": 0.2,
+    "figure.subplot.right": 0.9,
+    "figure.subplot.top": 0.85,
+    "figure.subplot.wspace": 0.4,
+    "text.usetex": False,
 }
 
 
@@ -258,8 +266,8 @@ plot_rcparams = {
 
 
 intersphinx_mapping = {
-    'python': ('https://docs.python.org/3', None),
-    'scipy': ('https://docs.scipy.org/doc/scipy/reference', None),
-    'matplotlib': ('http://matplotlib.org', None),
-    'numpy': ('https://docs.scipy.org/doc/numpy/', None)
+    "python": ("https://docs.python.org/3", None),
+    "scipy": ("https://docs.scipy.org/doc/scipy/reference", None),
+    "matplotlib": ("http://matplotlib.org", None),
+    "numpy": ("https://docs.scipy.org/doc/numpy/", None),
 }

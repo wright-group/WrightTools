@@ -47,7 +47,7 @@ class NameNotUniqueError(WrightToolsException):
             Name of an attribute which causes a duplication.
         """
         if name is not None:
-            message = 'Name {} results in a duplicate'.format(name)
+            message = "Name {} results in a duplicate".format(name)
         else:
             message = "Names must be unique"
         super().__init__(self, message)
@@ -72,6 +72,24 @@ class MultidimensionalAxisError(WrightToolsException):
 
 class ValueError(ValueError, WrightToolsException):
     """Raised when an argument has the right type but an inappropriate value."""
+
+    pass
+
+
+class FileExistsError(FileExistsError, WrightToolsException):
+    """Raised when trying to create a file or directory which already exists.
+
+    Corresponds to errno ``EEXIST``.
+    """
+
+    pass
+
+
+class TypeError(TypeError, WrightToolsException):
+    """Raised when an operation or function is applied to an object of inappropriate type.
+
+    The associated value is a string giving details about the type mismatch.
+    """
 
     pass
 
@@ -135,6 +153,14 @@ class WrongFileTypeWarning(WrightToolsWarning):
         expected : string
             Expected file suffix.
         """
-        filesuffix = os.path.basename(filepath).split('.')[-1]
-        message = 'file {0} has type {1} (expected {2})'.format(filepath, filesuffix, 'txt')
+        filesuffix = os.path.basename(filepath).split(".")[-1]
+        message = "file {0} has type {1} (expected {2})".format(filepath, filesuffix, expected)
         warnings.warn(message, WrongFileTypeWarning)
+
+
+class ObjectExistsWarning(WrightToolsWarning):
+    """Warn that an HDF5 object already exists when a new one is requested."""
+
+    def warn(name):
+        message = "object '{0}' already exists, returning existing copy".format(name)
+        warnings.warn(message, ObjectExistsWarning)
