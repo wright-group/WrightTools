@@ -6,6 +6,8 @@
 
 import shutil
 import os
+import sys
+import pathlib
 import weakref
 import tempfile
 import posixpath
@@ -64,8 +66,15 @@ class Group(h5py.Group, metaclass=MetaClass):
             self.attrs["created"] = wt_kit.TimeStamp().RFC3339
         for key, value in kwargs.items():
             try:
-                if isinstance(value, list) and len(value) > 0 and isinstance(value[0], str):
+                if isinstance(value, pathlib.Path):
+                    value = str(value)
+                elif isinstance(value, list) and len(value) > 0 and isinstance(value[0], str):
                     value = np.array(value, dtype="S")
+                elif sys.version_info > (3, 6):
+                    try:
+                        value = os.fspath(value)
+                    except TypeError:
+                        pass  # Not all things that can be stored have fspath
                 self.attrs[key] = value
             except TypeError:
                 # some values have no native HDF5 equivalent
@@ -339,6 +348,10 @@ class Group(h5py.Group, metaclass=MetaClass):
             Written filepath.
         """
         # parse filepath
+        if sys.version_info >= (3, 6):
+            filepath = os.fspath(filepath)
+        if isinstance(filepath, pathlib.Path):
+            filepath = str(filepath)
         if filepath is None:
             filepath = os.path.join(os.getcwd(), self.natural_name + ".wt5")
         elif not filepath.endswith((".wt5", ".h5", ".hdf5")):

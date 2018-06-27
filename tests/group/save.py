@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 """Test group copy and save."""
 
 
@@ -5,6 +6,8 @@
 
 
 import os
+import pathlib
+import warnings
 
 import numpy as np
 
@@ -148,6 +151,31 @@ def test_propagate_expressions():
     os.remove(p)
 
 
+def test_save_pathlib():
+    p = datasets.PyCMDS.wm_w2_w1_001
+    data = wt.data.from_PyCMDS(p)
+
+    p = pathlib.Path(__file__).parent / "pathlib"
+    p = data.save(p)
+    p = pathlib.Path(p)
+    assert p.exists()
+    assert p.suffix == ".wt5"
+    with warnings.catch_warnings(record=True) as w:
+        new = wt.open(p)
+        assert len(w) == 0
+    for k, v in data.attrs.items():
+        assert_equal(new.attrs[k], v)
+    for k, v in data.items():
+        assert_equal(new[k], v)
+    for axis in new.axes:
+        assert getattr(new, axis.natural_name) is axis
+    for channel in new.channels:
+        assert getattr(new, channel.natural_name) is channel
+    data.close()
+    new.close()
+    os.remove(p)
+
+
 # --- run -----------------------------------------------------------------------------------------
 
 
@@ -159,3 +187,4 @@ if __name__ == "__main__":
     test_simple_save()
     test_propagate_units()
     test_propagate_expressions()
+    test_save_pathlib()
