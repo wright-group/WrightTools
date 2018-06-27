@@ -76,6 +76,15 @@ class ValueError(ValueError, WrightToolsException):
     pass
 
 
+class FileExistsError(FileExistsError, WrightToolsException):
+    """Raised when trying to create a file or directory which already exists.
+
+    Corresponds to errno ``EEXIST``.
+    """
+
+    pass
+
+
 class TypeError(TypeError, WrightToolsException):
     """Raised when an operation or function is applied to an object of inappropriate type.
 
