@@ -159,6 +159,7 @@ class Group(h5py.Group, metaclass=MetaClass):
                 if hasattr(cls.instances[i], "_tmpfile"):
                     tmpfile = cls.instances[i]._tmpfile
                 break
+        p = str(p)
         if file is None:
             file = h5py.File(p, "a")
         # construct fullpath
@@ -167,7 +168,7 @@ class Group(h5py.Group, metaclass=MetaClass):
             name = posixpath.sep
         else:
             name = natural_name
-        fullpath = str(p) + "::" + parent + name
+        fullpath = p + "::" + parent + name
         # create and/or return
         try:
             instance = cls.instances[fullpath]
