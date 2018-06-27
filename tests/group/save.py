@@ -173,7 +173,7 @@ def test_save_pathlib():
         assert getattr(new, channel.natural_name) is channel
     data.close()
     new.close()
-    os.remove(p)
+    p.unlink()
 
 
 # --- run -----------------------------------------------------------------------------------------
