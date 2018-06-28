@@ -14,7 +14,7 @@ def wt_tree():
     # Add arguments
     parser.add_argument("path", type=str)
     parser.add_argument("--verbose", "-v", action="store_true", help="Verbose? False by default")
-    parser.add_argument("--depth", "-d", "-l", type=int, default=9, help="depth to print (int)")
+    parser.add_argument("--depth", "-d", "-L", type=int, default=9, help="depth to print (int)")
     parser.add_argument("internal_path", nargs="?", default="/")
     args = parser.parse_args()
 
