@@ -105,7 +105,7 @@ def make_colormap(seq, name="CustomMap", plot=False):
     name : string (optional)
         A name for the colormap
     plot : boolean (optional)
-        Use to generate a plot of the colormap (Defalut is False).
+        Use to generate a plot of the colormap (Default is False).
 
     Returns
     -------
