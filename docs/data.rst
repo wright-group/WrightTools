@@ -12,18 +12,20 @@ Instantiation
 WrightTools aims to provide user-friendly ways of creating data directly from common spectroscopy file formats.
 Here are the formats currently supported.
 
-=========  ================================================================  =========================================
-name       description                                                       API
----------  ----------------------------------------------------------------  -----------------------------------------
-Cary 50    Files from Varian's Cary® 50 UV-Vis                               :meth:`~WrightTools.data.from_Cary50`
-COLORS     Files from Control Lots Of Research in Spectroscopy               :meth:`~WrightTools.data.from_COLORS`
-JASCO      Files from JASCO_ optical spectrometers.                          :meth:`~WrightTools.data.from_JASCO`
-KENT       Files from "ps control" by Kent Meyer                             :meth:`~WrightTools.data.from_KENT`
-PyCMDS     Files from PyCMDS_.                                               :meth:`~WrightTools.data.from_PyCMDS`
-scope      .scope files from ocean optics spectrometers                      :meth:`~WrightTools.data.from_scope`
-Shimadzu   Files from Shimadzu_ UV-VIS spectrophotometers.                   :meth:`~WrightTools.data.from_shimadzu`
-Tensor 27  Files from Bruker Tensor 27 FT-IR                                 :meth:`~WrightTools.data.from_Tensor27`
-=========  ================================================================  =========================================
+=============  ================================================================  =========================================
+name           description                                                       API
+-------------  ----------------------------------------------------------------  -----------------------------------------
+BrunoldrRaman  Files from Brunold_ lab resonance raman measurements              :meth:`~WrightTools.data.from_BrunoldrRaman`
+Cary           Files from Varian's Cary® Spectrometers                           :meth:`~WrightTools.collection.from_Cary`
+COLORS         Files from Control Lots Of Research in Spectroscopy               :meth:`~WrightTools.data.from_COLORS`
+JASCO          Files from JASCO_ optical spectrometers.                          :meth:`~WrightTools.data.from_JASCO`
+KENT           Files from "ps control" by Kent Meyer                             :meth:`~WrightTools.data.from_KENT`
+PyCMDS         Files from PyCMDS_.                                               :meth:`~WrightTools.data.from_PyCMDS`
+Ocean Optics   .scope files from ocean optics spectrometers                      :meth:`~WrightTools.data.from_ocean_optics`
+Shimadzu       Files from Shimadzu_ UV-VIS spectrophotometers.                   :meth:`~WrightTools.data.from_shimadzu`
+SPCM           Files from Becker & Hickl spcm_ software                          :meth:`~WrightTools.data.from_spcm`
+Tensor 27      Files from Bruker Tensor 27 FT-IR                                 :meth:`~WrightTools.data.from_Tensor27`
+=============  ================================================================  =========================================
 
 Is your favorite format missing?
 It's easy to add---promise! Check out :ref:`contributing`.
@@ -111,12 +113,12 @@ The natural syntax is recommended, as it tends to result in more readable code.
 
 .. code-block:: python
 
-   >>> data.axis_names
-   ['w1', 'w2']
+   >>> data.axis_expressions
+   ('w1', 'w2')
    >>> data.w2 == data.axes[1]
    True
    >>> data.channel_names
-   ['signal', 'pyro1', 'pyro2', 'pyro3']
+   ('signal', 'pyro1', 'pyro2', 'pyro3')
    >>> data.pyro2 == data.channels[2]
    True
 
@@ -164,7 +166,7 @@ method                                              description
 ==================================================  ================================================================================
 
 WrightTools seamlessly handles dimensionality throughout.
-:ref:`Artists` and :ref:`Fit` are places where dimensionality is addressed explicitly.
+:ref:`Artists` is one such place where dimensionality is addressed explicitly.
 
 Processing without the pain
 ---------------------------
@@ -178,15 +180,13 @@ method                                              description
 --------------------------------------------------  --------------------------------------------------------------------------------
 :meth:`~WrightTools.data.Data.clip`                 clip values outside of a given range
 :meth:`~WrightTools.data.Data.level`                level the edge of data along a certain axis
-:meth:`~WrightTools.data.Data.normalize`            normalize a channel such that mag --> 1 and null --> 0
-:meth:`~WrightTools.data.Data.revert`               revert the data object to an earlier state
-:meth:`~WrightTools.data.Data.scale`                apply a scaling to a channel, such as square root or log
 :meth:`~WrightTools.data.Data.smooth`               smooth a channel via convolution with a n-dimensional Kaiser window
-:meth:`~WrightTools.data.Data.trim`                 remove outliers via a statistical test
 :meth:`~WrightTools.data.Data.zoom`                 zoom a channel using spline interpolation
 ==================================================  ================================================================================
 
+.. _Brunold: http://brunold.chem.wisc.edu/
 .. _JASCO: https://jascoinc.com/products/spectroscopy/
 .. _NISE: https://github.com/wright-group/NISE
 .. _PyCMDS: https://github.com/wright-group/PyCMDS
 .. _Shimadzu: http://www.ssi.shimadzu.com/products/productgroup.cfm?subcatlink=uvvisspectro
+.. _spcm: http://www.becker-hickl.com/software/spcm.htm

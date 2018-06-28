@@ -62,9 +62,7 @@ class Data(Group):
 
     def __repr__(self):
         return "<WrightTools.Data '{0}' {1} at {2}>".format(
-            self.natural_name,
-            str(self.axis_names),
-            "::".join([self.filepath, self.name]),
+            self.natural_name, str(self.axis_names), "::".join([self.filepath, self.name])
         )
 
     @property
@@ -172,7 +170,7 @@ class Data(Group):
         except (AssertionError, AttributeError):
             self._variables = [self[n] for n in self.variable_names]
         finally:
-            return self._variables
+            return tuple(self._variables)
 
     @property
     def _leaf(self):
@@ -222,9 +220,7 @@ class Data(Group):
         else:
             # axes
             s = "axes: "
-            s += ", ".join(
-                ["{0} ({1})".format(a.expression, a.units) for a in self.axes]
-            )
+            s += ", ".join(["{0} ({1})".format(a.expression, a.units) for a in self.axes])
             print(prefix + "├── " + s)
             # channels
             s = "channels: "
@@ -342,12 +338,8 @@ class Data(Group):
                 kwargs["signed"] = c.signed
                 kwargs.update(c.attrs)
                 data.create_channel(**kwargs)
-            new_axes = [
-                a.expression for a in kept_axes if a.expression not in at.keys()
-            ]
-            new_axis_units = [
-                a.units for a in kept_axes if a.expression not in at.keys()
-            ]
+            new_axes = [a.expression for a in kept_axes if a.expression not in at.keys()]
+            new_axis_units = [a.units for a in kept_axes if a.expression not in at.keys()]
             data.transform(*new_axes)
             for j, units in enumerate(new_axis_units):
                 data.axes[j].convert(units)
@@ -361,16 +353,24 @@ class Data(Group):
 
     def collapse(self, axis, method="integrate"):
         """
-        Collapse the dataset along one axis.
+        Collapse the dataset along one axis, adding lower rank channels.
+
+        New channels have names <channel name>_<axis name>_<method>.
 
         Parameters
         ----------
         axis : int or str
             The axis to collapse along.
+            If given as an integer, the axis in the underlying array is used.
+            If given as a string, the axis must exist, and be a 1D array-aligned axis.
+            (i.e. have a shape with a single value which is not ``1``)
+            The axis to collapse along is inferred from the shape of the axis.
         method : {'integrate', 'average', 'sum', 'max', 'min'} (optional)
             The method of collapsing the given axis. Method may also be list
             of methods corresponding to the channels of the object. Default
             is integrate. All methods but integrate disregard NANs.
+            Can also be a list, allowing for different treatment for varied channels.
+            In this case, None indicates that no change to that channel should occur.
 
         See Also
         --------
@@ -379,40 +379,92 @@ class Data(Group):
         split
             Split the dataset while maintaining its dimensionality.
         """
-        raise NotImplementedError
         # get axis index --------------------------------------------------------------------------
         if isinstance(axis, int):
             axis_index = axis
         elif isinstance(axis, str):
-            axis_index = self.axis_names.index(axis)
+            index = self.axis_names.index(axis)
+            axes = [i for i in range(self.ndim) if self.axes[index].shape[i] > 1]
+            if len(axes) > 1:
+                raise wt_exceptions.MultidimensionalAxisError(axis, "collapse")
+            elif len(axes) == 0:
+                raise wt_exceptions.ValueError(
+                    "Axis {} is a single point, cannot collapse".format(axis)
+                )
+            axis_index = axes[0]
         else:
-            raise TypeError("axis: expected {int, str}, got %s" % type(axis))
+            raise wt_exceptions.TypeError("axis: expected {int, str}, got %s" % type(axis))
+
+        new_shape = list(self.shape)
+        new_shape[axis_index] = 1
         # methods ---------------------------------------------------------------------------------
         if isinstance(method, list):
             if len(method) == len(self.channels):
                 methods = method
             else:
-                print("method argument incompatible in data.collapse")
+                raise wt_exceptions.ValueError(
+                    "method argument must have same number of elements as there are channels"
+                )
+            for m in methods:
+                if m not in [
+                    "sum",
+                    "max",
+                    "maximum",
+                    "min",
+                    "minimum",
+                    "ave",
+                    "average",
+                    "mean",
+                    "int",
+                    "integrate",
+                ]:
+                    raise wt_exceptions.ValueError("method '{}' not recognized".format(m))
         elif isinstance(method, str):
             methods = [method for _ in self.channels]
+
+        warnings.warn("collapse", category=wt_exceptions.EntireDatasetInMemoryWarning)
+
         # collapse --------------------------------------------------------------------------------
-        for method, channel in zip(methods, self.channels):
-            if method in ["int", "integrate"]:
-                channel[:] = np.trapz(
-                    y=channel[:], x=self._axes[axis_index][:], axis=axis_index
-                )
-            elif method == "sum":
-                channel[:] = np.nansum(channel[:], axis=axis_index)
+        for method, channel in zip(methods, self.channel_names):
+            if method is None:
+                continue
+
+            if self[channel].shape[axis_index] == 1:
+                continue  # Cannot collapse any further, don't clutter data object
+
+            new_shape = list(self[channel].shape)
+            new_shape[axis_index] = 1
+
+            new = self.create_channel(
+                "{}_{}_{}".format(channel, axis, method),
+                shape=new_shape,
+                units=self[channel].units,
+            )
+
+            channel = self[channel]
+
+            if method == "sum":
+                res = np.nansum(channel[:], axis=axis_index)
+                res.shape = new_shape
+                new[:] = res
             elif method in ["max", "maximum"]:
-                channel[:] = np.nanmax(channel[:], axis=axis_index)
+                res = np.nanmax(channel[:], axis=axis_index)
+                res.shape = new_shape
+                new[:] = res
             elif method in ["min", "minimum"]:
-                channel[:] = np.nanmin(channel[:], axis=axis_index)
+                res = np.nanmin(channel[:], axis=axis_index)
+                res.shape = new_shape
+                new[:] = res
             elif method in ["ave", "average", "mean"]:
-                channel[:] = np.nanmean(channel[:], axis=axis_index)
+                res = np.nanmean(channel[:], axis=axis_index)
+                res.shape = new_shape
+                new[:] = res
+            elif method in ["int", "integrate"]:
+                res = np.trapz(y=channel[:], x=self._axes[axis_index][:], axis=axis_index)
+                res.shape = new_shape
+                new[:] = res
             else:
-                print("method not recognized in data.collapse")
-        # cleanup ---------------------------------------------------------------------------------
-        self._axes.pop(axis_index)
+                raise wt_exceptions.ValueError("method '{}' not recognized".format(m))
 
     def convert(self, destination_units, *, convert_variables=False, verbose=True):
         """Convert all compatable axes to given units.
@@ -482,6 +534,10 @@ class Data(Group):
         Channel
             Created channel.
         """
+        if name in self.channel_names:
+            warnings.warn(name, wt_exceptions.ObjectExistsWarning)
+            return self[name]
+
         require_kwargs = {}
         if values is None:
             if shape is None:
@@ -497,9 +553,7 @@ class Data(Group):
         dataset_id = self.require_dataset(name=name, chunks=True, **require_kwargs).id
         channel = Channel(self, dataset_id, units=units, **kwargs)
         # finish
-        self.attrs["channel_names"] = np.append(
-            self.attrs["channel_names"], name.encode()
-        )
+        self.attrs["channel_names"] = np.append(self.attrs["channel_names"], name.encode())
         return channel
 
     def create_variable(self, name, values=None, shape=None, units=None, **kwargs):
@@ -526,6 +580,9 @@ class Data(Group):
         WrightTools Variable
             New child variable.
         """
+        if name in self.variable_names:
+            warnings.warn(name, wt_exceptions.ObjectExistsWarning)
+            return self[name]
         if values is None:
             if shape is None:
                 shape = self.shape
@@ -537,10 +594,8 @@ class Data(Group):
         id = self.require_dataset(name=name, data=values, shape=shape, dtype=dtype).id
         variable = Variable(self, id, units=units, **kwargs)
         # finish
-        self.variables.append(variable)
-        self.attrs["variable_names"] = np.append(
-            self.attrs["variable_names"], name.encode()
-        )
+        self._variables = None
+        self.attrs["variable_names"] = np.append(self.attrs["variable_names"], name.encode())
         return variable
 
     def flush(self):
@@ -696,19 +751,10 @@ class Data(Group):
         # finish
         channel._null = 0
         if verbose:
-            print(
-                "channel {0} leveled along axis {1}".format(channel.natural_name, axis)
-            )
+            print("channel {0} leveled along axis {1}".format(channel.natural_name, axis))
 
     def map_variable(
-        self,
-        variable,
-        points,
-        input_units="same",
-        *,
-        name=None,
-        parent=None,
-        verbose=True
+        self, variable, points, input_units="same", *, name=None, parent=None, verbose=True
     ):
         """Map points of an axis to new points using linear interpolation.
 
@@ -776,9 +822,7 @@ class Data(Group):
         if self.ndim == 1:
 
             def interpolate(dataset, points):
-                function = scipy.interpolate.interp1d(
-                    variable[:], dataset[:], bounds_error=False
-                )
+                function = scipy.interpolate.interp1d(variable[:], dataset[:], bounds_error=False)
                 return function(points)
 
         else:
@@ -787,9 +831,7 @@ class Data(Group):
 
             def interpolate(dataset, points):
                 values = dataset.full.flatten()
-                function = scipy.interpolate.LinearNDInterpolator(
-                    pts, values, rescale=True
-                )
+                function = scipy.interpolate.LinearNDInterpolator(pts, values, rescale=True)
                 new = function(out_pts)
                 new.shape = out.shape
                 return new
@@ -905,9 +947,7 @@ class Data(Group):
         elif isinstance(offset_axis, str):
             offset_axis_index = self.axis_names.index(offset_axis)
         else:
-            raise TypeError(
-                "offset_axis: expected {int, str}, got %s" % type(offset_axis)
-            )
+            raise TypeError("offset_axis: expected {int, str}, got %s" % type(offset_axis))
         # new points
         new_points = [a[:] for a in self._axes]
         old_offset_axis_points = self._axes[offset_axis_index][:]
@@ -943,9 +983,7 @@ class Data(Group):
             # grid data
             tup = tuple([arr[i] for i in range(len(arr) - 1)])
             # note that rescale is crucial in this operation
-            out = griddata(
-                tup, arr[-1], new_xi, method=method, fill_value=np.nan, rescale=True
-            )
+            out = griddata(tup, arr[-1], new_xi, method=method, fill_value=np.nan, rescale=True)
             channel[:] = out
         self._axes[offset_axis_index][:] = new_offset_axis_points
         # transpose out
@@ -1180,8 +1218,7 @@ class Data(Group):
                 transpose_order = range(len(values.shape))
                 # replace axis_index with zero
                 transpose_order = [
-                    len(values.shape) - 1 if i == axis_index else i
-                    for i in transpose_order
+                    len(values.shape) - 1 if i == axis_index else i for i in transpose_order
                 ]
                 transpose_order[len(values.shape) - 1] = axis_index
                 values = values.transpose(transpose_order)
@@ -1192,9 +1229,7 @@ class Data(Group):
                 for index in np.ndindex(values[..., 0].shape):
                     current_slice = values[index]
                     temp_slice = np.pad(current_slice, int(factor), mode=str("edge"))
-                    values[index] = np.convolve(
-                        temp_slice, w / w.sum(), mode=str("valid")
-                    )
+                    values[index] = np.convolve(temp_slice, w / w.sum(), mode=str("valid"))
                 # transpose out
                 values = values.transpose(transpose_order)
             # return array to channel object
@@ -1202,15 +1237,7 @@ class Data(Group):
         if verbose:
             print("smoothed data")
 
-    def split(
-        self,
-        axis,
-        positions,
-        units="same",
-        direction="below",
-        parent=None,
-        verbose=True,
-    ):
+    def split(self, axis, positions, units="same", direction="below", parent=None, verbose=True):
         """
         Split the data object along a given axis, in units.
 
@@ -1279,9 +1306,7 @@ class Data(Group):
         if flip:
             indicies = [i - 1 for i in indicies]
         # process ---------------------------------------------------------------------------------
-        outs = wt_collection.Collection(
-            name="split", parent=parent, edit_local=parent is not None
-        )
+        outs = wt_collection.Collection(name="split", parent=parent, edit_local=parent is not None)
         start = 0
         stop = 0
         for i in range(len(indicies) + 1):
@@ -1311,9 +1336,7 @@ class Data(Group):
                     attrs = dict(ch.attrs)
                     attrs.pop("name", None)
                     attrs.pop("units", None)
-                    new_data.create_channel(
-                        ch.natural_name, ch[:][slc], ch.units, **attrs
-                    )
+                    new_data.create_channel(ch.natural_name, ch[:][slc], ch.units, **attrs)
             else:
                 attrs = dict(self.attrs)
                 attrs.pop("name", None)
@@ -1346,11 +1369,7 @@ class Data(Group):
                 if new_data is None:
                     print("  {0} : None".format(i))
                 elif len(new_data.shape) < len(self.shape):
-                    print(
-                        "  {0} : {1} {2}(constant)".format(
-                            i, axis.natural_name, axis.units
-                        )
-                    )
+                    print("  {0} : {1} {2}(constant)".format(i, axis.natural_name, axis.units))
                 else:
                     new_axis = new_data.axes[axis_index]
                     print(
@@ -1412,9 +1431,7 @@ class Data(Group):
             axis[:] = scipy.ndimage.interpolation.zoom(axis[:], factor, order=order)
         # channels
         for channel in self.channels:
-            channel[:] = scipy.ndimage.interpolation.zoom(
-                channel[:], factor, order=order
-            )
+            channel[:] = scipy.ndimage.interpolation.zoom(channel[:], factor, order=order)
         # return
         if verbose:
             print("data zoomed to new shape:", self.shape)

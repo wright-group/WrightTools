@@ -6,6 +6,8 @@
 
 import shutil
 import os
+import sys
+import pathlib
 import weakref
 import tempfile
 import posixpath
@@ -16,6 +18,7 @@ import numpy as np
 import h5py
 
 from . import kit as wt_kit
+from . import exceptions as wt_exceptions
 from . import __wt5_version__
 
 
@@ -64,8 +67,15 @@ class Group(h5py.Group, metaclass=MetaClass):
             self.attrs["created"] = wt_kit.TimeStamp().RFC3339
         for key, value in kwargs.items():
             try:
-                if isinstance(value, list) and len(value) > 0 and isinstance(value[0], str):
+                if isinstance(value, pathlib.Path):
+                    value = str(value)
+                elif isinstance(value, list) and len(value) > 0 and isinstance(value[0], str):
                     value = np.array(value, dtype="S")
+                elif sys.version_info > (3, 6):
+                    try:
+                        value = os.fspath(value)
+                    except TypeError:
+                        pass  # Not all things that can be stored have fspath
                 self.attrs[key] = value
             except TypeError:
                 # some values have no native HDF5 equivalent
@@ -140,9 +150,10 @@ class Group(h5py.Group, metaclass=MetaClass):
             tmpfile = tempfile.mkstemp(prefix="", suffix=".wt5")
             p = tmpfile[1]
             if filepath:
-                shutil.copyfile(src=filepath, dst=p)
+                shutil.copyfile(src=str(filepath), dst=p)
         elif edit_local and filepath:
             p = filepath
+        p = str(p)
         for i in cls.instances.keys():
             if i.startswith(os.path.abspath(p) + "::"):
                 file = cls.instances[i].file
@@ -326,7 +337,7 @@ class Group(h5py.Group, metaclass=MetaClass):
 
         Parameters
         ----------
-        filepath : string (optional)
+        filepath : Path-like object (optional)
             Filepath to write. If None, file is created using natural_name.
         overwrite : boolean (optional)
             Toggle overwrite behavior. Default is False.
@@ -338,18 +349,18 @@ class Group(h5py.Group, metaclass=MetaClass):
         str
             Written filepath.
         """
-        # parse filepath
         if filepath is None:
-            filepath = os.path.join(os.getcwd(), self.natural_name + ".wt5")
-        elif not filepath.endswith((".wt5", ".h5", ".hdf5")):
-            filepath += ".wt5"
-        filepath = os.path.expanduser(filepath)
-        # handle overwrite
-        if os.path.isfile(filepath):
+            filepath = pathlib.Path("." / self.natural_name)
+        else:
+            filepath = pathlib.Path(filepath)
+        filepath = filepath.with_suffix(".wt5")
+        filepath = filepath.absolute().expanduser()
+        if filepath.exists():
             if overwrite:
-                os.remove(filepath)
+                filepath.unlink()
             else:
-                raise FileExistsError(filepath)
+                raise wt_exceptions.FileExistsError(filepath)
+
         # copy to new file
         h5py.File(filepath)
         new = Group(filepath=filepath, edit_local=True)
@@ -365,4 +376,4 @@ class Group(h5py.Group, metaclass=MetaClass):
         del new
         if verbose:
             print("file saved at", filepath)
-        return filepath
+        return str(filepath)

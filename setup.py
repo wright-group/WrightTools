@@ -18,6 +18,7 @@ extra_files = {
         "datasets/*/*",
         "datasets/*/*/*",
         "datasets/*/*/*/*",
+        "CITATION",
         "VERSION",
         "WT5_VERSION",
     ]
