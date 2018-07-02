@@ -62,7 +62,8 @@ setup(
     license="MIT",
     url="http://wright.tools",
     keywords="spectroscopy science multidimensional visualization",
-    entry_points={"console_scripts": ["wt-tree=WrightTools.__main__:wt_tree"]},
+    entry_points={"console_scripts": ["wt-tree=WrightTools.__main__:wt_tree"]
+                                   + ["wt-convert=WrightTools.__main__:wt_convert"]},
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Science/Research",

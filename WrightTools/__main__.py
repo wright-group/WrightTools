@@ -6,8 +6,9 @@ import argparse
 
 
 # --- define --------------------------------------------------------------------------------------
+# Entry points from terminal
 
-
+# Print a wt5 file tree
 def wt_tree():
     parser = argparse.ArgumentParser(description="Print a given data tree.")
 
@@ -22,8 +23,11 @@ def wt_tree():
     obj = wt.open(args.path, edit_local=True)[args.internal_path]
 
     # Print the tree
-    # If the object is a data object, it doesn't take depth as a parameter
+    # If the wt5 is a data object, it doesn't take depth as a parameter
     if isinstance(obj, wt.Data):
         obj.print_tree(verbose=args.verbose)
     else:
         obj.print_tree(verbose=args.verbose, depth=args.depth)
+
+def wt_convert():
+    print("convert world")
