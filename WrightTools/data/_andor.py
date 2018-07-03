@@ -5,11 +5,14 @@
 
 
 import os
+import time
 
 import numpy as np
+from skimage.transform import downscale_local_mean
 
 from ._data import Axis, Channel, Data
 from .. import exceptions as wt_exceptions
+from ..kit import _timestamp as timestamp
 
 
 # --- define --------------------------------------------------------------------------------------
@@ -22,7 +25,7 @@ __all__ = ["from_andor"]
 
 
 def from_andor(filepath, name=None, parent=None, verbose=True):
-    """Create a data object from JASCO UV-Vis spectrometers.
+    """Create a data object from Andor CCD spectrometer.
 
     Parameters
     ----------
@@ -48,15 +51,10 @@ def from_andor(filepath, name=None, parent=None, verbose=True):
     if not name:
         name = os.path.basename(filepath).split(".")[0]
     # create data
-    kwargs = {"name": name, "kind": "andor", "source": filepath}
-    if parent is None:
-        data = Data(**kwargs)
-    else:
-        data = parent.create_data(**kwargs)   
-
     with open(filepath) as f:
         axis0 = []
         arr = []
+        attrs = {}
         while True:
             line = f.readline().strip()[:-1]
             if len(line) == 0:
@@ -70,7 +68,6 @@ def from_andor(filepath, name=None, parent=None, verbose=True):
         i = 0
         while i < 3:
             line = f.readline().strip()
-            print(line)
             if len(line) == 0:
                 i += 1
             else:
@@ -78,20 +75,33 @@ def from_andor(filepath, name=None, parent=None, verbose=True):
                     key, val = line.split(':', 1)
                 except ValueError:
                     val = ''
-                data.attrs[key.strip()] = val.strip()
-
+                attrs[key.strip()] = val.strip()
     arr = np.array(arr, dtype=np.float)
-    arr = data.create_channel(name='signal', values=arr, signed=False)
+    arr /= float(attrs['Exposure Time (secs)'])
 
+    created = attrs['Date and Time']  # is this UTC?
+    created = time.strptime(created, '%a %b %d %H:%M:%S %Y')
+    created = timestamp.TimeStamp(time.mktime(created)).RFC3339
+
+    kwargs = {"name": name, "kind": "andor", "source": filepath, "created":created}
+    if parent is None:
+        data = Data(**kwargs)
+    else:
+        data = parent.create_data(**kwargs)   
+    # units of Hz because time normalized
+    arr = data.create_channel(name='signal', values=arr, signed=False, units='Hz')
+    # TODO:  read metadata to determine axis0 units instead
     axis0 = np.array(axis0)
     if axis0.dtype == int:
-        axis0 = data.create_variable(name='xpos', values=axis0[:, None], units='um')
+        axis0 = data.create_variable(name='xpos', values=axis0[:, None], units=None)
     else:
         axis0 = data.create_variable(name='wm', values=axis0[:, None], units='nm')
-
-    data.create_variable(name='ypos', values=np.arange(arr.shape[1])[None, :], units='um')
-
+    data.create_variable(name='ypos', values=np.arange(arr.shape[1])[None, :], units=None)
     data.transform(axis0.name, 'ypos')
+    
+    for key, val in attrs.items():
+        data.attrs[key] = val
+
     # finish
     if verbose:
         print("data created at {0}".format(data.fullpath))
