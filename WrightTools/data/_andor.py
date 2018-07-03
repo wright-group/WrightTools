@@ -66,6 +66,19 @@ def from_andor(filepath, name=None, parent=None, verbose=True):
                 line = [eval(x) for x in line]
                 axis0.append(line.pop(0))
                 arr.append(line)
+        
+        i = 0
+        while i < 3:
+            line = f.readline().strip()
+            print(line)
+            if len(line) == 0:
+                i += 1
+            else:
+                try:
+                    key, val = line.split(':', 1)
+                except ValueError:
+                    val = ''
+                data.attrs[key.strip()] = val.strip()
 
     arr = np.array(arr, dtype=np.float)
     arr = data.create_channel(name='signal', values=arr, signed=False)
