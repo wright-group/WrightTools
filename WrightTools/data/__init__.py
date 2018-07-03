@@ -7,6 +7,7 @@ from ._channel import *
 from ._join import *
 from ._variable import *
 
+from ._andor import *
 from ._brunold import *
 from ._colors import *
 from ._data import *
@@ -26,6 +27,7 @@ __all__ = [
     "Channel",
     "Variable",
     # From methods in alphabetic order
+    "from_andor",
     "from_BrunoldrRaman",
     "from_COLORS",
     "from_JASCO",
