@@ -8,7 +8,6 @@ import os
 import time
 
 import numpy as np
-from skimage.transform import downscale_local_mean
 
 from ._data import Axis, Channel, Data
 from .. import exceptions as wt_exceptions
@@ -64,7 +63,7 @@ def from_andor(filepath, name=None, parent=None, verbose=True):
                 line = [eval(x) for x in line]
                 axis0.append(line.pop(0))
                 arr.append(line)
-        
+
         i = 0
         while i < 3:
             line = f.readline().strip()
@@ -83,11 +82,11 @@ def from_andor(filepath, name=None, parent=None, verbose=True):
     created = time.strptime(created, '%a %b %d %H:%M:%S %Y')
     created = timestamp.TimeStamp(time.mktime(created)).RFC3339
 
-    kwargs = {"name": name, "kind": "andor", "source": filepath, "created":created}
+    kwargs = {"name": name, "kind": "andor", "source": filepath, "created": created}
     if parent is None:
         data = Data(**kwargs)
     else:
-        data = parent.create_data(**kwargs)   
+        data = parent.create_data(**kwargs)
     # units of Hz because time normalized
     arr = data.create_channel(name='signal', values=arr, signed=False, units='Hz')
     # TODO:  read metadata to determine axis0 units instead
@@ -98,7 +97,7 @@ def from_andor(filepath, name=None, parent=None, verbose=True):
         axis0 = data.create_variable(name='wm', values=axis0[:, None], units='nm')
     data.create_variable(name='ypos', values=np.arange(arr.shape[1])[None, :], units=None)
     data.transform(axis0.name, 'ypos')
-    
+
     for key, val in attrs.items():
         data.attrs[key] = val
 
