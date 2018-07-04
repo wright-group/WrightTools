@@ -41,7 +41,7 @@ def from_andor(filepath, name=None, parent=None, verbose=True):
     Returns
     -------
     data
-        New data object(s).
+        New data object.
     """
     # parse filepath
     if not filepath.endswith("asc"):
@@ -60,7 +60,7 @@ def from_andor(filepath, name=None, parent=None, verbose=True):
                 break
             else:
                 line = line.split(',')
-                line = [eval(x) for x in line]
+                line = [float(x) for x in line]
                 axis0.append(line.pop(0))
                 arr.append(line)
 
@@ -75,7 +75,8 @@ def from_andor(filepath, name=None, parent=None, verbose=True):
                 except ValueError:
                     val = ''
                 attrs[key.strip()] = val.strip()
-    arr = np.array(arr, dtype=np.float)
+
+    arr = np.array(arr)
     arr /= float(attrs['Exposure Time (secs)'])
 
     created = attrs['Date and Time']  # is this UTC?
