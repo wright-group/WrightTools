@@ -15,6 +15,7 @@ import h5py
 
 import scipy
 from scipy.interpolate import griddata, interp1d
+from skimage.transform import downscale_local_mean
 
 from .._group import Group
 from .. import collection as wt_collection
@@ -597,6 +598,51 @@ class Data(Group):
         self._variables = None
         self.attrs["variable_names"] = np.append(self.attrs["variable_names"], name.encode())
         return variable
+
+    def downscale(self, tup, name=None, parent=None):
+        """Down sample the data array using local averaging.
+
+        The number of points along each axis is decreased by factor.
+        See `skimage.transform.downscale_local_mean`__ for more info.
+
+        __ http://scikit-image.org/docs/0.12.x/api/
+            skimage.transform.html#skimage.transform.downscale_local_mean
+
+        Parameters
+        ----------
+        tup : tuple, entry for each variable
+            The factor by which each variable decreases in size
+        parent : 
+        Returns
+        -------
+        WrightTools Data
+            New data object.
+        """
+        if 'name' is None:
+            name = 'downscaled'
+        if 'parent' is None:
+            parent.create_data(name=name)
+        else:
+            newdata = Data(name=name)
+
+        for channel in self.channels:
+            name = channel.name.split('/')[-1]
+            newdata.create_channel(name=name,
+                                   values=downscale_local_mean(channel[:], tup),
+                                   units=channel.units)
+        # failing to abstract the general case
+        args = []
+        for i, axis in enumerate(self.axes):
+            if len(axis.variables) > 1:
+                raise NotImplementedError
+            variable = axis.variables[0]
+            name = variable.name.split('/')[-1]
+            args.append(name)
+            newdata.create_variable(name=name,
+                                    values=variable[::tup[i]],
+                                    units=variable.units)
+        newdata.transform(*args)
+        return newdata
 
     def flush(self):
         super().flush()
