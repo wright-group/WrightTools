@@ -30,4 +30,8 @@ def wt_tree():
         obj.print_tree(verbose=args.verbose, depth=args.depth)
 
 def wt_convert():
-    print("convert world")
+    parser = argparse.ArgumentParser(description="Converts data units.")
+    parser.add_argument('args', nargs='*')
+    argsList = parser.parse_args().args
+    print(argsList)
+    print(wt.units.converter(float(argsList[0]), argsList[1], argsList[2]))
