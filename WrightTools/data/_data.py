@@ -640,9 +640,9 @@ class Data(Group):
             variable = axis.variables[0]
             name = variable.name.split('/')[-1]
             args.append(name)
-            newdata.create_variable(name=name,
-                                    values=variable[::tup[i]],
-                                    units=variable.units)
+            slices = [slice(None, None, step) for step in tup]
+            newdata.create_variable(name=name, values=variable[slices], units=variable.units)
+        newdata.transform(*args)
         newdata.transform(*args)
         return newdata
 
