@@ -612,7 +612,9 @@ class Data(Group):
         ----------
         tup : tuple, entry for each variable
             The factor by which each variable decreases in size
-        parent : 
+        name : string
+        parent : WrightTools Collection
+
         Returns
         -------
         WrightTools Data
@@ -634,7 +636,7 @@ class Data(Group):
         args = []
         for i, axis in enumerate(self.axes):
             if len(axis.variables) > 1:
-                raise NotImplementedError
+                raise NotImplementedError('downscale only works with simple axes')
             variable = axis.variables[0]
             name = variable.name.split('/')[-1]
             args.append(name)
