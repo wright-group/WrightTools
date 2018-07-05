@@ -17,14 +17,14 @@ from ..kit import _timestamp as timestamp
 # --- define --------------------------------------------------------------------------------------
 
 
-__all__ = ["from_andor"]
+__all__ = ["from_Solis"]
 
 
 # --- from function -------------------------------------------------------------------------------
 
 
-def from_andor(filepath, name=None, parent=None, verbose=True):
-    """Create a data object from Andor CCD spectrometer.
+def from_Solis(filepath, name=None, parent=None, verbose=True):
+    """Create a data object from Andor Solis software (ascii exports).
 
     Parameters
     ----------

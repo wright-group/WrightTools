@@ -7,7 +7,7 @@ from ._channel import *
 from ._join import *
 from ._variable import *
 
-from ._andor import *
+from ._solis import *
 from ._brunold import *
 from ._colors import *
 from ._data import *
