@@ -76,9 +76,6 @@ def from_Solis(filepath, name=None, parent=None, verbose=True):
                     val = ''
                 attrs[key.strip()] = val.strip()
 
-    arr = np.array(arr)
-    arr /= float(attrs['Exposure Time (secs)'])
-
     created = attrs['Date and Time']  # is this UTC?
     created = time.strptime(created, '%a %b %d %H:%M:%S %Y')
     created = timestamp.TimeStamp(time.mktime(created)).RFC3339
@@ -88,11 +85,12 @@ def from_Solis(filepath, name=None, parent=None, verbose=True):
         data = Data(**kwargs)
     else:
         data = parent.create_data(**kwargs)
-    # units of Hz because time normalized
+    arr = np.array(arr)
+    arr /= float(attrs['Exposure Time (secs)'])
+    # signal has units of Hz because time normalized
     arr = data.create_channel(name='signal', values=arr, signed=False, units='Hz')
-    # TODO:  read metadata to determine axis0 units instead
     axis0 = np.array(axis0)
-    if axis0.dtype == int:
+    if float(attrs['Grating Groove Density (l/mm)']) == 0:
         axis0 = data.create_variable(name='xpos', values=axis0[:, None], units=None)
     else:
         axis0 = data.create_variable(name='wm', values=axis0[:, None], units='nm')
