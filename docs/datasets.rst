@@ -32,6 +32,8 @@ dataset                                            axis expressions             
 ``PyCMDS.wm_w2_w1_000``                            ``('wm', 'w2', 'w1')``        ``(35, 11, 11)``
 ``PyCMDS.wm_w2_w1_001``                            ``('wm', 'w2', 'w1')``        ``(29, 11, 11)``
 ``Shimadzu.MoS2_fromCzech2015`` [#czech2015]_      ``('energy',)``               ``(819,)``
+``Solis.wm ypos fluorescence with filter``         ``('wm', 'ypos')``            ``(2560, 2160)``
+``Solis.xpos ypos fluorescence``                   ``('xpos', 'ypos')``          ``(2560, 2160)``
 ``spcm.test_data``                                 ``('time',)``                 ``(1024,)``
 ``Tensor27.CuPCtS_powder_ATR``                     ``('energy',)``               ``(7259,)``
 ``wt5.v1p0p0_perovskite_TA``                       ``('w1=wm', 'w2', 'd2')``     ``(52, 52, 13)``     :ref:`sphx_glr_auto_examples_quick2d_signed.py`

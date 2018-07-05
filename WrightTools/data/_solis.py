@@ -80,7 +80,7 @@ def from_Solis(filepath, name=None, parent=None, verbose=True):
     created = time.strptime(created, '%a %b %d %H:%M:%S %Y')
     created = timestamp.TimeStamp(time.mktime(created)).RFC3339
 
-    kwargs = {"name": name, "kind": "andor", "source": filepath, "created": created}
+    kwargs = {"name": name, "kind": "Solis", "source": filepath, "created": created}
     if parent is None:
         data = Data(**kwargs)
     else:
