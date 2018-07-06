@@ -106,5 +106,6 @@ def from_Solis(filepath, name=None, parent=None, verbose=True):
     # finish
     if verbose:
         print("data created at {0}".format(data.fullpath))
-        print("  size: {0}".format(data.size))
+        print("  axes: {0}".format(data.axis_names))
+        print("  shape: {0}".format(data.shape))
     return data
