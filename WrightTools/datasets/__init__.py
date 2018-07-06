@@ -79,6 +79,9 @@ PyCMDS._from_files("PyCMDS")
 Shimadzu = DatasetContainer()
 Shimadzu._from_files("Shimadzu")
 
+Solis = DatasetContainer()
+Solis._from_files("Solis")
+
 spcm = DatasetContainer()
 spcm._from_files("spcm")
 
@@ -94,13 +97,14 @@ wt5._from_files(os.path.join(here, "wt5", "v1.0.1"), prefix="v1p0p1_")
 
 
 __all__ = [
+    "BrunoldrRaman",
+    "Cary",
     "COLORS",
     "JASCO",
     "KENT",
     "ocean_optics",
     "PyCMDS",
-    "BrunoldrRaman",
-    "Cary",
+    "Solis",
     "Tensor27",
     "wt5",
 ]

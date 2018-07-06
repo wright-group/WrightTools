@@ -7,6 +7,7 @@ from ._channel import *
 from ._join import *
 from ._variable import *
 
+from ._solis import *
 from ._brunold import *
 from ._colors import *
 from ._data import *
@@ -33,6 +34,7 @@ __all__ = [
     "from_PyCMDS",
     "from_ocean_optics",
     "from_shimadzu",
+    "from_Solis",
     "from_spcm",
     "from_Tensor27",
 ]
