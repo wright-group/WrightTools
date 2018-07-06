@@ -59,7 +59,7 @@ def from_Solis(filepath, name=None, parent=None, verbose=True):
             if len(line) == 0:
                 break
             else:
-                line = line.split(',')
+                line = line.split(",")
                 line = [float(x) for x in line]
                 axis0.append(line.pop(0))
                 arr.append(line)
@@ -71,13 +71,13 @@ def from_Solis(filepath, name=None, parent=None, verbose=True):
                 i += 1
             else:
                 try:
-                    key, val = line.split(':', 1)
+                    key, val = line.split(":", 1)
                 except ValueError:
-                    val = ''
+                    val = ""
                 attrs[key.strip()] = val.strip()
 
-    created = attrs['Date and Time']  # is this UTC?
-    created = time.strptime(created, '%a %b %d %H:%M:%S %Y')
+    created = attrs["Date and Time"]  # is this UTC?
+    created = time.strptime(created, "%a %b %d %H:%M:%S %Y")
     created = timestamp.TimeStamp(time.mktime(created)).RFC3339
 
     kwargs = {"name": name, "kind": "Solis", "source": filepath, "created": created}
@@ -86,19 +86,21 @@ def from_Solis(filepath, name=None, parent=None, verbose=True):
     else:
         data = parent.create_data(**kwargs)
     arr = np.array(arr)
-    arr /= float(attrs['Exposure Time (secs)'])
+    arr /= float(attrs["Exposure Time (secs)"])
     # signal has units of Hz because time normalized
-    arr = data.create_channel(name='signal', values=arr, signed=False, units='Hz')
+    arr = data.create_channel(name="signal", values=arr, signed=False, units="Hz")
     axis0 = np.array(axis0)
-    if float(attrs['Grating Groove Density (l/mm)']) == 0:
-        xname = 'xpos'
+    if float(attrs["Grating Groove Density (l/mm)"]) == 0:
+        xname = "xpos"
         xunits = None
     else:
-        xname = 'wm'
-        xunits = 'nm'
+        xname = "wm"
+        xunits = "nm"
     data.create_variable(name=xname, values=axis0[:, None], units=xunits)
-    data.create_variable(name='ypos', values=np.arange(arr.shape[1])[None, :], units=None)
-    data.transform(data.variables[0].natural_name, 'ypos')
+    data.create_variable(
+        name="ypos", values=np.arange(arr.shape[1])[None, :], units=None
+    )
+    data.transform(data.variables[0].natural_name, "ypos")
 
     for key, val in attrs.items():
         data.attrs[key] = val
