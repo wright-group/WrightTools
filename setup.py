@@ -41,6 +41,7 @@ setup(
         "sphinx-rtd-theme",
     ],
     install_requires=[
+        "skimage",
         "h5py",
         "imageio",
         "matplotlib>=2.0",
