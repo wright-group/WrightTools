@@ -27,7 +27,6 @@ __all__ = [
     "Channel",
     "Variable",
     # From methods in alphabetic order
-    "from_andor",
     "from_BrunoldrRaman",
     "from_COLORS",
     "from_JASCO",
@@ -35,6 +34,7 @@ __all__ = [
     "from_PyCMDS",
     "from_ocean_optics",
     "from_shimadzu",
+    "from_Solis",
     "from_spcm",
     "from_Tensor27",
 ]
