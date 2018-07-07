@@ -602,7 +602,6 @@ class Data(Group):
     def downscale(self, tup, name=None, parent=None):
         """Down sample the data array using local averaging.
 
-        The number of points along each axis is decreased by factor.
         See `skimage.transform.downscale_local_mean`__ for more info.
 
         __ http://scikit-image.org/docs/0.12.x/api/
@@ -610,39 +609,42 @@ class Data(Group):
 
         Parameters
         ----------
-        tup : tuple, entry for each variable
-            The factor by which each variable decreases in size
-        name : string
-        parent : WrightTools Collection
+        tup : tuple of ints
+            The collection of step sizes by which each axis is binned.
+            Each axis is sliced with step size determined by the tuple.
+            To keep an axis sampling unchanged, use 1 or None
+        name : string (optional)
+            The name of the string. Default is None.
+        parent : WrightTools Collection instance (optional)
+            Collection to place the downscaled data object. Default is
+            None (new parent).
 
         Returns
         -------
-        WrightTools Data
-            New data object.
+        WrightTools Data instance
+            New data object with the downscaled channels and axes
         """
-        if 'name' is None:
-            name = 'downscaled'
-        if 'parent' is None:
-            parent.create_data(name=name)
-        else:
+        if name is None:
+            name = self.natural_name + '_downscaled'
+        if parent is None:
             newdata = Data(name=name)
+        else:
+            parent.create_data(name=name)
 
         for channel in self.channels:
-            name = channel.name.split('/')[-1]
+            name = channel.natural_name
             newdata.create_channel(name=name,
                                    values=downscale_local_mean(channel[:], tup),
                                    units=channel.units)
-        # failing to abstract the general case
         args = []
         for i, axis in enumerate(self.axes):
             if len(axis.variables) > 1:
-                raise NotImplementedError('downscale only works with simple axes')
+                raise NotImplementedError('downscale only works with simple axes currently')
             variable = axis.variables[0]
-            name = variable.name.split('/')[-1]
+            name = variable.natural_name
             args.append(name)
             slices = [slice(None, None, step) for step in tup]
             newdata.create_variable(name=name, values=variable[slices], units=variable.units)
-        newdata.transform(*args)
         newdata.transform(*args)
         return newdata
 
