@@ -369,8 +369,8 @@ def quick2D_interactive(
         sp_x = add_sideplot(ax, 'x', pad=0.3)
         sp_y = add_sideplot(ax, 'y', pad=0.3)
 
-        xi = data.axes[0][:, 0]
-        yi = data.axes[1][:]
+        xi = data.axes[0].points
+        yi = data.axes[1].points
         zi = data.channels[channel_index][:]
 
         ylims = ax0.get_ylim()
@@ -390,13 +390,13 @@ def quick2D_interactive(
         return sp_x, sp_y
 
     def draw_side_plots(x0, y0):
-        x_temp = np.abs(data.axes[0][:, 0] - x0)
+        x_temp = np.abs(data.axes[0].points - x0)
         x_index = np.argmin(x_temp)
         side_plot = data.signal[x_index]
         line_sp_y.set_data(side_plot / side_plot.max(), data.axes[1][:])
         line_sp_y.set_visible(True)
 
-        y_temp = np.abs(data.axes[1][:] - y0)
+        y_temp = np.abs(data.axes[1].points - y0)
         y_index = np.argmin(y_temp)
         side_plot = data.signal[:, y_index]
         line_sp_x.set_data(data.axes[0][:, 0], side_plot / side_plot.max())
@@ -493,10 +493,12 @@ def quick2D_interactive(
                 levels = np.linspace(data_channel.null, data_channel.max(), 200)
     # colors ----------------------------------------------------------------------------------
     if pixelated:
-        ax0.pcolormesh(data, channel=channel_index,
-                       cmap=cmap, vmin=levels.min(), vmax=levels.max())
-        #ax0.pcolormesh(data.wm[::5,0], data.yind[::10], data.signal[::5, ::10].T, channel=channel_index,
+        #ax0.pcolormesh(data, channel=channel_index,
         #               cmap=cmap, vmin=levels.min(), vmax=levels.max())
+        # TODO:  slicing here to increase computation speed.  remove to default slicing after
+        #   data.downscale is merged
+        ax0.pcolormesh(data.axes[0].points[::5], data.axes[1].points[::10], data.signal[::5, ::10].T,
+                       channel=channel_index, cmap=cmap, vmin=levels.min(), vmax=levels.max())
     else:
         ax0.contourf(data, channel=channel_index, cmap=cmap, levels=levels)
     # contour lines ---------------------------------------------------------------------------
