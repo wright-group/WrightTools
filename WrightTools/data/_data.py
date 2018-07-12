@@ -625,7 +625,7 @@ class Data(Group):
             New data object with the downscaled channels and axes
         """
         if name is None:
-            name = self.natural_name + '_downscaled'
+            name = self.natural_name + "_downscaled"
         if parent is None:
             newdata = Data(name=name)
         else:
@@ -633,13 +633,13 @@ class Data(Group):
 
         for channel in self.channels:
             name = channel.natural_name
-            newdata.create_channel(name=name,
-                                   values=downscale_local_mean(channel[:], tup),
-                                   units=channel.units)
+            newdata.create_channel(
+                name=name, values=downscale_local_mean(channel[:], tup), units=channel.units
+            )
         args = []
         for i, axis in enumerate(self.axes):
             if len(axis.variables) > 1:
-                raise NotImplementedError('downscale only works with simple axes currently')
+                raise NotImplementedError("downscale only works with simple axes currently")
             variable = axis.variables[0]
             name = variable.natural_name
             args.append(name)

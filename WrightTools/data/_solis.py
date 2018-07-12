@@ -97,9 +97,7 @@ def from_Solis(filepath, name=None, parent=None, verbose=True):
         xname = "wm"
         xunits = "nm"
     data.create_variable(name=xname, values=axis0[:, None], units=xunits)
-    data.create_variable(
-        name="ypos", values=np.arange(arr.shape[1])[None, :], units=None
-    )
+    data.create_variable(name="ypos", values=np.arange(arr.shape[1])[None, :], units=None)
     data.transform(data.variables[0].natural_name, "ypos")
 
     for key, val in attrs.items():
