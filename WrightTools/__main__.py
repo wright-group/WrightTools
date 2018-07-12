@@ -33,26 +33,33 @@ def wt_convert():
     parser = argparse.ArgumentParser(description="Converts data units.")
     parser.add_argument('args', nargs='*')
     argsList = parser.parse_args().args
-    #print(argsList)
-    #i = argsList[0]
 
     # Perhaps more efficient way to do this is to loop backwards so I start with the units
     # Also use the other printer I used for the first assignment
+    units = ["nm", "wn", "eV", "meV", "Hz", "THz", "GHz"]
+
     unitArgs = []
-    units = {"nm", "wn", "eV", "meV", "Hz", "THz", "GHz"}
     for arg in argsList:
         if arg in units:
             unitArgs.append(arg)
-    #print(unitArgs)
+
+    valueArgs = [x for x in argsList if x not in unitArgs]
+    print(valueArgs)
 
     # No destination units provided
     if len(unitArgs) == 1:
-        for unit in units:
-            if unit != unitArgs[0]:
-                print(wt.units.converter(float(argsList[0]), unitArgs[0], unit), unit)
+        for value in valueArgs:
+            for unit in units:
+                if unit != unitArgs[0]: # Don't print original units too
+                    print(wt.units.converter(float(value), unitArgs[0], unit), unit)
+
     else:
-        for arg in argsList:
-            if arg not in units:
-                print(wt.units.converter(float(arg), unitArgs[0], unitArgs[1]))
+        for value in valueArgs:
+                if len(argsList) - len(unitArgs) == 1:
+                    print(wt.units.converter(float(value), unitArgs[0], unitArgs[1]))
+                else:
+                    print(value, unitArgs[0], "is", 
+                          wt.units.converter(float(value), unitArgs[0], unitArgs[1]),
+                          unitArgs[1])
 
     #print(wt.units.converter(float(argsList[0]), argsList[1], argsList[2]))
