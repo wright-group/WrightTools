@@ -47,8 +47,8 @@ def sigFigs(n):
 
 def convert_helper(value, orig, dest):
     result = round_sig(wt.units.converter(float(value), orig, dest), sigFigs(value))
-    if float(value) > 1000000:
-        return "{:.2e}".format(number)
+    if result > 1000000:
+        return "{:.2e}".format(result)
     else:
         return result
 
