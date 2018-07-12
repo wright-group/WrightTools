@@ -28,6 +28,7 @@ def test_xpos_ypos_fluorescence():
     assert data.units == (None, None)
     data.close()
 
+
 if __name__ == "__main__":
     test_wm_ypos_fluorescence_with_filter()
     test_xpos_ypos_fluorescence()
