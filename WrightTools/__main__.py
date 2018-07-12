@@ -36,15 +36,22 @@ def wt_convert():
     print(argsList)
     #i = argsList[0]
 
-    # Loop through the arguments until there is one that is nm, wn, etc. (dictionary?)
+    # Perhaps more efficient way to do this is to loop backwards so I start with the units
+    # Also use the other printer I used for the first assignment
     unitArgs = []
     units = {"nm", "wn", "eV", "meV", "Hz", "THz", "GHz"}
     for arg in argsList:
         if arg in units:
             unitArgs.append(arg)
     print(unitArgs)
-    for arg in argsList:
-        if arg not in units:
-            print(wt.units.converter(float(arg), unitArgs[0], unitArgs[1]))
+
+    # No destination units provided
+    if len(unitArgs) == 1:
+        for unit in units:
+            print(wt.units.converter(float(argsList[0]), unitArgs[0], unit), unit)
+    else:
+        for arg in argsList:
+            if arg not in units:
+                print(wt.units.converter(float(arg), unitArgs[0], unitArgs[1]))
 
     #print(wt.units.converter(float(argsList[0]), argsList[1], argsList[2]))
