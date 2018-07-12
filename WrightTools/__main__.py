@@ -41,30 +41,27 @@ def round_sig(value, sig):
         result = int(result)
     return result
 
-def numDigits(n): 
-    return len(list(filter(lambda m:m.isdigit(), str(n))))
+def sigFigs(n):
+    integral, _, fractional = n.partition(".")
+    return len((integral + fractional).lstrip('0'))
 
 def convert_helper(value, orig, dest):
-    return round_sig(wt.units.converter(float(value), orig, dest), numDigits(value))
+    result = round_sig(wt.units.converter(float(value), orig, dest), sigFigs(value))
+    if float(value) > 1000000:
+        return "{:.2e}".format(number)
+    else:
+        return result
 
 def wt_convert():
     parser = argparse.ArgumentParser(description="Converts data units.")
     parser.add_argument('args', nargs='*')
     argsList = parser.parse_args().args
-
-    # Perhaps more efficient way to do this is to loop backwards so I start with the units
-    # Also use the other printer I used for the first assignment
-    # Also try ternary operator
-    # also functions maybe if once I make everything better there are repeats
     units = ["nm", "wn", "eV", "meV", "Hz", "THz", "GHz"]
-
     unitArgs = []
     for arg in argsList:
         if arg in units:
             unitArgs.append(arg)
-
     valueArgs = [x for x in argsList if x not in unitArgs]
-
     orig = unitArgs[0]
 
     # No destination units (so report all)
@@ -77,7 +74,6 @@ def wt_convert():
                     if len(valueArgs) != 1:
                         print("  ", end='')
                     print(convert_helper(value, orig, dest), dest)
-
     # Destination units
     else:
         dest = unitArgs[1]
