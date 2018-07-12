@@ -34,4 +34,17 @@ def wt_convert():
     parser.add_argument('args', nargs='*')
     argsList = parser.parse_args().args
     print(argsList)
-    print(wt.units.converter(float(argsList[0]), argsList[1], argsList[2]))
+    #i = argsList[0]
+
+    # Loop through the arguments until there is one that is nm, wn, etc. (dictionary?)
+    unitArgs = []
+    units = {"nm", "wn", "eV", "meV", "Hz", "THz", "GHz"}
+    for arg in argsList:
+        if arg in units:
+            unitArgs.append(arg)
+    print(unitArgs)
+    for arg in argsList:
+        if arg not in units:
+            print(wt.units.converter(float(arg), unitArgs[0], unitArgs[1]))
+
+    #print(wt.units.converter(float(argsList[0]), argsList[1], argsList[2]))
