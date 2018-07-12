@@ -35,16 +35,25 @@ def wt_tree():
 
 # wt-convert
 
+
+# Rounds a value to a given number of sig figs
 def round_sig(value, sig):
-    result = round(value, sig-int(floor(log10(abs(value))))-1)
+    result = round(value, sig - int(floor(log10(abs(value)))) - 1)
     if result - int(result) == 0:
         result = int(result)
     return result
 
+
+# Determines the number of sig figs of a number
 def sigFigs(n):
     integral, _, fractional = n.partition(".")
-    return len((integral + fractional).lstrip('0'))
+    if fractional:
+        return len((integral + fractional).lstrip("0"))
+    else:
+        return len(integral.strip("0"))
 
+
+# Performs the conversion accounting for sig figs and scientific notation
 def convert_helper(value, orig, dest):
     result = round_sig(wt.units.converter(float(value), orig, dest), sigFigs(value))
     if result > 1000000:
@@ -52,9 +61,11 @@ def convert_helper(value, orig, dest):
     else:
         return result
 
+
 def wt_convert():
+    # Setup
     parser = argparse.ArgumentParser(description="Converts data units.")
-    parser.add_argument('args', nargs='*')
+    parser.add_argument("args", nargs="*")
     argsList = parser.parse_args().args
     units = ["nm", "wn", "eV", "meV", "Hz", "THz", "GHz"]
     unitArgs = []
@@ -64,21 +75,24 @@ def wt_convert():
     valueArgs = [x for x in argsList if x not in unitArgs]
     orig = unitArgs[0]
 
-    # No destination units (so report all)
-    if len(unitArgs) == 1:
-        for value in valueArgs:
+    # Loop through and print
+    dest = True if len(unitArgs) != 1 else False
+    for value in valueArgs:
+        if len(valueArgs) != 1:
+            print(value, orig, "is", end=" ")
+            if not dest:
+                print()
+
+        # Destination unit case
+        if dest:
+            print(convert_helper(value, orig, unitArgs[1]), end=" ")
             if len(valueArgs) != 1:
-                print(value, orig, "is")
-            for dest in units:
-                if dest != orig: # Don't print original units too
+                print(unitArgs[1])
+
+        # No destination unit case (print all conversions)
+        else:
+            for unit in units:
+                if unit != orig:
                     if len(valueArgs) != 1:
-                        print("  ", end='')
-                    print(convert_helper(value, orig, dest), dest)
-    # Destination units
-    else:
-        dest = unitArgs[1]
-        for value in valueArgs:
-            if len(valueArgs) == 1:
-                print(convert_helper(value, orig, dest))
-            else:
-                print(value, unitArgs[0], "is", convert_helper(value, orig, dest), dest)
+                        print("  ", end="")
+                    print(convert_helper(value, orig, unit), unit)
