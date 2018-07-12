@@ -33,7 +33,7 @@ def wt_convert():
     parser = argparse.ArgumentParser(description="Converts data units.")
     parser.add_argument('args', nargs='*')
     argsList = parser.parse_args().args
-    print(argsList)
+    #print(argsList)
     #i = argsList[0]
 
     # Perhaps more efficient way to do this is to loop backwards so I start with the units
@@ -43,12 +43,13 @@ def wt_convert():
     for arg in argsList:
         if arg in units:
             unitArgs.append(arg)
-    print(unitArgs)
+    #print(unitArgs)
 
     # No destination units provided
     if len(unitArgs) == 1:
         for unit in units:
-            print(wt.units.converter(float(argsList[0]), unitArgs[0], unit), unit)
+            if unit != unitArgs[0]:
+                print(wt.units.converter(float(argsList[0]), unitArgs[0], unit), unit)
     else:
         for arg in argsList:
             if arg not in units:
