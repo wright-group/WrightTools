@@ -12,12 +12,68 @@ from .. import units as wt_units
 # --- define --------------------------------------------------------------------------------------
 
 
-__all__ = ["mono_resolution", "nm_width", "symmetric_sqrt"]
+__all__ = ["fluence", "mono_resolution", "nm_width", "symmetric_sqrt"]
 
 
 # --- functions -----------------------------------------------------------------------------------
 
 
+def fluence(power_mW, color, beam_radius, reprate_Hz, pulse_width, 
+            color_units='wn', beam_radius_units='mm', pulse_width_units='fs_t', area_type='even'):
+    """Calculate the fluence of a beam.
+    
+    Parameters
+    ----------
+    power_mW : number
+        Time integrated power of beam.
+    color : number
+        Color of beam in units.
+    beam_radius : number
+        Radius of beam in units.
+    reprate_Hz : number
+        Laser repetition rate in inverse seconds (Hz).
+    pulse_width : number
+        Pulsewidth of laser in units
+    color_units : string (optional)
+        Valid wt.units color unit identifier. Default is wn.
+    beam_radius_units : string (optional)
+        Valid wt.units distance unit identifier. Default is mm.
+    pulse_width_units : number
+        Valid wt.units time unit identifier. Default is fs.
+    area_type : string (optional)
+        Type of calculation to accomplish for Gaussian area. 
+        Currently nothing other than the default of even is implemented. 
+
+    Returns
+    -------
+    tuple
+        Fluence in uj/cm2, photons/cm2, and peak intensity in GW/cm2
+    
+    """
+    # calculate beam area
+    if area_type == 'even':
+        radius_cm = wt_units.converter(beam_radius, beam_radius_units, 'cm')
+        area_cm2 = np.pi * radius_cm**2 # cm^2
+    else:
+        raise NotImplementedError
+    # calculate fluence in uj/cm^2
+    ujcm2 = power_mW / reprate_Hz # mJ
+    ujcm2 *= 1e3 # uJ
+    ujcm2 /= area_cm2 # uJ/cm^2
+    # calculate fluence in photons/cm^2
+    energy = wt_units.converter(color, color_units, 'eV') # eV
+    photonscm2 = ujcm2 * 1e-6 # J/cm2
+    photonscm2 /= 1.60218e-19 # eV/cm2
+    photonscm2 /= energy # photons/cm2
+    # calculate peak intensity in GW/cm^2
+    pulse_width_s = wt_units.converter(pulse_width, pulse_width_units, 's_t') # seconds
+    GWcm2 = ujcm2 / 1e6 # J/cm2
+    GWcm2 /= pulse_width_s # W/cm2
+    GWcm2 /= 1e9
+    # finish
+    return ujcm2, photonscm2, GWcm2
+
+    
 def mono_resolution(grooves_per_mm, slit_width, focal_length, output_color, output_units="wn"):
     """Calculate the resolution of a monochromator.
 
