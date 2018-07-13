@@ -1,7 +1,7 @@
 """Calculate."""
 
 
-# --- import --------------------------------------------------------------------------------------
+# --- import -------------------------------------------------------------
 
 
 import numpy as np
@@ -9,13 +9,13 @@ import numpy as np
 from .. import units as wt_units
 
 
-# --- define --------------------------------------------------------------------------------------
+# --- define -------------------------------------------------------------
 
 
 __all__ = ["fluence", "mono_resolution", "nm_width", "symmetric_sqrt"]
 
 
-# --- functions -----------------------------------------------------------------------------------
+# --- functions ----------------------------------------------------------
 
 
 def fluence(
@@ -28,9 +28,9 @@ def fluence(
     beam_radius_units="mm",
     pulse_width_units="fs_t",
     area_type="even",
-    ):
+):
     """Calculate the fluence of a beam.
-    
+
     Parameters
     ----------
     power_mW : number
@@ -50,14 +50,14 @@ def fluence(
     pulse_width_units : number
         Valid wt.units time unit identifier. Default is fs.
     area_type : string (optional)
-        Type of calculation to accomplish for Gaussian area. 
-        Currently nothing other than the default of even is implemented. 
+        Type of calculation to accomplish for Gaussian area.
+        Currently nothing other than the default of even is implemented.
 
     Returns
     -------
     tuple
         Fluence in uj/cm2, photons/cm2, and peak intensity in GW/cm2
-    
+
     """
     # calculate beam area
     if area_type == "even":
