@@ -28,7 +28,7 @@ def fluence(
     beam_radius_units="mm",
     pulse_width_units="fs_t",
     area_type="even",
-):
+    ):
     """Calculate the fluence of a beam.
     
     Parameters
