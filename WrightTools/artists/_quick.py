@@ -493,12 +493,10 @@ def quick2D_interactive(
                 levels = np.linspace(data_channel.null, data_channel.max(), 200)
     # colors ----------------------------------------------------------------------------------
     if pixelated:
-        #ax0.pcolormesh(data, channel=channel_index,
-        #               cmap=cmap, vmin=levels.min(), vmax=levels.max())
-        # TODO:  slicing here to increase computation speed.  remove to default slicing after
-        #   data.downscale is merged
-        ax0.pcolormesh(data.axes[0].points[::5], data.axes[1].points[::10], data.signal[::5, ::10].T,
-                       channel=channel_index, cmap=cmap, vmin=levels.min(), vmax=levels.max())
+        ax0.pcolormesh(data, channel=channel_index,
+                       cmap=cmap, vmin=levels.min(), vmax=levels.max())
+        #ax0.pcolormesh(data.axes[0].points[::5], data.axes[1].points[::10], data.signal[::5, ::10].T,
+        #               channel=channel_index, cmap=cmap, vmin=levels.min(), vmax=levels.max())
     else:
         ax0.contourf(data, channel=channel_index, cmap=cmap, levels=levels)
     # contour lines ---------------------------------------------------------------------------
