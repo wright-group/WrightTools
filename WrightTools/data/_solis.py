@@ -91,14 +91,16 @@ def from_Solis(filepath, name=None, parent=None, verbose=True):
     arr = data.create_channel(name="signal", values=arr, signed=False, units="Hz")
     axis0 = np.array(axis0)
     if float(attrs["Grating Groove Density (l/mm)"]) == 0:
-        xname = "xpos"
+        xname = "xindex"
         xunits = None
     else:
         xname = "wm"
         xunits = "nm"
     data.create_variable(name=xname, values=axis0[:, None], units=xunits)
-    data.create_variable(name="ypos", values=np.arange(arr.shape[1])[None, :], units=None)
-    data.transform(data.variables[0].natural_name, "ypos")
+    data.create_variable(
+        name="yindex", values=np.arange(arr.shape[1])[None, :], units=None
+    )
+    data.transform(data.variables[0].natural_name, "yindex")
 
     for key, val in attrs.items():
         data.attrs[key] = val
