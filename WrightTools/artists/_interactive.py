@@ -124,6 +124,8 @@ def quick2D_interactive(data, channel=0, axes=[0, 1], dynamic_range=False):
     sp_y = add_sideplot(ax0, 'y', pad=0.3)
     sp_x.fill_between(xaxis.points, zi.sum(axis=0), 0, color='k', alpha=0.3)
     sp_y.fill_betweenx(yaxis.points, zi.sum(axis=1), 0, color='k', alpha=0.3)
+    line_sp_x = sp_x.plot([None], [None], visible=False, color='b')[0]
+    line_sp_y = sp_y.plot([None], [None], visible=False, color='b')[0]
 
     sliders = {}
     for axis in data.axes:
@@ -133,6 +135,21 @@ def quick2D_interactive(data, channel=0, axes=[0, 1], dynamic_range=False):
                             0, axis.points.size - 1,
                             valinit=0, valstep=1, valfmt='%i')
             sliders[axis.natural_name] = slider
+
+    def draw_side_plots(x0, y0):
+        
+        x_temp = np.abs(data.axes[0].points - x0)
+        x_index = np.argmin(x_temp)
+        side_plot = data.signal[x_index]
+        line_sp_y.set_data(side_plot / side_plot.max(), data.axes[1][:])
+        line_sp_y.set_visible(True)
+    
+        y_temp = np.abs(data.axes[1].points - y0)
+        y_index = np.argmin(y_temp)
+        side_plot = data.signal[:, y_index]
+        line_sp_x.set_data(data.axes[0][:, 0], side_plot / side_plot.max())
+        line_sp_x.set_visible(True)
+
 
     def get_slice(data, sliders):
         slices = []
@@ -144,7 +161,23 @@ def quick2D_interactive(data, channel=0, axes=[0, 1], dynamic_range=False):
                 slices.append(slice())
         return slices
 
+    def handle_click_release(erelease):
+        x0 = erelease.xdata
+        y0 = erelease.ydata
+        xlim = ax0.get_xlim()
+        ylim = ax0.get_ylim()
+        if x0 > xlim[0] and x0 < xlim[1] and y0 > ylim[0] and y0 < ylim[1]:
+            if erelease.button == 1:  # left click
+                #draw_side_plots(x0, y0)
+                #draw_crosshairs(x0, y0, xlim, ylim)
+                print(x0, y0)
+            elif erelease.button == 3:  # right click
+                print(x0, y0)                
+            else:
+                pass
+
     def update(val):
+        print(val)
         slices = []
         for axis in data.axes:
             if axis.natural_name in sliders.keys():
@@ -171,6 +204,9 @@ def quick2D_interactive(data, channel=0, axes=[0, 1], dynamic_range=False):
         sp_y.fill_betweenx(yaxis.points, y_proj / np.abs(y_proj).max(), 0, color='k', alpha=0.3)
 
         fig.canvas.draw_idle()
+
+    side_plotter = plt.matplotlib.widgets.AxesWidget(ax0)
+    side_plotter.connect_event('button_release_event', handle_click_release)
 
     for slider in sliders.values():
         slider.on_changed(update)
