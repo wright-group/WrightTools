@@ -216,7 +216,7 @@ def remove_nans_1D(*args):
     vals = np.isnan(args[0])
     for a in args:
         vals |= np.isnan(a)
-    return tuple(np.array(a)[vals == False] for a in args)
+    return tuple(np.array(a)[vals is False] for a in args)
 
 
 def share_nans(*arrs):
@@ -257,18 +257,18 @@ def smooth_1D(arr, n=10):
 
 def svd(a, i=None):
     """Singular Value Decomposition.
-    
+
     Factors the matrix `a` as ``u * np.diag(s) * v``, where `u` and `v`
     are unitary and `s` is a 1D array of `a`'s singular values.
-    
+
     Parameters
     ----------
     a : array_like
         Input array.
     i : int or slice (optional)
-        What singular value "slice" to return. 
+        What singular value "slice" to return.
         Default is None which returns unitary 2D arrays.
-    
+
     Returns
     -------
     tuple
