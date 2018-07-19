@@ -1,10 +1,7 @@
 # --- import --------------------------------------------------------------------------------------
 
 
-import os
-
 import numpy as np
-
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider
 
@@ -157,11 +154,14 @@ def quick2D_interactive(data, channel=0, axes=[0, 1], dynamic_range=False):
     obj2D = ax0.pcolormesh(xaxis.points, yaxis.points, zi,
                            cmap=cmap, vmin=levels.min(), vmax=levels.max())
 
-    sp_x.fill_between(xaxis.points, zi.sum(axis=0), 0, color='k', alpha=0.3)
-    sp_y.fill_betweenx(yaxis.points, zi.sum(axis=1), 0, color='k', alpha=0.3)
+    sp_x.fill_between(xaxis.points, np.nansum(zi, axis=0), 0, color='k', alpha=0.3)
+    sp_y.fill_betweenx(yaxis.points, np.nansum(zi, axis=1), 0, color='k', alpha=0.3)
 
     ax0.set_xlim(xaxis.points.min(), xaxis.points.max())
     ax0.set_ylim(yaxis.points.min(), yaxis.points.max())
+    if channel.signed:
+        sp_x.set_ylim(-1, 1)
+        sp_y.set_xlim(-1, 1)
 
     def update_sideplot_slices():
         xlim = ax0.get_xlim()
@@ -187,10 +187,10 @@ def quick2D_interactive(data, channel=0, axes=[0, 1], dynamic_range=False):
     def update(info):
         # is info a value?  then we have a slider
         # is info an object with xydata?  then we have an event
-        print(info)
-        print(type(info))
+        # print(info)
+        # print(type(info))
         slices = get_slices(sliders)
-        #if type(info) in [int, float, np.float64]:  
+        #if type(info) in [int, float, np.float64]:
         if slices != current_state.slices: # a Slider moved; need to update all plots
             # sliders have changed
             arr = channel[slices].squeeze()
@@ -202,8 +202,8 @@ def quick2D_interactive(data, channel=0, axes=[0, 1], dynamic_range=False):
             obj2D.set_array(arr[:-1, :-1].ravel())
             sp_x.collections.clear()
             sp_y.collections.clear()
-            x_proj = arr.sum(axis=0)
-            y_proj = arr.sum(axis=1)
+            x_proj = np.nansum(arr, axis=0)
+            y_proj = np.nansum(arr, axis=1)
             sp_x.fill_between(xaxis.points, x_proj / np.abs(x_proj).max(), 0, color='k', alpha=0.3)
             sp_y.fill_betweenx(yaxis.points, y_proj / np.abs(y_proj).max(), 0, color='k', alpha=0.3)
             if line_sp_x.get_visible() and line_sp_y.get_visible():
@@ -213,7 +213,7 @@ def quick2D_interactive(data, channel=0, axes=[0, 1], dynamic_range=False):
             x0 = info.xdata
             y0 = info.ydata
             if x0 is None or y0 is None:
-                print(info)
+                print(info, info.xydata)
                 raise AttributeError
             xlim = ax0.get_xlim()
             ylim = ax0.get_ylim()
