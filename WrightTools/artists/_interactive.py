@@ -189,12 +189,36 @@ def quick2D_interactive(
                            cmap=cmap, vmin=levels.min(), vmax=levels.max())
 
     def draw_sideplot_projections(arr):
-        x_proj = np.nansum(arr, axis=0)
-        y_proj = np.nansum(arr, axis=1)
-        x_proj = norm(x_proj, channel.signed)
-        y_proj = norm(y_proj, channel.signed)
-        sp_x.fill_between(xaxis.points, x_proj, 0, color='k', alpha=0.3)
-        sp_y.fill_betweenx(yaxis.points, y_proj, 0, color='k', alpha=0.3)
+        if channel.signed:
+            temp_arr = np.ma.masked_array(arr, np.isnan(arr), copy=True)
+            temp_arr[temp_arr < 0] = 0
+            x_proj_pos = np.nanmean(temp_arr, axis=0)
+            y_proj_pos = np.nanmean(temp_arr, axis=1)
+
+            temp_arr = np.ma.masked_array(arr, np.isnan(arr), copy=True)
+            temp_arr[temp_arr > 0] = 0
+            x_proj_neg = np.nanmean(temp_arr, axis=0)
+            y_proj_neg = np.nanmean(temp_arr, axis=1)
+
+            x_proj_norm = max(np.nanmax(x_proj_pos), np.nanmax(-x_proj_neg))
+            x_proj_pos /= x_proj_norm
+            x_proj_neg /= x_proj_norm
+
+            y_proj_norm = max(np.nanmax(y_proj_pos), np.nanmax(-y_proj_neg))
+            y_proj_pos /= y_proj_norm
+            y_proj_neg /= y_proj_norm
+
+            sp_x.fill_between(xaxis.points, x_proj_pos, 0, color='k', alpha=0.3)
+            sp_x.fill_between(xaxis.points, 0, x_proj_neg, color='k', alpha=0.3)
+            sp_y.fill_betweenx(yaxis.points, y_proj_pos, 0, color='k', alpha=0.3)
+            sp_y.fill_betweenx(yaxis.points, 0, y_proj_neg, color='k', alpha=0.3)
+        else:
+            x_proj = np.nansum(arr, axis=0)
+            y_proj = np.nansum(arr, axis=1)
+            x_proj = norm(x_proj, channel.signed)
+            y_proj = norm(y_proj, channel.signed)
+            sp_x.fill_between(xaxis.points, x_proj, 0, color='k', alpha=0.3)
+            sp_y.fill_betweenx(yaxis.points, y_proj, 0, color='k', alpha=0.3)
 
     draw_sideplot_projections(zi)
 
