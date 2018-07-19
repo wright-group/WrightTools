@@ -148,7 +148,7 @@ def quick2D(
     autosave=False,
     save_directory=None,
     fname=None,
-    verbose=True,
+    verbose=True
 ):
     """Quickly plot 2D slice(s) of data.
 

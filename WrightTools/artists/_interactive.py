@@ -80,17 +80,18 @@ def set_aspect(xaxis, yaxis):
     return aspect
 
 
+# --- interactive plotting functions --------------------------------------------------------------
+
+
 def quick2D_interactive(data, channel=0, axes=[0, 1], dynamic_range=False):
     channel = get_channel(data, channel)
     xaxis, yaxis = get_axes(data, axes)
-    # get channel, scale appropriately
     cmap = get_colormap(channel)
 
     xaxis = data.axes[0]
     yaxis = data.axes[1]
     aspect = set_aspect(xaxis, yaxis)
 
-    # how many sliders?
     nsliders = data.ndim - 2
     if nsliders < 0:
         print('note enough dimensions')
@@ -104,8 +105,7 @@ def quick2D_interactive(data, channel=0, axes=[0, 1], dynamic_range=False):
 
     current_state = Bunch()
 
-    fig, gs = create_figure(width='single', nrows=1 + nsliders,
-                            aspects=aspects, hspace=0.5)
+    fig, gs = create_figure(width='single', nrows=1 + nsliders, aspects=aspects, hspace=0.5)
 
     # draw
     ax0 = plt.subplot(gs[0])
@@ -211,16 +211,14 @@ def quick2D_interactive(data, channel=0, axes=[0, 1], dynamic_range=False):
         # is info an object with xydata?  then we have an event
         # print(info)
         # print(type(info))
-        slices = get_slices(sliders)
-        #if type(info) in [int, float, np.float64]:
-        if slices != current_state.slices: # a Slider moved; need to update all plots
-            # sliders have changed
+        slices = get_slices(sliders, data)
+        if slices != current_state.slices:  # a Slider moved; need to update all plot objects
             arr = channel[slices].squeeze()
             current_state.slices = slices
             # TODO: check whether yaxis index is smaller (transpose not necessary)
             arr = arr.T.copy()
-            # TODO: why am I stripping array information?
-            # cf. https://stackoverflow.com/questions/29009743/using-set-array-with-pyplot-pcolormesh-ruins-figure
+            # TODO: why am I stripping off array information?
+            # cf. https://stackoverflow.com/questions/29009743
             obj2D.set_array(arr[:-1, :-1].ravel())
             sp_x.collections.clear()
             sp_y.collections.clear()

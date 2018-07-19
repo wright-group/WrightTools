@@ -16,10 +16,10 @@ if True:
     w3 = w1.copy()
     tau = np.linspace(-1, 3, 21)
 
-    signal = ((w1[:, None, None, None] - 1j) * (w2[None, :, None, None] - 1j) \
-              * (w3[None, None, :, None] - 1j))**-1 * np.exp(-tau[None, None, None, :])
-    signal += 2 * ((w1[:, None, None, None] - 1 - 1j) * (w2[None, :, None, None] - 1 - 1j) \
-               * (w3[None, None, :, None] - 1 - 1j))**-1 * np.exp(-2 * tau[None, None, None, :])
+    signal = ((w1[:, None, None, None] - 1j) * (w2[None, :, None, None] - 1j) *
+              (w3[None, None, :, None] - 1j))**-1 * np.exp(-tau[None, None, None, :])
+    signal += 2 * ((w1[:, None, None, None] - 1 - 1j) * (w2[None, :, None, None] - 1 - 1j) *
+                   (w3[None, None, :, None] - 1 - 1j))**-1 * np.exp(-2 * tau[None, None, None, :])
     signal[:, :, :, tau < 0] = 0
     signal[:, :, :, tau == 0] *= 0.5
     signal = np.abs(signal)
@@ -32,6 +32,6 @@ if True:
     data.create_variable('d1', values=tau[None, None, None, :], units='ps')
 
     data.transform('w1', 'w2', 'w3', 'd1')
-    
+
 if __name__ == '__main__':
     objects = wt.artists.quick2D_interactive(data)
