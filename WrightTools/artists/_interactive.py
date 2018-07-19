@@ -154,11 +154,23 @@ def quick2D_interactive(data, channel=0, axes=[0, 1], dynamic_range=False):
     obj2D = ax0.pcolormesh(xaxis.points, yaxis.points, zi,
                            cmap=cmap, vmin=levels.min(), vmax=levels.max())
 
-    sp_x.fill_between(xaxis.points, np.nansum(zi, axis=0), 0, color='k', alpha=0.3)
-    sp_y.fill_betweenx(yaxis.points, np.nansum(zi, axis=1), 0, color='k', alpha=0.3)
+    def draw_sideplot_projections(arr):
+        x_proj = np.nansum(arr, axis=0)
+        y_proj = np.nansum(arr, axis=1)
+        if channel.signed:
+            x_proj /= np.nanmax(np.abs(x_proj))
+            y_proj /= np.nanmax(np.abs(y_proj))
+        else:
+            x_proj /= np.nanmax(x_proj)
+            y_proj /= np.nanmax(y_proj)
+        sp_x.fill_between(xaxis.points, x_proj, 0, color='k', alpha=0.3)
+        sp_y.fill_betweenx(yaxis.points, y_proj, 0, color='k', alpha=0.3)
+
+    draw_sideplot_projections(zi)
 
     ax0.set_xlim(xaxis.points.min(), xaxis.points.max())
     ax0.set_ylim(yaxis.points.min(), yaxis.points.max())
+
     if channel.signed:
         sp_x.set_ylim(-1, 1)
         sp_y.set_xlim(-1, 1)
@@ -176,13 +188,23 @@ def quick2D_interactive(data, channel=0, axes=[0, 1], dynamic_range=False):
 
         x_temp = np.abs(data.axes[0].points - x0)
         x_index = np.argmin(x_temp)
-        side_plot = arr[x_index]
-        line_sp_y.set_data(side_plot / side_plot.max(), data.axes[1][:])
+        side_plot = arr[x_index].copy()
+        if channel.signed:
+            print(np.nanmax(np.abs(side_plot)))
+            side_plot /= np.nanmax(np.abs(side_plot))
+        else:
+            side_plot /= np.nanmax(side_plot)
+        line_sp_y.set_data(side_plot, data.axes[1][:])
 
         y_temp = np.abs(data.axes[1].points - y0)
         y_index = np.argmin(y_temp)
-        side_plot = arr[:, y_index]
-        line_sp_x.set_data(data.axes[0][:, 0], side_plot / side_plot.max())
+        side_plot = arr[:, y_index].copy()
+        if channel.signed:
+            print(np.nanmax(np.abs(side_plot)))
+            side_plot /= np.nanmax(np.abs(side_plot))
+        else:
+            side_plot /= np.nanmax(side_plot)
+        line_sp_x.set_data(data.axes[0][:, 0], side_plot)
 
     def update(info):
         # is info a value?  then we have a slider
@@ -202,10 +224,7 @@ def quick2D_interactive(data, channel=0, axes=[0, 1], dynamic_range=False):
             obj2D.set_array(arr[:-1, :-1].ravel())
             sp_x.collections.clear()
             sp_y.collections.clear()
-            x_proj = np.nansum(arr, axis=0)
-            y_proj = np.nansum(arr, axis=1)
-            sp_x.fill_between(xaxis.points, x_proj / np.abs(x_proj).max(), 0, color='k', alpha=0.3)
-            sp_y.fill_betweenx(yaxis.points, y_proj / np.abs(y_proj).max(), 0, color='k', alpha=0.3)
+            draw_sideplot_projections(arr)
             if line_sp_x.get_visible() and line_sp_y.get_visible():
                 update_sideplot_slices()
                 pass

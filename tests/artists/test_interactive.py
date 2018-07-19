@@ -4,6 +4,7 @@ import os
 
 here = os.path.dirname(__file__)
 
+
 if False:
     from WrightTools import datasets
     p = datasets.PyCMDS.wm_w2_w1_001
@@ -31,5 +32,6 @@ if True:
     data.create_variable('d1', values=tau[None, None, None, :], units='ps')
 
     data.transform('w1', 'w2', 'w3', 'd1')
-
-objects = wt.artists.quick2D_interactive(data)
+    
+if __name__ == '__main__':
+    objects = wt.artists.quick2D_interactive(data)
