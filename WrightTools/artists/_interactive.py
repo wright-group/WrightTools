@@ -57,12 +57,38 @@ def get_colormap(channel):
     return cmap
 
 
-def get_levels(channel, dynamic_range):
+def get_levels(channel, local):
+    if local:
+        raise NotImplementedError
     if channel.signed:
         levels = np.linspace(-channel.mag(), channel.mag(), 200)
     else:
         levels = np.linspace(0, channel.max(), 200)
     return levels
+
+
+def get_slices(sliders, axes, verbose=False):
+    slices = []
+    for axis in axes:
+        if axis.natural_name in sliders.keys():
+            this_val = int(sliders[axis.natural_name].val)
+            if verbose:
+                print(axis.natural_name, sliders[axis.natural_name].val,
+                      axis.points[this_val])
+            slices.append(slice(this_val, this_val + 1))
+        else:
+            slices.append(slice(None))
+    return slices
+
+
+def norm(arr, signed, ignore_zero=True):
+    if signed:
+        norm = np.nanmax(np.abs(arr))
+    else:
+        norm = np.nanmax(arr)
+    if norm != 0 and ignore_zero:
+        arr /= norm
+    return arr
 
 
 def set_aspect(xaxis, yaxis):
@@ -83,15 +109,39 @@ def set_aspect(xaxis, yaxis):
 # --- interactive plotting functions --------------------------------------------------------------
 
 
-def quick2D_interactive(data, channel=0, axes=[0, 1], dynamic_range=False):
+def quick2D_interactive(
+    data,
+    channel=0,
+    axes=[0, 1],
+    local=False,
+    verbose=False
+):
+    """ Interactive 2D plots of the dataset
+    Side plots show x and y projections of the slice (shaded gray).
+    Left clicks on the main axes draw 1D slices on side plots at the coordinates selected.
+    Right clicks remove the 1D slices.
+    For 3+ dimensional data, sliders below the main axes are used to change which slice is viewed.
+
+    Parameters
+    ----------
+    data : WrightTools.Data object
+        Data to plot.
+    axis : string or integer (optional)
+        Expression or index of axis. Default is 0.
+    channel : string or integer (optional)
+        Name or index of channel to plot. Default is 0.
+    local : boolean (optional)
+        Toggle plotting locally. Default is False.
+    verbose : boolean (optional)
+        Toggle talkback. Default is True.
+    """
     channel = get_channel(data, channel)
     xaxis, yaxis = get_axes(data, axes)
     cmap = get_colormap(channel)
+    levels = get_levels(channel, local)
+    current_state = Bunch()
 
-    xaxis = data.axes[0]
-    yaxis = data.axes[1]
     aspect = set_aspect(xaxis, yaxis)
-
     nsliders = data.ndim - 2
     if nsliders < 0:
         print('note enough dimensions')
@@ -100,10 +150,6 @@ def quick2D_interactive(data, channel=0, axes=[0, 1], dynamic_range=False):
         aspects = [[[0, 0], aspect]] + [[[i + 1, 0], 0.1] for i in range(nsliders)]
     else:
         aspects = [[[0, 0], aspect]]
-
-    levels = get_levels(channel, dynamic_range)
-
-    current_state = Bunch()
 
     fig, gs = create_figure(width='single', nrows=1 + nsliders, aspects=aspects, hspace=0.5)
 
@@ -131,20 +177,8 @@ def quick2D_interactive(data, channel=0, axes=[0, 1], dynamic_range=False):
                             valinit=0, valstep=1, valfmt='%i')
             sliders[axis.natural_name] = slider
 
-    def get_slices(sliders):
-        slices = []
-        for axis in data.axes:
-            if axis.natural_name in sliders.keys():
-                this_val = int(sliders[axis.natural_name].val)
-                print(axis.natural_name, sliders[axis.natural_name].val,
-                      axis.points[this_val])
-                slices.append(slice(this_val, this_val + 1))
-            else:
-                slices.append(slice(None))
-        return slices
-
-    slices = get_slices(sliders)
     # initial xyz start are from zero indices of additional axes
+    slices = get_slices(sliders, data.axes, verbose=verbose)
     zi = channel[slices]
     zi = zi.squeeze()
     if wt_kit.get_index(data.axes, xaxis) < wt_kit.get_index(data.axes, yaxis):
@@ -157,12 +191,8 @@ def quick2D_interactive(data, channel=0, axes=[0, 1], dynamic_range=False):
     def draw_sideplot_projections(arr):
         x_proj = np.nansum(arr, axis=0)
         y_proj = np.nansum(arr, axis=1)
-        if channel.signed:
-            x_proj /= np.nanmax(np.abs(x_proj))
-            y_proj /= np.nanmax(np.abs(y_proj))
-        else:
-            x_proj /= np.nanmax(x_proj)
-            y_proj /= np.nanmax(y_proj)
+        x_proj = norm(x_proj, channel.signed)
+        y_proj = norm(y_proj, channel.signed)
         sp_x.fill_between(xaxis.points, x_proj, 0, color='k', alpha=0.3)
         sp_y.fill_betweenx(yaxis.points, y_proj, 0, color='k', alpha=0.3)
 
@@ -189,21 +219,13 @@ def quick2D_interactive(data, channel=0, axes=[0, 1], dynamic_range=False):
         x_temp = np.abs(data.axes[0].points - x0)
         x_index = np.argmin(x_temp)
         side_plot = arr[x_index].copy()
-        if channel.signed:
-            print(np.nanmax(np.abs(side_plot)))
-            side_plot /= np.nanmax(np.abs(side_plot))
-        else:
-            side_plot /= np.nanmax(side_plot)
+        side_plot = norm(side_plot, channel.signed)
         line_sp_y.set_data(side_plot, data.axes[1][:])
 
         y_temp = np.abs(data.axes[1].points - y0)
         y_index = np.argmin(y_temp)
         side_plot = arr[:, y_index].copy()
-        if channel.signed:
-            print(np.nanmax(np.abs(side_plot)))
-            side_plot /= np.nanmax(np.abs(side_plot))
-        else:
-            side_plot /= np.nanmax(side_plot)
+        side_plot = norm(side_plot, channel.signed)
         line_sp_x.set_data(data.axes[0][:, 0], side_plot)
 
     def update(info):
@@ -211,7 +233,7 @@ def quick2D_interactive(data, channel=0, axes=[0, 1], dynamic_range=False):
         # is info an object with xydata?  then we have an event
         # print(info)
         # print(type(info))
-        slices = get_slices(sliders, data)
+        slices = get_slices(sliders, data.axes, verbose=verbose)
         if slices != current_state.slices:  # a Slider moved; need to update all plot objects
             arr = channel[slices].squeeze()
             current_state.slices = slices
