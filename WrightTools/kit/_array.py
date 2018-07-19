@@ -218,7 +218,7 @@ def remove_nans_1D(*args):
         vals |= np.isnan(a)
     # Despite pep8speaks complaints, this needs to be ==
     # == is semantically different from `is` for ndarray
-    return tuple(np.array(a)[vals == False] for a in args)  # noqa 
+    return tuple(np.array(a)[vals == False] for a in args)  # noqa
 
 
 def share_nans(*arrs):
