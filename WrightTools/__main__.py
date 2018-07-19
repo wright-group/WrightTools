@@ -65,7 +65,10 @@ def convert_helper(value, orig, dest):
 def wt_convert():
     # Setup
     parser = argparse.ArgumentParser(description="Converts data units.")
-    parser.add_argument("args", nargs="*")
+    parser.add_argument("args", nargs="*",
+        help='Pass data as "wt-convert [value] [original unit] [destination unit]". You may also' +
+             ' pass multiple values to receive conversions for each, and/or add no destination' +
+             ' unit to receive conversions to every unit.')
     argsList = parser.parse_args().args
     units = ["nm", "wn", "eV", "meV", "Hz", "THz", "GHz"]
     unitArgs = []
