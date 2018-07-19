@@ -265,7 +265,7 @@ def svd(a, i=None):
     ----------
     a : array_like
         Input array.
-    i : int (optional)
+    i : int or slice (optional)
         What singular value "slice" to return. 
         Default is None which returns unitary 2D arrays.
     
@@ -276,7 +276,7 @@ def svd(a, i=None):
     """
     u, s, v = np.linalg.svd(a, full_matrices=False, compute_uv=True)
     u = u.T
-    if i == None:
+    if i is None:
         return u, v, s
     else:
         return u[i], v[i], s[i]
