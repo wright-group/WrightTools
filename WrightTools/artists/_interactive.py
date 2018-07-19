@@ -114,9 +114,9 @@ def quick2D_interactive(
     channel=0,
     axes=[0, 1],
     local=False,
-    verbose=False
+    verbose=True
 ):
-    """ Interactive 2D plots of the dataset
+    """ Interactive 2D plot of the dataset.
     Side plots show x and y projections of the slice (shaded gray).
     Left clicks on the main axes draw 1D slices on side plots at the coordinates selected.
     Right clicks remove the 1D slices.
@@ -261,8 +261,8 @@ def quick2D_interactive(
         if slices != current_state.slices:  # a Slider moved; need to update all plot objects
             arr = channel[slices].squeeze()
             current_state.slices = slices
-            # TODO: check whether yaxis index is smaller (transpose not necessary)
-            arr = arr.T.copy()
+            if wt_kit.get_index(data.axes, xaxis) < wt_kit.get_index(data.axes, yaxis):
+                arr = arr.T.copy()
             # TODO: why am I stripping off array information?
             # cf. https://stackoverflow.com/questions/29009743
             obj2D.set_array(arr[:-1, :-1].ravel())
