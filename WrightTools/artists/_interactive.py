@@ -67,7 +67,8 @@ def get_slices(sliders, axes, verbose=False):
     for axis in axes:
         if axis.natural_name in sliders.keys():
             this_val = int(sliders[axis.natural_name].val)
-            text = "% 6.1f" % axis.points[this_val]
+            ndigits = int(infer_precision(axis))
+            text = '{0}'.format(round(axis.points[this_val], ndigits))
             sliders[axis.natural_name].valtext.set_text(text)
             if verbose:
                 print(axis.natural_name, sliders[axis.natural_name].val, text)
@@ -75,6 +76,12 @@ def get_slices(sliders, axes, verbose=False):
         else:
             slices.append(slice(None))
     return slices
+
+
+def infer_precision(axis):
+    step = np.diff(axis.points).min()
+    ordinal = np.log10(np.abs(step))
+    return -round(ordinal)
 
 
 def norm(arr, signed, ignore_zero=True):
