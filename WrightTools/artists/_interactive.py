@@ -2,7 +2,7 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.widgets import Slider
+from matplotlib.widgets import Slider, Button
 
 from ._helpers import create_figure, plot_colorbar, savefig, add_sideplot
 from ._colors import colormaps
@@ -67,8 +67,10 @@ def get_slices(sliders, axes, verbose=False):
     for axis in axes:
         if axis.natural_name in sliders.keys():
             this_val = int(sliders[axis.natural_name].val)
+            text = "% 6.2f" % axis.points[this_val]
+            sliders[axis.natural_name].valtext.set_text(text)
             if verbose:
-                print(axis.natural_name, sliders[axis.natural_name].val, axis.points[this_val])
+                print(axis.natural_name, sliders[axis.natural_name].val, text)
             slices.append(slice(this_val, this_val + 1))
         else:
             slices.append(slice(None))
@@ -102,7 +104,7 @@ def set_aspect(xaxis, yaxis):
     return aspect
 
 
-def interact2D(data, channel=0, axes=[0, 1], local=False, verbose=True):
+def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
     """ Interactive 2D plot of the dataset.
     Side plots show x and y projections of the slice (shaded gray).
     Left clicks on the main axes draw 1D slices on side plots at the coordinates selected.
@@ -122,12 +124,13 @@ def interact2D(data, channel=0, axes=[0, 1], local=False, verbose=True):
     verbose : boolean (optional)
         Toggle talkback. Default is True.
     """
+    # unpack
     channel = get_channel(data, channel)
-    xaxis, yaxis = get_axes(data, axes)
+    xaxis, yaxis = get_axes(data, [xaxis, yaxis])
     cmap = get_colormap(channel)
     levels = get_levels(channel, local)
     current_state = Bunch()
-
+    # create figure
     aspect = set_aspect(xaxis, yaxis)
     nsliders = data.ndim - 2
     if nsliders < 0:
@@ -137,33 +140,34 @@ def interact2D(data, channel=0, axes=[0, 1], local=False, verbose=True):
         aspects = [[[0, 0], aspect]] + [[[i + 1, 0], 0.1] for i in range(nsliders)]
     else:
         aspects = [[[0, 0], aspect]]
-
-    fig, gs = create_figure(width="single", nrows=1 + nsliders, aspects=aspects, hspace=0.5)
-
-    # draw
-    ax0 = plt.subplot(gs[0])
+    fig, gs = create_figure(width="single", nrows=7 + nsliders, cols=[1, 1, 1, 1, 1, "cbar"])
+    # create axes
+    ax0 = plt.subplot(gs[1:6, 0:5])
     ax0.patch.set_facecolor("w")
     ax0.grid(b=True)
-
-    sp_x = add_sideplot(ax0, "x", pad=0.3)
-    sp_y = add_sideplot(ax0, "y", pad=0.3)
+    cax = plt.subplot(gs[1:6, -1])
+    sp_x = add_sideplot(ax0, "x")
+    sp_y = add_sideplot(ax0, "y")
+    ax_local = plt.subplot(gs[0, 0])
+    # NOTE: there are more axes here for more buttons / widgets in future plans
+    # create lines
     line_sp_x = sp_x.plot([None], [None], visible=False, color="teal")[0]
     line_sp_y = sp_y.plot([None], [None], visible=False, color="coral")[0]
     crosshair_hline = ax0.plot([None], [None], visible=False, color="teal")[0]
     crosshair_vline = ax0.plot([None], [None], visible=False, color="coral")[0]
-
     current_state.xpos = crosshair_hline.get_ydata()[0]
     current_state.ypos = crosshair_vline.get_xdata()[0]
-
+    # create buttons
+    button_local = Button(ax_local, label="global")
+    # create sliders
     sliders = {}
     for axis in data.axes:
         if axis not in [xaxis, yaxis]:
-            slider_axes = plt.subplot(gs[len(sliders) + 1]).axes
+            slider_axes = plt.subplot(gs[~len(sliders), :]).axes
             slider = Slider(
                 slider_axes, axis.label, 0, axis.points.size - 1, valinit=0, valstep=1, valfmt="%i"
             )
             sliders[axis.natural_name] = slider
-
     # initial xyz start are from zero indices of additional axes
     slices = get_slices(sliders, data.axes, verbose=verbose)
     zi = channel[slices]
@@ -171,10 +175,14 @@ def interact2D(data, channel=0, axes=[0, 1], local=False, verbose=True):
     if wt_kit.get_index(data.axes, xaxis) < wt_kit.get_index(data.axes, yaxis):
         zi = zi.T.copy()
     current_state.slices = slices
-
+    # TODO: should we use pcolormesh or pcolor?
     obj2D = ax0.pcolormesh(
         xaxis.points, yaxis.points, zi, cmap=cmap, vmin=levels.min(), vmax=levels.max()
     )
+    ax0.set_xlabel(xaxis.label)
+    ax0.set_ylabel(yaxis.label)
+    # colorbar
+    plot_colorbar(cax, label=channel.label)
 
     def draw_sideplot_projections(arr):
         if channel.signed:
@@ -243,8 +251,6 @@ def interact2D(data, channel=0, axes=[0, 1], local=False, verbose=True):
     def update(info):
         # is info a value?  then we have a slider
         # is info an object with xydata?  then we have an event
-        # print(info)
-        # print(type(info))
         slices = get_slices(sliders, data.axes, verbose=verbose)
         if slices != current_state.slices:  # a Slider moved; need to update all plot objects
             arr = channel[slices].squeeze()
@@ -260,7 +266,12 @@ def interact2D(data, channel=0, axes=[0, 1], local=False, verbose=True):
             if line_sp_x.get_visible() and line_sp_y.get_visible():
                 update_sideplot_slices()
                 pass
-        else:
+        elif info.inaxes == ax_local:
+            if button_local.label.get_text() == "global":
+                button_local.label.set_text("local")
+            elif button_local.label.get_text() == "local":
+                button_local.label.set_text("global")
+        elif info.inaxes == ax0:  # crosshairs
             x0 = info.xdata
             y0 = info.ydata
             if x0 is None or y0 is None:
@@ -286,6 +297,8 @@ def interact2D(data, channel=0, axes=[0, 1], local=False, verbose=True):
 
     side_plotter = plt.matplotlib.widgets.AxesWidget(ax0)
     side_plotter.connect_event("button_release_event", update)
+
+    button_local.connect_event("button_release_event", update)
 
     for slider in sliders.values():
         slider.on_changed(update)

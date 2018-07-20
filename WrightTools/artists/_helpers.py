@@ -147,8 +147,10 @@ def add_sideplot(
     # beautify
     if along == "x":
         axCorr.set_ylim(ymin, ymax)
+        axCorr.tick_params(axis="x", which="both", length=0)
     elif along == "y":
         axCorr.set_xlim(ymin, ymax)
+        axCorr.tick_params(axis="y", which="both", length=0)
     plt.grid(grid)
     if zero_line:
         if along == "x":

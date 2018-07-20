@@ -1,5 +1,6 @@
 import numpy as np
 import WrightTools as wt
+from WrightTools import datasets
 import os
 
 here = os.path.dirname(__file__)
@@ -46,7 +47,12 @@ if True:
     data.transform("w1", "w2", "w3", "d1")
 
 if __name__ == "__main__":
-    objects = wt.artists.interact2D(data)
+    # objects = wt.artists.interact2D(data)
+    p = datasets.wt5.v1p0p1_MoS2_TrEE_movie
+    data = wt.open(p)
+    data.convert("eV")
+    wt.artists.interact2D(data)
+
     import matplotlib.pyplot as plt
 
     plt.show()
