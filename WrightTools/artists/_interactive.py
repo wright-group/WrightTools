@@ -130,28 +130,21 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
     cmap = get_colormap(channel)
     levels = get_levels(channel, local)
     current_state = Bunch()
+    current_state.local = local
     # create figure
-    # TODO: implement aspect again
-    # doesn't work because of incorporating colorbar
-    # aspect = set_aspect(xaxis, yaxis)
     nsliders = data.ndim - 2
     if nsliders < 0:
         print("note enough dimensions")
         return
-    # elif nsliders > 0:
-    #     aspects = [[[0, 0], aspect], [[0, 1], 6]]
-    #     for i in range(nsliders):
-    #         aspects += [[[i + 1, 0], 0.1], [[i+1, 1], 6]]
-    # else:
-    #     aspects = [[[0, 0], aspect], [[0, 1], 6]]
+    # TODO: implement aspect again; doesn't work because of our incorporation of colorbar
     fig, gs = create_figure(width="single", nrows=7 + nsliders, cols=[1, 1, 1, 1, 1, 'cbar'])
     # create axes
     ax0 = plt.subplot(gs[1:6, 0:5])
     ax0.patch.set_facecolor("w")
     ax0.grid(b=True)
     cax = plt.subplot(gs[1:6, -1])
-    sp_x = add_sideplot(ax0, "x", pad=0.2)
-    sp_y = add_sideplot(ax0, "y", pad=0.2)
+    sp_x = add_sideplot(ax0, "x", pad=0.1)
+    sp_y = add_sideplot(ax0, "y", pad=0.1)
     ax_local = plt.subplot(gs[0, 0])
     # NOTE: there are more axes here for more buttons / widgets in future plans
     # create lines
@@ -186,7 +179,8 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
     ax0.set_xlabel(xaxis.label)
     ax0.set_ylabel(yaxis.label)
     # colorbar
-    plot_colorbar(cax, cmap=cmap, label=channel.label)
+    plot_colorbar(cax, cmap=cmap, label=channel.label,
+                  ticks=np.linspace(levels.min(), levels.max(), 11))
 
     def draw_sideplot_projections(arr):
         if channel.signed:
