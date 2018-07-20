@@ -1,5 +1,4 @@
-# --- import --------------------------------------------------------------------------------------
-
+"""Interactive (widget based) artists."""
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -10,11 +9,7 @@ from ._colors import colormaps
 from .. import kit as wt_kit
 from .. import data as wt_data
 
-
-# --- define --------------------------------------------------------------------------------------
-
-
-__all__ = ["quick2D_interactive"]
+__all__ = ["interact2D"]
 
 
 # http://code.activestate.com/recipes/52308-the-simple-but-handy-collector-of-a-bunch-of-named/?in=user-97991
@@ -30,11 +25,11 @@ def get_axes(data, axes):
     if type(xaxis) in [int, str]:
         xaxis = data.axes[xaxis]
     elif type(xaxis) != wt_data.Axis:
-        raise TypeError('invalid xaxis type {0}'.format(type(xaxis)))
+        raise TypeError("invalid xaxis type {0}".format(type(xaxis)))
     if type(yaxis) in [int, str]:
         yaxis = data.axes[yaxis]
     elif type(yaxis) != wt_data.Axis:
-        raise TypeError('invalid xaxis type {0}'.format(type(yaxis)))
+        raise TypeError("invalid xaxis type {0}".format(type(yaxis)))
     return xaxis, yaxis
 
 
@@ -42,7 +37,7 @@ def get_channel(data, channel):
     if type(channel) in [int, str]:
         channel = data.channels[channel]
     elif type(channel) != wt_data.Channel:
-        raise TypeError('invalid channel type {0}'.format(type(channel)))
+        raise TypeError("invalid channel type {0}".format(type(channel)))
     return channel
 
 
@@ -73,8 +68,7 @@ def get_slices(sliders, axes, verbose=False):
         if axis.natural_name in sliders.keys():
             this_val = int(sliders[axis.natural_name].val)
             if verbose:
-                print(axis.natural_name, sliders[axis.natural_name].val,
-                      axis.points[this_val])
+                print(axis.natural_name, sliders[axis.natural_name].val, axis.points[this_val])
             slices.append(slice(this_val, this_val + 1))
         else:
             slices.append(slice(None))
@@ -97,25 +91,18 @@ def set_aspect(xaxis, yaxis):
         yr = yaxis.max() - yaxis.min()
         aspect = np.abs(yr / xr)
         if 3 < aspect or aspect < 1 / 3.:
-            raise Warning('units agree, but aspect {0} required for equal spacing is too' /
-                          + 'narrow.'.format(aspect))
+            raise Warning(
+                "units agree, but aspect {0} required for equal spacing is too"
+                / +"narrow.".format(aspect)
+            )
             aspect = np.clip(aspect, 1 / 3., 3.)
-            print('using aspect {0} instead'.format(aspect))
+            print("using aspect {0} instead".format(aspect))
     else:
         aspect = 1
     return aspect
 
 
-# --- interactive plotting functions --------------------------------------------------------------
-
-
-def quick2D_interactive(
-    data,
-    channel=0,
-    axes=[0, 1],
-    local=False,
-    verbose=True
-):
+def interact2D(data, channel=0, axes=[0, 1], local=False, verbose=True):
     """ Interactive 2D plot of the dataset.
     Side plots show x and y projections of the slice (shaded gray).
     Left clicks on the main axes draw 1D slices on side plots at the coordinates selected.
@@ -144,26 +131,26 @@ def quick2D_interactive(
     aspect = set_aspect(xaxis, yaxis)
     nsliders = data.ndim - 2
     if nsliders < 0:
-        print('note enough dimensions')
+        print("note enough dimensions")
         return
     elif nsliders > 0:
         aspects = [[[0, 0], aspect]] + [[[i + 1, 0], 0.1] for i in range(nsliders)]
     else:
         aspects = [[[0, 0], aspect]]
 
-    fig, gs = create_figure(width='single', nrows=1 + nsliders, aspects=aspects, hspace=0.5)
+    fig, gs = create_figure(width="single", nrows=1 + nsliders, aspects=aspects, hspace=0.5)
 
     # draw
     ax0 = plt.subplot(gs[0])
     ax0.patch.set_facecolor("w")
     ax0.grid(b=True)
 
-    sp_x = add_sideplot(ax0, 'x', pad=0.3)
-    sp_y = add_sideplot(ax0, 'y', pad=0.3)
-    line_sp_x = sp_x.plot([None], [None], visible=False, color='teal')[0]
-    line_sp_y = sp_y.plot([None], [None], visible=False, color='coral')[0]
-    crosshair_hline = ax0.plot([None], [None], visible=False, color='teal')[0]
-    crosshair_vline = ax0.plot([None], [None], visible=False, color='coral')[0]
+    sp_x = add_sideplot(ax0, "x", pad=0.3)
+    sp_y = add_sideplot(ax0, "y", pad=0.3)
+    line_sp_x = sp_x.plot([None], [None], visible=False, color="teal")[0]
+    line_sp_y = sp_y.plot([None], [None], visible=False, color="coral")[0]
+    crosshair_hline = ax0.plot([None], [None], visible=False, color="teal")[0]
+    crosshair_vline = ax0.plot([None], [None], visible=False, color="coral")[0]
 
     current_state.xpos = crosshair_hline.get_ydata()[0]
     current_state.ypos = crosshair_vline.get_xdata()[0]
@@ -172,9 +159,9 @@ def quick2D_interactive(
     for axis in data.axes:
         if axis not in [xaxis, yaxis]:
             slider_axes = plt.subplot(gs[len(sliders) + 1]).axes
-            slider = Slider(slider_axes, axis.label,
-                            0, axis.points.size - 1,
-                            valinit=0, valstep=1, valfmt='%i')
+            slider = Slider(
+                slider_axes, axis.label, 0, axis.points.size - 1, valinit=0, valstep=1, valfmt="%i"
+            )
             sliders[axis.natural_name] = slider
 
     # initial xyz start are from zero indices of additional axes
@@ -185,8 +172,9 @@ def quick2D_interactive(
         zi = zi.T.copy()
     current_state.slices = slices
 
-    obj2D = ax0.pcolormesh(xaxis.points, yaxis.points, zi,
-                           cmap=cmap, vmin=levels.min(), vmax=levels.max())
+    obj2D = ax0.pcolormesh(
+        xaxis.points, yaxis.points, zi, cmap=cmap, vmin=levels.min(), vmax=levels.max()
+    )
 
     def draw_sideplot_projections(arr):
         if channel.signed:
@@ -208,17 +196,17 @@ def quick2D_interactive(
             y_proj_pos /= y_proj_norm
             y_proj_neg /= y_proj_norm
 
-            sp_x.fill_between(xaxis.points, x_proj_pos, 0, color='k', alpha=0.3)
-            sp_x.fill_between(xaxis.points, 0, x_proj_neg, color='k', alpha=0.3)
-            sp_y.fill_betweenx(yaxis.points, y_proj_pos, 0, color='k', alpha=0.3)
-            sp_y.fill_betweenx(yaxis.points, 0, y_proj_neg, color='k', alpha=0.3)
+            sp_x.fill_between(xaxis.points, x_proj_pos, 0, color="k", alpha=0.3)
+            sp_x.fill_between(xaxis.points, 0, x_proj_neg, color="k", alpha=0.3)
+            sp_y.fill_betweenx(yaxis.points, y_proj_pos, 0, color="k", alpha=0.3)
+            sp_y.fill_betweenx(yaxis.points, 0, y_proj_neg, color="k", alpha=0.3)
         else:
             x_proj = np.nansum(arr, axis=0)
             y_proj = np.nansum(arr, axis=1)
             x_proj = norm(x_proj, channel.signed)
             y_proj = norm(y_proj, channel.signed)
-            sp_x.fill_between(xaxis.points, x_proj, 0, color='k', alpha=0.3)
-            sp_y.fill_betweenx(yaxis.points, y_proj, 0, color='k', alpha=0.3)
+            sp_x.fill_between(xaxis.points, x_proj, 0, color="k", alpha=0.3)
+            sp_y.fill_betweenx(yaxis.points, y_proj, 0, color="k", alpha=0.3)
 
     draw_sideplot_projections(zi)
 
@@ -297,7 +285,7 @@ def quick2D_interactive(
         fig.canvas.draw_idle()
 
     side_plotter = plt.matplotlib.widgets.AxesWidget(ax0)
-    side_plotter.connect_event('button_release_event', update)
+    side_plotter.connect_event("button_release_event", update)
 
     for slider in sliders.values():
         slider.on_changed(update)
