@@ -5,14 +5,20 @@ import os
 
 here = os.path.dirname(__file__)
 
-
 if False:
-    from WrightTools import datasets
-
     p = datasets.PyCMDS.wm_w2_w1_001
     data = wt.data.from_PyCMDS(p)
 
+if False:
+    p = datasets.wt5.v1p0p0_perovskite_TA
+    data = wt.open(p)    
+
 if True:
+    p = datasets.wt5.v1p0p1_MoS2_TrEE_movie
+    data = wt.open(p)
+    data.convert("eV")
+
+if False:
     w1 = np.linspace(-5, 5, 31)
     w2 = w1.copy()
     w3 = w1.copy()
@@ -48,11 +54,7 @@ if True:
 
 if __name__ == "__main__":
     # objects = wt.artists.interact2D(data)
-    p = datasets.wt5.v1p0p1_MoS2_TrEE_movie
-    data = wt.open(p)
-    data.convert("eV")
-    wt.artists.interact2D(data)
-
     import matplotlib.pyplot as plt
-
+    plt.close('all')
+    wt.artists.interact2D(data, xaxis=1, yaxis=0)
     plt.show()

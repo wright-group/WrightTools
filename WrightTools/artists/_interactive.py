@@ -67,7 +67,7 @@ def get_slices(sliders, axes, verbose=False):
     for axis in axes:
         if axis.natural_name in sliders.keys():
             this_val = int(sliders[axis.natural_name].val)
-            text = "% 6.2f" % axis.points[this_val]
+            text = "% 6.1f" % axis.points[this_val]
             sliders[axis.natural_name].valtext.set_text(text)
             if verbose:
                 print(axis.natural_name, sliders[axis.natural_name].val, text)
@@ -131,23 +131,27 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
     levels = get_levels(channel, local)
     current_state = Bunch()
     # create figure
-    aspect = set_aspect(xaxis, yaxis)
+    # TODO: implement aspect again
+    # doesn't work because of incorporating colorbar
+    # aspect = set_aspect(xaxis, yaxis)
     nsliders = data.ndim - 2
     if nsliders < 0:
         print("note enough dimensions")
         return
-    elif nsliders > 0:
-        aspects = [[[0, 0], aspect]] + [[[i + 1, 0], 0.1] for i in range(nsliders)]
-    else:
-        aspects = [[[0, 0], aspect]]
-    fig, gs = create_figure(width="single", nrows=7 + nsliders, cols=[1, 1, 1, 1, 1, "cbar"])
+    # elif nsliders > 0:
+    #     aspects = [[[0, 0], aspect], [[0, 1], 6]]
+    #     for i in range(nsliders):
+    #         aspects += [[[i + 1, 0], 0.1], [[i+1, 1], 6]]
+    # else:
+    #     aspects = [[[0, 0], aspect], [[0, 1], 6]]
+    fig, gs = create_figure(width="single", nrows=7 + nsliders, cols=[1, 1, 1, 1, 1, 'cbar'])
     # create axes
     ax0 = plt.subplot(gs[1:6, 0:5])
     ax0.patch.set_facecolor("w")
     ax0.grid(b=True)
     cax = plt.subplot(gs[1:6, -1])
-    sp_x = add_sideplot(ax0, "x")
-    sp_y = add_sideplot(ax0, "y")
+    sp_x = add_sideplot(ax0, "x", pad=0.2)
+    sp_y = add_sideplot(ax0, "y", pad=0.2)
     ax_local = plt.subplot(gs[0, 0])
     # NOTE: there are more axes here for more buttons / widgets in future plans
     # create lines
@@ -182,7 +186,7 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
     ax0.set_xlabel(xaxis.label)
     ax0.set_ylabel(yaxis.label)
     # colorbar
-    plot_colorbar(cax, label=channel.label)
+    plot_colorbar(cax, cmap=cmap, label=channel.label)
 
     def draw_sideplot_projections(arr):
         if channel.signed:
@@ -235,18 +239,20 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
         crosshair_vline.set_data(np.array([[x0, x0], ylim]))
 
         arr = channel[current_state.slices].squeeze()
+        if wt_kit.get_index(data.axes, xaxis) < wt_kit.get_index(data.axes, yaxis):
+            arr = arr.T.copy()
 
-        x_temp = np.abs(data.axes[0].points - x0)
+        x_temp = np.abs(xaxis.points - x0)
         x_index = np.argmin(x_temp)
-        side_plot = arr[x_index].copy()
+        side_plot = arr[:, x_index].copy()
         side_plot = norm(side_plot, channel.signed)
-        line_sp_y.set_data(side_plot, data.axes[1][:])
+        line_sp_y.set_data(side_plot, yaxis.points)
 
-        y_temp = np.abs(data.axes[1].points - y0)
+        y_temp = np.abs(yaxis.points - y0)
         y_index = np.argmin(y_temp)
-        side_plot = arr[:, y_index].copy()
+        side_plot = arr[y_index].copy()
         side_plot = norm(side_plot, channel.signed)
-        line_sp_x.set_data(data.axes[0][:, 0], side_plot)
+        line_sp_x.set_data(xaxis.points, side_plot)
 
     def update(info):
         # is info a value?  then we have a slider
