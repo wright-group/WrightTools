@@ -81,7 +81,7 @@ def get_slices(sliders, axes, verbose=False):
 def infer_precision(axis):
     step = np.diff(axis.points).min()
     ordinal = np.log10(np.abs(step))
-    return -round(ordinal)
+    return -np.floor(ordinal)
 
 
 def norm(arr, signed, ignore_zero=True):
@@ -102,7 +102,7 @@ def set_aspect(xaxis, yaxis):
         if 3 < aspect or aspect < 1 / 3.:
             raise Warning(
                 "units agree, but aspect {0} required for equal spacing is too"
-                / +"narrow.".format(aspect)
+                / + "narrow.".format(aspect)
             )
             aspect = np.clip(aspect, 1 / 3., 3.)
             print("using aspect {0} instead".format(aspect))
@@ -191,6 +191,8 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
 
     def draw_sideplot_projections(arr):
         if channel.signed:
+            colors = plt.cm.coolwarm(np.linspace(0,1,2))
+            alpha = 0.2
             temp_arr = np.ma.masked_array(arr, np.isnan(arr), copy=True)
             temp_arr[temp_arr < 0] = 0
             x_proj_pos = np.nanmean(temp_arr, axis=0)
@@ -200,19 +202,28 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
             temp_arr[temp_arr > 0] = 0
             x_proj_neg = np.nanmean(temp_arr, axis=0)
             y_proj_neg = np.nanmean(temp_arr, axis=1)
+            
+            x_proj = np.nanmean(arr, axis=0)
+            y_proj = np.nanmean(arr, axis=1)
 
             x_proj_norm = max(np.nanmax(x_proj_pos), np.nanmax(-x_proj_neg))
             x_proj_pos /= x_proj_norm
             x_proj_neg /= x_proj_norm
+            x_proj /= x_proj_norm
 
             y_proj_norm = max(np.nanmax(y_proj_pos), np.nanmax(-y_proj_neg))
             y_proj_pos /= y_proj_norm
             y_proj_neg /= y_proj_norm
+            y_proj /= y_proj_norm
 
-            sp_x.fill_between(xaxis.points, x_proj_pos, 0, color="k", alpha=0.3)
-            sp_x.fill_between(xaxis.points, 0, x_proj_neg, color="k", alpha=0.3)
-            sp_y.fill_betweenx(yaxis.points, y_proj_pos, 0, color="k", alpha=0.3)
-            sp_y.fill_betweenx(yaxis.points, 0, y_proj_neg, color="k", alpha=0.3)
+            sp_x.fill_between(xaxis.points, x_proj_pos, 0, color='k', alpha=alpha)
+            sp_x.fill_between(xaxis.points, 0, x_proj_neg, color='k', alpha=alpha)
+            sp_x.fill_between(xaxis.points, x_proj, 0, color='k', alpha=0.3)
+
+            sp_y.fill_betweenx(yaxis.points, y_proj_pos, 0, color='k', alpha=alpha)
+            sp_y.fill_betweenx(yaxis.points, 0, y_proj_neg, color='k', alpha=alpha)
+            sp_y.fill_betweenx(yaxis.points, y_proj, 0, color='k', alpha=alpha)
+
         else:
             x_proj = np.nansum(arr, axis=0)
             y_proj = np.nansum(arr, axis=1)
@@ -227,8 +238,8 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
     ax0.set_ylim(yaxis.points.min(), yaxis.points.max())
 
     if channel.signed:
-        sp_x.set_ylim(-1, 1)
-        sp_y.set_xlim(-1, 1)
+        sp_x.set_ylim(-1.1, 1.1)
+        sp_y.set_xlim(-1.1, 1.1)
 
     def update_sideplot_slices():
         xlim = ax0.get_xlim()
