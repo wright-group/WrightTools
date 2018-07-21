@@ -52,13 +52,18 @@ def get_colormap(channel):
     return cmap
 
 
-def get_levels(channel, local):
+def get_levels(channel, local, local_arr=None):
     if local:
-        raise NotImplementedError
-    if channel.signed:
-        levels = np.linspace(-channel.mag(), channel.mag(), 200)
+        if channel.signed:
+            mag = np.nanmax(np.abs(local_arr))
+            levels = np.linspace(-mag, mag, 200)
+        else:
+            levels = np.linspace(0, np.nanmax(local_arr), 200)
     else:
-        levels = np.linspace(0, channel.max(), 200)
+        if channel.signed:
+            levels = np.linspace(-channel.mag(), channel.mag(), 200)
+        else:
+            levels = np.linspace(0, channel.max(), 200)
     return levels
 
 
@@ -135,16 +140,14 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
     channel = get_channel(data, channel)
     xaxis, yaxis = get_axes(data, [xaxis, yaxis])
     cmap = get_colormap(channel)
-    levels = get_levels(channel, local)
     current_state = Bunch()
-    current_state.local = local
     # create figure
     nsliders = data.ndim - 2
     if nsliders < 0:
         print("note enough dimensions")
         return
-    # TODO: implement aspect again; doesn't work because of our incorporation of colorbar
-    fig, gs = create_figure(width="single", nrows=7 + nsliders, cols=[1, 1, 1, 1, 1, 'cbar'])
+    # TODO: implement aspect; doesn't work currently because of our incorporation of colorbar
+    fig, gs = create_figure(width="single", nrows=7 + nsliders, cols=[1, 1, 1, 1, 1, "cbar"])
     # create axes
     ax0 = plt.subplot(gs[1:6, 0:5])
     ax0.patch.set_facecolor("w")
@@ -162,7 +165,12 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
     current_state.xpos = crosshair_hline.get_ydata()[0]
     current_state.ypos = crosshair_vline.get_xdata()[0]
     # create buttons
-    button_local = Button(ax_local, label="global")
+    if local:
+        label = "local"
+    else:
+        label = "global"
+    current_state.local = local
+    button_local = Button(ax_local, label=label)
     # create sliders
     sliders = {}
     for axis in data.axes:
@@ -180,18 +188,19 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
         zi = zi.T.copy()
     current_state.slices = slices
     # TODO: should we use pcolormesh or pcolor?
+    levels = get_levels(channel, local, zi)
     obj2D = ax0.pcolormesh(
         xaxis.points, yaxis.points, zi, cmap=cmap, vmin=levels.min(), vmax=levels.max()
     )
     ax0.set_xlabel(xaxis.label)
     ax0.set_ylabel(yaxis.label)
     # colorbar
-    plot_colorbar(cax, cmap=cmap, label=channel.label,
+    colorbar = plot_colorbar(cax, cmap=cmap, label=channel.label,
                   ticks=np.linspace(levels.min(), levels.max(), 11))
 
     def draw_sideplot_projections(arr):
         if channel.signed:
-            colors = plt.cm.coolwarm(np.linspace(0,1,2))
+            # colors = plt.cm.coolwarm(np.linspace(0,1,2))
             alpha = 0.2
             temp_arr = np.ma.masked_array(arr, np.isnan(arr), copy=True)
             temp_arr[temp_arr < 0] = 0
@@ -202,7 +211,7 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
             temp_arr[temp_arr > 0] = 0
             x_proj_neg = np.nanmean(temp_arr, axis=0)
             y_proj_neg = np.nanmean(temp_arr, axis=1)
-            
+
             x_proj = np.nanmean(arr, axis=0)
             y_proj = np.nanmean(arr, axis=1)
 
@@ -222,7 +231,7 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
 
             sp_y.fill_betweenx(yaxis.points, y_proj_pos, 0, color='k', alpha=alpha)
             sp_y.fill_betweenx(yaxis.points, 0, y_proj_neg, color='k', alpha=alpha)
-            sp_y.fill_betweenx(yaxis.points, y_proj, 0, color='k', alpha=alpha)
+            sp_y.fill_betweenx(yaxis.points, y_proj, 0, color='k', alpha=0.3)
 
         else:
             x_proj = np.nansum(arr, axis=0)
@@ -272,23 +281,34 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
         slices = get_slices(sliders, data.axes, verbose=verbose)
         if slices != current_state.slices:  # a Slider moved; need to update all plot objects
             arr = channel[slices].squeeze()
-            current_state.slices = slices
             if wt_kit.get_index(data.axes, xaxis) < wt_kit.get_index(data.axes, yaxis):
                 arr = arr.T.copy()
             # TODO: why am I stripping off array information?
             # cf. https://stackoverflow.com/questions/29009743
             obj2D.set_array(arr[:-1, :-1].ravel())
+            levels = get_levels(channel, current_state.local, arr)
+            obj2D.set_clim(vmin=levels.min(), vmax=levels.max())
+            colorbar.set_ticklabels(np.linspace(levels.min(), levels.max(), 11))
+            colorbar.set_clim(vmin=levels.min(), vmax=levels.max())
             sp_x.collections.clear()
             sp_y.collections.clear()
             draw_sideplot_projections(arr)
+            current_state.slices = slices
             if line_sp_x.get_visible() and line_sp_y.get_visible():
                 update_sideplot_slices()
-                pass
         elif info.inaxes == ax_local:
             if button_local.label.get_text() == "global":
                 button_local.label.set_text("local")
+                current_state.local = True
             elif button_local.label.get_text() == "local":
                 button_local.label.set_text("global")
+                current_state.local = False
+            # update colorbar, obj2D
+            arr = channel[slices].squeeze()
+            levels = get_levels(channel, current_state.local, arr)
+            colorbar.set_ticklabels(np.linspace(levels.min(), levels.max(), 11))
+            colorbar.set_clim(vmin=levels.min(), vmax=levels.max())
+            obj2D.set_clim(vmin=levels.min(), vmax=levels.max())
         elif info.inaxes == ax0:  # crosshairs
             x0 = info.xdata
             y0 = info.ydata
@@ -321,4 +341,4 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
     for slider in sliders.values():
         slider.on_changed(update)
 
-    return obj2D, sliders, side_plotter, crosshair_hline, crosshair_vline
+    return obj2D, sliders, side_plotter, crosshair_hline, crosshair_vline, colorbar
