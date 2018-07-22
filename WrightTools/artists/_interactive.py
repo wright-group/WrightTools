@@ -159,10 +159,12 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
     ax_local = plt.subplot(gs[0, 0])
     # NOTE: there are more axes here for more buttons / widgets in future plans
     # create lines
-    line_sp_x = sp_x.plot([None], [None], visible=False, color="teal")[0]
-    line_sp_y = sp_y.plot([None], [None], visible=False, color="coral")[0]
-    crosshair_hline = ax0.plot([None], [None], visible=False, color="teal")[0]
-    crosshair_vline = ax0.plot([None], [None], visible=False, color="coral")[0]
+    x_color = "#00BFBF" # cyan with saturation increased
+    y_color = "coral"
+    line_sp_x = sp_x.plot([None], [None], visible=False, color=x_color)[0]
+    line_sp_y = sp_y.plot([None], [None], visible=False, color=y_color)[0]
+    crosshair_hline = ax0.plot([None], [None], visible=False, color=x_color)[0]
+    crosshair_vline = ax0.plot([None], [None], visible=False, color=y_color)[0]
     current_state.xpos = crosshair_hline.get_ydata()[0]
     current_state.ypos = crosshair_vline.get_xdata()[0]
     # create buttons
@@ -197,13 +199,12 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
     ax0.set_ylabel(yaxis.label)
     # colorbar
     colorbar = plot_colorbar(
-        cax, cmap=cmap, label=channel.label, ticks=np.linspace(clim[0], clim[1], 11)
+        cax, cmap=cmap, label=channel.natural_name, ticks=np.linspace(clim[0], clim[1], 11)
     )
 
     def draw_sideplot_projections(arr):
         if channel.signed:
             # colors = plt.cm.coolwarm(np.linspace(0,1,2))
-            alpha = 0.2
             temp_arr = np.ma.masked_array(arr, np.isnan(arr), copy=True)
             temp_arr[temp_arr < 0] = 0
             x_proj_pos = np.nanmean(temp_arr, axis=0)
@@ -227,12 +228,16 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
             y_proj_neg /= y_proj_norm
             y_proj /= y_proj_norm
 
-            sp_x.fill_between(xaxis.points, x_proj_pos, 0, color='k', alpha=alpha)
-            sp_x.fill_between(xaxis.points, 0, x_proj_neg, color='k', alpha=alpha)
+            alpha = 0.4
+            blue = '#517799'  # start with #87C7FF and change saturation
+            red = '#994C4C'  # start with #FF7F7F and change saturation
+
+            sp_x.fill_between(xaxis.points, x_proj_pos, 0, color=red, alpha=alpha)
+            sp_x.fill_between(xaxis.points, 0, x_proj_neg, color=blue, alpha=alpha)
             sp_x.fill_between(xaxis.points, x_proj, 0, color='k', alpha=0.3)
 
-            sp_y.fill_betweenx(yaxis.points, y_proj_pos, 0, color='k', alpha=alpha)
-            sp_y.fill_betweenx(yaxis.points, 0, y_proj_neg, color='k', alpha=alpha)
+            sp_y.fill_betweenx(yaxis.points, y_proj_pos, 0, color=red, alpha=alpha)
+            sp_y.fill_betweenx(yaxis.points, 0, y_proj_neg, color=blue, alpha=alpha)
             sp_y.fill_betweenx(yaxis.points, y_proj, 0, color='k', alpha=0.3)
 
         else:
@@ -292,7 +297,6 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
             obj2D.set_clim(*clim)
             ticklabels = gen_ticklabels(np.linspace(*clim, 11))
             colorbar.set_ticklabels(ticklabels)
-            #colorbar.set_clim(vmin=clim[0], vmax=clim[1])
             sp_x.collections.clear()
             sp_y.collections.clear()
             draw_sideplot_projections(arr)
@@ -311,7 +315,6 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
             clim = get_clim(channel, current_state.local, arr)
             ticklabels = gen_ticklabels(np.linspace(*clim, 11))
             colorbar.set_ticklabels(ticklabels)
-            #colorbar.set_clim(vmin=clim[0], vmax=clim[1])
             obj2D.set_clim(*clim)
         elif info.inaxes == ax0:  # crosshairs
             x0 = info.xdata
