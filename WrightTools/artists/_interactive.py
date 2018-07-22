@@ -52,41 +52,42 @@ def get_colormap(channel):
     return cmap
 
 
-def get_levels(channel, local, local_arr=None):
+def get_clim(channel, local, local_arr=None):
     if local:
         if channel.signed:
             mag = np.nanmax(np.abs(local_arr))
-            levels = np.linspace(-mag, mag, 200)
+            clim = [-mag, mag]
         else:
-            levels = np.linspace(0, np.nanmax(local_arr), 200)
+            clim = [0, np.nanmax(local_arr)]
     else:
         if channel.signed:
-            levels = np.linspace(-channel.mag(), channel.mag(), 200)
+            clim = [-channel.mag(), channel.mag()]
         else:
-            levels = np.linspace(0, channel.max(), 200)
-    return levels
+            clim = [0, channel.max()]
+    return clim
 
 
 def get_slices(sliders, axes, verbose=False):
     slices = []
     for axis in axes:
         if axis.natural_name in sliders.keys():
-            this_val = int(sliders[axis.natural_name].val)
-            ndigits = int(infer_precision(axis))
-            text = '{0}'.format(round(axis.points[this_val], ndigits))
-            sliders[axis.natural_name].valtext.set_text(text)
+            ticklabels = gen_ticklabels(axis.points)
+            this_index = int(sliders[axis.natural_name].val)
+            sliders[axis.natural_name].valtext.set_text(ticklabels[this_index])
             if verbose:
-                print(axis.natural_name, sliders[axis.natural_name].val, text)
-            slices.append(slice(this_val, this_val + 1))
+                print(axis.natural_name, sliders[axis.natural_name].val, ticklabels[this_index])
+            slices.append(slice(this_index, this_index + 1))
         else:
             slices.append(slice(None))
     return slices
 
 
-def infer_precision(axis):
-    step = np.diff(axis.points).min()
+def gen_ticklabels(points):
+    step = np.diff(points).min()
     ordinal = np.log10(np.abs(step))
-    return -np.floor(ordinal)
+    ndigits = -int(np.floor(ordinal))
+    ticklabels = ['{0}'.format(round(point, ndigits)) for point in points]
+    return ticklabels
 
 
 def norm(arr, signed, ignore_zero=True):
@@ -188,15 +189,16 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
         zi = zi.T.copy()
     current_state.slices = slices
     # TODO: should we use pcolormesh or pcolor?
-    levels = get_levels(channel, local, zi)
+    clim = get_clim(channel, local, zi)
     obj2D = ax0.pcolormesh(
-        xaxis.points, yaxis.points, zi, cmap=cmap, vmin=levels.min(), vmax=levels.max()
+        xaxis.points, yaxis.points, zi, cmap=cmap, vmin=clim[0], vmax=clim[1]
     )
     ax0.set_xlabel(xaxis.label)
     ax0.set_ylabel(yaxis.label)
     # colorbar
-    colorbar = plot_colorbar(cax, cmap=cmap, label=channel.label,
-                  ticks=np.linspace(levels.min(), levels.max(), 11))
+    colorbar = plot_colorbar(
+        cax, cmap=cmap, label=channel.label, ticks=np.linspace(clim[0], clim[1], 11)
+    )
 
     def draw_sideplot_projections(arr):
         if channel.signed:
@@ -286,10 +288,11 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
             # TODO: why am I stripping off array information?
             # cf. https://stackoverflow.com/questions/29009743
             obj2D.set_array(arr[:-1, :-1].ravel())
-            levels = get_levels(channel, current_state.local, arr)
-            obj2D.set_clim(vmin=levels.min(), vmax=levels.max())
-            colorbar.set_ticklabels(np.linspace(levels.min(), levels.max(), 11))
-            colorbar.set_clim(vmin=levels.min(), vmax=levels.max())
+            clim = get_clim(channel, current_state.local, arr)
+            obj2D.set_clim(*clim)
+            ticklabels = gen_ticklabels(np.linspace(*clim, 11))
+            colorbar.set_ticklabels(ticklabels)
+            #colorbar.set_clim(vmin=clim[0], vmax=clim[1])
             sp_x.collections.clear()
             sp_y.collections.clear()
             draw_sideplot_projections(arr)
@@ -305,10 +308,11 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
                 current_state.local = False
             # update colorbar, obj2D
             arr = channel[slices].squeeze()
-            levels = get_levels(channel, current_state.local, arr)
-            colorbar.set_ticklabels(np.linspace(levels.min(), levels.max(), 11))
-            colorbar.set_clim(vmin=levels.min(), vmax=levels.max())
-            obj2D.set_clim(vmin=levels.min(), vmax=levels.max())
+            clim = get_clim(channel, current_state.local, arr)
+            ticklabels = gen_ticklabels(np.linspace(*clim, 11))
+            colorbar.set_ticklabels(ticklabels)
+            #colorbar.set_clim(vmin=clim[0], vmax=clim[1])
+            obj2D.set_clim(*clim)
         elif info.inaxes == ax0:  # crosshairs
             x0 = info.xdata
             y0 = info.ydata
