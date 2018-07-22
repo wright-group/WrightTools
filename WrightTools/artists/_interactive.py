@@ -163,7 +163,7 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
     ax_local = plt.subplot(gs[0, 0])
     # NOTE: there are more axes here for more buttons / widgets in future plans
     # create lines
-    x_color = "#00BFBF" # cyan with saturation increased
+    x_color = "#00BFBF"  # cyan with saturation increased
     y_color = "coral"
     line_sp_x = sp_x.plot([None], [None], visible=False, color=x_color)[0]
     line_sp_y = sp_y.plot([None], [None], visible=False, color=y_color)[0]
@@ -233,16 +233,16 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
             y_proj /= y_proj_norm
 
             alpha = 0.4
-            blue = '#517799'  # start with #87C7FF and change saturation
-            red = '#994C4C'  # start with #FF7F7F and change saturation
+            blue = "#517799"  # start with #87C7FF and change saturation
+            red = "#994C4C"  # start with #FF7F7F and change saturation
 
             sp_x.fill_between(xaxis.points, x_proj_pos, 0, color=red, alpha=alpha)
             sp_x.fill_between(xaxis.points, 0, x_proj_neg, color=blue, alpha=alpha)
-            sp_x.fill_between(xaxis.points, x_proj, 0, color='k', alpha=0.3)
+            sp_x.fill_between(xaxis.points, x_proj, 0, color="k", alpha=0.3)
 
             sp_y.fill_betweenx(yaxis.points, y_proj_pos, 0, color=red, alpha=alpha)
             sp_y.fill_betweenx(yaxis.points, 0, y_proj_neg, color=blue, alpha=alpha)
-            sp_y.fill_betweenx(yaxis.points, y_proj, 0, color='k', alpha=0.3)
+            sp_y.fill_betweenx(yaxis.points, y_proj, 0, color="k", alpha=0.3)
 
         else:
             x_proj = np.nansum(arr, axis=0)
