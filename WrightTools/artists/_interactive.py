@@ -90,6 +90,9 @@ def get_slices(sliders, axes, verbose=False):
 
 def gen_ticklabels(points):
     step = np.diff(points).min()
+    if step == 0:
+        ticklabels = ['NaN' for point in points]
+        return ticklabels
     ordinal = np.log10(np.abs(step))
     ndigits = -int(np.floor(ordinal))
     if ndigits < 0:
@@ -241,14 +244,16 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
             y_proj = np.nanmean(arr, axis=1)
 
             x_proj_norm = max(np.nanmax(x_proj_pos), np.nanmax(-x_proj_neg))
-            x_proj_pos /= x_proj_norm
-            x_proj_neg /= x_proj_norm
-            x_proj /= x_proj_norm
+            if x_proj_norm != 0:
+                x_proj_pos /= x_proj_norm
+                x_proj_neg /= x_proj_norm
+                x_proj /= x_proj_norm
 
             y_proj_norm = max(np.nanmax(y_proj_pos), np.nanmax(-y_proj_neg))
-            y_proj_pos /= y_proj_norm
-            y_proj_neg /= y_proj_norm
-            y_proj /= y_proj_norm
+            if y_proj_norm != 0:
+                y_proj_pos /= y_proj_norm
+                y_proj_neg /= y_proj_norm
+                y_proj /= y_proj_norm
 
             alpha = 0.4
             blue = "#517799"  # start with #87C7FF and change saturation
