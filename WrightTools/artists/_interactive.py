@@ -22,20 +22,26 @@ class Bunch(dict):
 
 def get_axes(data, axes):
     xaxis, yaxis = axes
-    if type(xaxis) in [int, str]:
+    if isinstance(xaxis, int):
         xaxis = data.axes[xaxis]
+    elif isinstance(xaxis, str):
+        xaxis = [axis for axis in data.axes if axis.natural_name == xaxis][0]
     elif type(xaxis) != wt_data.Axis:
         raise TypeError("invalid xaxis type {0}".format(type(xaxis)))
-    if type(yaxis) in [int, str]:
+    if isinstance(yaxis, int):
         yaxis = data.axes[yaxis]
+    elif isinstance(yaxis, str):
+        yaxis = [axis for axis in data.axes if axis.natural_name == yaxis][0]
     elif type(yaxis) != wt_data.Axis:
         raise TypeError("invalid xaxis type {0}".format(type(yaxis)))
     return xaxis, yaxis
 
 
 def get_channel(data, channel):
-    if type(channel) in [int, str]:
+    if isinstance(channel, int):
         channel = data.channels[channel]
+    elif isinstance(channel, str):
+        channel = [ch for ch in data.channels if channel.natural_name == channel][0]
     elif type(channel) != wt_data.Channel:
         raise TypeError("invalid channel type {0}".format(type(channel)))
     return channel
@@ -133,9 +139,9 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
     ----------
     data : WrightTools.Data object
         Data to plot.
-    axis : string or integer (optional)
+    axis : string, integer, or data.Axis object (optional)
         Expression or index of axis. Default is 0.
-    channel : string or integer (optional)
+    channel : string, integer, or data.Channel object (optional)
         Name or index of channel to plot. Default is 0.
     local : boolean (optional)
         Toggle plotting locally. Default is False.
