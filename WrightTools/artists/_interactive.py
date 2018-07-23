@@ -161,7 +161,7 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
     cax = plt.subplot(gs[1:6, -1])
     sp_x = add_sideplot(ax0, "x", pad=0.1)
     sp_y = add_sideplot(ax0, "y", pad=0.1)
-    ax_local = plt.subplot(gs[0, 0:2], facecolor='#EEEEEE')
+    ax_local = plt.subplot(gs[0, 0], frameon=False)  # facecolor='#EEEEEE')
     # NOTE: there are more axes here for more buttons / widgets in future plans
     # create lines
     x_color = "#00BFBF"  # cyan with saturation increased
@@ -174,11 +174,13 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
     current_state.ypos = crosshair_vline.get_xdata()[0]
     # create buttons
     current_state.local = local
-    radio = RadioButtons(ax_local, ('global', 'local'))
+    radio = RadioButtons(ax_local, (' global', ' local'))
     if local:
         radio.set_active(1)
     else:
         radio.set_active(0)
+    for circle in radio.circles:
+        circle.set_radius(0.14)
     # create sliders
     sliders = {}
     for axis in data.axes:
@@ -288,17 +290,20 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
         line_sp_x.set_data(xaxis.points, side_plot)
 
     def update_local(index):
+        slices = get_slices(sliders, data.axes, verbose=verbose)
         if verbose:
             print(index)
-        if radio.value_selected == "global":
+        if radio.value_selected.strip() == "global":
             current_state.local = False
-        if radio.value_selected == "local":
+        if radio.value_selected.strip() == "local":
             current_state.local = True
         arr = channel[slices].squeeze()
         clim = get_clim(channel, current_state.local, arr)
+        print(clim)
         ticklabels = gen_ticklabels(np.linspace(*clim, 11))
         colorbar.set_ticklabels(ticklabels)
         obj2D.set_clim(*clim)
+        fig.canvas.draw_idle()
 
     def update(info):
         # is info a value?  then we have a slider
