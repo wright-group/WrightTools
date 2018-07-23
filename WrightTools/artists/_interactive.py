@@ -2,7 +2,7 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.widgets import Slider, Button
+from matplotlib.widgets import Slider, RadioButtons
 
 from ._helpers import create_figure, plot_colorbar, savefig, add_sideplot
 from ._colors import colormaps
@@ -161,7 +161,7 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
     cax = plt.subplot(gs[1:6, -1])
     sp_x = add_sideplot(ax0, "x", pad=0.1)
     sp_y = add_sideplot(ax0, "y", pad=0.1)
-    ax_local = plt.subplot(gs[0, 0])
+    ax_local = plt.subplot(gs[0, 0:2], facecolor='#EEEEEE')
     # NOTE: there are more axes here for more buttons / widgets in future plans
     # create lines
     x_color = "#00BFBF"  # cyan with saturation increased
@@ -173,12 +173,12 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
     current_state.xpos = crosshair_hline.get_ydata()[0]
     current_state.ypos = crosshair_vline.get_xdata()[0]
     # create buttons
-    if local:
-        label = "local"
-    else:
-        label = "global"
     current_state.local = local
-    button_local = Button(ax_local, label=label)
+    radio = RadioButtons(ax_local, ('global', 'local'))
+    if local:
+        radio.set_active(1)
+    else:
+        radio.set_active(0)
     # create sliders
     sliders = {}
     for axis in data.axes:
@@ -287,6 +287,19 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
         side_plot = norm(side_plot, channel.signed)
         line_sp_x.set_data(xaxis.points, side_plot)
 
+    def update_local(index):
+        if verbose:
+            print(index)
+        if radio.value_selected == "global":
+            current_state.local = False
+        if radio.value_selected == "local":
+            current_state.local = True
+        arr = channel[slices].squeeze()
+        clim = get_clim(channel, current_state.local, arr)
+        ticklabels = gen_ticklabels(np.linspace(*clim, 11))
+        colorbar.set_ticklabels(ticklabels)
+        obj2D.set_clim(*clim)
+
     def update(info):
         # is info a value?  then we have a slider
         # is info an object with xydata?  then we have an event
@@ -308,19 +321,6 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
             current_state.slices = slices
             if line_sp_x.get_visible() and line_sp_y.get_visible():
                 update_sideplot_slices()
-        elif info.inaxes == ax_local:
-            if button_local.label.get_text() == "global":
-                button_local.label.set_text("local")
-                current_state.local = True
-            elif button_local.label.get_text() == "local":
-                button_local.label.set_text("global")
-                current_state.local = False
-            # update colorbar, obj2D
-            arr = channel[slices].squeeze()
-            clim = get_clim(channel, current_state.local, arr)
-            ticklabels = gen_ticklabels(np.linspace(*clim, 11))
-            colorbar.set_ticklabels(ticklabels)
-            obj2D.set_clim(*clim)
         elif info.inaxes == ax0:  # crosshairs
             x0 = info.xdata
             y0 = info.ydata
@@ -348,9 +348,9 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
     side_plotter = plt.matplotlib.widgets.AxesWidget(ax0)
     side_plotter.connect_event("button_release_event", update)
 
-    button_local.connect_event("button_release_event", update)
+    radio.on_clicked(update_local)
 
     for slider in sliders.values():
         slider.on_changed(update)
 
-    return obj2D, sliders, side_plotter, crosshair_hline, crosshair_vline, colorbar
+    return obj2D, sliders, side_plotter, crosshair_hline, crosshair_vline, radio, colorbar
