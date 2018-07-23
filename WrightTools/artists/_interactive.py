@@ -167,7 +167,12 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
     cax = plt.subplot(gs[1:6, -1])
     sp_x = add_sideplot(ax0, "x", pad=0.1)
     sp_y = add_sideplot(ax0, "y", pad=0.1)
-    ax_local = plt.subplot(gs[0, 0], frameon=False)  # facecolor='#EEEEEE')
+    ax_local = plt.subplot(gs[0, 0], aspect='equal', frameon=False)  # facecolor='#EEEEEE')
+    ax_title = plt.subplot(gs[0, 3], frameon=False)
+    ax_title.text(0.5, 0.5, data.natural_name, fontsize=18,
+                  horizontalalignment='center', verticalalignment='center',
+                  transform=ax_title.transAxes)
+    ax_title.set_axis_off()
     # NOTE: there are more axes here for more buttons / widgets in future plans
     # create lines
     x_color = "#00BFBF"  # cyan with saturation increased
