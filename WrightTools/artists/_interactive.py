@@ -196,6 +196,10 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
                 slider_axes, axis.label, 0, axis.points.size - 1, valinit=0, valstep=1, valfmt="%i"
             )
             sliders[axis.natural_name] = slider
+            slider.ax.vlines(
+                    range(axis.points.size - 1), *slider.ax.get_ylim(),
+                    colors='k', linestyle=':', alpha=0.5
+            )
     # initial xyz start are from zero indices of additional axes
     slices = get_slices(sliders, data.axes, verbose=verbose)
     zi = channel[slices]
