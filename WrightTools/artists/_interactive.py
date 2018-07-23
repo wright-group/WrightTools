@@ -87,7 +87,8 @@ def gen_ticklabels(points):
     ordinal = np.log10(np.abs(step))
     ndigits = -int(np.floor(ordinal))
     if ndigits < 0:
-        fmt = "{" + "0".format(-ndigits) + "}"
+        ndigits += 1
+        fmt = "{0:0.0f}"
     else:
         fmt = "{" + "0:.{0}f".format(ndigits) + "}"
     ticklabels = [fmt.format(round(point, ndigits)) for point in points]
