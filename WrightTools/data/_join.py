@@ -122,14 +122,14 @@ def join(datas, *, name="join", parent=None, verbose=True):
                 new = out[variable_name]
                 # These lines are needed because h5py doesn't support advanced indexing natively
                 vals = new[:]
-                vals[wt_kit.valid_index(new_idx, old.shape)] = old[:]
+                vals[wt_kit.valid_index(new_idx, new.shape)] = old[:]
                 new[:] = vals
         for channel_name in channel_names:
             old = data[channel_name]
             new = out[channel_name]
             # These lines are needed because h5py doesn't support advanced indexing natively
             vals = new[:]
-            vals[wt_kit.valid_index(new_idx, old.shape)] = old[:]
+            vals[wt_kit.valid_index(new_idx, new.shape)] = old[:]
             new[:] = vals
     # axes
     out.transform(*axis_expressions)
