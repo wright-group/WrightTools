@@ -41,7 +41,7 @@ def get_channel(data, channel):
     if isinstance(channel, int):
         channel = data.channels[channel]
     elif isinstance(channel, str):
-        channel = [ch for ch in data.channels if channel.natural_name == channel][0]
+        channel = [ch for ch in data.channels if ch.natural_name == channel][0]
     elif type(channel) != wt_data.Channel:
         raise TypeError("invalid channel type {0}".format(type(channel)))
     return channel
