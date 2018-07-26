@@ -294,11 +294,8 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
 
     def update_local(index):
         if verbose:
-            print(index)
-        if radio.value_selected.strip() == "global":
-            current_state.local = False
-        if radio.value_selected.strip() == "local":
-            current_state.local = True
+            print("index", index)
+        current_state.local = radio.value_selected[1:] == "local"
         clim = get_clim(channel, current_state)
         ticklabels = gen_ticklabels(np.linspace(*clim, 11))
         colorbar.set_ticklabels(ticklabels)
@@ -306,8 +303,6 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
         fig.canvas.draw_idle()
 
     def update(info):
-        # is info a value?  then we have a slider
-        # is info an object with xydata?  then we have an event
         slices = get_slices(sliders, data.axes, verbose=verbose)
         if slices != current_state.slices:  # a Slider moved; need to update all plot objects
             arr = channel[slices].squeeze()
@@ -331,8 +326,7 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
             x0 = info.xdata
             y0 = info.ydata
             if x0 is None or y0 is None:
-                print(info, info.xydata)
-                raise AttributeError
+                raise AttributeError(info)
             xlim = ax0.get_xlim()
             ylim = ax0.get_ylim()
             if x0 > xlim[0] and x0 < xlim[1] and y0 > ylim[0] and y0 < ylim[1]:
