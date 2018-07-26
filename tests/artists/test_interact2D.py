@@ -56,5 +56,5 @@ if __name__ == "__main__":
     # objects = wt.artists.interact2D(data)
     import matplotlib.pyplot as plt
     plt.close('all')
-    objects = wt.artists.interact2D(data, xaxis=1, yaxis=0)
+    objects = wt.artists.interact2D(data, xaxis=0, yaxis=1)
     plt.show()

@@ -125,8 +125,10 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
     ----------
     data : WrightTools.Data object
         Data to plot.
-    axis : string, integer, or data.Axis object (optional)
-        Expression or index of axis. Default is 0.
+    xaxis : string, integer, or data.Axis object (optional)
+        Expression or index of x axis. Default is 0.
+    yaxis : string, integer, or data.Axis object (optional)
+        Expression or index of y axis. Default is 1.
     channel : string, integer, or data.Channel object (optional)
         Name or index of channel to plot. Default is 0.
     local : boolean (optional)
@@ -201,7 +203,8 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
     current_state.zi = zi
     clim = get_clim(channel, current_state)
     xi, yi, zi = pcolor_helper(xaxis.points[:, None], yaxis.points[None, :], zi)
-    obj2D = ax0.pcolormesh(xi, yi, zi, cmap=cmap, vmin=clim[0], vmax=clim[1])
+    plt.sca(ax0)
+    obj2D = plt.pcolormesh(xi, yi, zi, cmap=cmap, vmin=clim[0], vmax=clim[1])
     ax0.set_xlabel(xaxis.label)
     ax0.set_ylabel(yaxis.label)
     # colorbar

@@ -111,7 +111,6 @@ class Axes(matplotlib.axes.Axes):
         if plot_type not in ['pcolor', 'pcolormesh']:
             raise NotImplementedError
         args = list(args)  # offer pop, append etc
-        channel = kwargs.pop("channel", 0)
         dynamic_range = kwargs.pop("dynamic_range", False)
         if isinstance(args[0], Data):
             data = args.pop(0)
@@ -120,10 +119,11 @@ class Axes(matplotlib.axes.Axes):
             if not data.ndim == ndim:
                 raise wt_exceptions.DimensionalityError(ndim, data.ndim)
             # arrays
+            channel = kwargs.pop("channel", 0)
             channel_index = wt_kit.get_index(data.channel_names, channel)
+            zi = data.channels[channel_index][:]
             xi = data.axes[0].full
             yi = data.axes[1].full
-            zi = data.channels[channel_index][:]
             if plot_type in ['pcolor', 'pcolormesh']:
                 X, Y, Z = pcolor_helper(xi, yi, zi)
             else:
