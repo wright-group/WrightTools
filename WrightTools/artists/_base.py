@@ -344,7 +344,7 @@ class Axes(matplotlib.axes.Axes):
             elif plot_type in ['plot']:
                 ndim = 1
             if not data.ndim == ndim:
-                raise wt_exceptions.DimensionalityError(2, data.ndim)
+                raise wt_exceptions.DimensionalityError(ndim, data.ndim)
             # arrays
             channel_index = wt_kit.get_index(data.channel_names, channel)
             xi = data.axes[0].full
@@ -383,7 +383,6 @@ class Axes(matplotlib.axes.Axes):
         # decoration
         self.set_facecolor([0.75] * 3)
         return args, kwargs
-
 
     def pcolor(self, *args, **kwargs):
         """Create a pseudocolor plot of a 2-D array.
