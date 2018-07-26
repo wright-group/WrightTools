@@ -108,13 +108,13 @@ class Axes(matplotlib.axes.Axes):
 
     def _parse_plot_args(self, *args, **kwargs):
         plot_type = kwargs.pop("plot_type")
-        if plot_type not in ['pcolor', 'pcolormesh']:
+        if plot_type not in ["pcolor", "pcolormesh"]:
             raise NotImplementedError
         args = list(args)  # offer pop, append etc
         dynamic_range = kwargs.pop("dynamic_range", False)
         if isinstance(args[0], Data):
             data = args.pop(0)
-            if plot_type in ['pcolor', 'pcolormesh']:
+            if plot_type in ["pcolor", "pcolormesh"]:
                 ndim = 2
             if not data.ndim == ndim:
                 raise wt_exceptions.DimensionalityError(ndim, data.ndim)
@@ -124,7 +124,7 @@ class Axes(matplotlib.axes.Axes):
             zi = data.channels[channel_index][:]
             xi = data.axes[0].full
             yi = data.axes[1].full
-            if plot_type in ['pcolor', 'pcolormesh']:
+            if plot_type in ["pcolor", "pcolormesh"]:
                 X, Y, Z = pcolor_helper(xi, yi, zi)
             else:
                 X, Y, Z = xi, yi, zi
@@ -137,7 +137,7 @@ class Axes(matplotlib.axes.Axes):
             kwargs = self._parse_cmap(data=data, channel_index=channel_index, **kwargs)
         else:
             xi, yi, zi = args[:3]
-            if plot_type in ['pcolor', 'pcolormesh']:
+            if plot_type in ["pcolor", "pcolormesh"]:
                 if xi.ndim == 1 and xi.size == zi.shape[1]:
                     xi, yi, zi = pcolor_helper(xi, yi, zi)
                 elif xi.ndim == 2 and xi.shape == zi.shape:
@@ -414,9 +414,9 @@ class Axes(matplotlib.axes.Axes):
         -------
         matplotlib.collections.PolyCollection
         """
-        args, kwargs = self._parse_plot_args(*args, **kwargs, plot_type='pcolor')
+        args, kwargs = self._parse_plot_args(*args, **kwargs, plot_type="pcolor")
         return super().pcolor(*args, **kwargs)
-        
+
     def pcolormesh(self, *args, **kwargs):
         """Create a pseudocolor plot of a 2-D array.
 
@@ -448,7 +448,7 @@ class Axes(matplotlib.axes.Axes):
         -------
         matplotlib.collections.QuadMesh
         """
-        args, kwargs = self._parse_plot_args(*args, **kwargs, plot_type='pcolormesh')
+        args, kwargs = self._parse_plot_args(*args, **kwargs, plot_type="pcolormesh")
         return super().pcolormesh(*args, **kwargs)
 
     def plot(self, *args, **kwargs):

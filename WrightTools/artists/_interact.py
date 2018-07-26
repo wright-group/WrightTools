@@ -91,7 +91,7 @@ def get_slices(sliders, axes, verbose=False):
 def gen_ticklabels(points):
     step = np.nanmin(np.diff(points))
     if step == 0:
-        ticklabels = ['NaN' for point in points]
+        ticklabels = ["NaN" for point in points]
         return ticklabels
     ordinal = np.log10(np.abs(step))
     ndigits = -int(np.floor(ordinal))
@@ -145,7 +145,7 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
     # create figure
     nsliders = data.ndim - 2
     if nsliders < 0:
-        raise DimensionalityError('>= 2', data.ndim)
+        raise DimensionalityError(">= 2", data.ndim)
     # TODO: implement aspect; doesn't work currently because of our incorporation of colorbar
     fig, gs = create_figure(width="single", nrows=7 + nsliders, cols=[1, 1, 1, 1, 1, "cbar"])
     # create axes
@@ -155,11 +155,17 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
     cax = plt.subplot(gs[1:6, -1])
     sp_x = add_sideplot(ax0, "x", pad=0.1)
     sp_y = add_sideplot(ax0, "y", pad=0.1)
-    ax_local = plt.subplot(gs[0, 0], aspect='equal', frameon=False)
+    ax_local = plt.subplot(gs[0, 0], aspect="equal", frameon=False)
     ax_title = plt.subplot(gs[0, 3], frameon=False)
-    ax_title.text(0.5, 0.5, data.natural_name, fontsize=18,
-                  horizontalalignment='center', verticalalignment='center',
-                  transform=ax_title.transAxes)
+    ax_title.text(
+        0.5,
+        0.5,
+        data.natural_name,
+        fontsize=18,
+        horizontalalignment="center",
+        verticalalignment="center",
+        transform=ax_title.transAxes,
+    )
     ax_title.set_axis_off()
     # NOTE: there are more axes here for more buttons / widgets in future plans
     # create lines
@@ -173,7 +179,7 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
     current_state.ypos = crosshair_vline.get_xdata()[0]
     # create buttons
     current_state.local = local
-    radio = RadioButtons(ax_local, (' global', ' local'))
+    radio = RadioButtons(ax_local, (" global", " local"))
     if local:
         radio.set_active(1)
     else:
@@ -185,13 +191,14 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
     for axis in data.axes:
         if axis not in [xaxis, yaxis]:
             slider_axes = plt.subplot(gs[~len(sliders), :]).axes
-            slider = Slider(
-                slider_axes, axis.label, 0, axis.points.size - 1, valinit=0, valstep=1
-            )
+            slider = Slider(slider_axes, axis.label, 0, axis.points.size - 1, valinit=0, valstep=1)
             sliders[axis.natural_name] = slider
             slider.ax.vlines(
-                range(axis.points.size - 1), *slider.ax.get_ylim(),
-                colors='k', linestyle=':', alpha=0.5
+                range(axis.points.size - 1),
+                *slider.ax.get_ylim(),
+                colors="k",
+                linestyle=":",
+                alpha=0.5
             )
     # initial xyz start are from zero indices of additional axes
     slices = get_slices(sliders, data.axes, verbose=verbose)
