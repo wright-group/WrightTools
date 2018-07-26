@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider, RadioButtons
 
-from ._helpers import create_figure, plot_colorbar, savefig, add_sideplot
+from ._helpers import create_figure, plot_colorbar, savefig, add_sideplot, pcolor_helper
 from ._colors import colormaps
 from ..exceptions import DimensionalityError
 from .. import kit as wt_kit
@@ -137,6 +137,7 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
     # unpack
     channel = get_channel(data, channel)
     xaxis, yaxis = get_axes(data, [xaxis, yaxis])
+    print(xaxis, yaxis)
     cmap = get_colormap(channel)
     current_state = Bunch()
     # create figure
@@ -199,9 +200,8 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
         zi = zi.T.copy()
     current_state.zi = zi
     clim = get_clim(channel, current_state)
-    obj2D = ax0.pcolormesh(
-        xaxis.points, yaxis.points, zi, cmap=cmap, vmin=clim[0], vmax=clim[1]
-    )
+    xi, yi, zi = pcolor_helper(xaxis.points[:, None], yaxis.points[None, :], zi)
+    obj2D = ax0.pcolormesh(xi, yi, zi, cmap=cmap, vmin=clim[0], vmax=clim[1])
     ax0.set_xlabel(xaxis.label)
     ax0.set_ylabel(yaxis.label)
     # colorbar
@@ -308,9 +308,7 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
             current_state.zi = arr
             if wt_kit.get_index(data.axes, xaxis) < wt_kit.get_index(data.axes, yaxis):
                 arr = arr.T.copy()
-            # TODO: why am I stripping off array information?
-            # cf. https://stackoverflow.com/questions/29009743
-            obj2D.set_array(arr[:-1, :-1].ravel())
+            obj2D.set_array(arr.ravel())
             clim = get_clim(channel, current_state)
             obj2D.set_clim(*clim)
             ticklabels = gen_ticklabels(np.linspace(*clim, 11))
