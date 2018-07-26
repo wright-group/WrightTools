@@ -6,6 +6,7 @@ from matplotlib.widgets import Slider, RadioButtons
 
 from ._helpers import create_figure, plot_colorbar, savefig, add_sideplot
 from ._colors import colormaps
+from ..exceptions import DimensionalityError
 from .. import kit as wt_kit
 from .. import data as wt_data
 
@@ -113,23 +114,6 @@ def norm(arr, signed, ignore_zero=True):
     return arr
 
 
-def set_aspect(xaxis, yaxis):
-    if xaxis.units == yaxis.units:
-        xr = xaxis.max() - xaxis.min()
-        yr = yaxis.max() - yaxis.min()
-        aspect = np.abs(yr / xr)
-        if 3 < aspect or aspect < 1 / 3.:
-            raise Warning(
-                "units agree, but aspect {0} required for equal spacing is too" +
-                "narrow.".format(aspect)
-            )
-            aspect = np.clip(aspect, 1 / 3., 3.)
-            print("using aspect {0} instead".format(aspect))
-    else:
-        aspect = 1
-    return aspect
-
-
 def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
     """ Interactive 2D plot of the dataset.
     Side plots show x and y projections of the slice (shaded gray).
@@ -158,8 +142,7 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
     # create figure
     nsliders = data.ndim - 2
     if nsliders < 0:
-        print("note enough dimensions")
-        return
+        raise DimensionalityError('>= 2', data.ndim)
     # TODO: implement aspect; doesn't work currently because of our incorporation of colorbar
     fig, gs = create_figure(width="single", nrows=7 + nsliders, cols=[1, 1, 1, 1, 1, "cbar"])
     # create axes
@@ -169,7 +152,7 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
     cax = plt.subplot(gs[1:6, -1])
     sp_x = add_sideplot(ax0, "x", pad=0.1)
     sp_y = add_sideplot(ax0, "y", pad=0.1)
-    ax_local = plt.subplot(gs[0, 0], aspect='equal', frameon=False)  # facecolor='#EEEEEE')
+    ax_local = plt.subplot(gs[0, 0], aspect='equal', frameon=False)
     ax_title = plt.subplot(gs[0, 3], frameon=False)
     ax_title.text(0.5, 0.5, data.natural_name, fontsize=18,
                   horizontalalignment='center', verticalalignment='center',
