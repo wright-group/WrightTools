@@ -187,8 +187,8 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
             )
             sliders[axis.natural_name] = slider
             slider.ax.vlines(
-                    range(axis.points.size - 1), *slider.ax.get_ylim(),
-                    colors='k', linestyle=':', alpha=0.5
+                range(axis.points.size - 1), *slider.ax.get_ylim(),
+                colors='k', linestyle=':', alpha=0.5
             )
     # initial xyz start are from zero indices of additional axes
     slices = get_slices(sliders, data.axes, verbose=verbose)
@@ -198,7 +198,6 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
     if wt_kit.get_index(data.axes, xaxis) < wt_kit.get_index(data.axes, yaxis):
         zi = zi.T.copy()
     current_state.zi = zi
-    # TODO: should we use pcolormesh or pcolor?
     clim = get_clim(channel, current_state)
     obj2D = ax0.pcolormesh(
         xaxis.points, yaxis.points, zi, cmap=cmap, vmin=clim[0], vmax=clim[1]
@@ -212,7 +211,6 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
 
     def draw_sideplot_projections(arr):
         if channel.signed:
-            # colors = plt.cm.coolwarm(np.linspace(0,1,2))
             temp_arr = np.ma.masked_array(arr, np.isnan(arr), copy=True)
             temp_arr[temp_arr < 0] = 0
             x_proj_pos = np.nanmean(temp_arr, axis=0)
@@ -326,7 +324,7 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
             x0 = info.xdata
             y0 = info.ydata
             if x0 is None or y0 is None:
-                raise AttributeError(info)
+                raise TypeError(info)
             xlim = ax0.get_xlim()
             ylim = ax0.get_ylim()
             if x0 > xlim[0] and x0 < xlim[1] and y0 > ylim[0] and y0 < ylim[1]:

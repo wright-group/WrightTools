@@ -332,6 +332,59 @@ class Axes(matplotlib.axes.Axes):
             kwargs["framealpha"] = 1.
         return super().legend(*args, **kwargs)
 
+    def _parse_plot_args(self, *args, **kwargs):
+        plot_type = kwargs.pop("plot_type", False)
+        args = list(args)  # offer pop, append etc
+        channel = kwargs.pop("channel", 0)
+        dynamic_range = kwargs.pop("dynamic_range", False)
+        if isinstance(args[0], Data):
+            data = args.pop(0)
+            if plot_type in ['pcolor', 'pcolormesh', 'contour', 'contourf']:
+                ndim = 2
+            elif plot_type in ['plot']:
+                ndim = 1
+            if not data.ndim == ndim:
+                raise wt_exceptions.DimensionalityError(2, data.ndim)
+            # arrays
+            channel_index = wt_kit.get_index(data.channel_names, channel)
+            xi = data.axes[0].full
+            yi = data.axes[1].full
+            zi = data.channels[channel_index][:]
+            if plot_type in ['pcolor', 'pcolormesh']:
+                X, Y, Z = pcolor_helper(xi, yi, zi)
+            else:
+                X, Y, Z = xi, yi, zi
+            args = [X, Y, Z] + args
+            # limits
+            kwargs = self._parse_limits(
+                data=data, channel_index=channel_index, dynamic_range=dynamic_range, **kwargs
+            )
+            # cmap
+            kwargs = self._parse_cmap(data=data, channel_index=channel_index, **kwargs)
+        else:
+            xi, yi, zi = args[:3]
+            if plot_type in ['pcolor', 'pcolormesh']:
+                if xi.ndim == 1 and xi.size == zi.shape[1]:
+                    xi, yi, zi = pcolor_helper(xi, yi, zi)
+                elif xi.ndim == 2 and xi.shape == zi.shape:
+                    xi, yi, zi = pcolor_helper(xi, yi, zi)
+            data = None
+            channel_index = 0
+            kwargs = self._parse_limits(zi=args[2], **kwargs)
+            kwargs = self._parse_cmap(**kwargs)
+        # labels
+        self._apply_labels(
+            autolabel=kwargs.pop("autolabel", False),
+            xlabel=kwargs.pop("xlabel", None),
+            ylabel=kwargs.pop("ylabel", None),
+            data=data,
+            channel_index=channel_index,
+        )
+        # decoration
+        self.set_facecolor([0.75] * 3)
+        return args, kwargs
+
+
     def pcolor(self, *args, **kwargs):
         """Create a pseudocolor plot of a 2-D array.
 
@@ -362,50 +415,9 @@ class Axes(matplotlib.axes.Axes):
         -------
         matplotlib.collections.PolyCollection
         """
-        args = list(args)  # offer pop, append etc
-        channel = kwargs.pop("channel", 0)
-        dynamic_range = kwargs.pop("dynamic_range", False)
-        # unpack data object, if given
-        if isinstance(args[0], Data):
-            data = args.pop(0)
-            if not data.ndim == 2:
-                raise wt_exceptions.DimensionalityError(2, data.ndim)
-            # arrays
-            channel_index = wt_kit.get_index(data.channel_names, channel)
-            xi = data.axes[0].full
-            yi = data.axes[1].full
-            zi = data.channels[channel_index][:]
-            X, Y, Z = pcolor_helper(xi, yi, zi)
-            args = [X, Y, Z] + args
-            # limits
-            kwargs = self._parse_limits(
-                data=data, channel_index=channel_index, dynamic_range=dynamic_range, **kwargs
-            )
-            # cmap
-            kwargs = self._parse_cmap(data=data, channel_index=channel_index, **kwargs)
-        else:
-            xi, yi, zi = args[:3]
-            if xi.ndim == 1 and xi.size == zi.shape[1]:
-                xi, yi, zi = pcolor_helper(xi, yi, zi)
-            elif xi.ndim == 2 and xi.shape == zi.shape:
-                xi, yi, zi = pcolor_helper(xi, yi, zi)
-            data = None
-            channel_index = 0
-            kwargs = self._parse_limits(zi=args[2], **kwargs)
-            kwargs = self._parse_cmap(**kwargs)
-        # labels
-        self._apply_labels(
-            autolabel=kwargs.pop("autolabel", False),
-            xlabel=kwargs.pop("xlabel", None),
-            ylabel=kwargs.pop("ylabel", None),
-            data=data,
-            channel_index=channel_index,
-        )
-        # decoration
-        self.set_facecolor([0.75] * 3)
-        # call parent
+        args, kwargs = self._parse_plot_args(*args, **kwargs, plot_type='pcolor')
         return super().pcolor(*args, **kwargs)
-
+        
     def pcolormesh(self, *args, **kwargs):
         """Create a pseudocolor plot of a 2-D array.
 
@@ -437,48 +449,7 @@ class Axes(matplotlib.axes.Axes):
         -------
         matplotlib.collections.QuadMesh
         """
-        args = list(args)  # offer pop, append etc
-        channel = kwargs.pop("channel", 0)
-        dynamic_range = kwargs.pop("dynamic_range", False)
-        # unpack data object, if given
-        if isinstance(args[0], Data):
-            data = args.pop(0)
-            if not data.ndim == 2:
-                raise wt_exceptions.DimensionalityError(2, data.ndim)
-            # arrays
-            channel_index = wt_kit.get_index(data.channel_names, channel)
-            xi = data.axes[0].full
-            yi = data.axes[1].full
-            zi = data.channels[channel_index][:]
-            X, Y, Z = pcolor_helper(xi, yi, zi)
-            args = [X, Y, Z] + args
-            # limits
-            kwargs = self._parse_limits(
-                data=data, channel_index=channel_index, dynamic_range=dynamic_range, **kwargs
-            )
-            # cmap
-            kwargs = self._parse_cmap(data=data, channel_index=channel_index, **kwargs)
-        else:
-            xi, yi, zi = args[:3]
-            if xi.ndim == 1 and xi.size == zi.shape[1]:
-                xi, yi, zi = pcolor_helper(xi, yi, zi)
-            elif xi.ndim == 2 and xi.shape == zi.shape:
-                xi, yi, zi = pcolor_helper(xi, yi, zi)
-            data = None
-            channel_index = 0
-            kwargs = self._parse_limits(zi=args[2], **kwargs)
-            kwargs = self._parse_cmap(**kwargs)
-        # labels
-        self._apply_labels(
-            autolabel=kwargs.pop("autolabel", False),
-            xlabel=kwargs.pop("xlabel", None),
-            ylabel=kwargs.pop("ylabel", None),
-            data=data,
-            channel_index=channel_index,
-        )
-        # decoration
-        self.set_facecolor([0.75] * 3)
-        # call parent
+        args, kwargs = self._parse_plot_args(*args, **kwargs, plot_type='pcolormesh')
         return super().pcolormesh(*args, **kwargs)
 
     def plot(self, *args, **kwargs):
