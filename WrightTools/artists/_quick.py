@@ -10,7 +10,7 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 
-from ._helpers import create_figure, plot_colorbar, savefig, add_sideplot
+from ._helpers import create_figure, plot_colorbar, savefig
 from ._colors import colormaps
 from .. import kit as wt_kit
 

@@ -22,16 +22,14 @@ class Bunch(dict):
 
 def get_axes(data, axes):
     xaxis, yaxis = axes
-    if isinstance(xaxis, int):
+    if type(xaxis) in [int, str]:
+        xaxis = wt_kit.get_index(data.axis_names, xaxis)
         xaxis = data.axes[xaxis]
-    elif isinstance(xaxis, str):
-        xaxis = [axis for axis in data.axes if axis.natural_name == xaxis][0]
     elif type(xaxis) != wt_data.Axis:
         raise TypeError("invalid xaxis type {0}".format(type(xaxis)))
-    if isinstance(yaxis, int):
+    if type(yaxis) in [int, str]:
+        yaxis = wt_kit.get_index(data.axis_names, yaxis)
         yaxis = data.axes[yaxis]
-    elif isinstance(yaxis, str):
-        yaxis = [axis for axis in data.axes if axis.natural_name == yaxis][0]
     elif type(yaxis) != wt_data.Axis:
         raise TypeError("invalid xaxis type {0}".format(type(yaxis)))
     return xaxis, yaxis
@@ -58,13 +56,14 @@ def get_colormap(channel):
     return cmap
 
 
-def get_clim(channel, local, local_arr=None):
-    if local:
+def get_clim(channel, current_state):
+    if current_state.local:
+        arr = current_state.zi
         if channel.signed:
-            mag = np.nanmax(np.abs(local_arr))
+            mag = np.nanmax(np.abs(arr))
             clim = [-mag, mag]
         else:
-            clim = [0, np.nanmax(local_arr)]
+            clim = [0, np.nanmax(arr)]
     else:
         if channel.signed:
             clim = [-channel.mag(), channel.mag()]
@@ -89,7 +88,7 @@ def get_slices(sliders, axes, verbose=False):
 
 
 def gen_ticklabels(points):
-    step = np.diff(points).min()
+    step = np.nanmin(np.diff(points))
     if step == 0:
         ticklabels = ['NaN' for point in points]
         return ticklabels
@@ -121,8 +120,8 @@ def set_aspect(xaxis, yaxis):
         aspect = np.abs(yr / xr)
         if 3 < aspect or aspect < 1 / 3.:
             raise Warning(
-                "units agree, but aspect {0} required for equal spacing is too"
-                / + "narrow.".format(aspect)
+                "units agree, but aspect {0} required for equal spacing is too" +
+                "narrow.".format(aspect)
             )
             aspect = np.clip(aspect, 1 / 3., 3.)
             print("using aspect {0} instead".format(aspect))
@@ -210,13 +209,14 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
             )
     # initial xyz start are from zero indices of additional axes
     slices = get_slices(sliders, data.axes, verbose=verbose)
+    current_state.slices = slices
     zi = channel[slices]
     zi = zi.squeeze()
     if wt_kit.get_index(data.axes, xaxis) < wt_kit.get_index(data.axes, yaxis):
         zi = zi.T.copy()
-    current_state.slices = slices
+    current_state.zi = zi
     # TODO: should we use pcolormesh or pcolor?
-    clim = get_clim(channel, local, zi)
+    clim = get_clim(channel, current_state)
     obj2D = ax0.pcolormesh(
         xaxis.points, yaxis.points, zi, cmap=cmap, vmin=clim[0], vmax=clim[1]
     )
@@ -310,16 +310,13 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
         line_sp_x.set_data(xaxis.points, side_plot)
 
     def update_local(index):
-        slices = get_slices(sliders, data.axes, verbose=verbose)
         if verbose:
             print(index)
         if radio.value_selected.strip() == "global":
             current_state.local = False
         if radio.value_selected.strip() == "local":
             current_state.local = True
-        arr = channel[slices].squeeze()
-        clim = get_clim(channel, current_state.local, arr)
-        print(clim)
+        clim = get_clim(channel, current_state)
         ticklabels = gen_ticklabels(np.linspace(*clim, 11))
         colorbar.set_ticklabels(ticklabels)
         obj2D.set_clim(*clim)
@@ -331,19 +328,20 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
         slices = get_slices(sliders, data.axes, verbose=verbose)
         if slices != current_state.slices:  # a Slider moved; need to update all plot objects
             arr = channel[slices].squeeze()
+            current_state.slices = slices
+            current_state.zi = arr
             if wt_kit.get_index(data.axes, xaxis) < wt_kit.get_index(data.axes, yaxis):
                 arr = arr.T.copy()
             # TODO: why am I stripping off array information?
             # cf. https://stackoverflow.com/questions/29009743
             obj2D.set_array(arr[:-1, :-1].ravel())
-            clim = get_clim(channel, current_state.local, arr)
+            clim = get_clim(channel, current_state)
             obj2D.set_clim(*clim)
             ticklabels = gen_ticklabels(np.linspace(*clim, 11))
             colorbar.set_ticklabels(ticklabels)
             sp_x.collections.clear()
             sp_y.collections.clear()
             draw_sideplot_projections(arr)
-            current_state.slices = slices
             if line_sp_x.get_visible() and line_sp_y.get_visible():
                 update_sideplot_slices()
         elif info.inaxes == ax0:  # crosshairs

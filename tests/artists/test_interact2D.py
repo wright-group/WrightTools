@@ -11,7 +11,7 @@ if False:
 
 if True:
     p = datasets.wt5.v1p0p0_perovskite_TA
-    data = wt.open(p)    
+    data = wt.open(p)
 
 if False:
     p = datasets.wt5.v1p0p1_MoS2_TrEE_movie
