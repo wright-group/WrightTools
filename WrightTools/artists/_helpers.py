@@ -17,6 +17,7 @@ import matplotlib.patheffects as PathEffects
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 import imageio
+import warnings
 
 from .. import kit as wt_kit
 from ._base import Figure, GridSpec
@@ -487,7 +488,7 @@ def get_scaled_bounds(ax, position, *, distance=0.1, factor=200):
     return [h_scaled, v_scaled], [va, ha]
 
 
-def pcolor_helper(xi, yi):
+def pcolor_helper(xi, yi, zi=None):
     """Prepare a set of arrays for plotting using `pcolor`.
 
     The return values are suitable for feeding directly into ``matplotlib.pcolor``
@@ -499,6 +500,8 @@ def pcolor_helper(xi, yi):
         Array of X-coordinates.
     yi : 1D or 2D array-like
         Array of Y-coordinates.
+    zi : 2D array (optional)
+        If zi is not None, it is returned unchanged in the output.
 
     Returns
     -------
@@ -506,6 +509,8 @@ def pcolor_helper(xi, yi):
         X dimension for pcolor
     Y : 2D ndarray
         Y dimension for pcolor
+    zi : 2D ndarray
+        if zi parameter is not None, returns a copy of the zi parameter
     """
     xi = xi.copy()
     yi = yi.copy()
@@ -543,7 +548,13 @@ def pcolor_helper(xi, yi):
             ll = orig[idx[0] + 0, idx[1] + 0]
             lr = orig[idx[0] + 0, idx[1] + 1]
             out[idx] = np.mean([ul, ur, ll, lr])
-    return X, Y
+    if zi is not None:
+        warnings.warn(
+            "zi argument is not used in pcolor_helper and is not required", DeprecationWarning
+        )
+        return X, Y, zi.copy()
+    else:
+        return X, Y
 
 
 def plot_colorbar(

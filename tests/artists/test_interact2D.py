@@ -10,6 +10,7 @@ if False:
     p = datasets.wt5.v1p0p1_MoS2_TrEE_movie  # axes w2, w1=wm, d2
     data = wt.open(p)
     data.convert("eV")
+    data.level(0, 2, -4)
 
 if False:
     x = np.arange(6)
