@@ -487,7 +487,7 @@ def get_scaled_bounds(ax, position, *, distance=0.1, factor=200):
     return [h_scaled, v_scaled], [va, ha]
 
 
-def pcolor_helper(xi, yi, zi):
+def pcolor_helper(xi, yi):
     """Prepare a set of arrays for plotting using `pcolor`.
 
     The return values are suitable for feeding directly into ``matplotlib.pcolor``
@@ -499,8 +499,6 @@ def pcolor_helper(xi, yi, zi):
         Array of X-coordinates.
     yi : 1D or 2D array-like
         Array of Y-coordinates.
-    zi : 2D array-like
-        Rectangular array of Z-coordinates.
 
     Returns
     -------
@@ -508,17 +506,16 @@ def pcolor_helper(xi, yi, zi):
         X dimension for pcolor
     Y : 2D ndarray
         Y dimension for pcolor
-    Z : 2D ndarray
-        Z dimension for pcolor
     """
     xi = xi.copy()
     yi = yi.copy()
-    zi = zi.copy()
     if xi.ndim == 1:
         xi.shape = (xi.size, 1)
     if yi.ndim == 1:
         yi.shape = (1, yi.size)
     shape = wt_kit.joint_shape(xi, yi)
+    print("----------pcolor_helper----------")
+    print("joint shape", shape)
     # full
 
     def full(arr):
@@ -529,6 +526,8 @@ def pcolor_helper(xi, yi, zi):
 
     xi = full(xi)
     yi = full(yi)
+    print("xi.shape", xi.shape)
+    print("yi.shape", yi.shape)
     # pad
     x = np.arange(shape[1])
     y = np.arange(shape[0])
@@ -548,7 +547,9 @@ def pcolor_helper(xi, yi, zi):
             ll = orig[idx[0] + 0, idx[1] + 0]
             lr = orig[idx[0] + 0, idx[1] + 1]
             out[idx] = np.mean([ul, ur, ll, lr])
-    return X, Y, zi
+    print("X.shape", X.shape, "Y.shape", Y.shape)
+    print("--------------------------------")
+    return X, Y
 
 
 def plot_colorbar(

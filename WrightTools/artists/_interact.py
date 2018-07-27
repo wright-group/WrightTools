@@ -205,21 +205,28 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
     current_state.slices = slices
     zi = channel[slices]
     zi = zi.squeeze()
+    # set x as second index for zi array
     if wt_kit.get_index(data.axes, xaxis) < wt_kit.get_index(data.axes, yaxis):
         zi = zi.T.copy()
-    current_state.zi = zi
     clim = get_clim(channel, current_state)
-    xi, yi, zi = pcolor_helper(xaxis.points[:, None], yaxis.points[None, :], zi)
-    plt.sca(ax0)
-    obj2D = plt.pcolormesh(xi, yi, zi, cmap=cmap, vmin=clim[0], vmax=clim[1])
-    ax0.set_xlabel(xaxis.label)
-    ax0.set_ylabel(yaxis.label)
+    obj2D = ax0.pcolormesh(
+        xaxis.points,
+        yaxis.points,
+        zi,
+        cmap=cmap,
+        vmin=clim[0],
+        vmax=clim[1],
+        ylabel=yaxis.label,
+        xlabel=xaxis.label,
+    )
+    current_state.zi = zi
     # colorbar
     colorbar = plot_colorbar(
         cax, cmap=cmap, label=channel.natural_name, ticks=np.linspace(clim[0], clim[1], 11)
     )
 
-    def draw_sideplot_projections(arr):
+    def draw_sideplot_projections():
+        arr = current_state.zi
         if channel.signed:
             temp_arr = np.ma.masked_array(arr, np.isnan(arr), copy=True)
             temp_arr[temp_arr < 0] = 0
@@ -266,7 +273,7 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
             sp_x.fill_between(xaxis.points, x_proj, 0, color="k", alpha=0.3)
             sp_y.fill_betweenx(yaxis.points, y_proj, 0, color="k", alpha=0.3)
 
-    draw_sideplot_projections(zi)
+    draw_sideplot_projections()
 
     ax0.set_xlim(xaxis.points.min(), xaxis.points.max())
     ax0.set_ylim(yaxis.points.min(), yaxis.points.max())
@@ -280,23 +287,20 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
         ylim = ax0.get_ylim()
         x0 = current_state.xpos
         y0 = current_state.ypos
+        print(x0, y0)
 
         crosshair_hline.set_data(np.array([xlim, [y0, y0]]))
         crosshair_vline.set_data(np.array([[x0, x0], ylim]))
 
-        arr = channel[current_state.slices].squeeze()
-        if wt_kit.get_index(data.axes, xaxis) < wt_kit.get_index(data.axes, yaxis):
-            arr = arr.T.copy()
-
         x_temp = np.abs(xaxis.points - x0)
         x_index = np.argmin(x_temp)
-        side_plot = arr[:, x_index].copy()
+        side_plot = current_state.zi[:, x_index].copy()
         side_plot = norm(side_plot, channel.signed)
         line_sp_y.set_data(side_plot, yaxis.points)
 
         y_temp = np.abs(yaxis.points - y0)
         y_index = np.argmin(y_temp)
-        side_plot = arr[y_index].copy()
+        side_plot = current_state.zi[y_index].copy()
         side_plot = norm(side_plot, channel.signed)
         line_sp_x.set_data(xaxis.points, side_plot)
 
@@ -313,19 +317,20 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
     def update(info):
         slices = get_slices(sliders, data.axes, verbose=verbose)
         if slices != current_state.slices:  # a Slider moved; need to update all plot objects
-            arr = channel[slices].squeeze()
-            current_state.slices = slices
-            current_state.zi = arr
+            zi = channel[slices].squeeze()
+            # set x as second index for zi array
             if wt_kit.get_index(data.axes, xaxis) < wt_kit.get_index(data.axes, yaxis):
-                arr = arr.T.copy()
-            obj2D.set_array(arr.ravel())
+                zi = zi.T.copy()
+            obj2D.set_array(zi.ravel())
+            current_state.slices = slices
+            current_state.zi = zi
             clim = get_clim(channel, current_state)
             obj2D.set_clim(*clim)
             ticklabels = gen_ticklabels(np.linspace(*clim, 11))
             colorbar.set_ticklabels(ticklabels)
             sp_x.collections.clear()
             sp_y.collections.clear()
-            draw_sideplot_projections(arr)
+            draw_sideplot_projections()
             if line_sp_x.get_visible() and line_sp_y.get_visible():
                 update_sideplot_slices()
         elif info.inaxes == ax0:  # crosshairs

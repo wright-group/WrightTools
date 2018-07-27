@@ -107,7 +107,9 @@ class Axes(matplotlib.axes.Axes):
         return kwargs
 
     def _parse_plot_args(self, *args, **kwargs):
+        print("---------_parse_plot_args------------")
         plot_type = kwargs.pop("plot_type")
+        print("plot_type", plot_type)
         if plot_type not in ["pcolor", "pcolormesh"]:
             raise NotImplementedError
         args = list(args)  # offer pop, append etc
@@ -125,10 +127,10 @@ class Axes(matplotlib.axes.Axes):
             xi = data.axes[0].full
             yi = data.axes[1].full
             if plot_type in ["pcolor", "pcolormesh"]:
-                X, Y, Z = pcolor_helper(xi, yi, zi)
+                X, Y = pcolor_helper(xi, yi)
             else:
-                X, Y, Z = xi, yi, zi
-            args = [X, Y, Z] + args
+                X, Y = xi, yi
+            args = [X, Y, zi] + args
             # limits
             kwargs = self._parse_limits(
                 data=data, channel_index=channel_index, dynamic_range=dynamic_range, **kwargs
@@ -138,10 +140,14 @@ class Axes(matplotlib.axes.Axes):
         else:
             xi, yi, zi = args[:3]
             if plot_type in ["pcolor", "pcolormesh"]:
-                if xi.ndim == 1 and xi.size == zi.shape[1]:
-                    xi, yi, zi = pcolor_helper(xi, yi, zi)
-                elif xi.ndim == 2 and xi.shape == zi.shape:
-                    xi, yi, zi = pcolor_helper(xi, yi, zi)
+                # only apply pcolor_helper if it looks like it hasn't been applied
+                if (xi.ndim == 1 and xi.size == zi.shape[1]) or (
+                    xi.ndim == 2 and xi.shape == zi.shape
+                ):
+                    xi, yi = pcolor_helper(xi, yi)
+                    args[:3] = [xi.T.copy(), yi.T.copy(), zi]
+            print("zi.shape", zi.shape, "xi.shape", xi.shape, "yi.shape", yi.shape)
+            print([arg.shape for arg in args[:3]])
             data = None
             channel_index = 0
             kwargs = self._parse_limits(zi=args[2], **kwargs)
@@ -156,6 +162,7 @@ class Axes(matplotlib.axes.Axes):
         )
         # decoration
         self.set_facecolor([0.75] * 3)
+        print("--------------------------------------")
         return args, kwargs
 
     def add_sideplot(self, along, pad=0, height=0.75, ymin=0, ymax=1.1):
@@ -449,6 +456,8 @@ class Axes(matplotlib.axes.Axes):
         matplotlib.collections.QuadMesh
         """
         args, kwargs = self._parse_plot_args(*args, **kwargs, plot_type="pcolormesh")
+        x, y, z = args[:3]
+        print(x.shape, y.shape, z.shape)
         return super().pcolormesh(*args, **kwargs)
 
     def plot(self, *args, **kwargs):
