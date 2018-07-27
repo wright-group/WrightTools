@@ -107,9 +107,7 @@ class Axes(matplotlib.axes.Axes):
         return kwargs
 
     def _parse_plot_args(self, *args, **kwargs):
-        print("---------_parse_plot_args------------")
         plot_type = kwargs.pop("plot_type")
-        print("plot_type", plot_type)
         if plot_type not in ["pcolor", "pcolormesh"]:
             raise NotImplementedError
         args = list(args)  # offer pop, append etc
@@ -146,8 +144,6 @@ class Axes(matplotlib.axes.Axes):
                 ):
                     xi, yi = pcolor_helper(xi, yi)
                     args[:3] = [xi.T.copy(), yi.T.copy(), zi]
-            print("zi.shape", zi.shape, "xi.shape", xi.shape, "yi.shape", yi.shape)
-            print([arg.shape for arg in args[:3]])
             data = None
             channel_index = 0
             kwargs = self._parse_limits(zi=args[2], **kwargs)
@@ -162,7 +158,6 @@ class Axes(matplotlib.axes.Axes):
         )
         # decoration
         self.set_facecolor([0.75] * 3)
-        print("--------------------------------------")
         return args, kwargs
 
     def add_sideplot(self, along, pad=0, height=0.75, ymin=0, ymax=1.1):
@@ -457,7 +452,6 @@ class Axes(matplotlib.axes.Axes):
         """
         args, kwargs = self._parse_plot_args(*args, **kwargs, plot_type="pcolormesh")
         x, y, z = args[:3]
-        print(x.shape, y.shape, z.shape)
         return super().pcolormesh(*args, **kwargs)
 
     def plot(self, *args, **kwargs):

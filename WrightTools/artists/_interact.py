@@ -139,7 +139,6 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
     # unpack
     channel = get_channel(data, channel)
     xaxis, yaxis = get_axes(data, [xaxis, yaxis])
-    print(xaxis, yaxis)
     cmap = get_colormap(channel)
     current_state = Bunch()
     # create figure
@@ -287,7 +286,8 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
         ylim = ax0.get_ylim()
         x0 = current_state.xpos
         y0 = current_state.ypos
-        print(x0, y0)
+        if verbose:
+            print(x0, y0)
 
         crosshair_hline.set_data(np.array([xlim, [y0, y0]]))
         crosshair_vline.set_data(np.array([[x0, x0], ylim]))
@@ -306,7 +306,7 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
 
     def update_local(index):
         if verbose:
-            print("index", index)
+            print("normalization:", index)
         current_state.local = radio.value_selected[1:] == "local"
         clim = get_clim(channel, current_state)
         ticklabels = gen_ticklabels(np.linspace(*clim, 11))

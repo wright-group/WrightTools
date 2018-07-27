@@ -514,10 +514,8 @@ def pcolor_helper(xi, yi):
     if yi.ndim == 1:
         yi.shape = (1, yi.size)
     shape = wt_kit.joint_shape(xi, yi)
-    print("----------pcolor_helper----------")
-    print("joint shape", shape)
-    # full
 
+    # full
     def full(arr):
         for i in range(arr.ndim):
             if arr.shape[i] == 1:
@@ -526,8 +524,6 @@ def pcolor_helper(xi, yi):
 
     xi = full(xi)
     yi = full(yi)
-    print("xi.shape", xi.shape)
-    print("yi.shape", yi.shape)
     # pad
     x = np.arange(shape[1])
     y = np.arange(shape[0])
@@ -547,8 +543,6 @@ def pcolor_helper(xi, yi):
             ll = orig[idx[0] + 0, idx[1] + 0]
             lr = orig[idx[0] + 0, idx[1] + 1]
             out[idx] = np.mean([ul, ur, ll, lr])
-    print("X.shape", X.shape, "Y.shape", Y.shape)
-    print("--------------------------------")
     return X, Y
 
 
