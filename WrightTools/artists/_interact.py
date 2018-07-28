@@ -176,6 +176,8 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
     crosshair_vline = ax0.plot([None], [None], visible=False, color=y_color)[0]
     current_state.xpos = crosshair_hline.get_ydata()[0]
     current_state.ypos = crosshair_vline.get_xdata()[0]
+    current_state.bin_vs_x = True
+    current_state.bin_vs_y = True
     # create buttons
     current_state.local = local
     radio = RadioButtons(ax_local, (" global", " local"))
@@ -240,37 +242,52 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
             x_proj = np.nanmean(arr, axis=0)
             y_proj = np.nanmean(arr, axis=1)
 
-            x_proj_norm = max(np.nanmax(x_proj_pos), np.nanmax(-x_proj_neg))
-            if x_proj_norm != 0:
-                x_proj_pos /= x_proj_norm
-                x_proj_neg /= x_proj_norm
-                x_proj /= x_proj_norm
-
-            y_proj_norm = max(np.nanmax(y_proj_pos), np.nanmax(-y_proj_neg))
-            if y_proj_norm != 0:
-                y_proj_pos /= y_proj_norm
-                y_proj_neg /= y_proj_norm
-                y_proj /= y_proj_norm
-
             alpha = 0.4
             blue = "#517799"  # start with #87C7FF and change saturation
             red = "#994C4C"  # start with #FF7F7F and change saturation
-
-            sp_x.fill_between(xaxis.points, x_proj_pos, 0, color=red, alpha=alpha)
-            sp_x.fill_between(xaxis.points, 0, x_proj_neg, color=blue, alpha=alpha)
-            sp_x.fill_between(xaxis.points, x_proj, 0, color="k", alpha=0.3)
-
-            sp_y.fill_betweenx(yaxis.points, y_proj_pos, 0, color=red, alpha=alpha)
-            sp_y.fill_betweenx(yaxis.points, 0, y_proj_neg, color=blue, alpha=alpha)
-            sp_y.fill_betweenx(yaxis.points, y_proj, 0, color="k", alpha=0.3)
-
+            if current_state.bin_vs_x:
+                x_proj_norm = max(np.nanmax(x_proj_pos), np.nanmax(-x_proj_neg))
+                if x_proj_norm != 0:
+                    x_proj_pos /= x_proj_norm
+                    x_proj_neg /= x_proj_norm
+                    x_proj /= x_proj_norm
+                try:
+                    sp_x.fill_between(xaxis.points, x_proj_pos, 0, color=red, alpha=alpha)
+                    sp_x.fill_between(xaxis.points, 0, x_proj_neg, color=blue, alpha=alpha)
+                    sp_x.fill_between(xaxis.points, x_proj, 0, color="k", alpha=0.3)
+                except ValueError:  # Input passed into argument is not 1-dimensional
+                    current_state.bin_vs_x = False
+                    sp_x.set_visible(False)
+            if current_state.bin_vs_y:
+                y_proj_norm = max(np.nanmax(y_proj_pos), np.nanmax(-y_proj_neg))
+                if y_proj_norm != 0:
+                    y_proj_pos /= y_proj_norm
+                    y_proj_neg /= y_proj_norm
+                    y_proj /= y_proj_norm
+                try:
+                    sp_y.fill_betweenx(yaxis.points, y_proj_pos, 0, color=red, alpha=alpha)
+                    sp_y.fill_betweenx(yaxis.points, 0, y_proj_neg, color=blue, alpha=alpha)
+                    sp_y.fill_betweenx(yaxis.points, y_proj, 0, color="k", alpha=0.3)
+                except ValueError:
+                    current_state.bin_vs_y = False
+                    sp_y.set_visible(False)
         else:
-            x_proj = np.nansum(arr, axis=0)
-            y_proj = np.nansum(arr, axis=1)
-            x_proj = norm(x_proj, channel.signed)
-            y_proj = norm(y_proj, channel.signed)
-            sp_x.fill_between(xaxis.points, x_proj, 0, color="k", alpha=0.3)
-            sp_y.fill_betweenx(yaxis.points, y_proj, 0, color="k", alpha=0.3)
+            if current_state.bin_vs_x:
+                x_proj = np.nansum(arr, axis=0)
+                x_proj = norm(x_proj, channel.signed)
+                try:
+                    sp_x.fill_between(xaxis.points, x_proj, 0, color="k", alpha=0.3)
+                except ValueError:
+                    current_state.bin_vs_x = False
+                    sp_x.set_visible(False)
+            if current_state.bin_vs_y:
+                y_proj = np.nansum(arr, axis=1)
+                y_proj = norm(y_proj, channel.signed)
+                try:
+                    sp_y.fill_betweenx(yaxis.points, y_proj, 0, color="k", alpha=0.3)
+                except ValueError:
+                    current_state.bin_vs_y = False
+                    sp_y.set_visible(False)
 
     draw_sideplot_projections()
 
@@ -282,6 +299,11 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
         sp_y.set_xlim(-1.1, 1.1)
 
     def update_sideplot_slices():
+        # TODO:  if bins is only available along one axis, slicing should be valid along the other
+        #   e.g., if bin_vs_y =  True, then assemble slices vs x
+        #   for now, just uniformly turn off slicing
+        if (not current_state.bin_vs_x) or (not current_state.bin_vs_y):
+            return
         xlim = ax0.get_xlim()
         ylim = ax0.get_ylim()
         x0 = current_state.xpos
