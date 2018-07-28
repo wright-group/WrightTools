@@ -273,7 +273,7 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
                     sp_y.set_visible(False)
         else:
             if current_state.bin_vs_x:
-                x_proj = np.nansum(arr, axis=0)
+                x_proj = np.nanmean(arr, axis=0)
                 x_proj = norm(x_proj, channel.signed)
                 try:
                     sp_x.fill_between(xaxis.points, x_proj, 0, color="k", alpha=0.3)
@@ -281,7 +281,7 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
                     current_state.bin_vs_x = False
                     sp_x.set_visible(False)
             if current_state.bin_vs_y:
-                y_proj = np.nansum(arr, axis=1)
+                y_proj = np.nanmean(arr, axis=1)
                 y_proj = norm(y_proj, channel.signed)
                 try:
                     sp_y.fill_betweenx(yaxis.points, y_proj, 0, color="k", alpha=0.3)
