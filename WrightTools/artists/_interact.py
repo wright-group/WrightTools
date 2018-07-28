@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider, RadioButtons
 
-from ._helpers import create_figure, plot_colorbar, savefig, add_sideplot, pcolor_helper
+from ._helpers import create_figure, plot_colorbar, add_sideplot
 from ._colors import colormaps
 from ..exceptions import DimensionalityError
 from .. import kit as wt_kit
