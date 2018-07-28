@@ -12,7 +12,7 @@ if False:
     data.convert("eV")
     data.level(0, 2, -4)
 
-if False:
+if False:  # 2 axes, easy to identify which is which
     x = np.arange(6)
     y = x[::2].copy()
     z = np.arange(x.size * y.size).reshape(x.size, y.size).astype("float")
@@ -23,7 +23,13 @@ if False:
     data.create_variable("y", values=y[None, :], units="wn")
     data.transform("x", "y")
 
-if False:
+if False:  # non-orthogonal axes (still single variable)
+    p = datasets.PyCMDS.w2_w1_000
+    data = wt.data.from_PyCMDS(p)
+    data.convert("wn", convert_variables=True)
+    data.transform("wm", "w1")  # wm = w1 + 2*w2
+
+if False:  # 4 axes
     w1 = np.linspace(-5, 5, 31)
     w2 = w1[::2].copy()
     w3 = w1.copy()
@@ -58,7 +64,6 @@ if False:
     data.transform("w1", "w2", "w3", "d1")
 
 if __name__ == "__main__":
-    # objects = wt.artists.interact2D(data)
     import matplotlib.pyplot as plt
 
     plt.close("all")
