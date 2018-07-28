@@ -19,6 +19,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 import imageio
 import warnings
 
+from .. import exceptions as wt_exceptions
 from .. import kit as wt_kit
 from ._base import Figure, GridSpec
 from ._colors import colormaps
@@ -550,7 +551,8 @@ def pcolor_helper(xi, yi, zi=None):
             out[idx] = np.mean([ul, ur, ll, lr])
     if zi is not None:
         warnings.warn(
-            "zi argument is not used in pcolor_helper and is not required", DeprecationWarning
+            "zi argument is not used in pcolor_helper and is not required",
+            wt_exceptions.VisibleDeprecationWarning,
         )
         return X, Y, zi.copy()
     else:
