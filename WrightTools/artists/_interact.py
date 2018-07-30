@@ -150,7 +150,6 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
     # create axes
     ax0 = plt.subplot(gs[1:6, 0:5])
     ax0.patch.set_facecolor("w")
-    ax0.grid(b=True)
     cax = plt.subplot(gs[1:6, -1])
     sp_x = add_sideplot(ax0, "x", pad=0.1)
     sp_y = add_sideplot(ax0, "y", pad=0.1)
@@ -220,6 +219,7 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
         ylabel=yaxis.label,
         xlabel=xaxis.label,
     )
+    ax0.grid(b=True)
     current_state.zi = zi
     # colorbar
     colorbar = plot_colorbar(
