@@ -1,6 +1,7 @@
 """Interactive (widget based) artists."""
 
 import numpy as np
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider, RadioButtons
 
@@ -19,6 +20,13 @@ class Bunch(dict):
     def __init__(self, **kw):
         dict.__init__(self, kw)
         self.__dict__ = self
+
+
+_at_dict = lambda data, sliders, xaxis, yaxis: {
+    a.natural_name: (a[:].flat[int(sliders[a.natural_name].val)], a.units)
+    for a in data.axes
+    if a not in [xaxis, yaxis]
+}
 
 
 def get_axes(data, axes):
@@ -59,7 +67,7 @@ def get_colormap(channel):
 
 def get_clim(channel, current_state):
     if current_state.local:
-        arr = current_state.zi
+        arr = current_state.dat[channel.natural_name][:]
         if channel.signed:
             mag = np.nanmax(np.abs(arr))
             clim = [-mag, mag]
@@ -203,18 +211,14 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
                 alpha=0.5
             )
     # initial xyz start are from zero indices of additional axes
-    slices = get_slices(sliders, data.axes, verbose=verbose)
-    current_state.slices = slices
-    zi = channel[slices]
-    zi = zi.squeeze()
-    # set x as second index for zi array
-    if wt_kit.get_index(data.axes, xaxis) < wt_kit.get_index(data.axes, yaxis):
-        zi = zi.T.copy()
+    # slices = get_slices(sliders, data.axes, verbose=verbose)
+    # current_state.slices = slices
+    current_state.dat = data.chop(
+        xaxis.natural_name, yaxis.natural_name, at=_at_dict(data, sliders, xaxis, yaxis)
+    )[0]
     clim = get_clim(channel, current_state)
     obj2D = ax0.pcolormesh(
-        xaxis.points,
-        yaxis.points,
-        zi,
+        current_state.dat,
         cmap=cmap,
         vmin=clim[0],
         vmax=clim[1],
@@ -222,27 +226,28 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
         xlabel=xaxis.label,
     )
     ax0.grid(b=True)
-    current_state.zi = zi
     # colorbar
     colorbar = plot_colorbar(
         cax, cmap=cmap, label=channel.natural_name, ticks=np.linspace(clim[0], clim[1], 11)
     )
 
     def draw_sideplot_projections():
-        arr = current_state.zi
+        xind = list(np.array(xaxis.shape) > 1).index(True)
+        yind = list(np.array(yaxis.shape) > 1).index(True)
+        arr = current_state.dat[channel.natural_name][:]
         if channel.signed:
             temp_arr = np.ma.masked_array(arr, np.isnan(arr), copy=True)
             temp_arr[temp_arr < 0] = 0
-            x_proj_pos = np.nanmean(temp_arr, axis=0)
-            y_proj_pos = np.nanmean(temp_arr, axis=1)
+            x_proj_pos = np.nanmean(temp_arr, axis=yind)
+            y_proj_pos = np.nanmean(temp_arr, axis=xind)
 
             temp_arr = np.ma.masked_array(arr, np.isnan(arr), copy=True)
             temp_arr[temp_arr > 0] = 0
-            x_proj_neg = np.nanmean(temp_arr, axis=0)
-            y_proj_neg = np.nanmean(temp_arr, axis=1)
+            x_proj_neg = np.nanmean(temp_arr, axis=yind)
+            y_proj_neg = np.nanmean(temp_arr, axis=xind)
 
-            x_proj = np.nanmean(arr, axis=0)
-            y_proj = np.nanmean(arr, axis=1)
+            x_proj = np.nanmean(arr, axis=yind)
+            y_proj = np.nanmean(arr, axis=xind)
 
             alpha = 0.4
             blue = "#517799"  # start with #87C7FF and change saturation
@@ -275,7 +280,7 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
                     sp_y.set_visible(False)
         else:
             if current_state.bin_vs_x:
-                x_proj = np.nanmean(arr, axis=0)
+                x_proj = np.nanmean(arr, axis=yind)
                 x_proj = norm(x_proj, channel.signed)
                 try:
                     sp_x.fill_between(xaxis.points, x_proj, 0, color="k", alpha=0.3)
@@ -283,7 +288,7 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
                     current_state.bin_vs_x = False
                     sp_x.set_visible(False)
             if current_state.bin_vs_y:
-                y_proj = np.nanmean(arr, axis=1)
+                y_proj = np.nanmean(arr, axis=xind)
                 y_proj = norm(y_proj, channel.signed)
                 try:
                     sp_y.fill_betweenx(yaxis.points, y_proj, 0, color="k", alpha=0.3)
@@ -316,15 +321,15 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
         crosshair_hline.set_data(np.array([xlim, [y0, y0]]))
         crosshair_vline.set_data(np.array([[x0, x0], ylim]))
 
-        x_temp = np.abs(xaxis.points - x0)
-        x_index = np.argmin(x_temp)
-        side_plot = current_state.zi[:, x_index].copy()
+        at_dict = _at_dict(data, sliders, xaxis, yaxis)
+        at_dict[xaxis.natural_name] = (x0, xaxis.units)
+        side_plot = data.chop(yaxis.natural_name, at=at_dict)[0][channel.natural_name].points
         side_plot = norm(side_plot, channel.signed)
         line_sp_y.set_data(side_plot, yaxis.points)
 
-        y_temp = np.abs(yaxis.points - y0)
-        y_index = np.argmin(y_temp)
-        side_plot = current_state.zi[y_index].copy()
+        at_dict = _at_dict(data, sliders, xaxis, yaxis)
+        at_dict[yaxis.natural_name] = (y0, yaxis.units)
+        side_plot = data.chop(xaxis.natural_name, at=at_dict)[0][channel.natural_name].points
         side_plot = norm(side_plot, channel.signed)
         line_sp_x.set_data(xaxis.points, side_plot)
 
@@ -339,15 +344,17 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
         fig.canvas.draw_idle()
 
     def update(info):
-        slices = get_slices(sliders, data.axes, verbose=verbose)
-        if slices != current_state.slices:  # a Slider moved; need to update all plot objects
-            zi = channel[slices].squeeze()
-            # set x as second index for zi array
-            if wt_kit.get_index(data.axes, xaxis) < wt_kit.get_index(data.axes, yaxis):
-                zi = zi.T.copy()
-            obj2D.set_array(zi.ravel())
-            current_state.slices = slices
-            current_state.zi = zi
+        if isinstance(info, float):
+            current_state.dat = data.chop(
+                xaxis.natural_name,
+                yaxis.natural_name,
+                at={
+                    a.natural_name: (a[:].flat[int(sliders[a.natural_name].val)], a.units)
+                    for a in data.axes
+                    if a not in [xaxis, yaxis]
+                },
+            )[0]
+            obj2D.set_array(current_state.dat[channel.natural_name][:].ravel())
             clim = get_clim(channel, current_state)
             obj2D.set_clim(*clim)
             ticklabels = gen_ticklabels(np.linspace(*clim, 11))
@@ -357,7 +364,7 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
             draw_sideplot_projections()
             if line_sp_x.get_visible() and line_sp_y.get_visible():
                 update_sideplot_slices()
-        elif info.inaxes == ax0:  # crosshairs
+        if isinstance(info, mpl.backend_bases.MouseEvent) and info.inaxes == ax0:  # crosshairs
             x0 = info.xdata
             y0 = info.ydata
             if x0 is None or y0 is None:
