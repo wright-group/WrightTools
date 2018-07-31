@@ -304,7 +304,7 @@ class Data(Group):
         out = wt_collection.Collection(name="chop", parent=parent)
         # get output shape
         kept = args + list(at.keys())
-        kept_axes = [self._axes[self.axis_expressions.index(a)] for a in kept]
+        kept_axes = [self._axes[self.axis_names.index(a)] for a in kept]
         removed_axes = [a for a in self._axes if a not in kept_axes]
         removed_shape = wt_kit.joint_shape(*removed_axes)
         if removed_shape == ():
