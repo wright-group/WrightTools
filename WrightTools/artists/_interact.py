@@ -190,6 +190,8 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
     sliders = {}
     for axis in data.axes:
         if axis not in [xaxis, yaxis]:
+            if axis.size > np.prod(axis.shape):
+                raise NotImplementedError("Cannot use multivariable axis as a slider")
             slider_axes = plt.subplot(gs[~len(sliders), :]).axes
             slider = Slider(slider_axes, axis.label, 0, axis.points.size - 1, valinit=0, valstep=1)
             sliders[axis.natural_name] = slider
