@@ -501,7 +501,7 @@ def pcolor_helper(xi, yi, zi=None):
         Array of X-coordinates.
     yi : 1D or 2D array-like
         Array of Y-coordinates.
-    zi : 2D array (optional)
+    zi : 2D array (optional, deprecated)
         If zi is not None, it is returned unchanged in the output.
 
     Returns
@@ -511,7 +511,7 @@ def pcolor_helper(xi, yi, zi=None):
     Y : 2D ndarray
         Y dimension for pcolor
     zi : 2D ndarray
-        if zi parameter is not None, returns a copy of the zi parameter
+        if zi parameter is not None, returns zi parameter unchanged
     """
     xi = xi.copy()
     yi = yi.copy()
