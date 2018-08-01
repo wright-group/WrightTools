@@ -360,7 +360,7 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
         fig.canvas.draw_idle()
 
     def update(info):
-        if isinstance(info, float):
+        if isinstance(info, (float, int)):
             current_state.dat.close()
             current_state.dat = data.chop(
                 xaxis.natural_name,
