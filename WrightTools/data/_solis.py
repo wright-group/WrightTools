@@ -9,7 +9,7 @@ import time
 
 import numpy as np
 
-from ._data import Axis, Channel, Data
+from ._data import Data
 from .. import exceptions as wt_exceptions
 from ..kit import _timestamp as timestamp
 
@@ -97,9 +97,7 @@ def from_Solis(filepath, name=None, parent=None, verbose=True):
         xname = "wm"
         xunits = "nm"
     data.create_variable(name=xname, values=axis0[:, None], units=xunits)
-    data.create_variable(
-        name="yindex", values=np.arange(arr.shape[1])[None, :], units=None
-    )
+    data.create_variable(name="yindex", values=np.arange(arr.shape[1])[None, :], units=None)
     data.transform(data.variables[0].natural_name, "yindex")
 
     for key, val in attrs.items():

@@ -12,7 +12,7 @@ import numpy as np
 
 from scipy.interpolate import griddata
 
-from ._data import Axis, Channel, Data
+from ._data import Data
 from .. import kit as wt_kit
 
 
@@ -56,7 +56,7 @@ def from_COLORS(
     Returns
     -------
     WrightTools.Data
-        Data from KENT.
+        Data from COLORS.
     """
     # do we have a list of files or just one file? ------------------------------------------------
     if isinstance(filepaths, list):
