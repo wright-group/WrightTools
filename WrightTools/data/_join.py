@@ -9,7 +9,6 @@ import warnings
 
 import numpy as np
 
-from .. import units as wt_units
 from .. import kit as wt_kit
 from .. import exceptions as wt_exceptions
 from ._data import Data
@@ -88,12 +87,11 @@ def join(datas, *, name="join", parent=None, verbose=True):
         out = Data(name=name, parent=parent)
         for k, v in d.items():
             values = v["values"]
-            units = v["units"]
             shape = [1] * ndim
             shape[i] = values.size
             values.shape = tuple(shape)
             # **attrs passes the name and units as well
-            var = out.create_variable(values=values, **datas[0][k].attrs)
+            out.create_variable(values=values, **datas[0][k].attrs)
             i += 1
         return out
 
