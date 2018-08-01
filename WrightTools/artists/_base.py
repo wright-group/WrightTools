@@ -99,11 +99,11 @@ class Axes(matplotlib.axes.Axes):
             else:
                 vmin = data.channels[channel_index].null
                 vmax = data.channels[channel_index].max()
-            # don't overwrite
-            if "vmin" not in kwargs.keys():
-                kwargs["vmin"] = vmin
-            if "vmax" not in kwargs.keys():
-                kwargs["vmax"] = vmax
+        # don't overwrite
+        if "vmin" not in kwargs.keys():
+            kwargs["vmin"] = vmin
+        if "vmax" not in kwargs.keys():
+            kwargs["vmax"] = vmax
         return kwargs
 
     def add_sideplot(self, along, pad=0, height=0.75, ymin=0, ymax=1.1):
@@ -210,9 +210,6 @@ class Axes(matplotlib.axes.Axes):
                 channel_index=channel_index,
             )
         else:
-            data = None
-            channel_index = 0
-            signed = False
             kwargs = self._parse_limits(zi=args[2], dynamic_range=dynamic_range, **kwargs)
         # call parent
         return super().contour(*args, **kwargs)
