@@ -136,13 +136,13 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
     channel = get_channel(data, channel)
     for ch in data.channel_names:
         if ch != channel.natural_name:
-            data.remove_channel(ch)
+            data.remove_channel(ch, verbose=False)
     varis = list(data.variable_names)
     for ax in data.axes:
         for v in ax.variables:
             varis.remove(v.natural_name)
     for v in varis:
-        data.remove_variable(v, implied=False)
+        data.remove_variable(v, implied=False, verbose=False)
     xaxis, yaxis = get_axes(data, [xaxis, yaxis])
     cmap = get_colormap(channel)
     current_state = Bunch()
