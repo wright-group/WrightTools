@@ -144,8 +144,22 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
     verbose : boolean (optional)
         Toggle talkback. Default is True.
     """
+    # avoid changing passed data object
+    data = data.copy()
+    data.print_tree()
     # unpack
     channel = get_channel(data, channel)
+    for ch in data.channel_names:
+        if ch != channel.natural_name:
+            data.remove_channel(ch)
+    varis = list(data.variable_names)
+    print(varis)
+    for ax in data.axes:
+        for v in ax.variables:
+            varis.remove(v.natural_name)
+    for v in varis:
+        data.remove_variable(v, implied=False)
+    print(data.variable_names)
     xaxis, yaxis = get_axes(data, [xaxis, yaxis])
     cmap = get_colormap(channel)
     current_state = Bunch()
@@ -323,15 +337,19 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
 
         at_dict = _at_dict(data, sliders, xaxis, yaxis)
         at_dict[xaxis.natural_name] = (x0, xaxis.units)
-        side_plot = data.chop(yaxis.natural_name, at=at_dict)[0][channel.natural_name].points
+        side_plot_data = data.chop(yaxis.natural_name, at=at_dict)
+        side_plot = side_plot_data[0][channel.natural_name].points
         side_plot = norm(side_plot, channel.signed)
         line_sp_y.set_data(side_plot, yaxis.points)
+        side_plot_data.close()
 
         at_dict = _at_dict(data, sliders, xaxis, yaxis)
         at_dict[yaxis.natural_name] = (y0, yaxis.units)
-        side_plot = data.chop(xaxis.natural_name, at=at_dict)[0][channel.natural_name].points
+        side_plot_data = data.chop(xaxis.natural_name, at=at_dict)
+        side_plot = side_plot_data[0][channel.natural_name].points
         side_plot = norm(side_plot, channel.signed)
         line_sp_x.set_data(xaxis.points, side_plot)
+        side_plot_data.close()
 
     def update_local(index):
         if verbose:
@@ -345,6 +363,7 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
 
     def update(info):
         if isinstance(info, float):
+            current_state.dat.close()
             current_state.dat = data.chop(
                 xaxis.natural_name,
                 yaxis.natural_name,
