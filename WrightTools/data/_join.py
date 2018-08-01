@@ -64,7 +64,7 @@ def join(datas, *, name="join", parent=None, verbose=True):
     for v in variable_names:
         variable_units.append(datas[0][v].units)
     for c in channel_names:
-        channel_units.append(datas[0][v].units)
+        channel_units.append(datas[0][c].units)
     # axis variables
     axis_variable_names = []
     axis_variable_units = []
