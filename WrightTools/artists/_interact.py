@@ -22,11 +22,12 @@ class Bunch(dict):
         self.__dict__ = self
 
 
-_at_dict = lambda data, sliders, xaxis, yaxis: {
-    a.natural_name: (a[:].flat[int(sliders[a.natural_name].val)], a.units)
-    for a in data.axes
-    if a not in [xaxis, yaxis]
-}
+def _at_dict(data, sliders, xaxis, yaxis):
+    return {
+        a.natural_name: (a[:].flat[int(sliders[a.natural_name].val)], a.units)
+        for a in data.axes
+        if a not in [xaxis, yaxis]
+    }
 
 
 def get_axes(data, axes):
@@ -81,21 +82,6 @@ def get_clim(channel, current_state):
     return clim
 
 
-def get_slices(sliders, axes, verbose=False):
-    slices = []
-    for axis in axes:
-        if axis.natural_name in sliders.keys():
-            ticklabels = gen_ticklabels(axis.points)
-            this_index = int(sliders[axis.natural_name].val)
-            sliders[axis.natural_name].valtext.set_text(ticklabels[this_index])
-            if verbose:
-                print(axis.natural_name, sliders[axis.natural_name].val, ticklabels[this_index])
-            slices.append(slice(this_index, this_index + 1))
-        else:
-            slices.append(slice(None))
-    return slices
-
-
 def gen_ticklabels(points):
     step = np.nanmin(np.diff(points))
     if step == 0:
@@ -146,20 +132,17 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
     """
     # avoid changing passed data object
     data = data.copy()
-    data.print_tree()
     # unpack
     channel = get_channel(data, channel)
     for ch in data.channel_names:
         if ch != channel.natural_name:
             data.remove_channel(ch)
     varis = list(data.variable_names)
-    print(varis)
     for ax in data.axes:
         for v in ax.variables:
             varis.remove(v.natural_name)
     for v in varis:
         data.remove_variable(v, implied=False)
-    print(data.variable_names)
     xaxis, yaxis = get_axes(data, [xaxis, yaxis])
     cmap = get_colormap(channel)
     current_state = Bunch()
@@ -225,10 +208,11 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
                 alpha=0.5
             )
     # initial xyz start are from zero indices of additional axes
-    # slices = get_slices(sliders, data.axes, verbose=verbose)
-    # current_state.slices = slices
     current_state.dat = data.chop(
-        xaxis.natural_name, yaxis.natural_name, at=_at_dict(data, sliders, xaxis, yaxis)
+        xaxis.natural_name,
+        yaxis.natural_name,
+        at=_at_dict(data, sliders, xaxis, yaxis),
+        verbose=verbose,
     )[0]
     clim = get_clim(channel, current_state)
     obj2D = ax0.pcolormesh(
@@ -337,7 +321,7 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
 
         at_dict = _at_dict(data, sliders, xaxis, yaxis)
         at_dict[xaxis.natural_name] = (x0, xaxis.units)
-        side_plot_data = data.chop(yaxis.natural_name, at=at_dict)
+        side_plot_data = data.chop(yaxis.natural_name, at=at_dict, verbose=verbose)
         side_plot = side_plot_data[0][channel.natural_name].points
         side_plot = norm(side_plot, channel.signed)
         line_sp_y.set_data(side_plot, yaxis.points)
@@ -345,7 +329,7 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
 
         at_dict = _at_dict(data, sliders, xaxis, yaxis)
         at_dict[yaxis.natural_name] = (y0, yaxis.units)
-        side_plot_data = data.chop(xaxis.natural_name, at=at_dict)
+        side_plot_data = data.chop(xaxis.natural_name, at=at_dict, verbose=verbose)
         side_plot = side_plot_data[0][channel.natural_name].points
         side_plot = norm(side_plot, channel.signed)
         line_sp_x.set_data(xaxis.points, side_plot)
@@ -372,6 +356,7 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
                     for a in data.axes
                     if a not in [xaxis, yaxis]
                 },
+                verbose=verbose,
             )[0]
             obj2D.set_array(current_state.dat[channel.natural_name][:].ravel())
             clim = get_clim(channel, current_state)
