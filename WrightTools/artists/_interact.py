@@ -230,9 +230,9 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
     )
 
     def draw_sideplot_projections():
-        xind = list(np.array(xaxis.shape) > 1).index(True)
-        yind = list(np.array(yaxis.shape) > 1).index(True)
         arr = current_state.dat[channel.natural_name][:]
+        xind = list(np.array(current_state.dat[xaxis.natural_name].shape) > 1).index(True)
+        yind = list(np.array(current_state.dat[yaxis.natural_name].shape) > 1).index(True)
         if channel.signed:
             temp_arr = np.ma.masked_array(arr, np.isnan(arr), copy=True)
             temp_arr[temp_arr < 0] = 0
