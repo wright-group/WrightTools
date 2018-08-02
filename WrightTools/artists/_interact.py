@@ -213,7 +213,7 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
         xaxis.natural_name,
         yaxis.natural_name,
         at=_at_dict(data, sliders, xaxis, yaxis),
-        verbose=verbose,
+        verbose=False,
     )[0]
     clim = get_clim(channel, current_state)
     obj2D = ax0.pcolormesh(
@@ -328,15 +328,13 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
         ylim = ax0.get_ylim()
         x0 = current_state.xpos
         y0 = current_state.ypos
-        if verbose:
-            print(x0, y0)
 
         crosshair_hline.set_data(np.array([xlim, [y0, y0]]))
         crosshair_vline.set_data(np.array([[x0, x0], ylim]))
 
         at_dict = _at_dict(data, sliders, xaxis, yaxis)
         at_dict[xaxis.natural_name] = (x0, xaxis.units)
-        side_plot_data = data.chop(yaxis.natural_name, at=at_dict, verbose=verbose)
+        side_plot_data = data.chop(yaxis.natural_name, at=at_dict, verbose=False)
         side_plot = side_plot_data[0][channel.natural_name].points
         side_plot = norm(side_plot, channel.signed)
         line_sp_y.set_data(side_plot, yaxis.points)
@@ -344,7 +342,7 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
 
         at_dict = _at_dict(data, sliders, xaxis, yaxis)
         at_dict[yaxis.natural_name] = (y0, yaxis.units)
-        side_plot_data = data.chop(xaxis.natural_name, at=at_dict, verbose=verbose)
+        side_plot_data = data.chop(xaxis.natural_name, at=at_dict, verbose=False)
         side_plot = side_plot_data[0][channel.natural_name].points
         side_plot = norm(side_plot, channel.signed)
         line_sp_x.set_data(xaxis.points, side_plot)
@@ -371,7 +369,7 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
                     for a in data.axes
                     if a not in [xaxis, yaxis]
                 },
-                verbose=verbose,
+                verbose=False,
             )[0]
             for k, s in sliders.items():
                 s.valtext.set_text(
@@ -398,6 +396,8 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
                 current_state.xpos = info.xdata
                 current_state.ypos = info.ydata
                 if info.button == 1:  # left click
+                    if verbose:
+                        print(current_state.xpos, current_state.ypos)
                     update_sideplot_slices()
                     line_sp_x.set_visible(True)
                     line_sp_y.set_visible(True)
