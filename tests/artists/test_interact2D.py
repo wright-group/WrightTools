@@ -1,18 +1,26 @@
+#! /usr/bin/env python3
+
 import numpy as np
 import WrightTools as wt
 from WrightTools import datasets
 
-if True:
+
+def test_perovskite():
     p = datasets.wt5.v1p0p0_perovskite_TA  # axes w1=wm, w2, d2
     data = wt.open(p)
+    wt.artists.interact2D(data, xaxis=2, yaxis=1)
 
-if False:
+
+def test_MoS2():
     p = datasets.wt5.v1p0p1_MoS2_TrEE_movie  # axes w2, w1=wm, d2
     data = wt.open(p)
     data.convert("eV")
     data.level(0, 2, -4)
+    wt.artists.interact2D(data, xaxis=0, yaxis=1, local=True)
 
-if False:  # 2 axes, easy to identify which is which
+
+def test_asymmetric():
+    # 2 axes, easy to identify which is which
     x = np.arange(6)
     y = x[::2].copy()
     z = np.arange(x.size * y.size).reshape(x.size, y.size).astype("float")
@@ -22,14 +30,19 @@ if False:  # 2 axes, easy to identify which is which
     data.create_variable("x", values=x[:, None], units="wn")
     data.create_variable("y", values=y[None, :], units="wn")
     data.transform("x", "y")
+    wt.artists.interact2D(data, xaxis=1, yaxis=0)
 
-if False:  # non-orthogonal axes (still single variable)
+
+def test_skewed():
+    # non-orthogonal axes (still single variable)
     p = datasets.PyCMDS.w2_w1_000
     data = wt.data.from_PyCMDS(p)
     data.convert("wn", convert_variables=True)
     data.transform("wm", "w1")  # wm = w1 + 2*w2
+    wt.artists.interact2D(data, xaxis=0, yaxis=1)
 
-if False:  # 4 axes
+
+def test_4D():
     w1 = np.linspace(-5, 5, 31)
     w2 = w1[::2].copy()
     w3 = w1.copy()
@@ -62,10 +75,16 @@ if False:  # 4 axes
     data.create_variable("d1", values=tau[None, None, None, :], units="ps")
 
     data.transform("w1", "w2", "w3", "d1")
+    wt.artists.interact2D(data, xaxis=0, yaxis=1, local=True)
+
 
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
 
     plt.close("all")
-    objects = wt.artists.interact2D(data, xaxis=0, yaxis=1)
+    test_perovskite()
+    test_MoS2()
+    test_asymmetric()
+    test_skewed()
+    test_4D()
     plt.show()
