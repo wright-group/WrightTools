@@ -295,16 +295,34 @@ class Data(Group):
         split
             Split the dataset while maintaining its dimensionality.
         """
+        from ._axis import operators, operator_to_identifier
+
         # parse args
         args = list(args)
         for i, arg in enumerate(args):
             if isinstance(arg, int):
-                args[i] = self._axes[arg].expression
+                args[i] = self._axes[arg].natural_name
+            elif isinstance(arg, str):
+                # same normalization that occurs in the natural_name @property
+                arg = arg.strip()
+                for op in operators:
+                    arg = arg.replace(op, operator_to_identifier[op])
+                args[i] = wt_kit.string2identifier(arg)
+
+        # normalize the at keys to the natural name
+        for k in list(at.keys()):
+            for op in operators:
+                if op in k:
+                    nk = k.replace(op, operator_to_identifier[op])
+                    at[nk] = at[k]
+                    at.pop(k)
+                    k = nk
+
         # get output collection
         out = wt_collection.Collection(name="chop", parent=parent)
         # get output shape
         kept = args + list(at.keys())
-        kept_axes = [self._axes[self.axis_expressions.index(a)] for a in kept]
+        kept_axes = [self._axes[self.axis_names.index(a)] for a in kept]
         removed_axes = [a for a in self._axes if a not in kept_axes]
         removed_shape = wt_kit.joint_shape(*removed_axes)
         if removed_shape == ():
@@ -320,7 +338,11 @@ class Data(Group):
                 point = wt_units.converter(point, units, destination_units)
                 axis_index = self.axis_names.index(axis)
                 axis = self._axes[axis_index]
-                idx[axis_index] = np.argmin(np.abs(axis[tuple(idx)] - point))
+                idx_index = np.array(axis.shape) > 1
+                if np.sum(idx_index) > 1:
+                    raise wt_exceptions.MultidimensionalAxisError("chop", axis.natural_name)
+                idx_index = list(idx_index).index(True)
+                idx[idx_index] = np.argmin(np.abs(axis[tuple(idx)] - point))
             data = out.create_data(name="chop%03i" % i)
             for v in self.variables:
                 kwargs = {}
@@ -348,8 +370,7 @@ class Data(Group):
         out.flush()
         # return
         if verbose:
-            es = [a.expression for a in kept_axes]
-            print("chopped data into %d piece(s)" % len(out), "in", es)
+            print("chopped data into %d piece(s)" % len(out), "in", new_axes)
         return out
 
     def collapse(self, axis, method="integrate"):
@@ -1098,6 +1119,7 @@ class Data(Group):
             name = new.pop(variable_index)
             del self[name]
             self.variable_names = new
+            self._variables = None
         # finish
         if verbose:
             print("{0} variable(s) removed:".format(len(removed)))

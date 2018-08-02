@@ -5,6 +5,7 @@
 # --- import -------------------------------------------------------------------------------------
 
 
+import numpy as np
 import WrightTools as wt
 from WrightTools import datasets
 
@@ -122,12 +123,42 @@ def test_parent():
     assert chop.parent is parent
 
 
+def test_transformed():
+    x = np.arange(6)
+    y = x[::2].copy()
+    z = np.arange(x.size * y.size).reshape(x.size, y.size).astype("float")
+    z[:, y < 2] *= 0
+    data = wt.data.Data(name="data")
+    data.create_channel("signal", values=z, signed=False)
+    data.create_variable("x", values=x[:, None], units="wn")
+    data.create_variable("y", values=y[None, :], units="wn")
+    data.x.label = "x"
+    data.y.label = "y"
+    data.transform("x", "y")
+
+    d = data.chop("x", at={"y": (2, "wn")})
+    assert len(d) == 1
+    assert d[0].shape == (6,)
+    assert d[0].axis_names == ("x",)
+    assert d[0]["y"].shape == (1,)
+
+    data.transform("y", "x")
+    d = data.chop("x", at={"y": (2, "wn")})
+    assert len(d) == 1
+    assert d[0].shape == (6,)
+    assert d[0].axis_names == ("x",)
+    assert d[0]["y"].shape == (1,)
+
+
 # --- run -----------------------------------------------------------------------------------------
 
 
 if __name__ == "__main__":
+    test_transformed()
     test_2D_to_1D()
     test_3D_to_1D()
+    test_3D_to_1D_at()
     test_3D_to_2D_propagate_channel_attrs()
     test_3D_to_2D_signed()
     test_3D_to_2D_units()
+    test_parent()
