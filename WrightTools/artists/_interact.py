@@ -207,6 +207,7 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
                 linestyle=":",
                 alpha=0.5
             )
+            slider.valtext.set_text(gen_ticklabels(axis.points)[0])
     # initial xyz start are from zero indices of additional axes
     current_state.dat = data.chop(
         xaxis.natural_name,
@@ -372,6 +373,10 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
                 },
                 verbose=verbose,
             )[0]
+            for k, s in sliders.items():
+                s.valtext.set_text(
+                    gen_ticklabels(data.axes[data.axis_names.index(k)].points)[int(s.val)]
+                )
             obj2D.set_array(current_state.dat[channel.natural_name][:].ravel())
             clim = get_clim(channel, current_state)
             obj2D.set_clim(*clim)
