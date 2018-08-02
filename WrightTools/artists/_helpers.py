@@ -644,6 +644,8 @@ def plot_colorbar(
     # parse clim
     if vlim is None:
         vlim = clim
+    if max(vlim) == min(vlim):
+        vlim[-1] += 1e-1
     # parse format
     if isinstance(decimals, int):
         format = "%.{0}f".format(decimals)

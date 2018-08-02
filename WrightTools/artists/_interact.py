@@ -353,8 +353,9 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
             print("normalization:", index)
         current_state.local = radio.value_selected[1:] == "local"
         clim = get_clim(channel, current_state)
-        ticklabels = gen_ticklabels(np.linspace(*clim, 11))
-        colorbar.set_ticklabels(ticklabels)
+        colorbar = plot_colorbar(
+            cax, cmap=cmap, label=channel.natural_name, ticks=np.linspace(clim[0], clim[1], 11)
+        )
         obj2D.set_clim(*clim)
         fig.canvas.draw_idle()
 
@@ -379,7 +380,9 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
             clim = get_clim(channel, current_state)
             obj2D.set_clim(*clim)
             ticklabels = gen_ticklabels(np.linspace(*clim, 11))
-            colorbar.set_ticklabels(ticklabels)
+            colorbar = plot_colorbar(
+                cax, cmap=cmap, label=channel.natural_name, ticks=np.linspace(clim[0], clim[1], 11)
+            )
             sp_x.collections.clear()
             sp_y.collections.clear()
             draw_sideplot_projections()
