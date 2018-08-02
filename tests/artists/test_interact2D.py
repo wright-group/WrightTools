@@ -8,7 +8,7 @@ from WrightTools import datasets
 def test_perovskite():
     p = datasets.wt5.v1p0p0_perovskite_TA  # axes w1=wm, w2, d2
     data = wt.open(p)
-    wt.artists.interact2D(data, xaxis=2, yaxis=1)
+    return wt.artists.interact2D(data, xaxis=2, yaxis=1)
 
 
 def test_MoS2():
@@ -16,7 +16,7 @@ def test_MoS2():
     data = wt.open(p)
     data.convert("eV")
     data.level(0, 2, -4)
-    wt.artists.interact2D(data, xaxis=0, yaxis=1, local=True)
+    return wt.artists.interact2D(data, xaxis=0, yaxis=1, local=True)
 
 
 def test_asymmetric():
@@ -30,7 +30,7 @@ def test_asymmetric():
     data.create_variable("x", values=x[:, None], units="wn")
     data.create_variable("y", values=y[None, :], units="wn")
     data.transform("x", "y")
-    wt.artists.interact2D(data, xaxis=1, yaxis=0)
+    return wt.artists.interact2D(data, xaxis=1, yaxis=0)
 
 
 def test_skewed():
@@ -39,7 +39,7 @@ def test_skewed():
     data = wt.data.from_PyCMDS(p)
     data.convert("wn", convert_variables=True)
     data.transform("wm", "w1")  # wm = w1 + 2*w2
-    wt.artists.interact2D(data, xaxis=0, yaxis=1)
+    return wt.artists.interact2D(data, xaxis=0, yaxis=1)
 
 
 def test_4D():
@@ -75,16 +75,17 @@ def test_4D():
     data.create_variable("d1", values=tau[None, None, None, :], units="ps")
 
     data.transform("w1", "w2", "w3", "d1")
-    wt.artists.interact2D(data, xaxis=0, yaxis=1, local=True)
+    return wt.artists.interact2D(data, xaxis=0, yaxis=1, local=True)
 
 
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
 
     plt.close("all")
-    test_perovskite()
-    test_MoS2()
-    test_asymmetric()
-    test_skewed()
-    test_4D()
+    # store to variable to prevent garbage collection
+    t0 = test_perovskite()
+    t1 = test_MoS2()
+    t2 = test_asymmetric()
+    t3 = test_skewed()
+    t4 = test_4D()
     plt.show()
