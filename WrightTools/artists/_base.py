@@ -451,7 +451,6 @@ class Axes(matplotlib.axes.Axes):
         matplotlib.collections.QuadMesh
         """
         args, kwargs = self._parse_plot_args(*args, **kwargs, plot_type="pcolormesh")
-        x, y, z = args[:3]
         return super().pcolormesh(*args, **kwargs)
 
     def plot(self, *args, **kwargs):
