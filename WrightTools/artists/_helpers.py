@@ -5,7 +5,6 @@
 
 
 import os
-import sys
 
 import numpy as np
 
@@ -1023,17 +1022,13 @@ def stitch_to_animation(images, outpath=None, *, duration=0.5, palettesize=256, 
     if outpath is None:
         outpath = os.path.splitext(images[0])[0] + ".gif"
     # write
-    try:
-        t = wt_kit.Timer(verbose=False)
-        with t, imageio.get_writer(
-            outpath, mode="I", duration=duration, palettesize=palettesize
-        ) as writer:
-            for p in images:
-                image = imageio.imread(p)
-                writer.append_data(image)
-    except BaseException:
-        print("Error: {0}".format(sys.exc_info()[0]))
-        return None
+    t = wt_kit.Timer(verbose=False)
+    with t, imageio.get_writer(
+        outpath, mode="I", duration=duration, palettesize=palettesize
+    ) as writer:
+        for p in images:
+            image = imageio.imread(p)
+            writer.append_data(image)
     # finish
     if verbose:
         interval = np.round(t.interval, 2)

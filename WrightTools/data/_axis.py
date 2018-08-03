@@ -19,6 +19,8 @@ from .. import units as wt_units
 # --- define --------------------------------------------------------------------------------------
 
 
+__all__ = ["Axis"]
+
 operator_to_identifier = {}
 operator_to_identifier["/"] = "__d__"
 operator_to_identifier["="] = "__e__"

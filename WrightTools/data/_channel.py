@@ -11,6 +11,8 @@ import h5py
 from .. import kit as wt_kit
 from .._dataset import Dataset
 
+__all__ = ["Channel"]
+
 
 # --- class ---------------------------------------------------------------------------------------
 

@@ -9,7 +9,7 @@ import time
 
 import numpy as np
 
-from ._data import Axis, Channel, Data
+from ._data import Data
 from .. import exceptions as wt_exceptions
 from ..kit import _timestamp as timestamp
 
