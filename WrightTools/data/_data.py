@@ -1148,7 +1148,7 @@ class Data(Group):
             index = self.channel_names.index(k)
             # rename
             new[v] = obj, index
-            obj.instances.pop(obj.fullpath, None)
+            obj._instances.pop(obj.fullpath, None)
             obj.natural_name = str(v)
             # remove old references
             del self[k]
@@ -1199,7 +1199,7 @@ class Data(Group):
             index = self.variable_names.index(k)
             # rename
             new[v] = obj, index
-            obj.instances.pop(obj.fullpath, None)
+            obj._instances.pop(obj.fullpath, None)
             obj.natural_name = str(v)
             # remove old references
             del self[k]
