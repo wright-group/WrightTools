@@ -239,8 +239,9 @@ class Group(h5py.Group, metaclass=MetaClass):
     def close(self):
         """Close the file that contains the Group.
 
-        All groups which are in the file will be closed and removed from the _instances dictionaries.
-        Tempfiles, if they exist, will be removed.
+        All groups which are in the file will be closed and removed from the
+        _instances dictionaries.
+        Tempfiles, if they exist, will be removed
         """
         from .collection import Collection
         from .data._data import Channel, Data, Variable
