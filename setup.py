@@ -50,7 +50,7 @@ setup(
         "python-dateutil",
         "pytz",
         "scipy",
-        "tidy_headers",
+        "tidy_headers>=0.3.0",
     ],
     extras_require={
         "docs": ["sphinx-gallery==0.1.12"],
