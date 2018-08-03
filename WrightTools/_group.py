@@ -40,7 +40,7 @@ class MetaClass(type(h5py.Group)):
 class Group(h5py.Group, metaclass=MetaClass):
     """Container of groups and datasets."""
 
-    instances = {}
+    _instances = {}
     class_name = "Group"
 
     def __init__(self, file=None, parent=None, name=None, **kwargs):
@@ -154,11 +154,11 @@ class Group(h5py.Group, metaclass=MetaClass):
         elif edit_local and filepath:
             p = filepath
         p = str(p)
-        for i in cls.instances.keys():
+        for i in cls._instances.keys():
             if i.startswith(os.path.abspath(p) + "::"):
-                file = cls.instances[i].file
-                if hasattr(cls.instances[i], "_tmpfile"):
-                    tmpfile = cls.instances[i]._tmpfile
+                file = cls._instances[i].file
+                if hasattr(cls._instances[i], "_tmpfile"):
+                    tmpfile = cls._instances[i]._tmpfile
                 break
         if file is None:
             file = h5py.File(p, "a")
@@ -171,14 +171,14 @@ class Group(h5py.Group, metaclass=MetaClass):
         fullpath = p + "::" + parent + name
         # create and/or return
         try:
-            instance = cls.instances[fullpath]
+            instance = cls._instances[fullpath]
         except KeyError:
             kwargs["file"] = file
             kwargs["parent"] = parent
             kwargs["name"] = natural_name
             instance = super(Group, cls).__new__(cls)
             cls.__init__(instance, **kwargs)
-            cls.instances[fullpath] = instance
+            cls._instances[fullpath] = instance
             if tmpfile:
                 setattr(instance, "_tmpfile", tmpfile)
                 weakref.finalize(instance, instance.close)
@@ -232,15 +232,16 @@ class Group(h5py.Group, metaclass=MetaClass):
             from .collection import Collection
 
             key = posixpath.dirname(self.fullpath) + posixpath.sep
-            self._parent = Collection.instances[key]
+            self._parent = Collection._instances[key]
         finally:
             return self._parent
 
     def close(self):
         """Close the file that contains the Group.
 
-        All groups which are in the file will be closed and removed from the instances dictionaries.
-        Tempfiles, if they exist, will be removed.
+        All groups which are in the file will be closed and removed from the
+        _instances dictionaries.
+        Tempfiles, if they exist, will be removed
         """
         from .collection import Collection
         from .data._data import Channel, Data, Variable
@@ -248,11 +249,11 @@ class Group(h5py.Group, metaclass=MetaClass):
         path = os.path.abspath(self.filepath) + "::"
         for kind in (Collection, Channel, Data, Variable, Group):
             rm = []
-            for key in kind.instances.keys():
+            for key in kind._instances.keys():
                 if key.startswith(path):
                     rm.append(key)
             for key in rm:
-                kind.instances.pop(key, None)
+                kind._instances.pop(key, None)
 
         if self.fid.valid > 0:
             # for some reason, the following file operations sometimes fail
