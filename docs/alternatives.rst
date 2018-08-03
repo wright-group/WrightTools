@@ -12,6 +12,7 @@ Your project may be better served by one of them:
 - nmrglue_
 - PyTrA_
 - scikit-spectra_
+- specutils_
 - xarray_
 
 Of course there are also the "default" python data-science structures:
@@ -31,4 +32,5 @@ Those with general interest in array-oriented scientific data should be aware of
 .. _nmrglue: http://www.nmrglue.com/
 .. _PyTrA: http://nznano.blogspot.com/2012/06/pytra-femtosecond-transient-absorption.html
 .. _scikit-spectra: http://hugadams.github.io/scikit-spectra/
+.. _specutils: http://specutils.readthedocs.io/en/latest/
 .. _xarray: http://xarray.pydata.org/

@@ -61,7 +61,7 @@ For more information, check see :ref:`artists`, or check out our `gallery`_.
 
 .. code-block:: python
 
-   wt.artists.quick2D(data, 'w1', 'd2', at={'w2': [2, 'eV']})
+   wt.artists.quick2D(data, 'w1=wm', 'd2', at={'w2': [2, 'eV']})
 
 .. plot::
    :include-source: False
@@ -106,14 +106,14 @@ Use ``split`` to break your dataset into smaller pieces.
      0 : -599.79 to -40.06 fs (length 15)
      1 : 39.91 to 279.70 fs (length 7)
 
-Clip (Coming soon)
-^^^^^^^^^^^^^^^^^^
+Clip
+^^^^
 
 Use ``clip`` to ignore points outside of a specific range.
 
 .. code-block:: python
 
-   data.clip('ai0', min=0.0, max=0.1)
+   data.ai0.clip(min=0.0, max=0.1)
 
 .. plot::
    :include-source: False
@@ -122,10 +122,9 @@ Use ``clip`` to ignore points outside of a specific range.
    import WrightTools as wt
    from WrightTools import datasets
    p = datasets.wt5.v1p0p1_MoS2_TrEE_movie
-   #data = wt.open(p)
-   #data.clip('ai0', min=0.0, max=0.1)
-   #artist = wt.artists.mpl_2D(data, 'w1', 'd2', at={'w2': [2, 'eV']})
-   #artist.plot()
-   #plt.show()
+   data = wt.open(p)
+   data.ai0.clip(min=0.0, max=0.1)
+   wt.artists.quick2D(data, 'w1=wm', 'd2', at={'w2': [2, 'eV']})
+   plt.show()
 
 .. _gallery: auto_examples/index.html

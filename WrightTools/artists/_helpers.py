@@ -5,7 +5,6 @@
 
 
 import os
-import sys
 
 import numpy as np
 
@@ -17,7 +16,9 @@ import matplotlib.patheffects as PathEffects
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 import imageio
+import warnings
 
+from .. import exceptions as wt_exceptions
 from .. import kit as wt_kit
 from ._base import Figure, GridSpec
 from ._colors import colormaps
@@ -147,8 +148,10 @@ def add_sideplot(
     # beautify
     if along == "x":
         axCorr.set_ylim(ymin, ymax)
+        axCorr.tick_params(axis="x", which="both", length=0)
     elif along == "y":
         axCorr.set_xlim(ymin, ymax)
+        axCorr.tick_params(axis="y", which="both", length=0)
     plt.grid(grid)
     if zero_line:
         if along == "x":
@@ -485,7 +488,7 @@ def get_scaled_bounds(ax, position, *, distance=0.1, factor=200):
     return [h_scaled, v_scaled], [va, ha]
 
 
-def pcolor_helper(xi, yi, zi):
+def pcolor_helper(xi, yi, zi=None):
     """Prepare a set of arrays for plotting using `pcolor`.
 
     The return values are suitable for feeding directly into ``matplotlib.pcolor``
@@ -497,8 +500,8 @@ def pcolor_helper(xi, yi, zi):
         Array of X-coordinates.
     yi : 1D or 2D array-like
         Array of Y-coordinates.
-    zi : 2D array-like
-        Rectangular array of Z-coordinates.
+    zi : 2D array (optional, deprecated)
+        If zi is not None, it is returned unchanged in the output.
 
     Returns
     -------
@@ -506,19 +509,18 @@ def pcolor_helper(xi, yi, zi):
         X dimension for pcolor
     Y : 2D ndarray
         Y dimension for pcolor
-    Z : 2D ndarray
-        Z dimension for pcolor
+    zi : 2D ndarray
+        if zi parameter is not None, returns zi parameter unchanged
     """
     xi = xi.copy()
     yi = yi.copy()
-    zi = zi.copy()
     if xi.ndim == 1:
         xi.shape = (xi.size, 1)
     if yi.ndim == 1:
         yi.shape = (1, yi.size)
     shape = wt_kit.joint_shape(xi, yi)
-    # full
 
+    # full
     def full(arr):
         for i in range(arr.ndim):
             if arr.shape[i] == 1:
@@ -546,7 +548,14 @@ def pcolor_helper(xi, yi, zi):
             ll = orig[idx[0] + 0, idx[1] + 0]
             lr = orig[idx[0] + 0, idx[1] + 1]
             out[idx] = np.mean([ul, ur, ll, lr])
-    return X, Y, zi
+    if zi is not None:
+        warnings.warn(
+            "zi argument is not used in pcolor_helper and is not required",
+            wt_exceptions.VisibleDeprecationWarning,
+        )
+        return X, Y, zi.copy()
+    else:
+        return X, Y
 
 
 def plot_colorbar(
@@ -634,6 +643,8 @@ def plot_colorbar(
     # parse clim
     if vlim is None:
         vlim = clim
+    if max(vlim) == min(vlim):
+        vlim[-1] += 1e-1
     # parse format
     if isinstance(decimals, int):
         format = "%.{0}f".format(decimals)
@@ -1011,17 +1022,13 @@ def stitch_to_animation(images, outpath=None, *, duration=0.5, palettesize=256, 
     if outpath is None:
         outpath = os.path.splitext(images[0])[0] + ".gif"
     # write
-    try:
-        t = wt_kit.Timer(verbose=False)
-        with t, imageio.get_writer(
-            outpath, mode="I", duration=duration, palettesize=palettesize
-        ) as writer:
-            for p in images:
-                image = imageio.imread(p)
-                writer.append_data(image)
-    except BaseException:
-        print("Error: {0}".format(sys.exc_info()[0]))
-        return None
+    t = wt_kit.Timer(verbose=False)
+    with t, imageio.get_writer(
+        outpath, mode="I", duration=duration, palettesize=palettesize
+    ) as writer:
+        for p in images:
+            image = imageio.imread(p)
+            writer.append_data(image)
     # finish
     if verbose:
         interval = np.round(t.interval, 2)

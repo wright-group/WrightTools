@@ -6,8 +6,6 @@ addons:
     apt:
         packages:
             - libfreetype6-dev
-            - hdf5-tools
-            - libhdf5-dev
             - libopenblas-dev
 install:
   - python setup.py install

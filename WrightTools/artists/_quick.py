@@ -289,7 +289,7 @@ def quick2D(
         # colorbar
         cax = plt.subplot(gs[1])
         cbar_ticks = np.linspace(levels.min(), levels.max(), 11)
-        plot_colorbar(cax=cax, ticks=cbar_ticks, label=channel.name, cmap=cmap)
+        plot_colorbar(cax=cax, ticks=cbar_ticks, label=channel.natural_name, cmap=cmap)
         # save figure -----------------------------------------------------------------------------
         if autosave:
             if fname:

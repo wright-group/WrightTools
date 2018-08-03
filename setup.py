@@ -41,9 +41,10 @@ setup(
         "sphinx-rtd-theme",
     ],
     install_requires=[
+        "scikit-image",
         "h5py",
         "imageio",
-        "matplotlib>=2.0",
+        "matplotlib>=2.2",
         "numexpr",
         "numpy",
         "python-dateutil",
@@ -62,6 +63,7 @@ setup(
     license="MIT",
     url="http://wright.tools",
     keywords="spectroscopy science multidimensional visualization",
+    entry_points={"console_scripts": ["wt-tree=WrightTools.__main__:wt_tree"]},
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Science/Research",

@@ -244,11 +244,11 @@ class Artist:
         if state_names:
             for i in range(size[1]):
                 plot = self.subplots[i][0]
-                for i in range(len(self.energies)):
+                for j in range(len(self.energies)):
                     plot.text(
                         -state_text_buffer,
-                        energies[i],
-                        state_names[i],
+                        energies[j],
+                        state_names[j],
                         fontsize=state_font_size,
                         verticalalignment="center",
                         horizontalalignment="center",

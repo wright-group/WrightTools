@@ -17,7 +17,7 @@ fi
 # build
 printf "\033[1;35mbuilding...\033[0m\n"
 $PYTHON setup.py sdist
-$PYTHON setup.py bdist_wheel --universal
+$PYTHON setup.py bdist_wheel
 # upload
 printf "\033[1;35muploading...\033[0m\n"
 while true; do
