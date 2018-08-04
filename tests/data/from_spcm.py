@@ -19,8 +19,17 @@ def test_test_data():
     data.close()
 
 
+def test_test_data_full_metadata():
+    p = datasets.spcm.test_data_full_metadata
+    data = wt.data.from_spcm(p)
+    assert data.size == data.attrs["SP_ADC_RE"]
+    # data.close()
+    return data
+
+
 # --- run -----------------------------------------------------------------------------------------
 
 
 if __name__ == "__main__":
     test_test_data()
+    data = test_test_data_full_metadata()

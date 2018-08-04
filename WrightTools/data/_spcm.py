@@ -55,17 +55,13 @@ def from_spcm(filepath, name=None, *, delimiter=",", format=None, parent=None, v
     # parse name
     if not name:
         name = os.path.basename("filepath").split(".")[0]
-    # create data
-    kwargs = {"name": name, "kind": "spcm", "source": filepath}
-    if parent:
-        data = parent.create_data(**kwargs)
-    else:
-        data = Data(**kwargs)
     # create headers dictionary
-    headers = collections.OrderedDict()
+    headers = {}
+    header_lines = 0
     with open(filepath) as f:
         while True:
             line = f.readline().strip()
+            header_lines += 1
             if len(line) == 0:
                 break
             else:
@@ -74,10 +70,57 @@ def from_spcm(filepath, name=None, *, delimiter=",", format=None, parent=None, v
                     headers["resolution"] = int(value.strip(" bits ADC"))
                 else:
                     headers[key.strip()] = value.strip()
+        line = f.readline().strip()
+        while "_BEGIN" in line:
+            header_lines += 1
+            section = line.split("_BEGIN")[0]
+            # section_dict = {}
+            while True:
+                line = f.readline().strip()
+                header_lines += 1
+                if section + "_END" in line:
+                    break
+                if section == "SYS_PARA":
+                    use_type = {
+                        "B": lambda b: int(b) == 1,
+                        "C": str,  # e.g. #SP [SP_OVERFL,C,N]
+                        "F": float,
+                        "I": int,
+                        "L": int,  # e.g. #DI [DI_MAXCNT,L,128]
+                        "S": str,
+                        "U": int,  # unsigned int?
+                    }
+                    item = line[line.find("[") + 1 : line.find("]")].split(",")
+                    key = item[0]
+                    try:
+                        value = use_type[item[1]](item[2])
+                    except KeyError:
+                        print(header_lines, line)
+                        return
+                    headers[key] = value
+                else:
+                    splitted = line.split()
+                    value = splitted[-1][1:-1].split(",")
+                    key = " ".join(splitted[:-1])
+                    headers[key] = value
+            print("exit inner", header_lines)
+            # headers[section] = section_dict
+            line = f.readline().strip()
+            if "END" in line:
+                header_lines += 1
+                break
+        print("exit outer", header_lines)
+    print(header_lines + 1)
+    # initialize data object
+    kwargs = {"name": name, "kind": "spcm", "source": filepath, **headers}
+    if parent:
+        data = parent.create_data(**kwargs)
+    else:
+        data = Data(**kwargs)
     # import data
     arr = np.genfromtxt(
-        filepath, skip_header=(len(headers) + 2), skip_footer=1, delimiter=delimiter
-    ).T
+        filepath, skip_header=(header_lines + 1), skip_footer=1, delimiter=delimiter, unpack=True
+    )
     # unexpected delimiter handler
     if np.any(np.isnan(arr)):
         # delimiter warning dictionary
@@ -85,8 +128,12 @@ def from_spcm(filepath, name=None, *, delimiter=",", format=None, parent=None, v
         warnings.warn("file is not %s-delimited! Trying other delimiters." % delim_dict[delimiter])
         for delimiter in delim_dict.keys():
             arr = np.genfromtxt(
-                filepath, skip_header=len(headers) + 2, skip_footer=1, delimiter=delimiter
-            ).T
+                filepath,
+                skip_header=header_lines + 1,
+                skip_footer=1,
+                delimiter=delimiter,
+                unpack=True,
+            )
             if not np.any(np.isnan(arr)):
                 print("file is %s-delimited." % delim_dict[delimiter])
                 break
