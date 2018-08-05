@@ -56,7 +56,7 @@ def from_spcm(filepath, name=None, *, delimiter=",", format=None, parent=None, v
     if not name:
         name = os.path.basename("filepath").split(".")[0]
     # create headers dictionary
-    headers = {}
+    headers = collections.OrderedDict()
     header_lines = 0
     with open(filepath) as f:
         while True:
@@ -74,7 +74,6 @@ def from_spcm(filepath, name=None, *, delimiter=",", format=None, parent=None, v
         while "_BEGIN" in line:
             header_lines += 1
             section = line.split("_BEGIN")[0]
-            # section_dict = {}
             while True:
                 line = f.readline().strip()
                 header_lines += 1
@@ -92,25 +91,17 @@ def from_spcm(filepath, name=None, *, delimiter=",", format=None, parent=None, v
                     }
                     item = line[line.find("[") + 1 : line.find("]")].split(",")
                     key = item[0]
-                    try:
-                        value = use_type[item[1]](item[2])
-                    except KeyError:
-                        print(header_lines, line)
-                        return
+                    value = use_type[item[1]](item[2])
                     headers[key] = value
                 else:
                     splitted = line.split()
                     value = splitted[-1][1:-1].split(",")
                     key = " ".join(splitted[:-1])
                     headers[key] = value
-            print("exit inner", header_lines)
-            # headers[section] = section_dict
             line = f.readline().strip()
             if "END" in line:
                 header_lines += 1
                 break
-        print("exit outer", header_lines)
-    print(header_lines + 1)
     # initialize data object
     kwargs = {"name": name, "kind": "spcm", "source": filepath, **headers}
     if parent:
@@ -152,4 +143,6 @@ def from_spcm(filepath, name=None, *, delimiter=",", format=None, parent=None, v
         print("  kind: {0}".format(data.kind))
         print("  range: {0} to {1} (ns)".format(data.time[0], data.time[-1]))
         print("  size: {0}".format(data.size))
+        if "SP_COL_T" in data.attrs.keys():
+            print("  collection time:  {0} sec".format(data.attrs["SP_COL_T"]))
     return data
