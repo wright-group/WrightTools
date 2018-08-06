@@ -1370,52 +1370,45 @@ class Data(Group):
             next(b, None)
             return zip(a, b)
 
-        values = self._axes[0][:]
+        def mask_reduce(mask, shape):
+            mask = mask.copy()
+            for i in range(len(mask.shape)):
+                a = mask.copy()
+                offset = 0
+                j = list(range(len(mask.shape)))
+                j.remove(i)
+                j = tuple(j)
+                a = a.max(axis=j, keepdims=True)
+                idx = [slice(None)] * len(mask.shape)
+                a = a.flatten()
+                idx[i] = [k for k in range(len(a)) if a[k]]
+                mask = mask[tuple(idx)]
+
+            red = tuple([i for i in range(len(shape)) if shape[i] == 1])
+            return mask.max(axis=red, keepdims=True)
+
+        values = self._axes[0].full
         masks = [(values >= lo) & (values < hi) for lo, hi in pairwise(positions)]
         for i in range(len(positions) - 1):
             out.create_data("split%03i" % i)
 
         for var in self.variables:
             for i, mask in enumerate(masks):
-                shape = list(mask.shape)
-                mask_l = mask
-                for j, s in enumerate(var.shape):
-                    if s == 1:
-                        shape[j] = 1
-                        mask_l = mask_l.max(axis=j, keepdims=True)
-                        # mask_l.shape = tuple(shape)
-                    elif shape[j] == 1:
-                        mask_l = mask_l.repeat(s, j)
-                oshape = []
-                for j in range(len(shape)):
-                    tmp = mask_l
-                    tshape = list(mask_l.shape)
-                    for k in range(len(shape)):
-                        if k != j:
-                            tshape[k] = 1
-                            tmp = tmp.max(axis=k, keepdims=True)
-                    oshape.append(np.sum(tmp))
-                out[i].create_variable(values=var[:][mask_l].reshape(oshape), **var.attrs)
+                omask = mask_reduce(mask, var.shape)
+                out_arr = np.full(omask.shape, np.nan)
+                red = tuple([i for i in range(len(var.shape)) if var.shape[i] == 1])
+                imask = mask.max(axis=red, keepdims=True)
+                out_arr[omask] = var[:][imask]
+                out[i].create_variable(values=out_arr, **var.attrs)
 
         for ch in self.channels:
             for i, mask in enumerate(masks):
-                shape = list(mask.shape)
-                mask_l = mask
-                for j, s in enumerate(ch.shape):
-                    if s == 1:
-                        shape[j] = 1
-                        mask_l = mask_l.max(axis=j, keepdims=True)
-                        # mask_l.shape = tuple(shape)
-                    elif shape[j] == 1:
-                        mask_l = mask_l.repeat(s, j)
-                oshape = []
-                for j in range(len(shape)):
-                    tmp = mask_l
-                    for k in range(len(shape)):
-                        if k != j:
-                            tmp = tmp.max(axis=k, keepdims=True)
-                    oshape.append(np.sum(tmp))
-                out[i].create_channel(values=ch[:][mask_l].reshape(oshape), **ch.attrs)
+                omask = mask_reduce(mask, ch.shape)
+                out_arr = np.full(omask.shape, np.nan)
+                red = tuple([i for i in range(len(ch.shape)) if ch.shape[i] == 1])
+                imask = mask.max(axis=red, keepdims=True)
+                out_arr[omask] = ch[:][imask]
+                out[i].create_channel(values=out_arr, **ch.attrs)
 
         for d in out.values():
             d.transform(*old_expr)
