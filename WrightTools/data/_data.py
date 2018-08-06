@@ -1348,7 +1348,8 @@ class Data(Group):
         old_units = self.units
         out = wt_collection.Collection(name="split", parent=parent)
         if isinstance(expression, int):
-            units = self._axes[expression].units
+            if units is None:
+                units = self._axes[expression].units
             expression = self._axes[expression].expression
         elif isinstance(expression, str):
             pass
@@ -1394,7 +1395,10 @@ class Data(Group):
 
         for var in self.variables:
             for i, mask in enumerate(masks):
-                omask = mask_reduce(mask, var.shape)
+                try:
+                    omask = mask_reduce(mask, var.shape)
+                except ValueError:
+                    continue
                 out_arr = np.full(omask.shape, np.nan)
                 red = tuple([i for i in range(len(var.shape)) if var.shape[i] == 1])
                 imask = mask.max(axis=red, keepdims=True)
@@ -1403,7 +1407,10 @@ class Data(Group):
 
         for ch in self.channels:
             for i, mask in enumerate(masks):
-                omask = mask_reduce(mask, ch.shape)
+                try:
+                    omask = mask_reduce(mask, ch.shape)
+                except ValueError:
+                    continue
                 out_arr = np.full(omask.shape, np.nan)
                 red = tuple([i for i in range(len(ch.shape)) if ch.shape[i] == 1])
                 imask = mask.max(axis=red, keepdims=True)
@@ -1411,9 +1418,12 @@ class Data(Group):
                 out[i].create_channel(values=out_arr, **ch.attrs)
 
         for d in out.values():
-            d.transform(*old_expr)
-            for ax, u in zip(d.axes, old_units):
-                ax.convert(u)
+            try:
+                d.transform(*old_expr)
+                for ax, u in zip(d.axes, old_units):
+                    ax.convert(u)
+            except IndexError:
+                continue
         self.transform(*old_expr)
         for ax, u in zip(self.axes, old_units):
             ax.convert(u)
