@@ -23,8 +23,10 @@ __all__ = ["from_spcm"]
 # --- from function -------------------------------------------------------------------------------
 
 
-def from_spcm(filepath, name=None, *, delimiter=",", format=None, parent=None, verbose=True):
-    """Create a data object from Becker & Hickl `spcm`__ software.
+def from_spcm(filepath, name=None, *, delimiter=",", parent=None, verbose=True):
+    """Create a data object from Becker & Hickl `spcm`__ software.  Must be exported as
+    an ASCII (.asc) file.  If file format is exported as "ASCII with Setup", setup parameters are
+    added to the ``attrs`` dictionary of the returned ``Data`` object
 
     __ http://www.becker-hickl.com/software/spcm.htm
 
@@ -37,9 +39,6 @@ def from_spcm(filepath, name=None, *, delimiter=",", format=None, parent=None, v
         Default is None.
     delimiter : string (optional)
         The string used to separate values. Default is ','.
-    format : {'ascii'} (optional)
-        Force file to be interpreted as a specific format. Default is None
-        (autorecognized).
     parent : WrightTools.Collection (optional)
         Collection to place new data object within. Default is None.
     verbose : boolean (optional)
