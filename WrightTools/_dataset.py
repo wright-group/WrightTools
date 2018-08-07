@@ -22,7 +22,7 @@ from . import units as wt_units
 class Dataset(h5py.Dataset):
     """Array-like data container."""
 
-    instances = {}
+    _instances = {}
     class_name = "Dataset"
 
     def __getitem__(self, index):
@@ -88,12 +88,12 @@ class Dataset(h5py.Dataset):
     def __new__(cls, parent, id, **kwargs):
         """New object formation handler."""
         fullpath = parent.fullpath + h5py.h5i.get_name(id).decode()
-        if fullpath in cls.instances.keys():
-            return cls.instances[fullpath]
+        if fullpath in cls._instances.keys():
+            return cls._instances[fullpath]
         else:
             instance = super(Dataset, cls).__new__(cls)
             cls.__init__(instance, parent, id, **kwargs)
-            cls.instances[fullpath] = instance
+            cls._instances[fullpath] = instance
             return instance
 
     def __repr__(self):

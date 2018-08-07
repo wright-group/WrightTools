@@ -19,6 +19,8 @@ from .. import units as wt_units
 # --- define --------------------------------------------------------------------------------------
 
 
+__all__ = ["Axis"]
+
 operator_to_identifier = {}
 operator_to_identifier["/"] = "__d__"
 operator_to_identifier["="] = "__e__"
@@ -89,7 +91,7 @@ class Axis(object):
     @property
     def label(self):
         symbol = wt_units.get_symbol(self.units)
-        label = r"$\mathsf{" + self.expression
+        label = self.expression
         for v in self.variables:
             vl = "%s_{%s}" % (symbol, v.label)
             vl = vl.replace("_{}", "")  # label can be empty, no empty subscripts
@@ -102,7 +104,7 @@ class Axis(object):
             label += r"\right)"
         else:
             pass
-        label += r"}$"
+        label = r"$\mathsf{%s}$" % label
         return label
 
     @property

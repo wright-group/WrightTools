@@ -79,10 +79,7 @@ def from_KENT(
     channels["OPA1"] = {"idx": 6}
     channels["OPA2"] = {"idx": 7}
     # do we have a list of files or just one file? ------------------------------------------------
-    if isinstance(filepaths, list):
-        file_example = filepaths[0]
-    else:
-        file_example = filepaths
+    if not isinstance(filepaths, list):
         filepaths = [filepaths]
     # import full array ---------------------------------------------------------------------------
     arr = np.concatenate([np.genfromtxt(f).T for f in filepaths], axis=1)

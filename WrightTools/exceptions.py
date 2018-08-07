@@ -76,6 +76,24 @@ class ValueError(ValueError, WrightToolsException):
     pass
 
 
+class FileExistsError(FileExistsError, WrightToolsException):
+    """Raised when trying to create a file or directory which already exists.
+
+    Corresponds to errno ``EEXIST``.
+    """
+
+    pass
+
+
+class TypeError(TypeError, WrightToolsException):
+    """Raised when an operation or function is applied to an object of inappropriate type.
+
+    The associated value is a string giving details about the type mismatch.
+    """
+
+    pass
+
+
 class UnitsError(WrightToolsException):
     """Units Error."""
 
@@ -136,5 +154,13 @@ class WrongFileTypeWarning(WrightToolsWarning):
             Expected file suffix.
         """
         filesuffix = os.path.basename(filepath).split(".")[-1]
-        message = "file {0} has type {1} (expected {2})".format(filepath, filesuffix, "txt")
+        message = "file {0} has type {1} (expected {2})".format(filepath, filesuffix, expected)
         warnings.warn(message, WrongFileTypeWarning)
+
+
+class ObjectExistsWarning(WrightToolsWarning):
+    """Warn that an HDF5 object already exists when a new one is requested."""
+
+    def warn(name):
+        message = "object '{0}' already exists, returning existing copy".format(name)
+        warnings.warn(message, ObjectExistsWarning)

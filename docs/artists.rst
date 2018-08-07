@@ -71,7 +71,6 @@ Custom figures
 --------------
 
 WrightTools offers specialized tools for custom figure generation.
-It is often difficult to 
 
 Layout
 ^^^^^^

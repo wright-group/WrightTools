@@ -18,6 +18,7 @@ extra_files = {
         "datasets/*/*",
         "datasets/*/*/*",
         "datasets/*/*/*/*",
+        "CITATION",
         "VERSION",
         "WT5_VERSION",
     ]
@@ -40,15 +41,16 @@ setup(
         "sphinx-rtd-theme",
     ],
     install_requires=[
+        "scikit-image",
         "h5py",
         "imageio",
-        "matplotlib>=2.0",
+        "matplotlib>=2.2",
         "numexpr",
         "numpy",
         "python-dateutil",
         "pytz",
         "scipy",
-        "tidy_headers",
+        "tidy_headers>=0.3.0",
     ],
     extras_require={
         "docs": ["sphinx-gallery"],
@@ -61,6 +63,7 @@ setup(
     license="MIT",
     url="http://wright.tools",
     keywords="spectroscopy science multidimensional visualization",
+    entry_points={"console_scripts": ["wt-tree=WrightTools.__main__:wt_tree"]},
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Science/Research",

@@ -42,6 +42,7 @@ Contents
    units
    datasets
    contributing 
+   write_from_method
    api/modules
    auto_examples/index
    publications

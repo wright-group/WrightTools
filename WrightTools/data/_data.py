@@ -15,6 +15,7 @@ import h5py
 
 import scipy
 from scipy.interpolate import griddata, interp1d
+from skimage.transform import downscale_local_mean
 
 from .._group import Group
 from .. import collection as wt_collection
@@ -170,7 +171,7 @@ class Data(Group):
         except (AssertionError, AttributeError):
             self._variables = [self[n] for n in self.variable_names]
         finally:
-            return self._variables
+            return tuple(self._variables)
 
     @property
     def _leaf(self):
@@ -294,16 +295,34 @@ class Data(Group):
         split
             Split the dataset while maintaining its dimensionality.
         """
+        from ._axis import operators, operator_to_identifier
+
         # parse args
         args = list(args)
         for i, arg in enumerate(args):
             if isinstance(arg, int):
-                args[i] = self._axes[arg].expression
+                args[i] = self._axes[arg].natural_name
+            elif isinstance(arg, str):
+                # same normalization that occurs in the natural_name @property
+                arg = arg.strip()
+                for op in operators:
+                    arg = arg.replace(op, operator_to_identifier[op])
+                args[i] = wt_kit.string2identifier(arg)
+
+        # normalize the at keys to the natural name
+        for k in list(at.keys()):
+            for op in operators:
+                if op in k:
+                    nk = k.replace(op, operator_to_identifier[op])
+                    at[nk] = at[k]
+                    at.pop(k)
+                    k = nk
+
         # get output collection
         out = wt_collection.Collection(name="chop", parent=parent)
         # get output shape
         kept = args + list(at.keys())
-        kept_axes = [self._axes[self.axis_expressions.index(a)] for a in kept]
+        kept_axes = [self._axes[self.axis_names.index(a)] for a in kept]
         removed_axes = [a for a in self._axes if a not in kept_axes]
         removed_shape = wt_kit.joint_shape(*removed_axes)
         if removed_shape == ():
@@ -319,7 +338,11 @@ class Data(Group):
                 point = wt_units.converter(point, units, destination_units)
                 axis_index = self.axis_names.index(axis)
                 axis = self._axes[axis_index]
-                idx[axis_index] = np.argmin(np.abs(axis[tuple(idx)] - point))
+                idx_index = np.array(axis.shape) > 1
+                if np.sum(idx_index) > 1:
+                    raise wt_exceptions.MultidimensionalAxisError("chop", axis.natural_name)
+                idx_index = list(idx_index).index(True)
+                idx[idx_index] = np.argmin(np.abs(axis[tuple(idx)] - point))
             data = out.create_data(name="chop%03i" % i)
             for v in self.variables:
                 kwargs = {}
@@ -347,22 +370,29 @@ class Data(Group):
         out.flush()
         # return
         if verbose:
-            es = [a.expression for a in kept_axes]
-            print("chopped data into %d piece(s)" % len(out), "in", es)
+            print("chopped data into %d piece(s)" % len(out), "in", new_axes)
         return out
 
     def collapse(self, axis, method="integrate"):
         """
-        Collapse the dataset along one axis.
+        Collapse the dataset along one axis, adding lower rank channels.
+
+        New channels have names <channel name>_<axis name>_<method>.
 
         Parameters
         ----------
         axis : int or str
             The axis to collapse along.
+            If given as an integer, the axis in the underlying array is used.
+            If given as a string, the axis must exist, and be a 1D array-aligned axis.
+            (i.e. have a shape with a single value which is not ``1``)
+            The axis to collapse along is inferred from the shape of the axis.
         method : {'integrate', 'average', 'sum', 'max', 'min'} (optional)
             The method of collapsing the given axis. Method may also be list
             of methods corresponding to the channels of the object. Default
             is integrate. All methods but integrate disregard NANs.
+            Can also be a list, allowing for different treatment for varied channels.
+            In this case, None indicates that no change to that channel should occur.
 
         See Also
         --------
@@ -371,38 +401,92 @@ class Data(Group):
         split
             Split the dataset while maintaining its dimensionality.
         """
-        raise NotImplementedError
         # get axis index --------------------------------------------------------------------------
         if isinstance(axis, int):
             axis_index = axis
         elif isinstance(axis, str):
-            axis_index = self.axis_names.index(axis)
+            index = self.axis_names.index(axis)
+            axes = [i for i in range(self.ndim) if self.axes[index].shape[i] > 1]
+            if len(axes) > 1:
+                raise wt_exceptions.MultidimensionalAxisError(axis, "collapse")
+            elif len(axes) == 0:
+                raise wt_exceptions.ValueError(
+                    "Axis {} is a single point, cannot collapse".format(axis)
+                )
+            axis_index = axes[0]
         else:
-            raise TypeError("axis: expected {int, str}, got %s" % type(axis))
+            raise wt_exceptions.TypeError("axis: expected {int, str}, got %s" % type(axis))
+
+        new_shape = list(self.shape)
+        new_shape[axis_index] = 1
         # methods ---------------------------------------------------------------------------------
         if isinstance(method, list):
             if len(method) == len(self.channels):
                 methods = method
             else:
-                print("method argument incompatible in data.collapse")
+                raise wt_exceptions.ValueError(
+                    "method argument must have same number of elements as there are channels"
+                )
+            for m in methods:
+                if m not in [
+                    "sum",
+                    "max",
+                    "maximum",
+                    "min",
+                    "minimum",
+                    "ave",
+                    "average",
+                    "mean",
+                    "int",
+                    "integrate",
+                ]:
+                    raise wt_exceptions.ValueError("method '{}' not recognized".format(m))
         elif isinstance(method, str):
             methods = [method for _ in self.channels]
+
+        warnings.warn("collapse", category=wt_exceptions.EntireDatasetInMemoryWarning)
+
         # collapse --------------------------------------------------------------------------------
-        for method, channel in zip(methods, self.channels):
-            if method in ["int", "integrate"]:
-                channel[:] = np.trapz(y=channel[:], x=self._axes[axis_index][:], axis=axis_index)
-            elif method == "sum":
-                channel[:] = np.nansum(channel[:], axis=axis_index)
+        for method, channel in zip(methods, self.channel_names):
+            if method is None:
+                continue
+
+            if self[channel].shape[axis_index] == 1:
+                continue  # Cannot collapse any further, don't clutter data object
+
+            new_shape = list(self[channel].shape)
+            new_shape[axis_index] = 1
+
+            new = self.create_channel(
+                "{}_{}_{}".format(channel, axis, method),
+                shape=new_shape,
+                units=self[channel].units,
+            )
+
+            channel = self[channel]
+
+            if method == "sum":
+                res = np.nansum(channel[:], axis=axis_index)
+                res.shape = new_shape
+                new[:] = res
             elif method in ["max", "maximum"]:
-                channel[:] = np.nanmax(channel[:], axis=axis_index)
+                res = np.nanmax(channel[:], axis=axis_index)
+                res.shape = new_shape
+                new[:] = res
             elif method in ["min", "minimum"]:
-                channel[:] = np.nanmin(channel[:], axis=axis_index)
+                res = np.nanmin(channel[:], axis=axis_index)
+                res.shape = new_shape
+                new[:] = res
             elif method in ["ave", "average", "mean"]:
-                channel[:] = np.nanmean(channel[:], axis=axis_index)
+                res = np.nanmean(channel[:], axis=axis_index)
+                res.shape = new_shape
+                new[:] = res
+            elif method in ["int", "integrate"]:
+                res = np.trapz(y=channel[:], x=self._axes[axis_index][:], axis=axis_index)
+                res.shape = new_shape
+                new[:] = res
             else:
-                print("method not recognized in data.collapse")
-        # cleanup ---------------------------------------------------------------------------------
-        self._axes.pop(axis_index)
+                raise wt_exceptions.ValueError("method '{}' not recognized".format(m))
 
     def convert(self, destination_units, *, convert_variables=False, verbose=True):
         """Convert all compatable axes to given units.
@@ -472,6 +556,10 @@ class Data(Group):
         Channel
             Created channel.
         """
+        if name in self.channel_names:
+            warnings.warn(name, wt_exceptions.ObjectExistsWarning)
+            return self[name]
+
         require_kwargs = {}
         if values is None:
             if shape is None:
@@ -514,6 +602,9 @@ class Data(Group):
         WrightTools Variable
             New child variable.
         """
+        if name in self.variable_names:
+            warnings.warn(name, wt_exceptions.ObjectExistsWarning)
+            return self[name]
         if values is None:
             if shape is None:
                 shape = self.shape
@@ -525,9 +616,58 @@ class Data(Group):
         id = self.require_dataset(name=name, data=values, shape=shape, dtype=dtype).id
         variable = Variable(self, id, units=units, **kwargs)
         # finish
-        self.variables.append(variable)
+        self._variables = None
         self.attrs["variable_names"] = np.append(self.attrs["variable_names"], name.encode())
         return variable
+
+    def downscale(self, tup, name=None, parent=None):
+        """Down sample the data array using local averaging.
+
+        See `skimage.transform.downscale_local_mean`__ for more info.
+
+        __ http://scikit-image.org/docs/0.12.x/api/
+            skimage.transform.html#skimage.transform.downscale_local_mean
+
+        Parameters
+        ----------
+        tup : tuple of ints
+            The collection of step sizes by which each axis is binned.
+            Each axis is sliced with step size determined by the tuple.
+            To keep an axis sampling unchanged, use 1 or None
+        name : string (optional)
+            The name of the string. Default is None.
+        parent : WrightTools Collection instance (optional)
+            Collection to place the downscaled data object. Default is
+            None (new parent).
+
+        Returns
+        -------
+        WrightTools Data instance
+            New data object with the downscaled channels and axes
+        """
+        if name is None:
+            name = self.natural_name + "_downscaled"
+        if parent is None:
+            newdata = Data(name=name)
+        else:
+            parent.create_data(name=name)
+
+        for channel in self.channels:
+            name = channel.natural_name
+            newdata.create_channel(
+                name=name, values=downscale_local_mean(channel[:], tup), units=channel.units
+            )
+        args = []
+        for i, axis in enumerate(self.axes):
+            if len(axis.variables) > 1:
+                raise NotImplementedError("downscale only works with simple axes currently")
+            variable = axis.variables[0]
+            name = variable.natural_name
+            args.append(name)
+            slices = [slice(None, None, step) for step in tup]
+            newdata.create_variable(name=name, values=variable[slices], units=variable.units)
+        newdata.transform(*args)
+        return newdata
 
     def flush(self):
         super().flush()
@@ -979,6 +1119,7 @@ class Data(Group):
             name = new.pop(variable_index)
             del self[name]
             self.variable_names = new
+            self._variables = None
         # finish
         if verbose:
             print("{0} variable(s) removed:".format(len(removed)))
@@ -1007,7 +1148,7 @@ class Data(Group):
             index = self.channel_names.index(k)
             # rename
             new[v] = obj, index
-            obj.instances.pop(obj.fullpath, None)
+            obj._instances.pop(obj.fullpath, None)
             obj.natural_name = str(v)
             # remove old references
             del self[k]
@@ -1058,7 +1199,7 @@ class Data(Group):
             index = self.variable_names.index(k)
             # rename
             new[v] = obj, index
-            obj.instances.pop(obj.fullpath, None)
+            obj._instances.pop(obj.fullpath, None)
             obj.natural_name = str(v)
             # remove old references
             del self[k]
