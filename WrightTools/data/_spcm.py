@@ -105,7 +105,7 @@ def from_spcm(filepath, name=None, *, delimiter=",", parent=None, verbose=True):
     if "Date" in headers.keys() and "Time" in headers.keys():
         # NOTE:  reports created in local time, no-way to calculate absolute time
         created = " ".join([headers["Date"], headers["Time"]])
-        created = time.strptime(created, "%Y-%m-%d %H:%M:%S")  
+        created = time.strptime(created, "%Y-%m-%d %H:%M:%S")
         created = timestamp.TimeStamp(time.mktime(created)).RFC3339
         headers['created'] = created
 
