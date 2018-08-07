@@ -1416,9 +1416,13 @@ class Data(Group):
                 out_arr[omask] = ch[:][imask]
                 out[i].create_channel(values=out_arr, **ch.attrs)
 
-        for d in out.values():
-            d.transform(expression)
         if verbose:
+            for d in out.values():
+                try:
+                    d.transform(expression)
+                except IndexError:
+                    continue
+
             print("split data into {0} pieces along <{1}>:".format(len(positions) - 1, expression))
             for i, (lo, hi) in enumerate(pairwise(positions)):
                 new_data = out[i]
