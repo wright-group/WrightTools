@@ -1375,7 +1375,6 @@ class Data(Group):
             mask = mask.copy()
             for i in range(len(mask.shape)):
                 a = mask.copy()
-                offset = 0
                 j = list(range(len(mask.shape)))
                 j.remove(i)
                 j = tuple(j)
@@ -1418,6 +1417,22 @@ class Data(Group):
                 out[i].create_channel(values=out_arr, **ch.attrs)
 
         for d in out.values():
+            d.transform(expression)
+        if verbose:
+            print("split data into {0} pieces along <{1}>:".format(len(positions) - 1, expression))
+            for i, (lo, hi) in enumerate(pairwise(positions)):
+                new_data = out[i]
+                if new_data.shape == ():
+                    print("  {0} : None".format(i))
+                else:
+                    new_axis = new_data.axes[0]
+                    print(
+                        "  {0} : {1:0.2f} to {2:0.2f} {3} {4}".format(
+                            i, lo, hi, new_axis.units, new_axis.shape
+                        )
+                    )
+
+        for d in out.values():
             try:
                 d.transform(*old_expr)
                 for ax, u in zip(d.axes, old_units):
@@ -1428,25 +1443,6 @@ class Data(Group):
         for ax, u in zip(self.axes, old_units):
             ax.convert(u)
 
-        if False:  # verbose:
-            print(
-                "split data into {0} pieces along {1}:".format(
-                    len(positions) - 1, axis.natural_name
-                )
-            )
-            for i in range(len(outs)):
-                new_data = outs[i]
-                if new_data is None:
-                    print("  {0} : None".format(i))
-                elif len(new_data.shape) < len(self.shape):
-                    print("  {0} : {1} {2}(constant)".format(i, axis.natural_name, axis.units))
-                else:
-                    new_axis = new_data.axes[axis_index]
-                    print(
-                        "  {0} : {1} to {2} {3} (length {4})".format(
-                            i, new_axis[0], new_axis[-1], new_axis.units, new_axis.size
-                        )
-                    )
         return out
 
     def transform(self, *axes, verbose=True):
