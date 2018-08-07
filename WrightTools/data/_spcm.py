@@ -25,6 +25,7 @@ __all__ = ["from_spcm"]
 
 def from_spcm(filepath, name=None, *, delimiter=",", parent=None, verbose=True):
     """Create a ``Data`` object from a Becker & Hickl `spcm`__ file (ASCII-exported, ``.asc``).
+
     If provided, setup parameters are stored in the ``attrs`` dictionary of the ``Data`` object.
 
     __ http://www.becker-hickl.com/software/spcm.htm
@@ -32,7 +33,7 @@ def from_spcm(filepath, name=None, *, delimiter=",", parent=None, verbose=True):
     Parameters
     ----------
     filepath : string
-        Path to SPC-130 .asc file.
+        Path to SPC-xxx .asc file.
     name : string (optional)
         Name to give to the created data object. If None, filename is used.
         Default is None.
@@ -110,27 +111,6 @@ def from_spcm(filepath, name=None, *, delimiter=",", parent=None, verbose=True):
     arr = np.genfromtxt(
         filepath, skip_header=(header_lines + 1), skip_footer=1, delimiter=delimiter, unpack=True
     )
-    # unexpected delimiter handler
-    if np.any(np.isnan(arr)):
-        # delimiter warning dictionary
-        delim_dict = {",": "comma", " ": "space", "\t": "tab", ";": "semicolon", ":": "colon"}
-        warnings.warn("file is not %s-delimited! Trying other delimiters." % delim_dict[delimiter])
-        for delimiter in delim_dict.keys():
-            arr = np.genfromtxt(
-                filepath,
-                skip_header=header_lines + 1,
-                skip_footer=1,
-                delimiter=delimiter,
-                unpack=True,
-            )
-            if not np.any(np.isnan(arr)):
-                print("file is %s-delimited." % delim_dict[delimiter])
-                break
-        else:
-            error = """Unable to load data file.
-                       Data object not created!
-                       Please check that your file is formatted properly."""
-            raise RuntimeError(error)
     # construct data
     data.create_variable(name="time", values=arr[0], units="ns")
     data.create_channel(name="counts", values=arr[1])
