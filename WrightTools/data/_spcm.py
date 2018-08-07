@@ -24,9 +24,8 @@ __all__ = ["from_spcm"]
 
 
 def from_spcm(filepath, name=None, *, delimiter=",", parent=None, verbose=True):
-    """Create a data object from Becker & Hickl `spcm`__ software.  Must be exported as
-    an ASCII (.asc) file.  If file format is exported as "ASCII with Setup", setup parameters are
-    added to the ``attrs`` dictionary of the returned ``Data`` object
+    """Create a ``Data`` object from a Becker & Hickl `spcm`__ file (ASCII-exported, ``.asc``).
+    If provided, setup parameters are stored in the ``attrs`` dictionary of the ``Data`` object.
 
     __ http://www.becker-hickl.com/software/spcm.htm
 
