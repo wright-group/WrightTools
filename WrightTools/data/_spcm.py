@@ -6,12 +6,13 @@
 
 import os
 import collections
-import warnings
+import time
 
 import numpy as np
 
 from ._data import Data
 from .. import exceptions as wt_exceptions
+from ..kit import _timestamp as timestamp
 
 
 # --- define --------------------------------------------------------------------------------------
@@ -101,6 +102,12 @@ def from_spcm(filepath, name=None, *, delimiter=",", parent=None, verbose=True):
             if "END" in line:
                 header_lines += 1
                 break
+    if "Date" in headers.keys() and "Time" in headers.keys():
+        # NOTE:  reports created in local time, no-way to calculate absolute time
+        created = " ".join([headers["Date"], headers["Time"]])
+        created = time.strptime(created, "%Y-%m-%d %H:%M:%S")  
+        created = timestamp.TimeStamp(time.mktime(created)).RFC3339
+
     # initialize data object
     kwargs = {"name": name, "kind": "spcm", "source": filepath, **headers}
     if parent:
