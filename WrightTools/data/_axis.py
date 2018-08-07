@@ -181,8 +181,8 @@ class Axis(object):
 
     def max(self):
         """Axis max."""
-        return np.max(self[:])
+        return np.nanmax(self[:])
 
     def min(self):
         """Axis min."""
-        return np.min(self[:])
+        return np.nanmin(self[:])
