@@ -16,6 +16,7 @@ addons:
             - libfreetype6-dev
             - libopenblas-dev
 install:
+  - pip install cython
   - python setup.py install
   - pip install -U pytest pytest-mp
 before_script:
