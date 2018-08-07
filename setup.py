@@ -37,7 +37,7 @@ setup(
         "pytest",
         "pytest-cov",
         "sphinx",
-        "sphinx-gallery",
+        "sphinx-gallery==0.1.12",
         "sphinx-rtd-theme",
     ],
     install_requires=[
@@ -53,7 +53,7 @@ setup(
         "tidy_headers>=0.3.0",
     ],
     extras_require={
-        "docs": ["sphinx", "sphinx-gallery", "sphinx-rtd-theme"],
+        "docs": ["sphinx", "sphinx-gallery==0.1.12", "sphinx-rtd-theme"],
         "dev": ["black", "pre-commit", "pydocstyle"],
     },
     version=version,
