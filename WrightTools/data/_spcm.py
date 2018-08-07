@@ -107,6 +107,7 @@ def from_spcm(filepath, name=None, *, delimiter=",", parent=None, verbose=True):
         created = " ".join([headers["Date"], headers["Time"]])
         created = time.strptime(created, "%Y-%m-%d %H:%M:%S")  
         created = timestamp.TimeStamp(time.mktime(created)).RFC3339
+        headers['created'] = created
 
     # initialize data object
     kwargs = {"name": name, "kind": "spcm", "source": filepath, **headers}
