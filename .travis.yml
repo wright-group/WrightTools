@@ -17,7 +17,7 @@ addons:
             - libopenblas-dev
 install:
   - pip install cython
-  - python setup.py install
+  - pip install .
   - pip install -U pytest pytest-mp
 before_script:
 - "export DISPLAY=:99.0"
