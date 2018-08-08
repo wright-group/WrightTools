@@ -46,7 +46,7 @@ setup(
         "imageio",
         "matplotlib>=2.2",
         "numexpr",
-        "numpy",
+        "numpy>=1.15.0",
         "python-dateutil",
         "pytz",
         "scipy",
