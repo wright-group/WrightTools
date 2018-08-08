@@ -35,6 +35,7 @@ dataset                                            axis expressions             
 ``Solis.wm_ypos_fluorescence_with_filter``         ``('wm', 'ypos')``            ``(2560, 2160)``
 ``Solis.xpos_ypos_fluorescence``                   ``('xpos', 'ypos')``          ``(2560, 2160)``
 ``spcm.test_data``                                 ``('time',)``                 ``(1024,)``
+``spcm.test_data_full_metadata``				   ``('time',)``				 ``(1024,)``
 ``Tensor27.CuPCtS_powder_ATR``                     ``('energy',)``               ``(7259,)``
 ``wt5.v1p0p0_perovskite_TA``                       ``('w1=wm', 'w2', 'd2')``     ``(52, 52, 13)``     :ref:`sphx_glr_auto_examples_quick2d_signed.py`
 ``wt5.v1p0p1_MoS2_TrEE_movie`` [#czech2015]_       ``('w2', 'w1', 'd2')``        ``(41, 41, 23)``     :ref:`sphx_glr_auto_examples_level.py`, :ref:`sphx_glr_auto_examples_colormaps.py`
