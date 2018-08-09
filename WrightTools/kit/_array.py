@@ -371,4 +371,3 @@ def mask_reduce(mask, shape=None):
         red = tuple([i for i in range(len(shape)) if shape[i] == 1])
         return mask.max(axis=red, keepdims=True)
     return mask
-

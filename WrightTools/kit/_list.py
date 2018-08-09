@@ -98,6 +98,7 @@ def get_index(lis, argument):
     else:
         return lis.index(argument)
 
+
 def pairwise(iterable):
     """s -> (s0,s1), (s1,s2), (s2, s3), ...
     
@@ -118,4 +119,3 @@ def pairwise(iterable):
     a, b = itertools.tee(iterable)
     next(b, None)
     return zip(a, b)
-
