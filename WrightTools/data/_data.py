@@ -1365,37 +1365,15 @@ class Data(Group):
         except TypeError:
             positions = [-np.inf, positions, np.inf]
 
-        def pairwise(iterable):
-            "s -> (s0,s1), (s1,s2), (s2, s3), ..."
-            a, b = itertools.tee(iterable)
-            next(b, None)
-            return zip(a, b)
-
-        def mask_reduce(mask, shape):
-            mask = mask.copy()
-            for i in range(len(mask.shape)):
-                a = mask.copy()
-                j = list(range(len(mask.shape)))
-                j.remove(i)
-                j = tuple(j)
-                a = a.max(axis=j, keepdims=True)
-                idx = [slice(None)] * len(mask.shape)
-                a = a.flatten()
-                idx[i] = [k for k in range(len(a)) if a[k]]
-                mask = mask[tuple(idx)]
-
-            red = tuple([i for i in range(len(shape)) if shape[i] == 1])
-            return mask.max(axis=red, keepdims=True)
-
         values = self._axes[0].full
-        masks = [(values >= lo) & (values < hi) for lo, hi in pairwise(positions)]
+        masks = [(values >= lo) & (values < hi) for lo, hi in wt_kit.pairwise(positions)]
         for i in range(len(positions) - 1):
             out.create_data("split%03i" % i)
 
         for var in self.variables:
             for i, mask in enumerate(masks):
                 try:
-                    omask = mask_reduce(mask, var.shape)
+                    omask = wt_kit.mask_reduce(mask, var.shape)
                 except ValueError:
                     continue
                 out_arr = np.full(omask.shape, np.nan)
@@ -1407,7 +1385,7 @@ class Data(Group):
         for ch in self.channels:
             for i, mask in enumerate(masks):
                 try:
-                    omask = mask_reduce(mask, ch.shape)
+                    omask = wt_kit.mask_reduce(mask, ch.shape)
                 except ValueError:
                     continue
                 out_arr = np.full(omask.shape, np.nan)
