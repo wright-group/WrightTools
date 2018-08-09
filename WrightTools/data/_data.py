@@ -1402,7 +1402,7 @@ class Data(Group):
                     continue
 
             print("split data into {0} pieces along <{1}>:".format(len(positions) - 1, expression))
-            for i, (lo, hi) in enumerate(pairwise(positions)):
+            for i, (lo, hi) in enumerate(wt_kit.pairwise(positions)):
                 new_data = out[i]
                 if new_data.shape == ():
                     print("  {0} : None".format(i))
