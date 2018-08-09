@@ -36,7 +36,7 @@ setup(
     tests_require=[
         "pytest",
         "pytest-cov",
-        "sphinx==1.6.5",
+        "sphinx",
         "sphinx-gallery==0.1.12",
         "sphinx-rtd-theme",
     ],
@@ -53,7 +53,7 @@ setup(
         "tidy_headers>=0.3.0",
     ],
     extras_require={
-        "docs": ["sphinx-gallery==0.1.12"],
+        "docs": ["sphinx", "sphinx-gallery==0.1.12", "sphinx-rtd-theme"],
         "dev": ["black", "pre-commit", "pydocstyle"],
     },
     version=version,
@@ -72,6 +72,7 @@ setup(
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
         "Topic :: Scientific/Engineering",
     ],
 )
