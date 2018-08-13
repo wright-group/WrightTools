@@ -6,6 +6,8 @@
 
 import numpy as np
 
+from typing import Tuple, List
+
 from .. import exceptions as wt_exceptions
 
 
@@ -30,7 +32,7 @@ __all__ = [
 # --- functions -----------------------------------------------------------------------------------
 
 
-def closest_pair(arr, give="indicies"):
+def closest_pair(arr, give="indicies") -> List[List[tuple, tuple]]:
     """Find the pair of indices corresponding to the closest elements in an array.
 
     If multiple pairs are equally close, both pairs of indicies are returned.
@@ -82,7 +84,7 @@ def closest_pair(arr, give="indicies"):
         raise KeyError("give not recognized in closest_pair")
 
 
-def diff(xi, yi, order=1):
+def diff(xi, yi, order=1) -> np.ndarray:
     """Take the numerical derivative of a 1D array.
 
     Output is mapped onto the original coordinates  using linear interpolation.
@@ -155,7 +157,7 @@ def fft(xi, yi, axis=0):
     return xi, yi
 
 
-def joint_shape(*args):
+def joint_shape(*args) -> Tuple[int, ...]:
     """Given a set of arrays, return the joint shape.
 
     Parameters
@@ -177,7 +179,7 @@ def joint_shape(*args):
     return tuple(shape)
 
 
-def orthogonal(*args):
+def orthogonal(*args) -> bool:
     """Determine if a set of arrays are orthogonal.
 
     Parameters
@@ -198,7 +200,7 @@ def orthogonal(*args):
     return True
 
 
-def remove_nans_1D(*args):
+def remove_nans_1D(*args) -> Tuple[np.ndarray, ...]:
     """Remove nans in a set of 1D arrays.
 
     Removes indicies in all arrays if any array is nan at that index.
@@ -219,7 +221,7 @@ def remove_nans_1D(*args):
     return tuple(np.array(a)[~vals] for a in args)
 
 
-def share_nans(*arrs):
+def share_nans(*arrs) -> Tuple[np.ndarray, ...]:
     """Take a list of nD arrays and return a new list of nD arrays.
 
     The new list is in the same order as the old list.
@@ -241,7 +243,7 @@ def share_nans(*arrs):
     return tuple([a + nans for a in arrs])
 
 
-def smooth_1D(arr, n=10):
+def smooth_1D(arr, n=10) -> np.ndarray:
     """Smooth 1D data by 'running average'.
 
     Parameters
@@ -255,7 +257,7 @@ def smooth_1D(arr, n=10):
     return arr
 
 
-def svd(a, i=None):
+def svd(a, i=None) -> Tuple[np.ndarray, ...]:
     """Singular Value Decomposition.
 
     Factors the matrix `a` as ``u * np.diag(s) * v``, where `u` and `v`
@@ -282,7 +284,7 @@ def svd(a, i=None):
         return u[i], v[i], s[i]
 
 
-def unique(arr, tolerance=1e-6):
+def unique(arr, tolerance=1e-6) -> np.ndarray:
     """Return unique elements in 1D array, within tolerance.
 
     Parameters
@@ -308,7 +310,7 @@ def unique(arr, tolerance=1e-6):
     return np.array(unique)
 
 
-def valid_index(index, shape):
+def valid_index(index, shape) -> tuple:
     """Get a valid index for a broadcastable shape.
 
     Parameters
