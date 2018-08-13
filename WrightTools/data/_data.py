@@ -1371,7 +1371,7 @@ class Data(Group):
         cuts = []
         for mask in masks:
             try:
-                omasks.append(wt_kit.mask_reduce(mask, values.shape))
+                omasks.append(wt_kit.mask_reduce(mask))
                 cuts.append([i == 1 for i in omasks[-1].shape])
             except ValueError:
                 omasks.append(None)
@@ -1380,32 +1380,26 @@ class Data(Group):
             out.create_data("split%03i" % i)
 
         for var in self.variables:
-            for i, (mask, omask, cut) in enumerate(zip(masks, omasks, cuts)):
+            for i, (imask, omask, cut) in enumerate(zip(masks, omasks, cuts)):
                 if omask is None:
+                    # Zero length split
                     continue
-                try:
-                    omask = wt_kit.mask_reduce(omask, var.shape)
-                except ValueError:
-                    continue
+                omask = wt_kit.enforce_mask_shape(omask, var.shape)
                 omask.shape = tuple([s for s, c in zip(omask.shape, cut) if not c])
                 out_arr = np.full(omask.shape, np.nan)
-                red = tuple([i for i in range(len(var.shape)) if var.shape[i] == 1])
-                imask = mask.max(axis=red, keepdims=True)
+                imask = wt_kit.enforce_mask_shape(imask, var.shape)
                 out_arr[omask] = var[:][imask]
                 out[i].create_variable(values=out_arr, **var.attrs)
 
         for ch in self.channels:
-            for i, (mask, omask, cut) in enumerate(zip(masks, omasks, cuts)):
+            for i, (imask, omask, cut) in enumerate(zip(masks, omasks, cuts)):
                 if omask is None:
+                    # Zero length split
                     continue
-                try:
-                    omask = wt_kit.mask_reduce(omask, ch.shape)
-                except ValueError:
-                    continue
+                omask = wt_kit.enforce_mask_shape(omask, ch.shape)
                 omask.shape = tuple([s for s, c in zip(omask.shape, cut) if not c])
                 out_arr = np.full(omask.shape, np.nan)
-                red = tuple([i for i in range(len(ch.shape)) if ch.shape[i] == 1])
-                imask = mask.max(axis=red, keepdims=True)
+                imask = wt_kit.enforce_mask_shape(imask, ch.shape)
                 out_arr[omask] = ch[:][imask]
                 out[i].create_channel(values=out_arr, **ch.attrs)
 
