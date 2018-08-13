@@ -43,7 +43,7 @@ class Variable(Dataset):
         self.attrs["class"] = self.class_name
 
     @property
-    def label(self):
+    def label(self) -> str:
         return self.attrs.get("label", "")
 
     @label.setter

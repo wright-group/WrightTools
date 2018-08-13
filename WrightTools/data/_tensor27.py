@@ -21,7 +21,7 @@ __all__ = ["from_Tensor27"]
 # --- from function -------------------------------------------------------------------------------
 
 
-def from_Tensor27(filepath, name=None, parent=None, verbose=True):
+def from_Tensor27(filepath, name=None, parent=None, verbose=True) -> Data:
     """Create a data object from a Tensor27 FTIR file.
 
     .. plot::

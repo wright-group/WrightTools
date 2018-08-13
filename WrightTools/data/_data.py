@@ -12,6 +12,7 @@ import warnings
 import numpy as np
 
 import h5py
+from typing import Tuple
 
 import scipy
 from scipy.interpolate import griddata, interp1d
@@ -61,27 +62,27 @@ class Data(Group):
         self.source
         self.variable_names
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "<WrightTools.Data '{0}' {1} at {2}>".format(
             self.natural_name, str(self.axis_names), "::".join([self.filepath, self.name])
         )
 
     @property
-    def axes(self):
+    def axes(self) -> Tuple[Axis, ...]:
         return tuple(self._axes)
 
     @property
-    def axis_expressions(self):
+    def axis_expressions(self) -> Tuple[str, ...]:
         """Axis expressions."""
         return tuple(a.expression for a in self._axes)
 
     @property
-    def axis_names(self):
+    def axis_names(self) -> Tuple[str, ...]:
         """Axis names."""
         return tuple(a.natural_name for a in self._axes)
 
     @property
-    def channel_names(self):
+    def channel_names(self) -> tuple:
         """Channel names."""
         if "channel_names" not in self.attrs.keys():
             self.attrs["channel_names"] = np.array([], dtype="S")
@@ -93,12 +94,12 @@ class Data(Group):
         self.attrs["channel_names"] = np.array(value, dtype="S")
 
     @property
-    def channels(self):
+    def channels(self) -> Tuple[Channel, ...]:
         """Channels."""
         return tuple(self[n] for n in self.channel_names)
 
     @property
-    def datasets(self):
+    def datasets(self) -> Tuple[h5py.Dataset, ...]:
         """Datasets."""
         return tuple(v for _, v in self.items() if isinstance(v, h5py.Dataset))
 
@@ -111,7 +112,7 @@ class Data(Group):
         return value if not value == "None" else None
 
     @property
-    def ndim(self):
+    def ndim(self) -> int:
         """Get number of dimensions."""
         try:
             assert self._ndim is not None
@@ -124,7 +125,7 @@ class Data(Group):
             return self._ndim
 
     @property
-    def shape(self):
+    def shape(self) -> Tuple[int, ...]:
         """Shape."""
         try:
             assert self._shape is not None
@@ -134,7 +135,7 @@ class Data(Group):
             return self._shape
 
     @property
-    def size(self):
+    def size(self) -> int:
         """Size."""
         return functools.reduce(operator.mul, self.shape)
 
@@ -147,12 +148,12 @@ class Data(Group):
         return value if not value == "None" else None
 
     @property
-    def units(self):
+    def units(self) -> Tuple[str, ...]:
         """All axis units."""
         return tuple(a.units for a in self._axes)
 
     @property
-    def variable_names(self):
+    def variable_names(self) -> Tuple[str, ...]:
         """Variable names."""
         if "variable_names" not in self.attrs.keys():
             self.attrs["variable_names"] = np.array([], dtype="S")
@@ -164,7 +165,7 @@ class Data(Group):
         self.attrs["variable_names"] = np.array(value, dtype="S")
 
     @property
-    def variables(self):
+    def variables(self) -> Tuple[Variable, ...]:
         """Variables."""
         try:
             assert self._variables is not None
@@ -243,7 +244,7 @@ class Data(Group):
         new.insert(0, new.pop(channel_index))
         self.channel_names = new
 
-    def chop(self, *args, at={}, parent=None, verbose=True):
+    def chop(self, *args, at={}, parent=None, verbose=True) -> wt_collection.Collection:
         """Divide the dataset into its lower-dimensionality components.
 
         Parameters
@@ -532,7 +533,7 @@ class Data(Group):
                         )
         self._on_axes_updated()
 
-    def create_channel(self, name, values=None, shape=None, units=None, **kwargs):
+    def create_channel(self, name, values=None, shape=None, units=None, **kwargs) -> Channel:
         """Append a new channel.
 
         Parameters
@@ -578,7 +579,7 @@ class Data(Group):
         self.attrs["channel_names"] = np.append(self.attrs["channel_names"], name.encode())
         return channel
 
-    def create_variable(self, name, values=None, shape=None, units=None, **kwargs):
+    def create_variable(self, name, values=None, shape=None, units=None, **kwargs) -> Variable:
         """Add new child variable.
 
         Parameters
@@ -620,7 +621,7 @@ class Data(Group):
         self.attrs["variable_names"] = np.append(self.attrs["variable_names"], name.encode())
         return variable
 
-    def downscale(self, tup, name=None, parent=None):
+    def downscale(self, tup, name=None, parent=None) -> "Data":
         """Down sample the data array using local averaging.
 
         See `skimage.transform.downscale_local_mean`__ for more info.
@@ -672,8 +673,8 @@ class Data(Group):
     def flush(self):
         super().flush()
 
-    def get_nadir(self, channel=0):
-        """Get the coordinates in units of the minimum in a channel.
+    def get_nadir(self, channel=0) -> tuple:
+        """Get the coordinates, in units, of the minimum in a channel.
 
         Parameters
         ----------
@@ -698,8 +699,8 @@ class Data(Group):
         # finish
         return tuple(a[idx] for a in self._axes)
 
-    def get_zenith(self, channel=0):
-        """Get the coordinates in units of the maximum in a channel.
+    def get_zenith(self, channel=0) -> tuple:
+        """Get the coordinates, in units, of the maximum in a channel.
 
         Parameters
         ----------
@@ -1243,7 +1244,7 @@ class Data(Group):
 
         self.channels[0].chunkwise(f, self.channels)
 
-    def smooth(self, factors, channel=None, verbose=True):
+    def smooth(self, factors, channel=None, verbose=True) -> "Data":
         """Smooth a channel using an n-dimenional `kaiser window`__.
 
         Note, all arrays are loaded into memory.
