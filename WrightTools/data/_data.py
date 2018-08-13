@@ -1433,7 +1433,7 @@ class Data(Group):
             try:
                 d.transform(*old_expr)
                 keep = []
-                for ax, u in zip(d.axes, old_units):
+                for ax in d.axes:
                     if ax.size > 1:
                         keep.append(ax.expression)
                 d.transform(*keep)
