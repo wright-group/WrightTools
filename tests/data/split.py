@@ -75,6 +75,7 @@ def test_split_axis_name():
     assert len(split) == 2
     assert split[1].shape == (35, 10, 11)
     assert split[0].shape == (35, 11)
+    assert split[0].axis_expressions == ("wm", "w1")
     a.close()
 
 

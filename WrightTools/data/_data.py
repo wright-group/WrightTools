@@ -1432,6 +1432,11 @@ class Data(Group):
         for d in out.values():
             try:
                 d.transform(*old_expr)
+                keep = []
+                for ax, u in zip(d.axes, old_units):
+                    if ax.size > 1:
+                        keep.append(ax.expression)
+                d.transform(*keep)
                 for ax, u in zip(d.axes, old_units):
                     ax.convert(u)
             except IndexError:
