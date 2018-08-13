@@ -74,7 +74,7 @@ def test_split_axis_name():
     split.print_tree()
     assert len(split) == 2
     assert split[1].shape == (35, 10, 11)
-    assert split[0].shape == (35, 1, 11)  # WT2 made this 35, 11
+    assert split[0].shape == (35, 11)
     a.close()
 
 
@@ -84,7 +84,7 @@ def test_split_constant():
     split = a.split(1, [1555])
     split.print_tree()
     assert len(split) == 2
-    assert split[0].shape == (35, 1, 11)
+    assert split[0].shape == (35, 11)
     a.close()
 
 

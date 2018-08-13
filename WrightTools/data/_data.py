@@ -1367,15 +1367,27 @@ class Data(Group):
 
         values = self._axes[0].full
         masks = [(values >= lo) & (values < hi) for lo, hi in wt_kit.pairwise(positions)]
+        omasks = []
+        cuts = []
+        for mask in masks:
+            try:
+                omasks.append(wt_kit.mask_reduce(mask, values.shape))
+                cuts.append([i == 1 for i in omasks[-1].shape])
+            except ValueError:
+                omasks.append(None)
+                cuts.append(None)
         for i in range(len(positions) - 1):
             out.create_data("split%03i" % i)
 
         for var in self.variables:
-            for i, mask in enumerate(masks):
+            for i, (mask, omask, cut) in enumerate(zip(masks, omasks, cuts)):
+                if omask is None:
+                    continue
                 try:
-                    omask = wt_kit.mask_reduce(mask, var.shape)
+                    omask = wt_kit.mask_reduce(omask, var.shape)
                 except ValueError:
                     continue
+                omask.shape = tuple([s for s, c in zip(omask.shape, cut) if not c])
                 out_arr = np.full(omask.shape, np.nan)
                 red = tuple([i for i in range(len(var.shape)) if var.shape[i] == 1])
                 imask = mask.max(axis=red, keepdims=True)
@@ -1383,11 +1395,14 @@ class Data(Group):
                 out[i].create_variable(values=out_arr, **var.attrs)
 
         for ch in self.channels:
-            for i, mask in enumerate(masks):
+            for i, (mask, omask, cut) in enumerate(zip(masks, omasks, cuts)):
+                if omask is None:
+                    continue
                 try:
-                    omask = wt_kit.mask_reduce(mask, ch.shape)
+                    omask = wt_kit.mask_reduce(omask, ch.shape)
                 except ValueError:
                     continue
+                omask.shape = tuple([s for s, c in zip(omask.shape, cut) if not c])
                 out_arr = np.full(omask.shape, np.nan)
                 red = tuple([i for i in range(len(ch.shape)) if ch.shape[i] == 1])
                 imask = mask.max(axis=red, keepdims=True)
