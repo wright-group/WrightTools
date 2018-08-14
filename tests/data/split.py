@@ -6,6 +6,7 @@
 
 
 import pytest
+import numpy as np
 
 import WrightTools as wt
 from WrightTools import datasets
@@ -17,7 +18,10 @@ from WrightTools import datasets
 def test_split():
     p = datasets.PyCMDS.wm_w2_w1_000
     a = wt.data.from_PyCMDS(p)
+    exprs = a.axis_expressions
     split = a.split(0, [19700], units="wn")
+    assert exprs == a.axis_expressions
+    assert exprs == split[0].axis_expressions
     assert len(split) == 2
     print(split[0].shape)
     assert split[0].shape == (14, 11, 11)
@@ -100,6 +104,27 @@ def test_split_parent():
     a.close()
 
 
+def test_split_expression():
+    p = datasets.PyCMDS.wm_w2_w1_000
+    a = wt.data.from_PyCMDS(p)
+    split = a.split("w1+w2", 3150, units="wn")
+    assert len(split) == 2
+    print(split[0].shape)
+    assert split[0].shape == (35, 10, 10)
+    assert split[1].shape == (35, 11, 11)
+
+
+def test_split_hole():
+    data = wt.Data()
+    data.create_variable("x", np.linspace(-5, 5, 100)[:, None])
+    data.create_variable("y", np.linspace(-5, 5, 100)[None, :])
+    data.create_variable("z", np.exp(-data.x[:] ** 2) * np.exp(-data.y[:] ** 2))
+    split = data.split("z", 0.5)
+    assert len(split) == 2
+    assert split[0].shape == (100, 100)
+    assert split[1].shape == (16, 16)
+
+
 if __name__ == "__main__":
 
     test_split()
@@ -110,3 +135,5 @@ if __name__ == "__main__":
     test_split_axis_name()
     test_split_constant()
     test_split_parent()
+    test_split_expression()
+    test_split_hole()
