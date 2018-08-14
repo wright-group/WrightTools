@@ -1312,7 +1312,7 @@ class Data(Group):
 
     def split(self, expression, positions, *, units=None, parent=None, verbose=True):
         """
-        Split the data object along a given axis, in units.
+        Split the data object along a given expression, in units.
 
         Parameters
         ----------
