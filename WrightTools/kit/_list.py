@@ -101,9 +101,9 @@ def get_index(lis, argument):
 
 def pairwise(iterable):
     """s -> (s0,s1), (s1,s2), (s2, s3), ...
-    
+
     Originally from `itertools docs`__
-    
+
     __ https://docs.python.org/3/library/itertools.html#itertools-recipes
 
     Parameters
