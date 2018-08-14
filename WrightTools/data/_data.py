@@ -645,6 +645,11 @@ class Data(Group):
         -------
         WrightTools Data instance
             New data object with the downscaled channels and axes
+
+        See Also
+        --------
+        zoom
+            Zoom the data array using spline interpolation of the requested order.
         """
         if name is None:
             name = self.natural_name + "_downscaled"
@@ -827,7 +832,7 @@ class Data(Group):
 
     def map_variable(
         self, variable, points, input_units="same", *, name=None, parent=None, verbose=True
-    ):
+    ) -> "Data":
         """Map points of an axis to new points using linear interpolation.
 
         Out-of-bounds points are written nan.
@@ -1495,6 +1500,11 @@ class Data(Group):
             The order of the spline used to interpolate onto new points.
         verbose : bool (optional)
             Toggle talkback. Default is True.
+
+        See Also
+        --------
+        downscale
+            Down-sample the data array using local averaging.
         """
         raise NotImplementedError
         import scipy.ndimage
