@@ -83,7 +83,9 @@ def fluence(
     return ujcm2, photonscm2, GWcm2
 
 
-def mono_resolution(grooves_per_mm, slit_width, focal_length, output_color, output_units="wn") -> float:
+def mono_resolution(
+    grooves_per_mm, slit_width, focal_length, output_color, output_units="wn"
+) -> float:
     """Calculate the resolution of a monochromator.
 
     Parameters
@@ -135,7 +137,7 @@ def nm_width(center, width, units="wn"):
     return red - blue
 
 
-def symmetric_sqrt(x, out=None) -> :
+def symmetric_sqrt(x, out=None) -> np.ndarray:
     """Compute the 'symmetric' square root: sign(x) * sqrt(abs(x)).
 
     Parameters

@@ -120,7 +120,7 @@ def diff(xi, yi, order=1) -> np.ndarray:
     return yi
 
 
-def fft(xi, yi, axis=0) -> Tuple(np.ndarray, np.ndarray):
+def fft(xi, yi, axis=0) -> Tuple[np.ndarray, np.ndarray]:
     """Take the 1D FFT of an N-dimensional array and return "sensible" properly shifted arrays.
 
     Parameters
