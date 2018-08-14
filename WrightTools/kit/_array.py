@@ -6,7 +6,7 @@
 
 import numpy as np
 
-from typing import Tuple, List
+from typing import Tuple, List, Union, Any
 
 from .. import exceptions as wt_exceptions
 
@@ -32,7 +32,7 @@ __all__ = [
 # --- functions -----------------------------------------------------------------------------------
 
 
-def closest_pair(arr, give="indicies") -> List[List[tuple, tuple]]:
+def closest_pair(arr, give="indicies") -> Any:
     """Find the pair of indices corresponding to the closest elements in an array.
 
     If multiple pairs are equally close, both pairs of indicies are returned.
@@ -120,7 +120,7 @@ def diff(xi, yi, order=1) -> np.ndarray:
     return yi
 
 
-def fft(xi, yi, axis=0):
+def fft(xi, yi, axis=0) -> Tuple(np.ndarray, np.ndarray):
     """Take the 1D FFT of an N-dimensional array and return "sensible" properly shifted arrays.
 
     Parameters
@@ -257,7 +257,7 @@ def smooth_1D(arr, n=10) -> np.ndarray:
     return arr
 
 
-def svd(a, i=None) -> Tuple[np.ndarray, ...]:
+def svd(a, i=None) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Singular Value Decomposition.
 
     Factors the matrix `a` as ``u * np.diag(s) * v``, where `u` and `v`
