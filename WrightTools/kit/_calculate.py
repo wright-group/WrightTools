@@ -6,6 +6,8 @@
 
 import numpy as np
 
+from typing import Tuple
+
 from .. import units as wt_units
 
 
@@ -13,7 +15,6 @@ from .. import units as wt_units
 
 
 __all__ = ["fluence", "mono_resolution", "nm_width", "symmetric_sqrt"]
-
 
 # --- functions ----------------------------------------------------------
 
@@ -28,7 +29,7 @@ def fluence(
     beam_radius_units="mm",
     pulse_width_units="fs_t",
     area_type="even",
-) -> tuple:
+) -> Tuple[float, float, float]:
     """Calculate the fluence of a beam.
 
     Parameters
@@ -115,7 +116,7 @@ def mono_resolution(
     )
 
 
-def nm_width(center, width, units="wn"):
+def nm_width(center, width, units="wn") -> float:
     """Given a center and width, in energy units, get back a width in nm.
 
     Parameters

@@ -8,12 +8,11 @@ import collections
 import operator
 import functools
 import warnings
-import itertools
 
 import numpy as np
 
 import h5py
-from typing import Tuple
+from typing import Optional, Tuple, Union
 
 import scipy
 from scipy.interpolate import griddata, interp1d
@@ -1316,7 +1315,9 @@ class Data(Group):
         if verbose:
             print("smoothed data")
 
-    def split(self, expression, positions, *, units=None, parent=None, verbose=True):
+    def split(
+        self, expression, positions, *, units=None, parent=None, verbose=True
+    ) -> wt_collection.Collection:
         """
         Split the data object along a given expression, in units.
 
@@ -1360,7 +1361,7 @@ class Data(Group):
         elif isinstance(expression, str):
             pass
         else:
-            raise TypeError("expression: expected {int, str}, got %s" % type(axis))
+            raise TypeError("expression: expected {int, str}, got %s" % type(expression))
 
         self.transform(expression)
         if units:
