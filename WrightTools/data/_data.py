@@ -479,9 +479,8 @@ class Data(Group):
                 res = np.nanmean(channel[:], axis=axis_index, keepdims=True)
                 new[:] = res
             elif method in ["int", "integrate"]:
-                res = np.trapz(
-                    y=channel[:], x=self._axes[axis_index][:], axis=axis_index, keepdims=True
-                )
+                res = np.trapz(y=channel[:], x=self._axes[axis_index][:], axis=axis_index)
+                res.shape = new_shape
                 new[:] = res
             else:
                 raise wt_exceptions.ValueError("method '{}' not recognized".format(m))
