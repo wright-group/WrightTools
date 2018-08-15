@@ -8,6 +8,7 @@ import collections
 import operator
 import functools
 import warnings
+import itertools
 
 import numpy as np
 
@@ -1309,29 +1310,23 @@ class Data(Group):
         if verbose:
             print("smoothed data")
 
-    def split(self, axis, positions, units="same", direction="below", parent=None, verbose=True):
+    def split(self, expression, positions, *, units=None, parent=None, verbose=True):
         """
-        Split the data object along a given axis, in units.
+        Split the data object along a given expression, in units.
 
         Parameters
         ----------
-        axis : int or str
-            The axis to split along.
+        expression : int or str
+            The expression to split along. If given as an integer, the axis at that index
+            is used.
         positions : number-type or 1D array-type
-            The position(s) to split at, in units. If a non-exact position is
-            given, the closest valid axis position will be used.
+            The position(s) to split at, in units.
         units : str (optional)
             The units of the given positions. Default is same, which assumes
-            input units are identical to axis units.
-        direction : {'below', 'above'} (optional)
-            Choose which group of data the points at positions remains with.
-            This decision is based on the value, not the index.
-            Consider points [0, 1, 2, 3, 4, 5] and split value [3]. If direction
-            is above the returned objects are [0, 1, 2] and [3, 4, 5]. If
-            direction is below the returned objects are [0, 1, 2, 3] and
-            [4, 5]. Default is below.
-        parent : WrightTools.Collection
+            input units are identical to first variable units.
+        parent : WrightTools.Collection (optional)
             The parent collection in which to place the 'split' collection.
+            Default is a new Collection.
         verbose : bool (optional)
             Toggle talkback. Default is True.
 
@@ -1348,108 +1343,103 @@ class Data(Group):
         collapse
             Collapse the dataset along one axis.
         """
-        raise NotImplementedError
         # axis ------------------------------------------------------------------------------------
-        if isinstance(axis, int):
-            axis_index = axis
-        elif isinstance(axis, str):
-            axis_index = self.axis_names.index(axis)
+        old_expr = self.axis_expressions
+        old_units = self.units
+        out = wt_collection.Collection(name="split", parent=parent)
+        if isinstance(expression, int):
+            if units is None:
+                units = self._axes[expression].units
+            expression = self._axes[expression].expression
+        elif isinstance(expression, str):
+            pass
         else:
-            raise TypeError("axis: expected {int, str}, got %s" % type(axis))
-        axis = self._axes[axis_index]
-        # indicies --------------------------------------------------------------------------------
-        # positions must be iterable and should be a numpy array
-        if type(positions) in [int, float]:
-            positions = [positions]
-        positions = np.array(positions)
-        # positions should be in the data units
-        if units != "same":
-            positions = wt_units.converter(positions, units, axis.units)
-        # get indicies of split
-        indicies = []
-        for position in positions:
-            idx = np.argmin(abs(axis[:] - position))
-            indicies.append(idx)
-        indicies.sort()
-        # set direction according to units
-        flip = direction == "above"
-        if axis[-1] < axis[0]:
-            flip = not flip
-        if flip:
-            indicies = [i - 1 for i in indicies]
-        # process ---------------------------------------------------------------------------------
-        outs = wt_collection.Collection(name="split", parent=parent, edit_local=parent is not None)
-        start = 0
-        stop = 0
-        for i in range(len(indicies) + 1):
-            # get start and stop
-            start = stop  # previous value
-            if i == len(indicies):
-                stop = len(axis)
-            else:
-                stop = indicies[i] + 1
-            # new data object prepare
-            new_name = "split%03d" % i
-            if stop - start < 1:
-                outs.create_data("")
-            elif stop - start == 1:
-                attrs = dict(self.attrs)
-                attrs.pop("name", None)
-                new_data = outs.create_data(new_name, **attrs)
-                for ax in self._axes:
-                    if ax != axis:
-                        attrs = dict(ax.attrs)
-                        attrs.pop("name", None)
-                        attrs.pop("units", None)
-                        new_data.create_axis(ax.natural_name, ax[:], ax.units, **attrs)
-                slc = [slice(None)] * len(self.shape)
-                slc[axis_index] = start
-                for ch in self.channels:
-                    attrs = dict(ch.attrs)
-                    attrs.pop("name", None)
-                    attrs.pop("units", None)
-                    new_data.create_channel(ch.natural_name, ch[:][slc], ch.units, **attrs)
-            else:
-                attrs = dict(self.attrs)
-                attrs.pop("name", None)
-                new_data = outs.create_data(new_name, **attrs)
-                for ax in self._axes:
-                    if ax == axis:
-                        slc = slice(start, stop)
-                    else:
-                        slc = slice(None)
-                    attrs = dict(ax.attrs)
-                    attrs.pop("name", None)
-                    attrs.pop("units", None)
-                    new_data.create_axis(ax.natural_name, ax[slc], ax.units, **attrs)
-                slc = [slice(None)] * len(self.shape)
-                slc[axis_index] = slice(start, stop)
-                for ch in self.channels:
-                    attrs = dict(ch.attrs)
-                    attrs.pop("name", None)
-                    attrs.pop("units", None)
-                    new_data.create_channel(ch.natural_name, ch[slc], ch.units, **attrs)
-        # post process ----------------------------------------------------------------------------
+            raise TypeError("expression: expected {int, str}, got %s" % type(axis))
+
+        self.transform(expression)
+        if units:
+            self.convert(units)
+
+        try:
+            positions = [-np.inf] + sorted(list(positions)) + [np.inf]
+        except TypeError:
+            positions = [-np.inf, positions, np.inf]
+
+        values = self._axes[0].full
+        masks = [(values >= lo) & (values < hi) for lo, hi in wt_kit.pairwise(positions)]
+        omasks = []
+        cuts = []
+        for mask in masks:
+            try:
+                omasks.append(wt_kit.mask_reduce(mask))
+                cuts.append([i == 1 for i in omasks[-1].shape])
+            except ValueError:
+                omasks.append(None)
+                cuts.append(None)
+        for i in range(len(positions) - 1):
+            out.create_data("split%03i" % i)
+
+        for var in self.variables:
+            for i, (imask, omask, cut) in enumerate(zip(masks, omasks, cuts)):
+                if omask is None:
+                    # Zero length split
+                    continue
+                omask = wt_kit.enforce_mask_shape(omask, var.shape)
+                omask.shape = tuple([s for s, c in zip(omask.shape, cut) if not c])
+                out_arr = np.full(omask.shape, np.nan)
+                imask = wt_kit.enforce_mask_shape(imask, var.shape)
+                out_arr[omask] = var[:][imask]
+                out[i].create_variable(values=out_arr, **var.attrs)
+
+        for ch in self.channels:
+            for i, (imask, omask, cut) in enumerate(zip(masks, omasks, cuts)):
+                if omask is None:
+                    # Zero length split
+                    continue
+                omask = wt_kit.enforce_mask_shape(omask, ch.shape)
+                omask.shape = tuple([s for s, c in zip(omask.shape, cut) if not c])
+                out_arr = np.full(omask.shape, np.nan)
+                imask = wt_kit.enforce_mask_shape(imask, ch.shape)
+                out_arr[omask] = ch[:][imask]
+                out[i].create_channel(values=out_arr, **ch.attrs)
+
         if verbose:
-            print(
-                "split data into {0} pieces along {1}:".format(
-                    len(indicies) + 1, axis.natural_name
-                )
-            )
-            for i in range(len(outs)):
-                new_data = outs[i]
-                if new_data is None:
+            for d in out.values():
+                try:
+                    d.transform(expression)
+                except IndexError:
+                    continue
+
+            print("split data into {0} pieces along <{1}>:".format(len(positions) - 1, expression))
+            for i, (lo, hi) in enumerate(wt_kit.pairwise(positions)):
+                new_data = out[i]
+                if new_data.shape == ():
                     print("  {0} : None".format(i))
-                elif len(new_data.shape) < len(self.shape):
-                    print("  {0} : {1} {2}(constant)".format(i, axis.natural_name, axis.units))
                 else:
-                    new_axis = new_data.axes[axis_index]
+                    new_axis = new_data.axes[0]
                     print(
-                        "  {0} : {1} to {2} {3} (length {4})".format(
-                            i, new_axis[0], new_axis[-1], new_axis.units, new_axis.size
+                        "  {0} : {1:0.2f} to {2:0.2f} {3} {4}".format(
+                            i, lo, hi, new_axis.units, new_axis.shape
                         )
                     )
-        return outs
+
+        for d in out.values():
+            try:
+                d.transform(*old_expr)
+                keep = []
+                for ax in d.axes:
+                    if ax.size > 1:
+                        keep.append(ax.expression)
+                d.transform(*keep)
+                for ax, u in zip(d.axes, old_units):
+                    ax.convert(u)
+            except IndexError:
+                continue
+        self.transform(*old_expr)
+        for ax, u in zip(self.axes, old_units):
+            ax.convert(u)
+
+        return out
 
     def transform(self, *axes, verbose=True):
         """Transform the data.

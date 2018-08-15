@@ -363,7 +363,7 @@ class Dataset(h5py.Dataset):
             def f(dataset, s):
                 return np.nanmax(dataset[s])
 
-            self.attrs["max"] = max(self.chunkwise(f).values())
+            self.attrs["max"] = np.nanmax(list(self.chunkwise(f).values()))
         return self.attrs["max"]
 
     def min(self):
@@ -373,7 +373,7 @@ class Dataset(h5py.Dataset):
             def f(dataset, s):
                 return np.nanmin(dataset[s])
 
-            self.attrs["min"] = min(self.chunkwise(f).values())
+            self.attrs["min"] = np.nanmin(list(self.chunkwise(f).values()))
         return self.attrs["min"]
 
     def slices(self):

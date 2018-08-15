@@ -24,6 +24,8 @@ __all__ = [
     "svd",
     "unique",
     "valid_index",
+    "mask_reduce",
+    "enforce_mask_shape",
 ]
 
 
@@ -338,3 +340,47 @@ def valid_index(index, shape):
         else:
             out.append(i)
     return tuple(out[::-1])
+
+
+def mask_reduce(mask):
+    """Reduce a boolean mask, removing all false slices in any dimension.
+
+    Parameters
+    ----------
+    mask : ndarray with bool dtype
+        The mask which is to be reduced
+
+    Returns
+    -------
+        A boolean mask with no all False slices.
+    """
+    mask = mask.copy()
+    for i in range(len(mask.shape)):
+        a = mask.copy()
+        j = list(range(len(mask.shape)))
+        j.remove(i)
+        j = tuple(j)
+        a = a.max(axis=j, keepdims=True)
+        idx = [slice(None)] * len(mask.shape)
+        a = a.flatten()
+        idx[i] = [k for k in range(len(a)) if a[k]]
+        mask = mask[tuple(idx)]
+    return mask
+
+
+def enforce_mask_shape(mask, shape):
+    """Reduce a boolean mask to fit a given shape.
+
+    Parameters
+    ----------
+    mask : ndarray with bool dtype
+        The mask which is to be reduced
+    shape : tuple of int
+        Shape which broadcasts to the mask shape.
+
+    Returns
+    -------
+        A boolean mask, collapsed along axes where the shape given has one element.
+    """
+    red = tuple([i for i in range(len(shape)) if shape[i] == 1])
+    return mask.max(axis=red, keepdims=True)
