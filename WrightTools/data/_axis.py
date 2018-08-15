@@ -91,7 +91,7 @@ class Axis(object):
 
     @property
     def label(self):
-        label = self.expression.replace("_", "\\,")
+        label = self.expression.replace("_", "\\;")
         if self.units_kind:
             symbol = wt_units.get_symbol(self.units)
             for v in self.variables:
