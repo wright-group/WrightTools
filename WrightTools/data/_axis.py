@@ -170,9 +170,14 @@ class Axis(object):
         convert_variables : boolean (optional)
             Toggle conversion of stored arrays. Default is False.
         """
+        if self.units is None and (destination_units is None or destination_units == "None"):
+            return
         if not wt_units.is_valid_conversion(self.units, destination_units):
             kind = wt_units.kind(self.units)
-            valid = list(wt_units.dicts[kind].keys())
+            try:
+                valid = list(wt_units.dicts[kind].keys())
+            except KeyError:
+                valid = None
             raise wt_exceptions.UnitsError(valid, destination_units)
         if convert_variables:
             for v in self.variables:
