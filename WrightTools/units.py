@@ -159,7 +159,10 @@ def get_symbol(units):
 
 
 def get_valid_conversions(units):
-    valid = list(dicts[kind(units)])
+    try:
+        valid = list(dicts[kind(units)])
+    except KeyError:
+        return ()
     valid.remove(units)
     return tuple(valid)
 
