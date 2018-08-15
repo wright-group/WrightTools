@@ -3,11 +3,12 @@
 
 # --- import --------------------------------------------------------------------------------------
 
+import itertools
 
 # --- define --------------------------------------------------------------------------------------
 
 
-__all__ = ["flatten_list", "intersperse", "get_index"]
+__all__ = ["flatten_list", "intersperse", "get_index", "pairwise"]
 
 
 # --- functions -----------------------------------------------------------------------------------
@@ -96,3 +97,25 @@ def get_index(lis, argument):
             raise IndexError("index {0} incompatible with length {1}".format(argument, len(lis)))
     else:
         return lis.index(argument)
+
+
+def pairwise(iterable):
+    """s -> (s0,s1), (s1,s2), (s2, s3), ...
+
+    Originally from `itertools docs`__
+
+    __ https://docs.python.org/3/library/itertools.html#itertools-recipes
+
+    Parameters
+    ----------
+    iterable : iterable
+        Iterable from which to produce pairs
+
+    Returns
+    -------
+    generator
+        Generator which producis pairwise tuples
+    """
+    a, b = itertools.tee(iterable)
+    next(b, None)
+    return zip(a, b)
