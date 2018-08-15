@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 """Test remove_variable."""
 
 
@@ -55,3 +56,10 @@ def test_index():
     data.remove_variable(-2)
     assert data.variable_names == ("w2", "w1", "wm", "d2")
     data.close()
+
+
+if __name__ == "__main__":
+    test_exception()
+    test_implied()
+    test_not_implied()
+    test_index()

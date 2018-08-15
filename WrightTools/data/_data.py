@@ -1110,7 +1110,7 @@ class Data(Group):
         # check that axes will not be ruined
         for n in removed:
             for a in self._axes:
-                if n in a.variables:
+                if n in [v.natural_name for v in a.variables]:
                     message = "{0} is contained in axis {1}".format(n, a.expression)
                     raise RuntimeError(message)
         # do removal
