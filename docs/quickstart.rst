@@ -94,17 +94,37 @@ Convert
 
 Want fine control? You can always convert individual axes, *e.g.* ``data.w2.convert('wn')``.
 
-Split (Coming soon)
-^^^^^^^^^^^^^^^^^^^
+Split
+^^^^^
 
 Use ``split`` to break your dataset into smaller pieces.
 
 .. code-block:: python
 
-   >>> data.split('d2', 0.)
-   split data into 2 pieces along d2:
-     0 : -599.79 to -40.06 fs (length 15)
-     1 : 39.91 to 279.70 fs (length 7)
+   >>> col = data.split('d2', 0.)
+   split data into 2 pieces along <d2>:
+     0 : -inf to 0.00 fs (1, 1, 15)
+     1 : 0.00 to inf fs (1, 1, 8)
+
+
+.. plot::
+   :include-source: False
+
+   import matplotlib.pyplot as plt
+   import WrightTools as wt
+   from WrightTools import datasets
+   p = datasets.wt5.v1p0p1_MoS2_TrEE_movie
+   data = wt.open(p)
+   col = data.split('d2', 0.)
+   fig, gs = wt.artists.create_figure(cols=[1,1])
+   for i, d in enumerate(col.values()):
+       d = d.chop("w1=wm", "d2", at={"w2": (2, "eV")})[0]
+       ax = plt.subplot(gs[i])
+       ax.pcolor(d)
+       ax.set_xlim(data.w1__e__wm.min(), data.w1__e__wm.max())
+       ax.set_ylim(data.d2.min(), data.d2.max())
+   wt.artists.set_fig_labels(xlabel=data.w1__e__wm.label, ylabel=data.d2.label)
+   plt.show()
 
 Clip
 ^^^^
