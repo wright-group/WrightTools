@@ -90,20 +90,18 @@ class Axis(object):
 
     @property
     def label(self):
-        symbol = wt_units.get_symbol(self.units)
-        label = self.expression
-        for v in self.variables:
-            vl = "%s_{%s}" % (symbol, v.label)
-            vl = vl.replace("_{}", "")  # label can be empty, no empty subscripts
-            label = label.replace(v.natural_name, vl)
+        label = self.expression.replace("_", "\\,")
         if self.units_kind:
+            symbol = wt_units.get_symbol(self.units)
+            for v in self.variables:
+                vl = "%s_{%s}" % (symbol, v.label)
+                vl = vl.replace("_{}", "")  # label can be empty, no empty subscripts
+                label = label.replace(v.natural_name, vl)
             units_dictionary = getattr(wt_units, self.units_kind)
             label += r"\,"
             label += r"\left("
             label += units_dictionary[self.units][2]
             label += r"\right)"
-        else:
-            pass
         label = r"$\mathsf{%s}$" % label
         return label
 
