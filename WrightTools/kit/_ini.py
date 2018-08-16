@@ -8,7 +8,7 @@ import configparser
 
 import tidy_headers
 
-from typing import List
+from typing import Dict, List
 
 # --- define --------------------------------------------------------------------------------------
 
@@ -56,7 +56,7 @@ class INI:
         self.config = configparser.ConfigParser()
 
     @property
-    def dictionary(self) -> dict:
+    def dictionary(self) -> Dict[str, dict]:
         """Get a python dictionary of contents."""
         self.config.read(self.filepath)
         return self.config._sections
@@ -108,7 +108,7 @@ class INI:
         self.config.read(self.filepath)
         return self.config.has_section(section)
 
-    def read(self, section, option) -> str:
+    def read(self, section, option):
         """Read from file.
 
         Parameters
@@ -129,7 +129,7 @@ class INI:
         return out
 
     @property
-    def sections(self) -> list:
+    def sections(self) -> List[str]:
         """List of sections."""
         self.config.read(self.filepath)
         return self.config.sections()

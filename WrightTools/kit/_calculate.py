@@ -6,7 +6,7 @@
 
 import numpy as np
 
-from typing import Tuple
+from typing import Tuple, Union
 
 from .. import units as wt_units
 
@@ -138,7 +138,7 @@ def nm_width(center, width, units="wn") -> float:
     return red - blue
 
 
-def symmetric_sqrt(x, out=None) -> np.ndarray:
+def symmetric_sqrt(x, out=None) -> Union[np.ndarray, float, complex]:
     """Compute the 'symmetric' square root: sign(x) * sqrt(abs(x)).
 
     Parameters

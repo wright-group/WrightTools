@@ -6,7 +6,7 @@
 
 import numpy as np
 
-from typing import Tuple, List, Union, Any
+from typing import Tuple, Any
 
 from .. import exceptions as wt_exceptions
 
@@ -312,7 +312,7 @@ def unique(arr, tolerance=1e-6) -> np.ndarray:
     return np.array(unique)
 
 
-def valid_index(index, shape) -> tuple:
+def valid_index(index, shape) -> Tuple:
     """Get a valid index for a broadcastable shape.
 
     Parameters
