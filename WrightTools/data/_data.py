@@ -12,7 +12,7 @@ import warnings
 import numpy as np
 
 import h5py
-from typing import Optional, Tuple, Union
+from typing import Tuple
 
 import scipy
 from scipy.interpolate import griddata, interp1d

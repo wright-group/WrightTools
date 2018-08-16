@@ -14,7 +14,6 @@ from .. import kit as wt_kit
 from .._dataset import Dataset
 
 __all__ = ["Channel"]
-num_type = TypeVar("num_type", int, float, complex)
 
 # --- class ---------------------------------------------------------------------------------------
 
@@ -78,17 +77,17 @@ class Channel(Dataset):
                 setattr(self, identifier, value)
 
     @property
-    def major_extent(self) -> num_type:
+    def major_extent(self) -> complex:
         """Maximum deviation from null."""
         return max((self.max() - self.null, self.null - self.min()))
 
     @property
-    def minor_extent(self) -> num_type:
+    def minor_extent(self) -> complex:
         """Minimum deviation from null."""
         return min((self.max() - self.null, self.null - self.min()))
 
     @property
-    def null(self) -> num_type:
+    def null(self) -> complex:
         if "null" not in self.attrs.keys():
             self.attrs["null"] = 0
         return self.attrs["null"]
@@ -107,7 +106,7 @@ class Channel(Dataset):
     def signed(self, value):
         self.attrs["signed"] = value
 
-    def mag(self) -> num_type:
+    def mag(self) -> complex:
         """Channel magnitude (maximum deviation from null)."""
         return self.major_extent
 
