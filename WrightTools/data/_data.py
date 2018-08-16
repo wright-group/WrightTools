@@ -457,30 +457,29 @@ class Data(Group):
 
             new_shape = list(self[channel].shape)
             new_shape[axis_index] = 1
+            rtype = self[channel].dtype
+            if method in ["ave", "average", "mean", "int", "integrate"]:
+                rtype = np.result_type(self[channel].dtype, float)
 
             new = self.create_channel(
                 "{}_{}_{}".format(channel, axis, method),
-                shape=new_shape,
+                values=np.empty(new_shape, dtype=rtype),
                 units=self[channel].units,
             )
 
             channel = self[channel]
 
             if method == "sum":
-                res = np.nansum(channel[:], axis=axis_index)
-                res.shape = new_shape
+                res = np.nansum(channel[:], axis=axis_index, keepdims=True)
                 new[:] = res
             elif method in ["max", "maximum"]:
-                res = np.nanmax(channel[:], axis=axis_index)
-                res.shape = new_shape
+                res = np.nanmax(channel[:], axis=axis_index, keepdims=True)
                 new[:] = res
             elif method in ["min", "minimum"]:
-                res = np.nanmin(channel[:], axis=axis_index)
-                res.shape = new_shape
+                res = np.nanmin(channel[:], axis=axis_index, keepdims=True)
                 new[:] = res
             elif method in ["ave", "average", "mean"]:
-                res = np.nanmean(channel[:], axis=axis_index)
-                res.shape = new_shape
+                res = np.nanmean(channel[:], axis=axis_index, keepdims=True)
                 new[:] = res
             elif method in ["int", "integrate"]:
                 res = np.trapz(y=channel[:], x=self._axes[axis_index][:], axis=axis_index)
