@@ -24,7 +24,7 @@ __all__ = ["from_spcm"]
 # --- from function -------------------------------------------------------------------------------
 
 
-def from_spcm(filepath, name=None, *, delimiter=",", parent=None, verbose=True) -> Data:
+def from_spcm(filepath, name=None, *, delimiter=",", parent=None, verbose=True):
     """Create a ``Data`` object from a Becker & Hickl `spcm`__ file (ASCII-exported, ``.asc``).
 
     If provided, setup parameters are stored in the ``attrs`` dictionary of the ``Data`` object.

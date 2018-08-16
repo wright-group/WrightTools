@@ -21,7 +21,7 @@ __all__ = ["from_shimadzu"]
 # --- from function -------------------------------------------------------------------------------
 
 
-def from_shimadzu(filepath, name=None, parent=None, verbose=True) -> Data:
+def from_shimadzu(filepath, name=None, parent=None, verbose=True):
     """Create a data object from Shimadzu .txt file.
 
     Parameters

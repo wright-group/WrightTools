@@ -23,7 +23,7 @@ __all__ = ["from_Solis"]
 # --- from function -------------------------------------------------------------------------------
 
 
-def from_Solis(filepath, name=None, parent=None, verbose=True) -> Data:
+def from_Solis(filepath, name=None, parent=None, verbose=True):
     """Create a data object from Andor Solis software (ascii exports).
 
     Parameters

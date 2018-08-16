@@ -33,7 +33,7 @@ def from_KENT(
     frequency_tolerance=0.5,
     parent=None,
     verbose=True,
-) -> Data:
+):
     """Create data object from KENT file(s).
 
     Parameters

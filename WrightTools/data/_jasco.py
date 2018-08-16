@@ -21,7 +21,7 @@ __all__ = ["from_JASCO"]
 # --- from function -------------------------------------------------------------------------------
 
 
-def from_JASCO(filepath, name=None, parent=None, verbose=True) -> Data:
+def from_JASCO(filepath, name=None, parent=None, verbose=True):
     """Create a data object from JASCO UV-Vis spectrometers.
 
     Parameters

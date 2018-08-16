@@ -21,7 +21,7 @@ __all__ = ["from_PyCMDS"]
 # --- from function -------------------------------------------------------------------------------
 
 
-def from_PyCMDS(filepath, name=None, parent=None, verbose=True) -> Data:
+def from_PyCMDS(filepath, name=None, parent=None, verbose=True):
     """Create a data object from a single PyCMDS output file.
 
     Parameters
