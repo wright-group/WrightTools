@@ -457,10 +457,13 @@ class Data(Group):
 
             new_shape = list(self[channel].shape)
             new_shape[axis_index] = 1
+            rtype = self[channel].dtype
+            if method in ["ave", "average", "mean", "int", "integrate"]:
+                rtype = np.result_type(self[channel].dtype, float)
 
             new = self.create_channel(
                 "{}_{}_{}".format(channel, axis, method),
-                values=np.empty(new_shape, dtype=self[channel].dtype),
+                values=np.empty(new_shape, dtype=rtype),
                 units=self[channel].units,
             )
 
