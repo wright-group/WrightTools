@@ -9,7 +9,7 @@ import collections
 import numpy as np
 import warnings
 
-from typing import Dict, List
+from typing import Dict, List, Optional, Tuple
 
 # --- define --------------------------------------------------------------------------------------
 
@@ -159,7 +159,7 @@ def get_symbol(units) -> str:
         return kind(units)
 
 
-def get_valid_conversions(units) -> tuple:
+def get_valid_conversions(units) -> Tuple[str, ...]:
     try:
         valid = list(dicts[kind(units)])
     except KeyError:
@@ -178,7 +178,7 @@ def is_valid_conversion(a, b) -> bool:
         return False
 
 
-def kind(units):
+def kind(units) -> Optional[str]:
     """Find the kind of given units.
 
     Parameters
