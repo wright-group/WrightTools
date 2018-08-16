@@ -32,4 +32,4 @@ if os.path.isfile(p):
     if __branch__ != "master":
         __version__ += "+" + __branch__
 else:
-    __branch__ = None
+    __branch__ = None  # type: ignore

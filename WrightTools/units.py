@@ -9,6 +9,7 @@ import collections
 import numpy as np
 import warnings
 
+from typing import Dict, List
 
 # --- define --------------------------------------------------------------------------------------
 
@@ -70,7 +71,7 @@ time = {
     "d_t": ["x*86400.", "x/86400.", r"d"],
 }
 
-dicts = collections.OrderedDict()
+dicts = collections.OrderedDict()  # type: Dict[str, Dict[str, List[str]]]
 dicts["angle"] = angle
 dicts["delay"] = delay
 dicts["energy"] = energy

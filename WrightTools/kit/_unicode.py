@@ -5,6 +5,7 @@
 
 
 import collections
+from typing import Dict
 
 
 # --- define --------------------------------------------------------------------------------------
@@ -13,7 +14,7 @@ import collections
 __all__ = ["unicode_dictionary"]
 
 
-unicode_dictionary = collections.OrderedDict()
+unicode_dictionary = collections.OrderedDict()  # type: Dict[str, str]
 unicode_dictionary["Alpha"] = u"\u0391"
 unicode_dictionary["Beta"] = u"\u0392"
 unicode_dictionary["Gamma"] = u"\u0392"

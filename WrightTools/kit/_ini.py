@@ -61,7 +61,7 @@ class INI:
         self.config.read(self.filepath)
         return self.config._sections
 
-    def get_options(self, section) -> List[str, ...]:
+    def get_options(self, section) -> List[str]:
         """List the options in a section.
 
         Parameters
