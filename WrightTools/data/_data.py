@@ -13,6 +13,8 @@ import numpy as np
 
 import h5py
 
+from typing import Tuple
+
 import scipy
 from scipy.interpolate import griddata, interp1d
 from skimage.transform import downscale_local_mean
@@ -698,7 +700,7 @@ class Data(Group):
         # finish
         return tuple(a[idx] for a in self._axes)
 
-    def get_zenith(self, channel=0):
+    def get_zenith(self, channel=0) -> Tuple:
         """Get the coordinates in units of the maximum in a channel.
 
         Parameters
