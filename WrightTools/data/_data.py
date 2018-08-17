@@ -16,7 +16,7 @@ import scipy
 from scipy.interpolate import griddata, interp1d
 from skimage.transform import downscale_local_mean
 
-from typing import Tuple
+from typing import Tuple  # do not import before scikit utils!
 
 from .._group import Group
 from .. import collection as wt_collection
