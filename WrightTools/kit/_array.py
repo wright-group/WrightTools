@@ -6,9 +6,9 @@
 
 import numpy as np
 
-from typing import Tuple, Any
-
 from .. import exceptions as wt_exceptions
+
+from typing import Tuple, Any
 
 
 # --- define --------------------------------------------------------------------------------------

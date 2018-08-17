@@ -12,11 +12,10 @@ import warnings
 import numpy as np
 
 import h5py
+
 import scipy
 from scipy.interpolate import griddata, interp1d
 from skimage.transform import downscale_local_mean
-
-from typing import Tuple  # do not import before scikit utils!
 
 from .._group import Group
 from .. import collection as wt_collection
@@ -26,6 +25,8 @@ from .. import units as wt_units
 from ._axis import Axis, identifier_to_operator
 from ._channel import Channel
 from ._variable import Variable
+
+from typing import Tuple  # do not import before scikit utils!
 
 
 # --- define --------------------------------------------------------------------------------------

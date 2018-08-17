@@ -8,8 +8,6 @@ import numpy as np
 
 import h5py
 
-from typing import TypeVar
-
 from .. import kit as wt_kit
 from .._dataset import Dataset
 

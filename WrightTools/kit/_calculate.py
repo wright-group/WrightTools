@@ -6,9 +6,9 @@
 
 import numpy as np
 
-from typing import Tuple, Union
-
 from .. import units as wt_units
+
+from typing import Tuple, Union
 
 
 # --- define -------------------------------------------------------------
