@@ -26,7 +26,7 @@ from ._axis import Axis, identifier_to_operator
 from ._channel import Channel
 from ._variable import Variable
 
-from typing import Tuple  # do not import before scikit utils!
+# from typing import Tuple  # do not import before scikit utils!
 
 
 # --- define --------------------------------------------------------------------------------------
@@ -69,16 +69,16 @@ class Data(Group):
         )
 
     @property
-    def axes(self) -> Tuple[Axis, ...]:
+    def axes(self) -> tuple:
         return tuple(self._axes)
 
     @property
-    def axis_expressions(self) -> Tuple[str, ...]:
+    def axis_expressions(self) -> tuple:
         """Axis expressions."""
         return tuple(a.expression for a in self._axes)
 
     @property
-    def axis_names(self) -> Tuple[str, ...]:
+    def axis_names(self) -> tuple:
         """Axis names."""
         return tuple(a.natural_name for a in self._axes)
 
@@ -95,12 +95,12 @@ class Data(Group):
         self.attrs["channel_names"] = np.array(value, dtype="S")
 
     @property
-    def channels(self) -> Tuple[Channel, ...]:
+    def channels(self) -> tuple:
         """Channels."""
         return tuple(self[n] for n in self.channel_names)
 
     @property
-    def datasets(self) -> Tuple[h5py.Dataset, ...]:
+    def datasets(self) -> tuple:
         """Datasets."""
         return tuple(v for _, v in self.items() if isinstance(v, h5py.Dataset))
 
@@ -126,7 +126,7 @@ class Data(Group):
             return self._ndim
 
     @property
-    def shape(self) -> Tuple[int, ...]:
+    def shape(self) -> tuple:
         """Shape."""
         try:
             assert self._shape is not None
@@ -149,12 +149,12 @@ class Data(Group):
         return value if not value == "None" else None
 
     @property
-    def units(self) -> Tuple[str, ...]:
+    def units(self) -> tuple:
         """All axis units."""
         return tuple(a.units for a in self._axes)
 
     @property
-    def variable_names(self) -> Tuple[str, ...]:
+    def variable_names(self) -> tuple:
         """Variable names."""
         if "variable_names" not in self.attrs.keys():
             self.attrs["variable_names"] = np.array([], dtype="S")
@@ -166,7 +166,7 @@ class Data(Group):
         self.attrs["variable_names"] = np.array(value, dtype="S")
 
     @property
-    def variables(self) -> Tuple[Variable, ...]:
+    def variables(self) -> tuple:
         """Variables."""
         try:
             assert self._variables is not None
