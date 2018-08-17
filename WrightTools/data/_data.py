@@ -622,7 +622,7 @@ class Data(Group):
         self.attrs["variable_names"] = np.append(self.attrs["variable_names"], name.encode())
         return variable
 
-    def downscale(self, tup, name=None, parent=None) -> "Data":
+    def downscale(self, tup, name=None, parent=None):
         """Down sample the data array using local averaging.
 
         See `skimage.transform.downscale_local_mean`__ for more info.
