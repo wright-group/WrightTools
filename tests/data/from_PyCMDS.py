@@ -88,6 +88,28 @@ def test_tolerance():
     data.close()
 
 
+def test_autotune():
+    p = os.path.join(here, "test_data", "autotune.data")
+    data = wt.data.from_PyCMDS(p)
+    assert data.shape == (20, 21)
+    assert data.axis_expressions == ("w2", "w2_BBO")
+    assert "w2_BBO_points" in data.variable_names
+    assert "w2_BBO_centers" in data.variable_names
+    data.close()
+
+
+def test_two_centers():
+    p = os.path.join(here, "test_data", "two_centers.data")
+    data = wt.data.from_PyCMDS(p)
+    assert data.shape == (11, 21, 51)
+    assert data.axis_expressions == ("w2", "w2_Mixer_1", "wm")
+    assert "wm_points" in data.variable_names
+    assert "wm_centers" in data.variable_names
+    assert "w2_Mixer_1_points" in data.variable_names
+    assert "w2_Mixer_1_centers" in data.variable_names
+    data.close()
+
+
 # --- run -----------------------------------------------------------------------------------------
 
 
@@ -100,3 +122,5 @@ if __name__ == "__main__":
     test_incomplete()
     test_ps_delay()
     test_tolerance()
+    test_autotune()
+    test_two_centers()

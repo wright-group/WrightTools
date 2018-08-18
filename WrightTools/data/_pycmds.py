@@ -91,8 +91,8 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True) -> Data:
             name=ax["name"] + "_points", values=np.array(ax["points"]).reshape(sh)
         )
         if ax["centers"] is not None:
-            sh = [1] * len(shape)
-            sh[i - 1] = len(axes[i - 1]["points"])
+            sh = list(shape)
+            sh[i] = 1
             data.create_variable(
                 name=ax["name"] + "_centers", values=np.array(ax["centers"]).reshape(sh)
             )
@@ -111,7 +111,11 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True) -> Data:
             # ---Blaise 2018-01-09
             units = headers["units"][index]
             label = headers["label"][index]
-            if "w" in name and name.startswith(tuple(data.variable_names)):
+            if (
+                "w" in name
+                and name.startswith(tuple(data.variable_names))
+                and name not in headers["axis names"]
+            ):
                 inherited_shape = data[name.split("_")[0]].shape
                 for i, s in enumerate(inherited_shape):
                     if s == 1:
@@ -142,7 +146,7 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True) -> Data:
                         values = mean
             if name in headers["axis names"]:
                 points = np.array(headers[name + " points"])
-                pointsshape = [1] * len(values.shape)
+                pointsshape = [1] * values.ndim
                 for i, ax in enumerate(axes):
                     if ax["name"] == name:
                         pointsshape[i] = len(points)
@@ -151,7 +155,8 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True) -> Data:
                 for i in range(points.ndim):
                     if points.shape[i] == 1:
                         points = np.repeat(points, values.shape[i], axis=i)
-                values[np.isnan(values)] = points[np.isnan(values)]
+                if points.size <= values.size:
+                    values[np.isnan(values)] = points[np.isnan(values)]
             data.create_variable(name, values=values, units=units, label=label)
         if kind == "channel":
             data.create_channel(name=name, values=values, shape=values.shape)
