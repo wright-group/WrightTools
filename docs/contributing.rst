@@ -92,7 +92,7 @@ Contributing
         $ git pull # make sure your branch is up to date
         $ git push
 
-#. make a pull request to the development branch
+#. make a pull request to the master branch
 #. communicate with the maintainers in your pull request, assuming any further work needs to be done
 #. celebrate! 🎉
 

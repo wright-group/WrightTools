@@ -22,9 +22,9 @@ Status
 +-------------------+-------------------+
 | **Read the Docs**                     |
 +-------------------+-------------------+
-| master            | |rtd-master|      |
+| stable            | |rtd-stable|      |
 +-------------------+-------------------+
-| development       | |rtd-development| |
+| latest            | |rtd-latest|      |
 +-------------------+-------------------+
 
 Contents
@@ -66,9 +66,9 @@ Index
 .. |pypi-version| image:: https://badge.fury.io/py/WrightTools.svg
    :target: https://badge.fury.io/py/WrightTools
 
-.. |rtd-development| image:: https://readthedocs.org/projects/wrighttools/badge/?version=development
-   :target: http://wright.tools/en/development/?badge=development
+.. |rtd-latest| image:: https://readthedocs.org/projects/wrighttools/badge/?version=latest
+   :target: http://wright.tools/en/latest/?badge=latest
 
-.. |rtd-master| image:: https://readthedocs.org/projects/wrighttools/badge/?version=master
-   :target: http://wright.tools/en/master/?badge=master
+.. |rtd-stable| image:: https://readthedocs.org/projects/wrighttools/badge/?version=stable
+   :target: http://wright.tools/en/stable/?badge=stable
 
