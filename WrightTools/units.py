@@ -126,7 +126,7 @@ def converter(val, current_unit, destination_unit):
     return val
 
 
-def get_symbol(units):
+def get_symbol(units) -> str:
     """Get default symbol type.
 
     Parameters
@@ -158,13 +158,16 @@ def get_symbol(units):
         return kind(units)
 
 
-def get_valid_conversions(units):
-    valid = list(dicts[kind(units)])
+def get_valid_conversions(units) -> tuple:
+    try:
+        valid = list(dicts[kind(units)])
+    except KeyError:
+        return ()
     valid.remove(units)
     return tuple(valid)
 
 
-def is_valid_conversion(a, b):
+def is_valid_conversion(a, b) -> bool:
     for dic in dicts.values():
         if a in dic.keys() and b in dic.keys():
             return True

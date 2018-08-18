@@ -21,7 +21,7 @@ __all__ = ["from_ocean_optics"]
 # --- from function -------------------------------------------------------------------------------
 
 
-def from_ocean_optics(filepath, name=None, *, parent=None, verbose=True):
+def from_ocean_optics(filepath, name=None, *, parent=None, verbose=True) -> Data:
     """Create a data object from an Ocean Optics brand spectrometer.
 
     Parameters

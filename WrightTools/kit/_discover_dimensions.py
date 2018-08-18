@@ -21,7 +21,7 @@ __all__ = ["discover_dimensions"]
 # --- function ------------------------------------------------------------------------------------
 
 
-def discover_dimensions(arr, cols):
+def discover_dimensions(arr, cols) -> collections.OrderedDict:
     """Discover the dimensions of a flattened multidimensional array.
 
     Parameters

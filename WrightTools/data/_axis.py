@@ -11,6 +11,7 @@ import functools
 
 import numpy as np
 
+from ._variable import Variable
 from .. import exceptions as wt_exceptions
 from .. import kit as wt_kit
 from .. import units as wt_units
@@ -63,7 +64,7 @@ class Axis(object):
             vs[variable.natural_name] = wt_units.converter(arr, variable.units, self.units)
         return numexpr.evaluate(self.expression.split("=")[0], local_dict=vs)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "<WrightTools.Axis {0} ({1}) at {2}>".format(
             self.expression, str(self.units), id(self)
         )
@@ -72,11 +73,12 @@ class Axis(object):
     def _leaf(self):
         out = self.expression
         if self.units is not None:
-            out += " ({0}) {1}".format(self.units, self.shape)
+            out += " ({0})".format(self.units)
+        out += " {0}".format(self.shape)
         return out
 
     @property
-    def full(self):
+    def full(self) -> np.ndarray:
         arr = self[:]
         for i in range(arr.ndim):
             if arr.shape[i] == 1:
@@ -84,38 +86,36 @@ class Axis(object):
         return arr
 
     @property
-    def identity(self):
+    def identity(self) -> str:
         """Complete identifier written to disk in data.attrs['axes']."""
         return self.natural_name + " {%s}" % self.units
 
     @property
-    def label(self):
-        symbol = wt_units.get_symbol(self.units)
-        label = self.expression
-        for v in self.variables:
-            vl = "%s_{%s}" % (symbol, v.label)
-            vl = vl.replace("_{}", "")  # label can be empty, no empty subscripts
-            label = label.replace(v.natural_name, vl)
+    def label(self) -> str:
+        label = self.expression.replace("_", "\\;")
         if self.units_kind:
+            symbol = wt_units.get_symbol(self.units)
+            for v in self.variables:
+                vl = "%s_{%s}" % (symbol, v.label)
+                vl = vl.replace("_{}", "")  # label can be empty, no empty subscripts
+                label = label.replace(v.natural_name, vl)
             units_dictionary = getattr(wt_units, self.units_kind)
             label += r"\,"
             label += r"\left("
             label += units_dictionary[self.units][2]
             label += r"\right)"
-        else:
-            pass
         label = r"$\mathsf{%s}$" % label
         return label
 
     @property
-    def natural_name(self):
+    def natural_name(self) -> str:
         name = self.expression.strip()
         for op in operators:
             name = name.replace(op, operator_to_identifier[op])
         return wt_kit.string2identifier(name)
 
     @property
-    def ndim(self):
+    def ndim(self) -> int:
         """Get number of dimensions."""
         try:
             assert self._ndim is not None
@@ -125,27 +125,27 @@ class Axis(object):
             return self._ndim
 
     @property
-    def points(self):
+    def points(self) -> np.ndarray:
         """Squeezed array."""
         return np.squeeze(self[:])
 
     @property
-    def shape(self):
+    def shape(self) -> tuple:
         """Shape."""
         return wt_kit.joint_shape(*self.variables)
 
     @property
-    def size(self):
+    def size(self) -> int:
         """Size."""
         return functools.reduce(operator.mul, self.shape)
 
     @property
-    def units_kind(self):
+    def units_kind(self) -> str:
         """Units kind."""
         return wt_units.kind(self.units)
 
     @property
-    def variables(self):
+    def variables(self) -> list:
         """Variables."""
         try:
             assert self._variables is not None
@@ -170,9 +170,10 @@ class Axis(object):
         convert_variables : boolean (optional)
             Toggle conversion of stored arrays. Default is False.
         """
+        if self.units is None and (destination_units is None or destination_units == "None"):
+            return
         if not wt_units.is_valid_conversion(self.units, destination_units):
-            kind = wt_units.kind(self.units)
-            valid = list(wt_units.dicts[kind].keys())
+            valid = wt_units.get_valid_conversions(self.units)
             raise wt_exceptions.UnitsError(valid, destination_units)
         if convert_variables:
             for v in self.variables:
@@ -181,8 +182,8 @@ class Axis(object):
 
     def max(self):
         """Axis max."""
-        return np.max(self[:])
+        return np.nanmax(self[:])
 
     def min(self):
         """Axis min."""
-        return np.min(self[:])
+        return np.nanmin(self[:])

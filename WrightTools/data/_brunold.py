@@ -21,7 +21,7 @@ __all__ = ["from_BrunoldrRaman"]
 # --- from function -------------------------------------------------------------------------------
 
 
-def from_BrunoldrRaman(filepath, name=None, parent=None, verbose=True):
+def from_BrunoldrRaman(filepath, name=None, parent=None, verbose=True) -> Data:
     """Create a data object from the Brunold rRaman instrument.
 
     Expects one energy (in wavenumbers) and one counts value.

@@ -61,27 +61,27 @@ class Data(Group):
         self.source
         self.variable_names
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "<WrightTools.Data '{0}' {1} at {2}>".format(
             self.natural_name, str(self.axis_names), "::".join([self.filepath, self.name])
         )
 
     @property
-    def axes(self):
+    def axes(self) -> tuple:
         return tuple(self._axes)
 
     @property
-    def axis_expressions(self):
+    def axis_expressions(self) -> tuple:
         """Axis expressions."""
         return tuple(a.expression for a in self._axes)
 
     @property
-    def axis_names(self):
+    def axis_names(self) -> tuple:
         """Axis names."""
         return tuple(a.natural_name for a in self._axes)
 
     @property
-    def channel_names(self):
+    def channel_names(self) -> tuple:
         """Channel names."""
         if "channel_names" not in self.attrs.keys():
             self.attrs["channel_names"] = np.array([], dtype="S")
@@ -93,12 +93,12 @@ class Data(Group):
         self.attrs["channel_names"] = np.array(value, dtype="S")
 
     @property
-    def channels(self):
+    def channels(self) -> tuple:
         """Channels."""
         return tuple(self[n] for n in self.channel_names)
 
     @property
-    def datasets(self):
+    def datasets(self) -> tuple:
         """Datasets."""
         return tuple(v for _, v in self.items() if isinstance(v, h5py.Dataset))
 
@@ -111,7 +111,7 @@ class Data(Group):
         return value if not value == "None" else None
 
     @property
-    def ndim(self):
+    def ndim(self) -> int:
         """Get number of dimensions."""
         try:
             assert self._ndim is not None
@@ -124,7 +124,7 @@ class Data(Group):
             return self._ndim
 
     @property
-    def shape(self):
+    def shape(self) -> tuple:
         """Shape."""
         try:
             assert self._shape is not None
@@ -134,7 +134,7 @@ class Data(Group):
             return self._shape
 
     @property
-    def size(self):
+    def size(self) -> int:
         """Size."""
         return functools.reduce(operator.mul, self.shape)
 
@@ -147,12 +147,12 @@ class Data(Group):
         return value if not value == "None" else None
 
     @property
-    def units(self):
+    def units(self) -> tuple:
         """All axis units."""
         return tuple(a.units for a in self._axes)
 
     @property
-    def variable_names(self):
+    def variable_names(self) -> tuple:
         """Variable names."""
         if "variable_names" not in self.attrs.keys():
             self.attrs["variable_names"] = np.array([], dtype="S")
@@ -164,7 +164,7 @@ class Data(Group):
         self.attrs["variable_names"] = np.array(value, dtype="S")
 
     @property
-    def variables(self):
+    def variables(self) -> tuple:
         """Variables."""
         try:
             assert self._variables is not None
@@ -243,7 +243,7 @@ class Data(Group):
         new.insert(0, new.pop(channel_index))
         self.channel_names = new
 
-    def chop(self, *args, at={}, parent=None, verbose=True):
+    def chop(self, *args, at={}, parent=None, verbose=True) -> wt_collection.Collection:
         """Divide the dataset into its lower-dimensionality components.
 
         Parameters
@@ -456,30 +456,29 @@ class Data(Group):
 
             new_shape = list(self[channel].shape)
             new_shape[axis_index] = 1
+            rtype = self[channel].dtype
+            if method in ["ave", "average", "mean", "int", "integrate"]:
+                rtype = np.result_type(self[channel].dtype, float)
 
             new = self.create_channel(
                 "{}_{}_{}".format(channel, axis, method),
-                shape=new_shape,
+                values=np.empty(new_shape, dtype=rtype),
                 units=self[channel].units,
             )
 
             channel = self[channel]
 
             if method == "sum":
-                res = np.nansum(channel[:], axis=axis_index)
-                res.shape = new_shape
+                res = np.nansum(channel[:], axis=axis_index, keepdims=True)
                 new[:] = res
             elif method in ["max", "maximum"]:
-                res = np.nanmax(channel[:], axis=axis_index)
-                res.shape = new_shape
+                res = np.nanmax(channel[:], axis=axis_index, keepdims=True)
                 new[:] = res
             elif method in ["min", "minimum"]:
-                res = np.nanmin(channel[:], axis=axis_index)
-                res.shape = new_shape
+                res = np.nanmin(channel[:], axis=axis_index, keepdims=True)
                 new[:] = res
             elif method in ["ave", "average", "mean"]:
-                res = np.nanmean(channel[:], axis=axis_index)
-                res.shape = new_shape
+                res = np.nanmean(channel[:], axis=axis_index, keepdims=True)
                 new[:] = res
             elif method in ["int", "integrate"]:
                 res = np.trapz(y=channel[:], x=self._axes[axis_index][:], axis=axis_index)
@@ -532,7 +531,7 @@ class Data(Group):
                         )
         self._on_axes_updated()
 
-    def create_channel(self, name, values=None, shape=None, units=None, **kwargs):
+    def create_channel(self, name, values=None, shape=None, units=None, **kwargs) -> Channel:
         """Append a new channel.
 
         Parameters
@@ -578,7 +577,7 @@ class Data(Group):
         self.attrs["channel_names"] = np.append(self.attrs["channel_names"], name.encode())
         return channel
 
-    def create_variable(self, name, values=None, shape=None, units=None, **kwargs):
+    def create_variable(self, name, values=None, shape=None, units=None, **kwargs) -> Variable:
         """Add new child variable.
 
         Parameters
@@ -620,7 +619,7 @@ class Data(Group):
         self.attrs["variable_names"] = np.append(self.attrs["variable_names"], name.encode())
         return variable
 
-    def downscale(self, tup, name=None, parent=None):
+    def downscale(self, tup, name=None, parent=None) -> "Data":
         """Down sample the data array using local averaging.
 
         See `skimage.transform.downscale_local_mean`__ for more info.
@@ -644,6 +643,11 @@ class Data(Group):
         -------
         WrightTools Data instance
             New data object with the downscaled channels and axes
+
+        See Also
+        --------
+        zoom
+            Zoom the data array using spline interpolation of the requested order.
         """
         if name is None:
             name = self.natural_name + "_downscaled"
@@ -672,8 +676,8 @@ class Data(Group):
     def flush(self):
         super().flush()
 
-    def get_nadir(self, channel=0):
-        """Get the coordinates in units of the minimum in a channel.
+    def get_nadir(self, channel=0) -> tuple:
+        """Get the coordinates, in units, of the minimum in a channel.
 
         Parameters
         ----------
@@ -698,8 +702,8 @@ class Data(Group):
         # finish
         return tuple(a[idx] for a in self._axes)
 
-    def get_zenith(self, channel=0):
-        """Get the coordinates in units of the maximum in a channel.
+    def get_zenith(self, channel=0) -> tuple:
+        """Get the coordinates, in units, of the maximum in a channel.
 
         Parameters
         ----------
@@ -826,7 +830,7 @@ class Data(Group):
 
     def map_variable(
         self, variable, points, input_units="same", *, name=None, parent=None, verbose=True
-    ):
+    ) -> "Data":
         """Map points of an axis to new points using linear interpolation.
 
         Out-of-bounds points are written nan.
@@ -1109,7 +1113,7 @@ class Data(Group):
         # check that axes will not be ruined
         for n in removed:
             for a in self._axes:
-                if n in a.expression:
+                if n in [v.natural_name for v in a.variables]:
                     message = "{0} is contained in axis {1}".format(n, a.expression)
                     raise RuntimeError(message)
         # do removal
@@ -1148,7 +1152,7 @@ class Data(Group):
             index = self.channel_names.index(k)
             # rename
             new[v] = obj, index
-            obj.instances.pop(obj.fullpath, None)
+            obj._instances.pop(obj.fullpath, None)
             obj.natural_name = str(v)
             # remove old references
             del self[k]
@@ -1199,7 +1203,7 @@ class Data(Group):
             index = self.variable_names.index(k)
             # rename
             new[v] = obj, index
-            obj.instances.pop(obj.fullpath, None)
+            obj._instances.pop(obj.fullpath, None)
             obj.natural_name = str(v)
             # remove old references
             del self[k]
@@ -1243,7 +1247,7 @@ class Data(Group):
 
         self.channels[0].chunkwise(f, self.channels)
 
-    def smooth(self, factors, channel=None, verbose=True):
+    def smooth(self, factors, channel=None, verbose=True) -> "Data":
         """Smooth a channel using an n-dimenional `kaiser window`__.
 
         Note, all arrays are loaded into memory.
@@ -1309,29 +1313,25 @@ class Data(Group):
         if verbose:
             print("smoothed data")
 
-    def split(self, axis, positions, units="same", direction="below", parent=None, verbose=True):
+    def split(
+        self, expression, positions, *, units=None, parent=None, verbose=True
+    ) -> wt_collection.Collection:
         """
-        Split the data object along a given axis, in units.
+        Split the data object along a given expression, in units.
 
         Parameters
         ----------
-        axis : int or str
-            The axis to split along.
+        expression : int or str
+            The expression to split along. If given as an integer, the axis at that index
+            is used.
         positions : number-type or 1D array-type
-            The position(s) to split at, in units. If a non-exact position is
-            given, the closest valid axis position will be used.
+            The position(s) to split at, in units.
         units : str (optional)
             The units of the given positions. Default is same, which assumes
-            input units are identical to axis units.
-        direction : {'below', 'above'} (optional)
-            Choose which group of data the points at positions remains with.
-            This decision is based on the value, not the index.
-            Consider points [0, 1, 2, 3, 4, 5] and split value [3]. If direction
-            is above the returned objects are [0, 1, 2] and [3, 4, 5]. If
-            direction is below the returned objects are [0, 1, 2, 3] and
-            [4, 5]. Default is below.
-        parent : WrightTools.Collection
+            input units are identical to first variable units.
+        parent : WrightTools.Collection (optional)
             The parent collection in which to place the 'split' collection.
+            Default is a new Collection.
         verbose : bool (optional)
             Toggle talkback. Default is True.
 
@@ -1348,108 +1348,103 @@ class Data(Group):
         collapse
             Collapse the dataset along one axis.
         """
-        raise NotImplementedError
         # axis ------------------------------------------------------------------------------------
-        if isinstance(axis, int):
-            axis_index = axis
-        elif isinstance(axis, str):
-            axis_index = self.axis_names.index(axis)
+        old_expr = self.axis_expressions
+        old_units = self.units
+        out = wt_collection.Collection(name="split", parent=parent)
+        if isinstance(expression, int):
+            if units is None:
+                units = self._axes[expression].units
+            expression = self._axes[expression].expression
+        elif isinstance(expression, str):
+            pass
         else:
-            raise TypeError("axis: expected {int, str}, got %s" % type(axis))
-        axis = self._axes[axis_index]
-        # indicies --------------------------------------------------------------------------------
-        # positions must be iterable and should be a numpy array
-        if type(positions) in [int, float]:
-            positions = [positions]
-        positions = np.array(positions)
-        # positions should be in the data units
-        if units != "same":
-            positions = wt_units.converter(positions, units, axis.units)
-        # get indicies of split
-        indicies = []
-        for position in positions:
-            idx = np.argmin(abs(axis[:] - position))
-            indicies.append(idx)
-        indicies.sort()
-        # set direction according to units
-        flip = direction == "above"
-        if axis[-1] < axis[0]:
-            flip = not flip
-        if flip:
-            indicies = [i - 1 for i in indicies]
-        # process ---------------------------------------------------------------------------------
-        outs = wt_collection.Collection(name="split", parent=parent, edit_local=parent is not None)
-        start = 0
-        stop = 0
-        for i in range(len(indicies) + 1):
-            # get start and stop
-            start = stop  # previous value
-            if i == len(indicies):
-                stop = len(axis)
-            else:
-                stop = indicies[i] + 1
-            # new data object prepare
-            new_name = "split%03d" % i
-            if stop - start < 1:
-                outs.create_data("")
-            elif stop - start == 1:
-                attrs = dict(self.attrs)
-                attrs.pop("name", None)
-                new_data = outs.create_data(new_name, **attrs)
-                for ax in self._axes:
-                    if ax != axis:
-                        attrs = dict(ax.attrs)
-                        attrs.pop("name", None)
-                        attrs.pop("units", None)
-                        new_data.create_axis(ax.natural_name, ax[:], ax.units, **attrs)
-                slc = [slice(None)] * len(self.shape)
-                slc[axis_index] = start
-                for ch in self.channels:
-                    attrs = dict(ch.attrs)
-                    attrs.pop("name", None)
-                    attrs.pop("units", None)
-                    new_data.create_channel(ch.natural_name, ch[:][slc], ch.units, **attrs)
-            else:
-                attrs = dict(self.attrs)
-                attrs.pop("name", None)
-                new_data = outs.create_data(new_name, **attrs)
-                for ax in self._axes:
-                    if ax == axis:
-                        slc = slice(start, stop)
-                    else:
-                        slc = slice(None)
-                    attrs = dict(ax.attrs)
-                    attrs.pop("name", None)
-                    attrs.pop("units", None)
-                    new_data.create_axis(ax.natural_name, ax[slc], ax.units, **attrs)
-                slc = [slice(None)] * len(self.shape)
-                slc[axis_index] = slice(start, stop)
-                for ch in self.channels:
-                    attrs = dict(ch.attrs)
-                    attrs.pop("name", None)
-                    attrs.pop("units", None)
-                    new_data.create_channel(ch.natural_name, ch[slc], ch.units, **attrs)
-        # post process ----------------------------------------------------------------------------
+            raise TypeError("expression: expected {int, str}, got %s" % type(expression))
+
+        self.transform(expression)
+        if units:
+            self.convert(units)
+
+        try:
+            positions = [-np.inf] + sorted(list(positions)) + [np.inf]
+        except TypeError:
+            positions = [-np.inf, positions, np.inf]
+
+        values = self._axes[0].full
+        masks = [(values >= lo) & (values < hi) for lo, hi in wt_kit.pairwise(positions)]
+        omasks = []
+        cuts = []
+        for mask in masks:
+            try:
+                omasks.append(wt_kit.mask_reduce(mask))
+                cuts.append([i == 1 for i in omasks[-1].shape])
+            except ValueError:
+                omasks.append(None)
+                cuts.append(None)
+        for i in range(len(positions) - 1):
+            out.create_data("split%03i" % i)
+
+        for var in self.variables:
+            for i, (imask, omask, cut) in enumerate(zip(masks, omasks, cuts)):
+                if omask is None:
+                    # Zero length split
+                    continue
+                omask = wt_kit.enforce_mask_shape(omask, var.shape)
+                omask.shape = tuple([s for s, c in zip(omask.shape, cut) if not c])
+                out_arr = np.full(omask.shape, np.nan)
+                imask = wt_kit.enforce_mask_shape(imask, var.shape)
+                out_arr[omask] = var[:][imask]
+                out[i].create_variable(values=out_arr, **var.attrs)
+
+        for ch in self.channels:
+            for i, (imask, omask, cut) in enumerate(zip(masks, omasks, cuts)):
+                if omask is None:
+                    # Zero length split
+                    continue
+                omask = wt_kit.enforce_mask_shape(omask, ch.shape)
+                omask.shape = tuple([s for s, c in zip(omask.shape, cut) if not c])
+                out_arr = np.full(omask.shape, np.nan)
+                imask = wt_kit.enforce_mask_shape(imask, ch.shape)
+                out_arr[omask] = ch[:][imask]
+                out[i].create_channel(values=out_arr, **ch.attrs)
+
         if verbose:
-            print(
-                "split data into {0} pieces along {1}:".format(
-                    len(indicies) + 1, axis.natural_name
-                )
-            )
-            for i in range(len(outs)):
-                new_data = outs[i]
-                if new_data is None:
+            for d in out.values():
+                try:
+                    d.transform(expression)
+                except IndexError:
+                    continue
+
+            print("split data into {0} pieces along <{1}>:".format(len(positions) - 1, expression))
+            for i, (lo, hi) in enumerate(wt_kit.pairwise(positions)):
+                new_data = out[i]
+                if new_data.shape == ():
                     print("  {0} : None".format(i))
-                elif len(new_data.shape) < len(self.shape):
-                    print("  {0} : {1} {2}(constant)".format(i, axis.natural_name, axis.units))
                 else:
-                    new_axis = new_data.axes[axis_index]
+                    new_axis = new_data.axes[0]
                     print(
-                        "  {0} : {1} to {2} {3} (length {4})".format(
-                            i, new_axis[0], new_axis[-1], new_axis.units, new_axis.size
+                        "  {0} : {1:0.2f} to {2:0.2f} {3} {4}".format(
+                            i, lo, hi, new_axis.units, new_axis.shape
                         )
                     )
-        return outs
+
+        for d in out.values():
+            try:
+                d.transform(*old_expr)
+                keep = []
+                for ax in d.axes:
+                    if ax.size > 1:
+                        keep.append(ax.expression)
+                d.transform(*keep)
+                for ax, u in zip(d.axes, old_units):
+                    ax.convert(u)
+            except IndexError:
+                continue
+        self.transform(*old_expr)
+        for ax, u in zip(self.axes, old_units):
+            ax.convert(u)
+
+        return out
 
     def transform(self, *axes, verbose=True):
         """Transform the data.
@@ -1494,6 +1489,11 @@ class Data(Group):
             The order of the spline used to interpolate onto new points.
         verbose : bool (optional)
             Toggle talkback. Default is True.
+
+        See Also
+        --------
+        downscale
+            Down-sample the data array using local averaging.
         """
         raise NotImplementedError
         import scipy.ndimage
