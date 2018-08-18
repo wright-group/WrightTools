@@ -82,10 +82,14 @@ def get_clim(channel, current_state):
     return clim
 
 
-def gen_ticklabels(points):
+def gen_ticklabels(points, signed=None):
     step = np.nanmin(np.diff(points))
-    if step == 0:
-        ticklabels = ["NaN" for point in points]
+    if step == 0:  # zeros everywhere
+        ticklabels = ['' for i in range(11)]
+        if signed:
+            ticklabels[5] = '0'
+        else:
+            ticklabels[0] = '0'
         return ticklabels
     ordinal = np.log10(np.abs(step))
     ndigits = -int(np.floor(ordinal))
@@ -216,6 +220,9 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
         verbose=False,
     )[0]
     clim = get_clim(channel, current_state)
+    ticklabels = gen_ticklabels(np.linspace(*clim, 11), channel.signed)
+    if clim[0] == clim[1]:
+        clim = [0, 1]
     obj2D = ax0.pcolormesh(
         current_state.dat,
         cmap=cmap,
@@ -229,6 +236,8 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
     colorbar = plot_colorbar(
         cax, cmap=cmap, label=channel.natural_name, ticks=np.linspace(clim[0], clim[1], 11)
     )
+    colorbar.set_ticklabels(ticklabels)
+    fig.canvas.draw_idle()
 
     def draw_sideplot_projections():
         arr = current_state.dat[channel.natural_name][:]
@@ -353,9 +362,8 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
             print("normalization:", index)
         current_state.local = radio.value_selected[1:] == "local"
         clim = get_clim(channel, current_state)
-        colorbar = plot_colorbar(
-            cax, cmap=cmap, label=channel.natural_name, ticks=np.linspace(clim[0], clim[1], 11)
-        )
+        ticklabels = gen_ticklabels(np.linspace(*clim, 11), channel.signed)
+        colorbar.set_ticklabels(ticklabels)
         obj2D.set_clim(*clim)
         fig.canvas.draw_idle()
 
@@ -379,10 +387,8 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
             obj2D.set_array(current_state.dat[channel.natural_name][:].ravel())
             clim = get_clim(channel, current_state)
             obj2D.set_clim(*clim)
-            ticklabels = gen_ticklabels(np.linspace(*clim, 11))
-            colorbar = plot_colorbar(
-                cax, cmap=cmap, label=channel.natural_name, ticks=np.linspace(clim[0], clim[1], 11)
-            )
+            ticklabels = gen_ticklabels(np.linspace(*clim, 11), channel.signed)
+            colorbar.set_ticklabels(ticklabels)
             sp_x.collections.clear()
             sp_y.collections.clear()
             draw_sideplot_projections()
