@@ -222,7 +222,7 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
     clim = get_clim(channel, current_state)
     ticklabels = gen_ticklabels(np.linspace(*clim, 11), channel.signed)
     if clim[0] == clim[1]:
-        clim = [0, 1]
+        clim = [-1 if channel.signed else 0, 1]
     obj2D = ax0.pcolormesh(
         current_state.dat,
         cmap=cmap,
@@ -364,6 +364,8 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
         clim = get_clim(channel, current_state)
         ticklabels = gen_ticklabels(np.linspace(*clim, 11), channel.signed)
         colorbar.set_ticklabels(ticklabels)
+        if clim[0] == clim[1]:
+            clim = [-1 if channel.signed else 0, 1]
         obj2D.set_clim(*clim)
         fig.canvas.draw_idle()
 
@@ -386,8 +388,10 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
                 )
             obj2D.set_array(current_state.dat[channel.natural_name][:].ravel())
             clim = get_clim(channel, current_state)
-            obj2D.set_clim(*clim)
             ticklabels = gen_ticklabels(np.linspace(*clim, 11), channel.signed)
+            if clim[0] == clim[1]:
+                clim = [-1 if channel.signed else 0, 1]
+            obj2D.set_clim(*clim)
             colorbar.set_ticklabels(ticklabels)
             sp_x.collections.clear()
             sp_y.collections.clear()
