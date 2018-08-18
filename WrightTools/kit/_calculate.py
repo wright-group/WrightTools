@@ -14,7 +14,6 @@ from .. import units as wt_units
 
 __all__ = ["fluence", "mono_resolution", "nm_width", "symmetric_sqrt"]
 
-
 # --- functions ----------------------------------------------------------
 
 
@@ -28,7 +27,7 @@ def fluence(
     beam_radius_units="mm",
     pulse_width_units="fs_t",
     area_type="even",
-):
+) -> tuple:
     """Calculate the fluence of a beam.
 
     Parameters
@@ -83,7 +82,9 @@ def fluence(
     return ujcm2, photonscm2, GWcm2
 
 
-def mono_resolution(grooves_per_mm, slit_width, focal_length, output_color, output_units="wn"):
+def mono_resolution(
+    grooves_per_mm, slit_width, focal_length, output_color, output_units="wn"
+) -> float:
     """Calculate the resolution of a monochromator.
 
     Parameters
@@ -113,7 +114,7 @@ def mono_resolution(grooves_per_mm, slit_width, focal_length, output_color, outp
     )
 
 
-def nm_width(center, width, units="wn"):
+def nm_width(center, width, units="wn") -> float:
     """Given a center and width, in energy units, get back a width in nm.
 
     Parameters

@@ -13,7 +13,6 @@ from .._dataset import Dataset
 
 __all__ = ["Channel"]
 
-
 # --- class ---------------------------------------------------------------------------------------
 
 
@@ -76,17 +75,17 @@ class Channel(Dataset):
                 setattr(self, identifier, value)
 
     @property
-    def major_extent(self):
+    def major_extent(self) -> complex:
         """Maximum deviation from null."""
         return max((self.max() - self.null, self.null - self.min()))
 
     @property
-    def minor_extent(self):
+    def minor_extent(self) -> complex:
         """Minimum deviation from null."""
         return min((self.max() - self.null, self.null - self.min()))
 
     @property
-    def null(self):
+    def null(self) -> complex:
         if "null" not in self.attrs.keys():
             self.attrs["null"] = 0
         return self.attrs["null"]
@@ -96,7 +95,7 @@ class Channel(Dataset):
         self.attrs["null"] = value
 
     @property
-    def signed(self):
+    def signed(self) -> bool:
         if "signed" not in self.attrs.keys():
             self.attrs["signed"] = False
         return self.attrs["signed"]
@@ -105,7 +104,7 @@ class Channel(Dataset):
     def signed(self, value):
         self.attrs["signed"] = value
 
-    def mag(self):
+    def mag(self) -> complex:
         """Channel magnitude (maximum deviation from null)."""
         return self.major_extent
 

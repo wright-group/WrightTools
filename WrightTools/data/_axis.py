@@ -11,6 +11,7 @@ import functools
 
 import numpy as np
 
+from ._variable import Variable
 from .. import exceptions as wt_exceptions
 from .. import kit as wt_kit
 from .. import units as wt_units
@@ -63,7 +64,7 @@ class Axis(object):
             vs[variable.natural_name] = wt_units.converter(arr, variable.units, self.units)
         return numexpr.evaluate(self.expression.split("=")[0], local_dict=vs)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "<WrightTools.Axis {0} ({1}) at {2}>".format(
             self.expression, str(self.units), id(self)
         )
@@ -76,7 +77,7 @@ class Axis(object):
         return out
 
     @property
-    def full(self):
+    def full(self) -> np.ndarray:
         arr = self[:]
         for i in range(arr.ndim):
             if arr.shape[i] == 1:
@@ -84,12 +85,12 @@ class Axis(object):
         return arr
 
     @property
-    def identity(self):
+    def identity(self) -> str:
         """Complete identifier written to disk in data.attrs['axes']."""
         return self.natural_name + " {%s}" % self.units
 
     @property
-    def label(self):
+    def label(self) -> str:
         symbol = wt_units.get_symbol(self.units)
         label = self.expression
         for v in self.variables:
@@ -108,14 +109,14 @@ class Axis(object):
         return label
 
     @property
-    def natural_name(self):
+    def natural_name(self) -> str:
         name = self.expression.strip()
         for op in operators:
             name = name.replace(op, operator_to_identifier[op])
         return wt_kit.string2identifier(name)
 
     @property
-    def ndim(self):
+    def ndim(self) -> int:
         """Get number of dimensions."""
         try:
             assert self._ndim is not None
@@ -125,27 +126,27 @@ class Axis(object):
             return self._ndim
 
     @property
-    def points(self):
+    def points(self) -> np.ndarray:
         """Squeezed array."""
         return np.squeeze(self[:])
 
     @property
-    def shape(self):
+    def shape(self) -> tuple:
         """Shape."""
         return wt_kit.joint_shape(*self.variables)
 
     @property
-    def size(self):
+    def size(self) -> int:
         """Size."""
         return functools.reduce(operator.mul, self.shape)
 
     @property
-    def units_kind(self):
+    def units_kind(self) -> str:
         """Units kind."""
         return wt_units.kind(self.units)
 
     @property
-    def variables(self):
+    def variables(self) -> list:
         """Variables."""
         try:
             assert self._variables is not None
