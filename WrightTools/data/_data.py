@@ -26,8 +26,6 @@ from ._axis import Axis, identifier_to_operator
 from ._channel import Channel
 from ._variable import Variable
 
-# from typing import Tuple  # do not import before scikit utils!
-
 
 # --- define --------------------------------------------------------------------------------------
 

@@ -11,8 +11,6 @@ import functools
 
 import numpy as np
 
-from typing import Tuple, List
-
 from ._variable import Variable
 from .. import exceptions as wt_exceptions
 from .. import kit as wt_kit
@@ -133,7 +131,7 @@ class Axis(object):
         return np.squeeze(self[:])
 
     @property
-    def shape(self) -> Tuple[int, ...]:
+    def shape(self) -> tuple:
         """Shape."""
         return wt_kit.joint_shape(*self.variables)
 
@@ -148,7 +146,7 @@ class Axis(object):
         return wt_units.kind(self.units)
 
     @property
-    def variables(self) -> List[Variable]:
+    def variables(self) -> list:
         """Variables."""
         try:
             assert self._variables is not None

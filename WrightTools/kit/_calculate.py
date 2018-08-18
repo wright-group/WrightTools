@@ -8,8 +8,6 @@ import numpy as np
 
 from .. import units as wt_units
 
-from typing import Tuple, Union
-
 
 # --- define -------------------------------------------------------------
 
@@ -29,7 +27,7 @@ def fluence(
     beam_radius_units="mm",
     pulse_width_units="fs_t",
     area_type="even",
-) -> Tuple[float, float, float]:
+) -> tuple:
     """Calculate the fluence of a beam.
 
     Parameters
@@ -138,7 +136,7 @@ def nm_width(center, width, units="wn") -> float:
     return red - blue
 
 
-def symmetric_sqrt(x, out=None) -> Union[np.ndarray, float, complex]:
+def symmetric_sqrt(x, out=None):
     """Compute the 'symmetric' square root: sign(x) * sqrt(abs(x)).
 
     Parameters

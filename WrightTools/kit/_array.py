@@ -8,8 +8,6 @@ import numpy as np
 
 from .. import exceptions as wt_exceptions
 
-from typing import Tuple, Any
-
 
 # --- define --------------------------------------------------------------------------------------
 
@@ -34,7 +32,7 @@ __all__ = [
 # --- functions -----------------------------------------------------------------------------------
 
 
-def closest_pair(arr, give="indicies") -> Any:
+def closest_pair(arr, give="indicies"):
     """Find the pair of indices corresponding to the closest elements in an array.
 
     If multiple pairs are equally close, both pairs of indicies are returned.
@@ -122,7 +120,7 @@ def diff(xi, yi, order=1) -> np.ndarray:
     return yi
 
 
-def fft(xi, yi, axis=0) -> Tuple[np.ndarray, np.ndarray]:
+def fft(xi, yi, axis=0) -> tuple:
     """Take the 1D FFT of an N-dimensional array and return "sensible" properly shifted arrays.
 
     Parameters
@@ -159,7 +157,7 @@ def fft(xi, yi, axis=0) -> Tuple[np.ndarray, np.ndarray]:
     return xi, yi
 
 
-def joint_shape(*args) -> Tuple[int, ...]:
+def joint_shape(*args) -> tuple:
     """Given a set of arrays, return the joint shape.
 
     Parameters
@@ -202,7 +200,7 @@ def orthogonal(*args) -> bool:
     return True
 
 
-def remove_nans_1D(*args) -> Tuple[np.ndarray, ...]:
+def remove_nans_1D(*args) -> tuple:
     """Remove nans in a set of 1D arrays.
 
     Removes indicies in all arrays if any array is nan at that index.
@@ -223,7 +221,7 @@ def remove_nans_1D(*args) -> Tuple[np.ndarray, ...]:
     return tuple(np.array(a)[~vals] for a in args)
 
 
-def share_nans(*arrs) -> Tuple[np.ndarray, ...]:
+def share_nans(*arrs) -> tuple:
     """Take a list of nD arrays and return a new list of nD arrays.
 
     The new list is in the same order as the old list.
@@ -259,7 +257,7 @@ def smooth_1D(arr, n=10) -> np.ndarray:
     return arr
 
 
-def svd(a, i=None) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+def svd(a, i=None) -> tuple:
     """Singular Value Decomposition.
 
     Factors the matrix `a` as ``u * np.diag(s) * v``, where `u` and `v`
@@ -312,7 +310,7 @@ def unique(arr, tolerance=1e-6) -> np.ndarray:
     return np.array(unique)
 
 
-def valid_index(index, shape) -> Tuple:
+def valid_index(index, shape) -> tuple:
     """Get a valid index for a broadcastable shape.
 
     Parameters
