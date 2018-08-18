@@ -65,10 +65,10 @@ def test_4D():
     )
     signal[:, :, :, tau < 0] = 0
     signal[:, :, :, tau == 0] *= 0.5
-    signal = np.abs(signal)
+    signal = np.imag(signal)
 
     data = wt.data.Data(name="data")
-    data.create_channel("signal", values=signal, signed=False)
+    data.create_channel("signal", values=signal, signed=True)
     data.create_variable("w1", values=w1[:, None, None, None], units="wn")
     data.create_variable("w2", values=w2[None, :, None, None], units="wn")
     data.create_variable("w3", values=w3[None, None, :, None], units="wn")
