@@ -1,9 +1,5 @@
 * distribution
-** push to master
-*** merge into master from development (requires approval)
-*** make a new release on GitHub
-*** merge back into development from master
-*** update development VERSION
+** make a new release on GitHub
 ** release to PyPI
 *** checkout master on your machine
 *** ensure twine is installed / setup on your machine
@@ -19,3 +15,4 @@
 *** make a PR to conda-forge master
 *** wait for checks to complete
 *** merge
+** update master VERSION
