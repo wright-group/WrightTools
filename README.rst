@@ -11,11 +11,11 @@ Documentation at `wright.tools <http://wright.tools>`_.
 .. image:: https://badge.fury.io/py/WrightTools.svg
    :target: https://badge.fury.io/py/WrightTools
 
-.. image:: https://readthedocs.org/projects/wrighttools/badge/?version=master
-   :target: http://wright.tools/en/master/?badge=master
+.. image:: https://readthedocs.org/projects/wrighttools/badge/?version=stable
+   :target: http://wright.tools/en/stable/?badge=stable
 
-.. image:: https://readthedocs.org/projects/wrighttools/badge/?version=development
-   :target: http://wright.tools/en/development/?badge=development
+.. image:: https://readthedocs.org/projects/wrighttools/badge/?version=latest
+   :target: http://wright.tools/en/latest/?badge=latest
 
 .. image:: https://img.shields.io/badge/code%20style-black-000000.svg
    :target: https://github.com/ambv/black
