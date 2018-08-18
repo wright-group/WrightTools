@@ -55,12 +55,12 @@ class INI:
         self.config = configparser.ConfigParser()
 
     @property
-    def dictionary(self):
+    def dictionary(self) -> dict:
         """Get a python dictionary of contents."""
         self.config.read(self.filepath)
         return self.config._sections
 
-    def get_options(self, section):
+    def get_options(self, section) -> list:
         """List the options in a section.
 
         Parameters
@@ -75,7 +75,7 @@ class INI:
         """
         return list(self.dictionary[section].keys())
 
-    def has_option(self, section, option):
+    def has_option(self, section, option) -> bool:
         """Test if file has option.
 
         Parameters
@@ -92,7 +92,7 @@ class INI:
         self.config.read(self.filepath)
         return self.config.has_option(section, option)
 
-    def has_section(self, section):
+    def has_section(self, section) -> bool:
         """Test if file has section.
 
         Parameters
@@ -128,7 +128,7 @@ class INI:
         return out
 
     @property
-    def sections(self):
+    def sections(self) -> list:
         """List of sections."""
         self.config.read(self.filepath)
         return self.config.sections()

@@ -23,7 +23,7 @@ __all__ = ["join"]
 # --- functions -----------------------------------------------------------------------------------
 
 
-def join(datas, *, name="join", parent=None, verbose=True):
+def join(datas, *, name="join", parent=None, verbose=True) -> Data:
     """Join a list of data objects together.
 
     For now datas must have identical dimensionalities (order and identity).
