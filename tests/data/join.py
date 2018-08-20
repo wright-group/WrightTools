@@ -112,7 +112,6 @@ def test_2D_no_overlap_aligned():
 
     a.close()
     b.close()
-    pass
 
 
 def test_2D_no_overlap_offset():
@@ -293,7 +292,20 @@ def test_overlap_mean():
 
 
 def test_opposite_dimension():
-    pass
+    a = wt.Data()
+    b = wt.Data()
+
+    a.create_variable("x", np.linspace(0, 10, 11)[:, None])
+    a.create_variable("y", np.linspace(0, 10, 11)[None, :])
+    b.create_variable("x", np.linspace(11, 21, 11)[None, :])
+    b.create_variable("y", np.linspace(0, 10, 11)[:, None])
+    a.transform("x", "y")
+    b.transform("x", "y")
+
+    joined = wt.data.join([a, b])
+
+    assert joined.shape == (22, 11)
+    assert np.allclose(joined.x.points, np.linspace(0, 21, 22))
 
 
 if __name__ == "__main__":
