@@ -17,7 +17,8 @@ def test_wm_ypos_fluorescence_with_filter():
     assert data.shape == (2560, 2160)
     assert data.axis_expressions == ("wm", "yindex")
     assert data.units == ("nm", None)
-    data.close()
+    # data.close()
+    return data
 
 
 def test_xpos_ypos_fluorescence():
@@ -30,5 +31,5 @@ def test_xpos_ypos_fluorescence():
 
 
 if __name__ == "__main__":
-    test_wm_ypos_fluorescence_with_filter()
-    test_xpos_ypos_fluorescence()
+    data = test_wm_ypos_fluorescence_with_filter()
+    # test_xpos_ypos_fluorescence()
