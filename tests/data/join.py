@@ -95,6 +95,23 @@ def test_1D_overlap_offset():
 
 
 def test_2D_no_overlap_aligned():
+    a = wt.Data()
+    b = wt.Data()
+
+    a.create_variable("x", np.linspace(0, 10, 11)[:, None])
+    a.create_variable("y", np.linspace(0, 10, 11)[None, :])
+    b.create_variable("x", np.linspace(11, 21, 11)[:, None])
+    b.create_variable("y", np.linspace(0, 10, 11)[None, :])
+    a.transform("x", "y")
+    b.transform("x", "y")
+
+    joined = wt.data.join([a, b])
+
+    assert joined.shape == (22, 11)
+    assert np.allclose(joined.x.points, np.linspace(0, 21, 22))
+
+    a.close()
+    b.close()
     pass
 
 
@@ -151,26 +168,131 @@ def test_1D_plus_2D_plus_3D():
 
 
 def test_overlap_first():
-    pass
+    a = wt.Data()
+    b = wt.Data()
+
+    a.create_variable("x", np.linspace(0, 10, 11))
+    b.create_variable("x", np.linspace(5, 15, 11))
+    a.transform("x")
+    b.transform("x")
+    a.create_channel("y", np.ones_like(a.x))
+    b.create_channel("y", np.ones_like(b.x) * 2)
+
+    joined = wt.data.join([a, b])
+
+    assert joined.shape == (16,)
+    assert np.allclose(joined.x.points, np.linspace(0, 15, 16))
+    assert np.isclose(joined.y[0], 1.0)
+    assert np.isclose(joined.y[10], 1.0)
+    assert np.isclose(joined.y[-1], 2.0)
+
+    a.close()
+    b.close()
 
 
 def test_overlap_last():
-    pass
+    a = wt.Data()
+    b = wt.Data()
+
+    a.create_variable("x", np.linspace(0, 10, 11))
+    b.create_variable("x", np.linspace(5, 15, 11))
+    a.transform("x")
+    b.transform("x")
+    a.create_channel("y", np.ones_like(a.x))
+    b.create_channel("y", np.ones_like(b.x) * 2)
+
+    joined = wt.data.join([a, b])
+
+    assert joined.shape == (16,)
+    assert np.allclose(joined.x.points, np.linspace(0, 15, 16))
+    assert np.isclose(joined.y[0], 1.0)
+    assert np.isclose(joined.y[10], 2.0)
+    assert np.isclose(joined.y[-1], 2.0)
 
 
 def test_overlap_sum():
+    a = wt.Data()
+    b = wt.Data()
+
+    a.create_variable("x", np.linspace(0, 10, 11))
+    b.create_variable("x", np.linspace(5, 15, 11))
+    a.transform("x")
+    b.transform("x")
+    a.create_channel("y", np.ones_like(a.x))
+    b.create_channel("y", np.ones_like(b.x) * 2)
+
+    joined = wt.data.join([a, b])
+
+    assert joined.shape == (16,)
+    assert np.allclose(joined.x.points, np.linspace(0, 15, 16))
+    assert np.isclose(joined.y[0], 1.0)
+    assert np.isclose(joined.y[10], 2.0)
+    assert np.isclose(joined.y[-1], 2.0)
+
     pass
 
 
 def test_overlap_max():
-    pass
+    a = wt.Data()
+    b = wt.Data()
+
+    a.create_variable("x", np.linspace(0, 10, 11))
+    b.create_variable("x", np.linspace(5, 15, 11))
+    a.transform("x")
+    b.transform("x")
+    a.create_channel("y", np.ones_like(a.x))
+    b.create_channel("y", np.ones_like(b.x) * 2)
+
+    joined = wt.data.join([a, b])
+
+    assert joined.shape == (16,)
+    assert np.allclose(joined.x.points, np.linspace(0, 15, 16))
+    assert np.isclose(joined.y[0], 1.0)
+    assert np.isclose(joined.y[10], 2.0)
+    assert np.isclose(joined.y[-1], 2.0)
 
 
 def test_overlap_min():
-    pass
+    a = wt.Data()
+    b = wt.Data()
+
+    a.create_variable("x", np.linspace(0, 10, 11))
+    b.create_variable("x", np.linspace(5, 15, 11))
+    a.transform("x")
+    b.transform("x")
+    a.create_channel("y", np.ones_like(a.x))
+    b.create_channel("y", np.ones_like(b.x) * 2)
+
+    joined = wt.data.join([a, b])
+
+    assert joined.shape == (16,)
+    assert np.allclose(joined.x.points, np.linspace(0, 15, 16))
+    assert np.isclose(joined.y[0], 1.0)
+    assert np.isclose(joined.y[10], 1.0)
+    assert np.isclose(joined.y[-1], 2.0)
 
 
 def test_overlap_mean():
+    a = wt.Data()
+    b = wt.Data()
+
+    a.create_variable("x", np.linspace(0, 10, 11))
+    b.create_variable("x", np.linspace(5, 15, 11))
+    a.transform("x")
+    b.transform("x")
+    a.create_channel("y", np.ones_like(a.x))
+    b.create_channel("y", np.ones_like(b.x) * 2)
+
+    joined = wt.data.join([a, b])
+
+    assert joined.shape == (16,)
+    assert np.allclose(joined.x.points, np.linspace(0, 15, 16))
+    assert np.isclose(joined.y[0], 1.0)
+    assert np.isclose(joined.y[10], 1.5)
+    assert np.isclose(joined.y[-1], 2.0)
+
+
+def test_opposite_dimension():
     pass
 
 
@@ -199,3 +321,4 @@ if __name__ == "__main__":
     test_overlap_max()
     test_overlap_min()
     test_overlap_mean()
+    test_opposite_dimension()
