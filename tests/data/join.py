@@ -35,5 +35,120 @@ def test_wm_w2_w1():
     joined.close()
 
 
+def test_1D_no_overlap():
+    pass
+
+
+def test_1D_overlap_identical():
+    pass
+
+
+def test_1D_overlap_offset():
+    pass
+
+
+def test_2D_no_overlap_aligned():
+    pass
+
+
+def test_2D_no_overlap_offset():
+    pass
+
+
+def test_2D_overlap_identical():
+    pass
+
+
+def test_2D_overlap_offset():
+    pass
+
+
+def test_2D_some_same_some_offset():
+    pass
+
+
+def test_1D_to_2D_aligned():
+    pass
+
+
+def test_1D_to_2D_not_aligned():
+    pass
+
+
+def test_2D_plus_1D():
+    pass
+
+
+def test_3D_no_overlap_aligned():
+    pass
+
+
+def test_3D_no_overlap_offset():
+    pass
+
+
+def test_3D_overlap_identical():
+    pass
+
+
+def test_3D_overlap_offset():
+    pass
+
+
+def test_3D_plus_2D():
+    pass
+
+
+def test_1D_plus_2D_plus_3D():
+    pass
+
+
+def test_overlap_first():
+    pass
+
+
+def test_overlap_last():
+    pass
+
+
+def test_overlap_sum():
+    pass
+
+
+def test_overlap_max():
+    pass
+
+
+def test_overlap_min():
+    pass
+
+
+def test_overlap_mean():
+    pass
+
+
 if __name__ == "__main__":
     test_wm_w2_w1()
+    test_1D_no_overlap()
+    test_1D_overlap_identical()
+    test_1D_overlap_offset()
+    test_2D_no_overlap_aligned()
+    test_2D_no_overlap_offset()
+    test_2D_overlap_identical()
+    test_2D_overlap_offset()
+    test_2D_some_same_some_offset()
+    test_1D_to_2D_aligned()
+    test_1D_to_2D_not_aligned()
+    test_2D_plus_1D()
+    test_3D_no_overlap_aligned()
+    test_3D_no_overlap_offset()
+    test_3D_overlap_identical()
+    test_3D_overlap_offset()
+    test_3D_plus_2D()
+    test_1D_plus_2D_plus_3D()
+    test_overlap_first()
+    test_overlap_last()
+    test_overlap_sum()
+    test_overlap_max()
+    test_overlap_min()
+    test_overlap_mean()
