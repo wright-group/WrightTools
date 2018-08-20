@@ -36,15 +36,62 @@ def test_wm_w2_w1():
 
 
 def test_1D_no_overlap():
-    pass
+    a = wt.Data()
+    b = wt.Data()
+
+    a.create_variable("x", np.linspace(0, 10, 11))
+    b.create_variable("x", np.linspace(11, 21, 11))
+    a.transform("x")
+    b.transform("x")
+
+    joined = wt.data.join([a, b])
+
+    assert joined.shape == (22,)
+    assert np.allclose(joined.x.points, np.linspace(0, 21, 22))
+
+    a.close()
+    b.close()
+    joined.close()
 
 
 def test_1D_overlap_identical():
-    pass
+    a = wt.Data()
+    b = wt.Data()
+
+    a.create_variable("x", np.linspace(0, 10, 11))
+    b.create_variable("x", np.linspace(5, 15, 11))
+    a.transform("x")
+    b.transform("x")
+
+    joined = wt.data.join([a, b])
+
+    assert joined.shape == (16,)
+    assert np.allclose(joined.x.points, np.linspace(0, 15, 16))
+
+    a.close()
+    b.close()
+    joined.close()
 
 
 def test_1D_overlap_offset():
-    pass
+    a = wt.Data()
+    b = wt.Data()
+
+    a.create_variable("x", np.linspace(0, 10, 11))
+    b.create_variable("x", np.linspace(5.5, 15.5, 11))
+    a.transform("x")
+    b.transform("x")
+
+    joined = wt.data.join([a, b])
+
+    assert joined.shape == (22,)
+    assert np.allclose(
+        joined.x.points,
+        np.sort(np.concatenate([np.linspace(0, 10, 11), np.linspace(5.5, 15.5, 11)])),
+    )
+
+    a.close()
+    b.close()
 
 
 def test_2D_no_overlap_aligned():
