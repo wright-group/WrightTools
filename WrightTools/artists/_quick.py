@@ -286,6 +286,7 @@ def quick2D(
         plt.yticks(fontsize=14)
         ax.set_xlabel(xaxis.label, fontsize=18)
         ax.set_ylabel(yaxis.label, fontsize=18)
+        ax.grid()
         # colorbar
         cax = plt.subplot(gs[1])
         cbar_ticks = np.linspace(levels.min(), levels.max(), 11)
