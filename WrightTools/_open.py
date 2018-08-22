@@ -10,6 +10,7 @@ import h5py
 
 from . import collection as wt_collection
 from . import data as wt_data
+from . import _group as wt_group
 
 
 # --- define -------------------------------------------------------------------------------------
@@ -45,4 +46,4 @@ def open(filepath, edit_local=False):
     elif class_name == "Collection":
         return wt_collection.Collection(filepath=filepath, name=name, edit_local=edit_local)
     else:
-        return wt_collection.Group(filepath=filepath, name=name, edit_local=edit_local)
+        return wt_group.Group(filepath=filepath, name=name, edit_local=edit_local)
