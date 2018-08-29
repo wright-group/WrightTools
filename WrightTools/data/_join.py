@@ -12,6 +12,7 @@ import numpy as np
 from .. import kit as wt_kit
 from .. import exceptions as wt_exceptions
 from ._data import Data
+from ..collection import Collection
 
 
 # --- define --------------------------------------------------------------------------------------
@@ -32,7 +33,7 @@ def join(datas, *, name="join", parent=None, verbose=True) -> Data:
 
     Parameters
     ----------
-    datas : list of data
+    datas : list of data or WrightTools.Collection
         The list of data objects to join together.
     name : str (optional)
         The name for the data object which is created. Default is 'join'.
@@ -48,12 +49,16 @@ def join(datas, *, name="join", parent=None, verbose=True) -> Data:
     """
     warnings.warn("join", category=wt_exceptions.EntireDatasetInMemoryWarning)
     # TODO: fill value
+    if isinstance(datas, Collection):
+        datas = datas.values()
     datas = list(datas)
     # check if variables are valid
     axis_expressions = datas[0].axis_expressions
     variable_names = set(datas[0].variable_names)
     channel_names = set(datas[0].channel_names)
-    for d in datas:
+    for d in datas[1:]:
+        if d.axis_expressions != axis_expressions:
+            raise wt_exceptions.ValueError("Joined data must have same axis_expressions")
         variable_names &= set(d.variable_names)
         channel_names &= set(d.channel_names)
     variable_names = list(variable_names)
