@@ -134,7 +134,6 @@ def test_2D_no_overlap_offset():
     assert joined.shape == (22, 22)
     assert np.allclose(joined.x.points, np.linspace(0, 21, 22))
     assert np.allclose(joined.y.points, np.linspace(0, 10.5, 22))
-    assert np.count(np.isnan(joined.z)) == 22
 
     a.close()
     b.close()
@@ -180,7 +179,6 @@ def test_2D_overlap_offset():
     joined = wt.data.join([a, b])
 
     assert joined.shape == (16, 22)
-    assert np.count(np.isnan(joined.z)) == 10
 
     a.close()
     b.close()
@@ -270,27 +268,147 @@ def test_2D_plus_1D():
 
 
 def test_3D_no_overlap_aligned():
-    pass
+    a = wt.Data()
+    b = wt.Data()
+
+    a.create_variable("x", np.linspace(0, 10, 11)[:, None, None])
+    a.create_variable("y", np.linspace(0, 10, 11)[None, :, None])
+    a.create_variable("z", np.linspace(0, 10, 11)[None, None, :])
+    b.create_variable("x", np.linspace(11, 21, 11)[:, None, None])
+    b.create_variable("y", np.linspace(0, 10, 11)[None, :, None])
+    b.create_variable("z", np.linspace(0, 10, 11)[None, None, :])
+    a.transform("x", "y", "z")
+    b.transform("x", "y", "z")
+
+    joined = wt.data.join([a, b])
+
+    assert joined.shape == (22, 11, 11)
+    assert np.allclose(joined.x.points, np.linspace(0, 21, 22))
+
+    a.close()
+    b.close()
+    joined.close()
 
 
 def test_3D_no_overlap_offset():
-    pass
+    a = wt.Data()
+    b = wt.Data()
+
+    a.create_variable("x", np.linspace(0, 10, 11)[:, None, None])
+    a.create_variable("y", np.linspace(0, 10, 11)[None, :, None])
+    a.create_variable("z", np.linspace(0, 10, 11)[None, None, :])
+    b.create_variable("x", np.linspace(0.5, 10.5, 11)[:, None, None])
+    b.create_variable("y", np.linspace(11, 21, 11)[None, :, None])
+    b.create_variable("z", np.linspace(0, 10, 11)[None, None, :])
+    a.transform("x", "y", "z")
+    b.transform("x", "y", "z")
+
+    joined = wt.data.join([a, b])
+
+    assert joined.shape == (22, 22, 11)
+    assert np.allclose(joined.x.points, np.linspace(0, 10.5, 22))
+    assert np.allclose(joined.y.points, np.linspace(0, 21, 22))
+
+    a.close()
+    b.close()
+    joined.close()
 
 
 def test_3D_overlap_identical():
-    pass
+    a = wt.Data()
+    b = wt.Data()
+
+    a.create_variable("x", np.linspace(0, 10, 11)[:, None, None])
+    a.create_variable("y", np.linspace(0, 10, 11)[None, :, None])
+    a.create_variable("z", np.linspace(0, 10, 11)[None, None, :])
+    b.create_variable("x", np.linspace(5, 15, 11)[:, None, None])
+    b.create_variable("y", np.linspace(0, 10, 11)[None, :, None])
+    b.create_variable("z", np.linspace(0, 10, 11)[None, None, :])
+    a.transform("x", "y", "z")
+    b.transform("x", "y", "z")
+
+    joined = wt.data.join([a, b])
+
+    assert joined.shape == (16, 11, 11)
+    assert np.allclose(joined.x.points, np.linspace(0, 15, 16))
+
+    a.close()
+    b.close()
+    joined.close()
 
 
 def test_3D_overlap_offset():
-    pass
+    a = wt.Data()
+    b = wt.Data()
+
+    a.create_variable("x", np.linspace(0, 10, 11)[:, None, None])
+    a.create_variable("y", np.linspace(0, 10, 11)[None, :, None])
+    a.create_variable("z", np.linspace(0, 10, 11)[None, None, :])
+    b.create_variable("x", np.linspace(10.5, 0.5, 11)[:, None, None])
+    b.create_variable("y", np.linspace(0, 10, 11)[None, :, None])
+    b.create_variable("z", np.linspace(0, 10, 11)[None, None, :])
+    a.transform("x", "y", "z")
+    b.transform("x", "y", "z")
+
+    joined = wt.data.join([a, b])
+
+    assert joined.shape == (22, 11, 11)
+    assert np.allclose(joined.x.points, np.linspace(0, 10.5, 22))
+
+    a.close()
+    b.close()
+    joined.close()
 
 
 def test_3D_plus_2D():
-    pass
+    a = wt.Data()
+    b = wt.Data()
+
+    a.create_variable("x", np.linspace(0, 10, 11)[:, None, None])
+    a.create_variable("y", np.linspace(0, 10, 11)[None, :, None])
+    a.create_variable("z", np.linspace(0, 10, 11)[None, None, :])
+    b.create_variable("x", np.linspace(0, 10, 11)[:, None])
+    b.create_variable("y", np.linspace(0, 10, 11)[None, :])
+    b.create_variable("z", [[11]])
+    a.transform("x", "y", "z")
+    b.transform("x", "y", "z")
+
+    joined = wt.data.join([a, b])
+
+    assert joined.shape == (11, 11, 12)
+    assert np.allclose(joined.z.points, np.linspace(0, 11, 12))
+
+    a.close()
+    b.close()
+    joined.close()
 
 
 def test_1D_plus_2D_plus_3D():
-    pass
+    a = wt.Data()
+    b = wt.Data()
+    c = wt.Data()
+
+    a.create_variable("x", np.linspace(0, 10, 11)[:, None, None])
+    a.create_variable("y", np.linspace(0, 10, 11)[None, :, None])
+    a.create_variable("z", np.linspace(0, 10, 11)[None, None, :])
+    b.create_variable("x", np.linspace(0, 10, 11)[:, None])
+    b.create_variable("y", np.linspace(0, 9, 10)[None, :])
+    b.create_variable("z", [[11]])
+    c.create_variable("x", np.linspace(0, 10, 11))
+    c.create_variable("y", [10])
+    c.create_variable("z", [11])
+    a.transform("x", "y", "z")
+    b.transform("x", "y", "z")
+    c.transform("x", "y", "z")
+
+    joined = wt.data.join([b, a, c])
+
+    assert joined.shape == (11, 11, 12)
+    assert np.allclose(joined.z.points, np.linspace(0, 11, 12))
+
+    a.close()
+    b.close()
+    joined.close()
 
 
 def test_overlap_first():
