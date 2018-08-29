@@ -576,6 +576,44 @@ def test_opposite_dimension():
     joined.close()
 
 
+def test_split_join_multiple():
+    p = datasets.PyCMDS.wm_w2_w1_000
+    a = wt.data.from_PyCMDS(p)
+    split = a.split(0, [20605, 19705], units="wn")
+    joined = wt.data.join(split)
+    assert joined.shape == (35, 11, 11)
+    assert np.allclose(a.signal_mean, joined.signal_mean)
+    a.close()
+    split.close()
+    joined.close()
+
+
+def test_split_join_expression():
+    p = datasets.PyCMDS.wm_w2_w1_000
+    a = wt.data.from_PyCMDS(p)
+    split = a.split("w1+w2", 3150, units="wn")
+    joined = wt.data.join(split)
+    assert joined.shape == (35, 11, 11)
+    assert np.allclose(a.signal_mean, joined.signal_mean)
+    a.close()
+    split.close()
+    joined.close()
+
+
+def test_split_join_hole():
+    data = wt.Data()
+    data.create_variable("x", np.linspace(-5, 5, 100)[:, None])
+    data.create_variable("y", np.linspace(-5, 5, 100)[None, :])
+    data.create_variable("z", np.exp(-data.x[:] ** 2) * np.exp(-data.y[:] ** 2))
+    split = data.split("z", 0.5)
+    joined = wt.data.join(split)
+    assert joined.shape == (100, 100)
+    assert np.allclose(data.z, joined.z)
+    data.close()
+    split.close()
+    joined.close()
+
+
 if __name__ == "__main__":
     test_wm_w2_w1()
     test_1D_no_overlap()
@@ -601,3 +639,6 @@ if __name__ == "__main__":
     test_overlap_min()
     test_overlap_mean()
     test_opposite_dimension()
+    test_split_join_multiple()
+    test_split_join_expression()
+    test_split_join_hole()
