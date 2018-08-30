@@ -156,7 +156,7 @@ def test_2D_overlap_identical():
     joined = wt.data.join([a, b])
 
     assert joined.shape == (16, 11)
-    assert np.count(np.isnan(joined.z)) == 0
+    assert np.sum(np.isnan(joined.z)) == 0
 
     a.close()
     b.close()
@@ -188,6 +188,7 @@ def test_2D_overlap_offset():
 def test_1D_to_2D_aligned():
     a = wt.Data()
     b = wt.Data()
+    c = wt.Data()
 
     a.create_variable("x", np.linspace(0, 10, 11))
     a.create_variable("y", np.array([0.]))
@@ -214,6 +215,7 @@ def test_1D_to_2D_aligned():
 def test_1D_to_2D_not_aligned():
     a = wt.Data()
     b = wt.Data()
+    c = wt.Data()
 
     a.create_variable("x", np.linspace(0, 10, 11))
     a.create_variable("y", np.array([0.]))
@@ -369,7 +371,7 @@ def test_3D_plus_2D():
     a.create_variable("z", np.linspace(0, 10, 11)[None, None, :])
     b.create_variable("x", np.linspace(0, 10, 11)[:, None])
     b.create_variable("y", np.linspace(0, 10, 11)[None, :])
-    b.create_variable("z", [[11]])
+    b.create_variable("z", np.array([[11]]))
     a.transform("x", "y", "z")
     b.transform("x", "y", "z")
 
@@ -393,7 +395,7 @@ def test_1D_plus_2D_plus_3D():
     a.create_variable("z", np.linspace(0, 10, 11)[None, None, :])
     b.create_variable("x", np.linspace(0, 10, 11)[:, None])
     b.create_variable("y", np.linspace(0, 9, 10)[None, :])
-    b.create_variable("z", [[11]])
+    b.create_variable("z", np.array([[11]]))
     c.create_variable("x", np.linspace(0, 10, 11))
     c.create_variable("y", [10])
     c.create_variable("z", [11])
@@ -419,8 +421,8 @@ def test_overlap_first():
     b.create_variable("x", np.linspace(5, 15, 11))
     a.transform("x")
     b.transform("x")
-    a.create_channel("y", np.ones_like(a.x))
-    b.create_channel("y", np.ones_like(b.x) * 2)
+    a.create_channel("y", np.ones_like(a.x[:]))
+    b.create_channel("y", np.ones_like(b.x[:]) * 2)
 
     joined = wt.data.join([a, b])
 
@@ -443,8 +445,8 @@ def test_overlap_last():
     b.create_variable("x", np.linspace(5, 15, 11))
     a.transform("x")
     b.transform("x")
-    a.create_channel("y", np.ones_like(a.x))
-    b.create_channel("y", np.ones_like(b.x) * 2)
+    a.create_channel("y", np.ones_like(a.x[:]))
+    b.create_channel("y", np.ones_like(b.x[:]) * 2)
 
     joined = wt.data.join([a, b])
 
@@ -467,8 +469,8 @@ def test_overlap_sum():
     b.create_variable("x", np.linspace(5, 15, 11))
     a.transform("x")
     b.transform("x")
-    a.create_channel("y", np.ones_like(a.x))
-    b.create_channel("y", np.ones_like(b.x) * 2)
+    a.create_channel("y", np.ones_like(a.x[:]))
+    b.create_channel("y", np.ones_like(b.x[:]) * 2)
 
     joined = wt.data.join([a, b])
 
@@ -491,8 +493,8 @@ def test_overlap_max():
     b.create_variable("x", np.linspace(5, 15, 11))
     a.transform("x")
     b.transform("x")
-    a.create_channel("y", np.ones_like(a.x))
-    b.create_channel("y", np.ones_like(b.x) * 2)
+    a.create_channel("y", np.ones_like(a.x[:]))
+    b.create_channel("y", np.ones_like(b.x[:]) * 2)
 
     joined = wt.data.join([a, b])
 
@@ -515,8 +517,8 @@ def test_overlap_min():
     b.create_variable("x", np.linspace(5, 15, 11))
     a.transform("x")
     b.transform("x")
-    a.create_channel("y", np.ones_like(a.x))
-    b.create_channel("y", np.ones_like(b.x) * 2)
+    a.create_channel("y", np.ones_like(a.x[:]))
+    b.create_channel("y", np.ones_like(b.x[:]) * 2)
 
     joined = wt.data.join([a, b])
 
@@ -539,8 +541,8 @@ def test_overlap_mean():
     b.create_variable("x", np.linspace(5, 15, 11))
     a.transform("x")
     b.transform("x")
-    a.create_channel("y", np.ones_like(a.x))
-    b.create_channel("y", np.ones_like(b.x) * 2)
+    a.create_channel("y", np.ones_like(a.x[:]))
+    b.create_channel("y", np.ones_like(b.x[:]) * 2)
 
     joined = wt.data.join([a, b])
 
