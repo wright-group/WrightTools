@@ -566,6 +566,7 @@ class Data(Group):
             else:
                 require_kwargs["shape"] = shape
             require_kwargs["dtype"] = np.float64
+            require_kwargs["fillvalue"] = np.nan
         else:
             require_kwargs["data"] = values
             require_kwargs["shape"] = values.shape
@@ -608,11 +609,15 @@ class Data(Group):
             if shape is None:
                 shape = self.shape
             dtype = np.float64
+            fillvalue = np.nan
         else:
             shape = values.shape
             dtype = values.dtype
+            fillvalue = None
         # create dataset
-        id = self.require_dataset(name=name, data=values, shape=shape, dtype=dtype).id
+        id = self.require_dataset(
+            name=name, data=values, shape=shape, dtype=dtype, fillvalue=fillvalue
+        ).id
         variable = Variable(self, id, units=units, **kwargs)
         # finish
         self._variables = None
