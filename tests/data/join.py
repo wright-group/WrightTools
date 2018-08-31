@@ -230,7 +230,6 @@ def test_1D_to_2D_not_aligned():
     joined = wt.data.join([a, b, c])
 
     assert joined.shape == (26, 3)
-    assert np.allclose(joined.x.points, np.linspace(0, 10, 11))
     assert np.allclose(joined.y.points, np.linspace(0, 2, 3))
 
     a.close()
@@ -477,7 +476,7 @@ def test_overlap_sum():
     assert joined.shape == (16,)
     assert np.allclose(joined.x.points, np.linspace(0, 15, 16))
     assert np.isclose(joined.y[0], 1.0)
-    assert np.isclose(joined.y[10], 2.0)
+    assert np.isclose(joined.y[10], 3.0)
     assert np.isclose(joined.y[-1], 2.0)
 
     a.close()
@@ -607,6 +606,7 @@ def test_split_join_hole():
     data.create_variable("x", np.linspace(-5, 5, 100)[:, None])
     data.create_variable("y", np.linspace(-5, 5, 100)[None, :])
     data.create_variable("z", np.exp(-data.x[:] ** 2) * np.exp(-data.y[:] ** 2))
+    data.transform("x", "y")
     split = data.split("z", 0.5)
     joined = wt.data.join(split)
     assert joined.shape == (100, 100)
