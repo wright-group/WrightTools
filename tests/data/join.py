@@ -487,20 +487,24 @@ def test_overlap_sum():
 def test_overlap_max():
     a = wt.Data()
     b = wt.Data()
+    c = wt.Data()
 
     a.create_variable("x", np.linspace(0, 10, 11))
-    b.create_variable("x", np.linspace(5, 15, 11))
+    b.create_variable("x", np.linspace(5, 10, 6))
+    c.create_variable("x", np.linspace(5, 15, 11))
     a.transform("x")
     b.transform("x")
+    c.transform("x")
     a.create_channel("y", np.ones_like(a.x[:]))
-    b.create_channel("y", np.ones_like(b.x[:]) * 2)
+    b.create_channel("y", np.ones_like(b.x[:]) * 3)
+    c.create_channel("y", np.ones_like(b.x[:]) * 2)
 
-    joined = wt.data.join([a, b])
+    joined = wt.data.join([a, b, c])
 
     assert joined.shape == (16,)
     assert np.allclose(joined.x.points, np.linspace(0, 15, 16))
     assert np.isclose(joined.y[0], 1.0)
-    assert np.isclose(joined.y[10], 2.0)
+    assert np.isclose(joined.y[10], 3.0)
     assert np.isclose(joined.y[-1], 2.0)
 
     a.close()
@@ -583,7 +587,8 @@ def test_split_join_multiple():
     split = a.split(0, [20605, 19705], units="wn")
     joined = wt.data.join(split)
     assert joined.shape == (35, 11, 11)
-    assert np.allclose(a.signal_mean, joined.signal_mean)
+    # Flipped because join has effect of sorting axis
+    assert np.allclose(np.flip(a.signal_mean[:], axis=1), joined.signal_mean)
     a.close()
     split.close()
     joined.close()
@@ -595,7 +600,8 @@ def test_split_join_expression():
     split = a.split("w1+w2", 3150, units="wn")
     joined = wt.data.join(split)
     assert joined.shape == (35, 11, 11)
-    assert np.allclose(a.signal_mean, joined.signal_mean)
+    # Flipped because join has effect of sorting axis
+    assert np.allclose(np.flip(a.signal_mean[:], axis=1), joined.signal_mean)
     a.close()
     split.close()
     joined.close()
