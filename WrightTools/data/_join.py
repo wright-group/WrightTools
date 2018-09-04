@@ -115,13 +115,12 @@ def join(datas, *, name="join", parent=None, method="first", verbose=True) -> Da
             out.create_variable(shape=shape, **datas[0][variable_name].attrs)
             count[variable_name] = np.zeros_like(out[variable_name], dtype=int)
 
-    out.print_tree()
     # channels
     for data in datas:
         new_idx = []
         for variable_name in vs.keys():
-            p = data[variable_name].points[np.newaxis, ...]
-            arr = out[variable_name].points[..., np.newaxis]
+            p = data[variable_name][:][np.newaxis, ...]
+            arr = out[variable_name][:][..., np.newaxis]
             i = np.argmin(np.abs(arr - p), axis=np.argmax(arr.shape))
             new_idx.append(i)
         for variable_name in out.variable_names:
@@ -131,15 +130,7 @@ def join(datas, *, name="join", parent=None, method="first", verbose=True) -> Da
                 # These lines are needed because h5py doesn't support advanced indexing natively
                 vals = np.empty_like(new)
                 vals[:] = np.nan
-                idx = wt_kit.valid_index(new_idx, new.shape)
-                mask = np.ones(new.shape, dtype=bool)
-                for i, (sh, idex) in enumerate(zip(new.shape, idx)):
-                    m = np.array([x in idex for x in range(sh)])
-                    sha = [1] * new.ndim
-                    sha[i] = sh
-                    m.shape = sha
-                    mask *= m
-                vals.ravel()[mask.ravel()] = old[:].ravel()
+                vals[wt_kit.valid_index(new_idx, new.shape)] = old[:]
                 count[variable_name][wt_kit.valid_index(new_idx, new.shape)] += 1
                 if method == "first":
                     vals[~np.isnan(new)] = 0.
@@ -160,15 +151,7 @@ def join(datas, *, name="join", parent=None, method="first", verbose=True) -> Da
             # These lines are needed because h5py doesn't support advanced indexing natively
             vals = np.empty_like(new)
             vals[:] = np.nan
-            idx = wt_kit.valid_index(new_idx, new.shape)
-            mask = np.ones(new.shape, dtype=bool)
-            for i, (sh, idex) in enumerate(zip(new.shape, idx)):
-                m = np.array([x in idex for x in range(sh)])
-                sha = [1] * new.ndim
-                sha[i] = sh
-                m.shape = sha
-                mask *= m
-            vals.ravel()[mask.ravel()] = old[:].ravel()
+            vals[wt_kit.valid_index(new_idx, new.shape)] = old[:]
             count[channel_name][wt_kit.valid_index(new_idx, new.shape)] += 1
             if method == "first":
                 vals[~np.isnan(new)] = 0.
