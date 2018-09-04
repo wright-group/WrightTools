@@ -118,10 +118,15 @@ def join(datas, *, name="join", parent=None, method="first", verbose=True) -> Da
     # channels
     for data in datas:
         new_idx = []
+        transpose = []
         for variable_name in vs.keys():
-            p = data[variable_name][:][np.newaxis, ...]
+            p = data[variable_name].points
+            transpose.append(np.argmax(data[variable_name].shape))
             arr = out[variable_name][:][..., np.newaxis]
             i = np.argmin(np.abs(arr - p), axis=np.argmax(arr.shape))
+            sh = [1] * i.ndim
+            sh[np.argmax(arr.shape)] = i.size
+            i.shape = sh
             new_idx.append(i)
         for variable_name in out.variable_names:
             if variable_name not in vs.keys():
@@ -130,7 +135,7 @@ def join(datas, *, name="join", parent=None, method="first", verbose=True) -> Da
                 # These lines are needed because h5py doesn't support advanced indexing natively
                 vals = np.empty_like(new)
                 vals[:] = np.nan
-                vals[wt_kit.valid_index(new_idx, new.shape)] = old[:]
+                vals[wt_kit.valid_index(new_idx, new.shape)] = old[:].transpose(transpose)
                 count[variable_name][wt_kit.valid_index(new_idx, new.shape)] += 1
                 if method == "first":
                     vals[~np.isnan(new)] = 0.
@@ -151,7 +156,7 @@ def join(datas, *, name="join", parent=None, method="first", verbose=True) -> Da
             # These lines are needed because h5py doesn't support advanced indexing natively
             vals = np.empty_like(new)
             vals[:] = np.nan
-            vals[wt_kit.valid_index(new_idx, new.shape)] = old[:]
+            vals[wt_kit.valid_index(new_idx, new.shape)] = old[:].transpose(transpose)
             count[channel_name][wt_kit.valid_index(new_idx, new.shape)] += 1
             if method == "first":
                 vals[~np.isnan(new)] = 0.

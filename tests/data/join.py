@@ -568,15 +568,15 @@ def test_opposite_dimension():
 
     a.create_variable("x", np.linspace(0, 10, 11)[:, None])
     a.create_variable("y", np.linspace(0, 10, 11)[None, :])
-    b.create_variable("x", np.linspace(11, 21, 11)[None, :])
+    b.create_variable("x", np.linspace(11, 16, 6)[None, :])
     b.create_variable("y", np.linspace(0, 10, 11)[:, None])
     a.transform("x", "y")
     b.transform("x", "y")
 
     joined = wt.data.join([a, b])
 
-    assert joined.shape == (22, 11)
-    assert np.allclose(joined.x.points, np.linspace(0, 21, 22))
+    assert joined.shape == (17, 11)
+    assert np.allclose(joined.x.points, np.linspace(0, 16, 17))
 
     a.close()
     b.close()
@@ -624,6 +624,19 @@ def test_split_join_hole():
     joined.close()
 
 
+def test_transpose():
+    data = wt.Data()
+    data.create_variable("x", np.linspace(-5, 5, 10)[:, None])
+    data.create_variable("y", np.linspace(-5, 5, 100)[None, :])
+    data.create_variable("z", np.exp(-data.x[:] ** 2) * np.exp(-data.y[:] ** 2))
+    data.transform("y", "x")
+    joined = wt.data.join([data])
+    assert joined.shape == (100, 10)
+    assert np.allclose(data.z.points.T, joined.z)
+    data.close()
+    joined.close()
+
+
 if __name__ == "__main__":
     test_wm_w2_w1()
     test_1D_no_overlap()
@@ -652,3 +665,4 @@ if __name__ == "__main__":
     test_split_join_multiple()
     test_split_join_expression()
     test_split_join_hole()
+    test_transpose()
