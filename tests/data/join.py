@@ -423,7 +423,7 @@ def test_overlap_first():
     a.create_channel("y", np.ones_like(a.x[:]))
     b.create_channel("y", np.ones_like(b.x[:]) * 2)
 
-    joined = wt.data.join([a, b])
+    joined = wt.data.join([a, b], method="first")
 
     assert joined.shape == (16,)
     assert np.allclose(joined.x.points, np.linspace(0, 15, 16))
@@ -447,7 +447,7 @@ def test_overlap_last():
     a.create_channel("y", np.ones_like(a.x[:]))
     b.create_channel("y", np.ones_like(b.x[:]) * 2)
 
-    joined = wt.data.join([a, b])
+    joined = wt.data.join([a, b], method="last")
 
     assert joined.shape == (16,)
     assert np.allclose(joined.x.points, np.linspace(0, 15, 16))
@@ -471,7 +471,7 @@ def test_overlap_sum():
     a.create_channel("y", np.ones_like(a.x[:]))
     b.create_channel("y", np.ones_like(b.x[:]) * 2)
 
-    joined = wt.data.join([a, b])
+    joined = wt.data.join([a, b], method="sum")
 
     assert joined.shape == (16,)
     assert np.allclose(joined.x.points, np.linspace(0, 15, 16))
@@ -497,9 +497,10 @@ def test_overlap_max():
     c.transform("x")
     a.create_channel("y", np.ones_like(a.x[:]))
     b.create_channel("y", np.ones_like(b.x[:]) * 3)
-    c.create_channel("y", np.ones_like(b.x[:]) * 2)
+    c.create_channel("y", np.ones_like(c.x[:]) * 2)
 
-    joined = wt.data.join([a, b, c])
+    joined = wt.data.join([a, b, c], method="max")
+    print(joined.y.points)
 
     assert joined.shape == (16,)
     assert np.allclose(joined.x.points, np.linspace(0, 15, 16))
@@ -523,7 +524,8 @@ def test_overlap_min():
     a.create_channel("y", np.ones_like(a.x[:]))
     b.create_channel("y", np.ones_like(b.x[:]) * 2)
 
-    joined = wt.data.join([a, b])
+    joined = wt.data.join([a, b], method="min")
+    print(joined.y.points)
 
     assert joined.shape == (16,)
     assert np.allclose(joined.x.points, np.linspace(0, 15, 16))
@@ -547,7 +549,7 @@ def test_overlap_mean():
     a.create_channel("y", np.ones_like(a.x[:]))
     b.create_channel("y", np.ones_like(b.x[:]) * 2)
 
-    joined = wt.data.join([a, b])
+    joined = wt.data.join([a, b], method="mean")
 
     assert joined.shape == (16,)
     assert np.allclose(joined.x.points, np.linspace(0, 15, 16))

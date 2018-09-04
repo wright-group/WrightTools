@@ -24,7 +24,7 @@ __all__ = ["join"]
 # --- functions -----------------------------------------------------------------------------------
 
 
-def join(datas, *, name="join", parent=None, verbose=True) -> Data:
+def join(datas, *, name="join", parent=None, method="first", verbose=True) -> Data:
     """Join a list of data objects together.
 
     For now datas must have identical dimensionalities (order and identity).
@@ -101,9 +101,11 @@ def join(datas, *, name="join", parent=None, verbose=True) -> Data:
         return out
 
     out = from_dict(vs, parent=parent)
+    count = {}
     for channel_name, units in zip(channel_names, channel_units):
         # **attrs passes the name and units as well
         out.create_channel(**datas[0][channel_name].attrs)
+        count[channel_name] = np.zeros_like(out[channel_name], dtype=int)
     for variable_name in variable_names:
         if variable_name not in vs.keys():
             shape = tuple(
@@ -111,6 +113,8 @@ def join(datas, *, name="join", parent=None, verbose=True) -> Data:
             )
             # **attrs passes the name and units as well
             out.create_variable(shape=shape, **datas[0][variable_name].attrs)
+            count[variable_name] = np.zeros_like(out[variable_name], dtype=int)
+
     # channels
     for data in datas:
         new_idx = []
@@ -124,16 +128,48 @@ def join(datas, *, name="join", parent=None, verbose=True) -> Data:
                 old = data[variable_name]
                 new = out[variable_name]
                 # These lines are needed because h5py doesn't support advanced indexing natively
-                vals = new[:]
+                vals = np.empty_like(new)
+                vals[:] = np.nan
                 vals[wt_kit.valid_index(new_idx, new.shape)] = old[:]
-                new[:] = vals
+                count[variable_name][wt_kit.valid_index(new_idx, new.shape)] += 1
+                if method == "first":
+                    vals[~np.isnan(new)] = 0.
+                elif method == "last":
+                    new[~np.isnan(vals)] = 0.
+                elif method == "min":
+                    new[new > vals] = 0.
+                    vals[vals > new] = 0.
+                elif method == "max":
+                    new[new < vals] = 0.
+                    vals[vals < new] = 0.
+                new[np.isnan(new) & ~np.isnan(vals)] = 0.
+                vals[np.isnan(vals)] = 0.
+                new[:] += vals
         for channel_name in channel_names:
             old = data[channel_name]
             new = out[channel_name]
             # These lines are needed because h5py doesn't support advanced indexing natively
-            vals = new[:]
+            vals = np.empty_like(new)
+            vals[:] = np.nan
             vals[wt_kit.valid_index(new_idx, new.shape)] = old[:]
-            new[:] = vals
+            count[channel_name][wt_kit.valid_index(new_idx, new.shape)] += 1
+            if method == "first":
+                vals[~np.isnan(new)] = 0.
+            elif method == "last":
+                new[~np.isnan(vals)] = 0.
+            elif method == "min":
+                new[new > vals] = 0.
+                vals[vals > new] = 0.
+            elif method == "max":
+                new[new < vals] = 0.
+                vals[vals < new] = 0.
+            new[np.isnan(new) & ~np.isnan(vals)] = 0.
+            vals[np.isnan(vals)] = 0.
+            new[:] += vals
+
+    if method == "mean":
+        for name, c in count.items():
+            out[name][:] /= c
     # axes
     out.transform(*axis_expressions)
     # finish
