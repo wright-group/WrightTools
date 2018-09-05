@@ -25,7 +25,7 @@ __all__ = ["join"]
 
 
 def join(
-    datas, *, atol=0, rtol=None, name="join", parent=None, method="first", verbose=True
+    datas, *, atol=None, rtol=None, name="join", parent=None, method="first", verbose=True
 ) -> Data:
     """Join a list of data objects together.
 
@@ -88,7 +88,10 @@ def join(
     for n, units, atol_, rtol_ in zip(axis_variable_names, axis_variable_units, atol, rtol):
         dtype = np.result_type(*[d[n].dtype for d in datas])
         if atol_ is None:
-            atol_ = 0
+            try:
+                atol_ = min(np.min(np.abs(np.diff(d[n][:]))) for d in datas if d[n].size > 1) * 0.1
+            except ValueError:
+                atol_ = 0
         if rtol_ is None:
             rtol_ = 4 * np.finfo(dtype).resolution if isinstance(dtype, np.inexact) else 0
         values = np.concatenate([d[n][:].flat for d in datas])
