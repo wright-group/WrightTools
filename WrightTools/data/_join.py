@@ -24,7 +24,9 @@ __all__ = ["join"]
 # --- functions -----------------------------------------------------------------------------------
 
 
-def join(datas, *, name="join", parent=None, method="first", verbose=True) -> Data:
+def join(
+    datas, *, atol=0, rtol=None, name="join", parent=None, method="first", verbose=True
+) -> Data:
     """Join a list of data objects together.
 
     For now datas must have identical dimensionalities (order and identity).
@@ -48,10 +50,13 @@ def join(datas, *, name="join", parent=None, method="first", verbose=True) -> Da
         A new Data instance.
     """
     warnings.warn("join", category=wt_exceptions.EntireDatasetInMemoryWarning)
-    # TODO: fill value
     if isinstance(datas, Collection):
         datas = datas.values()
     datas = list(datas)
+    if not isinstance(atol, collections.Iterable):
+        atol = [atol] * len(datas[0].axes)
+    if not isinstance(rtol, collections.Iterable):
+        rtol = [rtol] * len(datas[0].axes)
     # check if variables are valid
     axis_expressions = datas[0].axis_expressions
     variable_names = set(datas[0].variable_names)
@@ -73,17 +78,36 @@ def join(datas, *, name="join", parent=None, method="first", verbose=True) -> Da
     axis_variable_names = []
     axis_variable_units = []
     for a in datas[0].axes:
+        if len(a.variables) > 1:
+            raise wt_exceptions.ValueError("Applied transform must have single variable axes")
         for v in a.variables:
             axis_variable_names.append(v.natural_name)
             axis_variable_units.append(v.units)
 
     vs = collections.OrderedDict()
-    for n, units in zip(axis_variable_names, axis_variable_units):
+    for n, units, atol_, rtol_ in zip(axis_variable_names, axis_variable_units, atol, rtol):
+        dtype = np.result_type(*[d[n].dtype for d in datas])
+        if atol_ is None:
+            atol_ = 0
+        if rtol_ is None:
+            rtol_ = 4 * np.finfo(dtype).resolution if isinstance(dtype, np.inexact) else 0
         values = np.concatenate([d[n][:].flat for d in datas])
-        rounded = values.round(8)
-        _, idxs = np.unique(rounded, True)
-        values = values.flat[idxs]
-        vs[n] = {"values": values, "units": units}
+        values = np.sort(values)
+        filtered = []
+        i = 0
+        while i < len(values):
+            sum_ = values[i]
+            count = 1
+            i += 1
+            if i < len(values):
+                while np.isclose(values[i - 1], values[i], atol=atol_, rtol=rtol_):
+                    sum_ += values[i]
+                    count += 1
+                    i += 1
+                    if i >= len(values):
+                        break
+            filtered.append(sum_ / count)
+        vs[n] = {"values": np.array(filtered), "units": units}
     # TODO: the following should become a new from method
 
     def from_dict(d, parent=None):
