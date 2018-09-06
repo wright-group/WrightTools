@@ -142,7 +142,7 @@ def join(
             out.create_variable(shape=shape, **datas[0][variable_name].attrs)
             count[variable_name] = np.zeros_like(out[variable_name], dtype=int)
 
-    def combine(data, out, item_name, new_idx):
+    def combine(data, out, item_name, new_idx, transpose, slice_):
         old = data[item_name]
         new = out[item_name]
 
@@ -152,7 +152,11 @@ def join(
         else:
             vals[:] = 0
         valid_index = wt_kit.valid_index(new_idx, new.shape)
-        vals[valid_index] = old[:].transpose(transpose)
+        print(valid_index)
+        print()
+        print(np.broadcast(*valid_index).shape)
+        print(transpose, old.shape)
+        vals[valid_index] = old[:].transpose(transpose)[slice_]
         if method == "first":
             vals[~np.isnan(new[:])] = 0
             if not vals.dtype.kind in "fcmM":
@@ -176,9 +180,15 @@ def join(
     for data in datas:
         new_idx = []
         transpose = []
+        slice_ = []
         for variable_name in vs.keys():
             p = data[variable_name].points
-            transpose.append(np.argmax(data[variable_name].shape))
+            print(data[variable_name], p)
+            if np.ndim(p) > 0:
+                transpose.append(np.argmax(data[variable_name].shape))
+                slice_.append(slice(None))
+            else:
+                slice_.append(np.newaxis)
             arr = out[variable_name][:][..., np.newaxis]
             i = np.argmin(np.abs(arr - p), axis=np.argmax(arr.shape))
             sh = [1] * i.ndim
@@ -187,9 +197,9 @@ def join(
             new_idx.append(i)
         for variable_name in out.variable_names:
             if variable_name not in vs.keys():
-                combine(data, out, variable_name, new_idx)
+                combine(data, out, variable_name, new_idx, transpose, slice_)
         for channel_name in channel_names:
-            combine(data, out, channel_name, new_idx)
+            combine(data, out, channel_name, new_idx, transpose, slice_)
 
     if method == "mean":
         for name, c in count.items():
