@@ -562,6 +562,30 @@ def test_overlap_mean():
     joined.close()
 
 
+def test_integer_dtype():
+    a = wt.Data()
+    b = wt.Data()
+
+    a.create_variable("x", np.linspace(0, 10, 11, dtype=int))
+    b.create_variable("x", np.linspace(5, 15, 11, dtype=int))
+    a.transform("x")
+    b.transform("x")
+    a.create_channel("y", np.ones_like(a.x[:]))
+    b.create_channel("y", np.ones_like(b.x[:]) * 2)
+
+    joined = wt.data.join([a, b], method="mean")
+
+    assert joined.shape == (16,)
+    assert np.all(joined.x.points == np.linspace(0, 15, 16, dtype=int))
+    assert joined.y[0] == 1
+    assert joined.y[10] == 1
+    assert joined.y[-1] == 2
+
+    a.close()
+    b.close()
+    joined.close()
+
+
 def test_opposite_dimension():
     a = wt.Data()
     b = wt.Data()

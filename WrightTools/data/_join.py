@@ -93,7 +93,7 @@ def join(
             except ValueError:
                 atol_ = 0
         if rtol_ is None:
-            rtol_ = 4 * np.finfo(dtype).resolution if isinstance(dtype, np.inexact) else 0
+            rtol_ = 4 * np.finfo(dtype).resolution if dtype.kind in "fcmM" else 0
         values = np.concatenate([d[n][:].flat for d in datas])
         values = np.sort(values)
         filtered = []
@@ -131,7 +131,7 @@ def join(
     count = {}
     for channel_name, units in zip(channel_names, channel_units):
         # **attrs passes the name and units as well
-        out.create_channel(**datas[0][channel_name].attrs)
+        out.create_channel(**datas[0][channel_name].attrs, dtype=datas[0][channel_name][:].dtype)
         count[channel_name] = np.zeros_like(out[channel_name], dtype=int)
     for variable_name in variable_names:
         if variable_name not in vs.keys():
@@ -141,6 +141,36 @@ def join(
             # **attrs passes the name and units as well
             out.create_variable(shape=shape, **datas[0][variable_name].attrs)
             count[variable_name] = np.zeros_like(out[variable_name], dtype=int)
+
+    def combine(data, out, item_name, new_idx):
+        old = data[item_name]
+        new = out[item_name]
+
+        vals = np.empty_like(new)
+        if vals.dtype.kind in "fcmM":
+            vals[:] = np.nan
+        else:
+            vals[:] = 0
+        valid_index = wt_kit.valid_index(new_idx, new.shape)
+        vals[valid_index] = old[:].transpose(transpose)
+        if method == "first":
+            vals[~np.isnan(new[:])] = 0
+            if not vals.dtype.kind in "fcmM":
+                vals[count[item_name] > 0] = 0
+        elif method == "last":
+            new[~np.isnan(vals)] = 0
+            if not vals.dtype.kind in "fcmM":
+                new[valid_index] = 0
+        elif method == "min":
+            new[new > vals] = 0
+            vals[vals > new] = 0
+        elif method == "max":
+            new[new < vals] = 0
+            vals[vals < new] = 0
+        new[np.isnan(new) & ~np.isnan(vals)] = 0
+        vals[np.isnan(vals)] = 0
+        count[item_name][valid_index] += 1
+        new[:] += vals
 
     # channels
     for data in datas:
@@ -157,51 +187,16 @@ def join(
             new_idx.append(i)
         for variable_name in out.variable_names:
             if variable_name not in vs.keys():
-                old = data[variable_name]
-                new = out[variable_name]
-                # These lines are needed because h5py doesn't support advanced indexing natively
-                vals = np.empty_like(new)
-                vals[:] = np.nan
-                vals[wt_kit.valid_index(new_idx, new.shape)] = old[:].transpose(transpose)
-                count[variable_name][wt_kit.valid_index(new_idx, new.shape)] += 1
-                if method == "first":
-                    vals[~np.isnan(new)] = 0.
-                elif method == "last":
-                    new[~np.isnan(vals)] = 0.
-                elif method == "min":
-                    new[new > vals] = 0.
-                    vals[vals > new] = 0.
-                elif method == "max":
-                    new[new < vals] = 0.
-                    vals[vals < new] = 0.
-                new[np.isnan(new) & ~np.isnan(vals)] = 0.
-                vals[np.isnan(vals)] = 0.
-                new[:] += vals
+                combine(data, out, variable_name, new_idx)
         for channel_name in channel_names:
-            old = data[channel_name]
-            new = out[channel_name]
-            # These lines are needed because h5py doesn't support advanced indexing natively
-            vals = np.empty_like(new)
-            vals[:] = np.nan
-            vals[wt_kit.valid_index(new_idx, new.shape)] = old[:].transpose(transpose)
-            count[channel_name][wt_kit.valid_index(new_idx, new.shape)] += 1
-            if method == "first":
-                vals[~np.isnan(new)] = 0.
-            elif method == "last":
-                new[~np.isnan(vals)] = 0.
-            elif method == "min":
-                new[new > vals] = 0.
-                vals[vals > new] = 0.
-            elif method == "max":
-                new[new < vals] = 0.
-                vals[vals < new] = 0.
-            new[np.isnan(new) & ~np.isnan(vals)] = 0.
-            vals[np.isnan(vals)] = 0.
-            new[:] += vals
+            combine(data, out, channel_name, new_idx)
 
     if method == "mean":
         for name, c in count.items():
-            out[name][:] /= c
+            if out[name].dtype.kind in "fcmM":
+                out[name][:] /= c
+            else:
+                out[name][:] //= c
     # axes
     out.transform(*axis_expressions)
     # finish
