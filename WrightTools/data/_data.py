@@ -544,11 +544,14 @@ class Data(Group):
             Array. If None, an empty array equaling the data shape is
             created. Default is None.
         shape : tuple of int
-            Shape to use. must broadcast with the full shape.
+            Shape to use. Must broadcast with the full shape.
             Only used if `values` is None.
             Default is the full shape of self.
         units : string (optional)
             Channel units. Default is None.
+        dtype : numpy.dtype (optional)
+            dtype to use for dataset, default is np.float64.
+            Only used if `values` is None.
         kwargs : dict
             Additional keyword arguments passed to Channel instantiation.
 
@@ -604,6 +607,9 @@ class Data(Group):
             Default is the full shape of self.
         units : string (optional)
             Variable units. Default is None.
+        dtype : numpy.dtype (optional)
+            dtype to use for dataset, default is np.float64.
+            Only used if `values` is None.
         kwargs
             Additional kwargs to variable instantiation.
 
