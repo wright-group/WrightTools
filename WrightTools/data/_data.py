@@ -531,7 +531,9 @@ class Data(Group):
                         )
         self._on_axes_updated()
 
-    def create_channel(self, name, values=None, shape=None, units=None, **kwargs) -> Channel:
+    def create_channel(
+        self, name, values=None, shape=None, units=None, *, dtype=None, **kwargs
+    ) -> Channel:
         """Append a new channel.
 
         Parameters
@@ -565,8 +567,14 @@ class Data(Group):
                 require_kwargs["shape"] = self.shape
             else:
                 require_kwargs["shape"] = shape
-            require_kwargs["dtype"] = np.float64
-            require_kwargs["fillvalue"] = np.nan
+            if dtype is None:
+                require_kwargs["dtype"] = np.dtype(np.float64)
+            else:
+                require_kwargs["dtype"] = dtype
+            if require_kwargs["dtype"].kind in "fcmM":
+                require_kwargs["fillvalue"] = np.nan
+            else:
+                require_kwargs["fillvalue"] = 0
         else:
             require_kwargs["data"] = values
             require_kwargs["shape"] = values.shape
@@ -578,7 +586,9 @@ class Data(Group):
         self.attrs["channel_names"] = np.append(self.attrs["channel_names"], name.encode())
         return channel
 
-    def create_variable(self, name, values=None, shape=None, units=None, **kwargs) -> Variable:
+    def create_variable(
+        self, name, values=None, shape=None, units=None, *, dtype=None, **kwargs
+    ) -> Variable:
         """Add new child variable.
 
         Parameters
@@ -608,8 +618,12 @@ class Data(Group):
         if values is None:
             if shape is None:
                 shape = self.shape
-            dtype = np.float64
-            fillvalue = np.nan
+            if dtype is None:
+                dtype = np.dtype(np.float64)
+            if dtype.kind in "fcmM":
+                fillvalue = np.nan
+            else:
+                fillvalue = 0
         else:
             shape = values.shape
             dtype = values.dtype
