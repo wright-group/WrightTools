@@ -185,6 +185,41 @@ def test_2D_overlap_offset():
     joined.close()
 
 
+def test_2D_to_3D_overlap():
+    x1 = np.arange(-2.5, 2.5, 0.5)
+    x2 = np.arange(1, 10, 1)
+    x3 = np.arange(5, 25, 2.5)
+    y = np.linspace(-1, 1, 11)
+    z = np.arange(1, 10)
+
+    ch1 = lambda x, y, z: 5 * (x / 2.5)**2 + y**2 + (z / 10)**2
+    ch2 = lambda x, y, z: 4 * np.exp(-x / 10) - 3 * y + z
+    ch3 = lambda x, y, z: 5 + np.cos(x) - np.sin(z + y)
+
+    ds = []
+
+    for zi in z:
+        for xi, chi in zip([x1, x2, x3], [ch1, ch2, ch3]):
+            d = wt.data.Data()
+            d.create_variable(name='x', values=xi[:, None, None], units='fs')
+            d.create_variable(name='y', values=y[None, :, None], units='nm')
+            d.create_variable(name='z', values=zi)
+            d.create_channel(
+                name='ch', values=chi(xi[:, None, None], y[None, :, None], zi), units='nm'
+            )
+            d.transform('x', 'y', 'z')
+            ds.append(d)
+
+    joined = wt.data.join(ds)
+    [d.close() for d in ds]
+
+    assert not np.any(np.isnan(joined.ch[:]))
+    assert joined.shape[0] == len(set(list(x1) + list(x2) + list(x3)))
+    assert joined.shape[1:] == (y.size, z.size)
+
+    joined.close()
+
+
 def test_1D_to_2D_aligned():
     a = wt.Data()
     b = wt.Data()
