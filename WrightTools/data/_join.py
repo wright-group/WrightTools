@@ -125,6 +125,7 @@ def join(
             # **attrs passes the name and units as well
             out.create_variable(values=values, **datas[0][k].attrs)
             i += 1
+        out.transform(*list(d.keys()))
         return out
 
     out = from_dict(vs, parent=parent)
@@ -135,27 +136,28 @@ def join(
         count[channel_name] = np.zeros_like(out[channel_name], dtype=int)
     for variable_name in variable_names:
         if variable_name not in vs.keys():
-            shape = tuple(
-                1 if i == 1 else n for i, n in zip(datas[0][variable_name].shape, out.shape)
-            )
+            shape = [1] * out.ndim
+            for i, s in enumerate(out.shape):
+                idx = [np.argmax(d[out.axes[i].expression].shape) for d in datas]
+                if any(d[variable_name].shape[j] != 1 for d, j in zip(datas, idx)) or all(
+                    d[out.axes[i].expression].size == 1 for d in datas
+                ):
+                    shape[i] = s
             # **attrs passes the name and units as well
-            out.create_variable(shape=shape, **datas[0][variable_name].attrs)
+            out.create_variable(
+                shape=shape, **datas[0][variable_name].attrs, dtype=datas[0][variable_name].dtype
+            )
             count[variable_name] = np.zeros_like(out[variable_name], dtype=int)
 
     def combine(data, out, item_name, new_idx, transpose, slice_):
         old = data[item_name]
         new = out[item_name]
-
         vals = np.empty_like(new)
         if vals.dtype.kind in "fcmM":
             vals[:] = np.nan
         else:
             vals[:] = 0
-        valid_index = wt_kit.valid_index(new_idx, new.shape)
-        print(valid_index)
-        print()
-        print(np.broadcast(*valid_index).shape)
-        print(transpose, old.shape)
+        valid_index = tuple(wt_kit.valid_index(new_idx, new.shape))
         vals[valid_index] = old[:].transpose(transpose)[slice_]
         if method == "first":
             vals[~np.isnan(new[:])] = 0
@@ -183,7 +185,6 @@ def join(
         slice_ = []
         for variable_name in vs.keys():
             p = data[variable_name].points
-            print(data[variable_name], p)
             if np.ndim(p) > 0:
                 transpose.append(np.argmax(data[variable_name].shape))
                 slice_.append(slice(None))
