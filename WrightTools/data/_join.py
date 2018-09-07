@@ -209,11 +209,15 @@ def join(
             if not vals.dtype.kind in "fcmM":
                 new[valid_index] = 0
         elif method == "min":
-            new[new > vals] = 0
-            vals[vals > new] = 0
+            rep_new = new > vals
+            rep_vals = vals > new
+            new[rep_new] = 0
+            vals[rep_vals] = 0
         elif method == "max":
-            new[new < vals] = 0
-            vals[vals < new] = 0
+            rep_new = new < vals
+            rep_vals = vals < new
+            new[rep_new] = 0
+            vals[rep_vals] = 0
         # Ensure that previously NaN points which have values are written
         new[np.isnan(new) & ~np.isnan(vals)] = 0
         # Ensure that new data does not overwrite any previous data with nan

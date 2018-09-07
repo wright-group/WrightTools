@@ -179,6 +179,7 @@ A selection of important methods follows.
 method                                              description
 --------------------------------------------------  --------------------------------------------------------------------------------
 :meth:`~WrightTools.data.Data.clip`                 clip values outside of a given range
+:meth:`~WrightTools.data.join`                      join multiple data objects into one
 :meth:`~WrightTools.data.Data.level`                level the edge of data along a certain axis
 :meth:`~WrightTools.data.Data.smooth`               smooth a channel via convolution with a n-dimensional Kaiser window
 :meth:`~WrightTools.data.Data.zoom`                 zoom a channel using spline interpolation
