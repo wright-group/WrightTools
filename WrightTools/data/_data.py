@@ -847,7 +847,7 @@ class Data(Group):
         if self.ndim > 1:
             subtrahend = np.expand_dims(subtrahend, axis=axis)
         # level
-        channel[:] = channel[:] - subtrahend  # verbose
+        channel -= subtrahend
         # finish
         channel._null = 0
         if verbose:
