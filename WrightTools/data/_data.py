@@ -43,6 +43,7 @@ class Data(Group):
 
     def __init__(self, *args, **kwargs):
         self._axes = []
+        self._constants = []
         Group.__init__(self, *args, **kwargs)
         # populate axes from attrs string
         for identifier in self.attrs.get("axes", []):
@@ -54,7 +55,17 @@ class Data(Group):
             expression = expression.replace(" ", "")  # remove all whitespace
             axis = Axis(self, expression, units.strip())
             self._axes.append(axis)
+        for identifier in self.attrs.get("constants", []):
+            identifier = identifier.decode()
+            expression, units = identifier.split("{")
+            units = units.replace("}", "")
+            for i in identifier_to_operator.keys():
+                expression = expression.replace(i, identifier_to_operator[i])
+            expression = expression.replace(" ", "")  # remove all whitespace
+            axis = Axis(self, expression, units.strip())
+            self._constants.append(axis)
         self._current_axis_identities_in_natural_namespace = []
+        self._on_constants_updated()
         self._on_axes_updated()
         # the following are populated if not already recorded
         self.channel_names
@@ -79,6 +90,20 @@ class Data(Group):
     def axis_names(self) -> tuple:
         """Axis names."""
         return tuple(a.natural_name for a in self._axes)
+
+    @property
+    def constants(self) -> tuple:
+        return tuple(self._constants)
+
+    @property
+    def constant_expressions(self) -> tuple:
+        """Axis expressions."""
+        return tuple(a.expression for a in self._constants)
+
+    @property
+    def constant_names(self) -> tuple:
+        """Axis names."""
+        return tuple(a.natural_name for a in self._constants)
 
     @property
     def channel_names(self) -> tuple:
@@ -152,6 +177,11 @@ class Data(Group):
         return tuple(a.units for a in self._axes)
 
     @property
+    def constant_units(self) -> tuple:
+        """All constant units."""
+        return tuple(a.units for a in self._constants)
+
+    @property
     def variable_names(self) -> tuple:
         """Variable names."""
         if "variable_names" not in self.attrs.keys():
@@ -194,6 +224,14 @@ class Data(Group):
             setattr(self, key, a)
             self._current_axis_identities_in_natural_namespace.append(key)
 
+    def _on_constants_updated(self):
+        """Method to run when constants are changed in any way.
+
+        Propagates updated constants properly.
+        """
+        # update attrs
+        self.attrs["constants"] = [a.identity.encode() for a in self._constants]
+
     def _print_branch(self, prefix, depth, verbose):
         def print_leaves(prefix, lis, vline=True):
             for i, item in enumerate(lis):
@@ -212,6 +250,9 @@ class Data(Group):
             # axes
             print(prefix + "├── axes")
             print_leaves(prefix, self.axes)
+            # constants
+            print(prefix + "├── constants")
+            print_leaves(prefix, self.constants)
             # variables
             print(prefix + "├── variables")
             print_leaves(prefix, self.variables)
@@ -222,6 +263,12 @@ class Data(Group):
             # axes
             s = "axes: "
             s += ", ".join(["{0} ({1})".format(a.expression, a.units) for a in self.axes])
+            print(prefix + "├── " + s)
+            # constants
+            s = "constants: "
+            s += ", ".join(
+                ["{0} ({1} {2})".format(a.expression, a.value, a.units) for a in self.constants]
+            )
             print(prefix + "├── " + s)
             # channels
             s = "channels: "
@@ -488,7 +535,7 @@ class Data(Group):
                 raise wt_exceptions.ValueError("method '{}' not recognized".format(m))
 
     def convert(self, destination_units, *, convert_variables=False, verbose=True):
-        """Convert all compatable axes to given units.
+        """Convert all compatable axes and constants to given units.
 
         Parameters
         ----------
@@ -518,6 +565,17 @@ class Data(Group):
                             axis.expression, orig, destination_units
                         )
                     )
+        # apply to all compatible constants
+        for constant in self.constants:
+            if constant.units_kind == units_kind:
+                orig = constant.units
+                constant.convert(destination_units, convert_variables=convert_variables)
+                if verbose:
+                    print(
+                        "constant {} converted from {} to {}".format(
+                            constant.expression, orig, destination_units
+                        )
+                    )
         if convert_variables:
             for var in self.variables:
                 if wt_units.kind(var.units) == units_kind:
@@ -530,6 +588,7 @@ class Data(Group):
                             )
                         )
         self._on_axes_updated()
+        self._on_constants_updated()
 
     def create_channel(self, name, values=None, shape=None, units=None, **kwargs) -> Channel:
         """Append a new channel.
@@ -878,7 +937,7 @@ class Data(Group):
         else:
             points = wt_units.converter(points, input_units, variable.units)
         # construct new data object
-        special = ["name", "axes", "channel_names", "variable_names"]
+        special = ["name", "axes", "constants", "channel_names", "variable_names"]
         kwargs = {k: v for k, v in self.attrs.items() if k not in special}
         if name is None:
             name = "{0}_{1}_mapped".format(self.natural_name, variable.natural_name)
@@ -1112,6 +1171,7 @@ class Data(Group):
             removed = [variable]
         # check that axes will not be ruined
         for n in removed:
+            # TODO should constants be checked here as well (if so, should evaluate error raised)
             for a in self._axes:
                 if n in [v.natural_name for v in a.variables]:
                     message = "{0} is contained in axis {1}".format(n, a.expression)
@@ -1214,6 +1274,7 @@ class Data(Group):
             self[v] = obj
             names[index] = v
         self.variable_names = names
+        # TODO update constants
         # update axes
         units = self.units
         new = list(self.axis_expressions)
