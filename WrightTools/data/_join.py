@@ -74,9 +74,9 @@ def join(
     if isinstance(datas, Collection):
         datas = datas.values()
     datas = list(datas)
-    if not isinstance(atol, collections.Iterable):
+    if not isinstance(atol, collections.abc.Iterable):
         atol = [atol] * len(datas[0].axes)
-    if not isinstance(rtol, collections.Iterable):
+    if not isinstance(rtol, collections.abc.Iterable):
         rtol = [rtol] * len(datas[0].axes)
     # check if variables are valid
     axis_expressions = datas[0].axis_expressions
