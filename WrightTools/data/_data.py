@@ -532,7 +532,7 @@ class Data(Group):
         self._on_axes_updated()
 
     def create_channel(
-        self, name, values=None, shape=None, units=None, *, dtype=None, **kwargs
+        self, name, values=None, *, shape=None, units=None, dtype=None, **kwargs
     ) -> Channel:
         """Append a new channel.
 
@@ -590,7 +590,7 @@ class Data(Group):
         return channel
 
     def create_variable(
-        self, name, values=None, shape=None, units=None, *, dtype=None, **kwargs
+        self, name, values=None, *, shape=None, units=None, dtype=None, **kwargs
     ) -> Variable:
         """Add new child variable.
 
