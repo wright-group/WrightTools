@@ -24,6 +24,7 @@ from .. import kit as wt_kit
 from .. import units as wt_units
 from ._axis import Axis, identifier_to_operator
 from ._channel import Channel
+from ._constant import Constant
 from ._variable import Variable
 
 
@@ -1532,6 +1533,57 @@ class Data(Group):
         # finish
         self.flush()
         self._on_axes_updated()
+
+    def set_constants(self, *constants, verbose=True):
+        """Transform the data.
+
+        Parameters
+        ----------
+        constants : strings
+            Expressions for the new set of constants.
+        verbose : boolean (optional)
+            Toggle talkback. Default is True
+        """
+        # create
+        new = []
+        current = {c.expression: c for c in self._constants}
+        for expression in constants:
+            constant = current.get(expression, Constant(self, expression))
+            new.append(constant)
+        self._constants = new
+        # units
+        for c in self._constants:
+            if c.units is None:
+                c.convert(c.variables[0].units)
+        # finish
+        self.flush()
+        self._on_constants_updated()
+
+    def create_constant(self, expression, *, verbose=True):
+        if expression in self.constant_expressions:
+            wt_exceptions.ObjectExistsWarning.warn(expression)
+            return self.constants[self.constant_expressions.index(expression)]
+        constant = Constant(self, expression)
+        if constant.units is None:
+            constant.convert(constant.variables[0].units)
+        self._constants.append(constant)
+        self.flush()
+        self._on_constants_updated()
+        if verbose:
+            print("Constant '{}' added".format(constant.expression))
+        return constant
+
+    def remove_constant(self, constant, *, verbose=True):
+        if isinstance(constant, str):
+            constant_index = wt_kit.get_index(self.constant_expressions, constant)
+        elif isinstance(constant, Constant):
+            constant_index = wt_kit.get_index(self.constants, constant)
+        constant = self._constants[constant_index]
+        self._constants.remove(constant_index)
+        self.flush()
+        self._on_constants_updated()
+        if verbose:
+            print("Constant '{}' removed".format(constant.expression))
 
     def zoom(self, factor, order=1, verbose=True):
         """Zoom the data array using spline interpolation of the requested order.
