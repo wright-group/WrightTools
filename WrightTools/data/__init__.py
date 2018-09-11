@@ -4,6 +4,7 @@
 
 from ._axis import *
 from ._channel import *
+from ._constant import *
 from ._join import *
 from ._variable import *
 
@@ -25,6 +26,7 @@ __all__ = [
     "join",
     "Axis",
     "Channel",
+    "Constant",
     "Variable",
     # From methods in alphabetic order
     "from_BrunoldrRaman",
