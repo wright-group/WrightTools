@@ -66,12 +66,11 @@ class Constant(Axis):
                 vl = "%s_{%s}" % (symbol, v.label)
                 vl = vl.replace("_{}", "")  # label can be empty, no empty subscripts
                 label = label.replace(v.natural_name, vl)
-            label += r"\,=\,{}".format(self.value)
+        label += r"\,=\,{}".format(self.value)
+        if self.units_kind:
             units_dictionary = getattr(wt_units, self.units_kind)
             label += r"\,"
-            label += r"\left("
             label += units_dictionary[self.units][2]
-            label += r"\right)"
         label = r"$\mathsf{%s}$" % label
         return label
 
@@ -79,3 +78,8 @@ class Constant(Axis):
     def value(self) -> complex:
         """The value of the constant."""
         return np.nanmean(self[:])
+
+    @property
+    def std(self) -> complex:
+        """The value of the constant."""
+        return np.nanstd(self[:])
