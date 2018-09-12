@@ -412,6 +412,9 @@ class Data(Group):
             new_axes = [a.expression for a in kept_axes if a.expression not in at.keys()]
             new_axis_units = [a.units for a in kept_axes if a.expression not in at.keys()]
             data.transform(*new_axes)
+            for ax in self.axis_expressions:
+                if ax not in new_axes:
+                    data.create_constant(ax, verbose=False)
             for j, units in enumerate(new_axis_units):
                 data.axes[j].convert(units)
             i += 1
@@ -1440,6 +1443,9 @@ class Data(Group):
             try:
                 omasks.append(wt_kit.mask_reduce(mask))
                 cuts.append([i == 1 for i in omasks[-1].shape])
+                # Ensure at least one axis is kept
+                if np.all(cuts[-1]):
+                    cuts[-1][0] = False
             except ValueError:
                 omasks.append(None)
                 cuts.append(None)
@@ -1497,11 +1503,22 @@ class Data(Group):
                 for ax in d.axes:
                     if ax.size > 1:
                         keep.append(ax.expression)
+                    else:
+                        d.create_constant(ax.expression, verbose=False)
                 d.transform(*keep)
                 for ax, u in zip(d.axes, old_units):
                     ax.convert(u)
             except IndexError:
                 continue
+            tempax = Axis(d, expression)
+            if all(
+                np.all(
+                    np.sum(~np.isnan(tempax.masked), axis=tuple(set(range(tempax.ndim)) - {j}))
+                    <= 1
+                )
+                for j in range(tempax.ndim)
+            ):
+                d.create_constant(expression, verbose=False)
         self.transform(*old_expr)
         for ax, u in zip(self.axes, old_units):
             ax.convert(u)

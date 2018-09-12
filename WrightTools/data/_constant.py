@@ -77,9 +77,9 @@ class Constant(Axis):
     @property
     def value(self) -> complex:
         """The value of the constant."""
-        return np.nanmean(self[:])
+        return np.nanmean(self.masked)
 
     @property
     def std(self) -> complex:
         """The value of the constant."""
-        return np.nanstd(self[:])
+        return np.nanstd(self.masked)

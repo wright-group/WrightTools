@@ -160,6 +160,15 @@ class Axis(object):
         finally:
             return self._variables
 
+    @property
+    def masked(self) -> np.ndarray:
+        arr = self[:]
+        arr.shape = self.shape
+        arr = wt_kit.share_nans(arr, *self.parent.channels)[0]
+        return np.nanmean(
+            arr, keepdims=True, axis=tuple(i for i in range(self.ndim) if self.shape[i] == 1)
+        )
+
     def convert(self, destination_units, *, convert_variables=False):
         """Convert axis to destination_units.
 
