@@ -83,7 +83,6 @@ class Dataset(h5py.Dataset):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._dcpl.set_fill_value(np.full((1,), np.nan))  # does not work as intended
 
     def __new__(cls, parent, id, **kwargs):
         """New object formation handler."""

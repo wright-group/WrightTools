@@ -531,7 +531,9 @@ class Data(Group):
                         )
         self._on_axes_updated()
 
-    def create_channel(self, name, values=None, shape=None, units=None, **kwargs) -> Channel:
+    def create_channel(
+        self, name, values=None, *, shape=None, units=None, dtype=None, **kwargs
+    ) -> Channel:
         """Append a new channel.
 
         Parameters
@@ -542,11 +544,14 @@ class Data(Group):
             Array. If None, an empty array equaling the data shape is
             created. Default is None.
         shape : tuple of int
-            Shape to use. must broadcast with the full shape.
+            Shape to use. Must broadcast with the full shape.
             Only used if `values` is None.
             Default is the full shape of self.
         units : string (optional)
             Channel units. Default is None.
+        dtype : numpy.dtype (optional)
+            dtype to use for dataset, default is np.float64.
+            Only used if `values` is None.
         kwargs : dict
             Additional keyword arguments passed to Channel instantiation.
 
@@ -565,7 +570,14 @@ class Data(Group):
                 require_kwargs["shape"] = self.shape
             else:
                 require_kwargs["shape"] = shape
-            require_kwargs["dtype"] = np.float64
+            if dtype is None:
+                require_kwargs["dtype"] = np.dtype(np.float64)
+            else:
+                require_kwargs["dtype"] = dtype
+            if require_kwargs["dtype"].kind in "fcmM":
+                require_kwargs["fillvalue"] = np.nan
+            else:
+                require_kwargs["fillvalue"] = 0
         else:
             require_kwargs["data"] = values
             require_kwargs["shape"] = values.shape
@@ -577,7 +589,9 @@ class Data(Group):
         self.attrs["channel_names"] = np.append(self.attrs["channel_names"], name.encode())
         return channel
 
-    def create_variable(self, name, values=None, shape=None, units=None, **kwargs) -> Variable:
+    def create_variable(
+        self, name, values=None, *, shape=None, units=None, dtype=None, **kwargs
+    ) -> Variable:
         """Add new child variable.
 
         Parameters
@@ -593,6 +607,9 @@ class Data(Group):
             Default is the full shape of self.
         units : string (optional)
             Variable units. Default is None.
+        dtype : numpy.dtype (optional)
+            dtype to use for dataset, default is np.float64.
+            Only used if `values` is None.
         kwargs
             Additional kwargs to variable instantiation.
 
@@ -607,12 +624,20 @@ class Data(Group):
         if values is None:
             if shape is None:
                 shape = self.shape
-            dtype = np.float64
+            if dtype is None:
+                dtype = np.dtype(np.float64)
+            if dtype.kind in "fcmM":
+                fillvalue = np.nan
+            else:
+                fillvalue = 0
         else:
             shape = values.shape
             dtype = values.dtype
+            fillvalue = None
         # create dataset
-        id = self.require_dataset(name=name, data=values, shape=shape, dtype=dtype).id
+        id = self.require_dataset(
+            name=name, data=values, shape=shape, dtype=dtype, fillvalue=fillvalue
+        ).id
         variable = Variable(self, id, units=units, **kwargs)
         # finish
         self._variables = None
@@ -822,7 +847,7 @@ class Data(Group):
         if self.ndim > 1:
             subtrahend = np.expand_dims(subtrahend, axis=axis)
         # level
-        channel[:] = channel[:] - subtrahend  # verbose
+        channel -= subtrahend
         # finish
         channel._null = 0
         if verbose:
