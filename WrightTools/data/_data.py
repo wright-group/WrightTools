@@ -1175,11 +1175,17 @@ class Data(Group):
             removed = [variable]
         # check that axes will not be ruined
         for n in removed:
-            # TODO should constants be checked here as well (if so, should evaluate error raised)
             for a in self._axes:
                 if n in [v.natural_name for v in a.variables]:
                     message = "{0} is contained in axis {1}".format(n, a.expression)
                     raise RuntimeError(message)
+            for c in self._constants:
+                if n in [v.natural_name for v in c.variables]:
+                    warnings.warn(
+                        "Variable being removed used in a constant",
+                        wt_exceptions.WrightToolsWarning,
+                    )
+
         # do removal
         for n in removed:
             variable_index = wt_kit.get_index(self.variable_names, n)
@@ -1278,8 +1284,6 @@ class Data(Group):
             self[v] = obj
             names[index] = v
         self.variable_names = names
-        # TODO update constants
-        # update axes
         units = self.units
         new = list(self.axis_expressions)
         for i, v in enumerate(kwargs.keys()):
@@ -1290,6 +1294,14 @@ class Data(Group):
         self.transform(*new)
         for a, u in zip(self._axes, units):
             a.convert(u)
+        units = self.constant_units
+        new = list(self.constant_expressions)
+        for i, v in enumerate(kwargs.keys()):
+            for j, n in enumerate(new):
+                new[j] = n.replace(v, "{%i}" % i)
+        for i, n in enumerate(new):
+            new[i] = n.format(*kwargs.values())
+        self.set_constants(*new)
         # finish
         if verbose:
             print("{0} variable(s) renamed:".format(len(kwargs)))
