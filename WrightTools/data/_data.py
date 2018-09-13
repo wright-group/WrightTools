@@ -698,9 +698,6 @@ class Data(Group):
         newdata.transform(*args)
         return newdata
 
-    def flush(self):
-        super().flush()
-
     def get_nadir(self, channel=0) -> tuple:
         """Get the coordinates, in units, of the minimum in a channel.
 
