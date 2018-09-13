@@ -131,7 +131,7 @@ def add_sideplot(
     elif along == "y":
         axCorr = divider.append_axes("right", height, pad=pad, sharey=ax)
     axCorr.autoscale(False)
-    axCorr.set_adjustable("box-forced")
+    axCorr.set_adjustable("box")
     # bin
     if arrs_to_bin is not None:
         xi, yi, zi = arrs_to_bin
