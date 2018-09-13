@@ -1546,6 +1546,11 @@ class Data(Group):
             Expressions for the new set of axes.
         verbose : boolean (optional)
             Toggle talkback. Default is True
+
+        See Also
+        --------
+        set_constants
+            Similar method except for constants
         """
         # TODO: ensure that transform does not break data
         # create
@@ -1564,14 +1569,23 @@ class Data(Group):
         self._on_axes_updated()
 
     def set_constants(self, *constants, verbose=True):
-        """Transform the data.
+        """Set the constants associated with the data.
 
         Parameters
         ----------
-        constants : strings
+        constants : str
             Expressions for the new set of constants.
         verbose : boolean (optional)
             Toggle talkback. Default is True
+
+        See Also
+        --------
+        transform
+            Similar method except for axes.
+        create_constant
+            Add an individual constant.
+        remove_constant
+            Remove an individual constant.
         """
         # create
         new = []
@@ -1583,12 +1597,28 @@ class Data(Group):
         # units
         for c in self._constants:
             if c.units is None:
-                c.convert(c.variables[0].units)
+                c.convert(c.variables[0].units, verbose=False)
         # finish
         self.flush()
         self._on_constants_updated()
 
     def create_constant(self, expression, *, verbose=True):
+        """Append a constant to the stored list.
+
+        Parameters
+        ----------
+        expression : str
+            Expression for the new constant.
+        verbose : boolean (optional)
+            Toggle talkback. Default is True
+            
+        See Also
+        --------
+        set_constants
+            Remove and replace all constants.
+        remove_constant
+            Remove an individual constant.
+        """
         if expression in self.constant_expressions:
             wt_exceptions.ObjectExistsWarning.warn(expression)
             return self.constants[self.constant_expressions.index(expression)]
@@ -1603,7 +1633,23 @@ class Data(Group):
         return constant
 
     def remove_constant(self, constant, *, verbose=True):
-        if isinstance(constant, str):
+        """Remove a constant from the stored list.
+
+        Parameters
+        ----------
+        constant : str or Constant or int
+            Expression for the new constant.
+        verbose : boolean (optional)
+            Toggle talkback. Default is True
+            
+        See Also
+        --------
+        set_constants
+            Remove and replace all constants.
+        create_constant
+            Add an individual constant.
+        """
+        if isinstance(constant, (str, int)):
             constant_index = wt_kit.get_index(self.constant_expressions, constant)
         elif isinstance(constant, Constant):
             constant_index = wt_kit.get_index(self.constants, constant)

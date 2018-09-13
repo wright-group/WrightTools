@@ -59,6 +59,7 @@ class Constant(Axis):
 
     @property
     def label(self) -> str:
+        """A latex formatted label representing constant expression and united value."""
         label = self.expression.replace("_", "\\;")
         if self.units_kind:
             symbol = wt_units.get_symbol(self.units)
@@ -81,5 +82,5 @@ class Constant(Axis):
 
     @property
     def std(self) -> complex:
-        """The value of the constant."""
+        """The standard deviation of the constant."""
         return np.nanstd(self.masked)

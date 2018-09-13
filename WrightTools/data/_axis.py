@@ -79,6 +79,7 @@ class Axis(object):
 
     @property
     def full(self) -> np.ndarray:
+        """Axis expression evaluated and repeated to match the shape of the parent data object."""
         arr = self[:]
         for i in range(arr.ndim):
             if arr.shape[i] == 1:
@@ -92,6 +93,7 @@ class Axis(object):
 
     @property
     def label(self) -> str:
+        """A latex formatted label representing axis expression."""
         label = self.expression.replace("_", "\\;")
         if self.units_kind:
             symbol = wt_units.get_symbol(self.units)
@@ -109,6 +111,7 @@ class Axis(object):
 
     @property
     def natural_name(self) -> str:
+        """Valid python identifier representation of the expession."""
         name = self.expression.strip()
         for op in operators:
             name = name.replace(op, operator_to_identifier[op])
@@ -162,6 +165,7 @@ class Axis(object):
 
     @property
     def masked(self) -> np.ndarray:
+        """Axis expression evaluated, and masked with NaN shared from data channels."""
         arr = self[:]
         arr.shape = self.shape
         arr = wt_kit.share_nans(arr, *self.parent.channels)[0]
