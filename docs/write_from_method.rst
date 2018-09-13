@@ -259,6 +259,14 @@ Axes are algebraic combinations of variables (Linear combinations are guaranteed
 
         data.transform("energy")
 
+You may also add constants to your data object in your from method.
+These are expressions of variables which have a constant value
+(potentially with noise) in the whole of the data.
+
+.. code-block:: python
+
+        data.set_constants("x", "y-z")
+
 Verbose Output
 --------------
 
