@@ -190,7 +190,7 @@ class Axes(matplotlib.axes.Axes):
         elif along == "y":
             ax.set_xlim(ymin, ymax)
         ax.autoscale(enable=False)
-        ax.set_adjustable("box-forced")
+        ax.set_adjustable("box")
         ax.is_sideplot = True
         plt.setp(ax.get_xticklabels(), visible=False)
         plt.setp(ax.get_yticklabels(), visible=False)
