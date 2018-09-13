@@ -1302,6 +1302,8 @@ class Data(Group):
         for i, n in enumerate(new):
             new[i] = n.format(*kwargs.values())
         self.set_constants(*new)
+        for c, u in zip(self._constants, units):
+            c.convert(u)
         # finish
         if verbose:
             print("{0} variable(s) renamed:".format(len(kwargs)))

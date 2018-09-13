@@ -4,17 +4,9 @@
 # --- import --------------------------------------------------------------------------------------
 
 
-import re
-import numexpr
-import operator
-import functools
-
 import numpy as np
 
-from ._variable import Variable
 from ._axis import Axis
-from .. import exceptions as wt_exceptions
-from .. import kit as wt_kit
 from .. import units as wt_units
 
 
@@ -45,7 +37,7 @@ class Constant(Axis):
         super().__init__(parent, expression, units)
 
     def __repr__(self) -> str:
-        return "<WrightTools.Constant {0} = {1} {2} at {2}>".format(
+        return "<WrightTools.Constant {0} = {1} {2} at {3}>".format(
             self.expression, self.value, str(self.units), id(self)
         )
 
