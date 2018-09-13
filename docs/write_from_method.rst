@@ -191,6 +191,7 @@ as overwriting may cause unexpected behavior or be overwritten internally:
 - ``__version__``
 - ``item_names``
 - ``axes``
+- ``constants``
 - ``source``
 - ``variable_names``
 - ``channel_names``
