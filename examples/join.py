@@ -7,7 +7,6 @@ Some examples of how joining works.
 import numpy as np
 from matplotlib import pyplot as plt
 import WrightTools as wt
-from WrightTools import datasets
 
 a = wt.data.Data(name="a")
 b = wt.data.Data(name="b")
