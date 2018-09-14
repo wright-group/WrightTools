@@ -86,7 +86,7 @@ def from_Cary(filepath, name=None, parent=None, verbose=True):
     # chew through all scans
     datas = Collection(name=name, parent=parent, edit_local=parent is not None)
     for i in range(0, len(header) - 1, 2):
-        r = re.compile("[ \t\(\)]+")
+        r = re.compile(r"[ \t\(\)]+")
         spl = r.split(columns[i])
         ax = spl[0].lower() if len(spl) > 0 else None
         units = spl[1].lower() if len(spl) > 1 else None
