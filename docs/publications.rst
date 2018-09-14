@@ -37,11 +37,11 @@ Email a developer---or better yet, make a pull request.
 
 Ordered by date of publication, newest first.
 
-#. **Communication: Multidimensional triple sum-frequency spectroscopy of MoS2 and comparisons with absorption and second        harmonic generation spectroscopies**
+#. **Communication: Multidimensional triple sum-frequency spectroscopy of MoS2 and comparisons with absorption and second harmonic generation spectroscopies**
    *J. Chem. Phys* **2018** 149, 091101.
    `doi:10.1063/1.5047802 <https://doi.org/10.1063/1.5047802>`_
 
-#. **Resonant Third-Order Susceptibility of PbSe Quantum Dots Determined by Standard Dilution and Transient Grating              Spectroscopy** 
+#. **Resonant Third-Order Susceptibility of PbSe Quantum Dots Determined by Standard Dilution and Transient Grating Spectroscopy** 
    Daniel D. Kohler, Blaise J. Thompson, and John C. Wright
    *J. Phys. Chem. C* **2018** 122 (31), 18086--18093.
    `doi:10.1021/acs.jpcc.8b04462 <https://doi.org/10.1021/acs.jpcc.8b04462>`_
