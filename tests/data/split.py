@@ -146,6 +146,9 @@ def test_split_constants():
     assert len(split) == 4
     assert split[0].constant_expressions == ()
     assert split[1].constant_expressions == ("x-y",)
+    assert split[1].constants[0].value == 0
+    assert split[1].constants[0].std == 0
+    assert split[1].constants[0].shape == (11, 11)
     assert split[2].constant_expressions == ()
     assert split[3].constant_expressions == ("x", "y", "x-y")
     d.close()
