@@ -243,18 +243,50 @@ def share_nans(*arrs) -> tuple:
     return tuple([a + nans for a in arrs])
 
 
-def smooth_1D(arr, n=10) -> np.ndarray:
-    """Smooth 1D data by 'running average'.
+def smooth_1D(arr, n=10, smooth_type="flat") -> np.ndarray:
+    """Smooth 1D data using a window function.
+    
+    Edge effects will be present. 
 
     Parameters
     ----------
-    n : int
-        number of points to average
+    arr : array_like
+        Input array, 1D.
+    n : int (optional)
+        Window length.
+    smooth_type : {'flat', 'hanning', 'hamming', 'bartlett', 'blackman'} (optional)
+        Type of window function to convolve data with.
+        'flat' window will produce a moving average smoothing.
+        
+    Returns
+    -------
+    array_like
+        Smoothed 1D array.
     """
-    for i in range(n, len(arr) - n):
-        window = arr[i - n : i + n].copy()
-        arr[i] = window.mean()
-    return arr
+
+    # check array input
+    if arr.ndim != 1:
+        raise wt_exceptions.DimensionalityError(1, arr.ndim)
+    if arr.size < n:
+        raise wt_exceptions.ValueError("Input array size must be larger than window size.")
+    if n < 3:
+        return arr
+    # construct window array
+    if smooth_type == "flat":
+        w = np.ones(n, dtype=arr.dtype)
+    elif smooth_type == "hanning":
+        w = np.hanning(n)
+    elif smooth_type == "hamming":
+        w = np.hamming(n)
+    elif smooth_type == "bartlett":
+        w = np.bartlett(n)
+    elif smooth_type == "blackman":
+        w = np.blackman(n)
+    else:
+        raise wt_exceptions.ValueError("Given smooth_type not available.")
+    # convolve reflected array with window function
+    out = np.convolve(w / w.sum(), arr, mode="same")
+    return out
 
 
 def svd(a, i=None) -> tuple:
