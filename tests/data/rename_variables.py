@@ -48,7 +48,10 @@ def test_propagate_units():
 def test_updated_axes():
     p = datasets.COLORS.v2p2_WL_wigner
     data = wt.data.from_COLORS(p)
+    data.create_constant("wm")
+    assert data.constant_expressions == ("wm",)
     assert data.axis_expressions == ("wm", "d1")
     data.rename_variables(wm="mono")
     assert data.axis_expressions == ("mono", "d1")
+    assert data.constant_expressions == ("mono",)
     data.close()

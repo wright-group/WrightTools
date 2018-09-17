@@ -1599,7 +1599,7 @@ class Data(Group):
         # units
         for c in self._constants:
             if c.units is None:
-                c.convert(c.variables[0].units, verbose=False)
+                c.convert(c.variables[0].units)
         # finish
         self.flush()
         self._on_constants_updated()
@@ -1656,7 +1656,7 @@ class Data(Group):
         elif isinstance(constant, Constant):
             constant_index = wt_kit.get_index(self.constants, constant)
         constant = self._constants[constant_index]
-        self._constants.remove(constant_index)
+        self._constants.pop(constant_index)
         self.flush()
         self._on_constants_updated()
         if verbose:
