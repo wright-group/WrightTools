@@ -3,9 +3,6 @@
 
 # --- import --------------------------------------------------------------------------------------
 
-
-import random
-
 import WrightTools as wt
 from WrightTools import datasets
 
