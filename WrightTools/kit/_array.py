@@ -268,7 +268,8 @@ def smooth_1D(arr, n=10, smooth_type="flat") -> np.ndarray:
     if arr.ndim != 1:
         raise wt_exceptions.DimensionalityError(1, arr.ndim)
     if arr.size < n:
-        raise wt_exceptions.ValueError("Input array size must be larger than window size.")
+        message = "Input array size must be larger than window size."
+        raise wt_exceptions.ValueError(message)
     if n < 3:
         return arr
     # construct window array
@@ -283,7 +284,8 @@ def smooth_1D(arr, n=10, smooth_type="flat") -> np.ndarray:
     elif smooth_type == "blackman":
         w = np.blackman(n)
     else:
-        raise wt_exceptions.ValueError("Given smooth_type not available.")
+        message = "Given smooth_type, {0}, not available.".format(str(smooth_type))
+        raise wt_exceptions.ValueError(message)
     # convolve reflected array with window function
     out = np.convolve(w / w.sum(), arr, mode="same")
     return out

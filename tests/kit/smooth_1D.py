@@ -12,10 +12,11 @@ import WrightTools as wt
 # --- test ----------------------------------------------------------------------------------------
 
 
-def test_1():
+def test_basic_smoothing_functionality():
     # create arrays
     x = np.linspace(0, 10, 1000)
     y = np.sin(x)
+    np.random.seed(seed=12)
     r = np.random.rand(1000) - .5
     yr = y + r
     # iterate through window types
@@ -31,4 +32,4 @@ def test_1():
 
 
 if __name__ == "__main__":
-    test_1()
+    test_basic_smoothing_functionality()
