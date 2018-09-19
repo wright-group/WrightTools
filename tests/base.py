@@ -27,7 +27,7 @@ def test_named_root_data():
 def test_parent_child():
     parent = wt.Collection(name="mother")
     child = wt.Collection(parent=parent, name="goose")
-    grandchild = wt.Collection(parent=parent, name="hen")
+    grandchild = wt.Collection(parent=child, name="hen")
     assert child.filepath == parent.filepath
     assert child.parent is parent
     assert grandchild.parent is child
