@@ -231,7 +231,9 @@ class Group(h5py.Group, metaclass=MetaClass):
         except (AssertionError, AttributeError):
             from .collection import Collection
 
-            key = posixpath.dirname(self.fullpath) + posixpath.sep
+            key = posixpath.dirname(self.fullpath)
+            if key.endswith("::"):
+                key += posixpath.sep
             self._parent = Collection._instances[key]
         finally:
             return self._parent
