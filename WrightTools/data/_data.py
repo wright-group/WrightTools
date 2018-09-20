@@ -1481,6 +1481,7 @@ class Data(Group):
         # TODO: ensure that transform does not break data
         # create
         new = []
+        newt = "newt" in self.axis_expressions
         current = {a.expression: a for a in self._axes}
         for expression in axes:
             axis = current.get(expression, Axis(self, expression))
@@ -1493,6 +1494,11 @@ class Data(Group):
         # finish
         self.flush()
         self._on_axes_updated()
+        nownewt = "newt" in self.axis_expressions
+        if verbose and nownewt and not newt:
+            print("Look she turned me into a newt")
+        elif verbose and newt and not nownewt:
+            print("I got better")
 
     def zoom(self, factor, order=1, verbose=True):
         """Zoom the data array using spline interpolation of the requested order.
