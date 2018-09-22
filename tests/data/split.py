@@ -27,6 +27,7 @@ def test_split():
     assert split[0].shape == (14, 11, 11)
     assert split[1].shape == (21, 11, 11)
     a.close()
+    split.close()
 
 
 def test_split_edge():
@@ -37,6 +38,7 @@ def test_split_edge():
     assert split[0].shape == (35, 11, 11)
     assert split[1].shape == ()
     a.close()
+    split.close()
 
 
 def test_split_multiple():
@@ -48,6 +50,7 @@ def test_split_multiple():
     assert split[1].shape == (18, 11, 11)
     assert split[0].shape == (15, 11, 11)
     a.close()
+    split.close()
 
 
 def test_split_close():
@@ -59,6 +62,7 @@ def test_split_close():
     assert split[1].shape == ()
     assert split[2].shape == (20, 11, 11)
     a.close()
+    split.close()
 
 
 def test_split_units():
@@ -69,6 +73,7 @@ def test_split_units():
     assert split[0].shape == (20, 11, 11)
     assert split[1].shape == (15, 11, 11)
     a.close()
+    split.close()
 
 
 def test_split_axis_name():
@@ -81,6 +86,7 @@ def test_split_axis_name():
     assert split[0].shape == (35, 11)
     assert split[0].axis_expressions == ("wm", "w1")
     a.close()
+    split.close()
 
 
 def test_split_constant():
@@ -91,6 +97,7 @@ def test_split_constant():
     assert len(split) == 2
     assert split[0].shape == (35, 11)
     a.close()
+    split.close()
 
 
 def test_split_parent():
@@ -102,6 +109,7 @@ def test_split_parent():
     assert split.filepath == parent.filepath
     assert len(split) == 2
     a.close()
+    parent.close()
 
 
 def test_split_expression():
@@ -109,9 +117,10 @@ def test_split_expression():
     a = wt.data.from_PyCMDS(p)
     split = a.split("w1+w2", 3150, units="wn")
     assert len(split) == 2
-    print(split[0].shape)
     assert split[0].shape == (35, 10, 10)
     assert split[1].shape == (35, 11, 11)
+    a.close()
+    split.close()
 
 
 def test_split_hole():
@@ -123,6 +132,27 @@ def test_split_hole():
     assert len(split) == 2
     assert split[0].shape == (100, 100)
     assert split[1].shape == (16, 16)
+    data.close()
+    split.close()
+
+
+def test_split_constants():
+    d = wt.Data()
+    d.create_variable("x", np.linspace(0, 10, 11)[:, None])
+    d.create_variable("y", np.linspace(0, 10, 11)[None, :])
+    d.create_channel("z", d.x[:] * d.y[:])
+    d.transform("x", "y")
+    split = d.split("x-y", [-0.1, 0.1, 9.9])
+    assert len(split) == 4
+    assert split[0].constant_expressions == ()
+    assert split[1].constant_expressions == ("x-y",)
+    assert split[1].constants[0].value == 0
+    assert split[1].constants[0].std == 0
+    assert split[1].constants[0].shape == (11, 11)
+    assert split[2].constant_expressions == ()
+    assert split[3].constant_expressions == ("x", "y", "x-y")
+    d.close()
+    split.close()
 
 
 if __name__ == "__main__":
@@ -137,3 +167,4 @@ if __name__ == "__main__":
     test_split_parent()
     test_split_expression()
     test_split_hole()
+    test_split_constants()

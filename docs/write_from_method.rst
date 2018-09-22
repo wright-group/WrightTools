@@ -191,6 +191,7 @@ as overwriting may cause unexpected behavior or be overwritten internally:
 - ``__version__``
 - ``item_names``
 - ``axes``
+- ``constants``
 - ``source``
 - ``variable_names``
 - ``channel_names``
@@ -257,6 +258,14 @@ Axes are algebraic combinations of variables (Linear combinations are guaranteed
 .. code-block:: python
 
         data.transform("energy")
+
+You may also add constants to your data object in your from method.
+These are expressions of variables which have a constant value
+(potentially with noise) in the whole of the data.
+
+.. code-block:: python
+
+        data.set_constants("x", "y-z")
 
 Verbose Output
 --------------

@@ -190,3 +190,8 @@ Version 1.0.1
 ^^^^^^^^^^^^^
 
 Changes internal handling of strings. Bare strings are no longer call ``encode()`` before storing.
+
+Version 1.0.2
+^^^^^^^^^^^^^
+
+Adds "constants" as a stored attribute in the attrs dictionary, a list of strings just like axes.

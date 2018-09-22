@@ -5,6 +5,8 @@
 # --- import --------------------------------------------------------------------------------------
 
 
+import warnings
+
 import WrightTools as wt
 from WrightTools import datasets
 
@@ -21,6 +23,17 @@ def test_exception():
         assert True
     else:
         assert False
+    data.close()
+
+
+def test_constant_warning():
+    p = datasets.PyCMDS.w2_w1_000
+    data = wt.data.from_PyCMDS(p)
+    data.create_constant("d1")
+    with warnings.catch_warnings(record=True) as w:
+        data.remove_variable("d1")
+        assert len(w) == 1
+        assert issubclass(w[-1].category, wt.exceptions.WrightToolsWarning)
     data.close()
 
 

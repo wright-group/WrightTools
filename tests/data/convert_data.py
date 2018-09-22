@@ -31,9 +31,12 @@ def test_convert_variables():
 def test_w1_wa():
     p = datasets.PyCMDS.w1_wa_000
     data = wt.data.from_PyCMDS(p)
+    data.create_constant("w2")
     assert data.wa.units == "nm"
+    assert data.constants[0].units == "nm"
     data.convert("eV")
     assert data.wa.units == "eV"
+    assert data.constants[0].units == "eV"
     assert np.isclose(data.wa.max(), 1.5802564757220569)
     assert np.isclose(data.wa.min(), 0.6726385958618104)
     assert data["wa"].units == "nm"

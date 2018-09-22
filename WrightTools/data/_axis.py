@@ -11,7 +11,6 @@ import functools
 
 import numpy as np
 
-from ._variable import Variable
 from .. import exceptions as wt_exceptions
 from .. import kit as wt_kit
 from .. import units as wt_units
@@ -79,6 +78,7 @@ class Axis(object):
 
     @property
     def full(self) -> np.ndarray:
+        """Axis expression evaluated and repeated to match the shape of the parent data object."""
         arr = self[:]
         for i in range(arr.ndim):
             if arr.shape[i] == 1:
@@ -92,6 +92,7 @@ class Axis(object):
 
     @property
     def label(self) -> str:
+        """A latex formatted label representing axis expression."""
         label = self.expression.replace("_", "\\;")
         if self.units_kind:
             symbol = wt_units.get_symbol(self.units)
@@ -109,6 +110,7 @@ class Axis(object):
 
     @property
     def natural_name(self) -> str:
+        """Valid python identifier representation of the expession."""
         name = self.expression.strip()
         for op in operators:
             name = name.replace(op, operator_to_identifier[op])
@@ -159,6 +161,16 @@ class Axis(object):
             self._variables = [self.parent.variables[i] for i in indices]
         finally:
             return self._variables
+
+    @property
+    def masked(self) -> np.ndarray:
+        """Axis expression evaluated, and masked with NaN shared from data channels."""
+        arr = self[:]
+        arr.shape = self.shape
+        arr = wt_kit.share_nans(arr, *self.parent.channels)[0]
+        return np.nanmean(
+            arr, keepdims=True, axis=tuple(i for i in range(self.ndim) if self.shape[i] == 1)
+        )
 
     def convert(self, destination_units, *, convert_variables=False):
         """Convert axis to destination_units.
