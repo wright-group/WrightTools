@@ -118,6 +118,18 @@ def quick1D(
         ax.set_ylabel(channel.name, fontsize=18)
         plt.xticks(rotation=45)
         plt.xlim(xi.min(), xi.max())
+        # add constants to title
+        ls = []
+        for constant in d.constants:
+            ls.append(constant.label)
+        title = ", ".join(ls)
+        ax.set_title(title)
+        # variable marker lines
+        for constant in d.constants:
+            if constant.units_kind == "energy":
+                # x axis
+                if axis.units == constant.units:
+                    plt.axvline(constant.value, color="k", linewidth=4, alpha=0.25)
         # save ------------------------------------------------------------------------------------
         if autosave:
             if fname:
@@ -287,9 +299,21 @@ def quick2D(
         ax.set_xlabel(xaxis.label, fontsize=18)
         ax.set_ylabel(yaxis.label, fontsize=18)
         ax.grid()
-
-        print(d.constants)
-
+        # add constants to title
+        ls = []
+        for constant in d.constants:
+            ls.append(constant.label)
+        title = ", ".join(ls)
+        ax.set_title(title)
+        # variable marker lines
+        for constant in d.constants:
+            if constant.units_kind == "energy":
+                # x axis
+                if xaxis.units == constant.units:
+                    plt.axvline(constant.value, color="k", linewidth=4, alpha=0.25)
+                # y axis
+                if yaxis.units == constant.units:
+                    plt.axhline(constant.value, color="k", linewidth=4, alpha=0.25)
         # colorbar
         cax = plt.subplot(gs[1])
         cbar_ticks = np.linspace(levels.min(), levels.max(), 11)
