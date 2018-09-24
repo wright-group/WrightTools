@@ -64,11 +64,12 @@ To put it simply, ``Data`` is a collection of ``Axis`` and ``Channel`` objects.
 attribute        tuple of...
 ---------------  ----------------------------
 data.axes        wt.data.Axis objects
+data.constants   wt.data.Constant objects
 data.channels    wt.data.Channel objects
 data.variables   wt.data.Variable objects
 ===============  ============================
 
-See also `Data.axis_expressions`, `Data.channel_names` and `Data.variable_names`.
+See also `Data.axis_expressions`, `Data.constant_expressions`, `Data.channel_names` and `Data.variable_names`.
 
 Axis
 ````
@@ -86,6 +87,23 @@ axis.units         current axis units (change with ``axis.convert``)
 axis.variables     component variables
 axis.expression    expression
 =================  ==========================================================
+
+Constant
+````````
+
+Constants are a special subclass of Axis objects, which is expected to be a single value.
+Constant adds the value to to the label attribute, suitable for titles of plots to identify
+static values associated with the plot.
+Note that there is nothing enforcing that the value is actually static: constants still have
+shapes and can be indexed to get the underlying numpy array.
+In addition to the above attributes, constants add:
+
+=================  ===============================================================
+attribute          description
+-----------------  ---------------------------------------------------------------
+constant.value     The mean (ignoring NaNs) of the evaluated expression.
+constant.std       The standard deviation of the points used to compute the value.
+=================  ===============================================================
 
 Channel
 ```````
@@ -179,6 +197,7 @@ A selection of important methods follows.
 method                                              description
 --------------------------------------------------  --------------------------------------------------------------------------------
 :meth:`~WrightTools.data.Data.clip`                 clip values outside of a given range
+:meth:`~WrightTools.data.join`                      join multiple data objects into one
 :meth:`~WrightTools.data.Data.level`                level the edge of data along a certain axis
 :meth:`~WrightTools.data.Data.smooth`               smooth a channel via convolution with a n-dimensional Kaiser window
 :meth:`~WrightTools.data.Data.zoom`                 zoom a channel using spline interpolation

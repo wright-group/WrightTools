@@ -61,6 +61,7 @@ def test_copy_data():
 def test_save_data():
     p = datasets.PyCMDS.wm_w2_w1_001
     data = wt.data.from_PyCMDS(p)
+    data.create_constant("w3")
     p = os.path.join(here, "data")
     p = data.save(p)
     assert os.path.isfile(p)
@@ -74,6 +75,7 @@ def test_save_data():
         assert getattr(new, axis.natural_name) is axis
     for channel in new.channels:
         assert getattr(new, channel.natural_name) is channel
+    assert new.constant_names == ("w3",)
     data.close()
     new.close()
     os.remove(p)

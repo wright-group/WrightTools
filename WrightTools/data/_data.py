@@ -24,6 +24,7 @@ from .. import kit as wt_kit
 from .. import units as wt_units
 from ._axis import Axis, identifier_to_operator
 from ._channel import Channel
+from ._constant import Constant
 from ._variable import Variable
 
 
@@ -43,6 +44,7 @@ class Data(Group):
 
     def __init__(self, *args, **kwargs):
         self._axes = []
+        self._constants = []
         Group.__init__(self, *args, **kwargs)
         # populate axes from attrs string
         for identifier in self.attrs.get("axes", []):
@@ -54,7 +56,17 @@ class Data(Group):
             expression = expression.replace(" ", "")  # remove all whitespace
             axis = Axis(self, expression, units.strip())
             self._axes.append(axis)
+        for identifier in self.attrs.get("constants", []):
+            identifier = identifier.decode()
+            expression, units = identifier.split("{")
+            units = units.replace("}", "")
+            for i in identifier_to_operator.keys():
+                expression = expression.replace(i, identifier_to_operator[i])
+            expression = expression.replace(" ", "")  # remove all whitespace
+            axis = Axis(self, expression, units.strip())
+            self._constants.append(axis)
         self._current_axis_identities_in_natural_namespace = []
+        self._on_constants_updated()
         self._on_axes_updated()
         # the following are populated if not already recorded
         self.channel_names
@@ -79,6 +91,20 @@ class Data(Group):
     def axis_names(self) -> tuple:
         """Axis names."""
         return tuple(a.natural_name for a in self._axes)
+
+    @property
+    def constants(self) -> tuple:
+        return tuple(self._constants)
+
+    @property
+    def constant_expressions(self) -> tuple:
+        """Axis expressions."""
+        return tuple(a.expression for a in self._constants)
+
+    @property
+    def constant_names(self) -> tuple:
+        """Axis names."""
+        return tuple(a.natural_name for a in self._constants)
 
     @property
     def channel_names(self) -> tuple:
@@ -152,6 +178,11 @@ class Data(Group):
         return tuple(a.units for a in self._axes)
 
     @property
+    def constant_units(self) -> tuple:
+        """All constant units."""
+        return tuple(a.units for a in self._constants)
+
+    @property
     def variable_names(self) -> tuple:
         """Variable names."""
         if "variable_names" not in self.attrs.keys():
@@ -194,6 +225,14 @@ class Data(Group):
             setattr(self, key, a)
             self._current_axis_identities_in_natural_namespace.append(key)
 
+    def _on_constants_updated(self):
+        """Method to run when constants are changed in any way.
+
+        Propagates updated constants properly.
+        """
+        # update attrs
+        self.attrs["constants"] = [a.identity.encode() for a in self._constants]
+
     def _print_branch(self, prefix, depth, verbose):
         def print_leaves(prefix, lis, vline=True):
             for i, item in enumerate(lis):
@@ -212,6 +251,9 @@ class Data(Group):
             # axes
             print(prefix + "├── axes")
             print_leaves(prefix, self.axes)
+            # constants
+            print(prefix + "├── constants")
+            print_leaves(prefix, self.constants)
             # variables
             print(prefix + "├── variables")
             print_leaves(prefix, self.variables)
@@ -222,6 +264,12 @@ class Data(Group):
             # axes
             s = "axes: "
             s += ", ".join(["{0} ({1})".format(a.expression, a.units) for a in self.axes])
+            print(prefix + "├── " + s)
+            # constants
+            s = "constants: "
+            s += ", ".join(
+                ["{0} ({1} {2})".format(a.expression, a.value, a.units) for a in self.constants]
+            )
             print(prefix + "├── " + s)
             # channels
             s = "channels: "
@@ -364,6 +412,9 @@ class Data(Group):
             new_axes = [a.expression for a in kept_axes if a.expression not in at.keys()]
             new_axis_units = [a.units for a in kept_axes if a.expression not in at.keys()]
             data.transform(*new_axes)
+            for ax in self.axis_expressions:
+                if ax not in new_axes:
+                    data.create_constant(ax, verbose=False)
             for j, units in enumerate(new_axis_units):
                 data.axes[j].convert(units)
             i += 1
@@ -488,7 +539,7 @@ class Data(Group):
                 raise wt_exceptions.ValueError("method '{}' not recognized".format(m))
 
     def convert(self, destination_units, *, convert_variables=False, verbose=True):
-        """Convert all compatable axes to given units.
+        """Convert all compatable axes and constants to given units.
 
         Parameters
         ----------
@@ -518,6 +569,17 @@ class Data(Group):
                             axis.expression, orig, destination_units
                         )
                     )
+        # apply to all compatible constants
+        for constant in self.constants:
+            if constant.units_kind == units_kind:
+                orig = constant.units
+                constant.convert(destination_units, convert_variables=convert_variables)
+                if verbose:
+                    print(
+                        "constant {} converted from {} to {}".format(
+                            constant.expression, orig, destination_units
+                        )
+                    )
         if convert_variables:
             for var in self.variables:
                 if wt_units.kind(var.units) == units_kind:
@@ -530,8 +592,11 @@ class Data(Group):
                             )
                         )
         self._on_axes_updated()
+        self._on_constants_updated()
 
-    def create_channel(self, name, values=None, shape=None, units=None, **kwargs) -> Channel:
+    def create_channel(
+        self, name, values=None, *, shape=None, units=None, dtype=None, **kwargs
+    ) -> Channel:
         """Append a new channel.
 
         Parameters
@@ -542,11 +607,14 @@ class Data(Group):
             Array. If None, an empty array equaling the data shape is
             created. Default is None.
         shape : tuple of int
-            Shape to use. must broadcast with the full shape.
+            Shape to use. Must broadcast with the full shape.
             Only used if `values` is None.
             Default is the full shape of self.
         units : string (optional)
             Channel units. Default is None.
+        dtype : numpy.dtype (optional)
+            dtype to use for dataset, default is np.float64.
+            Only used if `values` is None.
         kwargs : dict
             Additional keyword arguments passed to Channel instantiation.
 
@@ -565,7 +633,14 @@ class Data(Group):
                 require_kwargs["shape"] = self.shape
             else:
                 require_kwargs["shape"] = shape
-            require_kwargs["dtype"] = np.float64
+            if dtype is None:
+                require_kwargs["dtype"] = np.dtype(np.float64)
+            else:
+                require_kwargs["dtype"] = dtype
+            if require_kwargs["dtype"].kind in "fcmM":
+                require_kwargs["fillvalue"] = np.nan
+            else:
+                require_kwargs["fillvalue"] = 0
         else:
             require_kwargs["data"] = values
             require_kwargs["shape"] = values.shape
@@ -577,7 +652,9 @@ class Data(Group):
         self.attrs["channel_names"] = np.append(self.attrs["channel_names"], name.encode())
         return channel
 
-    def create_variable(self, name, values=None, shape=None, units=None, **kwargs) -> Variable:
+    def create_variable(
+        self, name, values=None, *, shape=None, units=None, dtype=None, **kwargs
+    ) -> Variable:
         """Add new child variable.
 
         Parameters
@@ -593,6 +670,9 @@ class Data(Group):
             Default is the full shape of self.
         units : string (optional)
             Variable units. Default is None.
+        dtype : numpy.dtype (optional)
+            dtype to use for dataset, default is np.float64.
+            Only used if `values` is None.
         kwargs
             Additional kwargs to variable instantiation.
 
@@ -607,12 +687,20 @@ class Data(Group):
         if values is None:
             if shape is None:
                 shape = self.shape
-            dtype = np.float64
+            if dtype is None:
+                dtype = np.dtype(np.float64)
+            if dtype.kind in "fcmM":
+                fillvalue = np.nan
+            else:
+                fillvalue = 0
         else:
             shape = values.shape
             dtype = values.dtype
+            fillvalue = None
         # create dataset
-        id = self.require_dataset(name=name, data=values, shape=shape, dtype=dtype).id
+        id = self.require_dataset(
+            name=name, data=values, shape=shape, dtype=dtype, fillvalue=fillvalue
+        ).id
         variable = Variable(self, id, units=units, **kwargs)
         # finish
         self._variables = None
@@ -672,9 +760,6 @@ class Data(Group):
             newdata.create_variable(name=name, values=variable[slices], units=variable.units)
         newdata.transform(*args)
         return newdata
-
-    def flush(self):
-        super().flush()
 
     def get_nadir(self, channel=0) -> tuple:
         """Get the coordinates, in units, of the minimum in a channel.
@@ -822,7 +907,7 @@ class Data(Group):
         if self.ndim > 1:
             subtrahend = np.expand_dims(subtrahend, axis=axis)
         # level
-        channel[:] = channel[:] - subtrahend  # verbose
+        channel -= subtrahend
         # finish
         channel._null = 0
         if verbose:
@@ -878,7 +963,7 @@ class Data(Group):
         else:
             points = wt_units.converter(points, input_units, variable.units)
         # construct new data object
-        special = ["name", "axes", "channel_names", "variable_names"]
+        special = ["name", "axes", "constants", "channel_names", "variable_names"]
         kwargs = {k: v for k, v in self.attrs.items() if k not in special}
         if name is None:
             name = "{0}_{1}_mapped".format(self.natural_name, variable.natural_name)
@@ -1116,6 +1201,13 @@ class Data(Group):
                 if n in [v.natural_name for v in a.variables]:
                     message = "{0} is contained in axis {1}".format(n, a.expression)
                     raise RuntimeError(message)
+            for c in self._constants:
+                if n in [v.natural_name for v in c.variables]:
+                    warnings.warn(
+                        "Variable being removed used in a constant",
+                        wt_exceptions.WrightToolsWarning,
+                    )
+
         # do removal
         for n in removed:
             variable_index = wt_kit.get_index(self.variable_names, n)
@@ -1214,7 +1306,6 @@ class Data(Group):
             self[v] = obj
             names[index] = v
         self.variable_names = names
-        # update axes
         units = self.units
         new = list(self.axis_expressions)
         for i, v in enumerate(kwargs.keys()):
@@ -1225,6 +1316,16 @@ class Data(Group):
         self.transform(*new)
         for a, u in zip(self._axes, units):
             a.convert(u)
+        units = self.constant_units
+        new = list(self.constant_expressions)
+        for i, v in enumerate(kwargs.keys()):
+            for j, n in enumerate(new):
+                new[j] = n.replace(v, "{%i}" % i)
+        for i, n in enumerate(new):
+            new[i] = n.format(*kwargs.values())
+        self.set_constants(*new)
+        for c, u in zip(self._constants, units):
+            c.convert(u)
         # finish
         if verbose:
             print("{0} variable(s) renamed:".format(len(kwargs)))
@@ -1378,6 +1479,9 @@ class Data(Group):
             try:
                 omasks.append(wt_kit.mask_reduce(mask))
                 cuts.append([i == 1 for i in omasks[-1].shape])
+                # Ensure at least one axis is kept
+                if np.all(cuts[-1]):
+                    cuts[-1][0] = False
             except ValueError:
                 omasks.append(None)
                 cuts.append(None)
@@ -1435,11 +1539,22 @@ class Data(Group):
                 for ax in d.axes:
                     if ax.size > 1:
                         keep.append(ax.expression)
+                    else:
+                        d.create_constant(ax.expression, verbose=False)
                 d.transform(*keep)
                 for ax, u in zip(d.axes, old_units):
                     ax.convert(u)
             except IndexError:
                 continue
+            tempax = Axis(d, expression)
+            if all(
+                np.all(
+                    np.sum(~np.isnan(tempax.masked), axis=tuple(set(range(tempax.ndim)) - {j}))
+                    <= 1
+                )
+                for j in range(tempax.ndim)
+            ):
+                d.create_constant(expression, verbose=False)
         self.transform(*old_expr)
         for ax, u in zip(self.axes, old_units):
             ax.convert(u)
@@ -1455,10 +1570,16 @@ class Data(Group):
             Expressions for the new set of axes.
         verbose : boolean (optional)
             Toggle talkback. Default is True
+
+        See Also
+        --------
+        set_constants
+            Similar method except for constants
         """
         # TODO: ensure that transform does not break data
         # create
         new = []
+        newt = "newt" in self.axis_expressions
         current = {a.expression: a for a in self._axes}
         for expression in axes:
             axis = current.get(expression, Axis(self, expression))
@@ -1471,6 +1592,103 @@ class Data(Group):
         # finish
         self.flush()
         self._on_axes_updated()
+        nownewt = "newt" in self.axis_expressions
+        if verbose and nownewt and not newt:
+            print("Look she turned me into a newt")
+        elif verbose and newt and not nownewt:
+            print("I got better")
+
+    def set_constants(self, *constants, verbose=True):
+        """Set the constants associated with the data.
+
+        Parameters
+        ----------
+        constants : str
+            Expressions for the new set of constants.
+        verbose : boolean (optional)
+            Toggle talkback. Default is True
+
+        See Also
+        --------
+        transform
+            Similar method except for axes.
+        create_constant
+            Add an individual constant.
+        remove_constant
+            Remove an individual constant.
+        """
+        # create
+        new = []
+        current = {c.expression: c for c in self._constants}
+        for expression in constants:
+            constant = current.get(expression, Constant(self, expression))
+            new.append(constant)
+        self._constants = new
+        # units
+        for c in self._constants:
+            if c.units is None:
+                c.convert(c.variables[0].units)
+        # finish
+        self.flush()
+        self._on_constants_updated()
+
+    def create_constant(self, expression, *, verbose=True):
+        """Append a constant to the stored list.
+
+        Parameters
+        ----------
+        expression : str
+            Expression for the new constant.
+        verbose : boolean (optional)
+            Toggle talkback. Default is True
+            
+        See Also
+        --------
+        set_constants
+            Remove and replace all constants.
+        remove_constant
+            Remove an individual constant.
+        """
+        if expression in self.constant_expressions:
+            wt_exceptions.ObjectExistsWarning.warn(expression)
+            return self.constants[self.constant_expressions.index(expression)]
+        constant = Constant(self, expression)
+        if constant.units is None:
+            constant.convert(constant.variables[0].units)
+        self._constants.append(constant)
+        self.flush()
+        self._on_constants_updated()
+        if verbose:
+            print("Constant '{}' added".format(constant.expression))
+        return constant
+
+    def remove_constant(self, constant, *, verbose=True):
+        """Remove a constant from the stored list.
+
+        Parameters
+        ----------
+        constant : str or Constant or int
+            Expression for the new constant.
+        verbose : boolean (optional)
+            Toggle talkback. Default is True
+            
+        See Also
+        --------
+        set_constants
+            Remove and replace all constants.
+        create_constant
+            Add an individual constant.
+        """
+        if isinstance(constant, (str, int)):
+            constant_index = wt_kit.get_index(self.constant_expressions, constant)
+        elif isinstance(constant, Constant):
+            constant_index = wt_kit.get_index(self.constants, constant)
+        constant = self._constants[constant_index]
+        self._constants.pop(constant_index)
+        self.flush()
+        self._on_constants_updated()
+        if verbose:
+            print("Constant '{}' removed".format(constant.expression))
 
     def zoom(self, factor, order=1, verbose=True):
         """Zoom the data array using spline interpolation of the requested order.
