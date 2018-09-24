@@ -13,8 +13,8 @@ def test_perovskite():
 
 def test_4D():
     w1 = np.linspace(-3, 3, 3)
-    w2 = w1[::2].copy()
-    w3 = w1.copy()
+    w2 = np.linspace(-2, 2, 3)
+    w3 = np.linspace(-1, 1, 3)
     tau = np.linspace(-1, 3, 2)
     signal = (
         w1[:, None, None, None]
