@@ -7,7 +7,14 @@ from WrightTools import datasets
 
 def test_perovskite():
     p = datasets.wt5.v1p0p0_perovskite_TA  # axes w1=wm, w2, d2
-    data = wt.open(p)
+    # A race condition exists where multiple tests access the same file in short order
+    # this loop will open the file when it becomes available.
+    while True:
+        try:
+            data = wt.open(p)
+            break
+        except:
+            pass
     return wt.artists.quick2D(data, xaxis=0, yaxis=2, at={"w2": [1.7, "eV"]})
 
 
