@@ -85,12 +85,12 @@ datasets.
     # import data
     p = datasets.wt5.v1p0p0_perovskite_TA  # axes w1=wm, w2, d2
     data = wt.open(p)
-    #data.transform("w1", "w2", "d2")
     interact = wt.artists.interact2D(data, xaxis=0, yaxis=2, local=True, verbose=False)
     # show-off functionality. The following lines are not needed when in an interactive mode.
     interact[1]['w2'].set_val(40) # hack w2 slider
     fig = plt.gcf()
-    fig.canvas.button_release_event(110, 260, 1)
+    # simulate mouse event to get crosshairs
+    fig.canvas.button_release_event(160, 375, 1)
     plt.show()
 
 Side plots show x and y projections of the slice (shaded gray). Left
