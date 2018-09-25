@@ -24,6 +24,7 @@ auto-generated plots in acquisition software.
     import WrightTools as wt
     from WrightTools import datasets
     import matplotlib.pyplot as plt
+    wt.artists.apply_rcparams('default')
     # import data
     p = datasets.wt5.v1p0p0_perovskite_TA  # axes w1=wm, w2, d2
     data = wt.open(p)
@@ -41,6 +42,7 @@ auto-generated plots in acquisition software.
     import WrightTools as wt
     from WrightTools import datasets
     import matplotlib.pyplot as plt
+    wt.artists.apply_rcparams('default')
     # import data
     p = datasets.wt5.v1p0p0_perovskite_TA  # axes w1=wm, w2, d2
     data = wt.open(p)
