@@ -5,6 +5,100 @@ Artists
 
 The artists module contains a variety of data visualizaton tools.
 
+Quick artists
+-------------
+
+| To facilitate rapid and easy visualization of data, WrightTools offers
+  “quick” artist functions which quickly generate 1D or 2D
+  representations.
+| These functions are made to make good representations by default, but
+  they do have certain keyword arguments to make popular customization
+  easy.
+| These are particular useful functions within the context of
+  auto-generated plots in acquisition software.
+
+``wt.artists.quick1D`` is a function that generates 1D representations.
+
+.. plot::
+
+    import WrightTools as wt
+    from WrightTools import datasets
+    import matplotlib.pyplot as plt
+    # import data
+    p = datasets.wt5.v1p0p0_perovskite_TA  # axes w1=wm, w2, d2
+    data = wt.open(p)
+    data.transform("w1", "w2", "d2")
+    # probe freqency trace
+    wt.artists.quick1D(data, axis=0, at={"w2": [1.7, "eV"], "d2": [0, "fs"]})
+    # delay trace
+    wt.artists.quick1D(data, axis="d2", at={"w2": [1.7, "eV"], "w1": [1.65, "eV"]})
+    plt.show()
+
+``wt.artists.quick2D`` is a function that generates 2D representations.
+
+.. plot::
+
+    import WrightTools as wt
+    from WrightTools import datasets
+    import matplotlib.pyplot as plt
+    # import data
+    p = datasets.wt5.v1p0p0_perovskite_TA  # axes w1=wm, w2, d2
+    data = wt.open(p)
+    data.transform("w1", "w2", "d2")
+    # probe wigner
+    wt.artists.quick2D(data, xaxis=0, yaxis=2, at={"w2": [1.7, "eV"]})
+    # 2D-frequency
+    wt.artists.quick2D(data, xaxis="w1", yaxis="w2", at={"d2": [0, "fs"]})
+    plt.show()
+
+Note that the actual quick functions are each one-liners. Keyword
+arguments such as ``autosave`` and ``save_directory`` may be supplied if
+the user desires to save images (not typical for users in interactive
+mode). The ``channel`` kwarg allows users to specify what channel they
+would like to plot.
+
+| Perhaps the most powerful feature of ``quick1D`` and ``quick2D`` are
+  their ability to treat higher-dimensional datasets by automatically
+  generating multiple figures. When handing a dataset of higher
+  dimensionality to these artists, the user may choose which axes will
+  be plotted against using keyword arguments.
+| Any axis not plotted against will be iterated over such that an image
+  will be generated at each coordinate in that axis. Users may also
+  provide a dictionary with entries of the form
+  ``{axis_name: [position, units]}`` to choose a specific coordinates
+  along non-plotted axes. Positions along non-plotted axes are reported
+  in the title of each plot and overlines are shown when applicable.
+  These functionalities are derived from ``wt.Data.chop``.
+
+Interactive artists
+-------------------
+
+``wt.artists.interact2D`` facilitates interaction with multidimensional
+datasets.
+
+.. plot::
+
+    import WrightTools as wt
+    from WrightTools import datasets
+    import matplotlib.pyplot as plt
+    # import data
+    p = datasets.wt5.v1p0p0_perovskite_TA  # axes w1=wm, w2, d2
+    data = wt.open(p)
+    #data.transform("w1", "w2", "d2")
+    interact = wt.artists.interact2D(data, xaxis=0, yaxis=2, local=True, verbose=False)
+    # show-off functionality. The following lines are not needed when in an interactive mode.
+    interact[1]['w2'].set_val(40) # hack w2 slider
+    fig = plt.gcf()
+    fig.canvas.button_release_event(110, 260, 1)
+    plt.show()
+
+Side plots show x and y projections of the slice (shaded gray). Left
+clicks on the main axes draw 1D slices on side plots at the coordinates
+selected. Right clicks remove the 1D slices. For 3+ dimensional data,
+sliders below the main axes are used to change which slice is viewed.
+``interact2D`` allows users to easily vizualize 2D slices of arbitrarly
+high dimension data.
+
 Colors
 ------
 
