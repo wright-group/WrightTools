@@ -17,7 +17,7 @@ easy.
 These are particular useful functions within the context of
 auto-generated plots in acquisition software.
 
-``wt.artists.quick1D`` is a function that generates 1D representations.
+:meth:`WrightTools.artists.quick1D` is a function that generates 1D representations.
 
 .. plot::
 
@@ -34,7 +34,7 @@ auto-generated plots in acquisition software.
     wt.artists.quick1D(data, axis="d2", at={"w2": [1.7, "eV"], "w1": [1.65, "eV"]})
     plt.show()
 
-``wt.artists.quick2D`` is a function that generates 2D representations.
+:meth:`WrightTools.artists.quick2D` is a function that generates 2D representations.
 
 .. plot::
 
@@ -57,7 +57,8 @@ the user desires to save images (not typical for users in interactive
 mode). The ``channel`` kwarg allows users to specify what channel they
 would like to plot.
 
-Perhaps the most powerful feature of ``quick1D`` and ``quick2D`` are
+Perhaps the most powerful feature of :meth:`WrightTools.artists.quick1D`
+and :meth:`WrightTools.artists.quick2D` are
 their ability to treat higher-dimensional datasets by automatically
 generating multiple figures. When handing a dataset of higher
 dimensionality to these artists, the user may choose which axes will
@@ -68,12 +69,12 @@ provide a dictionary with entries of the form
 ``{axis_name: [position, units]}`` to choose a specific coordinates
 along non-plotted axes. Positions along non-plotted axes are reported
 in the title of each plot and overlines are shown when applicable.
-These functionalities are derived from ``wt.Data.chop``.
+These functionalities are derived from :meth:`WrightTools.data.Data.chop`.
 
 Interactive artists
 -------------------
 
-``wt.artists.interact2D`` facilitates interaction with multidimensional
+:meth:`WrightTools.artists.interact2D` facilitates interaction with multidimensional
 datasets.
 
 .. plot::
@@ -96,7 +97,7 @@ Side plots show x and y projections of the slice (shaded gray). Left
 clicks on the main axes draw 1D slices on side plots at the coordinates
 selected. Right clicks remove the 1D slices. For 3+ dimensional data,
 sliders below the main axes are used to change which slice is viewed.
-``interact2D`` allows users to easily vizualize 2D slices of arbitrarly
+:meth:`WrightTools.artists.interact2D` allows users to easily vizualize 2D slices of arbitrarly
 high dimension data.
 
 Colors
