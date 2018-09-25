@@ -127,7 +127,7 @@ def quick1D(
         ax.set_title(title)
         # variable marker lines
         for constant in d.constants:
-            if not constant.units == None:
+            if constant.units is not None:
                 if axis.units_kind == constant.units_kind:
                     constant.convert(axis.units)
                     plt.axvline(constant.value, color="k", linewidth=4, alpha=0.25)
@@ -313,7 +313,7 @@ def quick2D(
         ax.set_title(title)
         # variable marker lines
         for constant in d.constants:
-            if not constant.units == None:
+            if constant.units is not None:
                 # x axis
                 if xaxis.units_kind == constant.units_kind:
                     constant.convert(xaxis.units)
@@ -326,6 +326,7 @@ def quick2D(
         cax = plt.subplot(gs[1])
         cbar_ticks = np.linspace(levels.min(), levels.max(), 11)
         plot_colorbar(cax=cax, ticks=cbar_ticks, label=channel.natural_name, cmap=cmap)
+        plt.sca(ax)
         # save figure -----------------------------------------------------------------------------
         if autosave:
             if fname:
