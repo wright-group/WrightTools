@@ -8,14 +8,14 @@ The artists module contains a variety of data visualizaton tools.
 Quick artists
 -------------
 
-| To facilitate rapid and easy visualization of data, WrightTools offers
-  “quick” artist functions which quickly generate 1D or 2D
-  representations.
-| These functions are made to make good representations by default, but
-  they do have certain keyword arguments to make popular customization
-  easy.
-| These are particular useful functions within the context of
-  auto-generated plots in acquisition software.
+To facilitate rapid and easy visualization of data, WrightTools offers
+“quick” artist functions which quickly generate 1D or 2D
+representations.
+These functions are made to make good representations by default, but
+they do have certain keyword arguments to make popular customization
+easy.
+These are particular useful functions within the context of
+auto-generated plots in acquisition software.
 
 ``wt.artists.quick1D`` is a function that generates 1D representations.
 
@@ -57,18 +57,18 @@ the user desires to save images (not typical for users in interactive
 mode). The ``channel`` kwarg allows users to specify what channel they
 would like to plot.
 
-| Perhaps the most powerful feature of ``quick1D`` and ``quick2D`` are
-  their ability to treat higher-dimensional datasets by automatically
-  generating multiple figures. When handing a dataset of higher
-  dimensionality to these artists, the user may choose which axes will
-  be plotted against using keyword arguments.
-| Any axis not plotted against will be iterated over such that an image
-  will be generated at each coordinate in that axis. Users may also
-  provide a dictionary with entries of the form
-  ``{axis_name: [position, units]}`` to choose a specific coordinates
-  along non-plotted axes. Positions along non-plotted axes are reported
-  in the title of each plot and overlines are shown when applicable.
-  These functionalities are derived from ``wt.Data.chop``.
+Perhaps the most powerful feature of ``quick1D`` and ``quick2D`` are
+their ability to treat higher-dimensional datasets by automatically
+generating multiple figures. When handing a dataset of higher
+dimensionality to these artists, the user may choose which axes will
+be plotted against using keyword arguments.
+Any axis not plotted against will be iterated over such that an image
+will be generated at each coordinate in that axis. Users may also
+provide a dictionary with entries of the form
+``{axis_name: [position, units]}`` to choose a specific coordinates
+along non-plotted axes. Positions along non-plotted axes are reported
+in the title of each plot and overlines are shown when applicable.
+These functionalities are derived from ``wt.Data.chop``.
 
 Interactive artists
 -------------------
