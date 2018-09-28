@@ -428,15 +428,20 @@ class Axes(matplotlib.axes.Axes):
         """
         args = list(args)  # offer pop, append etc
         # unpack data object, if given
-        if hasattr(args[0], "id"):  # TODO: replace once class comparison works...
+        if isinstance(args[0], Data):
             data = args.pop(0)
             channel = kwargs.pop("channel", 0)
-            if not data.ndim == 1:
-                raise wt_exceptions.DimensionalityError(1, data.ndim)
-            # arrays
             channel_index = wt_kit.get_index(data.channel_names, channel)
-            xi = data.axes[0][:]
-            zi = data.channels[channel_index][:].T
+            squeeze = np.array(data.channels[channel_index].shape) == 1
+            xa = data.axes[0]
+            for sq, xs in zip(squeeze, xa.shape):
+                if sq and xs != 1:
+                    raise wt_exceptions.ValueError("Cannot squeeze axis to fit channel")
+            squeeze = tuple([0 if i else slice(None) for i in squeeze])
+            zi = data.channels[channel_index].points
+            xi = xa[squeeze]
+            if not zi.ndim == 1:
+                raise wt_exceptions.DimensionalityError(1, data.ndim)
             args = [xi, zi] + args
         else:
             data = None
