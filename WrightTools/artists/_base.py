@@ -114,16 +114,22 @@ class Axes(matplotlib.axes.Axes):
         dynamic_range = kwargs.pop("dynamic_range", False)
         if isinstance(args[0], Data):
             data = args.pop(0)
-            if plot_type in ["pcolor", "pcolormesh", "contourf", "contour"]:
-                ndim = 2
-            if not data.ndim == ndim:
-                raise wt_exceptions.DimensionalityError(ndim, data.ndim)
-            # arrays
             channel = kwargs.pop("channel", 0)
             channel_index = wt_kit.get_index(data.channel_names, channel)
-            zi = data.channels[channel_index][:]
-            xi = data.axes[0].full
-            yi = data.axes[1].full
+            squeeze = np.array(data.channels[channel_index].shape) == 1
+            xa = data.axes[0]
+            ya = data.axes[1]
+            for sq, xs, ys in zip(squeeze, xa.shape, ya.shape):
+                if sq and (xs != 1 or ys != 1):
+                    raise wt_exceptions.ValueError("Cannot squeeze axis to fit channel")
+            squeeze = tuple([0 if i else slice(None) for i in squeeze])
+            zi = data.channels[channel_index].points
+            xi = xa.full[squeeze]
+            yi = ya.full[squeeze]
+            if plot_type in ["pcolor", "pcolormesh", "contourf", "contour"]:
+                ndim = 2
+            if not zi.ndim == ndim:
+                raise wt_exceptions.DimensionalityError(ndim, data.ndim)
             if plot_type in ["pcolor", "pcolormesh"]:
                 X, Y = pcolor_helper(xi, yi)
             else:
@@ -138,7 +144,7 @@ class Axes(matplotlib.axes.Axes):
                     kwargs["levels"] = np.linspace(kwargs["vmin"], kwargs["vmax"], 256)
             elif plot_type == "contour":
                 if "levels" not in kwargs.keys():
-                    if signed:
+                    if data.channels[channel_index].signed:
                         n = 11
                     else:
                         n = 6
@@ -244,7 +250,8 @@ class Axes(matplotlib.axes.Axes):
         -------
         matplotlib.contour.QuadContourSet
         """
-        return super().contour(self._parse_plot_args(*args, **kwargs, plot_type="contour"))
+        args, kwargs = self._parse_plot_args(*args, **kwargs, plot_type="contour")
+        return super().contour(*args, **kwargs)
 
     def contourf(self, *args, **kwargs):
         """Plot contours.
@@ -273,7 +280,7 @@ class Axes(matplotlib.axes.Axes):
         -------
         matplotlib.contour.QuadContourSet
         """
-        args, kwargs = self._parse_plot_args(args, kwargs, plot_type="contourf")
+        args, kwargs = self._parse_plot_args(*args, **kwargs, plot_type="contourf")
         # Overloading contourf in an attempt to fix aliasing problems when saving vector graphics
         # see https://stackoverflow.com/questions/15822159
         # also see https://stackoverflow.com/a/32911283
