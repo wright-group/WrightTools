@@ -226,6 +226,11 @@ class Axes(matplotlib.axes.Axes):
     def contour(self, *args, **kwargs):
         """Plot contours.
 
+        If a 3D or higher Data object is passed, a lower dimensional
+        channel can be plotted, provided the ``squeeze`` of the channel
+        has ``ndim==2`` and the first two axes do not span dimensions
+        other than those spanned by that channel.
+
         Parameters
         ----------
         data : 2D WrightTools.data.Data object
@@ -255,6 +260,11 @@ class Axes(matplotlib.axes.Axes):
 
     def contourf(self, *args, **kwargs):
         """Plot contours.
+
+        If a 3D or higher Data object is passed, a lower dimensional
+        channel can be plotted, provided the ``squeeze`` of the channel
+        has ``ndim==2`` and the first two axes do not span dimensions
+        other than those spanned by that channel.
 
         Parameters
         ----------
@@ -334,6 +344,11 @@ class Axes(matplotlib.axes.Axes):
     def pcolor(self, *args, **kwargs):
         """Create a pseudocolor plot of a 2-D array.
 
+        If a 3D or higher Data object is passed, a lower dimensional
+        channel can be plotted, provided the ``squeeze`` of the channel
+        has ``ndim==2`` and the first two axes do not span dimensions
+        other than those spanned by that channel.
+
         Uses pcolor_helper to ensure that color boundaries are drawn
         bisecting point positions, when possible.
 
@@ -366,6 +381,11 @@ class Axes(matplotlib.axes.Axes):
 
     def pcolormesh(self, *args, **kwargs):
         """Create a pseudocolor plot of a 2-D array.
+
+        If a 3D or higher Data object is passed, a lower dimensional
+        channel can be plotted, provided the ``squeeze`` of the channel
+        has ``ndim==2`` and the first two axes do not span dimensions
+        other than those spanned by that channel.
 
         Uses pcolor_helper to ensure that color boundaries are drawn
         bisecting point positions, when possible.
@@ -400,6 +420,11 @@ class Axes(matplotlib.axes.Axes):
 
     def plot(self, *args, **kwargs):
         """Plot lines and/or markers.
+
+        If a 2D or higher Data object is passed, a lower dimensional
+        channel can be plotted, provided the ``squeeze`` of the channel
+        has ``ndim==1`` and the first axis does not span dimensions
+        other than that spanned by the channel.
 
         Parameters
         ----------
