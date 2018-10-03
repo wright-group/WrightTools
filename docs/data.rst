@@ -151,8 +151,9 @@ Experiments are taken over all kinds of dynamic range, with all kinds of units.
 You might wish to take the difference between a UV-VIS scan taken from 400 to 800 nm, 1 nm steps and a different scan taken from 1.75 to 2.00 eV, 1 meV steps.
 This can be a huge pain!
 Even if you converted them to the same unit system, you would still have to deal with the different absolute positions of the two coordinate arrays.
+:meth:`~WrightTools.data.Data.map_variable` allows you to easily obtain a data object mapped onto a different set of coordinates.
 
-WrightTools data objects know all about units, and they implicitly use interpolation to map between different absolute coordinates.
+WrightTools data objects know all about units, and they are able use interpolation to map between different absolute coordinates.
 Here we list some of the capabilities that are enabled by this behavior.
 
 ==================================================  ================================================================================
