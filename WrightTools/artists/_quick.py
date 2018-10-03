@@ -117,7 +117,20 @@ def quick1D(
         ax.set_xlabel(axis.label, fontsize=18)
         ax.set_ylabel(channel.name, fontsize=18)
         plt.xticks(rotation=45)
+        plt.axvline(0, lw=2, c="k")
         plt.xlim(xi.min(), xi.max())
+        # add constants to title
+        ls = []
+        for constant in d.constants:
+            ls.append(constant.label)
+        title = ", ".join(ls)
+        ax.set_title(title)
+        # variable marker lines
+        for constant in d.constants:
+            if constant.units is not None:
+                if axis.units_kind == constant.units_kind:
+                    constant.convert(axis.units)
+                    plt.axvline(constant.value, color="k", linewidth=4, alpha=0.25)
         # save ------------------------------------------------------------------------------------
         if autosave:
             if fname:
@@ -230,7 +243,7 @@ def quick2D(
         xaxis = d.axes[0]
         xlim = xaxis.min(), xaxis.max()
         yaxis = d.axes[1]
-        ylim = xaxis.min(), yaxis.max()
+        ylim = yaxis.min(), yaxis.max()
         channel = d.channels[channel_index]
         zi = channel[:]
         zi = np.ma.masked_invalid(zi)
@@ -274,7 +287,6 @@ def quick2D(
                     levels = np.linspace(data_channel.null, data_channel.max(), 200)
         # colors ----------------------------------------------------------------------------------
         if pixelated:
-            # print(channel.name, d.channel_names, channel, channel_index)
             ax.pcolor(d, channel=channel_index, cmap=cmap, vmin=levels.min(), vmax=levels.max())
         else:
             ax.contourf(d, channel=channel_index, cmap=cmap, levels=levels)
@@ -286,10 +298,35 @@ def quick2D(
         plt.yticks(fontsize=14)
         ax.set_xlabel(xaxis.label, fontsize=18)
         ax.set_ylabel(yaxis.label, fontsize=18)
+        ax.grid()
+        # lims
+        ax.set_xlim(xlim)
+        ax.set_ylim(ylim)
+        # add zero lines
+        plt.axvline(0, lw=2, c="k")
+        plt.axhline(0, lw=2, c="k")
+        # add constants to title
+        ls = []
+        for constant in d.constants:
+            ls.append(constant.label)
+        title = ", ".join(ls)
+        ax.set_title(title)
+        # variable marker lines
+        for constant in d.constants:
+            if constant.units is not None:
+                # x axis
+                if xaxis.units_kind == constant.units_kind:
+                    constant.convert(xaxis.units)
+                    plt.axvline(constant.value, color="k", linewidth=4, alpha=0.25)
+                # y axis
+                if yaxis.units_kind == constant.units_kind:
+                    constant.convert(yaxis.units)
+                    plt.axhline(constant.value, color="k", linewidth=4, alpha=0.25)
         # colorbar
         cax = plt.subplot(gs[1])
         cbar_ticks = np.linspace(levels.min(), levels.max(), 11)
         plot_colorbar(cax=cax, ticks=cbar_ticks, label=channel.natural_name, cmap=cmap)
+        plt.sca(ax)
         # save figure -----------------------------------------------------------------------------
         if autosave:
             if fname:

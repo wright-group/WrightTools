@@ -85,11 +85,11 @@ def get_clim(channel, current_state):
 def gen_ticklabels(points, signed=None):
     step = np.nanmin(np.diff(points))
     if step == 0:  # zeros everywhere
-        ticklabels = ['' for i in range(11)]
+        ticklabels = ["" for i in range(11)]
         if signed:
-            ticklabels[5] = '0'
+            ticklabels[5] = "0"
         else:
-            ticklabels[0] = '0'
+            ticklabels[0] = "0"
         return ticklabels
     ordinal = np.log10(np.abs(step))
     ndigits = -int(np.floor(ordinal))
@@ -408,7 +408,7 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
             if x0 > xlim[0] and x0 < xlim[1] and y0 > ylim[0] and y0 < ylim[1]:
                 current_state.xpos = info.xdata
                 current_state.ypos = info.ydata
-                if info.button == 1:  # left click
+                if info.button == 1 or info.button is None:  # left click
                     if verbose:
                         print(current_state.xpos, current_state.ypos)
                     update_sideplot_slices()
