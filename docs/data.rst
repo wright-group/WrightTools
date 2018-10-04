@@ -153,7 +153,7 @@ This can be a huge pain!
 Even if you converted them to the same unit system, you would still have to deal with the different absolute positions of the two coordinate arrays.
 :meth:`~WrightTools.data.Data.map_variable` allows you to easily obtain a data object mapped onto a different set of coordinates.
 
-WrightTools data objects know all about units, and they are able use interpolation to map between different absolute coordinates.
+WrightTools data objects know all about units, and they are able to use interpolation to map between different absolute coordinates.
 Here we list some of the capabilities that are enabled by this behavior.
 
 ==================================================  ================================================================================
