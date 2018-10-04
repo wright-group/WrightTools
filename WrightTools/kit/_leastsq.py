@@ -71,7 +71,7 @@ def leastsqfitter(p0, datax, datay, function, verbose=False, cov_verbose=False):
         for i in range(len(pfit_leastsq)):
             try:
                 error.append(np.absolute(pcov[i][i]) ** 0.5)
-            except BaseException:
+            except IndexError:
                 error.append(0.00)
         perr_leastsq = np.array(error)
     # exit
