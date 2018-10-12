@@ -345,6 +345,7 @@ class Data(Group):
         """
         from ._axis import operators, operator_to_identifier
 
+        print(at)
         # parse args
         args = list(args)
         for i, arg in enumerate(args):
@@ -358,7 +359,7 @@ class Data(Group):
                 args[i] = wt_kit.string2identifier(arg)
 
         # normalize the at keys to the natural name
-        for k in list(at.keys()):
+        for k in [ak for ak in at.keys() if type(ak) == str]:
             for op in operators:
                 if op in k:
                     nk = k.replace(op, operator_to_identifier[op])
@@ -369,18 +370,26 @@ class Data(Group):
         # get output collection
         out = wt_collection.Collection(name="chop", parent=parent)
         # get output shape
-        kept = args + list(at.keys())
+        kept = args + [ak for ak in at.keys() if type(ak) == str]
         kept_axes = [self._axes[self.axis_names.index(a)] for a in kept]
         removed_axes = [a for a in self._axes if a not in kept_axes]
         removed_shape = wt_kit.joint_shape(*removed_axes)
         if removed_shape == ():
             removed_shape = (1,) * self.ndim
+        removed_shape = list(removed_shape)
+        for i in at.keys():
+            if type(i) == int:
+                removed_shape[i] = 1
+        removed_shape = tuple(removed_shape)
         # iterate
         i = 0
         for idx in np.ndindex(removed_shape):
             idx = np.array(idx, dtype=object)
             idx[np.array(removed_shape) == 1] = slice(None)
             for axis, point in at.items():
+                if type(axis) == int:
+                    idx[axis] = point
+                    continue
                 point, units = point
                 destination_units = self._axes[self.axis_names.index(axis)].units
                 point = wt_units.converter(point, units, destination_units)
