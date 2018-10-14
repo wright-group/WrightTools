@@ -345,7 +345,6 @@ class Data(Group):
         """
         from ._axis import operators, operator_to_identifier
 
-        print(at)
         # parse args
         args = list(args)
         for i, arg in enumerate(args):
