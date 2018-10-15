@@ -69,6 +69,7 @@ def quick1D(
     channel_index = wt_kit.get_index(data.channel_names, channel)
     shape = data.channels[channel_index].shape
     collapse = [i for i in range(len(shape)) if shape[i] == 1]
+    at = at.copy()
     at.update({c: 0 for c in collapse})
     # prepare data
     chopped = data.chop(axis, at=at, verbose=False)
@@ -198,6 +199,7 @@ def quick2D(
     channel_index = wt_kit.get_index(data.channel_names, channel)
     shape = data.channels[channel_index].shape
     collapse = [i for i in range(len(shape)) if shape[i] == 1]
+    at = at.copy()
     at.update({c: 0 for c in collapse})
     # prepare data
     chopped = data.chop(xaxis, yaxis, at=at, verbose=False)
