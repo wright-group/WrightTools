@@ -108,22 +108,28 @@ class Axes(matplotlib.axes.Axes):
 
     def _parse_plot_args(self, *args, **kwargs):
         plot_type = kwargs.pop("plot_type")
-        if plot_type not in ["pcolor", "pcolormesh"]:
+        if plot_type not in ["pcolor", "pcolormesh", "contourf", "contour"]:
             raise NotImplementedError
         args = list(args)  # offer pop, append etc
         dynamic_range = kwargs.pop("dynamic_range", False)
         if isinstance(args[0], Data):
             data = args.pop(0)
-            if plot_type in ["pcolor", "pcolormesh"]:
-                ndim = 2
-            if not data.ndim == ndim:
-                raise wt_exceptions.DimensionalityError(ndim, data.ndim)
-            # arrays
             channel = kwargs.pop("channel", 0)
             channel_index = wt_kit.get_index(data.channel_names, channel)
-            zi = data.channels[channel_index][:]
-            xi = data.axes[0].full
-            yi = data.axes[1].full
+            squeeze = np.array(data.channels[channel_index].shape) == 1
+            xa = data.axes[0]
+            ya = data.axes[1]
+            for sq, xs, ys in zip(squeeze, xa.shape, ya.shape):
+                if sq and (xs != 1 or ys != 1):
+                    raise wt_exceptions.ValueError("Cannot squeeze axis to fit channel")
+            squeeze = tuple([0 if i else slice(None) for i in squeeze])
+            zi = data.channels[channel_index].points
+            xi = xa.full[squeeze]
+            yi = ya.full[squeeze]
+            if plot_type in ["pcolor", "pcolormesh", "contourf", "contour"]:
+                ndim = 2
+            if not zi.ndim == ndim:
+                raise wt_exceptions.DimensionalityError(ndim, data.ndim)
             if plot_type in ["pcolor", "pcolormesh"]:
                 X, Y = pcolor_helper(xi, yi)
             else:
@@ -133,8 +139,23 @@ class Axes(matplotlib.axes.Axes):
             kwargs = self._parse_limits(
                 data=data, channel_index=channel_index, dynamic_range=dynamic_range, **kwargs
             )
-            # cmap
-            kwargs = self._parse_cmap(data=data, channel_index=channel_index, **kwargs)
+            if plot_type == "contourf":
+                if "levels" not in kwargs.keys():
+                    kwargs["levels"] = np.linspace(kwargs["vmin"], kwargs["vmax"], 256)
+            elif plot_type == "contour":
+                if "levels" not in kwargs.keys():
+                    if data.channels[channel_index].signed:
+                        n = 11
+                    else:
+                        n = 6
+                    kwargs["levels"] = np.linspace(kwargs.pop("vmin"), kwargs.pop("vmax"), n)[1:-1]
+                # colors
+                if "colors" not in kwargs.keys():
+                    kwargs["colors"] = "k"
+                if "alpha" not in kwargs.keys():
+                    kwargs["alpha"] = 0.5
+            if plot_type in ["pcolor", "pcolormesh", "contourf"]:
+                kwargs = self._parse_cmap(data=data, channel_index=channel_index, **kwargs)
         else:
             xi, yi, zi = args[:3]
             if plot_type in ["pcolor", "pcolormesh"]:
@@ -147,7 +168,11 @@ class Axes(matplotlib.axes.Axes):
             data = None
             channel_index = 0
             kwargs = self._parse_limits(zi=args[2], **kwargs)
-            kwargs = self._parse_cmap(**kwargs)
+            if plot_type == "contourf":
+                if "levels" not in kwargs.keys():
+                    kwargs["levels"] = np.linspace(kwargs["vmin"], kwargs["vmax"], 256)
+            if plot_type in ["pcolor", "pcolormesh", "contourf"]:
+                kwargs = self._parse_cmap(**kwargs)
         # labels
         self._apply_labels(
             autolabel=kwargs.pop("autolabel", False),
@@ -157,7 +182,8 @@ class Axes(matplotlib.axes.Axes):
             channel_index=channel_index,
         )
         # decoration
-        self.set_facecolor([0.75] * 3)
+        if plot_type != "contour":
+            self.set_facecolor([0.75] * 3)
         return args, kwargs
 
     def add_sideplot(self, along, pad=0, height=0.75, ymin=0, ymax=1.1):
@@ -200,6 +226,11 @@ class Axes(matplotlib.axes.Axes):
     def contour(self, *args, **kwargs):
         """Plot contours.
 
+        If a 3D or higher Data object is passed, a lower dimensional
+        channel can be plotted, provided the ``squeeze`` of the channel
+        has ``ndim==2`` and the first two axes do not span dimensions
+        other than those spanned by that channel.
+
         Parameters
         ----------
         data : 2D WrightTools.data.Data object
@@ -224,52 +255,16 @@ class Axes(matplotlib.axes.Axes):
         -------
         matplotlib.contour.QuadContourSet
         """
-        args = list(args)  # offer pop, append etc
-        channel = kwargs.pop("channel", 0)
-        dynamic_range = kwargs.pop("dynamic_range", False)
-        # unpack data object, if given
-        if isinstance(args[0], Data):
-            data = args.pop(0)
-            if not data.ndim == 2:
-                raise wt_exceptions.DimensionalityError(2, data.ndim)
-            # arrays
-            channel_index = wt_kit.get_index(data.channel_names, channel)
-            signed = data.channels[channel_index].signed
-            xi = data.axes[0].full
-            yi = data.axes[1].full
-            zi = data.channels[channel_index][:]
-            args = [xi, yi, zi] + args
-            # limits
-            kwargs = self._parse_limits(
-                data=data, channel_index=channel_index, dynamic_range=dynamic_range, **kwargs
-            )
-            # levels
-            if "levels" not in kwargs.keys():
-                if signed:
-                    n = 11
-                else:
-                    n = 6
-                kwargs["levels"] = np.linspace(kwargs.pop("vmin"), kwargs.pop("vmax"), n)[1:-1]
-            # colors
-            if "colors" not in kwargs.keys():
-                kwargs["colors"] = "k"
-            if "alpha" not in kwargs.keys():
-                kwargs["alpha"] = 0.5
-            # labels
-            self._apply_labels(
-                autolabel=kwargs.pop("autolabel", False),
-                xlabel=kwargs.pop("xlabel", None),
-                ylabel=kwargs.pop("ylabel", None),
-                data=data,
-                channel_index=channel_index,
-            )
-        else:
-            kwargs = self._parse_limits(zi=args[2], dynamic_range=dynamic_range, **kwargs)
-        # call parent
+        args, kwargs = self._parse_plot_args(*args, **kwargs, plot_type="contour")
         return super().contour(*args, **kwargs)
 
     def contourf(self, *args, **kwargs):
         """Plot contours.
+
+        If a 3D or higher Data object is passed, a lower dimensional
+        channel can be plotted, provided the ``squeeze`` of the channel
+        has ``ndim==2`` and the first two axes do not span dimensions
+        other than those spanned by that channel.
 
         Parameters
         ----------
@@ -295,44 +290,7 @@ class Axes(matplotlib.axes.Axes):
         -------
         matplotlib.contour.QuadContourSet
         """
-        args = list(args)  # offer pop, append etc
-        channel = kwargs.pop("channel", 0)
-        dynamic_range = kwargs.pop("dynamic_range", False)
-        # unpack data object, if given
-        if isinstance(args[0], Data):
-            data = args.pop(0)
-            if not data.ndim == 2:
-                raise wt_exceptions.DimensionalityError(2, data.ndim)
-            # arrays
-            channel_index = wt_kit.get_index(data.channel_names, channel)
-            xi = data.axes[0].full
-            yi = data.axes[1].full
-            zi = data.channels[channel_index][:]
-            args = [xi, yi, zi] + args
-            # limits
-            kwargs = self._parse_limits(
-                data=data, channel_index=channel_index, dynamic_range=dynamic_range, **kwargs
-            )
-            # cmap
-            kwargs = self._parse_cmap(data=data, channel_index=channel_index, **kwargs)
-        else:
-            data = None
-            channel_index = 0
-            kwargs = self._parse_limits(zi=args[2], dynamic_range=dynamic_range, **kwargs)
-            kwargs = self._parse_cmap(**kwargs)
-        # levels
-        if "levels" not in kwargs.keys():
-            vmin = kwargs.pop("vmin", args[2].min())
-            vmax = kwargs.pop("vmax", args[2].max())
-            kwargs["levels"] = np.linspace(vmin, vmax, 256)
-        # labels
-        self._apply_labels(
-            autolabel=kwargs.pop("autolabel", False),
-            xlabel=kwargs.pop("xlabel", None),
-            ylabel=kwargs.pop("ylabel", None),
-            data=data,
-            channel_index=channel_index,
-        )
+        args, kwargs = self._parse_plot_args(*args, **kwargs, plot_type="contourf")
         # Overloading contourf in an attempt to fix aliasing problems when saving vector graphics
         # see https://stackoverflow.com/questions/15822159
         # also see https://stackoverflow.com/a/32911283
@@ -386,6 +344,11 @@ class Axes(matplotlib.axes.Axes):
     def pcolor(self, *args, **kwargs):
         """Create a pseudocolor plot of a 2-D array.
 
+        If a 3D or higher Data object is passed, a lower dimensional
+        channel can be plotted, provided the ``squeeze`` of the channel
+        has ``ndim==2`` and the first two axes do not span dimensions
+        other than those spanned by that channel.
+
         Uses pcolor_helper to ensure that color boundaries are drawn
         bisecting point positions, when possible.
 
@@ -418,6 +381,11 @@ class Axes(matplotlib.axes.Axes):
 
     def pcolormesh(self, *args, **kwargs):
         """Create a pseudocolor plot of a 2-D array.
+
+        If a 3D or higher Data object is passed, a lower dimensional
+        channel can be plotted, provided the ``squeeze`` of the channel
+        has ``ndim==2`` and the first two axes do not span dimensions
+        other than those spanned by that channel.
 
         Uses pcolor_helper to ensure that color boundaries are drawn
         bisecting point positions, when possible.
@@ -453,6 +421,11 @@ class Axes(matplotlib.axes.Axes):
     def plot(self, *args, **kwargs):
         """Plot lines and/or markers.
 
+        If a 2D or higher Data object is passed, a lower dimensional
+        channel can be plotted, provided the ``squeeze`` of the channel
+        has ``ndim==1`` and the first axis does not span dimensions
+        other than that spanned by the channel.
+
         Parameters
         ----------
         data : 1D WrightTools.data.Data object
@@ -480,15 +453,20 @@ class Axes(matplotlib.axes.Axes):
         """
         args = list(args)  # offer pop, append etc
         # unpack data object, if given
-        if hasattr(args[0], "id"):  # TODO: replace once class comparison works...
+        if isinstance(args[0], Data):
             data = args.pop(0)
             channel = kwargs.pop("channel", 0)
-            if not data.ndim == 1:
-                raise wt_exceptions.DimensionalityError(1, data.ndim)
-            # arrays
             channel_index = wt_kit.get_index(data.channel_names, channel)
-            xi = data.axes[0][:]
-            zi = data.channels[channel_index][:].T
+            squeeze = np.array(data.channels[channel_index].shape) == 1
+            xa = data.axes[0]
+            for sq, xs in zip(squeeze, xa.shape):
+                if sq and xs != 1:
+                    raise wt_exceptions.ValueError("Cannot squeeze axis to fit channel")
+            squeeze = tuple([0 if i else slice(None) for i in squeeze])
+            zi = data.channels[channel_index].points
+            xi = xa[squeeze]
+            if not zi.ndim == 1:
+                raise wt_exceptions.DimensionalityError(1, data.ndim)
             args = [xi, zi] + args
         else:
             data = None

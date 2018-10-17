@@ -65,10 +65,14 @@ def quick1D(
     list of strings
         List of saved image files (if any).
     """
-    # prepare data
-    chopped = data.chop(axis, at=at, verbose=False)
     # channel index
     channel_index = wt_kit.get_index(data.channel_names, channel)
+    shape = data.channels[channel_index].shape
+    collapse = [i for i in range(len(shape)) if shape[i] == 1]
+    at = at.copy()
+    at.update({c: 0 for c in collapse})
+    # prepare data
+    chopped = data.chop(axis, at=at, verbose=False)
     # prepare figure
     fig = None
     if len(chopped) > 10:
@@ -87,7 +91,7 @@ def quick1D(
                 else:
                     fname = data.natural_name
             else:
-                folder_name = "mpl_1D " + wt_kit.TimeStamp().path
+                folder_name = "quick1D " + wt_kit.TimeStamp().path
                 os.mkdir(folder_name)
                 save_directory = folder_name
     # chew through image generation
@@ -204,10 +208,14 @@ def quick2D(
     list of strings
         List of saved image files (if any).
     """
-    # prepare data
-    chopped = data.chop(xaxis, yaxis, at=at, verbose=False)
     # channel index
     channel_index = wt_kit.get_index(data.channel_names, channel)
+    shape = data.channels[channel_index].shape
+    collapse = [i for i in range(len(shape)) if shape[i] == 1]
+    at = at.copy()
+    at.update({c: 0 for c in collapse})
+    # prepare data
+    chopped = data.chop(xaxis, yaxis, at=at, verbose=False)
     # colormap
     # get colormap
     if data.channels[channel_index].signed:
