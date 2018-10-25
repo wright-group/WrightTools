@@ -144,7 +144,10 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
     varis = list(data.variable_names)
     for ax in data.axes:
         for v in ax.variables:
-            varis.remove(v.natural_name)
+            try:
+                varis.remove(v.natural_name)
+            except ValueError:
+                pass  # Already removed, can't double count
     for v in varis:
         data.remove_variable(v, implied=False, verbose=False)
     xaxis, yaxis = get_axes(data, [xaxis, yaxis])
