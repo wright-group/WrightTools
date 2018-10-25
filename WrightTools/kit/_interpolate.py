@@ -94,7 +94,7 @@ class Spline:
         # nans
         if ignore_nans:
             lis = [xi_internal, yi_internal]
-            xi_internal, yi_internal = remove_nans_1D(lis)
+            xi_internal, yi_internal = remove_nans_1D(*lis)
         # UnivariateSpline needs ascending xi
         sort = np.argsort(xi_internal)
         xi_internal = xi_internal[sort]
