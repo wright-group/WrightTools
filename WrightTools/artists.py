@@ -633,7 +633,7 @@ class Figure(matplotlib.figure.Figure):
         self._axstack.add(key, a)
         self.sca(a)
         if int(matplotlib.__version__.split('.')[0]) > 1:
-            a._remove_method = self.__remove_ax
+            a._remove_method = lambda ax: self.delaxes(ax)
             self.stale = True
             a.stale_callback = matplotlib.figure._stale_figure_callback
         # finish
