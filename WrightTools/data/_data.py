@@ -63,8 +63,8 @@ class Data(Group):
             for i in identifier_to_operator.keys():
                 expression = expression.replace(i, identifier_to_operator[i])
             expression = expression.replace(" ", "")  # remove all whitespace
-            axis = Axis(self, expression, units.strip())
-            self._constants.append(axis)
+            const = Constant(self, expression, units.strip())
+            self._constants.append(const)
         self._current_axis_identities_in_natural_namespace = []
         self._on_constants_updated()
         self._on_axes_updated()
