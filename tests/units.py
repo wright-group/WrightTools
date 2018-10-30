@@ -18,3 +18,5 @@ def test_axis_convert_exception():
         data.w2.convert("fs")
     except wt.exceptions.UnitsError:
         assert True
+    else:
+        assert False
