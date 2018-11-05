@@ -10,6 +10,7 @@ import tidy_headers
 
 from ._data import Data
 from .. import kit as wt_kit
+from .. import units as wt_units
 
 
 # --- define --------------------------------------------------------------------------------------
