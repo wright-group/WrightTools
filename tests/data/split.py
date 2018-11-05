@@ -159,7 +159,7 @@ def test_split_constants():
 
 def test_autotune():
     p = here / "test_data" / "autotune.data"
-    data = wt.data.from_PyCMDS(p)
+    data = wt.data.from_PyCMDS(str(p))
     data.transform("w2", "w2_BBO")
     split = data.split("w2_BBO", [42])
     split.close()
