@@ -73,8 +73,9 @@ def from_Solis(filepath, name=None, parent=None, verbose=True) -> Data:
                 try:
                     key, val = line.split(":", 1)
                 except ValueError:
-                    val = ""
-                attrs[key.strip()] = val.strip()
+                    pass
+                else:
+                    attrs[key.strip()] = val.strip()
 
     created = attrs["Date and Time"]  # is this UTC?
     created = time.strptime(created, "%a %b %d %H:%M:%S %Y")
