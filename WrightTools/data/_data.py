@@ -1544,13 +1544,15 @@ class Data(Group):
             try:
                 d.transform(*old_expr)
                 keep = []
+                keep_units = []
                 for ax in d.axes:
                     if ax.size > 1:
                         keep.append(ax.expression)
+                        keep_units.append(ax.units)
                     else:
                         d.create_constant(ax.expression, verbose=False)
                 d.transform(*keep)
-                for ax, u in zip(d.axes, old_units):
+                for ax, u in zip(d.axes, keep_units):
                     ax.convert(u)
             except IndexError:
                 continue

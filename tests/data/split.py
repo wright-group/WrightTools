@@ -5,14 +5,16 @@
 # --- import --------------------------------------------------------------------------------------
 
 
-import pytest
 import numpy as np
 
 import WrightTools as wt
 from WrightTools import datasets
 
+import pathlib
 
 # --- test ----------------------------------------------------------------------------------------
+
+here = pathlib.Path(__file__).parent
 
 
 def test_split():
@@ -155,8 +157,19 @@ def test_split_constants():
     split.close()
 
 
-if __name__ == "__main__":
+def test_autotune():
+    p = here / "test_data" / "autotune.data"
+    data = wt.data.from_PyCMDS(str(p))
+    data.transform("w2", "w2_BBO")
+    split = data.split("w2_BBO", [42])
+    split.close()
+    data.transform("w2_BBO", "w2")
+    split = data.split("w2_BBO", [42, 41.5])
+    split.close()
+    data.close()
 
+
+if __name__ == "__main__":
     test_split()
     test_split_edge()
     test_split_multiple()
@@ -168,3 +181,4 @@ if __name__ == "__main__":
     test_split_expression()
     test_split_hole()
     test_split_constants()
+    test_autotune()
