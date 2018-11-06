@@ -32,7 +32,7 @@ def test_exception():
         assert True
     else:
         assert False
-    assert data.w1.units == "nm"
+    assert data.w1.units == "wn"
     assert data["w1"].units == "nm"
     data.close()
 
@@ -40,7 +40,7 @@ def test_exception():
 def test_w1_wa():
     p = datasets.PyCMDS.w1_wa_000
     data = wt.data.from_PyCMDS(p)
-    assert data.wa.units == "nm"
+    assert data.wa.units == "wn"
     data.wa.convert("eV")
     assert data.wa.units == "eV"
     assert np.isclose(data.wa.max(), 1.5802564757220569)

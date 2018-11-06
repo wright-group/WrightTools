@@ -9,6 +9,8 @@ from WrightTools import datasets
 def test_zenith():
     p = wt.datasets.PyCMDS.wm_w2_w1_000
     data = wt.data.from_PyCMDS(p)
+    data.wm.convert("nm")
+    data.w1.convert("nm")
     assert np.allclose(list(data.get_zenith()), [499.9893, 1575., 6349.206349])
 
 
