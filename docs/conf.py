@@ -129,7 +129,7 @@ html_context = {
     "display_github": True,  # Integrate GitHub
     "github_user": "wright-group",  # Username
     "github_repo": "WrightTools",  # Repo name
-    "github_version": "documentation",  # Version
+    "github_version": "master",  # Version
     "conf_py_path": "/docs/",  # Path in the checkout to the docs root
 }
 
