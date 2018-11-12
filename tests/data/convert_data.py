@@ -32,7 +32,7 @@ def test_w1_wa():
     p = datasets.PyCMDS.w1_wa_000
     data = wt.data.from_PyCMDS(p)
     data.create_constant("w2")
-    assert data.wa.units == "nm"
+    assert data.wa.units == "wn"
     assert data.constants[0].units == "nm"
     data.convert("eV")
     assert data.wa.units == "eV"

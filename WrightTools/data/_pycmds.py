@@ -10,6 +10,7 @@ import tidy_headers
 
 from ._data import Data
 from .. import kit as wt_kit
+from .. import units as wt_units
 
 
 # --- define --------------------------------------------------------------------------------------
@@ -152,6 +153,7 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True) -> Data:
                         pointsshape[i] = len(points)
                         break
                 points.shape = pointsshape
+                points = wt_units.converter(points, headers["axis units"][i], units)
                 for i in range(points.ndim):
                     if points.shape[i] == 1:
                         points = np.repeat(points, values.shape[i], axis=i)
@@ -168,6 +170,8 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True) -> Data:
         expression.replace("=D", "=")
         a["expression"] = expression
     data.transform(*[a["expression"] for a in axes])
+    for a, u in zip(data.axes, headers["axis units"]):
+        a.convert(u)
     # return
     if verbose:
         print("data created at {0}".format(data.fullpath))
