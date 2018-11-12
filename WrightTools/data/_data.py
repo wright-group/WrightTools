@@ -432,11 +432,58 @@ class Data(Group):
             print("chopped data into %d piece(s)" % len(out), "in", new_axes)
         return out
 
+    def gradient(self, axis):
+        """
+        Compute the gradient along one axis.
+
+        New channels have names ``<channel name>_<axis name>_gradient``.
+
+        Parameters
+        ----------
+        axis : int or str
+            The axis to differentiate along.
+            If given as an integer, the axis in the underlying array is used,
+            and unitary spacing is assumed.
+            If given as a string, the axis must exist, and be a 1D array-aligned axis.
+            (i.e. have a shape with a single value which is not ``1``)
+            The axis to collapse along is inferred from the shape of the axis.
+        """
+        # get axis index --------------------------------------------------------------------------
+        if isinstance(axis, int):
+            axis_index = axis
+        elif isinstance(axis, str):
+            index = self.axis_names.index(axis)
+            axes = [i for i in range(self.ndim) if self.axes[index].shape[i] > 1]
+            if len(axes) > 1:
+                raise wt_exceptions.MultidimensionalAxisError(axis, "collapse")
+            elif len(axes) == 0:
+                raise wt_exceptions.ValueError(
+                    "Axis {} is a single point, cannot collapse".format(axis)
+                )
+            axis_index = axes[0]
+        else:
+            raise wt_exceptions.TypeError("axis: expected {int, str}, got %s" % type(axis))
+
+        for channel in self.channel_names:
+            if self[channel].shape[axis_index] == 1:
+                continue  # Cannot take derivative along this axis, don't clutter data object
+            rtype = np.result_type(self[channel].dtype, float)
+            new = self.create_channel(
+                "{}_{}_gradient".format(channel, axis),
+                values=np.empty(self[channel].shape, dtype=rtype),
+            )
+
+            channel = self[channel]
+            if axis == axis_index:
+                new[:] = np.gradient(channel[:], axis=axis_index)
+            else:
+                new[:] = np.gradient(channel[:], self[axis].points, axis=axis_index)
+
     def collapse(self, axis, method="integrate"):
         """
         Collapse the dataset along one axis, adding lower rank channels.
 
-        New channels have names <channel name>_<axis name>_<method>.
+        New channels have names ``<channel name>_<axis name>_<method>``.
 
         Parameters
         ----------
