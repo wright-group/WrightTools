@@ -163,6 +163,8 @@ def get_symbol(units) -> str:
         return r"\mathcal{F}"
     elif kind(units) == "pulse_width":
         return r"\sigma"
+    elif kind(units) == "temperature":
+        return r"Temp"
     else:
         return kind(units)
 
