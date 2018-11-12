@@ -57,6 +57,14 @@ position = {
 # pulse width units (native: FWHM)
 pulse_width = {"FWHM": ["x", "x", r"FWHM"]}
 
+# temperature units (native: K)
+temperature = {
+    "K": ["x", "x", r"K"],
+    "deg_C": ["x+273.15", "x-273.15", r"^\circ C"],
+    "deg_F": ["(x+459.67)*5/9", "x*9/5-456.67", r"^\circ F"],
+    "deg_R": ["x*5/9", "x*9/5", r"^\circ R"],
+}
+
 # time units (native: s)
 time = {
     "fs_t": ["x/1e15", "x*1e15", r"fs"],
@@ -79,6 +87,7 @@ dicts["position"] = position
 dicts["pulse_width"] = pulse_width
 dicts["fluence"] = fluence
 dicts["od"] = od
+dicts["temperature"] = temperature
 
 
 # --- functions -----------------------------------------------------------------------------------

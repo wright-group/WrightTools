@@ -62,7 +62,7 @@ def from_Cary(filepath, name=None, parent=None, verbose=True):
         name = "cary"
     # import array
     lines = []
-    with open(filepath, "r") as f:
+    with open(filepath, "r", encoding="iso-8859-1") as f:
         header = f.readline()
         columns = f.readline()
         while True:
@@ -85,11 +85,13 @@ def from_Cary(filepath, name=None, parent=None, verbose=True):
     arr = np.array(lines).T
     # chew through all scans
     datas = Collection(name=name, parent=parent, edit_local=parent is not None)
+    units_dict = {"°c": "deg_C", "°f": "deg_F"}
     for i in range(0, len(header) - 1, 2):
         r = re.compile(r"[ \t\(\)]+")
         spl = r.split(columns[i])
         ax = spl[0].lower() if len(spl) > 0 else None
         units = spl[1].lower() if len(spl) > 1 else None
+        units = units_dict.get(units, units)
         dat = datas.create_data(header[i], kind="Cary", source=filepath)
         dat.create_variable(ax, arr[i][~np.isnan(arr[i])], units=units)
         dat.create_channel(
