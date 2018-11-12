@@ -432,7 +432,7 @@ class Data(Group):
             print("chopped data into %d piece(s)" % len(out), "in", new_axes)
         return out
 
-    def gradient(self, axis):
+    def gradient(self, axis, *, channel=0):
         """
         Compute the gradient along one axis.
 
@@ -447,6 +447,9 @@ class Data(Group):
             If given as a string, the axis must exist, and be a 1D array-aligned axis.
             (i.e. have a shape with a single value which is not ``1``)
             The axis to collapse along is inferred from the shape of the axis.
+        channel : int or str
+            The channel to differentiate.
+            Default is the first channel.
         """
         # get axis index --------------------------------------------------------------------------
         if isinstance(axis, int):
@@ -458,26 +461,32 @@ class Data(Group):
                 raise wt_exceptions.MultidimensionalAxisError(axis, "collapse")
             elif len(axes) == 0:
                 raise wt_exceptions.ValueError(
-                    "Axis {} is a single point, cannot collapse".format(axis)
+                    "Axis '{}' is a single point, cannot compute gradient".format(axis)
                 )
             axis_index = axes[0]
         else:
             raise wt_exceptions.TypeError("axis: expected {int, str}, got %s" % type(axis))
 
-        for channel in self.channel_names:
-            if self[channel].shape[axis_index] == 1:
-                continue  # Cannot take derivative along this axis, don't clutter data object
-            rtype = np.result_type(self[channel].dtype, float)
-            new = self.create_channel(
-                "{}_{}_gradient".format(channel, axis),
-                values=np.empty(self[channel].shape, dtype=rtype),
-            )
+        channel_index = wt_kit.get_index(self.channel_names, channel)
+        channel = self.channel_names[channel_index]
 
-            channel = self[channel]
-            if axis == axis_index:
-                new[:] = np.gradient(channel[:], axis=axis_index)
-            else:
-                new[:] = np.gradient(channel[:], self[axis].points, axis=axis_index)
+        if self[channel].shape[axis_index] == 1:
+            raise wt_exceptions.ValueError(
+                "Channel '{}' has a single point along Axis '{}', cannot compute gradient".format(
+                    channel, axis
+                )
+            )
+        rtype = np.result_type(self[channel].dtype, float)
+        new = self.create_channel(
+            "{}_{}_gradient".format(channel, axis),
+            values=np.empty(self[channel].shape, dtype=rtype),
+        )
+
+        channel = self[channel]
+        if axis == axis_index:
+            new[:] = np.gradient(channel[:], axis=axis_index)
+        else:
+            new[:] = np.gradient(channel[:], self[axis].points, axis=axis_index)
 
     def collapse(self, axis, method="integrate"):
         """
