@@ -37,6 +37,11 @@ meV        millielectronvolts    energy                :math:`E`
 Hz         hertz                 energy                :math:`f`
 THz        terahertz             energy                :math:`f`
 GHz        gigahertz             energy                :math:`f`
+K          kelvin                temperature           :math:`T`
+deg_C      celsius               temperature           :math:`T`
+deg_F      fahrenheit            temperature           :math:`T`
+deg_R      rankine               temperature           :math:`T`
+fluence    uJ per sq. cm         intensity             :math:`\mathcal{F}`
 mOD        mOD                   optical density       None
 OD         OD                    optical density       None
 nm_p       nanometers            position              None

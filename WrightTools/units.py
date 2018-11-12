@@ -164,7 +164,7 @@ def get_symbol(units) -> str:
     elif kind(units) == "pulse_width":
         return r"\sigma"
     elif kind(units) == "temperature":
-        return r"Temp"
+        return r"T"
     else:
         return kind(units)
 
