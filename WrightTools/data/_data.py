@@ -420,6 +420,8 @@ class Data(Group):
             new_axes = [a.expression for a in kept_axes if a.expression not in at.keys()]
             new_axis_units = [a.units for a in kept_axes if a.expression not in at.keys()]
             data.transform(*new_axes)
+            for const in self.constant_expressions:
+                data.create_constant(const, verbose=False)
             for ax in self.axis_expressions:
                 if ax not in new_axes:
                     data.create_constant(ax, verbose=False)
