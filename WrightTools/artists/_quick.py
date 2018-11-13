@@ -10,7 +10,7 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 
-from ._helpers import create_figure, plot_colorbar, savefig
+from ._helpers import _title, create_figure, plot_colorbar, savefig
 from ._colors import colormaps
 from .. import kit as wt_kit
 
@@ -128,7 +128,7 @@ def quick1D(
         for constant in d.constants:
             ls.append(constant.label)
         title = ", ".join(ls)
-        ax.set_title(title)
+        _title(fig, data.natural_name, subtitle=title)
         # variable marker lines
         for constant in d.constants:
             if constant.units is not None:
@@ -318,7 +318,7 @@ def quick2D(
         for constant in d.constants:
             ls.append(constant.label)
         title = ", ".join(ls)
-        ax.set_title(title)
+        _title(fig, data.natural_name, subtitle=title)
         # variable marker lines
         for constant in d.constants:
             if constant.units is not None:
