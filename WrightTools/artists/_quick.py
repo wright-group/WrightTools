@@ -128,7 +128,7 @@ def quick1D(
             plt.ylim(ymin, ymax)
         # label axes
         ax.set_xlabel(axis.label, fontsize=18)
-        ax.set_ylabel(channel.name, fontsize=18)
+        ax.set_ylabel(channel.natural_name, fontsize=18)
         plt.xticks(rotation=45)
         plt.axvline(0, lw=2, c="k")
         plt.xlim(xi.min(), xi.max())
