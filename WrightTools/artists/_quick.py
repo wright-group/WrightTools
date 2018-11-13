@@ -94,6 +94,16 @@ def quick1D(
                 folder_name = "quick1D " + wt_kit.TimeStamp().path
                 os.mkdir(folder_name)
                 save_directory = folder_name
+    # determine ymin and ymax for global axis scale
+    data_channel = data.channels[channel_index]
+    ymin, ymax = data_channel.min(), data_channel.max()
+    dynamic_range = ymax - ymin
+    ymin -= dynamic_range * 0.05
+    ymax += dynamic_range * 0.05
+    if np.sign(ymin) != np.sign(data_channel.min()):
+        ymin = 0
+    if np.sign(ymax) != np.sign(data_channel.max()):
+        ymax = 0
     # chew through image generation
     out = []
     for i, d in enumerate(chopped.values()):
@@ -115,8 +125,7 @@ def quick1D(
         if local:
             pass
         else:
-            data_channel = data.channels[channel_index]
-            plt.ylim(data_channel.min(), data_channel.max())
+            plt.ylim(ymin, ymax)
         # label axes
         ax.set_xlabel(axis.label, fontsize=18)
         ax.set_ylabel(channel.name, fontsize=18)
