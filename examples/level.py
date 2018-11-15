@@ -16,7 +16,7 @@ fig, gs = wt.artists.create_figure(width="double", cols=[1, 1, "cbar"])
 p = datasets.wt5.v1p0p1_MoS2_TrEE_movie
 data = wt.open(p)
 data.convert("eV")
-data.ai0.symmetric_root(0.5)
+data.ai0.symmetric_root(2)
 
 # as taken
 ax = plt.subplot(gs[0, 0])

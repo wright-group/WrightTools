@@ -18,7 +18,7 @@ p = datasets.wt5.v1p0p1_MoS2_TrEE_movie
 data = wt.open(p)
 data.level(0, 2, -3)
 data.convert("eV")
-data.ai0.symmetric_root(0.5)
+data.ai0.symmetric_root(2)
 data = data.chop("w1=wm", "w2", at={"d2": [-600, "fs"]})[0]
 data.ai0.normalize()
 
