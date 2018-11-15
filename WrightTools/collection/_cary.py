@@ -83,6 +83,7 @@ def from_Cary(filepath, name=None, parent=None, verbose=True):
     header = header.split(",")
     columns = columns.split(",")
     arr = np.array(lines).T
+    duplicate = len(header) // 2 == len(set(header) - {""})
     # chew through all scans
     datas = Collection(name=name, parent=parent, edit_local=parent is not None)
     units_dict = {"°c": "deg_C", "°f": "deg_F"}
@@ -92,7 +93,11 @@ def from_Cary(filepath, name=None, parent=None, verbose=True):
         ax = spl[0].lower() if len(spl) > 0 else None
         units = spl[1].lower() if len(spl) > 1 else None
         units = units_dict.get(units, units)
-        dat = datas.create_data(header[i], kind="Cary", source=filepath)
+        if duplicate:
+            name = "{}_{:03d}".format(header[i], i // 2)
+        else:
+            name = header[i]
+        dat = datas.create_data(name, kind="Cary", source=filepath)
         dat.create_variable(ax, arr[i][~np.isnan(arr[i])], units=units)
         dat.create_channel(
             columns[i + 1].lower(), arr[i + 1][~np.isnan(arr[i + 1])], label=columns[i + 1].lower()
