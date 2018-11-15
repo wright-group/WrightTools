@@ -490,6 +490,85 @@ class Data(Group):
         else:
             new[:] = np.gradient(channel[:], self[axis].points, axis=axis_index)
 
+    def moment(self, axis, channel=0, moment=1):
+        """
+        Collapse the dataset along one axis, adding lower rank channels.
+
+        New channels have names ``<channel name>_<axis name>_<method>``.
+
+        Parameters
+        ----------
+        axis : int or str
+            The axis to collapse along.
+            If given as an integer, the axis in the underlying array is used.
+            If given as a string, the axis must exist, and be a 1D array-aligned axis.
+            (i.e. have a shape with a single value which is not ``1``)
+            The axis to collapse along is inferred from the shape of the axis.
+        method : {'integrate', 'average', 'sum', 'max', 'min'} (optional)
+            The method of collapsing the given axis. Method may also be list
+            of methods corresponding to the channels of the object. Default
+            is integrate. All methods but integrate disregard NANs.
+            Can also be a list, allowing for different treatment for varied channels.
+            In this case, None indicates that no change to that channel should occur.
+
+        See Also
+        --------
+        chop
+            Divide the dataset into its lower-dimensionality components.
+        split
+            Split the dataset while maintaining its dimensionality.
+        """
+        # get axis index --------------------------------------------------------------------------
+        index = wt_kit.get_index(self.axis_names, axis)
+        axes = [i for i in range(self.ndim) if self.axes[index].shape[i] > 1]
+        if len(axes) > 1:
+            raise wt_exceptions.MultidimensionalAxisError(axis, "collapse")
+        elif len(axes) == 0:
+            raise wt_exceptions.ValueError(
+                "Axis {} is a single point, cannot collapse".format(axis)
+            )
+        axis_index = axes[0]
+
+        warnings.warn("moment", category=wt_exceptions.EntireDatasetInMemoryWarning)
+
+        channel_index = wt_kit.get_index(self.channel_names, channel)
+        channel = self.channel_names[channel_index]
+
+        if self[channel].shape[axis_index] == 1:
+            raise wt_exceptions.ValueError(
+                "Channel '{}' has a single point along Axis '{}', cannot compute moment".format(
+                    channel, axis
+                )
+            )
+
+        new_shape = list(self[channel].shape)
+        new_shape[axis_index] = 1
+
+        channel = self[channel]
+        axis_inp = axis
+        axis = self.axes[index]
+        x = axis[:]
+        y = channel[:]
+
+        about = 0
+        if moment > 0:
+            norm = np.trapz(y, x, axis=axis_index)
+            norm.shape = new_shape
+        if moment > 1:
+            about = np.average(x, weights=y, axis=axis_index)
+            about.shape = new_shape
+        if moment > 2:
+            sigma = (np.trapz((x - about) ** 2 * y, x, axis=axis_index) / norm) ** 0.5
+            sigma.shape = new_shape
+            norm *= sigma ** moment
+
+        values = np.trapz((x - about) ** moment * y, x, axis=axis_index)
+        values.shape = new_shape
+        values /= norm
+        self.create_channel(
+            "{}_{}_{}_{}".format(channel.natural_name, axis_inp, "moment", moment), values=values
+        )
+
     def collapse(self, axis, method="integrate"):
         """
         Collapse the dataset along one axis, adding lower rank channels.
