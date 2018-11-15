@@ -27,7 +27,7 @@ p = datasets.PyCMDS.d1_d2_000
 data = wt.data.from_PyCMDS(p)
 data.channels[0].symmetric_root(0.5)
 data.channels[0].normalize()
-data.channels[0].clip(min=0, replace="number")
+data.channels[0].clip(min=0, replace="value")
 ax.pcolor(data)
 ax.contour(data, levels=contour_levels)
 wt.diagrams.delay.label_sectors(ax=ax)  # using default labels
@@ -40,7 +40,7 @@ p = datasets.PyCMDS.d1_d2_001
 data = wt.data.from_PyCMDS(p)
 data.channels[0].symmetric_root(0.5)
 data.channels[0].normalize()
-data.channels[0].clip(min=0, replace="number")
+data.channels[0].clip(min=0, replace="value")
 ax.pcolor(data)
 ax.contour(data, levels=contour_levels)
 labels = ["II", "I", "III", "V", "VI", "IV"]
