@@ -15,7 +15,7 @@ def test_plot():
     os.unlink(p)
     data.level(0, 2, -3)
     data.convert("eV")
-    data.ai0.symmetric_root(0.5)
+    data.ai0.symmetric_root(2)
     chop = data.chop("w1=wm", at={"d2": [-600, "fs"], "w2": [2.0, "eV"]})[0]
 
     fig, gs = wt.artists.create_figure()
@@ -34,7 +34,7 @@ def test_plot_lower_rank():
     data.transform("w1", "w2", "d2")
     data.level(0, 2, -3)
     data.convert("eV")
-    data.ai0.symmetric_root(0.5)
+    data.ai0.symmetric_root(2)
     data.collapse("d2", method="sum")
     data.collapse("w2", method="sum")
 

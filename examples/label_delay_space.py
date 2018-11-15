@@ -25,7 +25,7 @@ def set_lim(ax):
 ax = plt.subplot(gs[0, 0])
 p = datasets.PyCMDS.d1_d2_000
 data = wt.data.from_PyCMDS(p)
-data.channels[0].symmetric_root(0.5)
+data.channels[0].symmetric_root(2)
 data.channels[0].normalize()
 ax.pcolor(data)
 ax.contour(data, levels=contour_levels)
@@ -37,7 +37,7 @@ ax.set_title(r"$\mathsf{\vec{k}_1 - \vec{k}_2 + \vec{k}_{2^\prime}}$", fontsize=
 ax = plt.subplot(gs[0, 1])
 p = datasets.PyCMDS.d1_d2_001
 data = wt.data.from_PyCMDS(p)
-data.channels[0].symmetric_root(0.5)
+data.channels[0].symmetric_root(2)
 data.channels[0].normalize()
 ax.pcolor(data)
 ax.contour(data, levels=contour_levels)
