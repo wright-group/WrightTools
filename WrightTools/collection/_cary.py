@@ -62,7 +62,7 @@ def from_Cary(filepath, name=None, parent=None, verbose=True):
         name = "cary"
     # import array
     lines = []
-    with open(filepath, "r", encoding="iso-8859-1") as f:
+    with open(str(filepath), "r", encoding="iso-8859-1") as f:
         header = f.readline()
         columns = f.readline()
         while True:
