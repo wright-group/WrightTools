@@ -4,7 +4,7 @@
 # --- import --------------------------------------------------------------------------------------
 
 
-import os
+import pathlib
 import re
 
 import numpy as np
@@ -55,8 +55,8 @@ def from_Cary(filepath, name=None, parent=None, verbose=True):
         New data object.
     """
     # check filepath
-    filesuffix = os.path.basename(filepath).split(".")[-1]
-    if filesuffix != "csv":
+    filesuffix = pathlib.Path(filepath).suffix
+    if filesuffix != ".csv":
         wt_exceptions.WrongFileTypeWarning.warn(filepath, "csv")
     if name is None:
         name = "cary"
