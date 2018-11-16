@@ -13,8 +13,6 @@ from WrightTools import datasets
 
 fig, gs = wt.artists.create_figure(width="double", cols=[1, 1, "cbar"])
 
-contour_levels = [0.001, 0.01, 0.1, 0.5, 0.75]
-
 
 def set_lim(ax):
     ax.set_xlim(-175, 175)
@@ -30,7 +28,6 @@ data.channels[0].symmetric_root(2)
 data.channels[0].normalize()
 data.channels[0].clip(min=0, replace="value")
 ax.pcolor(data)
-ax.contour(data, levels=contour_levels)
 wt.diagrams.delay.label_sectors(ax=ax)  # using default labels
 set_lim(ax)
 ax.set_title(r"$\mathsf{\vec{k}_1 - \vec{k}_2 + \vec{k}_{2^\prime}}$", fontsize=20)
@@ -44,7 +41,6 @@ data.channels[0].symmetric_root(2)
 data.channels[0].normalize()
 data.channels[0].clip(min=0, replace="value")
 ax.pcolor(data)
-ax.contour(data, levels=contour_levels)
 labels = ["II", "I", "III", "V", "VI", "IV"]
 wt.diagrams.delay.label_sectors(ax=ax, labels=labels)
 set_lim(ax)
