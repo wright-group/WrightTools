@@ -283,7 +283,11 @@ def create_figure(
         aspects larger than 1 will be taller than wide and vice-versa for
         aspects smaller than 1. You may only define the aspect for one subplot
         in each row. If no aspect is defined for a particular row, the leftmost
-        subplot will have an aspect of ``default_aspect``. Default is [].
+        subplot will have an aspect of ``default_aspect``. Default is given by
+        default_aspect kwarg.
+    default_aspect : number (optional)
+        Default aspect of left-most column, if no aspect is defined for a
+        given row.
 
     Returns
     -------
