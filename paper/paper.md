@@ -18,7 +18,7 @@ affiliations:
  - name: University of Wisconsin--Madison
    index: 1
 date: 06 June 2018
-bibliography: database.bib
+bibliography: paper.bib
 ---
 
 # Summary
