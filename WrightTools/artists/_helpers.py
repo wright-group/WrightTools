@@ -954,10 +954,9 @@ def set_fig_labels(
         fig = plt.gcf()
     # TODO: consider looping through fig to grab the gridspec
     # interpret row
-    numRows = fig.axes[0].numCols
+    numRows = fig.axes[0].numRows
     if isinstance(row, int):
-        if row < 0:
-            row = numRows + row
+        row %= numRows
         row_labeled = [row]
         row_removed = [i for i in range(numRows) if i not in row_labeled]
     else:
@@ -966,8 +965,7 @@ def set_fig_labels(
      # interpret col
     numCols = fig.axes[0].numCols
     if isinstance(col, int):
-        if col < 0:
-            col = numCols + col
+        col %= numCols
         col_labeled = [col]
         col_removed = [i for i in range(numCols) if i not in col_labeled]
     else:
