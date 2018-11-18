@@ -913,6 +913,8 @@ def set_fig_labels(
     xticks=None,
     yticks=None,
     title=None,
+    row=-1,
+    col=0,
     label_fontsize=18,
     title_fontsize=20,
 ):
@@ -934,10 +936,16 @@ def set_fig_labels(
         yticks. If False, ticks are hidden. Default is None.
     title : None or string (optional)
         Title of figure. Default is None.
-    label_fontsize : number
+    row : integer (optional)
+        Row to label. Default is -1.
+    col : integer (optional)
+        col to label. Default is -1.
+    label_fontsize : number (optional)
         Fontsize of label. Default is 18.
-    title_fontsize : number
+    title_fontsize : number (optional)
         Fontsize of title. Default is 20.
+    todo: doc
+
 
     See Also
     --------
@@ -948,9 +956,13 @@ def set_fig_labels(
         fig = plt.gcf()
     # axes
     for ax in fig.axes:
+        if col < 0:
+            col = ax.numCols + col
+        if row < 0:
+            row = ax.numRows + row
         if ax.is_sideplot:
             continue
-        elif ax.is_first_col() and ax.is_last_row():
+        elif ax.colNum == col and ax.rowNum == row:
             # lower left corner
             set_ax_labels(
                 ax=ax,
@@ -960,12 +972,12 @@ def set_fig_labels(
                 yticks=yticks,
                 label_fontsize=label_fontsize,
             )
-        elif ax.is_first_col():
+        elif ax.colNum == col:
             # lefthand column
             set_ax_labels(
                 ax=ax, ylabel=ylabel, xticks=False, yticks=yticks, label_fontsize=label_fontsize
             )
-        elif ax.is_last_row():
+        elif ax.rowNum == row:
             # bottom row
             set_ax_labels(
                 ax=ax, xlabel=xlabel, xticks=xticks, yticks=False, label_fontsize=label_fontsize
