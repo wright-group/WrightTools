@@ -952,36 +952,39 @@ def set_fig_labels(
     # get fig
     if fig is None:
         fig = plt.gcf()
+    # TODO: consider looping through fig to grab the gridspec
+    # interpret row
+    numRows = fig.axes[0].numCols
+    if isinstance(row, int):
+        if row < 0:
+            row = numRows + row
+        row_labeled = [row]
+        row_removed = [i for i in range(numRows) if i not in row_labeled]
+    else:
+        row_labeled = list(range(*row.indices(numRows)))
+        row_removed = [i for i in range(row.start, row.stop) if i not in row_labeled]
+     # interpret col
+    numCols = fig.axes[0].numCols
+    if isinstance(col, int):
+        if col < 0:
+            col = numCols + col
+        col_labeled = [col]
+        col_removed = [i for i in range(numCols) if i not in col_labeled]
+    else:
+        col_labeled = list(range(*col.indices(numCols)))
+        col_removed = [i for i in range(col.start, col.stop) if i not in col_labeled]
     # axes
     for ax in fig.axes:
-        if col < 0:
-            col = ax.numCols + col
-        if row < 0:
-            row = ax.numRows + row
         if ax.is_sideplot:
             continue
-        elif ax.colNum == col and ax.rowNum == row:
-            # lower left corner
-            set_ax_labels(
-                ax=ax,
-                xlabel=xlabel,
-                ylabel=ylabel,
-                xticks=xticks,
-                yticks=yticks,
-                label_fontsize=label_fontsize,
-            )
-        elif ax.colNum == col:
-            # lefthand column
-            set_ax_labels(
-                ax=ax, ylabel=ylabel, xticks=False, yticks=yticks, label_fontsize=label_fontsize
-            )
-        elif ax.rowNum == row:
-            # bottom row
-            set_ax_labels(
-                ax=ax, xlabel=xlabel, xticks=xticks, yticks=False, label_fontsize=label_fontsize
-            )
-        else:
-            set_ax_labels(ax=ax, xticks=False, yticks=False, xlabel='', ylabel='')
+        if ax.colNum in col_labeled:
+            set_ax_labels(ax=ax, ylabel=ylabel, yticks=yticks, label_fontsize=label_fontsize)
+        elif ax.colNum in col_removed:
+            set_ax_labels(ax=ax, ylabel='', yticks=False)
+        if ax.rowNum in row_labeled:
+            set_ax_labels(ax=ax, xlabel=xlabel, xticks=xticks, label_fontsize=label_fontsize)
+        elif ax.rowNum in row_removed:
+            set_ax_labels(ax=ax, xlabel='', xticks=False)
     # title
     if title is not None:
         fig.suptitle(title, fontsize=title_fontsize)
