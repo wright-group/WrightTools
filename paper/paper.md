@@ -26,8 +26,8 @@ bibliography: paper.bib
 "Multidimensional spectroscopy" (MDS) is an umbrella term for a family of analytical techniques that interrogate the response of a material to multiple stimuli, typically multiple electric fields.
 This approach has several unique capabilities:
 
-- resolving congested states [@ZhaoWei1999b, @DonaldsonPaulMurray2008a]
-- extracting spectra that would otherwise be selection-rule disallowed [@BoyleErinSelene2013b, @BoyleErinSelene2014a],
+- resolving congested states [@ZhaoWei1999b; @DonaldsonPaulMurray2008a]
+- extracting spectra that would otherwise be selection-rule disallowed [@BoyleErinSelene2013b; @BoyleErinSelene2014a],
 - resolving fully coherent dynamics [@PakoulevAndreiV2009a],
 - measuring coupling [@WrightJohnCurtis2011a]
 - resolving ultrafast dynamics
