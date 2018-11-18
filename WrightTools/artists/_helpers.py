@@ -944,8 +944,6 @@ def set_fig_labels(
         Fontsize of label. Default is 18.
     title_fontsize : number (optional)
         Fontsize of title. Default is 20.
-    todo: doc
-
 
     See Also
     --------
