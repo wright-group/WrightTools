@@ -958,27 +958,25 @@ def set_fig_labels(
         row %= numRows
         row = slice(0, row)
     row_start, row_stop, _ = row.indices(numRows)
-     # interpret col
+    # interpret col
     numCols = fig.axes[0].numCols
     if isinstance(col, int):
         col %= numCols
         col = slice(col, -1)
-    print(col)
     col_start, col_stop, _ = col.indices(numCols)
-    print(row_start, row_stop, col_start, col_stop)
     # axes
     for ax in fig.axes:
         if ax.is_sideplot:
             continue
-        if True: #row_start < ax.rowNum < row_stop and col_start < ax.colNum < col_stop:
+        if row_start <= ax.rowNum <= row_stop and col_start <= ax.colNum <= col_stop:
             if ax.colNum == col_start:
                 set_ax_labels(ax=ax, ylabel=ylabel, yticks=yticks, label_fontsize=label_fontsize)
             else:
-                set_ax_labels(ax=ax, ylabel='', yticks=False)
+                set_ax_labels(ax=ax, ylabel="", yticks=False)
             if ax.rowNum == row_stop:
                 set_ax_labels(ax=ax, xlabel=xlabel, xticks=xticks, label_fontsize=label_fontsize)
             else:
-                set_ax_labels(ax=ax, xlabel='', xticks=False)
+                set_ax_labels(ax=ax, xlabel="", xticks=False)
     # title
     if title is not None:
         fig.suptitle(title, fontsize=title_fontsize)
