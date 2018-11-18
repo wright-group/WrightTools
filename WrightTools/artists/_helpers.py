@@ -971,7 +971,7 @@ def set_fig_labels(
                 ax=ax, xlabel=xlabel, xticks=xticks, yticks=False, label_fontsize=label_fontsize
             )
         else:
-            set_ax_labels(ax=ax, xticks=False, yticks=False)
+            set_ax_labels(ax=ax, xticks=False, yticks=False, xlabel='', ylabel='')
     # title
     if title is not None:
         fig.suptitle(title, fontsize=title_fontsize)
