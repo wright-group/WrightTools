@@ -917,6 +917,8 @@ def set_fig_labels(
     xticks=None,
     yticks=None,
     title=None,
+    row=-1,
+    col=0,
     label_fontsize=18,
     title_fontsize=20,
 ):
@@ -938,9 +940,13 @@ def set_fig_labels(
         yticks. If False, ticks are hidden. Default is None.
     title : None or string (optional)
         Title of figure. Default is None.
-    label_fontsize : number
+    row : integer or slice (optional)
+        Row to label. Default is -1. If slice, step is ignored.
+    col : integer or slice (optional)
+        col to label. Default is 0. If slice, step is ignored.
+    label_fontsize : number (optional)
         Fontsize of label. Default is 18.
-    title_fontsize : number
+    title_fontsize : number (optional)
         Fontsize of title. Default is 20.
 
     See Also
@@ -950,32 +956,31 @@ def set_fig_labels(
     # get fig
     if fig is None:
         fig = plt.gcf()
+    # interpret row
+    numRows = fig.axes[0].numRows
+    if isinstance(row, int):
+        row %= numRows
+        row = slice(0, row)
+    row_start, row_stop, _ = row.indices(numRows)
+    # interpret col
+    numCols = fig.axes[0].numCols
+    if isinstance(col, int):
+        col %= numCols
+        col = slice(col, -1)
+    col_start, col_stop, _ = col.indices(numCols)
     # axes
     for ax in fig.axes:
         if ax.is_sideplot:
             continue
-        elif ax.is_first_col() and ax.is_last_row():
-            # lower left corner
-            set_ax_labels(
-                ax=ax,
-                xlabel=xlabel,
-                ylabel=ylabel,
-                xticks=xticks,
-                yticks=yticks,
-                label_fontsize=label_fontsize,
-            )
-        elif ax.is_first_col():
-            # lefthand column
-            set_ax_labels(
-                ax=ax, ylabel=ylabel, xticks=False, yticks=yticks, label_fontsize=label_fontsize
-            )
-        elif ax.is_last_row():
-            # bottom row
-            set_ax_labels(
-                ax=ax, xlabel=xlabel, xticks=xticks, yticks=False, label_fontsize=label_fontsize
-            )
-        else:
-            set_ax_labels(ax=ax, xticks=False, yticks=False)
+        if row_start <= ax.rowNum <= row_stop and col_start <= ax.colNum <= col_stop:
+            if ax.colNum == col_start:
+                set_ax_labels(ax=ax, ylabel=ylabel, yticks=yticks, label_fontsize=label_fontsize)
+            else:
+                set_ax_labels(ax=ax, ylabel="", yticks=False)
+            if ax.rowNum == row_stop:
+                set_ax_labels(ax=ax, xlabel=xlabel, xticks=xticks, label_fontsize=label_fontsize)
+            else:
+                set_ax_labels(ax=ax, xlabel="", xticks=False)
     # title
     if title is not None:
         fig.suptitle(title, fontsize=title_fontsize)
