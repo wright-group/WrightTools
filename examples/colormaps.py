@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-Colorbars
+Colormaps
 =========
 
-Different colorbars.
+Different colormaps.
 """
 
 import matplotlib.pyplot as plt
