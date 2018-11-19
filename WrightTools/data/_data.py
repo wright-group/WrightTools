@@ -1243,10 +1243,10 @@ class Data(Group):
             try:
                 indexes = tuple(keep_channels)
             except TypeError:
-                indexes = (index,)
+                indexes = (keep_channels,)
 
-            for i, ch in enumerate(self._channels):
-                if i not in indexes and not ch.name in indexes:
+            for i, ch in enumerate(self.channels):
+                if i not in indexes and not ch.natural_name in indexes:
                     self.remove_channel(ch.natural_name, verbose=verbose)
 
     def remove_channel(self, channel, *, verbose=True):
