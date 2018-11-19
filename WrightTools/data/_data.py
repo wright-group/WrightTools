@@ -1221,8 +1221,11 @@ class Data(Group):
         self._print_branch("", depth=0, verbose=verbose)
 
     def prune(self, keep_channels=True, *, verbose=True):
-        """Remove datasets from the Data object.
+        """Remove unused variables and (optionally) channels from the Data object.
             
+        Unused variables are those that are not included in either axes or constants.
+        Unused channels are those not specified in keep_channels, or the first channel.
+
         Parameters
         ----------
         keep_channels : boolean or int or str or tuple
