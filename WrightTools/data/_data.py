@@ -1220,6 +1220,38 @@ class Data(Group):
         print("{0} ({1})".format(self.natural_name, self.filepath))
         self._print_branch("", depth=0, verbose=verbose)
 
+    def prune(self, keep_channels=True, *, verbose=True):
+        """Remove unused variables and (optionally) channels from the Data object.
+            
+        Unused variables are those that are not included in either axes or constants.
+        Unused channels are those not specified in keep_channels, or the first channel.
+
+        Parameters
+        ----------
+        keep_channels : boolean or int or str or tuple
+            If False, removes all but the first channel.
+            If int or str, removes all but that index/name channel.
+            If tuple, removes all channels except those in the tuple by index or name.
+            Default is True: do not delete channels
+        verbose : boolean
+            Toggle talkback. Default is True.
+        """
+        for v in self.variables:
+            for var in wt_kit.flatten_list([ax.variables for ax in self._axes + self._constants]):
+                if v == var:
+                    break
+            else:
+                self.remove_variable(v.natural_name, implied=False, verbose=verbose)
+        if keep_channels is not True:
+            try:
+                indexes = tuple(keep_channels)
+            except TypeError:
+                indexes = (keep_channels,)
+
+            for i, ch in enumerate(self.channels):
+                if i not in indexes and not ch.natural_name in indexes:
+                    self.remove_channel(ch.natural_name, verbose=verbose)
+
     def remove_channel(self, channel, *, verbose=True):
         """Remove channel from data.
 
