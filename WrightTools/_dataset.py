@@ -87,6 +87,8 @@ class Dataset(h5py.Dataset):
     def __new__(cls, parent, id, **kwargs):
         """New object formation handler."""
         fullpath = parent.fullpath + h5py.h5i.get_name(id).decode()
+        if fullpath.startswith("//"):
+            fullpath = fullpath[1:]
         if fullpath in cls._instances.keys():
             return cls._instances[fullpath]
         else:

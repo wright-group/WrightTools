@@ -154,11 +154,11 @@ class Group(h5py.Group, metaclass=MetaClass):
         elif edit_local and filepath:
             p = filepath
         p = str(p)
-        for i in cls._instances.keys():
+        for i in Group._instances.keys():
             if i.startswith(os.path.abspath(p) + "::"):
-                file = cls._instances[i].file
-                if hasattr(cls._instances[i], "_tmpfile"):
-                    tmpfile = cls._instances[i]._tmpfile
+                file = Group._instances[i].file
+                if hasattr(Group._instances[i], "_tmpfile"):
+                    tmpfile = Group._instances[i]._tmpfile
                 break
         if file is None:
             file = h5py.File(p, "a")
@@ -167,18 +167,20 @@ class Group(h5py.Group, metaclass=MetaClass):
             parent = ""
             name = posixpath.sep
         else:
+            if not parent.endswith("/"):
+                parent += "/"
             name = natural_name
         fullpath = p + "::" + parent + name
         # create and/or return
         try:
-            instance = cls._instances[fullpath]
+            instance = Group._instances[fullpath]
         except KeyError:
             kwargs["file"] = file
             kwargs["parent"] = parent
             kwargs["name"] = natural_name
             instance = super(Group, cls).__new__(cls)
             cls.__init__(instance, **kwargs)
-            cls._instances[fullpath] = instance
+            Group._instances[fullpath] = instance
             if tmpfile:
                 setattr(instance, "_tmpfile", tmpfile)
                 weakref.finalize(instance, instance.close)
@@ -229,12 +231,10 @@ class Group(h5py.Group, metaclass=MetaClass):
         try:
             assert self._parent is not None
         except (AssertionError, AttributeError):
-            from .collection import Collection
-
             key = posixpath.dirname(self.fullpath)
             if key.endswith("::"):
                 key += posixpath.sep
-            self._parent = Collection._instances[key]
+            self._parent = Group._instances[key]
         finally:
             return self._parent
 
@@ -249,13 +249,9 @@ class Group(h5py.Group, metaclass=MetaClass):
         from .data._data import Channel, Data, Variable
 
         path = os.path.abspath(self.filepath) + "::"
-        for kind in (Collection, Channel, Data, Variable, Group):
-            rm = []
-            for key in kind._instances.keys():
-                if key.startswith(path):
-                    rm.append(key)
-            for key in rm:
-                kind._instances.pop(key, None)
+        for key in list(Group._instances.keys()):
+            if key.startswith(path):
+                Group._instances.pop(key, None)
 
         if self.fid.valid > 0:
             # for some reason, the following file operations sometimes fail
