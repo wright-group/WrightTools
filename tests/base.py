@@ -31,6 +31,9 @@ def test_parent_child():
     assert child.filepath == parent.filepath
     assert child.parent is parent
     assert grandchild.parent is child
+    assert grandchild.fullpath in wt._group.Group._instances.keys()
+    assert child.fullpath in wt._group.Group._instances.keys()
+    assert parent.fullpath in wt._group.Group._instances.keys()
 
 
 def test_single_instance_collection():
@@ -60,3 +63,13 @@ def test_nested():
     c.file.close()
     assert c.id.valid == 0
     assert cc.id.valid == 0
+
+
+if __name__ == "__main__":
+    test_named_root_collection()
+    test_named_root_data()
+    test_parent_child()
+    test_single_instance_collection()
+    test_single_instance_data()
+    test_tempfile_cleanup()
+    test_nested()
