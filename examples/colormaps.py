@@ -21,7 +21,7 @@ data.convert("eV")
 data.ai0.symmetric_root(2)
 data = data.chop("w1=wm", "w2", at={"d2": [-600, "fs"]})[0]
 data.ai0.normalize()
-data.ai0.clip(min=0, replace='value')
+data.ai0.clip(min=0, replace="value")
 
 
 def fill_row(row, cmap):
@@ -45,4 +45,6 @@ cmap = cm.viridis
 fill_row(2, cmap)
 
 # label
-wt.artists.set_fig_labels(xlabel=data.w1__e__wm.label, ylabel=data.w2.label, col=slice(0, 1))
+wt.artists.set_fig_labels(
+    xlabel=data.w1__e__wm.label, ylabel=data.w2.label, col=slice(0, 1)
+)
