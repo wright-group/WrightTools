@@ -491,32 +491,42 @@ class Data(Group):
             new[:] = np.gradient(channel[:], self[axis].points, axis=axis_index)
 
     def moment(self, axis, channel=0, moment=1):
-        """
-        Collapse the dataset along one axis, adding lower rank channels.
+        """Take the nth moment the dataset along one axis, adding lower rank channels.
 
-        New channels have names ``<channel name>_<axis name>_<method>``.
+        New channels have names ``<channel name>_<axis name>_moment_<moment num>``.
+
+        Moment 0 is the integral of the slice.
+        Moment 1 is the weighted average or "Center of Mass", normalized by the integral
+        Moment 2 is the variance, the central moment about the center of mass,
+            normalized by the integral
+        Moments 3+ are central moments about the center of mass, normalized by the integral
+            and by the standard deviation to the power of the moment.
 
         Parameters
         ----------
         axis : int or str
-            The axis to collapse along.
-            If given as an integer, the axis in the underlying array is used.
-            If given as a string, the axis must exist, and be a 1D array-aligned axis.
+            The axis to take the moment along.
+            If given as an integer, the axis with that index is used.
+            If given as a string, the axis with that name is used.
+            The axis must exist, and be a 1D array-aligned axis.
             (i.e. have a shape with a single value which is not ``1``)
             The axis to collapse along is inferred from the shape of the axis.
-        method : {'integrate', 'average', 'sum', 'max', 'min'} (optional)
-            The method of collapsing the given axis. Method may also be list
-            of methods corresponding to the channels of the object. Default
-            is integrate. All methods but integrate disregard NANs.
-            Can also be a list, allowing for different treatment for varied channels.
-            In this case, None indicates that no change to that channel should occur.
+        channel : int or str
+            The channel to take the moment.
+            If given as an integer, the channel with that index is used.
+            If given as a string, the channel with that name is used.
+            The channel must have values along the axis
+            (i.e. its shape must not be ``1`` in the dimension for which the axis is not ``1``)
+            Default is 0, the first channel.
+        moment : int or tuple of int
+            The moments to take.
+            One channel will be created for each number given.
+            Default is 1, the center of mass.
 
         See Also
         --------
-        chop
-            Divide the dataset into its lower-dimensionality components.
-        split
-            Split the dataset while maintaining its dimensionality.
+        collapse
+            Reduce dimensionality by some mathematical operation
         """
         # get axis index --------------------------------------------------------------------------
         index = wt_kit.get_index(self.axis_names, axis)
@@ -587,8 +597,7 @@ class Data(Group):
             )
 
     def collapse(self, axis, method="integrate"):
-        """
-        Collapse the dataset along one axis, adding lower rank channels.
+        """Collapse the dataset along one axis, adding lower rank channels.
 
         New channels have names ``<channel name>_<axis name>_<method>``.
 
@@ -613,6 +622,8 @@ class Data(Group):
             Divide the dataset into its lower-dimensionality components.
         split
             Split the dataset while maintaining its dimensionality.
+        moment
+            Take the moment along a particular axis
         """
         # get axis index --------------------------------------------------------------------------
         if isinstance(axis, int):
