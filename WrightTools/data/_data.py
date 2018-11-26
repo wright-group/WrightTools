@@ -502,6 +502,10 @@ class Data(Group):
         Moments 3+ are central moments about the center of mass, normalized by the integral
             and by the standard deviation to the power of the moment.
 
+        Moments, especially higher order moments, are susceptible to noise and basline.
+        It is recommended when used with real data to use :meth:`WrightTools.data.Channel.clip`
+        in conjunction with moments to reduce effects of noise.
+
         Parameters
         ----------
         axis : int or str
@@ -527,6 +531,8 @@ class Data(Group):
         --------
         collapse
             Reduce dimensionality by some mathematical operation
+        clip
+            Set values above/below a threshold to a particular value
         """
         # get axis index --------------------------------------------------------------------------
         index = wt_kit.get_index(self.axis_names, axis)
@@ -558,37 +564,47 @@ class Data(Group):
         axis_inp = axis
         axis = self.axes[index]
         x = axis[:]
-        sort = np.argsort(x.flat)
         if np.any(np.isnan(x)):
             raise wt_exceptions.ValueError("Axis '{}' includes NaN".format(axis_inp))
         y = np.nan_to_num(channel[:])
-
-        # Sort axis, so that integrals come out with expected sign
-        sli = [slice(None) for _ in range(x.ndim)]
-        sli[axis_index] = sort
-        x = x[sli]
-        y = y[sli]
 
         try:
             moments = tuple(moment)
         except TypeError:
             moments = (moment,)
 
+        if 0 in moments:
+            # Sort axis, so that integrals come out with expected sign
+            # only matters for integral, all others normalize by integral
+            sli = [slice(None) for _ in range(x.ndim)]
+            sort = np.argsort(x.flat)
+            sli[axis_index] = sort
+            sli = tuple(sli)
+            x = x[sli]
+            y = y[sli]
+
         for moment in moments:
             about = 0
             norm = 1
             if moment > 0:
                 norm = np.trapz(y, x, axis=axis_index)
+                norm = np.array(norm)
                 norm.shape = new_shape
             if moment > 1:
-                about = np.average(x, weights=y, axis=axis_index)
+                about = np.trapz(x * y, x, axis=axis_index)
+                about = np.array(about)
                 about.shape = new_shape
+                about /= norm
             if moment > 2:
-                sigma = (np.trapz((x - about) ** 2 * y, x, axis=axis_index) / norm) ** 0.5
+                sigma = np.trapz((x - about) ** 2 * y, x, axis=axis_index)
+                sigma = np.array(sigma)
                 sigma.shape = new_shape
+                sigma /= norm
+                sigma **= 0.5
                 norm *= sigma ** moment
 
             values = np.trapz((x - about) ** moment * y, x, axis=axis_index)
+            values = np.array(values)
             values.shape = new_shape
             values /= norm
             self.create_channel(
