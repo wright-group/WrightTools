@@ -559,25 +559,32 @@ class Data(Group):
         x = x[sli]
         y = y[sli]
 
-        about = 0
-        norm = 1
-        if moment > 0:
-            norm = np.trapz(y, x, axis=axis_index)
-            norm.shape = new_shape
-        if moment > 1:
-            about = np.average(x, weights=y, axis=axis_index)
-            about.shape = new_shape
-        if moment > 2:
-            sigma = (np.trapz((x - about) ** 2 * y, x, axis=axis_index) / norm) ** 0.5
-            sigma.shape = new_shape
-            norm *= sigma ** moment
+        try:
+            moments = tuple(moment)
+        except TypeError:
+            moments = (moment,)
 
-        values = np.trapz((x - about) ** moment * y, x, axis=axis_index)
-        values.shape = new_shape
-        values /= norm
-        self.create_channel(
-            "{}_{}_{}_{}".format(channel.natural_name, axis_inp, "moment", moment), values=values
-        )
+        for moment in moments:
+            about = 0
+            norm = 1
+            if moment > 0:
+                norm = np.trapz(y, x, axis=axis_index)
+                norm.shape = new_shape
+            if moment > 1:
+                about = np.average(x, weights=y, axis=axis_index)
+                about.shape = new_shape
+            if moment > 2:
+                sigma = (np.trapz((x - about) ** 2 * y, x, axis=axis_index) / norm) ** 0.5
+                sigma.shape = new_shape
+                norm *= sigma ** moment
+
+            values = np.trapz((x - about) ** moment * y, x, axis=axis_index)
+            values.shape = new_shape
+            values /= norm
+            self.create_channel(
+                "{}_{}_{}_{}".format(channel.natural_name, axis_inp, "moment", moment),
+                values=values,
+            )
 
     def collapse(self, axis, method="integrate"):
         """
