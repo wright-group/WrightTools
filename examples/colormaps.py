@@ -21,6 +21,7 @@ data.convert("eV")
 data.ai0.symmetric_root(2)
 data = data.chop("w1=wm", "w2", at={"d2": [-600, "fs"]})[0]
 data.ai0.normalize()
+data.ai0.clip(min=0, replace="value")
 
 
 def fill_row(row, cmap):
@@ -32,7 +33,8 @@ def fill_row(row, cmap):
     ax.pcolor(data, cmap=cmap)
     # cbar
     cax = plt.subplot(gs[row, 2])
-    wt.artists.plot_colorbar(cax=cax, label="amplitude", cmap=cmap)
+    wt.artists.plot_colorbar(cax=cax, label=cmap.name, cmap=cmap)
+    wt.artists.set_ax_labels(cax, yticks=False)
 
 
 cmap = wt.artists.colormaps["default"]
@@ -43,4 +45,6 @@ cmap = cm.viridis
 fill_row(2, cmap)
 
 # label
-wt.artists.set_fig_labels(xlabel=data.w1__e__wm.label, ylabel=data.w2.label)
+wt.artists.set_fig_labels(
+    xlabel=data.w1__e__wm.label, ylabel=data.w2.label, col=slice(0, 1)
+)
