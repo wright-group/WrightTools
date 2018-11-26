@@ -548,9 +548,19 @@ class Data(Group):
         axis_inp = axis
         axis = self.axes[index]
         x = axis[:]
-        y = channel[:]
+        sort = np.argsort(x.flat)
+        if np.any(np.isnan(x)):
+            raise wt_exceptions.ValueError("Axis '{}' includes NaN".format(axis_inp))
+        y = np.nan_to_num(channel[:])
+
+        # Sort axis, so that integrals come out with expected sign
+        sli = [slice(None) for _ in range(x.ndim)]
+        sli[axis_index] = sort
+        x = x[sli]
+        y = y[sli]
 
         about = 0
+        norm = 1
         if moment > 0:
             norm = np.trapz(y, x, axis=axis_index)
             norm.shape = new_shape
