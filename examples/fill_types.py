@@ -22,7 +22,7 @@ fig, gs = wt.artists.create_figure(width="double", nrows=2, cols=[1, 1, 1, 1, "c
 p = datasets.COLORS.v0p2_d1_d2_diagonal
 data = wt.data.from_COLORS(p, invert_d1=False)
 data.level(0, 0, 3)
-data.ai0.symmetric_root(0.5)
+data.ai0.symmetric_root(2)
 data.ai0.normalize()
 
 

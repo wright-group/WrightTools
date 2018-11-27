@@ -15,7 +15,7 @@ def test_pcolor():
     os.unlink(p)
     data.level(0, 2, -3)
     data.convert("eV")
-    data.ai0.symmetric_root(0.5)
+    data.ai0.symmetric_root(2)
     chop = data.chop("w1=wm", "w2", at={"d2": [-600, "fs"]})[0]
 
     fig, gs = wt.artists.create_figure()
@@ -34,7 +34,7 @@ def test_pcolor_lower_rank():
     os.unlink(p)
     data.level(0, 2, -3)
     data.convert("eV")
-    data.ai0.symmetric_root(0.5)
+    data.ai0.symmetric_root(2)
     data.collapse("d2", method="sum")
 
     fig, gs = wt.artists.create_figure()

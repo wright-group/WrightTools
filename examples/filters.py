@@ -1,10 +1,14 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Optical Filters
-===============
+Plotting Multiple Lines
+=======================
 
-A set of optical filters transmission spectra.
+A quick demonstration of how to plot multiple lines on the same
+set of axes, using :meth:`create_figure` to have a set of axes
+which can plot data objects directly.
+
+The dataset is a set of optical filters transmission spectra.
 """
 
 import WrightTools as wt

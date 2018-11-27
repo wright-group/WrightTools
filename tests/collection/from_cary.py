@@ -3,6 +3,10 @@
 import WrightTools as wt
 from WrightTools import datasets
 
+import pathlib
+
+here = pathlib.Path(__file__).parent.resolve()
+
 
 def test_CuPCtS_H2O_vis():
     p = datasets.Cary.CuPCtS_H2O_vis
@@ -25,6 +29,15 @@ def test_filters():
         assert d.shape == (sh,)
 
 
+def test_duplicate_name():
+    p = here.parent / "data" / "test_data" / "duplicate_name.csv"
+    col = wt.collection.from_Cary(p)
+    assert len(col) == 2
+    assert col.item_names == ("sample1_000", "sample1_001")
+    col.close()
+
+
 if __name__ == "__main__":
     test_CuPCtS_H2O_vis()
     test_filters()
+    test_duplicate_name()

@@ -3,7 +3,7 @@
 Installation
 ============
 
-WrightTools requires Python 3.5 or newer.
+WrightTools requires Python 3.6 or newer.
 
 conda-forge
 -----------
