@@ -14,10 +14,13 @@ authors:
  - name: Darien Morrow
    orcid: 0000-0002-8922-8049
    affiliation: 1
+ - name: Daniel D. Kohler
+   orcid: 0000-0003-4602-2961
+   affiliation: 1
 affiliations:
  - name: University of Wisconsin--Madison
    index: 1
-date: 06 June 2018
+date: 26 November 2018
 bibliography: paper.bib
 ---
 
