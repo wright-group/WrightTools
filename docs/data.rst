@@ -181,6 +181,7 @@ method                                              description
 --------------------------------------------------  --------------------------------------------------------------------------------
 :meth:`~WrightTools.data.Data.chop`                 chop data into a list of lower dimensional data
 :meth:`~WrightTools.data.Data.collapse`             destroy one dimension of data using a mathematical strategy
+:meth:`~WrightTools.data.Data.moment`               destroy one dimension of a channel by taking the nth moment
 :meth:`~WrightTools.data.Data.split`                split data at a series of coordinates, without reducing dimensionality
 ==================================================  ================================================================================
 
