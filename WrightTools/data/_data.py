@@ -502,7 +502,7 @@ class Data(Group):
         Moments 3+ are central moments about the center of mass, normalized by the integral
             and by the standard deviation to the power of the moment.
 
-        Moments, especially higher order moments, are susceptible to noise and basline.
+        Moments, especially higher order moments, are susceptible to noise and baseline.
         It is recommended when used with real data to use :meth:`WrightTools.data.Channel.clip`
         in conjunction with moments to reduce effects of noise.
 
