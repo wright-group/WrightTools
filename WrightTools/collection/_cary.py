@@ -68,7 +68,7 @@ def from_Cary(filepath, name=None, parent=None, verbose=True):
         columns = f.readline().decode("iso-8859-1")
         while True:
             line = f.readline().decode("iso-8859-1")
-            if line == "\n" or line == "":
+            if line == "\n" or line == "" or line == "\r\n":
                 break
             else:
                 # Note, it is necessary to call this twice, as a single call will
