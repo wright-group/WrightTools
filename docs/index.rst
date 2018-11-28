@@ -41,11 +41,11 @@ Contents
    kit
    units
    datasets
-   contributing 
+   contributing
    write_from_method
    api/modules
    auto_examples/index
-   publications
+   citation
    alternatives
 .. fit
 .. diagrams
@@ -71,4 +71,3 @@ Index
 
 .. |rtd-stable| image:: https://readthedocs.org/projects/wrighttools/badge/?version=stable
    :target: http://wright.tools/en/stable/?badge=stable
-
