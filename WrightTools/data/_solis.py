@@ -50,12 +50,13 @@ def from_Solis(filepath, name=None, parent=None, verbose=True) -> Data:
     if not name:
         name = os.path.basename(filepath).split(".")[0]
     # create data
-    with open(filepath) as f:
+    ds = np.DataSource(None)
+    with ds.open(filepath) as f:
         axis0 = []
         arr = []
         attrs = {}
         while True:
-            line = f.readline().strip()[:-1]
+            line = f.readline().strip()[:-1].decode()
             if len(line) == 0:
                 break
             else:
@@ -66,7 +67,7 @@ def from_Solis(filepath, name=None, parent=None, verbose=True) -> Data:
 
         i = 0
         while i < 3:
-            line = f.readline().strip()
+            line = f.readline().strip().decode()
             if len(line) == 0:
                 i += 1
             else:

@@ -58,9 +58,10 @@ def from_spcm(filepath, name=None, *, delimiter=",", parent=None, verbose=True) 
     # create headers dictionary
     headers = collections.OrderedDict()
     header_lines = 0
-    with open(filepath) as f:
+    ds = np.DataSource(None)
+    with ds.open(filepath, "rb") as f:
         while True:
-            line = f.readline().strip()
+            line = f.readline().decode().strip()
             header_lines += 1
             if len(line) == 0:
                 break
@@ -70,12 +71,12 @@ def from_spcm(filepath, name=None, *, delimiter=",", parent=None, verbose=True) 
                     headers["resolution"] = int(value.strip(" bits ADC"))
                 else:
                     headers[key.strip()] = value.strip()
-        line = f.readline().strip()
+        line = f.readline().decode().strip()
         while "_BEGIN" in line:
             header_lines += 1
             section = line.split("_BEGIN")[0]
             while True:
-                line = f.readline().strip()
+                line = f.readline().decode().strip()
                 header_lines += 1
                 if section + "_END" in line:
                     break
@@ -98,7 +99,7 @@ def from_spcm(filepath, name=None, *, delimiter=",", parent=None, verbose=True) 
                     value = splitted[-1][1:-1].split(",")
                     key = " ".join(splitted[:-1])
                     headers[key] = value
-            line = f.readline().strip()
+            line = f.readline().decode().strip()
             if "END" in line:
                 header_lines += 1
                 break
@@ -107,7 +108,7 @@ def from_spcm(filepath, name=None, *, delimiter=",", parent=None, verbose=True) 
         created = " ".join([headers["Date"], headers["Time"]])
         created = time.strptime(created, "%Y-%m-%d %H:%M:%S")
         created = timestamp.TimeStamp(time.mktime(created)).RFC3339
-        headers['created'] = created
+        headers["created"] = created
 
     # initialize data object
     kwargs = {"name": name, "kind": "spcm", "source": filepath, **headers}
