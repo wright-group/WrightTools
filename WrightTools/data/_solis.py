@@ -51,7 +51,7 @@ def from_Solis(filepath, name=None, parent=None, verbose=True) -> Data:
         name = os.path.basename(filepath).split(".")[0]
     # create data
     ds = np.DataSource(None)
-    with ds.open(filepath) as f:
+    with ds.open(filepath, "rb") as f:
         axis0 = []
         arr = []
         attrs = {}
