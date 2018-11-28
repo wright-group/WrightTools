@@ -59,7 +59,7 @@ class Group(h5py.Group, metaclass=MetaClass):
         file.require_group(path)
         h5py.Group.__init__(self, bind=file[path].id)
         self.__n = 0
-        self.fid = self.file.fid
+        self.fid = self.file.id
         self.natural_name = name
         # attrs
         self.attrs["class"] = self.class_name
