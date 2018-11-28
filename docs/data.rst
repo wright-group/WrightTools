@@ -58,8 +58,8 @@ Structure & properties
 ----------------------
 
 So what is a data object anyway?
-To put it simply, ``Data`` is a collection of ``Axis`` and ``Channel`` objects.
-``Axis`` objects are composed of ``Variable`` objects.
+To put it simply, :class:`~WrightTools.data.Data` is a collection of :class:`WrightTools.data.Axis` and :class:`WrightTools.data.Channel` objects.
+:class:`WrightTools.data.Axis` objects are composed of :class:`WrightTools.data.Variable` objects.
 
 ========================================  ============================================
 attribute                                 tuple of...
@@ -77,17 +77,17 @@ Axis
 
 Axes are the coordinates of the dataset. They have the following key attributes:
 
-=================  ==========================================================
-attribute          description
------------------  ----------------------------------------------------------
-axis.label         LaTeX-formatted label, appropriate for plotting
-axis.min()         coordinates minimum, in current units
-axis.max()         coordinates maximum, in current units
-axis.natural_name  axis name
-axis.units         current axis units (change with ``axis.convert``)
-axis.variables     component variables
-axis.expression    expression
-=================  ==========================================================
+===========================================  ========================================================================
+attribute                                    description
+-------------------------------------------  ------------------------------------------------------------------------
+:meth:`~WrightTools.data.Axis.label`         LaTeX-formatted label, appropriate for plotting
+:meth:`~WrightTools.data.Axis.min`           coordinates minimum, in current units
+:meth:`~WrightTools.data.Axis.max`           coordinates maximum, in current units
+:attr:`~WrightTools.data.Axis.natural_name`  axis name
+:attr:`~WrightTools.data.Axis.units`         current axis units (change with :meth:`~WrightTools.data.Axis.convert`)
+:attr:`~WrightTools.data.Axis.variables`     component variables
+:attr:`~WrightTools.data.Axis.expression`    expression
+===========================================  ========================================================================
 
 Constant
 ````````
@@ -99,29 +99,29 @@ Note that there is nothing enforcing that the value is actually static: constant
 shapes and can be indexed to get the underlying numpy array.
 In addition to the above attributes, constants add:
 
-=================  ===============================================================
-attribute          description
------------------  ---------------------------------------------------------------
-constant.value     The mean (ignoring NaNs) of the evaluated expression.
-constant.std       The standard deviation of the points used to compute the value.
-=================  ===============================================================
+=========================================  ===============================================================
+attribute                                   description
+-----------------------------------------  ---------------------------------------------------------------
+:attr:`~WrightTools.data.Constant.value`   The mean (ignoring NaNs) of the evaluated expression.
+:attr:`~WrightTools.data.Constant.std`     The standard deviation of the points used to compute the value.
+=========================================  ===============================================================
 
 Channel
 ```````
 
 Channels contain the n-dimensional data itself. They have the following key attributes:
 
-===============  ==========================================================
-attribute        description
----------------  ----------------------------------------------------------
-channel.label    LaTeX-formatted label, appropriate for plotting
-channel.mag()    channel magnitude (furthest deviation from null)
-channel.max()    channel maximum
-channel.min()    channel minimum
-channel.name     channel name
-channel.null     channel null (value of zero signal)
-channel.signed   flag to indicate if channel is signed
-===============  ==========================================================
+=========================================  ==========================================================
+attribute                                   description
+-----------------------------------------  ----------------------------------------------------------
+:attr:`~WrightTools.data.Channel.label`    LaTeX-formatted label, appropriate for plotting
+:meth:`~WrightTools.data.Channel.mag`      channel magnitude (furthest deviation from null)
+:meth:`~WrightTools.data.Channel.max`      channel maximum
+:meth:`~WrightTools.data.Channel.min`      channel minimum
+:attr:`~WrightTools.data.Channel.name`     channel name
+:attr:`~WrightTools.data.Channel.null`     channel null (value of zero signal)
+:attr:`~WrightTools.data.Channel.signed`   flag to indicate if channel is signed
+=========================================  ==========================================================
 
 Data
 ````
@@ -195,16 +195,16 @@ There are many common data processing operations in spectroscopy.
 WrightTools endeavors to make these operations easy.
 A selection of important methods follows.
 
-==================================================  ================================================================================
+==================================================  ====================================================================================
 method                                              description
---------------------------------------------------  --------------------------------------------------------------------------------
-:meth:`~WrightTools.data.Data.clip`                 clip values outside of a given range
-:meth:`~WrightTools.data.gradient`                  take the derivative along an axis
+--------------------------------------------------  ------------------------------------------------------------------------------------
+:meth:`~WrightTools.data.Channel.clip`              clip values outside of a given range (method of :class:`~WrightTools.data.Channel`)
+:meth:`~WrightTools.data.Data.gradient`             take the derivative along an axis
 :meth:`~WrightTools.data.join`                      join multiple data objects into one
 :meth:`~WrightTools.data.Data.level`                level the edge of data along a certain axis
 :meth:`~WrightTools.data.Data.smooth`               smooth a channel via convolution with a n-dimensional Kaiser window
 :meth:`~WrightTools.data.Data.zoom`                 zoom a channel using spline interpolation
-==================================================  ================================================================================
+==================================================  ====================================================================================
 
 .. _Brunold: http://brunold.chem.wisc.edu/
 .. _JASCO: https://jascoinc.com/products/spectroscopy/
