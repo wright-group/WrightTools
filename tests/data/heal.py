@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 # --- test ----------------------------------------------------------------------------------------
 
 
-def test_1():
+def test_heal_gauss():
     # create original arrays
     x = np.linspace(-3, 3, 31)[:, None]
     y = np.linspace(-3, 3, 31)[None, :]
@@ -45,4 +45,4 @@ def test_1():
 
 
 if __name__ == "__main__":
-    test_1()
+    test_heal_gauss()
