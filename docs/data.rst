@@ -24,6 +24,7 @@ PyCMDS         Files from PyCMDS_.                                              
 Ocean Optics   .scope files from ocean optics spectrometers                      :meth:`~WrightTools.data.from_ocean_optics`
 Shimadzu       Files from Shimadzu_ UV-VIS spectrophotometers.                   :meth:`~WrightTools.data.from_shimadzu`
 SPCM           Files from Becker & Hickl spcm_ software                          :meth:`~WrightTools.data.from_spcm`
+Solis          Files from Andor Solis software                                   :meth:`~WrightTools.data.from_Solis`
 Tensor 27      Files from Bruker Tensor 27 FT-IR                                 :meth:`~WrightTools.data.from_Tensor27`
 =============  ================================================================  =========================================
 
@@ -60,16 +61,16 @@ So what is a data object anyway?
 To put it simply, ``Data`` is a collection of ``Axis`` and ``Channel`` objects.
 ``Axis`` objects are composed of ``Variable`` objects.
 
-===============  ============================
-attribute        tuple of...
----------------  ----------------------------
-data.axes        wt.data.Axis objects
-data.constants   wt.data.Constant objects
-data.channels    wt.data.Channel objects
-data.variables   wt.data.Variable objects
-===============  ============================
+========================================  ============================================
+attribute                                 tuple of...
+----------------------------------------  --------------------------------------------
+:attr:`~WrightTools.data.Data.axes`        :class:`~WrightTools.data.Axis` objects
+:attr:`~WrightTools.data.Data.constants`   :class:`~WrightTools.data.Constant` objects
+:attr:`~WrightTools.data.Data.channels`    :class:`~WrightTools.data.Channel` objects
+:attr:`~WrightTools.data.Data.variables`   :class:`~WrightTools.data.Variable` objects
+========================================  ============================================
 
-See also `Data.axis_expressions`, `Data.constant_expressions`, `Data.channel_names` and `Data.variable_names`.
+See also :attr:`~WrightTools.data.Data.axis_expressions`, :attr:`~WrightTools.data.Data.constant_expressions`, :attr:`~WrightTools.data.Data.channel_names` and :attr:`~WrightTools.data.Data.variable_names`.
 
 Axis
 ````
