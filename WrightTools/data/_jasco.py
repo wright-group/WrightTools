@@ -5,6 +5,7 @@
 
 
 import pathlib
+from urllib.parse import urlparse
 
 import numpy as np
 
@@ -44,7 +45,13 @@ def from_JASCO(filepath, name=None, parent=None, verbose=True) -> Data:
         New data object(s).
     """
     # parse filepath
+    scheme = urlparse(filepath).scheme + "://"
+    if scheme == "://":
+        scheme = ""
     filepath = pathlib.Path(filepath)
+    if scheme:
+        filepath = filepath.relative_to(scheme)
+
     if not ".txt" in filepath.suffixes:
         wt_exceptions.WrongFileTypeWarning.warn(filepath, ".txt")
     # parse name
@@ -58,7 +65,7 @@ def from_JASCO(filepath, name=None, parent=None, verbose=True) -> Data:
         data = parent.create_data(**kwargs)
     # array
     ds = np.DataSource(None)
-    f = ds.open(str(filepath), "rt")
+    f = ds.open(scheme + str(filepath), "rt")
     arr = np.genfromtxt(f, skip_header=18).T
     f.close()
 

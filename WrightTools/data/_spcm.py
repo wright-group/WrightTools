@@ -5,6 +5,7 @@
 
 
 import pathlib
+from urllib.parse import urlparse
 import collections
 import time
 
@@ -51,7 +52,13 @@ def from_spcm(filepath, name=None, *, delimiter=",", parent=None, verbose=True) 
     -------
     WrightTools.data.Data object
     """
+    scheme = urlparse(filepath).scheme + "://"
+    if scheme == "://":
+        scheme = ""
     filepath = pathlib.Path(filepath)
+    if scheme:
+        filepath = filepath.relative_to(scheme)
+
     # check filepath
     if not ".asc" in filepath.suffixes:
         wt_exceptions.WrongFileTypeWarning.warn(filepath, ".asc")
@@ -62,7 +69,7 @@ def from_spcm(filepath, name=None, *, delimiter=",", parent=None, verbose=True) 
     headers = collections.OrderedDict()
     header_lines = 0
     ds = np.DataSource(None)
-    f = ds.open(str(filepath), "rt")
+    f = ds.open(scheme + str(filepath), "rt")
     while True:
         line = f.readline().strip()
         header_lines += 1

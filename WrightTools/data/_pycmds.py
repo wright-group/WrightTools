@@ -5,6 +5,7 @@
 
 
 import pathlib
+from urllib.parse import urlparse
 
 import numpy as np
 
@@ -46,10 +47,16 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True) -> Data:
     data
         A Data instance.
     """
+    scheme = urlparse(filepath).scheme + "://"
+    if scheme == "://":
+        scheme = ""
     filepath = pathlib.Path(filepath)
+    if scheme:
+        filepath = filepath.relative_to(scheme)
+
     # header
     ds = np.DataSource(None)
-    file_ = ds.open(str(filepath), "rt")
+    file_ = ds.open(scheme + str(filepath), "rt")
     headers = tidy_headers.read(file_)
     file_.seek(0)
     # name

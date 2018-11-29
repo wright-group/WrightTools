@@ -5,6 +5,7 @@
 
 
 import pathlib
+from urllib.parse import urlparse
 
 import collections
 
@@ -62,17 +63,21 @@ def from_COLORS(
     """
     # do we have a list of files or just one file? ------------------------------------------------
     if isinstance(filepaths, list):
-        file_example = pathlib.Path(filepaths[0])
-        filepaths = [pathlib.Path(f) for f in filepaths]
+        schemes = [urlparse(f).scheme + "://" for f in filepaths]
+        schemes = ["" if s == "://" else s for s in schemes]
+        file_example = pathlib.Path(filepaths[0]).relative_to(schemes[0])
+        filepaths = [pathlib.Path(f).relative_to(s) for f, s in zip(filepaths, schemes)]
     else:
-        file_example = pathlib.Path(filepaths)
-        filepaths = [pathlib.Path(filepaths)]
+        schemes = [urlparse(filepaths).scheme + "://"]
+        schemes = ["" if s == "://" else s for s in schemes]
+        file_example = pathlib.Path(filepaths).relative_to(schemes[0])
+        filepaths = [file_example]
     ds = np.DataSource(None)
     # define format of dat file -------------------------------------------------------------------
     if cols:
         pass
     else:
-        f = ds.open(str(file_example), "rt")
+        f = ds.open(schemes[0] + str(file_example), "rt")
         num_cols = len(np.genfromtxt(f).T)
         f.close()
         if num_cols in [28, 35, 41]:
@@ -133,8 +138,8 @@ def from_COLORS(
         channels["ai3"] = {"idx": 13, "label": "3"}
     # import full array ---------------------------------------------------------------------------
     arr = []
-    for f in filepaths:
-        ff = ds.open(str(f), "rt")
+    for f, s in zip(filepaths, schemes):
+        ff = ds.open(s + str(f), "rt")
         arr.append(np.genfromtxt(ff).T)
         ff.close()
     arr = np.concatenate(arr, axis=1)

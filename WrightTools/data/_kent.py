@@ -5,6 +5,7 @@
 
 
 import pathlib
+from urllib.parse import urlparse
 
 import collections
 
@@ -83,12 +84,14 @@ def from_KENT(
     # do we have a list of files or just one file? ------------------------------------------------
     if not isinstance(filepaths, list):
         filepaths = [filepaths]
-    filepaths = [pathlib.Path(f) for f in filepaths]
+    schemes = [urlparse(f).scheme + "://" for f in filepaths]
+    schemes = ["" if s == "://" else s for s in schemes]
+    filepaths = [pathlib.Path(f).relative_to(s) for f, s in zip(filepaths, schemes)]
     # import full array ---------------------------------------------------------------------------
     ds = np.DataSource(None)
     arr = []
-    for f in filepaths:
-        ff = ds.open(str(f), "rt")
+    for f, s in zip(filepaths, schemes):
+        ff = ds.open(s + str(f), "rt")
         arr.append(np.genfromtxt(ff).T)
         ff.close()
     arr = np.concatenate(arr, axis=1)

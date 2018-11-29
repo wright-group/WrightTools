@@ -5,6 +5,7 @@
 
 
 import pathlib
+from urllib.parse import urlparse
 import time
 
 import numpy as np
@@ -46,7 +47,13 @@ def from_Solis(filepath, name=None, parent=None, verbose=True) -> Data:
         New data object.
     """
     # parse filepath
+    scheme = urlparse(filepath).scheme + "://"
+    if scheme == "://":
+        scheme = ""
     filepath = pathlib.Path(filepath)
+    if scheme:
+        filepath = filepath.relative_to(scheme)
+
     if not ".asc" in filepath.suffixes:
         wt_exceptions.WrongFileTypeWarning.warn(filepath, ".asc")
     # parse name
@@ -54,7 +61,7 @@ def from_Solis(filepath, name=None, parent=None, verbose=True) -> Data:
         name = filepath.name.split(".")[0]
     # create data
     ds = np.DataSource(None)
-    f = ds.open(str(filepath), "rt")
+    f = ds.open(scheme + str(filepath), "rt")
     axis0 = []
     arr = []
     attrs = {}

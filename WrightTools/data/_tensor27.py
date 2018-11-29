@@ -5,6 +5,7 @@
 
 
 import pathlib
+from urllib.parse import urlparse
 
 import numpy as np
 
@@ -55,7 +56,13 @@ def from_Tensor27(filepath, name=None, parent=None, verbose=True) -> Data:
         New data object.
     """
     # parse filepath
+    scheme = urlparse(filepath).scheme + "://"
+    if scheme == "://":
+        scheme = ""
     filepath = pathlib.Path(filepath)
+    if scheme:
+        filepath = filepath.relative_to(scheme)
+
     if not ".dpt" in filepath.suffixes:
         wt_exceptions.WrongFileTypeWarning.warn(filepath, ".dpt")
     # parse name
@@ -69,7 +76,7 @@ def from_Tensor27(filepath, name=None, parent=None, verbose=True) -> Data:
         data = parent.create_data(**kwargs)
     # array
     ds = np.DataSource(None)
-    f = ds.open(str(filepath), "rt")
+    f = ds.open(scheme + str(filepath), "rt")
     arr = np.genfromtxt(f, skip_header=0).T
     f.close()
     # chew through all scans
