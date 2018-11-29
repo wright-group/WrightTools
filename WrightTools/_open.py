@@ -4,7 +4,7 @@
 # --- import -------------------------------------------------------------------------------------
 
 
-import posixpath
+import os
 import tempfile
 import weakref
 
@@ -32,7 +32,7 @@ def open(filepath, edit_local=False):
 
     Parameters
     ----------
-    filepath : string
+    filepath : path-like
         Path to file.
     edit_local : boolean (optional)
         If True, the file itself will be opened for editing. Otherwise, a
@@ -43,6 +43,7 @@ def open(filepath, edit_local=False):
     WrightTools Collection or Data
         Root-level object in file.
     """
+    filepath = os.fspath(filepath)
     ds = np.DataSource(None)
     if edit_local is False:
         tf = tempfile.mkstemp(prefix="", suffix=".wt5")
@@ -51,14 +52,14 @@ def open(filepath, edit_local=False):
                 tff.write(f.read())
         filepath = tf[1]
     f = h5py.File(filepath)
-    class_name = f[posixpath.sep].attrs["class"]
-    name = f[posixpath.sep].attrs["name"]
+    class_name = f["/"].attrs["class"]
+    name = f["/"].attrs["name"]
     if class_name == "Data":
-        obj = wt_data.Data(filepath=filepath, name=name, edit_local=True)
+        obj = wt_data.Data(filepath=str(filepath), name=name, edit_local=True)
     elif class_name == "Collection":
-        obj = wt_collection.Collection(filepath=filepath, name=name, edit_local=True)
+        obj = wt_collection.Collection(filepath=str(filepath), name=name, edit_local=True)
     else:
-        obj = wt_group.Group(filepath=filepath, name=name, edit_local=True)
+        obj = wt_group.Group(filepath=str(filepath), name=name, edit_local=True)
 
     if edit_local is False:
         setattr(obj, "_tmpfile", tf)
