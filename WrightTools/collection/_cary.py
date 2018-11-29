@@ -42,7 +42,7 @@ def from_Cary(filepath, name=None, parent=None, verbose=True):
 
     Parameters
     ----------
-    filepath : string
+    filepath : path-like
         Path to Cary output file (.csv).
     parent : WrightTools.Collection
         A collection object in which to place a collection of Data objects.
@@ -55,8 +55,8 @@ def from_Cary(filepath, name=None, parent=None, verbose=True):
         New data object.
     """
     # check filepath
-    filesuffix = pathlib.Path(filepath).suffix
-    if filesuffix != ".csv":
+    filepath = pathlib.Path(filepath)
+    if ".csv" not in filepath.suffixes:
         wt_exceptions.WrongFileTypeWarning.warn(filepath, "csv")
     if name is None:
         name = "cary"
