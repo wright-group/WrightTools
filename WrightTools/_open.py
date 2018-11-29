@@ -34,6 +34,8 @@ def open(filepath, edit_local=False):
     ----------
     filepath : path-like
         Path to file.
+        Can be either a local or remote file (http/ftp).
+        Can be compressed with gz/bz2, decompression based on file name.
     edit_local : boolean (optional)
         If True, the file itself will be opened for editing. Otherwise, a
         copy will be created. Default is False.
