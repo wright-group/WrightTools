@@ -4,7 +4,7 @@
 # --- import --------------------------------------------------------------------------------------
 
 
-import os
+import pathlib
 
 import numpy as np
 
@@ -28,7 +28,7 @@ def from_BrunoldrRaman(filepath, name=None, parent=None, verbose=True) -> Data:
 
     Parameters
     ----------
-    filepath : string, list of strings, or array of strings
+    filepath : path-like
         Path to .txt file.
     name : string (optional)
         Name to give to the created data object. If None, filename is used.
@@ -44,19 +44,23 @@ def from_BrunoldrRaman(filepath, name=None, parent=None, verbose=True) -> Data:
         New data object(s).
     """
     # parse filepath
-    if not filepath.endswith("txt"):
-        wt_exceptions.WrongFileTypeWarning.warn(filepath, "txt")
+    filepath = pathlib.Path(filepath)
+    if not ".txt" in filepath.suffixes:
+        wt_exceptions.WrongFileTypeWarning.warn(filepath, ".txt")
     # parse name
     if not name:
-        name = os.path.basename(filepath).split(".")[0]
+        name = filepath.name.split(".")[0]
     # create data
-    kwargs = {"name": name, "kind": "BrunoldrRaman", "source": filepath}
+    kwargs = {"name": name, "kind": "BrunoldrRaman", "source": str(filepath)}
     if parent is None:
         data = Data(**kwargs)
     else:
         data = parent.create_data(**kwargs)
     # array
-    arr = np.genfromtxt(filepath, delimiter="\t").T
+    ds = np.DataSource(None)
+    f = ds.open(str(filepath), "rt")
+    arr = np.genfromtxt(f, delimiter="\t").T
+    f.close()
     # chew through all scans
     data.create_variable(name="energy", values=arr[0], units="wn")
     data.create_channel(name="signal", values=arr[1])

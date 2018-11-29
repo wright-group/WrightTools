@@ -4,6 +4,8 @@
 # --- import --------------------------------------------------------------------------------------
 
 
+import pathlib
+
 import numpy as np
 
 import tidy_headers
@@ -27,8 +29,8 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True) -> Data:
 
     Parameters
     ----------
-    filepath : str
-        The file to load. Can accept .data, .fit, or .shots files.
+    filepath : path-like
+        Path to the .data file
     name : str or None (optional)
         The name to be applied to the new data object. If None, name is read
         from file.
@@ -42,8 +44,12 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True) -> Data:
     data
         A Data instance.
     """
+    filepath = pathlib.Path(filepath)
     # header
-    headers = tidy_headers.read(filepath)
+    ds = np.DataSource(None)
+    file_ = ds.open(str(filepath), "rt")
+    headers = tidy_headers.read(file_)
+    file_.seek(0)
     # name
     if name is None:  # name not given in method arguments
         data_name = headers["data name"]
@@ -63,7 +69,8 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True) -> Data:
     else:
         data = Data(**kwargs)
     # array
-    arr = np.genfromtxt(filepath).T
+    arr = np.genfromtxt(file_).T
+    file_.close()
     # get axes and scanned variables
     axes = []
     for name, identity, units in zip(
