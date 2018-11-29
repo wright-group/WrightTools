@@ -157,14 +157,15 @@ Even if you converted them to the same unit system, you would still have to deal
 WrightTools data objects know all about units, and they are able to use interpolation to map between different absolute coordinates.
 Here we list some of the capabilities that are enabled by this behavior.
 
-==================================================  ================================================================================
-method                                              description
---------------------------------------------------  --------------------------------------------------------------------------------
-:meth:`~WrightTools.data.Data.heal`                 use interpolation to guess the value of NaNs within a channel
-:meth:`~WrightTools.data.join`                      join together multiple data objects, accounting for dimensionality and overlap
-:meth:`~WrightTools.data.Data.map_variable`         re-map data coordinates
-:meth:`~WrightTools.data.Data.offset`               offset one axis based on another
-==================================================  ================================================================================
+==================================================  ================================================================================  =======================================================
+method                                              description                                                                        gallery
+--------------------------------------------------  --------------------------------------------------------------------------------  -------------------------------------------------------
+:meth:`~WrightTools.data.Data.heal`                 use interpolation to guess the value of NaNs within a channel                     :ref:`sphx_glr_auto_examples_heal.py`
+:meth:`~WrightTools.data.join`                      join together multiple data objects, accounting for dimensionality and overlap    :ref:`sphx_glr_auto_examples_join.py`
+:meth:`~WrightTools.data.Data.map_variable`         re-map data coordinates                                                           :ref:`sphx_glr_auto_examples_map-variable.py`
+==================================================  ================================================================================  =======================================================
+
+.. :meth:`~WrightTools.data.Data.offset`              offset one axis based on another                                                  :ref:`sphx_glr_auto_examples_offset.py`
 
 Dimensionality without the cursing
 ----------------------------------
@@ -177,14 +178,15 @@ Is this slice unusual, or do they all look like that?
 WrightTools tries to make multi-dimensional data easy to work with.
 The following methods deal directly with dimensionality manipulation.
 
-==================================================  ================================================================================
-method                                              description
---------------------------------------------------  --------------------------------------------------------------------------------
+==================================================  ================================================================================  =========================================================
+method                                              description                                                                        gallery
+--------------------------------------------------  --------------------------------------------------------------------------------  ---------------------------------------------------------
 :meth:`~WrightTools.data.Data.chop`                 chop data into a list of lower dimensional data
 :meth:`~WrightTools.data.Data.collapse`             destroy one dimension of data using a mathematical strategy
-:meth:`~WrightTools.data.Data.moment`               destroy one dimension of a channel by taking the nth moment
-:meth:`~WrightTools.data.Data.split`                split data at a series of coordinates, without reducing dimensionality
-==================================================  ================================================================================
+:meth:`~WrightTools.data.Data.moment`               destroy one dimension of a channel by taking the nth moment                       .. :ref:`sphx_glr_auto_examples_moment.py`
+:meth:`~WrightTools.data.Data.split`                split data at a series of coordinates, without reducing dimensionality            :ref:`sphx_glr_auto_examples_split.py`
+:meth:`~WrightTools.data.Data.transform`            transform the data on to a new combination of variables as axes                   :ref:`sphx_glr_auto_examples_DOVE_transform.py` :ref:`sphx_glr_auto_examples_fringes_transform.py`
+==================================================  ================================================================================  =========================================================
 
 WrightTools seamlessly handles dimensionality throughout.
 :ref:`Artists` is one such place where dimensionality is addressed explicitly.
@@ -196,16 +198,17 @@ There are many common data processing operations in spectroscopy.
 WrightTools endeavors to make these operations easy.
 A selection of important methods follows.
 
-==================================================  ====================================================================================
-method                                              description
---------------------------------------------------  ------------------------------------------------------------------------------------
+==================================================  ====================================================================================  =====================================================
+method                                              description                                                                            gallery
+--------------------------------------------------  ------------------------------------------------------------------------------------  -----------------------------------------------------
 :meth:`~WrightTools.data.Channel.clip`              clip values outside of a given range (method of :class:`~WrightTools.data.Channel`)
-:meth:`~WrightTools.data.Data.gradient`             take the derivative along an axis
-:meth:`~WrightTools.data.join`                      join multiple data objects into one
-:meth:`~WrightTools.data.Data.level`                level the edge of data along a certain axis
-:meth:`~WrightTools.data.Data.smooth`               smooth a channel via convolution with a n-dimensional Kaiser window
-:meth:`~WrightTools.data.Data.zoom`                 zoom a channel using spline interpolation
-==================================================  ====================================================================================
+:meth:`~WrightTools.data.Data.gradient`             take the derivative along an axis                                                     :ref:`sphx_glr_auto_examples_gradient.py`
+:meth:`~WrightTools.data.join`                      join multiple data objects into one                                                   :ref:`sphx_glr_auto_examples_join.py`
+:meth:`~WrightTools.data.Data.level`                level the edge of data along a certain axis                                           :ref:`sphx_glr_auto_examples_level.py`
+:meth:`~WrightTools.data.Data.smooth`               smooth a channel via convolution with a n-dimensional Kaiser window                   .. :ref:`sphx_glr_auto_examples_smooth.py`
+==================================================  ====================================================================================  =====================================================
+
+.. :meth:`~WrightTools.data.Data.zoom`                 zoom a channel using spline interpolation                                             :ref:`sphx_glr_auto_examples_zoom.py`
 
 .. _Brunold: http://brunold.chem.wisc.edu/
 .. _JASCO: https://jascoinc.com/products/spectroscopy/
