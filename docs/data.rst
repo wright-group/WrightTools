@@ -27,6 +27,12 @@ SPCM           Files from Becker & Hickl spcm_ software                         
 Tensor 27      Files from Bruker Tensor 27 FT-IR                                 :meth:`~WrightTools.data.from_Tensor27`
 =============  ================================================================  =========================================
 
+These functions accept both local and remote (http/ftp) files as well as transparent compression (gz/bz2).
+Compression detection is based on the file name, and file names for remote links are as appears in the link.
+Many download links (such as those from osf.io or Google drive) do not include extensions in the download link,
+and thus will cause Warnings/be unable to accept compressed files.
+This can often be worked around by adding a variable to the end of the url such as "https://osf.io/xxxxx/download?fname=file.csv.gz".
+
 Is your favorite format missing?
 It's easy to add---promise! Check out :ref:`contributing`.
 
