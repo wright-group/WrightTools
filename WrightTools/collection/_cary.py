@@ -63,11 +63,11 @@ def from_Cary(filepath, name=None, parent=None, verbose=True):
     # import array
     lines = []
     ds = np.DataSource(None)
-    with ds.open(str(filepath), "rb") as f:
-        header = f.readline().decode("iso-8859-1")
-        columns = f.readline().decode("iso-8859-1")
+    with ds.open(str(filepath), "rt", encoding="iso-8859-1") as f:
+        header = f.readline()
+        columns = f.readline()
         while True:
-            line = f.readline().decode("iso-8859-1")
+            line = f.readline()
             if line == "\n" or line == "" or line == "\r\n":
                 break
             else:
