@@ -35,6 +35,8 @@ def from_spcm(filepath, name=None, *, delimiter=",", parent=None, verbose=True) 
     ----------
     filepath : path-like
         Path to SPC-xxx .asc file.
+        Can be either a local or remote file (http/ftp).
+        Can be compressed with gz/bz2, decompression based on file name.
     name : string (optional)
         Name to give to the created data object. If None, filename is used.
         Default is None.

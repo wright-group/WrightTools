@@ -31,6 +31,8 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True) -> Data:
     ----------
     filepath : path-like
         Path to the .data file
+        Can be either a local or remote file (http/ftp).
+        Can be compressed with gz/bz2, decompression based on file name.
     name : str or None (optional)
         The name to be applied to the new data object. If None, name is read
         from file.

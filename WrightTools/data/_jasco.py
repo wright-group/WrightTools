@@ -28,6 +28,8 @@ def from_JASCO(filepath, name=None, parent=None, verbose=True) -> Data:
     ----------
     filepath : path-like
         Path to .txt file.
+        Can be either a local or remote file (http/ftp).
+        Can be compressed with gz/bz2, decompression based on file name.
     name : string (optional)
         Name to give to the created data object. If None, filename is used.
         Default is None.
