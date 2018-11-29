@@ -5,6 +5,7 @@
 
 
 import pathlib
+from urllib.parse import urlparse
 import re
 
 import numpy as np
@@ -55,7 +56,13 @@ def from_Cary(filepath, name=None, parent=None, verbose=True):
         New data object.
     """
     # check filepath
+    scheme = urlparse(filepath).scheme + "://"
+    if scheme == "://":
+        scheme = ""
     filepath = pathlib.Path(filepath)
+    if scheme:
+        filepath = filepath.relative_to(scheme)
+
     if ".csv" not in filepath.suffixes:
         wt_exceptions.WrongFileTypeWarning.warn(filepath, "csv")
     if name is None:
@@ -63,7 +70,7 @@ def from_Cary(filepath, name=None, parent=None, verbose=True):
     # import array
     lines = []
     ds = np.DataSource(None)
-    with ds.open(str(filepath), "rt", encoding="iso-8859-1") as f:
+    with ds.open(scheme + str(filepath), "rt", encoding="iso-8859-1") as f:
         header = f.readline()
         columns = f.readline()
         while True:
