@@ -110,6 +110,13 @@ def test_two_centers():
     data.close()
 
 
+def test_remote():
+    data = wt.data.from_PyCMDS("https://osf.io/download/rdn7v")
+    assert data.shape == (21, 81)
+    assert data.axis_expressions == ("wm", "w2=w1")
+    data.close()
+
+
 # --- run -----------------------------------------------------------------------------------------
 
 
@@ -124,3 +131,4 @@ if __name__ == "__main__":
     test_tolerance()
     test_autotune()
     test_two_centers()
+    test_remote()
