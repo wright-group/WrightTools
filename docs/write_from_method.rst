@@ -27,6 +27,7 @@ We will walk through by way of example, using :meth:`~WrightTools.data.from_JASC
 
     # --- import --------------------------------------------------------------
     import os
+    import pathlib
     import numpy as np
     from ._data import Axis, Channel, Data
     from .. import exceptions as wt_exceptions
@@ -38,8 +39,10 @@ We will walk through by way of example, using :meth:`~WrightTools.data.from_JASC
 
         Parameters
         ----------
-        filepath : string, list of strings, or array of strings
-            Path to .txt file.
+        filepath : path-like
+           Path to .txt file.
+           Can be either a local or remote file (http/ftp).
+           Can be compressed with gz/bz2, decompression based on file name.
         name : string (optional)
             Name to give to the created data object. If None, filename is used.
             Default is None.
@@ -54,8 +57,10 @@ We will walk through by way of example, using :meth:`~WrightTools.data.from_JASC
             New data object(s).
         """
         # parse filepath
-        if not filepath.endswith("txt"):
-            wt_exceptions.WrongFileTypeWarning.warn(filepath, "txt")
+        filestr = ps.fspath(filepath)
+        filepath = pathlib.Path(filepath)
+        if not ".txt" in filepath.suffixes:
+            wt_exceptions.WrongFileTypeWarning.warn(filepath, ".txt")
         # parse name
         if not name:
             name = os.path.basename(filepath).split(".")[0]
@@ -66,7 +71,10 @@ We will walk through by way of example, using :meth:`~WrightTools.data.from_JASC
         else:
             data = parent.create_data(**kwargs)
         # array
-        arr = np.genfromtxt(filepath, skip_header=18).T
+        ds = np.DataSource(None)
+        f = ds.open(filestr, "rt")
+        arr = np.genfromtxt(f, skip_header=18).T
+        f.close()
         # add variable and channels
         data.create_variable(name="energy", values=arr[0], units="nm")
         data.create_channel(name="signal", values=arr[1])
@@ -118,8 +126,10 @@ Check out the existing examples for formatting, such as the example from :meth:`
 
         Parameters
         ----------
-        filepath : string, list of strings, or array of strings
+        filepath : path-like
             Path to .txt file.
+            Can be either a local or remote file (http/ftp).
+            Can be compressed with gz/bz2, decompression based on file name.
         name : string (optional)
             Name to give to the created data object. If None, filename is used.
             Default is None.
@@ -142,16 +152,24 @@ A few simple validation checks can be performed.
 If it is not possible to read a data object, it should raise a ``WrightTools`` exception. See :mod:`~WrightTools.exceptions`.
 If it is simply an unexpected feature, such as unusual file extension, it should raise a warning.
 ``WrightTools`` includes a specific warning for unexpected file type: :class:`~WrightTools.exceptions.WrongFileTypeWarning`.
+We use :meth:`pathlib.Path.suffixes` to allow for compound file extensions like ``.txt.gz``.
 You should also validate the name, and extract the default in this step.
+
+This portion of the ``from_`` method also has some handling using urlparse for remote files (e.g. via http/ftp).
+
+
 
 .. code-block:: python
 
         # parse filepath
-        if not filepath.endswith("txt"):
-            wt_exceptions.WrongFileTypeWarning.warn(filepath, "txt")
+        filestr = os.fspath(filepath)
+        filepath = pathlib.Path(filepath)
+        if not ".txt" in filepath.suffixes:
+            wt_exceptions.WrongFileTypeWarning.warn(filepath, ".txt")
         # parse name
         if not name:
-            name = os.path.basename(filepath).split(".")[0]
+             name = filepath.name.split(".")[0]
+
 
 Create the Data object
 ----------------------
