@@ -27,6 +27,7 @@ Much more imformation can be found on the `HDF5 tutorial <https://support.hdfgro
 
 WrightTools relies upon the `h5py package <http://www.h5py.org/>`_, a Pythonic interface to HDF5.
 
+
 wt5 sub-format
 --------------
 
@@ -131,6 +132,7 @@ Axes are a thin wrapper that describe a specific algebraic expression made up of
 Axes are key for plottinng and interacting with data objects, but they do not directly contain the arrays within the HDF5 file.
 Rather, axes are simply stored as strings within the ``attrs`` metadata dictionary of the data object.
 
+
 Access
 ------
 
@@ -177,6 +179,7 @@ Shell
 `h5ls <https://support.hdfgroup.org/HDF5/doc/RM/Tools.html#Tools-Ls>`_: print information about one or more HDF5 files.
 
 `Complete list of official HDF5 tools <https://support.hdfgroup.org/HDF5/doc/RM/Tools.html>`_
+
 
 Changes
 -------

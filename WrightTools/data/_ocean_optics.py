@@ -4,8 +4,8 @@
 # --- import --------------------------------------------------------------------------------------
 
 
+import os
 import pathlib
-from urllib.parse import urlparse
 
 import numpy as np
 
@@ -45,12 +45,8 @@ def from_ocean_optics(filepath, name=None, *, parent=None, verbose=True) -> Data
         New data object.
     """
     # parse filepath
-    scheme = urlparse(filepath).scheme + "://"
-    if scheme == "://":
-        scheme = ""
+    filestr = os.fspath(filepath)
     filepath = pathlib.Path(filepath)
-    if scheme:
-        filepath = filepath.relative_to(scheme)
 
     if not ".scope" in filepath.suffixes:
         wt_exceptions.WrongFileTypeWarning.warn(filepath, ".scope")
@@ -58,7 +54,7 @@ def from_ocean_optics(filepath, name=None, *, parent=None, verbose=True) -> Data
     if not name:
         name = filepath.name.split(".")[0]
     # create data
-    kwargs = {"name": name, "kind": "Ocean Optics", "source": filepath}
+    kwargs = {"name": name, "kind": "Ocean Optics", "source": filestr}
     if parent is None:
         data = Data(**kwargs)
     else:
@@ -67,7 +63,7 @@ def from_ocean_optics(filepath, name=None, *, parent=None, verbose=True) -> Data
     skip_header = 14
     skip_footer = 1
     ds = np.DataSource(None)
-    f = ds.open(scheme + str(filepath), "rt")
+    f = ds.open(filestr, "rt")
     arr = np.genfromtxt(f, skip_header=skip_header, skip_footer=skip_footer, delimiter="\t").T
     f.close()
     # construct data

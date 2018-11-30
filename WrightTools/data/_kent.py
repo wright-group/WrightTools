@@ -4,8 +4,8 @@
 # --- import --------------------------------------------------------------------------------------
 
 
+import os
 import pathlib
-from urllib.parse import urlparse
 
 import collections
 
@@ -84,14 +84,13 @@ def from_KENT(
     # do we have a list of files or just one file? ------------------------------------------------
     if not isinstance(filepaths, list):
         filepaths = [filepaths]
-    schemes = [urlparse(f).scheme + "://" for f in filepaths]
-    schemes = ["" if s == "://" else s for s in schemes]
-    filepaths = [pathlib.Path(f).relative_to(s) for f, s in zip(filepaths, schemes)]
+    filestrs = [os.fspath(f) for f in filepaths]
+    filepaths = [pathlib.Path(f) for f in filepaths]
     # import full array ---------------------------------------------------------------------------
     ds = np.DataSource(None)
     arr = []
-    for f, s in zip(filepaths, schemes):
-        ff = ds.open(s + str(f), "rt")
+    for f in filestrs:
+        ff = ds.open(f, "rt")
         arr.append(np.genfromtxt(ff).T)
         ff.close()
     arr = np.concatenate(arr, axis=1)
@@ -104,7 +103,7 @@ def from_KENT(
     # create data object --------------------------------------------------------------------------
     if name is None:
         name = wt_kit.string2identifier(filepaths[0].name)
-    kwargs = {"name": name, "kind": "KENT", "source": filepaths}
+    kwargs = {"name": name, "kind": "KENT", "source": filestrs}
     if parent is not None:
         data = parent.create_data(**kwargs)
     else:

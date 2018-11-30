@@ -4,9 +4,8 @@
 # --- import --------------------------------------------------------------------------------------
 
 
+import os
 import pathlib
-from urllib.parse import urlparse
-
 import collections
 
 import numpy as np
@@ -63,21 +62,17 @@ def from_COLORS(
     """
     # do we have a list of files or just one file? ------------------------------------------------
     if isinstance(filepaths, list):
-        schemes = [urlparse(f).scheme + "://" for f in filepaths]
-        schemes = ["" if s == "://" else s for s in schemes]
-        file_example = pathlib.Path(filepaths[0]).relative_to(schemes[0])
-        filepaths = [pathlib.Path(f).relative_to(s) for f, s in zip(filepaths, schemes)]
+        filestrs = [os.fspath(f) for f in filepaths]
+        filepaths = [pathlib.Path(f) for f in filepaths]
     else:
-        schemes = [urlparse(filepaths).scheme + "://"]
-        schemes = ["" if s == "://" else s for s in schemes]
-        file_example = pathlib.Path(filepaths).relative_to(schemes[0])
-        filepaths = [file_example]
+        filestrs = [os.fspath(filepaths)]
+        filepaths = [pathlib.Path(filepaths)]
     ds = np.DataSource(None)
     # define format of dat file -------------------------------------------------------------------
     if cols:
         pass
     else:
-        f = ds.open(schemes[0] + str(file_example), "rt")
+        f = ds.open(filestrs[0], "rt")
         num_cols = len(np.genfromtxt(f).T)
         f.close()
         if num_cols in [28, 35, 41]:
@@ -138,8 +133,8 @@ def from_COLORS(
         channels["ai3"] = {"idx": 13, "label": "3"}
     # import full array ---------------------------------------------------------------------------
     arr = []
-    for f, s in zip(filepaths, schemes):
-        ff = ds.open(s + str(f), "rt")
+    for f in filestrs:
+        ff = ds.open(f, "rt")
         arr.append(np.genfromtxt(ff).T)
         ff.close()
     arr = np.concatenate(arr, axis=1)
@@ -154,8 +149,8 @@ def from_COLORS(
     scanned = wt_kit.discover_dimensions(arr, axes_discover)
     # create data object --------------------------------------------------------------------------
     if name is None:
-        name = wt_kit.string2identifier(file_example.name)
-    kwargs = {"name": name, "kind": "COLORS", "source": filepaths}
+        name = wt_kit.string2identifier(filepaths[0].name)
+    kwargs = {"name": name, "kind": "COLORS", "source": filestrs}
     if parent is not None:
         data = parent.create_data(**kwargs)
     else:

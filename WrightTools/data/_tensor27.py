@@ -56,12 +56,8 @@ def from_Tensor27(filepath, name=None, parent=None, verbose=True) -> Data:
         New data object.
     """
     # parse filepath
-    scheme = urlparse(filepath).scheme + "://"
-    if scheme == "://":
-        scheme = ""
+    filestr = os.fspath(filepath)
     filepath = pathlib.Path(filepath)
-    if scheme:
-        filepath = filepath.relative_to(scheme)
 
     if not ".dpt" in filepath.suffixes:
         wt_exceptions.WrongFileTypeWarning.warn(filepath, ".dpt")
@@ -69,14 +65,14 @@ def from_Tensor27(filepath, name=None, parent=None, verbose=True) -> Data:
     if not name:
         name = filepath.name.split(".")[0]
     # create data
-    kwargs = {"name": name, "kind": "Tensor27", "source": filepath}
+    kwargs = {"name": name, "kind": "Tensor27", "source": filestr}
     if parent is None:
         data = Data(**kwargs)
     else:
         data = parent.create_data(**kwargs)
     # array
     ds = np.DataSource(None)
-    f = ds.open(scheme + str(filepath), "rt")
+    f = ds.open(filestr, "rt")
     arr = np.genfromtxt(f, skip_header=0).T
     f.close()
     # chew through all scans

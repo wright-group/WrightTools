@@ -4,8 +4,8 @@
 # --- import --------------------------------------------------------------------------------------
 
 
+import os
 import pathlib
-from urllib.parse import urlparse
 import collections
 import time
 
@@ -52,12 +52,8 @@ def from_spcm(filepath, name=None, *, delimiter=",", parent=None, verbose=True) 
     -------
     WrightTools.data.Data object
     """
-    scheme = urlparse(filepath).scheme + "://"
-    if scheme == "://":
-        scheme = ""
+    filestr = os.fspath(filepath)
     filepath = pathlib.Path(filepath)
-    if scheme:
-        filepath = filepath.relative_to(scheme)
 
     # check filepath
     if not ".asc" in filepath.suffixes:
@@ -69,7 +65,7 @@ def from_spcm(filepath, name=None, *, delimiter=",", parent=None, verbose=True) 
     headers = collections.OrderedDict()
     header_lines = 0
     ds = np.DataSource(None)
-    f = ds.open(scheme + str(filepath), "rt")
+    f = ds.open(filestr, "rt")
     while True:
         line = f.readline().strip()
         header_lines += 1
@@ -121,7 +117,7 @@ def from_spcm(filepath, name=None, *, delimiter=",", parent=None, verbose=True) 
         headers["created"] = created
 
     # initialize data object
-    kwargs = {"name": name, "kind": "spcm", "source": filepath, **headers}
+    kwargs = {"name": name, "kind": "spcm", "source": filestr, **headers}
     if parent:
         data = parent.create_data(**kwargs)
     else:

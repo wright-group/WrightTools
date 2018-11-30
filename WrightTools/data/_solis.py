@@ -4,8 +4,8 @@
 # --- import --------------------------------------------------------------------------------------
 
 
+import os
 import pathlib
-from urllib.parse import urlparse
 import time
 
 import numpy as np
@@ -47,12 +47,8 @@ def from_Solis(filepath, name=None, parent=None, verbose=True) -> Data:
         New data object.
     """
     # parse filepath
-    scheme = urlparse(filepath).scheme + "://"
-    if scheme == "://":
-        scheme = ""
+    filestr = os.fspath(filepath)
     filepath = pathlib.Path(filepath)
-    if scheme:
-        filepath = filepath.relative_to(scheme)
 
     if not ".asc" in filepath.suffixes:
         wt_exceptions.WrongFileTypeWarning.warn(filepath, ".asc")
@@ -61,7 +57,7 @@ def from_Solis(filepath, name=None, parent=None, verbose=True) -> Data:
         name = filepath.name.split(".")[0]
     # create data
     ds = np.DataSource(None)
-    f = ds.open(scheme + str(filepath), "rt")
+    f = ds.open(filestr, "rt")
     axis0 = []
     arr = []
     attrs = {}
@@ -93,7 +89,7 @@ def from_Solis(filepath, name=None, parent=None, verbose=True) -> Data:
     created = time.strptime(created, "%a %b %d %H:%M:%S %Y")
     created = timestamp.TimeStamp(time.mktime(created)).RFC3339
 
-    kwargs = {"name": name, "kind": "Solis", "source": filepath, "created": created}
+    kwargs = {"name": name, "kind": "Solis", "source": filestr, "created": created}
     if parent is None:
         data = Data(**kwargs)
     else:

@@ -4,8 +4,8 @@
 # --- import --------------------------------------------------------------------------------------
 
 
+import os
 import pathlib
-from urllib.parse import urlparse
 
 import numpy as np
 
@@ -47,16 +47,12 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True) -> Data:
     data
         A Data instance.
     """
-    scheme = urlparse(filepath).scheme + "://"
-    if scheme == "://":
-        scheme = ""
+    filestr = os.fspath(filepath)
     filepath = pathlib.Path(filepath)
-    if scheme:
-        filepath = filepath.relative_to(scheme)
 
     # header
     ds = np.DataSource(None)
-    file_ = ds.open(scheme + str(filepath), "rt")
+    file_ = ds.open(filestr, "rt")
     headers = tidy_headers.read(file_)
     file_.seek(0)
     # name
@@ -70,7 +66,7 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True) -> Data:
     kwargs = {
         "name": data_name,
         "kind": "PyCMDS",
-        "source": filepath,
+        "source": filestr,
         "created": headers["file created"],
     }
     if parent is not None:
