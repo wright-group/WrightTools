@@ -65,7 +65,7 @@ We will walk through by way of example, using :meth:`~WrightTools.data.from_JASC
         if not name:
             name = os.path.basename(filepath).split(".")[0]
         # create data
-        kwargs = {"name": name, "kind": "JASCO", "source": filepath}
+        kwargs = {"name": name, "kind": "JASCO", "source": filestr}
         if parent is None:
             data = Data(**kwargs)
         else:
@@ -155,8 +155,8 @@ If it is simply an unexpected feature, such as unusual file extension, it should
 We use :meth:`pathlib.Path.suffixes` to allow for compound file extensions like ``.txt.gz``.
 You should also validate the name, and extract the default in this step.
 
-This portion of the ``from_`` method also has some handling using urlparse for remote files (e.g. via http/ftp).
-
+The reason to have both ``filestr`` and ``filepath`` is that :class:`pathlib.Path` objects 
+do not work well for urls (particularly on Windows), but pathlib is nice for performing validation.
 
 
 .. code-block:: python
@@ -187,7 +187,7 @@ Additional keyword arguments not expected by either :class:`~WrightTools.data.Da
 
 .. code-block:: python
 
-        kwargs = {"name": name, "kind": "JASCO", "source": filepath}
+        kwargs = {"name": name, "kind": "JASCO", "source": filestr}
         if parent is None:
             data = Data(**kwargs)
         else:
@@ -247,10 +247,19 @@ For one-dimensional data formats, this is particularly easy:
 .. code-block:: python
 
         # array
-        arr = np.genfromtxt(filepath, skip_header=18).T
+        ds = np.DataSource(None)
+        f = ds.open(filestr, "rt")
+        arr = np.genfromtxt(f, skip_header=18).T
+        f.close()
         # add variable and channels
         data.create_variable(name="energy", values=arr[0], units="nm")
         data.create_channel(name="signal", values=arr[1])
+
+:class:`numpy.DataSource` is a class which provides transparent decompression and remote file retrieval.
+:class:`numpy.genfromtxt` will handle this itself, however it will leave the downloaded files in the 
+working directory, and opening explicitly allows you to use the file more directly as well.
+Using ``np.DataSource(None)`` causes it to use temporary files which are removed automatically.
+Opening in ``"rt"`` mode ensures that you are reading as text.
 
 Parsing multidimensional datasets (and in particular formats which allow arbitrary dimensionality)
 provides real benefit, but becomes a much more arduous task to generalize.
