@@ -190,10 +190,13 @@ class Dataset(h5py.Dataset):
 
             def f(dataset, s):
                 arr = dataset[s]
-                amin = np.nanargmax(arr)
+                try:
+                    amin = np.nanargmax(arr)
+                except ValueError:
+                    amin = 0
                 idx = np.unravel_index(amin, arr.shape)
                 val = arr[idx]
-                return tuple((i + ss.indices(0)[0], val) for i, ss in zip(idx, s))
+                return (tuple(i + (ss.start if ss.start else 0) for i, ss in zip(idx, s)), val)
 
             chunk_res = self.chunkwise(f)
             idxs = [i[0] for i in chunk_res.values()]
@@ -207,10 +210,13 @@ class Dataset(h5py.Dataset):
 
             def f(dataset, s):
                 arr = dataset[s]
-                amin = np.nanargmin(arr)
+                try:
+                    amin = np.nanargmin(arr)
+                except ValueError:
+                    amin = 0
                 idx = np.unravel_index(amin, arr.shape)
                 val = arr[idx]
-                return tuple((i + ss.indices(0)[0], val) for i, ss in zip(idx, s))
+                return (tuple(i + (ss.start if ss.start else 0) for i, ss in zip(idx, s)), val)
 
             chunk_res = self.chunkwise(f)
             idxs = [i[0] for i in chunk_res.values()]
