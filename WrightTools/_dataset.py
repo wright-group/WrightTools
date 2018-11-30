@@ -192,14 +192,13 @@ class Dataset(h5py.Dataset):
                 arr = dataset[s]
                 amin = np.nanargmax(arr)
                 idx = np.unravel_index(amin, arr.shape)
-                return tuple(i + ss.indices(0)[0] for i, ss in zip(idx, s))
+                val = arr[idx]
+                return tuple(i + ss.indices(0)[0], val for i, ss in zip(idx, s))
 
-            idxs = list(self.chunkwise(f).values())
-            curmax = idxs[0]
-            for idx in idxs[1:]:
-                if self[idx] > self[curmax]:
-                    curmax = idx
-            self.attrs["argmax"] = curmax
+            chunk_res = self.chunkwise(f)
+            idxs = [i[0] for i in chunck_res.values()]
+            vals = [i[1] for i in chunck_res.values()]
+            self.attrs["argmax"] = idx[np.argnanmax(vals)]
         return tuple(self.attrs["argmax"])
 
     def argmin(self):
@@ -210,14 +209,13 @@ class Dataset(h5py.Dataset):
                 arr = dataset[s]
                 amin = np.nanargmin(arr)
                 idx = np.unravel_index(amin, arr.shape)
-                return tuple(i + ss.indices(0)[0] for i, ss in zip(idx, s))
+                val = arr[idx]
+                return tuple(i + ss.indices(0)[0], val for i, ss in zip(idx, s))
 
-            idxs = list(self.chunkwise(f).values())
-            curmin = idxs[0]
-            for idx in idxs[1:]:
-                if self[idx] < self[curmin]:
-                    curmin = idx
-            self.attrs["argmin"] = curmin
+            chunk_res = self.chunkwise(f)
+            idxs = [i[0] for i in chunck_res.values()]
+            vals = [i[1] for i in chunck_res.values()]
+            self.attrs["argmin"] = idx[np.argnanmin(vals)]
         return tuple(self.attrs["argmin"])
 
     def chunkwise(self, func, *args, **kwargs):
@@ -266,6 +264,12 @@ class Dataset(h5py.Dataset):
             min = self.min()
 
         def f(dataset, s, min, max, replace):
+            if hasattr(min, "shape"):
+                min = min[wt_kit.valid_index(s, min.shape)]
+            if hasattr(max, "shape"):
+                max = max[wt_kit.valid_index(s, max.shape)]
+            if hasattr(replace, "shape"):
+                replace = replace[wt_kit.valid_index(s, replace.shape)]
             arr = dataset[s]
             if replace == "value":
                 dataset[s] = np.clip(arr, min, max)
