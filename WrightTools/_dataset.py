@@ -193,7 +193,7 @@ class Dataset(h5py.Dataset):
                 amin = np.nanargmax(arr)
                 idx = np.unravel_index(amin, arr.shape)
                 val = arr[idx]
-                return tuple(i + ss.indices(0)[0], val for i, ss in zip(idx, s))
+                return tuple((i + ss.indices(0)[0], val) for i, ss in zip(idx, s))
 
             chunk_res = self.chunkwise(f)
             idxs = [i[0] for i in chunck_res.values()]
@@ -210,7 +210,7 @@ class Dataset(h5py.Dataset):
                 amin = np.nanargmin(arr)
                 idx = np.unravel_index(amin, arr.shape)
                 val = arr[idx]
-                return tuple(i + ss.indices(0)[0], val for i, ss in zip(idx, s))
+                return tuple((i + ss.indices(0)[0], val) for i, ss in zip(idx, s))
 
             chunk_res = self.chunkwise(f)
             idxs = [i[0] for i in chunck_res.values()]
