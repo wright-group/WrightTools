@@ -196,8 +196,8 @@ class Dataset(h5py.Dataset):
                 return tuple((i + ss.indices(0)[0], val) for i, ss in zip(idx, s))
 
             chunk_res = self.chunkwise(f)
-            idxs = [i[0] for i in chunck_res.values()]
-            vals = [i[1] for i in chunck_res.values()]
+            idxs = [i[0] for i in chunk_res.values()]
+            vals = [i[1] for i in chunk_res.values()]
             self.attrs["argmax"] = idx[np.argnanmax(vals)]
         return tuple(self.attrs["argmax"])
 
@@ -213,8 +213,8 @@ class Dataset(h5py.Dataset):
                 return tuple((i + ss.indices(0)[0], val) for i, ss in zip(idx, s))
 
             chunk_res = self.chunkwise(f)
-            idxs = [i[0] for i in chunck_res.values()]
-            vals = [i[1] for i in chunck_res.values()]
+            idxs = [i[0] for i in chunk_res.values()]
+            vals = [i[1] for i in chunk_res.values()]
             self.attrs["argmin"] = idx[np.argnanmin(vals)]
         return tuple(self.attrs["argmin"])
 
