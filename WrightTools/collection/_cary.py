@@ -4,8 +4,8 @@
 # --- import --------------------------------------------------------------------------------------
 
 
+import os
 import pathlib
-from urllib.parse import urlparse
 import re
 
 import numpy as np
@@ -56,12 +56,8 @@ def from_Cary(filepath, name=None, parent=None, verbose=True):
         New data object.
     """
     # check filepath
-    scheme = urlparse(filepath).scheme + "://"
-    if scheme == "://":
-        scheme = ""
+    filestr = os.fspath(filepath)
     filepath = pathlib.Path(filepath)
-    if scheme:
-        filepath = filepath.relative_to(scheme)
 
     if ".csv" not in filepath.suffixes:
         wt_exceptions.WrongFileTypeWarning.warn(filepath, "csv")
@@ -70,7 +66,7 @@ def from_Cary(filepath, name=None, parent=None, verbose=True):
     # import array
     lines = []
     ds = np.DataSource(None)
-    with ds.open(scheme + str(filepath), "rt", encoding="iso-8859-1") as f:
+    with ds.open(filestr, "rt", encoding="iso-8859-1") as f:
         header = f.readline()
         columns = f.readline()
         while True:
@@ -105,7 +101,7 @@ def from_Cary(filepath, name=None, parent=None, verbose=True):
             name = "{}_{:03d}".format(header[i], i // 2)
         else:
             name = header[i]
-        dat = datas.create_data(name, kind="Cary", source=filepath)
+        dat = datas.create_data(name, kind="Cary", source=filestr)
         dat.create_variable(ax, arr[i][~np.isnan(arr[i])], units=units)
         dat.create_channel(
             columns[i + 1].lower(), arr[i + 1][~np.isnan(arr[i + 1])], label=columns[i + 1].lower()
