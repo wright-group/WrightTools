@@ -85,7 +85,7 @@ def from_directory(filepath, from_methods, *, name=None, parent=None, verbose=Tr
         else:
             if (path / fname).is_dir():
                 if verbose:
-                    print("Creating Collection at", pathlib.PosixPath(parent.name) / fname)
+                    print("Creating Collection at", pathlib.PurePosixPath(parent.name) / fname)
                 col = parent.create_collection(name=fname)
                 for i in (path / fname).iterdir():
                     q.put((path / fname, i.name, col))
