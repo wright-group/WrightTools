@@ -5,6 +5,7 @@
 
 
 import os
+import pathlib
 
 import numpy as np
 
@@ -37,8 +38,10 @@ def from_Tensor27(filepath, name=None, parent=None, verbose=True) -> Data:
 
     Parameters
     ----------
-    filepath : string
+    filepath : path-like
         Path to Tensor27 output file (.dpt).
+        Can be either a local or remote file (http/ftp).
+        Can be compressed with gz/bz2, decompression based on file name.
     name : string (optional)
         Name to give to the created data object. If None, filename is used.
         Default is None.
@@ -53,19 +56,25 @@ def from_Tensor27(filepath, name=None, parent=None, verbose=True) -> Data:
         New data object.
     """
     # parse filepath
-    if not filepath.endswith("dpt"):
-        wt_exceptions.WrongFileTypeWarning.warn(filepath, "dpt")
+    filestr = os.fspath(filepath)
+    filepath = pathlib.Path(filepath)
+
+    if not ".dpt" in filepath.suffixes:
+        wt_exceptions.WrongFileTypeWarning.warn(filepath, ".dpt")
     # parse name
     if not name:
-        name = os.path.basename(filepath).split(".")[0]
+        name = filepath.name.split(".")[0]
     # create data
-    kwargs = {"name": name, "kind": "Tensor27", "source": filepath}
+    kwargs = {"name": name, "kind": "Tensor27", "source": filestr}
     if parent is None:
         data = Data(**kwargs)
     else:
         data = parent.create_data(**kwargs)
     # array
-    arr = np.genfromtxt(filepath, skip_header=0).T
+    ds = np.DataSource(None)
+    f = ds.open(filestr, "rt")
+    arr = np.genfromtxt(f, skip_header=0).T
+    f.close()
     # chew through all scans
     data.create_variable(name="energy", values=arr[0], units="wn")
     data.create_channel(name="signal", values=arr[1])

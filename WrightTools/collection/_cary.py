@@ -4,6 +4,7 @@
 # --- import --------------------------------------------------------------------------------------
 
 
+import os
 import pathlib
 import re
 
@@ -42,7 +43,7 @@ def from_Cary(filepath, name=None, parent=None, verbose=True):
 
     Parameters
     ----------
-    filepath : string
+    filepath : path-like
         Path to Cary output file (.csv).
     parent : WrightTools.Collection
         A collection object in which to place a collection of Data objects.
@@ -55,19 +56,22 @@ def from_Cary(filepath, name=None, parent=None, verbose=True):
         New data object.
     """
     # check filepath
-    filesuffix = pathlib.Path(filepath).suffix
-    if filesuffix != ".csv":
+    filestr = os.fspath(filepath)
+    filepath = pathlib.Path(filepath)
+
+    if ".csv" not in filepath.suffixes:
         wt_exceptions.WrongFileTypeWarning.warn(filepath, "csv")
     if name is None:
         name = "cary"
     # import array
     lines = []
-    with open(str(filepath), "r", encoding="iso-8859-1") as f:
+    ds = np.DataSource(None)
+    with ds.open(filestr, "rt", encoding="iso-8859-1") as f:
         header = f.readline()
         columns = f.readline()
         while True:
             line = f.readline()
-            if line == "\n" or line == "":
+            if line == "\n" or line == "" or line == "\r\n":
                 break
             else:
                 # Note, it is necessary to call this twice, as a single call will
@@ -97,7 +101,7 @@ def from_Cary(filepath, name=None, parent=None, verbose=True):
             name = "{}_{:03d}".format(header[i], i // 2)
         else:
             name = header[i]
-        dat = datas.create_data(name, kind="Cary", source=filepath)
+        dat = datas.create_data(name, kind="Cary", source=filestr)
         dat.create_variable(ax, arr[i][~np.isnan(arr[i])], units=units)
         dat.create_channel(
             columns[i + 1].lower(), arr[i + 1][~np.isnan(arr[i + 1])], label=columns[i + 1].lower()

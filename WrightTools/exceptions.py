@@ -5,6 +5,7 @@
 
 
 import os
+import pathlib
 
 import warnings
 
@@ -148,13 +149,15 @@ class WrongFileTypeWarning(WrightToolsWarning):
 
         Parameters
         ----------
-        filepath : string
+        filepath : path-like
             Given filepath.
         expected : string
             Expected file suffix.
         """
-        filesuffix = os.path.basename(filepath).split(".")[-1]
-        message = "file {0} has type {1} (expected {2})".format(filepath, filesuffix, expected)
+        filepath = pathlib.Path(filepath)
+        message = "file {0} has type {1} (expected {2})".format(
+            filepath, filepath.suffix, expected
+        )
         warnings.warn(message, WrongFileTypeWarning)
 
 
