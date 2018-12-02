@@ -76,18 +76,16 @@ def plot_delaunay_edges(ax, xi, yi, zi):
 
 # contourf
 ax = plt.subplot(gs[0, 2])
-levels = np.linspace(0, 1, 200)
-ax.contourf(data)
+ax.contourf(data, vmin=-1e-3)
 decorate(ax)
 ax.set_title("contourf", fontsize=20)
 ax = plt.subplot(gs[1, 2])
-ax.contourf(data, levels=np.linspace(0, 1, 99))  # why doesn't this work?
+ax.contourf(data, vmin=-1e-3)
 plot_delaunay_edges(ax, xi, yi, zi)
 dot_pixel_centers(ax, xi, yi)
 
 # contour
 ax = plt.subplot(gs[0, 3])
-levels = np.linspace(0, 1, 11)
 ax.contour(data)
 decorate(ax)
 ax.set_title("contour", fontsize=20)
@@ -104,7 +102,3 @@ wt.artists.set_fig_labels(xlabel=data.d1.label, ylabel=data.d2.label, xticks=tic
 # colorbar
 cax = plt.subplot(gs[:, -1])
 wt.artists.plot_colorbar(cax=cax, label="amplitude")
-
-
-# TODO: remove this
-plt.show()
