@@ -25,6 +25,6 @@ def test_PyCMDS_wm_w2_w1_000():
     assert data["wm"].argmax() == (34, 0, 0)
     assert data["w2"].argmax() == (0, 0, 0)
     assert data["w1"].argmax() == (0, 0, 10)
-    assert data.signal_diff.argmax() == (14, 5, 5)
-    assert data.signal_mean.argmax() == (14, 5, 5)
+    assert data.signal_diff.argmax() == (10, 8, 6)
+    assert data.signal_mean.argmax() == (14, 7, 4)
     data.close()

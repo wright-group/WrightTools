@@ -26,7 +26,7 @@ class INI:
 
         Parameters
         ----------
-        filepath : string
+        filepath : path-like
             Filepath.
         """
         self.filepath = filepath
