@@ -26,5 +26,5 @@ def test_PyCMDS_wm_w2_w1_000():
     assert data["w2"].argmin() == (0, 10, 0)
     assert data["w1"].argmin() == (0, 0, 0)
     assert data.signal_diff.argmin() == (0, 2, 0)
-    assert data.signal_mean.argmin() == (0, 1, 3)
+    assert data.signal_mean.argmin() == (30, 1, 9)
     data.close()

@@ -11,7 +11,7 @@ def test_zenith():
     data = wt.data.from_PyCMDS(p)
     data.wm.convert("nm")
     data.w1.convert("nm")
-    assert np.allclose(list(data.get_zenith()), [499.9893, 1575., 6349.206349])
+    assert np.allclose(list(data.get_zenith()), [495.0566, 1560., 6369.426752])
 
 
 if __name__ == "__main__":
