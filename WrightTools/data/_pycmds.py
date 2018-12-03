@@ -4,6 +4,7 @@
 # --- import --------------------------------------------------------------------------------------
 
 
+import itertools
 import os
 import pathlib
 
@@ -111,6 +112,10 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True) -> Data:
             )
     # get assorted remaining things
     # variables and channels
+    try:
+        signed = iter(headers["channel signed"])
+    except KeyError:
+        signed = itertools.repeat(False)
     for index, kind, name in zip(range(len(arr)), headers["kind"], headers["name"]):
         values = np.full(np.prod(shape), np.nan)
         values[: len(arr[index])] = arr[index]
@@ -173,7 +178,8 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True) -> Data:
                     values[np.isnan(values)] = points[np.isnan(values)]
             data.create_variable(name, values=values, units=units, label=label)
         if kind == "channel":
-            data.create_channel(name=name, values=values, shape=values.shape)
+            data.create_channel(name=name, values=values, shape=values.shape, signed=next(signed))
+            print(name, data.channels[-1].signed)
     # axes
     for a in axes:
         expression = a["identity"]
