@@ -70,7 +70,11 @@ class Group(h5py.Group, metaclass=MetaClass):
             try:
                 if isinstance(value, pathlib.Path):
                     value = str(value)
-                elif isinstance(value, list) and len(value) > 0 and isinstance(value[0], os.PathLike):
+                elif (
+                    isinstance(value, list)
+                    and len(value) > 0
+                    and isinstance(value[0], (str, os.PathLike))
+                ):
                     value = np.array(value, dtype="S")
                 elif sys.version_info > (3, 6):
                     try:
