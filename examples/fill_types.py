@@ -24,7 +24,7 @@ data = wt.data.from_COLORS(p, invert_d1=False)
 data.level(0, 0, 1)
 data.ai0.symmetric_root(2)
 data.ai0.normalize()
-data.ai0.clip(min=0, replace='value')
+data.ai0.clip(min=0, replace="value")
 
 
 def dot_pixel_centers(ax, xi, yi):
@@ -92,9 +92,9 @@ decorate(ax)
 ax.set_title("contour", fontsize=20)
 ax = plt.subplot(gs[1, 3])
 ax.contour(data)
-decorate(ax)
 plot_delaunay_edges(ax, xi, yi, zi)
 dot_pixel_centers(ax, xi, yi)
+decorate(ax)
 
 # label
 ticks = [-100, 0, 100]
