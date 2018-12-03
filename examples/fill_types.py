@@ -83,6 +83,7 @@ ax = plt.subplot(gs[1, 2])
 ax.contourf(data, vmin=-1e-3)
 plot_delaunay_edges(ax, xi, yi, zi)
 dot_pixel_centers(ax, xi, yi)
+decorate(ax)
 
 # contour
 ax = plt.subplot(gs[0, 3])
