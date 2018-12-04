@@ -21,9 +21,10 @@ fig, gs = wt.artists.create_figure(width="double", nrows=2, cols=[1, 1, 1, 1, "c
 # get data
 p = datasets.COLORS.v0p2_d1_d2_diagonal
 data = wt.data.from_COLORS(p, invert_d1=False)
-data.level(0, 0, 3)
+data.level(0, 0, 1)
 data.ai0.symmetric_root(2)
 data.ai0.normalize()
+data.ai0.clip(min=0, replace="value")
 
 
 def dot_pixel_centers(ax, xi, yi):
@@ -75,26 +76,25 @@ def plot_delaunay_edges(ax, xi, yi, zi):
 
 # contourf
 ax = plt.subplot(gs[0, 2])
-levels = np.linspace(0, 1, 200)
-ax.contourf(data)
+ax.contourf(data, vmin=-1e-3)
 decorate(ax)
 ax.set_title("contourf", fontsize=20)
 ax = plt.subplot(gs[1, 2])
-ax.contourf(data)
+ax.contourf(data, vmin=-1e-3)
 plot_delaunay_edges(ax, xi, yi, zi)
 dot_pixel_centers(ax, xi, yi)
+decorate(ax)
 
 # contour
 ax = plt.subplot(gs[0, 3])
-levels = np.linspace(0, 1, 11)
 ax.contour(data)
 decorate(ax)
 ax.set_title("contour", fontsize=20)
 ax = plt.subplot(gs[1, 3])
 ax.contour(data)
-decorate(ax)
 plot_delaunay_edges(ax, xi, yi, zi)
 dot_pixel_centers(ax, xi, yi)
+decorate(ax)
 
 # label
 ticks = [-100, 0, 100]
