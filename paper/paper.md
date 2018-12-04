@@ -17,7 +17,7 @@ authors:
  - name: Daniel D. Kohler
    orcid: 0000-0003-4602-2961
    affiliation: 1
--  name: John C. Wright
+ - name: John C. Wright
    orcid: 0000-0002-6926-1837
    affiliation: 1
 affiliations:
@@ -29,16 +29,16 @@ bibliography: paper.bib
 
 # Introduction
 
-"Multidimensional spectroscopy" (MDS) is an umbrella term for a family of analytical techniques that interrogate the response of a material to multiple stimuli, typically multiple electric fields.
+"Multidimensional spectroscopy" (MDS) is a family of analytical techniques that interrogate the response of a material to multiple stimuli (these stimuli are typically multiple, ultrafast electric fields).
 This approach has several unique capabilities:
 
 - resolving congested states [@ZhaoWei1999b; @DonaldsonPaulMurray2008a]
 - extracting spectra that would otherwise be selection-rule disallowed [@BoyleErinSelene2013b; @BoyleErinSelene2014a],
 - resolving fully coherent dynamics [@PakoulevAndreiV2009a],
-- measuring coupling [@WrightJohnCurtis2011a]
-- resolving ultrafast dynamics
+- measuring coupling [@WrightJohnCurtis2011a], 
+- resolving ultrafast dynamics [@SmallwoodChristopherL2018a; @CzechKyleJonathan2015a]. 
 
-In our view, the most exciting thing about these techinques is the great number of different approaches that scientists can take to learn about material quantum states.
+In our view, the most exciting aspect of these techniques is the vast number of different approaches that scientists can take to learn about material quantum states.
 Often, a great number of these experiments can be accomplished with a single instrument.
 
 Modern innovations in optics and laser science are bringing multidimensional spectroscopy to more and more laboratories around the world.
@@ -109,7 +109,7 @@ We are particularly excited about ongoing projects that build on top of ``Wright
 
 # Acknowledgements
 
-The development of ``WrightTools`` has been supported by the Department of Energy, Office of Basic Energy Sciences, Division of Materials Sciences and Engineering, under award DE--FG02--09ER46664 and by the National Science Foundation Division of Chemistry under Grant No. CHE-1709060. 
+The development of ``WrightTools`` has been supported by the Department of Energy, Office of Basic Energy Sciences, Division of Materials Sciences and Engineering, under award DE---FG02---09ER46664 and by the National Science Foundation Division of Chemistry under Grant No. CHE---1709060. 
 D.J.M acknowledges support from the Link Foundation.
 
 # References
