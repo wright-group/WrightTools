@@ -54,41 +54,40 @@ There are several recurring challenges in MDS data processing and representation
 
 - Dimensionality of datasets can typically be greater than two, complicating representation.
 - Shape and dimensionality change, and relevant axes can be different from the scanned dimensions.
-- Data can be awkwardly large-ish (several million pixels), to legitimately large---it is not always possible to store entire arrays in memory.
+- Data can be awkwardly large-ish (several million pixels), to legitimately large (it is not always possible to store entire arrays in memory).
 - There are no agreed-upon file formats.
 
-The excelent Scientific Python ecosystem is well suited to adress all of these challenges.
-Numpy supports interaction and manipulation of multidmensional datasets. [cite]
-Matplotlib supports one, two, and even three-dimensional plotting. [cite]
+The excellent Scientific Python ecosystem is well suited to adress all of these challenges. [@OliphantTravisE2007a]
+Numpy supports interaction and manipulation of multidmensional datasets. [@OliphantTravisE2006a]
+Matplotlib supports one, two, and even three-dimensional plotting. [@HunterJohnD2007a]
 h5py interfaces with hdf5, allowing for storage and access to large multidmensional arrays in a binary format that can be accessed from a variety of different popular languages, including MATLAB and Fortran. [cite]
 ``WrightTools`` does not intend to replace or reimplement these core libraries.
 Instead, ``WrightTools`` offers an interface that impedence-matches multidimensional spectroscopy and Scientific Python.
 
-``WrightTools`` defines a universal MDS data format: the wt5 file.
+``WrightTools`` defines a universal MDS data format: the ``wt5`` file.
 These are simply hdf5 files with certain internal conventions that are designed for MDS.
 These internal conventions enable the flexability and ease-of-use that we discuss in the rest of this section.
-The multdimensional spectroscopic data within these files is dynamically interacted with through ``WrightTools``'s various classes, which are children of ``h5py`` classes.
-``WrightTools`` offers a variety of functions that try hard to convert data stored in various other formats to wt5.
+The multdimensional spectroscopic data within these files is dynamically interacted with through ``WrightTools``'s various classes, which are children of h5py classes.
+``WrightTools`` offers a variety of functions that try hard to convert data stored in various other formats to ``wt5``.
 
 ``WrightTools`` defines a unique and flexable strategy of storing and manipulating axes and variables.
 MDS data is typically quite structured, so completely flattened solutions are bulky and not performant because they don't take advantage of the natural internal structure of the dataset.
-On the other hand, there are important reasons to manipuate and display MDS data in less structured ways. [cite]
+On the other hand, there are important reasons to manipuate and display MDS data in less structured ways. [@NeffMallonNathanA2017a]
 ``WrightTools`` allows users to ``transform`` their data, relaxing the strict structure requirements when necessary.
 
 ``WrightTools`` offers a suite of data manipulation tools with MDS in mind.
 Users can access portions of their data using high-level methods like ``chop``, ``split``, and ``clip``.
-They can process their data using simple mathematical operations or more specific tools like ``level``, ``gradient``, and ``collapse``.
+They can process their data using simple mathematical operations or more specific tools like ``level``, ``gradient``, ``collapse``, and ``smooth``.
 Users can even join multiple datasets together, creating higher-dimensional datasets when appropriate.
-All of these operations refer to the self-describing internal structure of the wt5 file wherever possible.
+All of these operations refer to the self-describing internal structure of the ``wt5`` file wherever possible.
 Users are not asked to refer to the specific shape and indicies of their data arrays.
 Instead, they deal with simple axis names and unit-aware coordinates.
 
 ``WrightTools`` offers a set of "artists" to quickly draw typical representations.
-These make it trivial to make beutiful Matplotlib representations of MDS datasets.
+These make it trivial to make beautiful Matplotlib representations of MDS datasets.
 Again, the self-describing internal structure is capitalized upon, auto-filling labels and auto-scaling axes.
 For higher-than-two dimensional datasets, ``WrightTools`` makes it easy to plot many separate figures that can be looped through using an image viewer or stitched into a looping animated gif.
-There is also an "interactive" artist which takes advantage of Matplotlib's interactive widgets.
-There are even specialty artists for drawing common MDS diagrams, such as WMELs [cite].
+
 
 # Availability 
 
