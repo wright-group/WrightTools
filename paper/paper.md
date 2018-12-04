@@ -17,6 +17,9 @@ authors:
  - name: Daniel D. Kohler
    orcid: 0000-0003-4602-2961
    affiliation: 1
+-  name: John C. Wright
+   orcid: 0000-0002-6926-1837
+   affiliation: 1
 affiliations:
  - name: University of Wisconsin--Madison
    index: 1
