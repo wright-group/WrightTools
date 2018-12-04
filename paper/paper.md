@@ -105,7 +105,7 @@ We are particularly excited about ongoing projects that build on top of ``Wright
 
 # Acknowledgements
 
-The development of ``WrightTools`` has been supported by the Department of Energy, Office of Basic Energy Sciences, Division of Materials Sciences and Engineering, under award DE---FG02---09ER46664 and by the National Science Foundation Division of Chemistry under Grant No. CHE---1709060. 
+The development of ``WrightTools`` has been supported by the Department of Energy, Office of Basic Energy Sciences, Division of Materials Sciences and Engineering, under award DE--FG02--09ER46664 and by the National Science Foundation Division of Chemistry under Grant No. CHE--1709060. 
 D.J.M acknowledges support from the Link Foundation.
 
 # References
