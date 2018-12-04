@@ -24,7 +24,7 @@ date: 26 November 2018
 bibliography: paper.bib
 ---
 
-# Summary
+# Introdcution
 
 "Multidimensional spectroscopy" (MDS) is an umbrella term for a family of analytical techniques that interrogate the response of a material to multiple stimuli, typically multiple electric fields.
 This approach has several unique capabilities:
