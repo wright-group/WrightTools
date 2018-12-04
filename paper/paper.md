@@ -11,7 +11,7 @@ authors:
  - name: Kyle F. Sunden
    orcid: 0000-0001-6167-8059
    affiliation: 1
- - name: Darien Morrow
+ - name: Darien J. Morrow
    orcid: 0000-0002-8922-8049
    affiliation: 1
  - name: Daniel D. Kohler
@@ -24,7 +24,7 @@ date: 26 November 2018
 bibliography: paper.bib
 ---
 
-# Introdcution
+# Introduction
 
 "Multidimensional spectroscopy" (MDS) is an umbrella term for a family of analytical techniques that interrogate the response of a material to multiple stimuli, typically multiple electric fields.
 This approach has several unique capabilities:
@@ -87,6 +87,12 @@ For higher-than-two dimensional datasets, ``WrightTools`` makes it easy to plot 
 There is also an "interactive" artist which takes advantage of Matplotlib's interactive widgets.
 There are even specialty artists for drawing common MDS diagrams, such as WMELs [cite].
 
+# Availability 
+
+``WrightTools`` is archived with Zenodo [cite].
+``WrightTools`` is installable with pip and conda package managers with documentation available at [wright.tools](http://wright.tools).
+
+
 # Impact
 
 To our knowledge, ``WrightTools`` has directly enabled no fewer than ten publications.
@@ -97,5 +103,10 @@ These practices are not yet common in the MDS community.
 Though still relatively uncommon, MDS is an increasingly important family of analytical techniques used by Chemists and Physists to interrogate especially complex systems and to answer especially challenging questions.
 We hope that ``WrightTools``, and the universal wt5 file format, will become a useful open source core technology for this growing community.
 We are particularly excited about ongoing projects that build on top of ``WrightTools``, including packages for data acquisition and simulation.
+
+# Acknowledgements
+
+The development of ``WrightTools`` has been supported by the Department of Energy, Office of Basic Energy Sciences, Division of Materials Sciences and Engineering, under award DE--FG02--09ER46664 and by the National Science Foundation Division of Chemistry under Grant No. CHE-1709060. 
+D.J.M acknowledges support from the Link Foundation.
 
 # References
