@@ -179,7 +179,6 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True) -> Data:
             data.create_variable(name, values=values, units=units, label=label)
         if kind == "channel":
             data.create_channel(name=name, values=values, shape=values.shape, signed=next(signed))
-            print(name, data.channels[-1].signed)
     # axes
     for a in axes:
         expression = a["identity"]
