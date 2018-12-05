@@ -538,10 +538,10 @@ class Data(Group):
         index = wt_kit.get_index(self.axis_names, axis)
         axes = [i for i in range(self.ndim) if self.axes[index].shape[i] > 1]
         if len(axes) > 1:
-            raise wt_exceptions.MultidimensionalAxisError(axis, "collapse")
+            raise wt_exceptions.MultidimensionalAxisError(axis, "moment")
         elif len(axes) == 0:
             raise wt_exceptions.ValueError(
-                "Axis {} is a single point, cannot collapse".format(axis)
+                "Axis {} is a single point, cannot compute moment".format(axis)
             )
         axis_index = axes[0]
 
@@ -612,7 +612,7 @@ class Data(Group):
                 values=values,
             )
 
-    def collapse(self, axis, method="integrate"):
+    def collapse(self, axis, method="sum"):
         """Collapse the dataset along one axis, adding lower rank channels.
 
         New channels have names ``<channel name>_<axis name>_<method>``.
@@ -625,10 +625,10 @@ class Data(Group):
             If given as a string, the axis must exist, and be a 1D array-aligned axis.
             (i.e. have a shape with a single value which is not ``1``)
             The axis to collapse along is inferred from the shape of the axis.
-        method : {'integrate', 'average', 'sum', 'max', 'min'} (optional)
+        method : {'average', 'sum', 'max', 'min'} (optional)
             The method of collapsing the given axis. Method may also be list
             of methods corresponding to the channels of the object. Default
-            is integrate. All methods but integrate disregard NANs.
+            is sum. NaNs are ignored.
             Can also be a list, allowing for different treatment for varied channels.
             In this case, None indicates that no change to that channel should occur.
 
@@ -641,6 +641,20 @@ class Data(Group):
         moment
             Take the moment along a particular axis
         """
+        if method in ("int", "integrate"):
+            warnings.warn(
+                "integrate method of collapse is deprecated, use moment(moment=0) instead",
+                wt_exceptions.VisibleDeprecationWarning,
+            )
+            for channel in self.channel_names:
+                try:
+                    self.moment(axis, channel, moment=0)
+                    self.rename_channels(
+                        **{self.channel_names[-1]: f"{channel}_{axis}_{method}"}, verbose=False
+                    )
+                except wt_exceptions.ValueError:
+                    pass  # may have some channels which fail, do so silently
+            return
         # get axis index --------------------------------------------------------------------------
         if isinstance(axis, int):
             axis_index = axis
@@ -659,7 +673,20 @@ class Data(Group):
 
         new_shape = list(self.shape)
         new_shape[axis_index] = 1
+        func = {
+            "sum": np.nansum,
+            "max": np.nanmax,
+            "maximum": np.nanmax,
+            "min": np.nanmin,
+            "minimum": np.nanmin,
+            "ave": np.nanmean,
+            "average": np.nanmean,
+            "mean": np.nanmean,
+        }
+
         # methods ---------------------------------------------------------------------------------
+        if isinstance(method, str):
+            methods = [method for _ in self.channels]
         if isinstance(method, list):
             if len(method) == len(self.channels):
                 methods = method
@@ -668,21 +695,8 @@ class Data(Group):
                     "method argument must have same number of elements as there are channels"
                 )
             for m in methods:
-                if m not in [
-                    "sum",
-                    "max",
-                    "maximum",
-                    "min",
-                    "minimum",
-                    "ave",
-                    "average",
-                    "mean",
-                    "int",
-                    "integrate",
-                ]:
+                if m not in func.keys():
                     raise wt_exceptions.ValueError("method '{}' not recognized".format(m))
-        elif isinstance(method, str):
-            methods = [method for _ in self.channels]
 
         warnings.warn("collapse", category=wt_exceptions.EntireDatasetInMemoryWarning)
 
@@ -697,7 +711,7 @@ class Data(Group):
             new_shape = list(self[channel].shape)
             new_shape[axis_index] = 1
             rtype = self[channel].dtype
-            if method in ["ave", "average", "mean", "int", "integrate"]:
+            if method in ["ave", "average", "mean"]:
                 rtype = np.result_type(self[channel].dtype, float)
 
             new = self.create_channel(
@@ -706,26 +720,7 @@ class Data(Group):
                 units=self[channel].units,
             )
 
-            channel = self[channel]
-
-            if method == "sum":
-                res = np.nansum(channel[:], axis=axis_index, keepdims=True)
-                new[:] = res
-            elif method in ["max", "maximum"]:
-                res = np.nanmax(channel[:], axis=axis_index, keepdims=True)
-                new[:] = res
-            elif method in ["min", "minimum"]:
-                res = np.nanmin(channel[:], axis=axis_index, keepdims=True)
-                new[:] = res
-            elif method in ["ave", "average", "mean"]:
-                res = np.nanmean(channel[:], axis=axis_index, keepdims=True)
-                new[:] = res
-            elif method in ["int", "integrate"]:
-                res = np.trapz(y=channel[:], x=self._axes[axis_index][:], axis=axis_index)
-                res.shape = new_shape
-                new[:] = res
-            else:
-                raise wt_exceptions.ValueError("method '{}' not recognized".format(m))
+            new[:] = func[method](self[channel], axis=axis_index, keepdims=True)
 
     def convert(self, destination_units, *, convert_variables=False, verbose=True):
         """Convert all compatable axes and constants to given units.
