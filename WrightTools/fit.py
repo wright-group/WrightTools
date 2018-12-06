@@ -167,6 +167,8 @@ class Function:
             p0 = kwargs['p0']
         else:
             p0 = self.guess(*args)
+        if len(args[0]) < len(p0):
+            return [np.nan] * len(self.params)
         out = scipy_optimize.leastsq(self.residuals, p0, args=args)
         if out[1] not in [1, 2]:  # solution was not found
             return np.full(len(p0), np.nan)
