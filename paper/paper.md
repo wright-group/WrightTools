@@ -39,27 +39,32 @@ This approach has several unique capabilities;
 - and resolving ultrafast dynamics [@SmallwoodChristopherL2018a; @CzechKyleJonathan2015a].
 
 In our view, the most exciting aspect of these techniques is the vast number of different approaches that scientists can take to learn about material quantum states.
-Often, a great number of these experiments can be accomplished with a single instrument.
-The diversity of related-but-unique approaches to interrogating quantum systems is a large strength of MDS.
+Often, a number of these experiments can be accomplished with a single instrument.
+The diversity of related-but-unique approaches to interrogating quantum systems is an important strength of MDS.
 
-Modern innovations in optics and laser science are bringing multidimensional spectroscopy to more and more laboratories around the world.
+Advancements in optics and laser science are bringing multidimensional spectroscopy to more and more laboratories around the world.
 At the same time, increasing automation and computer control are allowing traditionally "one-dimensional" spectroscopies to be recorded against other dimensions.
 
 Due to its diversity and dimensionality, MDS data is challenging to process and represent.
-The data processing tools that a scientist develops to process one experiment may not work when she attempts to process an experiment where different experimental variables are explored.
-Historically, this processing strategy has resulted in MR-CMDS practitioners have using custom, one-off data processing workflows that need to be changed for each particular  experiment.
+The data processing tools that scientists develop to process one experiment may not work when they attempt to process an experiment where different experimental variables are explored.
+Historically, this processing strategy has resulted in MDS practitioners using custom, one-off data processing workflows that need to be changed for each particular  experiment.
 These changes take time to implement, and can become annoyances or opportunities for error.
 Even worse, the challenge of designing a new processing workflow may dissuade a scientist from creatively modifying their experimental strategy, or comparing their data with data taken from another group.
 This limit to creativity and flexibility defeats one of the main advantages of the MDS "family approach".
 
 ``WrightTools`` is a new Python package that is made specifically for multidimensional spectroscopy.
 It aims to be a core toolkit that is general enough to handle all MDS datasets and processing workloads.
-Being built for and by MDS practitioners, ``WrightTools`` has an intuitive high-level interface for the experimental spectroscopist.
+Being built for and by MDS practitioners, ``WrightTools`` has an intuitive, high-level, object-oriented interface for spectroscopists.
 To our knowledge, ``WrightTools`` is the first MDS-focused toolkit to be freely avaliable and openly licensed.
 
 # Challenges and Implementation
 
-There are several recurring challenges in MDS data processing and representation
+There are several recurring challenges in MDS data processing and representation:
+
+- There are no agree-upon file formats. Oftentimes acquisition software outputs plain text files which do not have complete metadata, for instance the acquisition parameters are not stored.
+- Dataset dimensionality and size are large.
+- The same instrument (simulation) is capable of producing datasets with many different combinations of scanned hardware (variables) such that processing methods which hardcode axes 
+
 
 - Dimensionality of datasets can typically be greater than two, complicating representation.
 - Shape and dimensionality change, and relevant axes can be different from the scanned dimensions.
@@ -67,9 +72,9 @@ There are several recurring challenges in MDS data processing and representation
 - There are no agreed-upon file formats.
 
 The excellent Scientific Python ecosystem is well suited to adress all of these challenges. [@OliphantTravisE2007a]
-Numpy supports interaction and manipulation of multidmensional datasets. [@OliphantTravisE2006a]
+Numpy supports interaction with and manipulation of multidmensional datasets. [@OliphantTravisE2006a]
 Matplotlib supports one, two, and even three-dimensional plotting. [@HunterJohnD2007a]
-h5py interfaces with hdf5, allowing for storage and access to large multidmensional arrays in a binary format that can be accessed from a variety of different popular languages, including MATLAB and Fortran. [@hdf5]
+h5py [cite] interfaces with hdf5 [@hdf5], allowing for storage and access to large multidmensional arrays in a binary format that can be accessed from a variety of different popular languages, including MATLAB and Fortran. 
 ``WrightTools`` does not intend to replace or reimplement these core libraries.
 Instead, ``WrightTools`` offers an interface that impedence-matches multidimensional spectroscopy and Scientific Python.
 
@@ -85,17 +90,17 @@ There are two principle multidimensional array classes: ``Channel`` and ``Variab
 Conceptually, these correspond to independent (scanned) dimensions---"variables" and dependent (measured) signals---"channels".
 Channels typically contain measured signals from all of the different sensors that are employed simultaniously during a MDS experiment.
 Variables contain coordinates of different light manipulation hardware that are scanned against eachother to make up an MDS experiment.
-All variables are recorded, including coordinates for hardware that is not actually moved during that experiment (an array with one unique value) or other independent variables, such as lab time.
+All variables are recorded, including coordinates for hardware that are not actually moved during that experiment (an array with one unique value) or other independent variables, such as lab time.
 
 There can be many variables that change in the context of a single MDS experiment.
-The typical spectroscopist only really cares about a small subset of these variables, but exactly what subset matters may change as different strategies are used to explain the measurement.
-Furthermore, it is often useful to "combine" mutiple variables using simple algebraic relationships to exploit the natural symmetry of many MDS experiments and to draw comparisons between different members of the MDS family. [@NeffMallonNathanA2017a]
-In light of these details, ``WrightTools`` provides a high-level ``Axis`` class that allows users to transparently define which variables, or variable relationships, are important to them.
+The typical spectroscopist only really cares about a small subset of these variables, but exactly what subset matters may change as different strategies are used to explore the measurement.
+Furthermore, it is often useful to "combine" multiple variables using simple algebraic relationships to exploit the natural symmetry of many MDS experiments and to draw comparisons between different members of the MDS family. [@NeffMallonNathanA2017a]
+In light of these details, ``WrightTools`` provides a high-level ``Axis`` class that allows users to transparently define which variables, variable relationships, and unit conventions are important to them for representation and manipulation.
 Each ``Axis`` contains an ``expression``, which dictates its relationship with one or more variables.
 Given 5 variables with names [``'w1'``, ``'w2'``, ``'wm'``, ``'d1'``, ``'d2'``] , example valid expressions include ``'w1'``, ``'w1=wm'``, ``'w1+w2'``, ``'2*w1'``, ``'d1-d2'``, and ``'wm-w1+w2'``.
 Users may treat axes like multidimensional arrays, using ``__getitem__`` syntax and slicing, but axes do not themselves contain arrays.
 Instead, the appropriate axis value at each dataset coordinate is computed on-the-fly using the given expression.
-Users may at any time change their axes by simply ``transform``ing their dataset using new expressions.
+Users may at any time change their axes by simply calling ``transform`` with new expressions.
 
 ``WrightTools`` offers a suite of data manipulation tools with MDS in mind.
 Users can access portions of their data using high-level methods like ``chop``, ``split``, and ``clip``.
@@ -107,12 +112,12 @@ Instead, they deal with simple axis expressions and unit-aware coordinates.
 
 ``WrightTools`` offers a set of "artists" to quickly draw typical representations.
 These make it trivial to make beautiful Matplotlib representations of MDS datasets.
-Again, the self-describing internal structure is capitalized upon, auto-filling labels and auto-scaling axes.
+Again, the self-describing internal structure is capitalized upon, auto-filling labels (including units, symbols, and expressions) and auto-scaling axes.
 For higher-than-two dimensional datasets, ``WrightTools`` makes it easy to plot many separate figures that can be looped through using an image viewer or stitched into a looping animated gif.
 
 # Availability
 
-``WrightTools`` hosted on GitHub [cite] and archived on Zenodo [@ThompsonBlaiseJonathan2018WrightTools].
+``WrightTools`` is hosted on GitHub [cite] and archived on Zenodo [@ThompsonBlaiseJonathan2018WrightTools].
 ``WrightTools`` is distributed using [pip](http://pypi.org/project/WrightTools/) and [conda](http://anaconda.org/conda-forge/wrighttools) (through conda-forge).
 Documentation is available at [wright.tools](http://wright.tools).
 
