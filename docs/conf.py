@@ -17,6 +17,7 @@
 # --- import -------------------------------------------------------------------------------------
 
 
+import glob
 import os
 import sys
 import sphinx_gallery
@@ -64,6 +65,12 @@ extensions = [
     "sphinx_gallery.gen_gallery",
     "sphinx.ext.napoleon",
 ]
+
+# -----------------------------------------------------------------------------
+# Autosummary
+# -----------------------------------------------------------------------------
+
+autosummary_generate = glob.glob("api/*.rst")
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
