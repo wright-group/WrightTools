@@ -218,7 +218,10 @@ class Data(Group):
         # remove old attributes
         while len(self._current_axis_identities_in_natural_namespace) > 0:
             key = self._current_axis_identities_in_natural_namespace.pop(0)
-            self.__dict__.pop(key)
+            try:
+                delattr(self, key)
+            except AttributeError:
+                pass  # already gone
         # populate new attributes
         for a in self._axes:
             key = a.natural_name
