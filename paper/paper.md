@@ -67,9 +67,9 @@ There are several recurring challenges in MDS data processing and representation
 - Dataset dimensionality is large enough to represent challenges in human interaction and visualization.
 
 The excellent Scientific Python ecosystem is well suited to adress all of these challenges. [@OliphantTravisE2007a]
-Numpy supports interaction with and manipulation of multidmensional arrays. [@OliphantTravisE2006a]
+Numpy supports interaction with and manipulation of multidimensional arrays. [@OliphantTravisE2006a]
 Matplotlib supports one, two, and even three-dimensional plotting. [@HunterJohnD2007a]
-h5py [@ColletteAndrew2013] interfaces with hdf5 [@hdf5], allowing for storage and memory-safe access to large multidmensional arrays in a binary format that can be accessed from a variety of different popular languages, including MATLAB and Fortran.
+h5py [@ColletteAndrew2013] interfaces with hdf5 [@hdf5], allowing for storage and memory-safe access to large multidimensional arrays in a binary format that can be accessed from a variety of different popular languages, including MATLAB and Fortran.
 ``WrightTools`` does not intend to replace or reimplement these core libraries.
 Instead, ``WrightTools`` offers an interface that impedance-matches multidimensional spectroscopy and Scientific Python.
 
@@ -82,7 +82,7 @@ The multidimensional spectroscopic data within these files is dynamically intera
 ``WrightTools`` defines a unique and flexable strategy of storing and manipulating MDS datasets.
 A single instance of the `WrightTools.Data` class is implemented as a group containing many separate arrays.
 There are two principle multidimensional array classes: ``Channel`` and ``Variable``.
-Conceptually, these correspond to independent (scanned) dimensions---"variables" and dependent (measured) signals---"channels".
+Conceptually, these correspond to independent (scanned) dimensions---"variables"---and dependent (measured) signals---"channels".
 Channels typically contain measured signals from all of the different sensors that are employed simultaneously during a MDS experiment.
 Variables contain coordinates of different light manipulation hardware that are scanned against each-other to make up an MDS experiment.
 All variables are recorded, including coordinates for hardware that are not actually moved during that experiment (an array with one unique value) or other independent variables, such as lab time.
