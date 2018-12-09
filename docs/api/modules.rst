@@ -12,4 +12,3 @@ WrightTools API
    WrightTools.exceptions
    WrightTools.kit
    WrightTools.units
-
