@@ -24,8 +24,16 @@ PyCMDS         Files from PyCMDS_.                                              
 Ocean Optics   .scope files from ocean optics spectrometers                      :meth:`~WrightTools.data.from_ocean_optics`
 Shimadzu       Files from Shimadzu_ UV-VIS spectrophotometers.                   :meth:`~WrightTools.data.from_shimadzu`
 SPCM           Files from Becker & Hickl spcm_ software                          :meth:`~WrightTools.data.from_spcm`
+Solis          Files from Andor Solis software                                   :meth:`~WrightTools.data.from_Solis`
 Tensor 27      Files from Bruker Tensor 27 FT-IR                                 :meth:`~WrightTools.data.from_Tensor27`
 =============  ================================================================  =========================================
+
+These functions accept both local and remote (http/ftp) files as well as transparent compression (gz/bz2).
+Compression detection is based on the file name, and file names for remote links are as appears in the link.
+Many download links (such as those from osf.io or Google drive) do not include extensions in the download link,
+and thus will cause Warnings/be unable to accept compressed files.
+This can often be worked around by adding a variable to the end of the url such as ``https://osf.io/xxxxx/download?fname=file.csv.gz``.
+Google Drive direct download links have the form ``https://drive.google.com/dc?id=XXXXXXXXXXXXXXXXXXXX`` (i.e. replace ``open`` in the "share" links with ``dc``).
 
 Is your favorite format missing?
 It's easy to add---promise! Check out :ref:`contributing`.
@@ -57,36 +65,36 @@ Structure & properties
 ----------------------
 
 So what is a data object anyway?
-To put it simply, ``Data`` is a collection of ``Axis`` and ``Channel`` objects.
-``Axis`` objects are composed of ``Variable`` objects.
+To put it simply, :class:`~WrightTools.data.Data` is a collection of :class:`WrightTools.data.Axis` and :class:`WrightTools.data.Channel` objects.
+:class:`WrightTools.data.Axis` objects are composed of :class:`WrightTools.data.Variable` objects.
 
-===============  ============================
-attribute        tuple of...
----------------  ----------------------------
-data.axes        wt.data.Axis objects
-data.constants   wt.data.Constant objects
-data.channels    wt.data.Channel objects
-data.variables   wt.data.Variable objects
-===============  ============================
+========================================  ============================================
+attribute                                 tuple of...
+----------------------------------------  --------------------------------------------
+:attr:`~WrightTools.data.Data.axes`        :class:`~WrightTools.data.Axis` objects
+:attr:`~WrightTools.data.Data.constants`   :class:`~WrightTools.data.Constant` objects
+:attr:`~WrightTools.data.Data.channels`    :class:`~WrightTools.data.Channel` objects
+:attr:`~WrightTools.data.Data.variables`   :class:`~WrightTools.data.Variable` objects
+========================================  ============================================
 
-See also `Data.axis_expressions`, `Data.constant_expressions`, `Data.channel_names` and `Data.variable_names`.
+See also :attr:`~WrightTools.data.Data.axis_expressions`, :attr:`~WrightTools.data.Data.constant_expressions`, :attr:`~WrightTools.data.Data.channel_names` and :attr:`~WrightTools.data.Data.variable_names`.
 
 Axis
 ````
 
 Axes are the coordinates of the dataset. They have the following key attributes:
 
-=================  ==========================================================
-attribute          description
------------------  ----------------------------------------------------------
-axis.label         LaTeX-formatted label, appropriate for plotting
-axis.min()         coordinates minimum, in current units
-axis.max()         coordinates maximum, in current units
-axis.natural_name  axis name
-axis.units         current axis units (change with ``axis.convert``)
-axis.variables     component variables
-axis.expression    expression
-=================  ==========================================================
+===========================================  ========================================================================
+attribute                                    description
+-------------------------------------------  ------------------------------------------------------------------------
+:meth:`~WrightTools.data.Axis.label`         LaTeX-formatted label, appropriate for plotting
+:meth:`~WrightTools.data.Axis.min`           coordinates minimum, in current units
+:meth:`~WrightTools.data.Axis.max`           coordinates maximum, in current units
+:attr:`~WrightTools.data.Axis.natural_name`  axis name
+:attr:`~WrightTools.data.Axis.units`         current axis units (change with :meth:`~WrightTools.data.Axis.convert`)
+:attr:`~WrightTools.data.Axis.variables`     component variables
+:attr:`~WrightTools.data.Axis.expression`    expression
+===========================================  ========================================================================
 
 Constant
 ````````
@@ -98,29 +106,29 @@ Note that there is nothing enforcing that the value is actually static: constant
 shapes and can be indexed to get the underlying numpy array.
 In addition to the above attributes, constants add:
 
-=================  ===============================================================
-attribute          description
------------------  ---------------------------------------------------------------
-constant.value     The mean (ignoring NaNs) of the evaluated expression.
-constant.std       The standard deviation of the points used to compute the value.
-=================  ===============================================================
+=========================================  ===============================================================
+attribute                                   description
+-----------------------------------------  ---------------------------------------------------------------
+:attr:`~WrightTools.data.Constant.value`   The mean (ignoring NaNs) of the evaluated expression.
+:attr:`~WrightTools.data.Constant.std`     The standard deviation of the points used to compute the value.
+=========================================  ===============================================================
 
 Channel
 ```````
 
 Channels contain the n-dimensional data itself. They have the following key attributes:
 
-===============  ==========================================================
-attribute        description
----------------  ----------------------------------------------------------
-channel.label    LaTeX-formatted label, appropriate for plotting
-channel.mag()    channel magnitude (furthest deviation from null)
-channel.max()    channel maximum
-channel.min()    channel minimum
-channel.name     channel name
-channel.null     channel null (value of zero signal)
-channel.signed   flag to indicate if channel is signed
-===============  ==========================================================
+=========================================  ==========================================================
+attribute                                   description
+-----------------------------------------  ----------------------------------------------------------
+:attr:`~WrightTools.data.Channel.label`    LaTeX-formatted label, appropriate for plotting
+:meth:`~WrightTools.data.Channel.mag`      channel magnitude (furthest deviation from null)
+:meth:`~WrightTools.data.Channel.max`      channel maximum
+:meth:`~WrightTools.data.Channel.min`      channel minimum
+:attr:`~WrightTools.data.Channel.name`     channel name
+:attr:`~WrightTools.data.Channel.null`     channel null (value of zero signal)
+:attr:`~WrightTools.data.Channel.signed`   flag to indicate if channel is signed
+=========================================  ==========================================================
 
 Data
 ````
@@ -156,14 +164,15 @@ Even if you converted them to the same unit system, you would still have to deal
 WrightTools data objects know all about units, and they are able to use interpolation to map between different absolute coordinates.
 Here we list some of the capabilities that are enabled by this behavior.
 
-==================================================  ================================================================================
-method                                              description
---------------------------------------------------  --------------------------------------------------------------------------------
-:meth:`~WrightTools.data.Data.heal`                 use interpolation to guess the value of NaNs within a channel
-:meth:`~WrightTools.data.join`                      join together multiple data objects, accounting for dimensionality and overlap
-:meth:`~WrightTools.data.Data.map_variable`         re-map data coordinates
-:meth:`~WrightTools.data.Data.offset`               offset one axis based on another
-==================================================  ================================================================================
+==================================================  ================================================================================  =======================================================
+method                                              description                                                                        gallery
+--------------------------------------------------  --------------------------------------------------------------------------------  -------------------------------------------------------
+:meth:`~WrightTools.data.Data.heal`                 use interpolation to guess the value of NaNs within a channel                     :ref:`sphx_glr_auto_examples_heal.py`
+:meth:`~WrightTools.data.join`                      join together multiple data objects, accounting for dimensionality and overlap    :ref:`sphx_glr_auto_examples_join.py`
+:meth:`~WrightTools.data.Data.map_variable`         re-map data coordinates                                                           :ref:`sphx_glr_auto_examples_map-variable.py`
+==================================================  ================================================================================  =======================================================
+
+.. :meth:`~WrightTools.data.Data.offset`              offset one axis based on another                                                  :ref:`sphx_glr_auto_examples_offset.py`
 
 Dimensionality without the cursing
 ----------------------------------
@@ -176,13 +185,15 @@ Is this slice unusual, or do they all look like that?
 WrightTools tries to make multi-dimensional data easy to work with.
 The following methods deal directly with dimensionality manipulation.
 
-==================================================  ================================================================================
-method                                              description
---------------------------------------------------  --------------------------------------------------------------------------------
+==================================================  ================================================================================  =========================================================
+method                                              description                                                                        gallery
+--------------------------------------------------  --------------------------------------------------------------------------------  ---------------------------------------------------------
 :meth:`~WrightTools.data.Data.chop`                 chop data into a list of lower dimensional data
 :meth:`~WrightTools.data.Data.collapse`             destroy one dimension of data using a mathematical strategy
-:meth:`~WrightTools.data.Data.split`                split data at a series of coordinates, without reducing dimensionality
-==================================================  ================================================================================
+:meth:`~WrightTools.data.Data.moment`               destroy one dimension of a channel by taking the nth moment                       .. :ref:`sphx_glr_auto_examples_moment.py`
+:meth:`~WrightTools.data.Data.split`                split data at a series of coordinates, without reducing dimensionality            :ref:`sphx_glr_auto_examples_split.py`
+:meth:`~WrightTools.data.Data.transform`            transform the data on to a new combination of variables as axes                   :ref:`sphx_glr_auto_examples_DOVE_transform.py` :ref:`sphx_glr_auto_examples_fringes_transform.py`
+==================================================  ================================================================================  =========================================================
 
 WrightTools seamlessly handles dimensionality throughout.
 :ref:`Artists` is one such place where dimensionality is addressed explicitly.
@@ -194,16 +205,17 @@ There are many common data processing operations in spectroscopy.
 WrightTools endeavors to make these operations easy.
 A selection of important methods follows.
 
-==================================================  ================================================================================
-method                                              description
---------------------------------------------------  --------------------------------------------------------------------------------
-:meth:`~WrightTools.data.Data.clip`                 clip values outside of a given range
-:meth:`~WrightTools.data.gradient`                  take the derivative along an axis
-:meth:`~WrightTools.data.join`                      join multiple data objects into one
-:meth:`~WrightTools.data.Data.level`                level the edge of data along a certain axis
-:meth:`~WrightTools.data.Data.smooth`               smooth a channel via convolution with a n-dimensional Kaiser window
-:meth:`~WrightTools.data.Data.zoom`                 zoom a channel using spline interpolation
-==================================================  ================================================================================
+==================================================  ====================================================================================  =====================================================
+method                                              description                                                                            gallery
+--------------------------------------------------  ------------------------------------------------------------------------------------  -----------------------------------------------------
+:meth:`~WrightTools.data.Channel.clip`              clip values outside of a given range (method of :class:`~WrightTools.data.Channel`)
+:meth:`~WrightTools.data.Data.gradient`             take the derivative along an axis                                                     :ref:`sphx_glr_auto_examples_gradient.py`
+:meth:`~WrightTools.data.join`                      join multiple data objects into one                                                   :ref:`sphx_glr_auto_examples_join.py`
+:meth:`~WrightTools.data.Data.level`                level the edge of data along a certain axis                                           :ref:`sphx_glr_auto_examples_level.py`
+:meth:`~WrightTools.data.Data.smooth`               smooth a channel via convolution with a n-dimensional Kaiser window                   .. :ref:`sphx_glr_auto_examples_smooth.py`
+==================================================  ====================================================================================  =====================================================
+
+.. :meth:`~WrightTools.data.Data.zoom`                 zoom a channel using spline interpolation                                             :ref:`sphx_glr_auto_examples_zoom.py`
 
 .. _Brunold: http://brunold.chem.wisc.edu/
 .. _JASCO: https://jascoinc.com/products/spectroscopy/

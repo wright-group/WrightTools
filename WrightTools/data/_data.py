@@ -490,9 +490,130 @@ class Data(Group):
         else:
             new[:] = np.gradient(channel[:], self[axis].points, axis=axis_index)
 
-    def collapse(self, axis, method="integrate"):
+    def moment(self, axis, channel=0, moment=1):
+        """Take the nth moment the dataset along one axis, adding lower rank channels.
+
+        New channels have names ``<channel name>_<axis name>_moment_<moment num>``.
+
+        Moment 0 is the integral of the slice.
+        Moment 1 is the weighted average or "Center of Mass", normalized by the integral
+        Moment 2 is the variance, the central moment about the center of mass,
+            normalized by the integral
+        Moments 3+ are central moments about the center of mass, normalized by the integral
+            and by the standard deviation to the power of the moment.
+
+        Moments, especially higher order moments, are susceptible to noise and baseline.
+        It is recommended when used with real data to use :meth:`WrightTools.data.Channel.clip`
+        in conjunction with moments to reduce effects of noise.
+
+        Parameters
+        ----------
+        axis : int or str
+            The axis to take the moment along.
+            If given as an integer, the axis with that index is used.
+            If given as a string, the axis with that name is used.
+            The axis must exist, and be a 1D array-aligned axis.
+            (i.e. have a shape with a single value which is not ``1``)
+            The axis to collapse along is inferred from the shape of the axis.
+        channel : int or str
+            The channel to take the moment.
+            If given as an integer, the channel with that index is used.
+            If given as a string, the channel with that name is used.
+            The channel must have values along the axis
+            (i.e. its shape must not be ``1`` in the dimension for which the axis is not ``1``)
+            Default is 0, the first channel.
+        moment : int or tuple of int
+            The moments to take.
+            One channel will be created for each number given.
+            Default is 1, the center of mass.
+
+        See Also
+        --------
+        collapse
+            Reduce dimensionality by some mathematical operation
+        clip
+            Set values above/below a threshold to a particular value
         """
-        Collapse the dataset along one axis, adding lower rank channels.
+        # get axis index --------------------------------------------------------------------------
+        index = wt_kit.get_index(self.axis_names, axis)
+        axes = [i for i in range(self.ndim) if self.axes[index].shape[i] > 1]
+        if len(axes) > 1:
+            raise wt_exceptions.MultidimensionalAxisError(axis, "moment")
+        elif len(axes) == 0:
+            raise wt_exceptions.ValueError(
+                "Axis {} is a single point, cannot compute moment".format(axis)
+            )
+        axis_index = axes[0]
+
+        warnings.warn("moment", category=wt_exceptions.EntireDatasetInMemoryWarning)
+
+        channel_index = wt_kit.get_index(self.channel_names, channel)
+        channel = self.channel_names[channel_index]
+
+        if self[channel].shape[axis_index] == 1:
+            raise wt_exceptions.ValueError(
+                "Channel '{}' has a single point along Axis '{}', cannot compute moment".format(
+                    channel, axis
+                )
+            )
+
+        new_shape = list(self[channel].shape)
+        new_shape[axis_index] = 1
+
+        channel = self[channel]
+        axis_inp = axis
+        axis = self.axes[index]
+        x = axis[:]
+        if np.any(np.isnan(x)):
+            raise wt_exceptions.ValueError("Axis '{}' includes NaN".format(axis_inp))
+        y = np.nan_to_num(channel[:])
+
+        try:
+            moments = tuple(moment)
+        except TypeError:
+            moments = (moment,)
+
+        if 0 in moments:
+            # Sort axis, so that integrals come out with expected sign
+            # only matters for integral, all others normalize by integral
+            sli = [slice(None) for _ in range(x.ndim)]
+            sort = np.argsort(x.flat)
+            sli[axis_index] = sort
+            sli = tuple(sli)
+            x = x[sli]
+            y = y[sli]
+
+        for moment in moments:
+            about = 0
+            norm = 1
+            if moment > 0:
+                norm = np.trapz(y, x, axis=axis_index)
+                norm = np.array(norm)
+                norm.shape = new_shape
+            if moment > 1:
+                about = np.trapz(x * y, x, axis=axis_index)
+                about = np.array(about)
+                about.shape = new_shape
+                about /= norm
+            if moment > 2:
+                sigma = np.trapz((x - about) ** 2 * y, x, axis=axis_index)
+                sigma = np.array(sigma)
+                sigma.shape = new_shape
+                sigma /= norm
+                sigma **= 0.5
+                norm *= sigma ** moment
+
+            values = np.trapz((x - about) ** moment * y, x, axis=axis_index)
+            values = np.array(values)
+            values.shape = new_shape
+            values /= norm
+            self.create_channel(
+                "{}_{}_{}_{}".format(channel.natural_name, axis_inp, "moment", moment),
+                values=values,
+            )
+
+    def collapse(self, axis, method="sum"):
+        """Collapse the dataset along one axis, adding lower rank channels.
 
         New channels have names ``<channel name>_<axis name>_<method>``.
 
@@ -504,10 +625,10 @@ class Data(Group):
             If given as a string, the axis must exist, and be a 1D array-aligned axis.
             (i.e. have a shape with a single value which is not ``1``)
             The axis to collapse along is inferred from the shape of the axis.
-        method : {'integrate', 'average', 'sum', 'max', 'min'} (optional)
+        method : {'average', 'sum', 'max', 'min'} (optional)
             The method of collapsing the given axis. Method may also be list
             of methods corresponding to the channels of the object. Default
-            is integrate. All methods but integrate disregard NANs.
+            is sum. NaNs are ignored.
             Can also be a list, allowing for different treatment for varied channels.
             In this case, None indicates that no change to that channel should occur.
 
@@ -517,7 +638,23 @@ class Data(Group):
             Divide the dataset into its lower-dimensionality components.
         split
             Split the dataset while maintaining its dimensionality.
+        moment
+            Take the moment along a particular axis
         """
+        if method in ("int", "integrate"):
+            warnings.warn(
+                "integrate method of collapse is deprecated, use moment(moment=0) instead",
+                wt_exceptions.VisibleDeprecationWarning,
+            )
+            for channel in self.channel_names:
+                try:
+                    self.moment(axis, channel, moment=0)
+                    self.rename_channels(
+                        **{self.channel_names[-1]: f"{channel}_{axis}_{method}"}, verbose=False
+                    )
+                except wt_exceptions.ValueError:
+                    pass  # may have some channels which fail, do so silently
+            return
         # get axis index --------------------------------------------------------------------------
         if isinstance(axis, int):
             axis_index = axis
@@ -536,7 +673,20 @@ class Data(Group):
 
         new_shape = list(self.shape)
         new_shape[axis_index] = 1
+        func = {
+            "sum": np.nansum,
+            "max": np.nanmax,
+            "maximum": np.nanmax,
+            "min": np.nanmin,
+            "minimum": np.nanmin,
+            "ave": np.nanmean,
+            "average": np.nanmean,
+            "mean": np.nanmean,
+        }
+
         # methods ---------------------------------------------------------------------------------
+        if isinstance(method, str):
+            methods = [method for _ in self.channels]
         if isinstance(method, list):
             if len(method) == len(self.channels):
                 methods = method
@@ -545,21 +695,8 @@ class Data(Group):
                     "method argument must have same number of elements as there are channels"
                 )
             for m in methods:
-                if m not in [
-                    "sum",
-                    "max",
-                    "maximum",
-                    "min",
-                    "minimum",
-                    "ave",
-                    "average",
-                    "mean",
-                    "int",
-                    "integrate",
-                ]:
+                if m not in func.keys():
                     raise wt_exceptions.ValueError("method '{}' not recognized".format(m))
-        elif isinstance(method, str):
-            methods = [method for _ in self.channels]
 
         warnings.warn("collapse", category=wt_exceptions.EntireDatasetInMemoryWarning)
 
@@ -574,7 +711,7 @@ class Data(Group):
             new_shape = list(self[channel].shape)
             new_shape[axis_index] = 1
             rtype = self[channel].dtype
-            if method in ["ave", "average", "mean", "int", "integrate"]:
+            if method in ["ave", "average", "mean"]:
                 rtype = np.result_type(self[channel].dtype, float)
 
             new = self.create_channel(
@@ -583,26 +720,7 @@ class Data(Group):
                 units=self[channel].units,
             )
 
-            channel = self[channel]
-
-            if method == "sum":
-                res = np.nansum(channel[:], axis=axis_index, keepdims=True)
-                new[:] = res
-            elif method in ["max", "maximum"]:
-                res = np.nanmax(channel[:], axis=axis_index, keepdims=True)
-                new[:] = res
-            elif method in ["min", "minimum"]:
-                res = np.nanmin(channel[:], axis=axis_index, keepdims=True)
-                new[:] = res
-            elif method in ["ave", "average", "mean"]:
-                res = np.nanmean(channel[:], axis=axis_index, keepdims=True)
-                new[:] = res
-            elif method in ["int", "integrate"]:
-                res = np.trapz(y=channel[:], x=self._axes[axis_index][:], axis=axis_index)
-                res.shape = new_shape
-                new[:] = res
-            else:
-                raise wt_exceptions.ValueError("method '{}' not recognized".format(m))
+            new[:] = func[method](self[channel], axis=axis_index, keepdims=True)
 
     def convert(self, destination_units, *, convert_variables=False, verbose=True):
         """Convert all compatable axes and constants to given units.
@@ -1220,6 +1338,38 @@ class Data(Group):
         print("{0} ({1})".format(self.natural_name, self.filepath))
         self._print_branch("", depth=0, verbose=verbose)
 
+    def prune(self, keep_channels=True, *, verbose=True):
+        """Remove unused variables and (optionally) channels from the Data object.
+            
+        Unused variables are those that are not included in either axes or constants.
+        Unused channels are those not specified in keep_channels, or the first channel.
+
+        Parameters
+        ----------
+        keep_channels : boolean or int or str or tuple
+            If False, removes all but the first channel.
+            If int or str, removes all but that index/name channel.
+            If tuple, removes all channels except those in the tuple by index or name.
+            Default is True: do not delete channels
+        verbose : boolean
+            Toggle talkback. Default is True.
+        """
+        for v in self.variables:
+            for var in wt_kit.flatten_list([ax.variables for ax in self._axes + self._constants]):
+                if v == var:
+                    break
+            else:
+                self.remove_variable(v.natural_name, implied=False, verbose=verbose)
+        if keep_channels is not True:
+            try:
+                indexes = tuple(keep_channels)
+            except TypeError:
+                indexes = (keep_channels,)
+
+            for i, ch in enumerate(self.channels):
+                if i not in indexes and not ch.natural_name in indexes:
+                    self.remove_channel(ch.natural_name, verbose=verbose)
+
     def remove_channel(self, channel, *, verbose=True):
         """Remove channel from data.
 
@@ -1310,7 +1460,7 @@ class Data(Group):
             index = self.channel_names.index(k)
             # rename
             new[v] = obj, index
-            obj._instances.pop(obj.fullpath, None)
+            Group._instances.pop(obj.fullpath, None)
             obj.natural_name = str(v)
             # remove old references
             del self[k]
@@ -1361,7 +1511,7 @@ class Data(Group):
             index = self.variable_names.index(k)
             # rename
             new[v] = obj, index
-            obj._instances.pop(obj.fullpath, None)
+            Group._instances.pop(obj.fullpath, None)
             obj.natural_name = str(v)
             # remove old references
             del self[k]

@@ -16,12 +16,22 @@ def test_named_root_collection():
     c = wt.Collection(name="blaise")
     assert c.natural_name == "blaise"
     assert c.attrs["name"] == "blaise"
+    assert c.name == "/"
+    c.natural_name = "kyle"
+    assert c.natural_name == "kyle"
+    assert c.attrs["name"] == "kyle"
+    assert c.name == "/"
 
 
 def test_named_root_data():
     d = wt.Data(name="blaise")
     assert d.natural_name == "blaise"
     assert d.attrs["name"] == "blaise"
+    assert d.name == "/"
+    d.natural_name = "kyle"
+    assert d.natural_name == "kyle"
+    assert d.attrs["name"] == "kyle"
+    assert d.name == "/"
 
 
 def test_parent_child():
@@ -31,6 +41,12 @@ def test_parent_child():
     assert child.filepath == parent.filepath
     assert child.parent is parent
     assert grandchild.parent is child
+    assert grandchild.fullpath in wt._group.Group._instances.keys()
+    assert child.fullpath in wt._group.Group._instances.keys()
+    assert parent.fullpath in wt._group.Group._instances.keys()
+    child.natural_name = "duck"
+    assert grandchild.fullpath.endswith("/duck/hen")
+    assert grandchild.fullpath in wt._group.Group._instances.keys()
 
 
 def test_single_instance_collection():
@@ -60,3 +76,13 @@ def test_nested():
     c.file.close()
     assert c.id.valid == 0
     assert cc.id.valid == 0
+
+
+if __name__ == "__main__":
+    test_named_root_collection()
+    test_named_root_data()
+    test_parent_child()
+    test_single_instance_collection()
+    test_single_instance_data()
+    test_tempfile_cleanup()
+    test_nested()

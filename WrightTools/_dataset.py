@@ -4,7 +4,6 @@
 # --- import --------------------------------------------------------------------------------------
 
 
-import posixpath
 import collections
 
 import numpy as np
@@ -87,6 +86,7 @@ class Dataset(h5py.Dataset):
     def __new__(cls, parent, id, **kwargs):
         """New object formation handler."""
         fullpath = parent.fullpath + h5py.h5i.get_name(id).decode()
+        fullpath = fullpath.replace("//", "/")
         if fullpath in cls._instances.keys():
             return cls._instances[fullpath]
         else:
@@ -133,7 +133,7 @@ class Dataset(h5py.Dataset):
     @property
     def fullpath(self):
         """Full path: file and internal structure."""
-        return self.parent.fullpath + posixpath.sep + self.natural_name
+        return self.parent.filepath + "::" + self.name
 
     @property
     def natural_name(self):
@@ -190,16 +190,18 @@ class Dataset(h5py.Dataset):
 
             def f(dataset, s):
                 arr = dataset[s]
-                amin = np.nanargmax(arr)
+                try:
+                    amin = np.nanargmax(arr)
+                except ValueError:
+                    amin = 0
                 idx = np.unravel_index(amin, arr.shape)
-                return tuple(i + ss.indices(0)[0] for i, ss in zip(idx, s))
+                val = arr[idx]
+                return (tuple(i + (ss.start if ss.start else 0) for i, ss in zip(idx, s)), val)
 
-            idxs = list(self.chunkwise(f).values())
-            curmax = idxs[0]
-            for idx in idxs[1:]:
-                if self[idx] > self[curmax]:
-                    curmax = idx
-            self.attrs["argmax"] = curmax
+            chunk_res = self.chunkwise(f)
+            idxs = [i[0] for i in chunk_res.values()]
+            vals = [i[1] for i in chunk_res.values()]
+            self.attrs["argmax"] = idxs[np.nanargmax(vals)]
         return tuple(self.attrs["argmax"])
 
     def argmin(self):
@@ -208,16 +210,18 @@ class Dataset(h5py.Dataset):
 
             def f(dataset, s):
                 arr = dataset[s]
-                amin = np.nanargmin(arr)
+                try:
+                    amin = np.nanargmin(arr)
+                except ValueError:
+                    amin = 0
                 idx = np.unravel_index(amin, arr.shape)
-                return tuple(i + ss.indices(0)[0] for i, ss in zip(idx, s))
+                val = arr[idx]
+                return (tuple(i + (ss.start if ss.start else 0) for i, ss in zip(idx, s)), val)
 
-            idxs = list(self.chunkwise(f).values())
-            curmin = idxs[0]
-            for idx in idxs[1:]:
-                if self[idx] < self[curmin]:
-                    curmin = idx
-            self.attrs["argmin"] = curmin
+            chunk_res = self.chunkwise(f)
+            idxs = [i[0] for i in chunk_res.values()]
+            vals = [i[1] for i in chunk_res.values()]
+            self.attrs["argmin"] = idxs[np.nanargmin(vals)]
         return tuple(self.attrs["argmin"])
 
     def chunkwise(self, func, *args, **kwargs):
@@ -266,6 +270,12 @@ class Dataset(h5py.Dataset):
             min = self.min()
 
         def f(dataset, s, min, max, replace):
+            if hasattr(min, "shape"):
+                min = min[wt_kit.valid_index(s, min.shape)]
+            if hasattr(max, "shape"):
+                max = max[wt_kit.valid_index(s, max.shape)]
+            if hasattr(replace, "shape"):
+                replace = replace[wt_kit.valid_index(s, replace.shape)]
             arr = dataset[s]
             if replace == "value":
                 dataset[s] = np.clip(arr, min, max)

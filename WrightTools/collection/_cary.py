@@ -5,6 +5,7 @@
 
 
 import os
+import pathlib
 import re
 
 import numpy as np
@@ -42,7 +43,7 @@ def from_Cary(filepath, name=None, parent=None, verbose=True):
 
     Parameters
     ----------
-    filepath : string
+    filepath : path-like
         Path to Cary output file (.csv).
     parent : WrightTools.Collection
         A collection object in which to place a collection of Data objects.
@@ -55,19 +56,22 @@ def from_Cary(filepath, name=None, parent=None, verbose=True):
         New data object.
     """
     # check filepath
-    filesuffix = os.path.basename(filepath).split(".")[-1]
-    if filesuffix != "csv":
+    filestr = os.fspath(filepath)
+    filepath = pathlib.Path(filepath)
+
+    if ".csv" not in filepath.suffixes:
         wt_exceptions.WrongFileTypeWarning.warn(filepath, "csv")
     if name is None:
         name = "cary"
     # import array
     lines = []
-    with open(filepath, "r", encoding="iso-8859-1") as f:
+    ds = np.DataSource(None)
+    with ds.open(filestr, "rt", encoding="iso-8859-1") as f:
         header = f.readline()
         columns = f.readline()
         while True:
             line = f.readline()
-            if line == "\n" or line == "":
+            if line == "\n" or line == "" or line == "\r\n":
                 break
             else:
                 # Note, it is necessary to call this twice, as a single call will
@@ -83,6 +87,7 @@ def from_Cary(filepath, name=None, parent=None, verbose=True):
     header = header.split(",")
     columns = columns.split(",")
     arr = np.array(lines).T
+    duplicate = len(header) // 2 == len(set(header) - {""})
     # chew through all scans
     datas = Collection(name=name, parent=parent, edit_local=parent is not None)
     units_dict = {"°c": "deg_C", "°f": "deg_F"}
@@ -92,7 +97,11 @@ def from_Cary(filepath, name=None, parent=None, verbose=True):
         ax = spl[0].lower() if len(spl) > 0 else None
         units = spl[1].lower() if len(spl) > 1 else None
         units = units_dict.get(units, units)
-        dat = datas.create_data(header[i], kind="Cary", source=filepath)
+        if duplicate:
+            name = "{}_{:03d}".format(header[i], i // 2)
+        else:
+            name = header[i]
+        dat = datas.create_data(name, kind="Cary", source=filestr)
         dat.create_variable(ax, arr[i][~np.isnan(arr[i])], units=units)
         dat.create_channel(
             columns[i + 1].lower(), arr[i + 1][~np.isnan(arr[i + 1])], label=columns[i + 1].lower()

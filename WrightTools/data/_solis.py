@@ -5,6 +5,7 @@
 
 
 import os
+import pathlib
 import time
 
 import numpy as np
@@ -28,8 +29,10 @@ def from_Solis(filepath, name=None, parent=None, verbose=True) -> Data:
 
     Parameters
     ----------
-    filepath : string, list of strings, or array of strings
+    filepath : path-like
         Path to .txt file.
+        Can be either a local or remote file (http/ftp).
+        Can be compressed with gz/bz2, decompression based on file name.
     name : string (optional)
         Name to give to the created data object. If None, filename is used.
         Default is None.
@@ -44,44 +47,49 @@ def from_Solis(filepath, name=None, parent=None, verbose=True) -> Data:
         New data object.
     """
     # parse filepath
-    if not filepath.endswith("asc"):
-        wt_exceptions.WrongFileTypeWarning.warn(filepath, "asc")
+    filestr = os.fspath(filepath)
+    filepath = pathlib.Path(filepath)
+
+    if not ".asc" in filepath.suffixes:
+        wt_exceptions.WrongFileTypeWarning.warn(filepath, ".asc")
     # parse name
     if not name:
-        name = os.path.basename(filepath).split(".")[0]
+        name = filepath.name.split(".")[0]
     # create data
-    with open(filepath) as f:
-        axis0 = []
-        arr = []
-        attrs = {}
-        while True:
-            line = f.readline().strip()[:-1]
-            if len(line) == 0:
-                break
-            else:
-                line = line.split(",")
-                line = [float(x) for x in line]
-                axis0.append(line.pop(0))
-                arr.append(line)
+    ds = np.DataSource(None)
+    f = ds.open(filestr, "rt")
+    axis0 = []
+    arr = []
+    attrs = {}
+    while True:
+        line = f.readline().strip()[:-1]
+        if len(line) == 0:
+            break
+        else:
+            line = line.split(",")
+            line = [float(x) for x in line]
+            axis0.append(line.pop(0))
+            arr.append(line)
 
-        i = 0
-        while i < 3:
-            line = f.readline().strip()
-            if len(line) == 0:
-                i += 1
+    i = 0
+    while i < 3:
+        line = f.readline().strip()
+        if len(line) == 0:
+            i += 1
+        else:
+            try:
+                key, val = line.split(":", 1)
+            except ValueError:
+                pass
             else:
-                try:
-                    key, val = line.split(":", 1)
-                except ValueError:
-                    pass
-                else:
-                    attrs[key.strip()] = val.strip()
+                attrs[key.strip()] = val.strip()
 
+    f.close()
     created = attrs["Date and Time"]  # is this UTC?
     created = time.strptime(created, "%a %b %d %H:%M:%S %Y")
     created = timestamp.TimeStamp(time.mktime(created)).RFC3339
 
-    kwargs = {"name": name, "kind": "Solis", "source": filepath, "created": created}
+    kwargs = {"name": name, "kind": "Solis", "source": filestr, "created": created}
     if parent is None:
         data = Data(**kwargs)
     else:

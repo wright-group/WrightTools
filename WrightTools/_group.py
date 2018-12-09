@@ -17,6 +17,7 @@ import numpy as np
 
 import h5py
 
+from ._dataset import Dataset
 from . import kit as wt_kit
 from . import exceptions as wt_exceptions
 from . import __wt5_version__
@@ -59,7 +60,7 @@ class Group(h5py.Group, metaclass=MetaClass):
         file.require_group(path)
         h5py.Group.__init__(self, bind=file[path].id)
         self.__n = 0
-        self.fid = self.file.fid
+        self.fid = self.file.id
         self.natural_name = name
         # attrs
         self.attrs["class"] = self.class_name
@@ -69,7 +70,11 @@ class Group(h5py.Group, metaclass=MetaClass):
             try:
                 if isinstance(value, pathlib.Path):
                     value = str(value)
-                elif isinstance(value, list) and len(value) > 0 and isinstance(value[0], str):
+                elif (
+                    isinstance(value, list)
+                    and len(value) > 0
+                    and isinstance(value[0], (str, os.PathLike))
+                ):
                     value = np.array(value, dtype="S")
                 elif sys.version_info > (3, 6):
                     try:
@@ -154,11 +159,11 @@ class Group(h5py.Group, metaclass=MetaClass):
         elif edit_local and filepath:
             p = filepath
         p = str(p)
-        for i in cls._instances.keys():
+        for i in Group._instances.keys():
             if i.startswith(os.path.abspath(p) + "::"):
-                file = cls._instances[i].file
-                if hasattr(cls._instances[i], "_tmpfile"):
-                    tmpfile = cls._instances[i]._tmpfile
+                file = Group._instances[i].file
+                if hasattr(Group._instances[i], "_tmpfile"):
+                    tmpfile = Group._instances[i]._tmpfile
                 break
         if file is None:
             file = h5py.File(p, "a")
@@ -167,18 +172,20 @@ class Group(h5py.Group, metaclass=MetaClass):
             parent = ""
             name = posixpath.sep
         else:
+            if not parent.endswith("/"):
+                parent += "/"
             name = natural_name
         fullpath = p + "::" + parent + name
         # create and/or return
         try:
-            instance = cls._instances[fullpath]
+            instance = Group._instances[fullpath]
         except KeyError:
             kwargs["file"] = file
             kwargs["parent"] = parent
             kwargs["name"] = natural_name
             instance = super(Group, cls).__new__(cls)
             cls.__init__(instance, **kwargs)
-            cls._instances[fullpath] = instance
+            Group._instances[fullpath] = instance
             if tmpfile:
                 setattr(instance, "_tmpfile", tmpfile)
                 weakref.finalize(instance, instance.close)
@@ -221,6 +228,16 @@ class Group(h5py.Group, metaclass=MetaClass):
         """Set natural name."""
         if value is None:
             value = ""
+        if hasattr(self, "_natural_name") and self.name != "/":
+            keys = [k for k in self._instances.keys() if k.startswith(self.fullpath)]
+            dskeys = [k for k in Dataset._instances.keys() if k.startswith(self.fullpath)]
+            self.parent.move(self._natural_name, value)
+            for k in keys:
+                obj = self._instances.pop(k)
+                self._instances[obj.fullpath] = obj
+            for k in dskeys:
+                obj = Dataset._instances.pop(k)
+                Dataset._instances[obj.fullpath] = obj
         self._natural_name = self.attrs["name"] = value
 
     @property
@@ -229,12 +246,10 @@ class Group(h5py.Group, metaclass=MetaClass):
         try:
             assert self._parent is not None
         except (AssertionError, AttributeError):
-            from .collection import Collection
-
             key = posixpath.dirname(self.fullpath)
             if key.endswith("::"):
                 key += posixpath.sep
-            self._parent = Collection._instances[key]
+            self._parent = Group._instances[key]
         finally:
             return self._parent
 
@@ -249,13 +264,9 @@ class Group(h5py.Group, metaclass=MetaClass):
         from .data._data import Channel, Data, Variable
 
         path = os.path.abspath(self.filepath) + "::"
-        for kind in (Collection, Channel, Data, Variable, Group):
-            rm = []
-            for key in kind._instances.keys():
-                if key.startswith(path):
-                    rm.append(key)
-            for key in rm:
-                kind._instances.pop(key, None)
+        for key in list(Group._instances.keys()):
+            if key.startswith(path):
+                Group._instances.pop(key, None)
 
         if self.fid.valid > 0:
             # for some reason, the following file operations sometimes fail
