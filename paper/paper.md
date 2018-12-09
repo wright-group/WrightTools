@@ -113,7 +113,7 @@ A convenience function, `interact2D`, allows users to explore a complete dataset
 
 # Availability
 
-`WrightTools` is hosted on GitHub [cite] and archived on Zenodo [@ThompsonBlaiseJonathan2018WrightTools].
+`WrightTools` is hosted on [GitHub](http://github.com/wright-group/WrightTools/) and archived on Zenodo [@ThompsonBlaiseJonathan2018WrightTools].
 `WrightTools` is distributed using [pip](http://pypi.org/project/WrightTools/) and [conda](http://anaconda.org/conda-forge/wrighttools) (through conda-forge).
 Documentation is available at [wright.tools](http://wright.tools).
 
