@@ -69,7 +69,7 @@ There are several recurring challenges in MDS data processing and representation
 The excellent Scientific Python ecosystem is well suited to adress all of these challenges. [@OliphantTravisE2007a]
 Numpy supports interaction with and manipulation of multidmensional arrays. [@OliphantTravisE2006a]
 Matplotlib supports one, two, and even three-dimensional plotting. [@HunterJohnD2007a]
-h5py [cite] interfaces with hdf5 [@hdf5], allowing for storage and memory-safe access to large multidmensional arrays in a binary format that can be accessed from a variety of different popular languages, including MATLAB and Fortran.
+h5py [@ColletteAndrew2013] interfaces with hdf5 [@hdf5], allowing for storage and memory-safe access to large multidmensional arrays in a binary format that can be accessed from a variety of different popular languages, including MATLAB and Fortran.
 ``WrightTools`` does not intend to replace or reimplement these core libraries.
 Instead, ``WrightTools`` offers an interface that impedance-matches multidimensional spectroscopy and Scientific Python.
 
