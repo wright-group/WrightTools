@@ -8,8 +8,12 @@ import numpy as np
 
 import h5py
 
+import warnings
+import numbers
+
 from .. import kit as wt_kit
 from .._dataset import Dataset
+from .. import exceptions as wt_exceptions
 
 __all__ = ["Channel"]
 
@@ -148,7 +152,7 @@ class Channel(Dataset):
 
         factor : number (optional)
             Tolerance factor.  Default is 3.
-        replace : {'nan', 'mean', 'mask', number} (optional)
+        replace : {'nan', 'mean', number} (optional)
             Behavior of outlier replacement. Default is nan.
 
             nan
@@ -156,9 +160,6 @@ class Channel(Dataset):
 
             mean
                 Outliers are replaced by the mean of its neighborhood.
-
-            mask
-                Array is masked at outliers.
 
             number
                 Array becomes given number.
@@ -173,7 +174,7 @@ class Channel(Dataset):
         clip
             Remove pixels outside of a certain range.
         """
-        raise NotImplementedError
+        warnings.warn("trim", category=wt_exceptions.EntireDatasetInMemoryWarning)
         outliers = []
         means = []
         # find outliers
@@ -192,16 +193,19 @@ class Channel(Dataset):
         # replace outliers
         i = tuple(zip(*outliers))
         if replace == "nan":
-            self[i] = np.nan
+            arr = self[:]
+            arr[i] = np.nan
+            self[:] = arr
         elif replace == "mean":
-            self[i] = means
-        elif replace == "mask":
-            self[:] = np.ma.array(self[:])
-            self[i] = np.ma.masked
-        elif type(replace) in [int, float]:
-            self[i] = replace
+            arr = self[:]
+            arr[i] = means
+            self[:] = arr
+        elif isinstance(replace, numbers.Number):
+            arr = self[:]
+            arr[i] = replace
+            self[:] = arr
         else:
-            raise KeyError("replace must be one of {nan, mean, mask} or some number")
+            raise KeyError("replace must be one of {nan, mean} or some number")
         # finish
         if verbose:
             print("%i outliers removed" % len(outliers))
