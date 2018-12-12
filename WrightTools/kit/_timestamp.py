@@ -24,7 +24,9 @@ __all__ = ["TimeStamp", "timestamp_from_RFC3339"]
 
 
 def timestamp_from_RFC3339(RFC3339):
-    """Generate a Timestamp object from a RFC3339__ formatted string.
+    """Generate a Timestamp object from a RFC3339 formatted string.
+
+    `Link to RFC3339`__
 
     __ https://www.ietf.org/rfc/rfc3339.txt
 
