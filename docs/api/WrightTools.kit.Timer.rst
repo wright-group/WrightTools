@@ -1,22 +1,9 @@
 WrightTools.kit.Timer
 =====================
 
-.. currentmodule:: WrightTools.kit
 
-.. autoclass:: Timer
-
-   
-   .. automethod:: __init__
-
-   
-   .. rubric:: Methods
-
-   .. autosummary::
-   
-      ~Timer.__init__
-   
-   
-
-   
-   
-   
+.. automodule:: WrightTools.kit.Timer
+   :members:
+   :special-members: __init__
+   :imported-members:
+   :show-inheritance:
