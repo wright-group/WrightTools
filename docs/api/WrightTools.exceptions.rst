@@ -15,7 +15,7 @@ WrightTools\.exceptions module
    TypeError
    UnitsError
    ValueError
-   VisableDeprecationWarning
+   VisibleDeprecationWarning
    WrightToolsException
    WrightToolsWarning
    WrongFileTypeWarning
