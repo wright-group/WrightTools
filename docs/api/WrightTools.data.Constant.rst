@@ -12,8 +12,8 @@ WrightTools.data.Constant
    .. rubric:: Methods
 
    .. autosummary::
+      :toctree: WrightTools.data.Constant
    
-      ~Constant.__init__
       ~Constant.convert
       ~Constant.max
       ~Constant.min
@@ -25,6 +25,7 @@ WrightTools.data.Constant
    .. rubric:: Attributes
 
    .. autosummary::
+      :toctree: WrightTools.data.Constant
    
       ~Constant.full
       ~Constant.identity

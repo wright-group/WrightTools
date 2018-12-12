@@ -498,9 +498,9 @@ class Data(Group):
         Moment 0 is the integral of the slice.
         Moment 1 is the weighted average or "Center of Mass", normalized by the integral
         Moment 2 is the variance, the central moment about the center of mass,
-            normalized by the integral
+        normalized by the integral
         Moments 3+ are central moments about the center of mass, normalized by the integral
-            and by the standard deviation to the power of the moment.
+        and by the standard deviation to the power of the moment.
 
         Moments, especially higher order moments, are susceptible to noise and baseline.
         It is recommended when used with real data to use :meth:`WrightTools.data.Channel.clip`

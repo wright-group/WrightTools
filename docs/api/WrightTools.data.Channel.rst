@@ -12,8 +12,8 @@ WrightTools.data.Channel
    .. rubric:: Methods
 
    .. autosummary::
+      :toctree: WrightTools.data.Channel
    
-      ~Channel.__init__
       ~Channel.argmax
       ~Channel.argmin
       ~Channel.astype
@@ -42,6 +42,7 @@ WrightTools.data.Channel
    .. rubric:: Attributes
 
    .. autosummary::
+      :toctree: WrightTools.data.Channel
    
       ~Channel.attrs
       ~Channel.chunks

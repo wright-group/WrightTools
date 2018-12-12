@@ -12,8 +12,8 @@ WrightTools.data.Data
    .. rubric:: Methods
 
    .. autosummary::
+      :toctree: WrightTools.data.Data
    
-      ~Data.__init__
       ~Data.bring_to_front
       ~Data.chop
       ~Data.clear
@@ -71,6 +71,7 @@ WrightTools.data.Data
    .. rubric:: Attributes
 
    .. autosummary::
+      :toctree: WrightTools.data.Data
    
       ~Data.attrs
       ~Data.axes

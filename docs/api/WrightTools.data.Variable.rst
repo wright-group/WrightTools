@@ -12,8 +12,8 @@ WrightTools.data.Variable
    .. rubric:: Methods
 
    .. autosummary::
+      :toctree: WrightTools.data.Variable
    
-      ~Variable.__init__
       ~Variable.argmax
       ~Variable.argmin
       ~Variable.astype
@@ -39,6 +39,7 @@ WrightTools.data.Variable
    .. rubric:: Attributes
 
    .. autosummary::
+      :toctree: WrightTools.data.Variable
    
       ~Variable.attrs
       ~Variable.chunks

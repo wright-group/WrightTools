@@ -12,8 +12,8 @@ WrightTools.data.Axis
    .. rubric:: Methods
 
    .. autosummary::
-   
-      ~Axis.__init__
+      :toctree: WrightTools.data.Axis
+
       ~Axis.convert
       ~Axis.max
       ~Axis.min
@@ -25,6 +25,7 @@ WrightTools.data.Axis
    .. rubric:: Attributes
 
    .. autosummary::
+      :toctree: WrightTools.data.Axis
    
       ~Axis.full
       ~Axis.identity
