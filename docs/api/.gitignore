@@ -1,4 +1,5 @@
 *.rst
+!modules.rst
 !WrightTools.artists.rst
 !WrightTools.artists.Axes.rst
 !WrightTools.artists.Figure.rst
