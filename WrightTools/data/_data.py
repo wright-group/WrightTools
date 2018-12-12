@@ -1570,9 +1570,11 @@ class Data(Group):
         self.channels[0].chunkwise(f, self.channels)
 
     def smooth(self, factors, channel=None, verbose=True) -> "Data":
-        """Smooth a channel using an n-dimenional `kaiser window`__.
+        """Smooth a channel using an n-dimenional kaiser window.
 
         Note, all arrays are loaded into memory.
+
+        For more info see `Kaiser_window`__ wikipedia entry.
 
         __ https://en.wikipedia.org/wiki/Kaiser_window
 
