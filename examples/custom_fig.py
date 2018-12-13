@@ -19,7 +19,8 @@ from WrightTools import datasets
 p = datasets.wt5.v1p0p1_MoS2_TrEE_movie
 data = wt.open(p)
 data.level(0, 2, -3)
-data.convert("eV", convert_variables=True)
+data.convert("eV", convert_variables=True, verbose=False)
+data.smooth([2, 2, 2])
 data.ai0.symmetric_root(2)
 data.ai0.normalize()
 data.ai0.clip(min=0, replace="value")
@@ -40,14 +41,21 @@ trace_colors = ["#FE4EDA", "#00B7EB"]
 # prepare figure gridspec
 cols = [1, 1, "cbar"]
 aspects = [[[0, 0], .3]]
-fig, gs = wt.artists.create_figure(width="double", cols=cols, nrows=3, aspects=aspects)
+fig, gs = wt.artists.create_figure(
+    width="double", cols=cols, nrows=3, aspects=aspects, wspace=.35, hspace=.35
+)
 # plot wigners
 indxs = [(row, col) for row in range(1, 3) for col in range(2)]
 for indx, wigner, color in zip(indxs, wigners, wigner_colors):
     ax = plt.subplot(gs[indx])
-    ax.pcolor(wigner, vmin=0, vmax=1)
+    ax.pcolor(wigner, vmin=0, vmax=1)  # global colormpa
+    ax.contour(wigner)  # local contours
     ax.grid()
     wt.artists.set_ax_spines(ax=ax, c=color)
+    # set title as value of w2
+    wigner.constants[0].format_spec = ".2f"
+    wigner.round_spec = -1
+    ax.set_title(wigner.constants[0].label)
     # plot overlines
     for d2, t_color in zip(d2_vals, trace_colors):
         ax.axhline(d2, color=t_color, alpha=.5, linewidth=6)
@@ -72,4 +80,4 @@ wt.artists.set_fig_labels(xlabel=data.w1__e__wm.label, ylabel=data.d2.label, col
 ax = plt.subplot(gs[0, 0])
 ax.set_ylabel("amplitude")
 # saving the figure as a png
-wt.artists.savefig("custom_fig.png", fig=fig, close=False)
+# wt.artists.savefig("custom_fig.png", fig=fig, close=False)
