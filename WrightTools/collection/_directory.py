@@ -6,8 +6,8 @@
 
 import fnmatch
 import queue
+import pathlib
 import os
-import posixpath
 
 from ._collection import Collection
 
@@ -26,7 +26,7 @@ def from_directory(filepath, from_methods, *, name=None, parent=None, verbose=Tr
 
     Parameters
     ----------
-    filepath: str
+    filepath: path-like
         Path to the directory on the file system
     from_methods: dict<str, callable>
         Dictionary which maps patterns (using Unix-like glob wildcard patterns)
@@ -56,8 +56,9 @@ def from_directory(filepath, from_methods, *, name=None, parent=None, verbose=Tr
     ...             }
     >>> col = wt.collection.from_directory('path/to/folder', from_dict)
     """
+    filepath = pathlib.Path(filepath).resolve()
     if name is None:
-        name = os.path.basename(os.path.abspath(filepath))
+        name = filepath.name
 
     if verbose:
         print("Creating Collection:", name)
@@ -66,8 +67,8 @@ def from_directory(filepath, from_methods, *, name=None, parent=None, verbose=Tr
 
     q = queue.Queue()
 
-    for i in os.listdir(filepath):
-        q.put((filepath, i, root))
+    for i in filepath.iterdir():
+        q.put((filepath, i.name, root))
 
     while not q.empty():
         path, fname, parent = q.get()
@@ -75,17 +76,17 @@ def from_directory(filepath, from_methods, *, name=None, parent=None, verbose=Tr
             if fnmatch.fnmatch(fname, pattern):
                 if func is not None:
                     func(
-                        os.path.join(path, fname),
+                        path / fname,
                         name=os.path.splitext(fname)[0],
                         parent=parent,
                         verbose=verbose,
                     )
                 break
         else:
-            if os.path.isdir(os.path.join(path, fname)):
+            if (path / fname).is_dir():
                 if verbose:
-                    print("Creating Collection at", posixpath.join(parent.name, fname))
+                    print("Creating Collection at", pathlib.PurePosixPath(parent.name) / fname)
                 col = parent.create_collection(name=fname)
-                for i in os.listdir(os.path.join(path, fname)):
-                    q.put((os.path.join(path, fname), i, col))
+                for i in (path / fname).iterdir():
+                    q.put((path / fname, i.name, col))
     return root

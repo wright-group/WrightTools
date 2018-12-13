@@ -17,6 +17,7 @@ import numpy as np
 
 import h5py
 
+from ._dataset import Dataset
 from . import kit as wt_kit
 from . import exceptions as wt_exceptions
 from . import __wt5_version__
@@ -59,7 +60,7 @@ class Group(h5py.Group, metaclass=MetaClass):
         file.require_group(path)
         h5py.Group.__init__(self, bind=file[path].id)
         self.__n = 0
-        self.fid = self.file.fid
+        self.fid = self.file.id
         self.natural_name = name
         # attrs
         self.attrs["class"] = self.class_name
@@ -69,7 +70,7 @@ class Group(h5py.Group, metaclass=MetaClass):
             try:
                 if isinstance(value, pathlib.Path):
                     value = str(value)
-                elif isinstance(value, list) and len(value) > 0 and isinstance(value[0], str):
+                elif isinstance(value, list) and len(value) > 0 and isinstance(value[0], os.PathLike):
                     value = np.array(value, dtype="S")
                 elif sys.version_info > (3, 6):
                     try:
@@ -223,6 +224,16 @@ class Group(h5py.Group, metaclass=MetaClass):
         """Set natural name."""
         if value is None:
             value = ""
+        if hasattr(self, "_natural_name") and self.name != "/":
+            keys = [k for k in self._instances.keys() if k.startswith(self.fullpath)]
+            dskeys = [k for k in Dataset._instances.keys() if k.startswith(self.fullpath)]
+            self.parent.move(self._natural_name, value)
+            for k in keys:
+                obj = self._instances.pop(k)
+                self._instances[obj.fullpath] = obj
+            for k in dskeys:
+                obj = Dataset._instances.pop(k)
+                Dataset._instances[obj.fullpath] = obj
         self._natural_name = self.attrs["name"] = value
 
     @property

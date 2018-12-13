@@ -5,6 +5,7 @@
 
 
 import os
+import pathlib
 
 import numpy as np
 
@@ -26,8 +27,10 @@ def from_ocean_optics(filepath, name=None, *, parent=None, verbose=True) -> Data
 
     Parameters
     ----------
-    filepath : string, list of strings, or array of strings
+    filepath : path-like
         Path to an ocean optics output file.
+        Can be either a local or remote file (http/ftp).
+        Can be compressed with gz/bz2, decompression based on file name.
     name : string (optional)
         Name to give to the created data object. If None, filename is used.
         Default is None.
@@ -42,13 +45,16 @@ def from_ocean_optics(filepath, name=None, *, parent=None, verbose=True) -> Data
         New data object.
     """
     # parse filepath
-    if not filepath.endswith("scope"):
-        wt_exceptions.WrongFileTypeWarning.warn(filepath, "scope")
+    filestr = os.fspath(filepath)
+    filepath = pathlib.Path(filepath)
+
+    if not ".scope" in filepath.suffixes:
+        wt_exceptions.WrongFileTypeWarning.warn(filepath, ".scope")
     # parse name
     if not name:
-        name = os.path.basename(filepath).split(".")[0]
+        name = filepath.name.split(".")[0]
     # create data
-    kwargs = {"name": name, "kind": "Ocean Optics", "source": filepath}
+    kwargs = {"name": name, "kind": "Ocean Optics", "source": filestr}
     if parent is None:
         data = Data(**kwargs)
     else:
@@ -56,9 +62,10 @@ def from_ocean_optics(filepath, name=None, *, parent=None, verbose=True) -> Data
     # array
     skip_header = 14
     skip_footer = 1
-    arr = np.genfromtxt(
-        filepath, skip_header=skip_header, skip_footer=skip_footer, delimiter="\t"
-    ).T
+    ds = np.DataSource(None)
+    f = ds.open(filestr, "rt")
+    arr = np.genfromtxt(f, skip_header=skip_header, skip_footer=skip_footer, delimiter="\t").T
+    f.close()
     # construct data
     data.create_variable(name="energy", values=arr[0], units="nm")
     data.create_channel(name="signal", values=arr[1])
