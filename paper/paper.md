@@ -66,7 +66,7 @@ There are several recurring challenges in MDS data processing and representation
 - Dataset size may be large enough to run into computer memory limits.
 - Dataset dimensionality is large enough to represent challenges in human interaction and visualization.
 
-The excellent Scientific Python ecosystem is well suited to adress all of these challenges. [@OliphantTravisE2007a]
+The excellent Scientific Python ecosystem is well suited to address all of these challenges. [@OliphantTravisE2007a]
 Numpy supports interaction with and manipulation of multidimensional arrays. [@OliphantTravisE2006a]
 Matplotlib supports one, two, and even three-dimensional plotting. [@HunterJohnD2007a]
 h5py [@ColletteAndrew2013] interfaces with hdf5 [@hdf5], allowing for storage and memory-safe access to large multidimensional arrays in a binary format that can be accessed from a variety of different popular languages, including MATLAB and Fortran.
@@ -100,7 +100,7 @@ Users may at any time change their axes by simply calling ``transform`` with new
 ``WrightTools`` offers a suite of data manipulation tools with MDS in mind.
 Users can access portions of their data using high-level methods like ``chop``, ``split``, and ``clip``.
 They can process their data using simple mathematical operations or more specific tools like ``level``, ``gradient``, ``collapse``, and ``smooth``.
-Users can even join multiple datasets together, creating higher-dimensional datasets when appropriate.
+Users can even ``join`` multiple datasets together, creating higher-dimensional datasets when appropriate.
 All of these operations refer to the self-describing internal structure of the ``wt5`` file wherever possible.
 Users are not asked to refer to the specific shape and indicies of their data arrays.
 Instead, they deal with simple axis expressions and unit-aware coordinates.
