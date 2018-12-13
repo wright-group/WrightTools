@@ -1,7 +1,7 @@
 WrightTools.kit.INI
 ===================
 
-.. automodule:: WrightTools.kit._ini
+.. autoclass:: WrightTools.kit.INI
    :members:
    :special-members: __init__
    :show-inheritance:

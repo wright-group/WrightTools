@@ -33,15 +33,10 @@ WrightTools.data.Data
       ~Data.get_zenith
       ~Data.gradient
       ~Data.heal
-      ~Data.items
-      ~Data.keys
       ~Data.level
       ~Data.map_variable
       ~Data.moment
-      ~Data.move
       ~Data.offset
-      ~Data.pop
-      ~Data.popitem
       ~Data.print_tree
       ~Data.prune
       ~Data.remove_channel
@@ -49,19 +44,13 @@ WrightTools.data.Data
       ~Data.remove_variable
       ~Data.rename_channels
       ~Data.rename_variables
-      ~Data.require_dataset
-      ~Data.require_group
       ~Data.save
       ~Data.set_constants
-      ~Data.setdefault
       ~Data.share_nans
       ~Data.smooth
       ~Data.split
       ~Data.transform
       ~Data.update
-      ~Data.values
-      ~Data.visit
-      ~Data.visititems
       ~Data.zoom
    
    

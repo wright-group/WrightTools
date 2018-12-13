@@ -5,11 +5,3 @@ WrightTools.artists.Figure
 
 .. autoclass:: Figure
 
-   
-   .. rubric:: Methods
-
-   .. autosummary::
-      :toctree: WrightTools.artists.Figure
-   
-      Figure.add_subplot
-   
