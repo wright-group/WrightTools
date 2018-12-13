@@ -23,7 +23,7 @@ authors:
 affiliations:
  - name: University of Wisconsin--Madison
    index: 1
-date: 26 November 2018
+date: 13 December 2018
 bibliography: paper.bib
 ---
 
@@ -131,7 +131,7 @@ We are particularly excited about ongoing projects that build on top of `WrightT
 
 # Acknowledgements
 
-The development of `WrightTools` has been supported by the Department of Energy, Office of Basic Energy Sciences, Division of Materials Sciences and Engineering, under award DE--FG02--09ER46664 and by the National Science Foundation Division of Chemistry under Grant No. CHE--1709060.
+The development of `WrightTools` has been supported by by the National Science Foundation Division of Chemistry under Grant No. CHE--1709060.
 D.J.M acknowledges support from the Link Foundation.
 
 # References
