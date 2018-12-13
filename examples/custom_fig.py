@@ -80,4 +80,4 @@ wt.artists.set_fig_labels(xlabel=data.w1__e__wm.label, ylabel=data.d2.label, col
 ax = plt.subplot(gs[0, 0])
 ax.set_ylabel("amplitude")
 # saving the figure as a png
-# wt.artists.savefig("custom_fig.png", fig=fig, close=False)
+wt.artists.savefig("custom_fig.png", fig=fig, close=False)
