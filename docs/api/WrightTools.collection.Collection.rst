@@ -4,6 +4,7 @@ WrightTools.collection.Collection
 .. currentmodule:: WrightTools.collection
 
 .. autoclass:: Collection
+   :show-inheritance:
 
    
    .. automethod:: __init__

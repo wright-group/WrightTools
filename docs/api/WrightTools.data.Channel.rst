@@ -4,6 +4,7 @@ WrightTools.data.Channel
 .. currentmodule:: WrightTools.data
 
 .. autoclass:: Channel
+   :show-inheritance:
 
    
    .. automethod:: __init__

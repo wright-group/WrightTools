@@ -4,6 +4,7 @@ WrightTools.data.Constant
 .. currentmodule:: WrightTools.data
 
 .. autoclass:: Constant
+   :show-inheritance:
 
    
    .. automethod:: __init__

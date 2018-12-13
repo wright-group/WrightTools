@@ -4,6 +4,7 @@ WrightTools.artists.Axes
 .. currentmodule:: WrightTools.artists
 
 .. autoclass:: Axes
+   :show-inheritance:
 
    
    .. rubric:: Methods

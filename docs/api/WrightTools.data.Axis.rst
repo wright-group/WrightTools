@@ -4,6 +4,7 @@ WrightTools.data.Axis
 .. currentmodule:: WrightTools.data
 
 .. autoclass:: Axis
+   :show-inheritance:
 
    
    .. automethod:: __init__

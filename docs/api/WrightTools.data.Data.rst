@@ -4,6 +4,7 @@ WrightTools.data.Data
 .. currentmodule:: WrightTools.data
 
 .. autoclass:: Data
+   :show-inheritance:
 
    
    .. automethod:: __init__
