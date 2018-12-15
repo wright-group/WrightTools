@@ -23,7 +23,7 @@ Each dataset has a specific data type, such as integer, float, or character.
 Groups and datasets can contain additional `metadata <https://en.wikipedia.org/wiki/Metadata>`_.
 This metadata is stored in a key: value pair system called ``attrs``, similar to a python dictionary.
 
-Much more imformation can be found on the `HDF5 tutorial <https://support.hdfgroup.org/HDF5/Tutor/>`_.
+Much more information can be found on the `HDF5 tutorial <https://support.hdfgroup.org/HDF5/Tutor/>`_.
 
 WrightTools relies upon the `h5py package <http://www.h5py.org/>`_, a Pythonic interface to HDF5.
 
