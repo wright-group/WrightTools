@@ -1,8 +1,13 @@
 WrightTools\.units module
 =========================
 
-.. automodule:: WrightTools.units
-    :members:
-    :special-members: __init__
-    :undoc-members:
-    :show-inheritance:
+.. currentmodule:: WrightTools.units
+
+.. autosummary::
+   :toctree: ../api
+
+   converter
+   get_symbol
+   get_valid_conversions
+   is_valid_conversion
+   kind

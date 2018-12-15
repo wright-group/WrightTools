@@ -24,7 +24,9 @@ __all__ = ["TimeStamp", "timestamp_from_RFC3339"]
 
 
 def timestamp_from_RFC3339(RFC3339):
-    """Generate a Timestamp object from a RFC3339__ formatted string.
+    """Generate a Timestamp object from a RFC3339 formatted string.
+
+    `Link to RFC3339`__
 
     __ https://www.ietf.org/rfc/rfc3339.txt
 
@@ -144,7 +146,9 @@ class TimeStamp:
 
     @property
     def RFC3339(self):
-        """RFC3339__.
+        """RFC3339.
+
+        `Link to RFC3339.`__
 
         __ https://www.ietf.org/rfc/rfc3339.txt
         """
@@ -172,7 +176,9 @@ class TimeStamp:
 
     @property
     def RFC5322(self):
-        """RFC5322__.
+        """RFC5322.
+
+        `Link to RFC5322.`__
 
         __ https://tools.ietf.org/html/rfc5322#section-3.3
         """
