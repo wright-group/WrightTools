@@ -38,7 +38,6 @@ Contents
    wt5
    data
    artists
-   kit
    units
    datasets
    contributing
