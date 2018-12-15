@@ -76,7 +76,8 @@ Instead, ``WrightTools`` offers an interface that impedance-matches multidimensi
 ``WrightTools`` defines a universal MDS data format: the ``wt5`` file.
 These are simply hdf5 files with certain internal conventions that are designed for MDS.
 These internal conventions enable the flexibility and ease-of-use that we discuss in the rest of this section.
-The multidimensional spectroscopic data within these files is dynamically interacted with through instances of ``WrightTools``'s various classes, which are children of h5py classes.
+Instances of WrightTools’s classes dynamically interact with the multidimensional spectroscopic data within these files.
+These classes are children of h5py classes.
 ``WrightTools`` offers a variety of functions that try hard to convert data stored in various other formats to ``wt5``.
 
 ``WrightTools`` defines a unique and flexable strategy of storing and manipulating MDS datasets.
