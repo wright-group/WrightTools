@@ -8,6 +8,9 @@ We really appreciate your help.
 
 If you have any questions at all, please either `open an issue on GitHub <https://github.com/wright-group/WrightTools/issues>`_ or email a WrightTools maintainer. The current maintainers can always be found in `CONTRIBUTORS <https://github.com/wright-group/WrightTools/blob/master/CONTRIBUTORS>`_.
 
+Are you interested in adding support for yet another data format?
+Please see :ref:`write_from_function`.
+
 Preparing
 ---------
 

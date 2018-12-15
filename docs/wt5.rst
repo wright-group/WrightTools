@@ -1,7 +1,7 @@
 .. _wt5:
 
-wt5
-===
+The wt5 File Format
+===================
 
 WrightTools stores data in binary wt5 files.
 

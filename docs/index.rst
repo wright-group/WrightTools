@@ -35,21 +35,20 @@ Contents
 
    install
    quickstart
-   wt5
    data
    collection
    artists
    units
    datasets
    contributing
-   write_from_method
+   wt5
    api/modules
    auto_examples/index
    citation
    alternatives
 .. fit
 .. diagrams
-
+i
 Index
 -----
 
