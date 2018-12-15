@@ -37,6 +37,7 @@ Contents
    quickstart
    wt5
    data
+   collection
    artists
    units
    datasets
