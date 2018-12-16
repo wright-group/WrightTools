@@ -78,4 +78,4 @@ Collections can be nested and added to arbitrarily in order to optimally organiz
 
 Note that the collections do not directly contain datasets.
 Datasets are children of the data objects.
-We discuss data objects in the next section.
+We discussed data objects in the previous section.
