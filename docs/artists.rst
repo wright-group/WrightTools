@@ -176,6 +176,8 @@ exploring the relationships between ``WrightTools`` and the underlying ``matplot
 
 The preprocessing of data is handled in tools covered in :ref:`data`.
 
+First, the full code and the image it creates:
+
 .. literalinclude:: auto_examples/custom_fig.py
    :lines: 10-
 
@@ -249,11 +251,16 @@ Of course, standard matplotlib methods like :meth:`~matplotlib.axes.Axes.axhline
 In addition, ``WrightTools`` defines some small helper functions for common tasks.
 
 - :meth:`~WrightTools.artists.set_ax_spines` Easily set color/width of the outline (spines) of an axis
+
   - Great for using color to connect different parts of a figure (or figures throughout a larger work)
+
 - :meth:`~WrightTools.artists.corner_text` Quick and easy plot labeling within a dense grid
+
   - Pairs well with :attr:`WrightTools.data.Constant.label`
+
 - :meth:`~WrightTools.artists.plot_colorbar` Add a colorbar in a single function call
 - :meth:`~WrightTools.artists.set_fig_labels` Label axes in a whole row/column of a figure
+
   - Allows using slice objects to limit range affected
   - Removes axis labels from other axes in the rectangle
   - Pairs well with :attr:`WrightTools.data.Axes.label`
