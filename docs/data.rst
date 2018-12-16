@@ -104,14 +104,34 @@ Constant adds the value to to the label attribute, suitable for titles of plots 
 static values associated with the plot.
 Note that there is nothing enforcing that the value is actually static: constants still have
 shapes and can be indexed to get the underlying numpy array.
+
+You can control how this label is generated using the attributes ``format_spec`` an ``round_spec``.
+``label`` uses the python builtin ``format``, an thus format_spec is a specification as in the 
+`Format Specification Mini-Language`_.
+Common examples would be "0.2f" or "0.3e" for decimal representation with two digits past the decimal
+and engineers notation with 3 digits past the decimal, respectively.
+``round_spec`` allows you to control the rounding of your number via the `builtin`_ ``round()``.
+For instance, if you want a number rounded to the hundreds position, but represented as an integer, you may use ``round_spec=-2; format_spec="0.0f"``.
+
+
+For example, if you have a constant with value ``123.4567 nm``, a ``format_spec`` of ``0.3f``, and a ``round_spec`` of ``2``, you will get a label something like ``'$\\mathsf{\\lambda_{1}\\,=\\,123.460\\,nm}$'``, which will render as :math:`\mathsf{\lambda_{1}\,=\,123.460\,nm}`.
+
+An example of using constants/constant labels for plotting can be found in the gallery: :ref:`sphx_glr_auto_examples_custom_fig.py`.
+
+.. _`Format Specification Mini-Language`: https://docs.python.org/3/library/string.html#formatspec
+.. _`builtin`: https://docs.python.org/3/library/functions.html#round
+
 In addition to the above attributes, constants add:
 
-=========================================  ===============================================================
-attribute                                   description
------------------------------------------  ---------------------------------------------------------------
-:attr:`~WrightTools.data.Constant.value`   The mean (ignoring NaNs) of the evaluated expression.
-:attr:`~WrightTools.data.Constant.std`     The standard deviation of the points used to compute the value.
-=========================================  ===============================================================
+==============================================  =========================================================================
+attribute                                       description
+----------------------------------------------  -------------------------------------------------------------------------
+:attr:`~WrightTools.data.Constant.format_spec`  Format specification for how to represent the value, as in ``format()``.
+:attr:`~WrightTools.data.Constant.round_spec`   Specify which digit to round to, as in `round()`
+:attr:`~WrightTools.data.Constant.label`        LaTeX formatted label which includes a symbol and the constant value.
+:attr:`~WrightTools.data.Constant.value`        The mean (ignoring NaNs) of the evaluated expression.
+:attr:`~WrightTools.data.Constant.std`          The standard deviation of the points used to compute the value.
+==============================================  =========================================================================
 
 Channel
 ```````
