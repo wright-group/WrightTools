@@ -82,7 +82,7 @@ WrightTools strives to make data visualization as quick and painless as possible
 Axes, labels, and units are brought along implicitly.
 
 WrightTools offers a few handy ways to quickly visualize a data object, shown below.
-For more information, see :ref:`artists`, or check out our `gallery`_.
+For more information, see :ref:`artists`, or check out our `Gallery`_.
 
 quick1D
 ^^^^^^^
@@ -186,7 +186,7 @@ Note that :meth:`~WrightTools.data.Data.split` accepts axis expressions and unit
    from WrightTools import datasets
    p = datasets.wt5.v1p0p1_MoS2_TrEE_movie
    data = wt.open(p)
-   col = data.split('d2', 0.)
+   col = data.split('d2', -100.)
    fig, gs = wt.artists.create_figure(cols=[1,1])
    for i, d in enumerate(col.values()):
        d = d.chop("w1=wm", "d2", at={"w2": (2, "eV")})[0]
@@ -195,7 +195,6 @@ Note that :meth:`~WrightTools.data.Data.split` accepts axis expressions and unit
        ax.set_xlim(data.w1__e__wm.min(), data.w1__e__wm.max())
        ax.set_ylim(data.d2.min(), data.d2.max())
    wt.artists.set_fig_labels(xlabel=data.w1__e__wm.label, ylabel=data.d2.label)
-   plt.show()
 
 Clip
 ^^^^
@@ -216,7 +215,6 @@ Use :meth:`~WrightTools.data.Channel.clip` to ignore remove points outside of a 
    data = wt.open(p)
    data.ai0.clip(min=0.0, max=0.1)
    wt.artists.quick2D(data, 'w1=wm', 'd2', at={'w2': [2, 'eV']})
-   plt.show()
 
 Transform
 ^^^^^^^^^
@@ -235,10 +233,9 @@ Use :meth:`~WrightTools.data.Data.transform` to choose a different set of axes f
    from WrightTools import datasets
    p = datasets.wt5.v1p0p1_MoS2_TrEE_movie
    data = wt.open(p)
-   data.convert('eV')
    data.transform('w1=wm', 'w2-wm', 'd2')
-   wt.artists.quick2D(data, 'w1-w2', 'd2')
-   plt.show()
+   data.convert('eV')
+   wt.artists.quick2D(data, 'w1=wm', 'w2-wm', at={'d2': (-100, 'fs')})
 
 Save Data
 ---------
@@ -333,8 +330,8 @@ If you want to read further, consider the following links:
 * more about data objects: :ref:`data`
 * more about collection objects: :ref:`collection`
 * more about WrightTools artists: :ref:`artists`
-* a gallery of figures made using WrightTools (click for source code): `gallery`_
+* a gallery of figures made using WrightTools (click for source code): `Gallery`_
 * a complete list of WrightTools units: :ref:`units`
 * a complete list of attributes and methods of the ``Data`` class: :class:`~WrightTools.data.Data`
 
-.. _gallery: auto_examples/index.html
+.. _Gallery: auto_examples/index.html

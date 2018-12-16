@@ -48,7 +48,7 @@ Contents
    alternatives
 .. fit
 .. diagrams
-i
+
 Index
 -----
 
