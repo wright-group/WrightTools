@@ -22,13 +22,13 @@ Metadata
 ^^^^^^^^
 
 The following metadata is handled within ``WrightTools`` and define the necessary attributes to be a ``wt5`` file.
-It is recommended not to write over these attributes manually except at import time (e.g. ``from_<x>`` function)
+It is recommended not to write over these attributes manually except at import time (e.g. ``from_<x>`` function).
 
 ===================  ===========  ==========  ==========  ==========  ============================================
 name                 Collection   Data        Variable    Channel     description/notes
 ===================  ===========  ==========  ==========  ==========  ============================================
 ``name``             yes          yes         yes         yes         Usually matches the last component of the path,
-                                                                      except for root, ``/``, which does not have a name
+                                                                      except for root, ``/``, which does not have a path with it's name
 ``class``            yes          yes         yes         yes         Identifies which kind of WrightTools object it is.
 ``created``          yes          yes                                 Timestamp of when the object was made,
                                                                       can be overwritten with source file creation time by ``from_<x>`` functions.
@@ -131,7 +131,7 @@ Initial release of the format.
 Version 1.0.1
 ^^^^^^^^^^^^^
 
-Changes internal handling of strings. Bare strings are no longer call ``encode()`` before storing.
+Changes internal handling of strings. Bare strings are no longer required to call ``encode()`` before storing.
 
 Version 1.0.2
 ^^^^^^^^^^^^^
