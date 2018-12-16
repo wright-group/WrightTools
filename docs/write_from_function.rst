@@ -152,7 +152,7 @@ A few simple validation checks can be performed.
 If it is not possible to read a data object, it should raise a ``WrightTools`` exception. See :mod:`~WrightTools.exceptions`.
 If it is simply an unexpected feature, such as unusual file extension, it should raise a warning.
 ``WrightTools`` includes a specific warning for unexpected file type: :class:`~WrightTools.exceptions.WrongFileTypeWarning`.
-We use :meth:`pathlib.Path.suffixes` to allow for compound file extensions like ``.txt.gz``.
+We use :data:`pathlib.PurePath.suffixes` to allow for compound file extensions like ``.txt.gz``.
 You should also validate the name, and extract the default in this step.
 
 The reason to have both ``filestr`` and ``filepath`` is that :class:`pathlib.Path` objects
@@ -233,7 +233,7 @@ Create Variables and Channels
 -----------------------------
 
 Creating variables (things you set) and channels (things you measure) is painless.
-Once you have a ``numpy`` array, (see tools such as :meth:`numpy.genfromtxt`), all you have to
+Once you have a ``numpy`` array, (see tools such as :func:`numpy.genfromtxt`), all you have to
 do is add a name, and (optionally) units.
 
 Units are supported for both variables and channels, though tend to be more common on variables.
@@ -256,7 +256,7 @@ For one-dimensional data formats, this is particularly easy:
         data.create_channel(name="signal", values=arr[1])
 
 :class:`numpy.DataSource` is a class which provides transparent decompression and remote file retrieval.
-:class:`numpy.genfromtxt` will handle this itself, however it will leave the downloaded files in the
+:func:`numpy.genfromtxt` will handle this itself, however it will leave the downloaded files in the
 working directory, and opening explicitly allows you to use the file more directly as well.
 Using ``np.DataSource(None)`` causes it to use temporary files which are removed automatically.
 Opening in ``"rt"`` mode ensures that you are reading as text.

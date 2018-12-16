@@ -3,6 +3,8 @@ WrightTools\.data package
 
 .. currentmodule:: WrightTools.data
 
+.. automodule:: WrightTools.data
+
 .. autosummary::
    :toctree: ../api
 

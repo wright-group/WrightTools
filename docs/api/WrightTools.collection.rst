@@ -3,6 +3,8 @@ WrightTools\.collection package
 
 .. currentmodule:: WrightTools.collection
 
+.. automodule:: WrightTools.collection
+
 .. autosummary::
    :toctree: ../api
 

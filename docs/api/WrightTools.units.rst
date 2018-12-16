@@ -3,6 +3,8 @@ WrightTools\.units module
 
 .. currentmodule:: WrightTools.units
 
+.. automodule:: WrightTools.units
+
 .. autosummary::
    :toctree: ../api
 
