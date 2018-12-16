@@ -134,14 +134,14 @@ interact2D
 ^^^^^^^^^^
 
 :meth:`WrightTools.artists.interact2D` uses Matplotlib's interactive widgets framework to present an interactive graphical interface to a multidimensional data object.
-You must choose two axes two plot against in the central two-dimensional plot.
+You must choose two axes to plot against in the central two-dimensional plot.
 All other axes are automatically represented as "sliders", and you can easily manipulate these two explore the dataset in its full dimensionality.
 See :ref:`artists` for an example.
 
 Process Data
 ------------
 
-Now let's actually modify the arrays that make up our data object.
+Now let's actually modify the arrays that make up our data object. Note that the raw data which we imported is not being modified, rather we are modifying the data as copied into our data object.
 
 Convert
 ^^^^^^^
@@ -199,7 +199,7 @@ Note that :meth:`~WrightTools.data.Data.split` accepts axis expressions and unit
 Clip
 ^^^^
 
-Use :meth:`~WrightTools.data.Channel.clip` to ignore remove points outside of a specific range.
+Use :meth:`~WrightTools.data.Channel.clip` to ignore/remove points of a channel outside of a specific range.
 
 .. code-block:: python
 
@@ -257,7 +257,7 @@ and then open...
 
    data = wt.open('my-path.wt5')
 
-You will pick right up at the state where you saved the object.
+You will pick right up at the state where you saved the object (even on different operating systems or machines)!
 
 Collections
 ^^^^^^^^^^^
