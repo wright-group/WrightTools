@@ -42,7 +42,7 @@ Let's do that now:
    >>> data.shape
    (41, 41, 23)
 
-Alternatively, we can use the :meth:`WrightTools.data.Data.print_tree` method to print out a whole bunch of information at once.
+Alternatively, we can use the :meth:`~WrightTools.data.Data.print_tree` method to print out a whole bunch of information at once.
 
 .. code-block:: python
 
@@ -87,9 +87,9 @@ For more information, check see :ref:`artists`, or check out our `gallery`_.
 quick1D
 ^^^^^^^
 
-:meth:`WrightTools.artists.quick1D` makes it as easy as possible to visualize a simple 1D slice of our data object.
+:meth:`~WrightTools.artists.quick1D` makes it as easy as possible to visualize a simple 1D slice of our data object.
 We have to specify an axis to plot along---for this example let's choose ``w1=wm``.
-By default, :meth:`WrightTools.artists.quick1D` will plot all possible slices along our chosen axis.
+By default, :meth:`~WrightTools.artists.quick1D` will plot all possible slices along our chosen axis.
 Optionally, we can narrow down the number of generated plots by specifying what particular coordinate we are interested in.
 In this example, we have fully specified all other axes using the ``at`` keyword argument, so only one plot will be generated.
 
@@ -111,7 +111,7 @@ In this example, we have fully specified all other axes using the ``at`` keyword
 quick2D
 ^^^^^^^
 
-:meth:`WrightTools.artists.quick2D` is built with the same goals as :meth:`WrightTools.artists.quick1D`, but for two dimensional representations.
+:meth:`~WrightTools.artists.quick2D` is built with the same goals as :meth:`~WrightTools.artists.quick1D`, but for two dimensional representations.
 This time, we have to specify two axes to plot along---``w1=wm`` and ``d2``, in this example.
 Again, we use the ``at`` keyword argument so only one plot will be generated.
 
@@ -164,7 +164,7 @@ For more information see :ref:`units`.
 Split
 ^^^^^
 
-Use ``split`` to break your dataset into smaller pieces.
+Use :meth:`~WrightTools.data.Data.split` to break your dataset into smaller pieces.
 
 .. code-block:: python
 
@@ -198,7 +198,7 @@ TODO: note that coordinates, with units, were used---not indices.
 Clip
 ^^^^
 
-Use ``clip`` to ignore points outside of a specific range.
+Use :meth:`~WrightTools.data.Channel.clip` to ignore points outside of a specific range.
 
 .. code-block:: python
 
@@ -221,7 +221,24 @@ Use ``clip`` to ignore points outside of a specific range.
 Transform
 ^^^^^^^^^
 
-TODO
+Use :meth:`~WrightTools.data.Data.transform` to choose a different set of axes for your data object.
+
+.. code-block:: python
+
+   data.ai0.transform('w1=wm', 'w2-wm', 'd2')
+
+.. plot::
+   :include-source: False
+
+   import matplotlib.pyplot as plt
+   import WrightTools as wt
+   from WrightTools import datasets
+   p = datasets.wt5.v1p0p1_MoS2_TrEE_movie
+   data = wt.open(p)
+   data.convert('eV')
+   data.transform('w1=wm', 'w2-wm', 'd2')
+   wt.artists.quick2D(data, 'w1-w2', 'd2')
+   plt.show()
 
 Save Data
 ---------
