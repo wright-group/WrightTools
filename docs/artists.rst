@@ -186,7 +186,7 @@ First, the full code and the image it creates:
 Layout
 ^^^^^^
 
-``WrightTools`` defines a handy function, :meth:`~WrightTools.artists.create_figure`, to easily and flexibly making complicated figures.
+``WrightTools`` defines a handy function, :meth:`~WrightTools.artists.create_figure`, for easily and flexibly making complicated figures.
 When made with this function, :class:`~WrightTools.artists.Axes` created have additional functionality built in to work with :class:`~WrightTools.data.Data` objects directly.
 
 :meth:`~WrightTools.artists.create_figure` makes it easy to create figures the perfect size for ``"single"`` or ``double"`` column figures for journal articles (though they are convenient in other contexts as well).
