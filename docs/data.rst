@@ -6,6 +6,9 @@ Data
 A data object contains your entire n-dimensional dataset, including axes, units, channels, and relevant metadata.
 Once you have a data object, all of the other capabilities of WrightTools are immediately open to you, including processing, fitting, and plotting tools.
 
+.. toctree:: data
+   :maxdepth: 3
+
 Instantiation
 -------------
 
@@ -61,7 +64,7 @@ It is possible to create data objects directly in special circumstances, as show
    data.create_channel(name='signal', values=zi)
    data.transform('w1', 'w2')
 
-Structure & properties
+Structure & Attributes
 ----------------------
 
 So what is a data object anyway?
@@ -132,7 +135,6 @@ attribute                                   description
 
 Data
 ````
-
 As mentioned above, the axes and channels within data can be accessed within the ``data.axes`` and ``data.channels`` lists.
 Data also supports natural naming, so axis and channel objects can be accessed directly according to their name.
 The natural syntax is recommended, as it tends to result in more readable code.
@@ -152,8 +154,11 @@ The order of axes and channels is arbitrary.
 However many methods within WrightTools operate on the zero-indexed channel by default.
 For this reason, you can bring your favorite channel to zero-index using :meth:`~WrightTools.data.Data.bring_to_front`.
 
+Processing
+----------
+
 Units aware & interpolation ready
----------------------------------
+`````````````````````````````````
 
 Experiments are taken over all kinds of dynamic range, with all kinds of units.
 You might wish to take the difference between a UV-VIS scan taken from 400 to 800 nm, 1 nm steps and a different scan taken from 1.75 to 2.00 eV, 1 meV steps.
@@ -175,7 +180,7 @@ method                                              description                 
 .. :meth:`~WrightTools.data.Data.offset`              offset one axis based on another                                                  :ref:`sphx_glr_auto_examples_offset.py`
 
 Dimensionality without the cursing
-----------------------------------
+``````````````````````````````````
 
 Working with multidimensional data can be intimidating.
 What axis am I looking at again?
@@ -199,7 +204,7 @@ WrightTools seamlessly handles dimensionality throughout.
 :ref:`Artists` is one such place where dimensionality is addressed explicitly.
 
 Processing without the pain
----------------------------
+```````````````````````````
 
 There are many common data processing operations in spectroscopy.
 WrightTools endeavors to make these operations easy.
