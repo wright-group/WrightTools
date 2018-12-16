@@ -4,8 +4,8 @@ Custom Figure
 =============
 
 Example of custom figure layout, beautification, and saving.
-"""
 
+"""
 
 import matplotlib.pyplot as plt
 
@@ -55,7 +55,7 @@ for indx, wigner, color in zip(indxs, wigners, wigner_colors):
     # set title as value of w2
     wigner.constants[0].format_spec = ".2f"
     wigner.round_spec = -1
-    ax.set_title(wigner.constants[0].label)
+    wt.artists.corner_text(wigner.constants[0].label, ax=ax)
     # plot overlines
     for d2, t_color in zip(d2_vals, trace_colors):
         ax.axhline(d2, color=t_color, alpha=.5, linewidth=6)
