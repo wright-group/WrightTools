@@ -1,9 +1,11 @@
 ---
 title: 'WrightTools: a Python package for multidimensional spectroscopy'
 tags:
-  - example
-  - tags
-  - for the paper
+  - Python
+  - spectroscopy
+  - hdf5
+  - multidimensional
+  - data processing
 authors:
  - name: Blaise J. Thompson
    orcid: 0000-0002-3845-824X
