@@ -6,9 +6,9 @@ Collection
 Collection
 ----------
 
-Collection objects are containers like folders in a file system.
+Collection objects are containers, like folders in a file system.
 They can contain any mixture of collections and data objects.
-The contents of a collection can be accessed in a variety of convinient ways with WrightTools.
+The contents of a collection can be accessed in a variety of convenient ways with WrightTools.
 As an example, let's create a simple wt5 file now.
 
 .. code-block:: python
@@ -25,7 +25,7 @@ Let's add some data to our collection.
    results.create_data(name='messy')
    results.create_data(name='confusing')
 
-We can access treat our collection like a dictionary with methods ``keys``, ``values``, and ``items``.
+We can access/treat our collection like a dictionary with methods ``keys``, ``values``, and ``items``.
 
 .. code-block:: python
 
@@ -62,7 +62,7 @@ The child collections and data objects hold a reference to the parent.
    >>> calibration.parent
    <WrightTools.Collection 'results'>
 
-In sumarry, we have created a wt5 file with the following structure:
+In summary, we have created a wt5 file with the following structure:
 
 .. code-block:: bash
 
