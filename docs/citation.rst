@@ -11,15 +11,8 @@ developers through citation or acknowledgement.
 
 BibTex citation:
 
-::
-
-  @misc{WrightTools,
-    author =       {Blaise J. Thompson and Kyle F. Sunden and Darien J. Morrow and Nathan Andrew
-                    Neff-Mallon and Kyle J. Czech and Daniel D. Kohler and Tom Parker and Rachel
-                    Swedin},
-    doi =          {10.5281/zenodo.1198904},
-    title =        {WrightTools},
-  }
+.. literalinclude:: ../WrightTools/CITATION
+   :language: None
 
 Also see ``WrightTools.__citation__``.
 
