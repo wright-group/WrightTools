@@ -3,6 +3,8 @@ WrightTools\.artists module
 
 .. currentmodule:: WrightTools.artists
 
+.. automodule:: WrightTools.artists
+
 .. autosummary::
    :toctree: ../api
 

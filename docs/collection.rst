@@ -44,7 +44,7 @@ We can even use natural naming!
    >>> results.confusing
    <WrightTools.Data 'confusing'>
 
-Jeez, it would be nice to also keep track of the calibration data from our experiment.
+Ever think to yourself "Jeez, it would be nice to also keep track of the calibration data from our experiment"?
 Let's add a child collection called calibration within our root results collection.
 We'll fill this collection with our calibration data.
 
@@ -74,8 +74,8 @@ In summary, we have created a wt5 file with the following structure:
       ├─ data OPA1_tune_test
       └─ data OPA2_tune_test
 
-Collections can be nested and added to arbitrarily to optimally organize and share results.
+Collections can be nested and added to arbitrarily in order to optimally organize and share results.
 
 Note that the collections do not directly contain datasets.
-Datsets are children of the data objects.
-We discuss data objects in the next section.
+Datasets are children of the data objects.
+We discussed data objects in the previous section.

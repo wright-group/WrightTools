@@ -152,7 +152,7 @@ A few simple validation checks can be performed.
 If it is not possible to read a data object, it should raise a ``WrightTools`` exception. See :mod:`~WrightTools.exceptions`.
 If it is simply an unexpected feature, such as unusual file extension, it should raise a warning.
 ``WrightTools`` includes a specific warning for unexpected file type: :class:`~WrightTools.exceptions.WrongFileTypeWarning`.
-We use :meth:`pathlib.Path.suffixes` to allow for compound file extensions like ``.txt.gz``.
+We use :data:`pathlib.PurePath.suffixes` to allow for compound file extensions like ``.txt.gz``.
 You should also validate the name, and extract the default in this step.
 
 The reason to have both ``filestr`` and ``filepath`` is that :class:`pathlib.Path` objects
@@ -174,7 +174,7 @@ do not work well for urls (particularly on Windows), but pathlib is nice for per
 Create the Data object
 ----------------------
 
-To actually instantiate the object involves inspecting the ``parent`` argument.
+Instantiating the new data object involves inspecting the ``parent`` argument.
 By convention, arguments to the instantiation are passed in as a keyword argument dictionary.
 This should include, minimally, the ``name`` (described above), ``kind``
 (specific to the particular function), and ``source`` (typically the local file path)
@@ -200,7 +200,7 @@ Additional pieces of metadata can be added into the ``attrs`` dictionary of the 
 This can include text, numbers or even arrays.
 These are arbitrary, and can be accessed like a dictionary.
 Avoid using the "privileged" attributes for tasks other than their pre-defined purpose,
-as overwriting may cause unexpected behavior or be overwritten internally:
+as overwriting may cause unexpected behavior or for them to be overwritten internally:
 
 - ``name``
 - ``class``
@@ -233,7 +233,7 @@ Create Variables and Channels
 -----------------------------
 
 Creating variables (things you set) and channels (things you measure) is painless.
-Once you have a ``numpy`` array, (see tools such as :meth:`numpy.genfromtxt`), all you have to
+Once you have a ``numpy`` array, (see tools such as :func:`numpy.genfromtxt`), all you have to
 do is add a name, and (optionally) units.
 
 Units are supported for both variables and channels, though tend to be more common on variables.
@@ -256,7 +256,7 @@ For one-dimensional data formats, this is particularly easy:
         data.create_channel(name="signal", values=arr[1])
 
 :class:`numpy.DataSource` is a class which provides transparent decompression and remote file retrieval.
-:class:`numpy.genfromtxt` will handle this itself, however it will leave the downloaded files in the
+:func:`numpy.genfromtxt` will handle this itself, however it will leave the downloaded files in the
 working directory, and opening explicitly allows you to use the file more directly as well.
 Using ``np.DataSource(None)`` causes it to use temporary files which are removed automatically.
 Opening in ``"rt"`` mode ensures that you are reading as text.
@@ -265,7 +265,7 @@ Parsing multidimensional datasets (and in particular formats which allow arbitra
 provides real benefit, but becomes a much more arduous task to generalize.
 This is where it becomes important to consider the ``shape`` and ``units`` of the Data object.
 All variables and channels must be the same rank (``ndim``) and broadcast together to get the full shape.
-If variables in particular can be collapsed to a lower dimension, they should be, placing a ``1`` in the shape.
+If variables in particular can be collapsed to a lower dimension, they should be; this is accomplished by placing a ``1`` in the shape.
 
 For particularly complex parsing, see :meth:`~WrightTools.data.from_PyCMDS`,
 :meth:`~WrightTools.data.from_KENT`, and :meth:`~WrightTools.data.from_COLORS`.
@@ -280,7 +280,7 @@ Transform to Create Axes
 
 To get ``Data`` objects to behave as expected, they should be transformed to the natural axes of the
 data itself.
-Axes are algebraic combinations of variables (Linear combinations are guaranteed to be supported).
+Axes are algebraic combinations of variables (linear combinations are guaranteed to be supported).
 
 .. code-block:: python
 
@@ -297,12 +297,12 @@ These are expressions of variables which have a constant value
 Verbose Output
 --------------
 
-It is expected that these functions print out information at the end.
+It is expected that From functions print out information at the end.
 This should include the file path where the data is made, and a few lines which help users confirm
 that they imported the correct data object.
-This should be no more than about 5 lines.
+Printing should be no more than about 5 lines.
 
-For one-dimensional data, this tends to be the range of the axis and the size:
+For one-dimensional data, the print output tends to be the range of the axis and the size:
 
 .. code-block:: python
 

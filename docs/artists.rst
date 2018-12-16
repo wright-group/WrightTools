@@ -261,7 +261,7 @@ In addition, ``WrightTools`` defines some small helper functions for common task
 - :meth:`~WrightTools.artists.plot_colorbar` Add a colorbar in a single function call
 - :meth:`~WrightTools.artists.set_fig_labels` Label axes in a whole row/column of a figure
 
-  - Allows using slice objects to limit range affected
+  - Allows the use of slice objects to limit range affected
   - Removes axis labels from other axes in the rectangle
   - Pairs well with :attr:`WrightTools.data.Axes.label`
 

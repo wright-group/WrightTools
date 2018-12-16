@@ -3,6 +3,8 @@ WrightTools\.exceptions module
 
 .. currentmodule:: WrightTools.exceptions
 
+.. automodule:: WrightTools.exceptions
+
 .. autosummary::
    :toctree: ../api
 
