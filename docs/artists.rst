@@ -186,7 +186,7 @@ First, the full code and the image it creates:
 Layout
 ^^^^^^
 
-``WrightTools`` defines a handy function, :meth:`~WrightTools.artists.create_figure`, for easily and flexibly making complicated figures.
+``WrightTools`` defines a handy function, :meth:`~WrightTools.artists.create_figure`, to easily and flexibly making complicated figures.
 When made with this function, :class:`~WrightTools.artists.Axes` created have additional functionality built in to work with :class:`~WrightTools.data.Data` objects directly.
 
 :meth:`~WrightTools.artists.create_figure` makes it easy to create figures the perfect size for ``"single"`` or ``double"`` column figures for journal articles (though they are convenient in other contexts as well).
@@ -261,7 +261,7 @@ In addition, ``WrightTools`` defines some small helper functions for common task
 - :meth:`~WrightTools.artists.plot_colorbar` Add a colorbar in a single function call
 - :meth:`~WrightTools.artists.set_fig_labels` Label axes in a whole row/column of a figure
 
-  - Allows using slice objects to limit range affected
+  - Allows the use of slice objects to limit range affected
   - Removes axis labels from other axes in the rectangle
   - Pairs well with :attr:`WrightTools.data.Axes.label`
 
