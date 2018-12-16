@@ -7,6 +7,51 @@ WrightTools stores data in binary wt5 files.
 
 wt5 is a sub-format of `HDF5 <https://support.hdfgroup.org/HDF5/>`_.
 
+wt5
+---
+
+``wt5`` files are hdf5 files with particular structure and attributes defined.
+``wt5`` objects may appear embedded within a larger hdf5 file or vise-versa, however this is untested.
+At the root of a ``wt5`` file, a :class:`~WrightTools.collection.Collection` or :class:`~WrightTools.data.Data` object is found. 
+:class:`~WrightTools.collection.Collection` and :class:`~WrightTools.data.Data` are hdf5 groups.
+A :class:`~WrightTools.collection.Collection` may have children consisting of :class:`~WrightTools.collection.Collection` and/or :class:`~WrightTools.data.Data`.
+A :class:`~WrightTools.data.Data` may have children consisting of :class:`~WrightTools.data.Variable` and/or :class:`~WrightTools.data.Channel`.
+:class:`~WrightTools.data.Variable` and :class:`~WrightTools.data.Channel` are hdf5 datasets.
+
+Metadata
+^^^^^^^^
+
+The following metadata is handled within ``WrightTools`` and define the necessary attributes to be a ``wt5`` file.
+It is recommended not to write over these attributes manually except at import time (e.g. ``from_<x>`` function)
+
+===================  ===========  ==========  ==========  ==========  ============================================
+name                 Collection   Data        Variable    Channel     description/notes
+===================  ===========  ==========  ==========  ==========  ============================================
+``name``             yes          yes         yes         yes         Usually matches the last component of the path,
+                                                                      except for root, ``/``, which does not have a name
+``class``            yes          yes         yes         yes         Identifies which kind of WrightTools object it is.
+``created``          yes          yes                                 Timestamp of when the object was made,
+                                                                      can be overwritten with source file creation time by ``from_<x>`` functions.
+``__version__``      yes          yes                                 ``wt5`` version identifier
+``item_names``       yes          yes                                 Ordered list of the children
+``variable_names``                yes                                 Ordered list of all Variables
+``channel_names``                 yes                                 Ordered list of all Channels
+``axes``                          yes                                 Ordered list of axes expressions which define how a Data object is represented
+``constants``                     yes                                 Ordered list of expressions for values which are constant
+``kind``                          yes                                 Short description of what type of file it originated
+                                                                      from, usually the instrument
+``source``                        yes                                 File path/url to the original file as read in
+``label``                                     yes         yes         Identifier used to create more complex labels in
+                                                                      Axes or Constants, which are used to plot
+``units``                                     yes         yes         Units assigned to the dataset
+``min``                                       yes         yes         Cached minimum value
+``max``                                       yes         yes         Cached maximum value
+``argmin``                                    yes         yes         Cached index of minimum value
+``argmax``                                    yes         yes         Cached index of maximum value
+``signed``                                                yes         Boolean for treating channel as signed/unsigned
+===================  ===========  ==========  ==========  ==========  ============================================
+
+
 HDF5
 ----
 
