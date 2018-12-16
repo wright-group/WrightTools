@@ -6,6 +6,9 @@ Data
 A data object contains your entire n-dimensional dataset, including axes, units, channels, and relevant metadata.
 Once you have a data object, all of the other capabilities of WrightTools are immediately open to you, including processing, fitting, and plotting tools.
 
+Here we highlight some key features of the data object.
+For a complete list of methods and attributes, see :class:`WrightTools.data.Data` in the API docs.
+
 .. toctree:: data
    :maxdepth: 3
 
@@ -110,10 +113,34 @@ The order of axes and channels is arbitrary.
 However many methods within WrightTools operate on the zero-indexed channel by default.
 For this reason, you can bring your favorite channel to zero-index using :meth:`~WrightTools.data.Data.bring_to_front`.
 
+Variable
+````````
+
+The :class:`WrightTools.data.Variable` class holds key coordinates of the data object.
+One :class:`~WrightTools.data.Variable` instance exists for each recorded independent variable.
+This includes scanned optomechanical hardware, but also still hardware, and other variables like lab time.
+A typical data object will have many variables (each a multidimensional array).
+Variables have the following key attributes:
+
+=========================================  ==========================================================
+attribute                                   description
+-----------------------------------------  ----------------------------------------------------------
+:attr:`~WrightTools.data.Variable.label`   LaTeX-formatted label, appropriate for plotting
+:meth:`~WrightTools.data.Variable.units`   variable maximum
+:meth:`~WrightTools.data.Variable.units`   variable minimum
+:attr:`~WrightTools.data.Variable.units`   variable name
+:attr:`~WrightTools.data.Variable.units`   variable units
+=========================================  ==========================================================
+
 Axis
 ````
 
-Axes are the coordinates of the dataset. They have the following key attributes:
+The :class:`WrightTools.data.Axis` class defines the coordinates of a data object.
+Each ``Axis`` contains an ``expression``, which dictates its relationship with one or more variables.
+Given 5 variables with names [``'w1'``, ``'w2'``, ``'wm'``, ``'d1'``, ``'d2'``] , example valid expressions include ``'w1'``, ``'w1=wm'``, ``'w1+w2'``, ``'2*w1'``, ``'d1-d2'``, and ``'wm-w1+w2'``.
+Axes behave like arrays: you can slice into them, view their shape, get a min and max etc.
+But actually axes do not contain any new array information: they simply refer to the Variable arrays.
+Axes have the following key attributes:
 
 ===========================================  ========================================================================
 attribute                                    description
@@ -130,7 +157,7 @@ attribute                                    description
 Constant
 ````````
 
-Constants are a special subclass of Axis objects, which is expected to be a single value.
+:class:`WrightTools.data.Constant` objects are a special subclass of Axis objects, which is expected to be a single value.
 Constant adds the value to to the label attribute, suitable for titles of plots to identify
 static values associated with the plot.
 Note that there is nothing enforcing that the value is actually static: constants still have
@@ -147,7 +174,9 @@ attribute                                   description
 Channel
 ```````
 
-Channels contain the n-dimensional data itself. They have the following key attributes:
+The :class:`WrightTools.data.Channel` class contains the n-dimensional signals.
+A single data object may contain multiple channels corresponding to different detectors or measurement schemes.
+Channels have the following key attributes:
 
 =========================================  ==========================================================
 attribute                                   description
