@@ -3,9 +3,9 @@
 Quick Start
 ===========
 
-This "quick start" page is designed to introduce a few commonly-used features that you should know right off the bat as a user of WrightTools.
+This "quick start" page is designed to introduce a few commonly-used features that you should know immediately as a user of WrightTools.
 We assume that you have installed WrightTools and that you are somewhat comfortable using Python.
-If you are brand new to Python, it's typically useful to run Python within an integrated development environment---our favorite is (TODO: LINK) Spyder.
+If you are brand new to Python, it's typically useful to run Python within an integrated development environment---our favorite is `Spyder <https://www.spyder-ide.org/>`_.
 
 Each of the following code blocks builds on top of the previous code.
 Read this document like a series of commands typed into a Python shell.
@@ -15,7 +15,7 @@ Create a Data Object
 --------------------
 
 There are many ways to create a WrightTools data object.
-The most straight-forward strategy is to open an existing wt5 file.
+One strategy is to open an existing wt5 file.
 When you downloaded WrightTools you also downloaded a few example files.
 The :mod:`WrightTools.datasets` package allows you to easily access the path to these files.
 Let's create a data object now:
@@ -23,7 +23,7 @@ Let's create a data object now:
 .. code-block:: python
 
    import WrightTools as wt
-   # get an example wt5 file
+   # get the path to an example wt5 file
    from WrightTools import datasets
    p = datasets.wt5.v1p0p1_MoS2_TrEE_movie  # just a filepath
    # open data object
@@ -82,7 +82,7 @@ WrightTools strives to make data visualization as quick and painless as possible
 Axes, labels, and units are brought along implicitly.
 
 WrightTools offers a few handy ways to quickly visualize a data object, shown below.
-For more information, check see :ref:`artists`, or check out our `gallery`_.
+For more information, see :ref:`artists`, or check out our `gallery`_.
 
 quick1D
 ^^^^^^^
@@ -133,7 +133,10 @@ Again, we use the ``at`` keyword argument so only one plot will be generated.
 interact2D
 ^^^^^^^^^^
 
-TODO
+:meth:`WrightTools.artists.interact2D` uses Matplotlib's interactive widgets framework to present an interactive graphical interface to a multidimensional data object.
+You must choose two axes two plot against in the central two-dimensional plot.
+All other axes are automatically represented as "sliders", and you can easily manipulate these two explore the dataset in its full dimensionality.
+See :ref:`artists` for an example.
 
 Process Data
 ------------
@@ -168,13 +171,12 @@ Use :meth:`~WrightTools.data.Data.split` to break your dataset into smaller piec
 
 .. code-block:: python
 
-   >>> col = data.split('d2', 0.)
+   >>> col = data.split('d2', -100.)
    split data into 2 pieces along <d2>:
      0 : -inf to 0.00 fs (1, 1, 15)
      1 : 0.00 to inf fs (1, 1, 8)
 
-TODO: split at -100 instead.
-TODO: note that coordinates, with units, were used---not indices.
+Note that :meth:`~WrightTools.data.Data.split` accepts axis expressions and unit-aware coordinates, not axis indices.
 
 .. plot::
    :include-source: False
@@ -198,7 +200,7 @@ TODO: note that coordinates, with units, were used---not indices.
 Clip
 ^^^^
 
-Use :meth:`~WrightTools.data.Channel.clip` to ignore points outside of a specific range.
+Use :meth:`~WrightTools.data.Channel.clip` to ignore remove points outside of a specific range.
 
 .. code-block:: python
 
@@ -215,8 +217,6 @@ Use :meth:`~WrightTools.data.Channel.clip` to ignore points outside of a specifi
    data.ai0.clip(min=0.0, max=0.1)
    wt.artists.quick2D(data, 'w1=wm', 'd2', at={'w2': [2, 'eV']})
    plt.show()
-
-.. _gallery: auto_examples/index.html
 
 Transform
 ^^^^^^^^^
@@ -243,14 +243,98 @@ Use :meth:`~WrightTools.data.Data.transform` to choose a different set of axes f
 Save Data
 ---------
 
-TODO
+It's easy to save your data objects using WrightTools.
 
 Save, Open
 ^^^^^^^^^^
 
-TODO
+Most simply, you can simply save...
+
+.. code-block:: python
+
+   data.save('my-path.wt5')
+
+and then open...
+
+.. code-block:: python
+
+   data = wt.open('my-path.wt5')
+
+You will pick right up at the state where you saved the object.
 
 Collections
 ^^^^^^^^^^^
 
-TODO
+Collections are containers that can hold multiple data objects.
+Collections can nest within each-other, much like folders in your computers file system.
+Collections can help you store all associated data within a single wt5 file, keeping everything internally organized.
+Creating collections is easy:
+
+.. code-block:: python
+
+   >>> collection = wt.Collection(name='test')
+
+Filling collections with data objects is easy as well.
+Again, let's use the :mod:`WrightTools.datasets` package:
+
+.. code-block:: python
+
+   >>> from WrightTools import datasets
+   >>> p = datasets.COLORS.v0p2_d1_d2_diagonal
+   >>> wt.data.from_COLORS(p, parent=collection)
+   cols recognized as v0 (19)
+   data created at /tmp/w1ijzsmv.wt5::/d1_d2_diagonal_dat
+     axes: ('d1', 'd2')
+     shape: (21, 21)
+   >>> p = datasets.ocean_optics.tsunami
+   >>> wt.data.from_ocean_optics(p, parent=collection)
+   data created at /tmp/w1ijzsmv.wt5::/tsunami
+     range: 339.95 to 1013.55 (nm)
+     size: 2048
+   >>> p = datasets.PyCMDS.wm_w2_w1_000
+   >>> wt.data.from_PyCMDS(p, parent=collection)
+   data created at /tmp/w1ijzsmv.wt5::/3d1580hi
+     axes: ('wm', 'w2', 'w1')
+     shape: (35, 11, 11)
+
+Note that we are using from functions instead of :meth:`~WrightTools.open`.
+That's because these aren't wt5 files---they're raw data files output by various instruments.
+We use the ``parent`` keyword argument to create these data objects directly inside of our collection.
+See :ref:`Data` for a complete list of supported file formats.
+
+Much like data objects, collection objects have a method :meth:`~WrightTools.collection.Collection.print_tree` that prints out a bunch of information:
+
+.. code-block:: python
+
+   >>> collection.print_tree()
+   test (/tmp/w1ijzsmv.wt5)
+   ├── 0: d1_d2_diagonal_dat (21, 21)
+   │   ├── axes: d1 (fs), d2 (fs)
+   │   ├── constants:
+   │   └── channels: ai0, ai1, ai2, ai3
+   ├── 1: tsunami (2048,)
+   │   ├── axes: energy (nm)
+   │   ├── constants:
+   │   └── channels: signal
+   └── 2: 3d1580hi (35, 11, 11)
+       ├── axes: wm (wn), w2 (wn), w1 (wn)
+       ├── constants:
+       └── channels: signal_diff, signal_mean, pyro1, pyro2, pyro3, PMT voltage
+
+Collections can be saved inside of wt5 files, so be aware that :meth:`~WrightTools.open` may return a collection or a data object based on the contents of your wt5 file.
+
+Learning More
+-------------
+
+We hope that this quick start page has been a useful introduction to you.
+Now it's time to go forth and process data!
+If you want to read further, consider the following links:
+
+* more about data objects: :ref:`data`
+* more about collection objects: :ref:`collection`
+* more about WrightTools artists: :ref:`artists`
+* a gallery of figures made using WrightTools (click for source code): `gallery`_
+* a complete list of WrightTools units: :ref:`units`
+* a complete list of attributes and methods of the ``Data`` class: :class:`~WrightTools.data.Data`
+
+.. _gallery: auto_examples/index.html
