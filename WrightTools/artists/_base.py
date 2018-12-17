@@ -587,7 +587,6 @@ def apply_rcparams(kind="fast"):
         matplotlib.rcParams["contour.negative_linestyle"] = "solid"
     elif kind == "publication":
         matplotlib.rcParams["text.usetex"] = True
-        matplotlib.rcParams["text.latex.unicode"] = True
         preamble = "\\usepackage[cm]{sfmath}\\usepackage{amssymb}"
         matplotlib.rcParams["text.latex.preamble"] = preamble
         matplotlib.rcParams["mathtext.fontset"] = "cm"
