@@ -99,6 +99,12 @@ class Group(h5py.Group, metaclass=MetaClass):
                 parent.attrs["item_names"], self.natural_name.encode()
             )
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args, **kwargs):
+        self.close()
+
     def __getattr__(self, key):
         """Gets called if attribute not in self.__dict__.
 
