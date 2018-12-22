@@ -7,6 +7,7 @@
 import os
 
 import WrightTools as wt
+from WrightTools import datasets
 
 
 # --- test ----------------------------------------------------------------------------------------
@@ -78,6 +79,14 @@ def test_nested():
     assert cc.id.valid == 0
 
 
+def test_open_context():
+    p = datasets.wt5.v1p0p1_MoS2_TrEE_movie
+    with wt.open(p) as d:
+        assert os.path.isfile(d.filepath)
+    assert not os.path.isfile(d.filepath)
+    assert d.id.valid == 0
+
+
 if __name__ == "__main__":
     test_named_root_collection()
     test_named_root_data()
@@ -86,3 +95,4 @@ if __name__ == "__main__":
     test_single_instance_data()
     test_tempfile_cleanup()
     test_nested()
+    test_open_context()
