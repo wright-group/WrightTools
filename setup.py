@@ -42,7 +42,6 @@ setup(
         "numexpr",
         "numpy>=1.15.0",
         "python-dateutil",
-        "pytz",
         "scipy",
         "tidy_headers>=1.0.0",
     ],

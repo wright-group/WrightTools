@@ -6,7 +6,6 @@
 
 import time
 
-import pytz
 import dateutil
 from dateutil import tz
 import datetime
@@ -93,11 +92,11 @@ class TimeStamp:
         """
         # get timezone
         if timezone == "local":
-            self.tz = dateutil.tz.tzlocal()
+            self.tz = tz.tzlocal()
         elif timezone == "utc":
-            self.tz = pytz.utc
+            self.tz = tz.UTC
         elif type(timezone) in [int, float]:
-            self.tz = dateutil.tz.tzoffset(None, timezone)
+            self.tz = tz.tzoffset(None, timezone)
         else:
             raise KeyError
         # get unix timestamp
@@ -182,7 +181,7 @@ class TimeStamp:
 
         __ https://tools.ietf.org/html/rfc5322#section-3.3
         """
-        return self.datetime.astimezone(tz=pytz.utc).strftime("%a, %d %b %Y %H:%M:%S GMT")
+        return self.datetime.astimezone(tz=tz.UTC).strftime("%a, %d %b %Y %H:%M:%S GMT")
 
     @property
     def path(self):
