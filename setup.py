@@ -38,7 +38,7 @@ setup(
         "scikit-image",
         "h5py",
         "imageio",
-        "matplotlib>=2.2",
+        "matplotlib>=3.0",
         "numexpr",
         "numpy>=1.15.0",
         "python-dateutil",
