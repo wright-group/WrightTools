@@ -195,6 +195,7 @@ Note that :meth:`~WrightTools.data.Data.split` accepts axis expressions and unit
        ax.set_xlim(data.w1__e__wm.min(), data.w1__e__wm.max())
        ax.set_ylim(data.d2.min(), data.d2.max())
    wt.artists.set_fig_labels(xlabel=data.w1__e__wm.label, ylabel=data.d2.label)
+   plt.show()
 
 Clip
 ^^^^
@@ -215,6 +216,7 @@ Use :meth:`~WrightTools.data.Channel.clip` to ignore/remove points of a channel 
    data = wt.open(p)
    data.ai0.clip(min=0.0, max=0.1)
    wt.artists.quick2D(data, 'w1=wm', 'd2', at={'w2': [2, 'eV']})
+   plt.show()
 
 Transform
 ^^^^^^^^^
@@ -236,6 +238,7 @@ Use :meth:`~WrightTools.data.Data.transform` to choose a different set of axes f
    data.transform('w1=wm', 'w2-wm', 'd2')
    data.convert('eV')
    wt.artists.quick2D(data, 'w1=wm', 'w2-wm', at={'d2': (-100, 'fs')})
+   plt.show()
 
 Save Data
 ---------
