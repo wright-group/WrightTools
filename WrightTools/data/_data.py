@@ -1365,6 +1365,8 @@ class Data(Group):
                 self.remove_variable(v.natural_name, implied=False, verbose=verbose)
         if keep_channels is not True:
             try:
+                if isinstance(keep_channels, str):
+                    raise TypeError
                 indexes = tuple(keep_channels)
             except TypeError:
                 indexes = (keep_channels,)
