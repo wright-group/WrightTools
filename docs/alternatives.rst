@@ -38,7 +38,7 @@ Those with general interest in array-oriented scientific data should be aware of
 .. _gridded: https://noaa-orr-erd.github.io/gridded/
 .. _hyperspy: http://hyperspy.org/
 .. _ndarray: https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html
-.. _hdf5: https://support.hdfgroup.org/HDF5/
+.. _hdf5: https://portal.hdfgroup.org/display/HDF5/HDF5
 .. _netcdf: https://www.unidata.ucar.edu/software/netcdf/
 .. _nmrglue: http://www.nmrglue.com/
 .. _PyTrA: http://nznano.blogspot.com/2012/06/pytra-femtosecond-transient-absorption.html
