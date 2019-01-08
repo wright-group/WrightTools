@@ -3,7 +3,6 @@ title: 'WrightTools: a Python package for multidimensional spectroscopy'
 tags:
   - Python
   - spectroscopy
-  - hdf5
   - multidimensional
   - data processing
 authors:
