@@ -19,6 +19,7 @@ Your project may be better served by one of them:
 
 - glue_
 - gridded_
+- Gwyddion_
 - hyperspy_
 - nmrglue_
 - PyTrA_
@@ -36,6 +37,7 @@ Those with general interest in array-oriented scientific data should be aware of
 .. _DataFrame: https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.html
 .. _glue: http://www.glueviz.org
 .. _gridded: https://noaa-orr-erd.github.io/gridded/
+.. _Gwyddion: http://gwyddion.net/
 .. _hyperspy: http://hyperspy.org/
 .. _ndarray: https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html
 .. _hdf5: https://portal.hdfgroup.org/display/HDF5/HDF5
