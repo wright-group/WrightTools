@@ -4,6 +4,17 @@ Alternatives
 ============
 
 There are several packages with similar goals as WrightTools.
+None of them replace everything WrightTools does, but each of them overlaps with one of WrightTools' main features:
+
+- focus on spectroscopy
+- multidimensional
+- self-describing data formats
+- openly licensed & freely available
+
+Some of these packages are focused on adjacent analytical techniques that have different conventions than multidimensional spectroscopy.
+Others are focused on spectroscopy, but with a different approach than WrightTools.
+Others are more generic, and don't have the conventions of any particular experimental strategy built in.
+All of them are really cool!
 Your project may be better served by one of them:
 
 - glue_
