@@ -17,6 +17,7 @@
 # --- import -------------------------------------------------------------------------------------
 
 
+import glob
 import os
 import sys
 import sphinx_gallery
@@ -65,6 +66,12 @@ extensions = [
     "sphinx.ext.napoleon",
 ]
 
+# -----------------------------------------------------------------------------
+# Autosummary
+# -----------------------------------------------------------------------------
+
+autosummary_generate = glob.glob("api/*.rst")
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
 
@@ -79,7 +86,7 @@ master_doc = "index"
 
 # General information about the project.
 project = "WrightTools"
-copyright = "2016-2018, WrightTools Developers"
+copyright = "2016-2019, WrightTools Developers"
 author = "WrightTools Developers"
 
 # The version info for the project you're documenting, acts as replacement for

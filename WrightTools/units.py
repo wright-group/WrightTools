@@ -135,6 +135,9 @@ def converter(val, current_unit, destination_unit):
     return val
 
 
+convert = converter
+
+
 def get_symbol(units) -> str:
     """Get default symbol type.
 

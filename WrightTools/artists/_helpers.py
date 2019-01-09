@@ -292,7 +292,7 @@ def create_figure(
     Returns
     -------
     tuple
-        (matplotlib.figure.Figure, matplotlib.gridspec.GridSpec). GridSpec
+        (WrightTools.artists.Figure, WrightTools.artists.GridSpec). GridSpec
         contains SubplotSpec objects that can have axes placed into them.
         The SubplotSpec objects can be accessed through indexing: [row, col].
         Slicing works, for example ``cax = plt.subplot(gs[:, -1])``. See

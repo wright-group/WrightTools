@@ -188,7 +188,8 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True) -> Data:
         a["expression"] = expression
     data.transform(*[a["expression"] for a in axes])
     for a, u in zip(data.axes, headers["axis units"]):
-        a.convert(u)
+        if u is not None:
+            a.convert(u)
     # return
     if verbose:
         print("data created at {0}".format(data.fullpath))

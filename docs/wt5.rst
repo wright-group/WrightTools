@@ -1,11 +1,56 @@
 .. _wt5:
 
-wt5
-===
+The wt5 File Format
+===================
 
 WrightTools stores data in binary wt5 files.
 
 wt5 is a sub-format of `HDF5 <https://support.hdfgroup.org/HDF5/>`_.
+
+wt5
+---
+
+``wt5`` files are hdf5 files with particular structure and attributes defined.
+``wt5`` objects may appear embedded within a larger hdf5 file or vise-versa, however this is untested.
+At the root of a ``wt5`` file, a :class:`~WrightTools.collection.Collection` or :class:`~WrightTools.data.Data` object is found. 
+:class:`~WrightTools.collection.Collection` and :class:`~WrightTools.data.Data` are hdf5 groups.
+A :class:`~WrightTools.collection.Collection` may have children consisting of :class:`~WrightTools.collection.Collection` and/or :class:`~WrightTools.data.Data`.
+A :class:`~WrightTools.data.Data` may have children consisting of :class:`~WrightTools.data.Variable` and/or :class:`~WrightTools.data.Channel`.
+:class:`~WrightTools.data.Variable` and :class:`~WrightTools.data.Channel` are hdf5 datasets.
+
+Metadata
+^^^^^^^^
+
+The following metadata is handled within ``WrightTools`` and define the necessary attributes to be a ``wt5`` file.
+It is recommended not to write over these attributes manually except at import time (e.g. ``from_<x>`` function).
+
+===================  ===========  ==========  ==========  ==========  ============================================
+name                 Collection   Data        Variable    Channel     description/notes
+===================  ===========  ==========  ==========  ==========  ============================================
+``name``             yes          yes         yes         yes         Usually matches the last component of the path,
+                                                                      except for root, ``/``, which does not have a path with it's name
+``class``            yes          yes         yes         yes         Identifies which kind of WrightTools object it is.
+``created``          yes          yes                                 Timestamp of when the object was made,
+                                                                      can be overwritten with source file creation time by ``from_<x>`` functions.
+``__version__``      yes          yes                                 ``wt5`` version identifier
+``item_names``       yes          yes                                 Ordered list of the children
+``variable_names``                yes                                 Ordered list of all Variables
+``channel_names``                 yes                                 Ordered list of all Channels
+``axes``                          yes                                 Ordered list of axes expressions which define how a Data object is represented
+``constants``                     yes                                 Ordered list of expressions for values which are constant
+``kind``                          yes                                 Short description of what type of file it originated
+                                                                      from, usually the instrument
+``source``                        yes                                 File path/url to the original file as read in
+``label``                                     yes         yes         Identifier used to create more complex labels in
+                                                                      Axes or Constants, which are used to plot
+``units``                                     yes         yes         Units assigned to the dataset
+``min``                                       yes         yes         Cached minimum value
+``max``                                       yes         yes         Cached maximum value
+``argmin``                                    yes         yes         Cached index of minimum value
+``argmax``                                    yes         yes         Cached index of maximum value
+``signed``                                                yes         Boolean for treating channel as signed/unsigned
+===================  ===========  ==========  ==========  ==========  ============================================
+
 
 HDF5
 ----
@@ -23,115 +68,9 @@ Each dataset has a specific data type, such as integer, float, or character.
 Groups and datasets can contain additional `metadata <https://en.wikipedia.org/wiki/Metadata>`_.
 This metadata is stored in a key: value pair system called ``attrs``, similar to a python dictionary.
 
-Much more imformation can be found on the `HDF5 tutorial <https://support.hdfgroup.org/HDF5/Tutor/>`_.
+Much more information can be found on the `HDF5 tutorial <https://support.hdfgroup.org/HDF5/Tutor/>`_.
 
 WrightTools relies upon the `h5py package <http://www.h5py.org/>`_, a Pythonic interface to HDF5.
-
-
-wt5 sub-format
---------------
-
-The wt5 sub-format defines a few rules on top of the HDF5 data model.
-Within wt5, there are two container objects derived from group: collection and data.
-There are also two array objects derived from dataset: variable and channel.
-
-Collection
-^^^^^^^^^^
-
-Collection objects are containers like folders in a file system.
-They can contain any mixture of collections and data objects.
-The contents of a collection can be accessed in a variety of convinient ways with WrightTools.
-As an example, let's create a simple wt5 file now.
-
-.. code-block:: python
-
-   import WrightTools as wt
-   results = wt.Collection(name='results')
-
-We have created a new file with a root-level collection named results.
-Let's add some data to our collection.
-
-.. code-block:: python
-
-   results.create_data(name='neat')
-   results.create_data(name='messy')
-   results.create_data(name='confusing')
-
-We can access treat our collection like a dictionary with methods ``keys``, ``values``, and ``items``.
-
-.. code-block:: python
-
-   >>> list(results.values())
-   [<WrightTools.Data 'neat'>, <WrightTools.Data 'messy'>, <WrightTools.Data 'confusing'>]
-
-We can also access by key, or by index. 
-We can even use natural naming!
-
-.. code-block:: python
-
-   >>> results[1]
-   <WrightTools.Data 'messy'>
-   >>> results['neat']
-   <WrightTools.Data 'neat'>
-   >>> results.confusing
-   <WrightTools.Data 'confusing'>
-
-Jeez, it would be nice to also keep track of the calibration data from our experiment.
-Let's add a child collection called calibration within our root results collection.
-We'll fill this collection with our calibration data.
-
-.. code-block:: python
-
-   calibration = results.create_collection(name='calibration')
-   calibration.create_data(name='OPA1_tune_test')
-   calibration.create_data(name='OPA2_tune_test')
-
-This child collection can be accessed in all of the ways mentioned above (dictionary, index, natural naming).
-The child collections and data objects hold a reference to the parent.
-
-.. code-block:: python
-
-   >>> calibration.parent
-   <WrightTools.Collection 'results'>
-
-In sumarry, we have created a wt5 file with the following structure:
-
-.. code-block:: bash
-
-   collection results
-   ├─ data neat
-   ├─ data messy
-   ├─ data confusing
-   └─ collection calibration
-      ├─ data OPA1_tune_test
-      └─ data OPA2_tune_test 
-
-Collections can be nested and added to arbitrarily to optimally organize and share results.
-
-Note that the collections do not directly contain datasets.
-Datsets are children of the data objects.
-We discuss data objects in the next section.
-
-Data
-^^^^
-
-Data is, in some sense, the central object of WrightTools.
-Within the HDF5 file, a data object is merely a group containing severeal datasets.
-According to the rules of wt5, these datasets have very specific relationships that bind them together into a single cohesive data object.
-
-Each data object has a specific multidimensional shape.
-
-Datasets are divided into two categories: variables and channels.
-Variables correspond to independent axes of the experiment: things like OPA color, delay, and monochromator position.
-Channels correspond to dependent measurements: output intensities measured by detectors.
-Every variable and channel must have the same number of dimensions as its parent data object.
-However, the length of one or more of those dimensions may be one.
-This means that these arrays need not contain a unique point for every location in data.
-
-Axes are a thin wrapper that describe a specific algebraic expression made up of one or more component variables.
-Axes are key for plottinng and interacting with data objects, but they do not directly contain the arrays within the HDF5 file.
-Rather, axes are simply stored as strings within the ``attrs`` metadata dictionary of the data object.
-
 
 Access
 ------
@@ -192,7 +131,7 @@ Initial release of the format.
 Version 1.0.1
 ^^^^^^^^^^^^^
 
-Changes internal handling of strings. Bare strings are no longer call ``encode()`` before storing.
+Changes internal handling of strings. Bare strings are no longer required to call ``encode()`` before storing.
 
 Version 1.0.2
 ^^^^^^^^^^^^^

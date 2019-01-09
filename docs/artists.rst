@@ -3,12 +3,15 @@
 Artists
 =======
 
-The artists module contains a variety of data visualizaton tools.
+The artists module contains a variety of data visualization tools.
+
+.. toctree:: artists
+   :maxdepth: 3
 
 Quick artists
 -------------
 
-To facilitate rapid and easy visualization of data, WrightTools offers
+To facilitate rapid and easy visualization of data, ``WrightTools`` offers
 “quick” artist functions which quickly generate 1D or 2D
 representations.
 These functions are made to make good representations by default, but
@@ -99,7 +102,7 @@ Side plots show x and y projections of the slice (shaded gray). Left
 clicks on the main axes draw 1D slices on side plots at the coordinates
 selected. Right clicks remove the 1D slices. For 3+ dimensional data,
 sliders below the main axes are used to change which slice is viewed.
-:meth:`WrightTools.artists.interact2D` allows users to easily vizualize 2D slices of arbitrarly
+:meth:`WrightTools.artists.interact2D` allows users to easily vizualize 2D slices of arbitrarily
 high dimension data.
 
 Colors
@@ -107,7 +110,7 @@ Colors
 
 Two-dimensional data is often represented using "heatmaps".
 Your choice of colormap is a crucial part of how your data is perceived.
-WrightTools has a few choice colormaps built-in.
+``WrightTools`` has a few choice colormaps built-in.
 
 .. plot::
    :include-source: False
@@ -148,7 +151,7 @@ All of these are held in the `colormaps` dictionary.
    <matplotlib.colors.LinearSegmentedColormap at 0x7f6d8b658d30>
 
 Throughout WrightTools you can refer to colormaps by their name.
-By default, WrightTools will use the default (signed) colormap when plotting un(signed) channels.
+By default, WrightTools will use the "default" colormap when plotting unsigned channels and the "signed" colormap when plotting signed channels.
 
 There are many great resources on how to choose the best colormap.
 `Choosing Colormaps`_ is a great place to start reading.
@@ -167,27 +170,144 @@ wright and signed_old are kept for legacy purposes.
 Custom figures
 --------------
 
-WrightTools offers specialized tools for custom figure generation.
+``WrightTools`` offers specialized tools for custom publication quality figures.
+As an example, we will break down the figure in :ref:`sphx_glr_auto_examples_custom_fig.py`,
+exploring the relationships between ``WrightTools`` and the underlying ``matplotlib``.
+
+The preprocessing of data is handled in tools covered in :ref:`data`.
+
+First, the full code and the image it creates:
+
+.. literalinclude:: auto_examples/custom_fig.py
+   :lines: 10-
+
+.. image:: _images/sphx_glr_custom_fig_001.png
 
 Layout
 ^^^^^^
 
-Layout documentation coming soon.
+``WrightTools`` defines a handy function, :meth:`~WrightTools.artists.create_figure`, for easily and flexibly making complicated figures.
+When made with this function, :class:`~WrightTools.artists.Axes` created have additional functionality built in to work with :class:`~WrightTools.data.Data` objects directly.
+
+:meth:`~WrightTools.artists.create_figure` makes it easy to create figures the perfect size for ``"single"`` or ``double"`` column figures for journal articles (though they are convenient in other contexts as well).
+
+:meth:`~WrightTools.artists.create_figure` also creates a :class:`~matplotlib.GridSpec` to help layout subplots.
+Columns are created with a weighted list with the number of columns, passed as ``cols``.
+A special weight, ``"cbar"``, provides a fixed width column intended for color bars.
+All other columns are proportionally distributed according to their weights.
+The number of rows in the grid are specified with the ``nrows`` kwarg.
+You can modify the aspect ratio of particular rows independently using the ``aspects`` and ``default_aspect`` kwargs.
+
+Spacing between figures can be adjusted with the ``wspace`` and ``hspace`` kwargs for the width and height, respectively.
+
+Axes can be accessed with :meth:`matplotlib.pyplot.subplot`.
+Importantly, axes may span multiple rows/columns by using slice syntax into the gridspec.
+This is demonstrated with the color bar axes here, which takes up two rows in the last column.
+
+
+.. code-block:: python
+
+   # prepare figure gridspec
+   cols = [1, 1, "cbar"]
+   aspects = [[[0, 0], .3]]
+   fig, gs = wt.artists.create_figure(
+       width="double", cols=cols, nrows=3, aspects=aspects, wspace=1.35, hspace=.35
+   )   
+   # plot wigners
+   indxs = [(row, col) for row in range(1, 3) for col in range(2)]
+   for indx, wigner, color in zip(indxs, wigners, wigner_colors):
+       ax = plt.subplot(gs[indx])
+   ...
+   indxs = [(0, col) for col in range(2)]
+   for indx, color, traces in zip(indxs, trace_colors, tracess):
+       ax = plt.subplot(gs[indx])
+   ...
+   cax = plt.subplot(gs[1:3, -1])
 
 Plot
 ^^^^
 
-Plot documentation coming soon.
+Once you have axes with the :meth:`~matplotlib.pyplot.subplot` call, it can be used as you are used to using :class:`matplotlib.axes.Axes` objects (though some defaults, such as colormap, differ from bare matplotlib).
+However, you can also pass :class:`WrightTools.data.Data` objects in directly (and there are some kwargs available when you do).
+These :class:`WrightTools.artists.Axes` will extract out the proper arrays and plot the data.
+
+.. code-block:: python
+
+   for indx, wigner, color in zip(indxs, wigners, wigner_colors):
+       ax = plt.subplot(gs[indx])
+       ax.pcolor(wigner, vmin=0, vmax=1)  # global colormpa
+       ax.contour(wigner)  # local contours
+   ...
+   for indx, color, traces in zip(indxs, trace_colors, tracess):
+       ax = plt.subplot(gs[indx])
+       for trace, w_color in zip(traces, wigner_colors):
+           ax.plot(trace, color=w_color, linewidth=1.5)
 
 Beautify
 ^^^^^^^^
 
-Beautify documentation coming soon.
+Once the main data is plotted, additional information can be overlaid on the axes.
+Of course, standard matplotlib methods like :meth:`~matplotlib.axes.Axes.axhline` or :meth:`~matplotlib.axes.Axes.set_xlim` are all available.
+In addition, ``WrightTools`` defines some small helper functions for common tasks.
+
+- :meth:`~WrightTools.artists.set_ax_spines` Easily set color/width of the outline (spines) of an axis
+
+  - Great for using color to connect different parts of a figure (or figures throughout a larger work)
+
+- :meth:`~WrightTools.artists.corner_text` Quick and easy plot labeling within a dense grid
+
+  - Pairs well with :attr:`WrightTools.data.Constant.label`
+
+- :meth:`~WrightTools.artists.plot_colorbar` Add a colorbar in a single function call
+- :meth:`~WrightTools.artists.set_fig_labels` Label axes in a whole row/column of a figure
+
+  - Allows the use of slice objects to limit range affected
+  - Removes axis labels from other axes in the rectangle
+  - Pairs well with :attr:`WrightTools.data.Axes.label`
+
+
+.. code-block:: python
+
+   wigner_colors = ["C0", "C1", "C2", "C3"]
+   trace_colors = ["#FE4EDA", "#00B7EB"]
+   ...
+   for indx, wigner, color in zip(indxs, wigners, wigner_colors):
+       ...
+       ax.grid()
+       wt.artists.set_ax_spines(ax=ax, c=color)
+       # set title as value of w2
+       wigner.constants[0].format_spec = ".2f"
+       wigner.round_spec = -1
+       wt.artists.corner_text(wigner.constants[0].label, ax=ax)
+       # plot overlines
+       for d2, t_color in zip(d2_vals, trace_colors):
+           ax.axhline(d2, color=t_color, alpha=.5, linewidth=6)
+       # plot w2 placement
+       ax.axvline(wigner.w2.points, color="grey", alpha=.75, linewidth=6)
+   ...
+   for indx, color, traces in zip(indxs, trace_colors, tracess):
+       ...
+       ax.set_xlim(trace.axes[0].min(), trace.axes[0].max())
+       wt.artists.set_ax_spines(ax=ax, c=color)
+   # plot colormap
+   cax = plt.subplot(gs[1:3, -1])
+   ticks = np.linspace(data.ai0.min(), data.ai0.max(), 11)
+   wt.artists.plot_colorbar(cax=cax, label="amplitude", cmap="default", ticks=ticks)
+   # set axis labels
+   wt.artists.set_fig_labels(xlabel=data.w1__e__wm.label, ylabel=data.d2.label, col=slice(0, 1))
 
 Save
 ^^^^
 
-Save documentation coming soon.
+Saving figures is as easy as calling :meth:`~WrightTools.artists.savefig`.
+This is a simple wrapper for :meth:`matplotlib.pyplot.savefig` which allows us to override defaults so that figures created with :meth:`~WrightTools.artists.create_figure` have proper margins and resolution.
+If you wish to change margin padding or transparancy settings, the matplotlib function will work just as well.
+
+.. code-block:: python
+
+   # saving the figure as a png
+   wt.artists.savefig("custom_fig.png", fig=fig, close=False)
+
 
 .. _Choosing Colormaps: https://matplotlib.org/users/colormaps.html#choosing-colormaps  
 

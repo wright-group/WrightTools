@@ -1,10 +1,13 @@
 WrightTools\.collection package
 ===============================
 
-Module contents
----------------
+.. currentmodule:: WrightTools.collection
 
 .. automodule:: WrightTools.collection
-    :members:
-    :undoc-members:
-    :show-inheritance:
+
+.. autosummary::
+   :toctree: ../api
+
+   Collection
+   from_Cary
+   from_directory

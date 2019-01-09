@@ -4,12 +4,11 @@ WrightTools API
 .. toctree::
    :maxdepth: 6
 
-   WrightTools.diagrams
-   WrightTools.datasets
    WrightTools.artists
    WrightTools.collection
    WrightTools.data
+   WrightTools.diagrams
    WrightTools.exceptions
    WrightTools.kit
+   WrightTools.open
    WrightTools.units
-

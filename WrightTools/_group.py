@@ -70,7 +70,11 @@ class Group(h5py.Group, metaclass=MetaClass):
             try:
                 if isinstance(value, pathlib.Path):
                     value = str(value)
-                elif isinstance(value, list) and len(value) > 0 and isinstance(value[0], os.PathLike):
+                elif (
+                    isinstance(value, list)
+                    and len(value) > 0
+                    and isinstance(value[0], (str, os.PathLike))
+                ):
                     value = np.array(value, dtype="S")
                 elif sys.version_info > (3, 6):
                     try:
@@ -94,6 +98,12 @@ class Group(h5py.Group, metaclass=MetaClass):
             parent.attrs["item_names"] = np.append(
                 parent.attrs["item_names"], self.natural_name.encode()
             )
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args, **kwargs):
+        self.close()
 
     def __getattr__(self, key):
         """Gets called if attribute not in self.__dict__.
