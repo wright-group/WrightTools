@@ -45,20 +45,26 @@ class Group(h5py.Group, metaclass=MetaClass):
     class_name = "Group"
 
     def __init__(self, file=None, parent=None, name=None, **kwargs):
+        from .collection import Collection
+
         if file is None:
             return
         # parent
         if parent is None:
             parent = ""
         if parent == "":
-            parent = posixpath.sep
-            path = posixpath.sep
+            parent = pathlib.PurePosixPath("/")
+            path = pathlib.PurePosixPath("/")
         else:
-            path = posixpath.sep.join([parent, name])
+            path = pathlib.PurePosixPath(parent) / name
+        name = path.name if path.name else name
+        parent = path.parent
         self.filepath = file.filename
-        file.require_group(parent)
-        file.require_group(path)
-        h5py.Group.__init__(self, bind=file[path].id)
+        if name != "" and parent.name != "":
+            # Ensure that the parent Collection object is made first
+            Collection(file, parent=parent.parent, name=parent.name, edit_local=True)
+        file.require_group(str(path))
+        h5py.Group.__init__(self, bind=file[str(path)].id)
         self.__n = 0
         self.fid = self.file.id
         self.natural_name = name
@@ -91,7 +97,7 @@ class Group(h5py.Group, metaclass=MetaClass):
         self.__version__
         self.item_names
 
-        parent = file[parent]
+        parent = file[str(parent)]
         if parent.name == self.name:
             pass  # at root, dont add to item_names
         elif self.natural_name.encode() not in parent.attrs["item_names"]:
@@ -147,6 +153,9 @@ class Group(h5py.Group, metaclass=MetaClass):
         natural_name = args[2] if len(args) > 2 else kwargs.get("name", cls.class_name.lower())
         edit_local = args[3] if len(args) > 3 else kwargs.pop("edit_local", False)
         file = None
+        if isinstance(filepath, h5py.File):
+            file = filepath
+            filepath = file.filename
         tmpfile = None
         if isinstance(parent, h5py.Group):
             filepath = parent.filepath
@@ -176,8 +185,9 @@ class Group(h5py.Group, metaclass=MetaClass):
         # construct fullpath
         if parent is None:
             parent = ""
-            name = posixpath.sep
+            name = "/"
         else:
+            parent = str(parent)
             if not parent.endswith("/"):
                 parent += "/"
             name = natural_name
