@@ -321,9 +321,9 @@ def quick2D(
                 )
             else:
                 if contours_local:
-                    limit = np.nanmax(zi)
+                    limit = channel.max()
                 else:
-                    limit = data_channel.mag()
+                    limit = data_channel.max()
                 contour_levels = np.linspace(channel.null - 1e-10, limit + 1e-10, contours + 2)
             ax.contour(d, channel=channel_index, levels=contour_levels)
         # decoration ------------------------------------------------------------------------------
