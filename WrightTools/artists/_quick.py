@@ -309,7 +309,23 @@ def quick2D(
             ax.contourf(d, channel=channel_index, cmap=cmap, levels=levels)
         # contour lines ---------------------------------------------------------------------------
         if contours:
-            raise NotImplementedError
+            # get contour levels
+            # force top and bottom contour to be just outside of data range then add two contours
+            if channel.signed:
+                if contours_local:
+                    limit = channel.mag()
+                else:
+                    limit = data_channel.mag()
+                contour_levels = np.linspace(
+                    -limit + channel.null - 1e-10, limit + channel.null + 1e-10, contours + 2
+                )
+            else:
+                if contours_local:
+                    limit = np.nanmax(zi)
+                else:
+                    limit = data_channel.mag()
+                contour_levels = np.linspace(channel.null - 1e-10, limit + 1e-10, contours + 2)
+            ax.contour(d, channel=channel_index, levels=contour_levels)
         # decoration ------------------------------------------------------------------------------
         plt.xticks(rotation=45, fontsize=14)
         plt.yticks(fontsize=14)
