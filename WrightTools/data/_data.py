@@ -934,9 +934,11 @@ class Data(Group):
             if isinstance(factor, (int, type(None))):
                 factor = [factor] * arr.ndim
             factor = [1 if f is None else f for f in factor]
-            for axis, f in enumerate(factor):
-                if arr.shape[axis] >= f:
-                    arr = decimate(arr, f, axis=axis)
+            factor = [1 if s == 1 else f for s, f in zip(arr.shape, factor)]
+            m = np.ones(factor)
+            sl = tuple(slice(None, None, f) for f in factor)
+            arr = np.ascontiguousarray(scipy.ndimage.convolve(arr, m)[sl])
+            arr = arr / m.size
             return arr
 
         for channel in self.channels:
