@@ -18,6 +18,11 @@ def test_downscale():
     b = a.downscale((3, 10))
     assert b.shape == (854, 216)
     assert b.axis_expressions == a.axis_expressions
+    # wt.artists.quick2D(a)
+    wt.artists.quick2D(b)
+    import matplotlib.pyplot as plt
+
+    plt.show()
 
 
 if __name__ == "__main__":
