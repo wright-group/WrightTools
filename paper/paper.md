@@ -67,9 +67,9 @@ There are several recurring challenges in MDS data processing and representation
 - Dataset size may be large enough to run into computer memory limits.
 - Dataset dimensionality is large enough to represent challenges in human interaction and visualization.
 
-The excellent Scientific Python ecosystem is well suited to address all of these challenges. [@OliphantTravisE2007a]
-Numpy supports interaction with and manipulation of multidimensional arrays. [@OliphantTravisE2006a]
-Matplotlib supports one, two, and even three-dimensional plotting. [@HunterJohnD2007a]
+The excellent Scientific Python ecosystem is well suited to address all of these challenges [@OliphantTravisE2007a].
+Numpy supports interaction with and manipulation of multidimensional arrays [@OliphantTravisE2006a].
+Matplotlib supports one, two, and even three-dimensional plotting [@HunterJohnD2007a].
 h5py [@ColletteAndrew2013] interfaces with hdf5 [@hdf5], allowing for storage and memory-safe access to large multidimensional arrays in a binary format that can be accessed from a variety of different popular languages, including MATLAB and Fortran.
 ``WrightTools`` does not intend to replace or reimplement these core libraries.
 Instead, ``WrightTools`` offers an interface that impedance-matches multidimensional spectroscopy and Scientific Python.
@@ -91,7 +91,7 @@ All variables are recorded, including coordinates for hardware that are not actu
 
 There can be many variables that change in the context of a single MDS experiment.
 The typical spectroscopist only really cares about a small subset of these variables, but exactly what subset matters may change as different strategies are used to explore the dataset.
-Furthermore, it is often useful to "combine" multiple variables using simple algebraic relationships to exploit the natural symmetry of many MDS experiments and to draw comparisons between different members of the MDS family. [@NeffMallonNathanA2017a]
+Furthermore, it is often useful to "combine" multiple variables using simple algebraic relationships to exploit the natural symmetry of many MDS experiments and to draw comparisons between different members of the MDS family [@NeffMallonNathanA2017a].
 In light of these details, ``WrightTools`` provides a high-level ``Axis`` class that allows users to transparently define which variables, variable relationships, and unit conventions are important to them for representation and manipulation.
 Each ``Axis`` contains an ``expression``, which dictates its relationship with one or more variables.
 Given 5 variables with names [``'w1'``, ``'w2'``, ``'wm'``, ``'d1'``, ``'d2'``] , example valid expressions include ``'w1'``, ``'w1=wm'``, ``'w1+w2'``, ``'2*w1'``, ``'d1-d2'``, and ``'wm-w1+w2'``.
@@ -121,7 +121,7 @@ Documentation is available at [wright.tools](http://wright.tools).
 
 # Impact
 
-`WrightTools` has directly enabled no fewer than eleven publications. [@CzechKyleJonathan2015a; @KohlerDanielDavid2017a; @NeffMallonNathanA2017a; @ChenJie2017a; @MorrowDarienJames2017a; @HorakErikH2018a; @SundenKyleFoster2018a; @KohlerDanielDavid2018a; @HandaliJonathanDaniel2018a; @MorrowDarienJames2018a; @HandaliJonathanDaniel2018b]
+`WrightTools` has directly enabled no fewer than eleven publications [@CzechKyleJonathan2015a; @KohlerDanielDavid2017a; @NeffMallonNathanA2017a; @ChenJie2017a; @MorrowDarienJames2017a; @HorakErikH2018a; @SundenKyleFoster2018a; @KohlerDanielDavid2018a; @HandaliJonathanDaniel2018a; @MorrowDarienJames2018a; @HandaliJonathanDaniel2018b].
 Many of these publications have associated open datasets and `WrightTools`-based processing scripts which enhance the scientific community's ability to audit and reproduce the published work.
 Although these publications span several different MDS family members and instruments, the common usage of `WrightTools` makes it trivial to download and immediately interact with the raw and processed datasets, and (when applicable) simulations that comprise these publications.
 These practices are not yet common in the MDS community.
@@ -129,7 +129,7 @@ These practices are not yet common in the MDS community.
 Though still relatively uncommon, MDS is an increasingly important family of analytical techniques used by Chemists and Physists to interrogate especially complex systems and to answer especially challenging questions.
 By abstracting away common array manpulation, file management, and data visualization tasks, `WrightTools` promises to increase the productivity and creativity of MDS practitioners.
 We hope that `WrightTools`, and the universal `wt5` file format, will become a useful open source core technology for this growing community.
-We are particularly excited about ongoing projects that build on top of `WrightTools`, including packages for data acquisition and simulation. [@ThompsonBlaiseJonathan2018PyCMDS; @SundenKyleFoster2018a]
+We are particularly excited about ongoing projects that build on top of `WrightTools`, including packages for data acquisition and simulation [@ThompsonBlaiseJonathan2018PyCMDS; @SundenKyleFoster2018a].
 
 # Acknowledgements
 
