@@ -2,11 +2,9 @@ language: python
 matrix:
     include:
         - python: 3.6
-          dist: trusty
-          sudo: false
+          dist: xenial
         - python: 3.7
           dist: xenial
-          sudo: true
 addons:
     apt:
         packages:
