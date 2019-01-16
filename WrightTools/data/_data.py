@@ -15,7 +15,7 @@ import h5py
 
 import scipy
 from scipy.interpolate import griddata, interp1d
-from skimage.transform import downscale_local_mean
+from scipy.signal import decimate
 
 from .._group import Group
 from .. import collection as wt_collection
@@ -897,10 +897,9 @@ class Data(Group):
     def downscale(self, tup, name=None, parent=None) -> "Data":
         """Down sample the data array using local averaging.
 
-        See `skimage.transform.downscale_local_mean`__ for more info.
+        See `scipy.signal.decimate`__ for more info.
 
-        __ http://scikit-image.org/docs/0.12.x/api/
-            skimage.transform.html#skimage.transform.downscale_local_mean
+        __ https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.decimate.html
 
         Parameters
         ----------
@@ -931,21 +930,28 @@ class Data(Group):
         else:
             parent.create_data(name=name)
 
+        def _nd_decimate(arr, factor):
+            if isinstance(factor, (int, type(None))):
+                factor = [factor] * arr.ndim
+            factor = [1 if f is None else f for f in factor]
+            factor = [1 if s == 1 else f for s, f in zip(arr.shape, factor)]
+            m = np.ones(factor)
+            sl = tuple(slice(None, None, f) for f in factor)
+            arr = np.ascontiguousarray(scipy.ndimage.convolve(arr, m)[sl])
+            arr = arr / m.size
+            return arr
+
         for channel in self.channels:
             name = channel.natural_name
             newdata.create_channel(
-                name=name, values=downscale_local_mean(channel[:], tup), units=channel.units
+                name=name, values=_nd_decimate(channel[:], tup), units=channel.units
             )
-        args = []
-        for i, axis in enumerate(self.axes):
-            if len(axis.variables) > 1:
-                raise NotImplementedError("downscale only works with simple axes currently")
-            variable = axis.variables[0]
+        for variable in self.variables:
             name = variable.natural_name
-            args.append(name)
-            slices = [slice(None, None, step) for step in tup]
-            newdata.create_variable(name=name, values=variable[slices], units=variable.units)
-        newdata.transform(*args)
+            newdata.create_variable(
+                name=name, values=_nd_decimate(variable[:], tup), units=variable.units
+            )
+        newdata.transform(*self.axis_names)
         return newdata
 
     def get_nadir(self, channel=0) -> tuple:
