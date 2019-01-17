@@ -6,8 +6,8 @@ Citing WrightTools
 When publishing research which used WrightTools, please provide credit to WrightTools
 developers through citation or acknowledgement.
 
-.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.1198904.svg
-   :target: https://doi.org/10.5281/zenodo.1198904
+.. image:: http://joss.theoj.org/papers/10.21105/joss.01141/status.svg
+   :target: https://doi.org/10.21105/joss.01141
 
 BibTex citation:
 

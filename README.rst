@@ -26,8 +26,10 @@ Documentation at `wright.tools <http://wright.tools>`_.
 .. image:: https://img.shields.io/badge/code%20style-black-000000.svg
    :target: https://github.com/ambv/black
 
+.. image:: http://joss.theoj.org/papers/10.21105/joss.01141/status.svg
+   :target: https://doi.org/10.21105/joss.01141
+
 .. image:: https://raw.githubusercontent.com/wright-group/WrightTools/master/logo/logo.png
    :scale: 25 %
    :alt: WrightTools
    :align: center
-
