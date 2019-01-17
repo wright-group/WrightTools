@@ -27,7 +27,6 @@ WrightTools.data.Data
       ~Data.create_dataset
       ~Data.create_group
       ~Data.create_variable
-      ~Data.downscale
       ~Data.flush
       ~Data.get
       ~Data.get_nadir

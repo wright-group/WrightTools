@@ -15,7 +15,6 @@ import h5py
 
 import scipy
 from scipy.interpolate import griddata, interp1d
-from skimage.transform import downscale_local_mean
 
 from .._group import Group
 from .. import collection as wt_collection
@@ -893,60 +892,6 @@ class Data(Group):
         self._variables = None
         self.attrs["variable_names"] = np.append(self.attrs["variable_names"], name.encode())
         return variable
-
-    def downscale(self, tup, name=None, parent=None) -> "Data":
-        """Down sample the data array using local averaging.
-
-        See `skimage.transform.downscale_local_mean`__ for more info.
-
-        __ http://scikit-image.org/docs/0.12.x/api/
-            skimage.transform.html#skimage.transform.downscale_local_mean
-
-        Parameters
-        ----------
-        tup : tuple of ints
-            The collection of step sizes by which each axis is binned.
-            Each axis is sliced with step size determined by the tuple.
-            To keep an axis sampling unchanged, use 1 or None
-        name : string (optional)
-            The name of the string. Default is None.
-        parent : WrightTools Collection instance (optional)
-            Collection to place the downscaled data object. Default is
-            None (new parent).
-
-        Returns
-        -------
-        WrightTools Data instance
-            New data object with the downscaled channels and axes
-
-        See Also
-        --------
-        zoom
-            Zoom the data array using spline interpolation of the requested order.
-        """
-        if name is None:
-            name = self.natural_name + "_downscaled"
-        if parent is None:
-            newdata = Data(name=name)
-        else:
-            parent.create_data(name=name)
-
-        for channel in self.channels:
-            name = channel.natural_name
-            newdata.create_channel(
-                name=name, values=downscale_local_mean(channel[:], tup), units=channel.units
-            )
-        args = []
-        for i, axis in enumerate(self.axes):
-            if len(axis.variables) > 1:
-                raise NotImplementedError("downscale only works with simple axes currently")
-            variable = axis.variables[0]
-            name = variable.natural_name
-            args.append(name)
-            slices = [slice(None, None, step) for step in tup]
-            newdata.create_variable(name=name, values=variable[slices], units=variable.units)
-        newdata.transform(*args)
-        return newdata
 
     def get_nadir(self, channel=0) -> tuple:
         """Get the coordinates, in units, of the minimum in a channel.
@@ -1932,11 +1877,6 @@ class Data(Group):
             The order of the spline used to interpolate onto new points.
         verbose : bool (optional)
             Toggle talkback. Default is True.
-
-        See Also
-        --------
-        downscale
-            Down-sample the data array using local averaging.
         """
         raise NotImplementedError
         import scipy.ndimage
