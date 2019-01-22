@@ -50,7 +50,9 @@ def fluence(
         Valid wt.units time unit identifier. Default is fs.
     area_type : string (optional)
         Type of calculation to accomplish for Gaussian area.
-        Currently nothing other than the default of even is implemented.
+        even specfies a flat-top calculation
+        average specifies a Gaussian average within the FWHM
+        Default is even.
 
     Returns
     -------
@@ -62,6 +64,10 @@ def fluence(
     if area_type == "even":
         radius_cm = wt_units.converter(beam_radius, beam_radius_units, "cm")
         area_cm2 = np.pi * radius_cm ** 2  # cm^2
+    elif area_type == "average":
+        radius_cm = wt_units.converter(beam_radius, beam_radius_units, "cm")
+        area_cm2 = np.pi * radius_cm ** 2  # cm^2
+        area_cm2 /= 0.7213  # weight by average intensity felt by oscillator inside of FWHM
     else:
         raise NotImplementedError
     # calculate fluence in uj/cm^2
