@@ -4,7 +4,18 @@
    :alt: WrightTools
    :align: center
 
-Tools for loading, processing, and plotting multidimensional spectroscopy data.
+``WrightTools`` loads, processes, and plots multidimensional spectroscopy data.
+
+"Multidimensional spectroscopy" (MDS) is a family of diverse analytical techniques that record the response of a material to multiple stimuli---typically multiple ultrafast pulses of light.
+Due to its diversity and dimensionality, MDS data is challenging to process and visualize.
+``WrightTools`` is a freely available and openly licensed Python package that is made specifically for multidimensional spectroscopy.
+It aims to be a core toolkit that is general enough to handle all MDS datasets and processing workloads.
+Being built for and by MDS practitioners, ``WrightTools`` has an intuitive, high-level, object-oriented interface for spectroscopists.
+
+For a more complete introduction to WrightTools, please click on the badge below to read our short three-page paper in the Journal of Open Source Software:
+
+.. image:: http://joss.theoj.org/papers/10.21105/joss.01141/status.svg
+   :target: https://doi.org/10.21105/joss.01141
 
 Status
 ------
