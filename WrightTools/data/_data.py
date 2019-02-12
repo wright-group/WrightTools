@@ -812,6 +812,8 @@ class Data(Group):
         if name in self.channel_names:
             warnings.warn(name, wt_exceptions.ObjectExistsWarning)
             return self[name]
+        elif name in self.variable_names:
+            raise wt_exceptions.NameNotUniqueError(name)
 
         require_kwargs = {}
         if values is None:
@@ -870,6 +872,8 @@ class Data(Group):
         if name in self.variable_names:
             warnings.warn(name, wt_exceptions.ObjectExistsWarning)
             return self[name]
+        elif name in self.channel_names:
+            raise wt_exceptions.NameNotUniqueError(name)
         if values is None:
             if shape is None:
                 shape = self.shape
