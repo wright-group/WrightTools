@@ -380,7 +380,7 @@ class Group(h5py.Group, metaclass=MetaClass):
             Written filepath.
         """
         if filepath is None:
-            filepath = pathlib.Path("." / self.natural_name)
+            filepath = pathlib.Path(".") / self.natural_name
         else:
             filepath = pathlib.Path(filepath)
         filepath = filepath.with_suffix(".wt5")
