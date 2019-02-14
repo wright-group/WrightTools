@@ -537,15 +537,20 @@ class Data(Group):
             Set values above/below a threshold to a particular value
         """
         # get axis index --------------------------------------------------------------------------
+        axis_index = None
+        if isinstance(axis, tuple):
+            axis_index = axis[0]
+            axis = axis[1]
         index = wt_kit.get_index(self.axis_names, axis)
-        axes = [i for i in range(self.ndim) if self.axes[index].shape[i] > 1]
-        if len(axes) > 1:
-            raise wt_exceptions.MultidimensionalAxisError(axis, "moment")
-        elif len(axes) == 0:
-            raise wt_exceptions.ValueError(
-                "Axis {} is a single point, cannot compute moment".format(axis)
-            )
-        axis_index = axes[0]
+        if axis_index is None:
+            axes = [i for i in range(self.ndim) if self.axes[index].shape[i] > 1]
+            if len(axes) > 1:
+                raise wt_exceptions.MultidimensionalAxisError(axis, "moment")
+            elif len(axes) == 0:
+                raise wt_exceptions.ValueError(
+                    "Axis {} is a single point, cannot compute moment".format(axis)
+                )
+            axis_index = axes[0]
 
         warnings.warn("moment", category=wt_exceptions.EntireDatasetInMemoryWarning)
 
