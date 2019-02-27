@@ -141,11 +141,18 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True) -> Data:
                         values = np.expand_dims(values, i)
             else:
                 tolerance = headers["tolerance"][index]
+                units = headers["units"][index]
                 for i in range(len(shape)):
                     if tolerance is None:
                         break
                     if "d" in name:
-                        tolerance = 3.
+                        # This is a hack because delay is particularly 
+                        # unreliable in tolerance. And 3 fs vs 3 ps is a huge
+                        # difference... KFS 2019-2-27
+                        if units == "fs":
+                            tolerance = 3.
+                        else:
+                            tolerance = 0.1
                     if "zero" in name:
                         tolerance = 1e-10
                     try:
