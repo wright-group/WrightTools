@@ -77,6 +77,14 @@ def test_ps_delay():
     assert data.shape == (11, 15, 15)
     assert data.axis_expressions == ("d1", "w2", "w1")
     data.close()
+    p = os.path.join(here, "test_data", "ps_delay_together.data")
+    data = wt.data.from_PyCMDS(p)
+    assert data.shape == (33, 21)
+    assert data.axis_expressions == ("w3", "d1=d2")
+    assert data.d1.shape == (1, 21)
+    assert data.d2.shape == (1, 21)
+    assert data.d1__e__d2.shape == (1, 21)
+    data.close()
 
 
 def test_tolerance():
