@@ -77,6 +77,9 @@ def test_ps_delay():
     assert data.shape == (11, 15, 15)
     assert data.axis_expressions == ("d1", "w2", "w1")
     data.close()
+    
+    
+def test_ps_delay_together():
     p = os.path.join(here, "test_data", "ps_delay_together.data")
     data = wt.data.from_PyCMDS(p)
     assert data.shape == (33, 21)
