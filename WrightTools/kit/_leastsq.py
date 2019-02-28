@@ -65,7 +65,7 @@ def leastsqfitter(p0, datax, datay, function, verbose=False, cov_verbose=False):
             if cov_verbose:
                 print(pcov)
         else:
-            pcov = np.inf
+            pcov = np.array(np.inf)
         # calculate and write errors
         error = []
         for i in range(len(pfit_leastsq)):
