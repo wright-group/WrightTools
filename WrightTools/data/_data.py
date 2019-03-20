@@ -492,7 +492,7 @@ class Data(Group):
         else:
             new[:] = np.gradient(channel[:], self[axis].points, axis=axis_index)
 
-    def moment(self, axis, channel=0, moment=1):
+    def moment(self, axis, channel=0, moment=1, *, resultant=None):
         """Take the nth moment the dataset along one axis, adding lower rank channels.
 
         New channels have names ``<channel name>_<axis name>_moment_<moment num>``.
@@ -528,6 +528,11 @@ class Data(Group):
             The moments to take.
             One channel will be created for each number given.
             Default is 1, the center of mass.
+        resultant : tuple of int
+            The resultant shape after the moment operation.
+            By default, it is intuited by the axis along which the moment is being taken.
+            This default only works if that axis is 1D, so resultant is required if a 
+            multidimensional axis is passed as the first argument.
 
         See Also
         --------
@@ -535,12 +540,23 @@ class Data(Group):
             Reduce dimensionality by some mathematical operation
         clip
             Set values above/below a threshold to a particular value
+        WrightTools.kit.joint_shape
+            Useful for setting `resultant` kwarg based off of axes not collapsed.
         """
         # get axis index --------------------------------------------------------------------------
         axis_index = None
-        if isinstance(axis, tuple):
-            axis_index = axis[0]
-            axis = axis[1]
+        if resultant is not None:
+            for i, (s, r) in enumerate(zip(self.shape, resultant)):
+                if s != r and r == 1 and axis_index is None:
+                    axis_index = i
+                elif s == r:
+                    continue
+                else:
+                    raise wt_exceptions.ValueError(
+                        f"Invalid resultant shape '{resultant}' for shape {self.shape}. "
+                        + "Consider using `wt.kit.joint_shape` to join non-collapsed axes."
+                    )
+
         index = wt_kit.get_index(self.axis_names, axis)
         if axis_index is None:
             axes = [i for i in range(self.ndim) if self.axes[index].shape[i] > 1]
@@ -583,10 +599,7 @@ class Data(Group):
         if 0 in moments:
             # Sort axis, so that integrals come out with expected sign
             # only matters for integral, all others normalize by integral
-            sli = [slice(None) for _ in range(x.ndim)]
-            sort = np.argsort(x.flat)
-            sli[axis_index] = sort
-            sli = tuple(sli)
+            sli = np.argsort(x, axis=axis_index)
             x = x[sli]
             y = y[sli]
 
@@ -818,7 +831,7 @@ class Data(Group):
             warnings.warn(name, wt_exceptions.ObjectExistsWarning)
             return self[name]
 
-        require_kwargs = {}
+        require_kwargs = {"chunks": True}
         if values is None:
             if shape is None:
                 require_kwargs["shape"] = self.shape
@@ -836,8 +849,10 @@ class Data(Group):
             require_kwargs["data"] = values
             require_kwargs["shape"] = values.shape
             require_kwargs["dtype"] = values.dtype
+        if np.prod(require_kwargs["shape"]) == 1:
+            require_kwargs["chunks"] = False
         # create dataset
-        dataset_id = self.require_dataset(name=name, chunks=True, **require_kwargs).id
+        dataset_id = self.require_dataset(name=name, **require_kwargs).id
         channel = Channel(self, dataset_id, units=units, **kwargs)
         # finish
         self.attrs["channel_names"] = np.append(self.attrs["channel_names"], name.encode())
