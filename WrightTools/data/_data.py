@@ -599,7 +599,7 @@ class Data(Group):
         if 0 in moments:
             # Sort axis, so that integrals come out with expected sign
             # only matters for integral, all others normalize by integral
-            sli = np.argsort(x, axis=axis_index)
+            sli = tuple(np.argsort(x, axis=axis_index))
             x = x[sli]
             y = y[sli]
 
@@ -850,7 +850,7 @@ class Data(Group):
             require_kwargs["shape"] = values.shape
             require_kwargs["dtype"] = values.dtype
         if np.prod(require_kwargs["shape"]) == 1:
-            require_kwargs["chunks"] = False
+            require_kwargs["chunks"] = None
         # create dataset
         dataset_id = self.require_dataset(name=name, **require_kwargs).id
         channel = Channel(self, dataset_id, units=units, **kwargs)
