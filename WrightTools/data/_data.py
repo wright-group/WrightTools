@@ -599,7 +599,10 @@ class Data(Group):
         if 0 in moments:
             # Sort axis, so that integrals come out with expected sign
             # only matters for integral, all others normalize by integral
-            sli = tuple(np.argsort(x, axis=axis_index))
+            sli = [slice(None) for _ in range(x.ndim)]
+            sort = np.argsort(x.flat)
+            sli[axis_index] = sort
+            sli = tuple(sli)
             x = x[sli]
             y = y[sli]
 
