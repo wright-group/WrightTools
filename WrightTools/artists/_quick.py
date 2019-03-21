@@ -156,6 +156,7 @@ def quick1D(
             if verbose:
                 print("image saved at", fpath)
             out.append(fpath)
+    chopped.close()
     return out
 
 
@@ -372,4 +373,5 @@ def quick2D(
             if verbose:
                 print("image saved at", fpath)
             out.append(fpath)
+    chopped.close()
     return out
