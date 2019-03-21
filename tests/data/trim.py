@@ -32,18 +32,23 @@ def test_trim_2Dgauss():
     d.create_channel("damaged1", arr2)
     d.create_channel("damaged2", arr2)
     d.create_channel("damaged3", arr2)
+    d.create_channel("damaged4", arr2)
     d.transform("x", "y")
     # trim
+    d.original.trim([2, 2], factor=2)
     d.damaged1.trim([2, 2], factor=2)
     d.damaged2.trim([2, 2], factor=2, replace="mean")
     d.damaged3.trim([2, 2], factor=2, replace=0.5)
+    d.damaged4.trim([2, 2], factor=2, replace="exclusive_mean")
     # now heal
     d.create_channel("healed_linear", d.damaged1[:])
     d.heal(channel="healed_linear", fill_value=0, method="linear")
     # check
-    assert np.allclose(d.original[:], d.healed_linear[:], rtol=1e-1, atol=1e-1)
-    assert np.allclose(d.original[:], d.damaged2[:], rtol=1e-1, atol=9e-1)
-    assert np.allclose(d.original[:], d.damaged3[:], rtol=1e-1, atol=5e-1)
+    np.testing.assert_allclose(d.original[:], d.original[:], rtol=1e-1, atol=1e-1)
+    np.testing.assert_allclose(d.original[:], d.healed_linear[:], rtol=1e-1, atol=1e-1)
+    np.testing.assert_allclose(d.original[:], d.damaged2[:], rtol=1e-1, atol=9e-1)
+    np.testing.assert_allclose(d.original[:], d.damaged3[:], rtol=1e-1, atol=5e-1)
+    np.testing.assert_allclose(d.original[:], d.damaged4[:], rtol=1e-1, atol=3e-1)
 
 
 def test_trim_3Dgauss():
@@ -67,7 +72,7 @@ def test_trim_3Dgauss():
     # trim
     d.damaged.trim([2, 2, 2], factor=2, replace="mean")
     # check
-    assert np.allclose(d.original[:], d.damaged[:], rtol=1e-1, atol=9e-1)
+    np.testing.assert_allclose(d.original[:], d.damaged[:], rtol=1e-1, atol=9e-1)
 
 
 if __name__ == "__main__":

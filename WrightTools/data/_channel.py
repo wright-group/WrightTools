@@ -152,14 +152,17 @@ class Channel(Dataset):
 
         factor : number (optional)
             Tolerance factor.  Default is 3.
-        replace : {'nan', 'mean', number} (optional)
+        replace : {'nan', 'mean', 'exclusive_mean', number} (optional)
             Behavior of outlier replacement. Default is nan.
 
             nan
                 Outliers are replaced by numpy nans.
 
             mean
-                Outliers are replaced by the mean of its neighborhood.
+                Outliers are replaced by the mean of its neighborhood, including itself.
+
+            exclusive_mean
+                Outilers are replaced by the mean of its neighborhood, not including itself.
 
             number
                 Array becomes given number.
@@ -177,6 +180,7 @@ class Channel(Dataset):
         warnings.warn("trim", category=wt_exceptions.EntireDatasetInMemoryWarning)
         outliers = []
         means = []
+        ex_means = []
         # find outliers
         for idx in np.ndindex(self.shape):
             slices = []
@@ -186,26 +190,33 @@ class Channel(Dataset):
                 slices.append(slice(start, stop, 1))
             neighbors = self[slices]
             mean = np.nanmean(neighbors)
+            sum_ = np.nansum(neighbors)
             limit = np.nanstd(neighbors) * factor
             if np.abs(self[idx] - mean) > limit:
                 outliers.append(idx)
                 means.append(mean)
+                # Note, "- 1" is to exclude the point itself, which is not nan, in order
+                # to enter this if block, as `np.abs(nan - mean)` is nan, which would
+                # evaluate to False
+                ex_means.append((sum_ - self[idx]) / (np.sum(~np.isnan(neighbors)) - 1))
+
         # replace outliers
         i = tuple(zip(*outliers))
-        if replace == "nan":
-            arr = self[:]
-            arr[i] = np.nan
-            self[:] = arr
-        elif replace == "mean":
-            arr = self[:]
-            arr[i] = means
-            self[:] = arr
-        elif isinstance(replace, numbers.Number):
-            arr = self[:]
-            arr[i] = replace
-            self[:] = arr
-        else:
-            raise KeyError("replace must be one of {nan, mean} or some number")
+
+        if len(i) == 0:
+            if verbose:
+                print("No outliers found")
+            return []
+
+        replace = {"nan": np.nan, "mean": means, "exclusive_mean": ex_means}.get(replace, replace)
+
+        # This may someday be available in h5py directly, but seems that day is not yet.
+        # This is annoying because it is the only reason we hold the whole set in memory.
+        # KFS 2019-03-21
+        arr = self[:]
+        arr[i] = replace
+        self[:] = arr
+
         # finish
         if verbose:
             print("%i outliers removed" % len(outliers))
