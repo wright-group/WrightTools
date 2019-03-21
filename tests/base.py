@@ -5,6 +5,7 @@
 
 
 import os
+import pytest
 
 import WrightTools as wt
 from WrightTools import datasets
@@ -74,7 +75,8 @@ def test_nested():
     c = wt.Collection()
     cc = c.create_collection()
     assert c.fid.id == cc.fid.id
-    c.file.close()
+    c.close()
+    assert not os.path.isfile(c.filepath)
     assert c.id.valid == 0
     assert cc.id.valid == 0
 
@@ -87,6 +89,15 @@ def test_open_context():
     assert d.id.valid == 0
 
 
+def test_close():
+    d = wt.Data()
+    path = d.filepath
+    wt.close()
+    assert not os.path.isfile(path)
+    with pytest.raises(ValueError):
+        d.file
+
+
 if __name__ == "__main__":
     test_named_root_collection()
     test_named_root_data()
@@ -96,3 +107,4 @@ if __name__ == "__main__":
     test_tempfile_cleanup()
     test_nested()
     test_open_context()
+    test_close()
