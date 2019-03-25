@@ -19,6 +19,7 @@ from . import units
 from . import exceptions
 
 from ._open import *
+from ._close import *
 from .collection._collection import *
 from .data._data import *
 
