@@ -1,12 +1,13 @@
 """Test building the documentation."""
-import sphinx
+from sphinx import cmd
+from sphinx.cmd import build
 import os
 import shutil
 
 
 def test_build_docs():
     docsdir = os.path.abspath(os.path.dirname(__file__)) + "/../../docs"
-    exitCode = sphinx.build_main(["_sphinx.py", docsdir, docsdir + "/__testbuild"])
+    exitCode = build.build_main([docsdir, docsdir + "/__testbuild"])
     # The following code works in sphinx >= 1.7.0
     # exitCode = sphinx.build([docsdir, docsdir + '/__testbuild'])
     assert exitCode == 0
