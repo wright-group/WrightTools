@@ -50,6 +50,7 @@ class Data(Group):
             identifier = identifier.decode()
             expression, units = identifier.split("{")
             units = units.replace("}", "")
+            # Should not be needed for wt5 >= 1.0.3, kept for opening older wt5 files.
             for i in identifier_to_operator.keys():
                 expression = expression.replace(i, identifier_to_operator[i])
             expression = expression.replace(" ", "")  # remove all whitespace
