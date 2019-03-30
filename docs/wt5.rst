@@ -137,3 +137,10 @@ Version 1.0.2
 ^^^^^^^^^^^^^
 
 Adds "constants" as a stored attribute in the attrs dictionary, a list of strings just like axes.
+
+Version 1.0.3
+^^^^^^^^^^^^^
+
+Changed identity as stored in attrs dictionary (``axis`` and ``constant``) to use the ``expression`` including operators.
+Previous versions exhibited a bug where decimal points would be ignored when the expression was generated from the attrs (thus "2.0" would be stored as "2_0" and read in as "20").
+
