@@ -7,6 +7,7 @@
 import numpy as np
 
 import matplotlib
+from matplotlib.projections import register_projection
 from matplotlib.axes import SubplotBase, subplot_class_factory
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -28,6 +29,8 @@ __all__ = ["Axes", "Figure", "GridSpec", "apply_rcparams"]
 
 class Axes(matplotlib.axes.Axes):
     """Axes."""
+
+    name = "wright"
 
     transposed = False
     is_sideplot = False
@@ -483,6 +486,9 @@ class Axes(matplotlib.axes.Axes):
         return super().plot(*args, **kwargs)
 
 
+register_projection(Axes)
+
+
 class Figure(matplotlib.figure.Figure):
     """Figure."""
 
@@ -498,65 +504,8 @@ class Figure(matplotlib.figure.Figure):
         -------
         WrightTools.artists.Axes object
         """
-        # this method is largely copied from upstream
-        # --- Blaise 2018-02-24
-        #
-        # projection
-        if "projection" not in kwargs.keys():
-            projection = "wright"
-        else:
-            projection = kwargs["projection"]
-        # must be arguments
-        if not len(args):
-            return
-        # int args must be correct
-        if len(args) == 1 and isinstance(args[0], int):
-            args = tuple([int(c) for c in str(args[0])])
-            if len(args) != 3:
-                raise ValueError(
-                    "Integer subplot specification must "
-                    + "be a three digit number.  "
-                    + "Not {n:d}".format(n=len(args))
-                )
-        # subplotbase args
-        if isinstance(args[0], SubplotBase):
-            a = args[0]
-            if a.get_figure() is not self:
-                msg = "The Subplot must have been created in the present" " figure"
-                raise ValueError(msg)
-            # make a key for the subplot (which includes the axes object id
-            # in the hash)
-            key = self._make_key(*args, **kwargs)
-        else:
-            projection_class, kwargs, key = matplotlib.figure.process_projection_requirements(
-                self, *args, **kwargs
-            )
-            # try to find the axes with this key in the stack
-            ax = self._axstack.get(key)
-            if ax is not None:
-                if isinstance(ax, projection_class):
-                    # the axes already existed, so set it as active & return
-                    self.sca(ax)
-                    return ax
-                else:
-                    # Undocumented convenience behavior:
-                    # subplot(111); subplot(111, projection='polar')
-                    # will replace the first with the second.
-                    # Without this, add_subplot would be simpler and
-                    # more similar to add_axes.
-                    self._axstack.remove(ax)
-            if projection == "wright":
-                a = subplot_class_factory(Axes)(self, *args, **kwargs)
-            else:
-                a = subplot_class_factory(projection_class)(self, *args, **kwargs)
-        self._axstack.add(key, a)
-        self.sca(a)
-        if int(matplotlib.__version__.split(".")[0]) > 1:
-            a._remove_method = lambda ax: self.delaxes(ax)
-            self.stale = True
-            a.stale_callback = matplotlib.figure._stale_figure_callback
-        # finish
-        return a
+        kwargs.setdefault("projection", "wright")
+        return super().add_subplot(*args, **kwargs)
 
 
 class GridSpec(matplotlib.gridspec.GridSpec):
