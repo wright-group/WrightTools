@@ -516,6 +516,7 @@ class Data(Group):
             If given as a string, the axis with that name is used.
             The axis must exist, and be a 1D array-aligned axis.
             (i.e. have a shape with a single value which is not ``1``)
+            The collapsed axis must be monotonic to produce correct results.
             The axis to collapse along is inferred from the shape of the axis.
         channel : int or str
             The channel to take the moment.
@@ -533,6 +534,7 @@ class Data(Group):
             By default, it is intuited by the axis along which the moment is being taken.
             This default only works if that axis is 1D, so resultant is required if a 
             multidimensional axis is passed as the first argument.
+            The requirement of monotonicity applies on a per pixel basis.
 
         See Also
         --------
@@ -596,15 +598,14 @@ class Data(Group):
         except TypeError:
             moments = (moment,)
 
+        multiplier = 1
         if 0 in moments:
             # Sort axis, so that integrals come out with expected sign
             # only matters for integral, all others normalize by integral
             sli = [slice(None) for _ in range(x.ndim)]
-            sort = np.argsort(x.flat)
-            sli[axis_index] = sort
+            sli[axis_index] = [0, -1]
             sli = tuple(sli)
-            x = x[sli]
-            y = y[sli]
+            multiplier = np.sign(x[sli][..., 1:2] - x[sli][..., 0:1])
 
         for moment in moments:
             about = 0
@@ -630,6 +631,8 @@ class Data(Group):
             values = np.array(values)
             values.shape = new_shape
             values /= norm
+            if moment == 0:
+                values *= multiplier
             self.create_channel(
                 "{}_{}_{}_{}".format(channel.natural_name, axis_inp, "moment", moment),
                 values=values,
