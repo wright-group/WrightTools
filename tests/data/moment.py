@@ -43,6 +43,21 @@ def test_moment_nd():
     data.close()
 
 
+def test_moment_resultant():
+    p = datasets.PyCMDS.w1_wa_000
+    data = wt.data.from_PyCMDS(p)
+    data.convert("nm")
+
+    data.level(0, 1, -10)
+    data.moment("wa", moment=0, resultant=data.w1.shape)
+    assert data.channels[-1].shape == (25, 1)
+    data.moment("wa", moment=1, resultant=data.w1.shape)
+    assert data.channels[-1].shape == (25, 1)
+    data.moment("wa", moment=2, resultant=data.w1.shape)
+    assert data.channels[-1].shape == (25, 1)
+    data.close()
+
+
 if __name__ == "__main__":
     test_moment_nd()
     test_moment_lognormal()
