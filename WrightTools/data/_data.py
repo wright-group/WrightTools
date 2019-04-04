@@ -600,12 +600,11 @@ class Data(Group):
 
         multiplier = 1
         if 0 in moments:
-            # Sort axis, so that integrals come out with expected sign
+            # May be possible to optimize, probably doesn't need the sum
             # only matters for integral, all others normalize by integral
-            sli = [slice(None) for _ in range(x.ndim)]
-            sli[axis_index] = [0, -1]
-            sli = tuple(sli)
-            multiplier = np.sign(x[sli][..., 1:2] - x[sli][..., 0:1])
+            multiplier = np.sign(
+                np.sum(np.diff(x, axis=axis_index), axis=axis_index, keepdims=True)
+            )
 
         for moment in moments:
             about = 0
