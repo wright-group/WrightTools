@@ -493,7 +493,7 @@ class Data(Group):
         else:
             new[:] = np.gradient(channel[:], self[axis].points, axis=axis_index)
 
-    def moment(self, axis, channel=0, moment=1):
+    def moment(self, axis, channel=0, moment=1, *, resultant=None):
         """Take the nth moment the dataset along one axis, adding lower rank channels.
 
         New channels have names ``<channel name>_<axis name>_moment_<moment num>``.
@@ -517,6 +517,7 @@ class Data(Group):
             If given as a string, the axis with that name is used.
             The axis must exist, and be a 1D array-aligned axis.
             (i.e. have a shape with a single value which is not ``1``)
+            The collapsed axis must be monotonic to produce correct results.
             The axis to collapse along is inferred from the shape of the axis.
         channel : int or str
             The channel to take the moment.
@@ -529,6 +530,12 @@ class Data(Group):
             The moments to take.
             One channel will be created for each number given.
             Default is 1, the center of mass.
+        resultant : tuple of int
+            The resultant shape after the moment operation.
+            By default, it is intuited by the axis along which the moment is being taken.
+            This default only works if that axis is 1D, so resultant is required if a 
+            multidimensional axis is passed as the first argument.
+            The requirement of monotonicity applies on a per pixel basis.
 
         See Also
         --------
@@ -536,17 +543,33 @@ class Data(Group):
             Reduce dimensionality by some mathematical operation
         clip
             Set values above/below a threshold to a particular value
+        WrightTools.kit.joint_shape
+            Useful for setting `resultant` kwarg based off of axes not collapsed.
         """
         # get axis index --------------------------------------------------------------------------
+        axis_index = None
+        if resultant is not None:
+            for i, (s, r) in enumerate(zip(self.shape, resultant)):
+                if s != r and r == 1 and axis_index is None:
+                    axis_index = i
+                elif s == r:
+                    continue
+                else:
+                    raise wt_exceptions.ValueError(
+                        f"Invalid resultant shape '{resultant}' for shape {self.shape}. "
+                        + "Consider using `wt.kit.joint_shape` to join non-collapsed axes."
+                    )
+
         index = wt_kit.get_index(self.axis_names, axis)
-        axes = [i for i in range(self.ndim) if self.axes[index].shape[i] > 1]
-        if len(axes) > 1:
-            raise wt_exceptions.MultidimensionalAxisError(axis, "moment")
-        elif len(axes) == 0:
-            raise wt_exceptions.ValueError(
-                "Axis {} is a single point, cannot compute moment".format(axis)
-            )
-        axis_index = axes[0]
+        if axis_index is None:
+            axes = [i for i in range(self.ndim) if self.axes[index].shape[i] > 1]
+            if len(axes) > 1:
+                raise wt_exceptions.MultidimensionalAxisError(axis, "moment")
+            elif len(axes) == 0:
+                raise wt_exceptions.ValueError(
+                    "Axis {} is a single point, cannot compute moment".format(axis)
+                )
+            axis_index = axes[0]
 
         warnings.warn("moment", category=wt_exceptions.EntireDatasetInMemoryWarning)
 
@@ -576,15 +599,13 @@ class Data(Group):
         except TypeError:
             moments = (moment,)
 
+        multiplier = 1
         if 0 in moments:
-            # Sort axis, so that integrals come out with expected sign
+            # May be possible to optimize, probably doesn't need the sum
             # only matters for integral, all others normalize by integral
-            sli = [slice(None) for _ in range(x.ndim)]
-            sort = np.argsort(x.flat)
-            sli[axis_index] = sort
-            sli = tuple(sli)
-            x = x[sli]
-            y = y[sli]
+            multiplier = np.sign(
+                np.sum(np.diff(x, axis=axis_index), axis=axis_index, keepdims=True)
+            )
 
         for moment in moments:
             about = 0
@@ -610,6 +631,8 @@ class Data(Group):
             values = np.array(values)
             values.shape = new_shape
             values /= norm
+            if moment == 0:
+                values *= multiplier
             self.create_channel(
                 "{}_{}_{}_{}".format(channel.natural_name, axis_inp, "moment", moment),
                 values=values,
@@ -816,7 +839,7 @@ class Data(Group):
         elif name in self.variable_names:
             raise wt_exceptions.NameNotUniqueError(name)
 
-        require_kwargs = {}
+        require_kwargs = {"chunks": True}
         if values is None:
             if shape is None:
                 require_kwargs["shape"] = self.shape
@@ -834,8 +857,10 @@ class Data(Group):
             require_kwargs["data"] = values
             require_kwargs["shape"] = values.shape
             require_kwargs["dtype"] = values.dtype
+        if np.prod(require_kwargs["shape"]) == 1:
+            require_kwargs["chunks"] = None
         # create dataset
-        dataset_id = self.require_dataset(name=name, chunks=True, **require_kwargs).id
+        dataset_id = self.require_dataset(name=name, **require_kwargs).id
         channel = Channel(self, dataset_id, units=units, **kwargs)
         # finish
         self.attrs["channel_names"] = np.append(self.attrs["channel_names"], name.encode())
