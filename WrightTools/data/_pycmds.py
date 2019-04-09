@@ -146,7 +146,7 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True) -> Data:
                     if tolerance is None:
                         break
                     if "d" in name:
-                        # This is a hack because delay is particularly 
+                        # This is a hack because delay is particularly
                         # unreliable in tolerance. And 3 fs vs 3 ps is a huge
                         # difference... KFS 2019-2-27
                         if units == "fs":
@@ -197,6 +197,13 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True) -> Data:
     for a, u in zip(data.axes, headers["axis units"]):
         if u is not None:
             a.convert(u)
+    if headers["system name"] == "fs" and int(headers["PyCMDS version"].split(".")[1]) < 10:
+        for delay in ("d1", "d2", "d3", "d1_points", "d2_points", "d3_points"):
+            if delay not in data.variable_names:
+                continue
+            data[delay][:] *= 6000.671281903963041 / 6671.281903963041
+            if verbose:
+                print(f"Correction factor applied to {delay}")
     # return
     if verbose:
         print("data created at {0}".format(data.fullpath))
