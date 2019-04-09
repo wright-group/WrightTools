@@ -19,7 +19,7 @@ def wt_tree():
     args = parser.parse_args()
 
     # Create the data/collection object
-    obj = wt.open(args.path, edit_local=True)[args.internal_path]
+    obj = wt.open(args.path)[args.internal_path]
 
     # Print the tree
     # If the object is a data object, it doesn't take depth as a parameter
