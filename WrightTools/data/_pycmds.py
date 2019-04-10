@@ -206,7 +206,7 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True) -> Data:
         # there was an incorrect hard-coded conversion factor between mm and fs
         # this ONLY applied to Newport MFA stages
         # we apply this correction knowing that Newport MFAs were only used on the "fs" system
-        # and knowing that the Newport MFAs were always assigned as "d1" and "d2"
+        # and knowing that the Newport MFAs were always assigned as "d1", "d2" and "d3"
         # all of this is my fault... luckily I think we get away with it here
         # ---Blaise 2019-04-09
         for delay in ("d1", "d2", "d3", "d1_points", "d2_points", "d3_points"):
