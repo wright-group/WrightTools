@@ -197,7 +197,18 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True) -> Data:
     for a, u in zip(data.axes, headers["axis units"]):
         if u is not None:
             a.convert(u)
-    if headers["system name"] == "fs" and int(headers["PyCMDS version"].split(".")[1]) < 10:
+    if (
+        headers["system name"] == "fs"
+        and int(headers["PyCMDS version"].split("."))[0] == 0
+        and int(headers["PyCMDS version"].split(".")[1]) < 10
+    ):
+        # in versions of PyCMDS up to (and including) 0.9.0
+        # there was an incorrect hard-coded conversion factor between mm and fs
+        # this ONLY applied to Newport MFA stages
+        # we apply this correction knowing that Newport MFAs were only used on the "fs" system
+        # and knowing that the Newport MFAs were always assigned as "d1" and "d2"
+        # all of this is my fault... luckily I think we get away with it here
+        # ---Blaise 2019-04-09
         for delay in ("d1", "d2", "d3", "d1_points", "d2_points", "d3_points"):
             if delay not in data.variable_names:
                 continue
