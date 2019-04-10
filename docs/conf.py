@@ -230,12 +230,22 @@ texinfo_documents = [
 # --- gallery ------------------------------------------------------------------------------------
 
 
+def reset_wt(gallery_conf, fname):
+    # This is an awful hack because python does not allow unloading modules
+    # This is, however, the same thing upstream sphinx-gallery does for
+    # seaborn, so it's not _so_ bad I guess.  2019-04-07 KFS
+    for module in list(sys.modules.keys()):
+        if module.startswith("WrightTools.datasets"):
+            del sys.modules[module]
+
+
 sphinx_gallery_conf = {
     "examples_dirs": "../examples",
     "filename_pattern": "/*.py",
     "gallery_dirs": "auto_examples",
     "download_section_examples": False,
     "backreferences_dir": os.path.join("gen_modules", "backreferences"),
+    "reset_modules": ["matplotlib", reset_wt],
 }
 
 
