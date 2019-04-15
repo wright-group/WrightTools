@@ -35,7 +35,6 @@ setup(
     setup_requires=["pytest-runner"],
     tests_require=["pytest", "pytest-cov", "sphinx", "sphinx-gallery==0.1.12", "sphinx-rtd-theme"],
     install_requires=[
-        "scikit-image",
         "h5py",
         "imageio",
         "matplotlib>=3.0",

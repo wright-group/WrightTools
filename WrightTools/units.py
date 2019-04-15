@@ -47,7 +47,7 @@ od = {"mOD": ["1e3*x", "x/1e3", r"mOD"], "OD": ["x", "x", r"OD"]}
 
 # position units (native: mm)
 position = {
-    "nm_p": ["x/1e6", "1e6/x", r"nm"],
+    "nm_p": ["x/1e6", "1e6*x", r"nm"],
     "um": ["x/1000.", "1000.*x", r"um"],
     "mm": ["x", "x", r"mm"],
     "cm": ["10.*x", "x/10.", r"cm"],

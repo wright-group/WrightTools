@@ -63,6 +63,17 @@ def test_subtract_constant():
     data.close()
 
 
+def test_copy_decimal():
+    d = wt.Data()
+    d.create_variable("a", np.array([10.]))
+    d.transform("a/2.0")
+    assert d.a__d__2_0[0] == 5.
+    d2 = d.copy()
+    assert d2.a__d__2_0[0] == 5.
+    d.close()
+    d2.close()
+
+
 # --- run -----------------------------------------------------------------------------------------
 
 

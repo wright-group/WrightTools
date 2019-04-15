@@ -88,7 +88,7 @@ class Axis(object):
     @property
     def identity(self) -> str:
         """Complete identifier written to disk in data.attrs['axes']."""
-        return self.natural_name + " {%s}" % self.units
+        return self.expression + " {%s}" % self.units
 
     @property
     def label(self) -> str:

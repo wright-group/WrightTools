@@ -156,6 +156,7 @@ def quick1D(
             if verbose:
                 print("image saved at", fpath)
             out.append(fpath)
+    chopped.close()
     return out
 
 
@@ -309,7 +310,23 @@ def quick2D(
             ax.contourf(d, channel=channel_index, cmap=cmap, levels=levels)
         # contour lines ---------------------------------------------------------------------------
         if contours:
-            raise NotImplementedError
+            # get contour levels
+            # force top and bottom contour to be data range then clip them out
+            if channel.signed:
+                if contours_local:
+                    limit = channel.mag()
+                else:
+                    limit = data_channel.mag()
+                contour_levels = np.linspace(
+                    -limit + channel.null, limit + channel.null, contours + 2
+                )[1:-1]
+            else:
+                if contours_local:
+                    limit = channel.max()
+                else:
+                    limit = data_channel.max()
+                contour_levels = np.linspace(channel.null, limit, contours + 2)[1:-1]
+            ax.contour(d, channel=channel_index, levels=contour_levels)
         # decoration ------------------------------------------------------------------------------
         plt.xticks(rotation=45, fontsize=14)
         plt.yticks(fontsize=14)
@@ -356,4 +373,5 @@ def quick2D(
             if verbose:
                 print("image saved at", fpath)
             out.append(fpath)
+    chopped.close()
     return out

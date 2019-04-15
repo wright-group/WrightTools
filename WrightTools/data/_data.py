@@ -15,7 +15,6 @@ import h5py
 
 import scipy
 from scipy.interpolate import griddata, interp1d
-from skimage.transform import downscale_local_mean
 
 from .._group import Group
 from .. import collection as wt_collection
@@ -51,6 +50,7 @@ class Data(Group):
             identifier = identifier.decode()
             expression, units = identifier.split("{")
             units = units.replace("}", "")
+            # Should not be needed for wt5 >= 1.0.3, kept for opening older wt5 files.
             for i in identifier_to_operator.keys():
                 expression = expression.replace(i, identifier_to_operator[i])
             expression = expression.replace(" ", "")  # remove all whitespace
@@ -493,7 +493,7 @@ class Data(Group):
         else:
             new[:] = np.gradient(channel[:], self[axis].points, axis=axis_index)
 
-    def moment(self, axis, channel=0, moment=1):
+    def moment(self, axis, channel=0, moment=1, *, resultant=None):
         """Take the nth moment the dataset along one axis, adding lower rank channels.
 
         New channels have names ``<channel name>_<axis name>_moment_<moment num>``.
@@ -517,6 +517,7 @@ class Data(Group):
             If given as a string, the axis with that name is used.
             The axis must exist, and be a 1D array-aligned axis.
             (i.e. have a shape with a single value which is not ``1``)
+            The collapsed axis must be monotonic to produce correct results.
             The axis to collapse along is inferred from the shape of the axis.
         channel : int or str
             The channel to take the moment.
@@ -529,6 +530,12 @@ class Data(Group):
             The moments to take.
             One channel will be created for each number given.
             Default is 1, the center of mass.
+        resultant : tuple of int
+            The resultant shape after the moment operation.
+            By default, it is intuited by the axis along which the moment is being taken.
+            This default only works if that axis is 1D, so resultant is required if a 
+            multidimensional axis is passed as the first argument.
+            The requirement of monotonicity applies on a per pixel basis.
 
         See Also
         --------
@@ -536,17 +543,33 @@ class Data(Group):
             Reduce dimensionality by some mathematical operation
         clip
             Set values above/below a threshold to a particular value
+        WrightTools.kit.joint_shape
+            Useful for setting `resultant` kwarg based off of axes not collapsed.
         """
         # get axis index --------------------------------------------------------------------------
+        axis_index = None
+        if resultant is not None:
+            for i, (s, r) in enumerate(zip(self.shape, resultant)):
+                if s != r and r == 1 and axis_index is None:
+                    axis_index = i
+                elif s == r:
+                    continue
+                else:
+                    raise wt_exceptions.ValueError(
+                        f"Invalid resultant shape '{resultant}' for shape {self.shape}. "
+                        + "Consider using `wt.kit.joint_shape` to join non-collapsed axes."
+                    )
+
         index = wt_kit.get_index(self.axis_names, axis)
-        axes = [i for i in range(self.ndim) if self.axes[index].shape[i] > 1]
-        if len(axes) > 1:
-            raise wt_exceptions.MultidimensionalAxisError(axis, "moment")
-        elif len(axes) == 0:
-            raise wt_exceptions.ValueError(
-                "Axis {} is a single point, cannot compute moment".format(axis)
-            )
-        axis_index = axes[0]
+        if axis_index is None:
+            axes = [i for i in range(self.ndim) if self.axes[index].shape[i] > 1]
+            if len(axes) > 1:
+                raise wt_exceptions.MultidimensionalAxisError(axis, "moment")
+            elif len(axes) == 0:
+                raise wt_exceptions.ValueError(
+                    "Axis {} is a single point, cannot compute moment".format(axis)
+                )
+            axis_index = axes[0]
 
         warnings.warn("moment", category=wt_exceptions.EntireDatasetInMemoryWarning)
 
@@ -576,15 +599,13 @@ class Data(Group):
         except TypeError:
             moments = (moment,)
 
+        multiplier = 1
         if 0 in moments:
-            # Sort axis, so that integrals come out with expected sign
+            # May be possible to optimize, probably doesn't need the sum
             # only matters for integral, all others normalize by integral
-            sli = [slice(None) for _ in range(x.ndim)]
-            sort = np.argsort(x.flat)
-            sli[axis_index] = sort
-            sli = tuple(sli)
-            x = x[sli]
-            y = y[sli]
+            multiplier = np.sign(
+                np.sum(np.diff(x, axis=axis_index), axis=axis_index, keepdims=True)
+            )
 
         for moment in moments:
             about = 0
@@ -610,6 +631,8 @@ class Data(Group):
             values = np.array(values)
             values.shape = new_shape
             values /= norm
+            if moment == 0:
+                values *= multiplier
             self.create_channel(
                 "{}_{}_{}_{}".format(channel.natural_name, axis_inp, "moment", moment),
                 values=values,
@@ -813,8 +836,10 @@ class Data(Group):
         if name in self.channel_names:
             warnings.warn(name, wt_exceptions.ObjectExistsWarning)
             return self[name]
+        elif name in self.variable_names:
+            raise wt_exceptions.NameNotUniqueError(name)
 
-        require_kwargs = {}
+        require_kwargs = {"chunks": True}
         if values is None:
             if shape is None:
                 require_kwargs["shape"] = self.shape
@@ -832,8 +857,10 @@ class Data(Group):
             require_kwargs["data"] = values
             require_kwargs["shape"] = values.shape
             require_kwargs["dtype"] = values.dtype
+        if np.prod(require_kwargs["shape"]) == 1:
+            require_kwargs["chunks"] = None
         # create dataset
-        dataset_id = self.require_dataset(name=name, chunks=True, **require_kwargs).id
+        dataset_id = self.require_dataset(name=name, **require_kwargs).id
         channel = Channel(self, dataset_id, units=units, **kwargs)
         # finish
         self.attrs["channel_names"] = np.append(self.attrs["channel_names"], name.encode())
@@ -871,6 +898,8 @@ class Data(Group):
         if name in self.variable_names:
             warnings.warn(name, wt_exceptions.ObjectExistsWarning)
             return self[name]
+        elif name in self.channel_names:
+            raise wt_exceptions.NameNotUniqueError(name)
         if values is None:
             if shape is None:
                 shape = self.shape
@@ -893,60 +922,6 @@ class Data(Group):
         self._variables = None
         self.attrs["variable_names"] = np.append(self.attrs["variable_names"], name.encode())
         return variable
-
-    def downscale(self, tup, name=None, parent=None) -> "Data":
-        """Down sample the data array using local averaging.
-
-        See `skimage.transform.downscale_local_mean`__ for more info.
-
-        __ http://scikit-image.org/docs/0.12.x/api/
-            skimage.transform.html#skimage.transform.downscale_local_mean
-
-        Parameters
-        ----------
-        tup : tuple of ints
-            The collection of step sizes by which each axis is binned.
-            Each axis is sliced with step size determined by the tuple.
-            To keep an axis sampling unchanged, use 1 or None
-        name : string (optional)
-            The name of the string. Default is None.
-        parent : WrightTools Collection instance (optional)
-            Collection to place the downscaled data object. Default is
-            None (new parent).
-
-        Returns
-        -------
-        WrightTools Data instance
-            New data object with the downscaled channels and axes
-
-        See Also
-        --------
-        zoom
-            Zoom the data array using spline interpolation of the requested order.
-        """
-        if name is None:
-            name = self.natural_name + "_downscaled"
-        if parent is None:
-            newdata = Data(name=name)
-        else:
-            parent.create_data(name=name)
-
-        for channel in self.channels:
-            name = channel.natural_name
-            newdata.create_channel(
-                name=name, values=downscale_local_mean(channel[:], tup), units=channel.units
-            )
-        args = []
-        for i, axis in enumerate(self.axes):
-            if len(axis.variables) > 1:
-                raise NotImplementedError("downscale only works with simple axes currently")
-            variable = axis.variables[0]
-            name = variable.natural_name
-            args.append(name)
-            slices = [slice(None, None, step) for step in tup]
-            newdata.create_variable(name=name, values=variable[slices], units=variable.units)
-        newdata.transform(*args)
-        return newdata
 
     def get_nadir(self, channel=0) -> tuple:
         """Get the coordinates, in units, of the minimum in a channel.
@@ -1932,11 +1907,6 @@ class Data(Group):
             The order of the spline used to interpolate onto new points.
         verbose : bool (optional)
             Toggle talkback. Default is True.
-
-        See Also
-        --------
-        downscale
-            Down-sample the data array using local averaging.
         """
         raise NotImplementedError
         import scipy.ndimage
