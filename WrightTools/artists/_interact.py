@@ -14,6 +14,28 @@ from .. import data as wt_data
 __all__ = ["interact2D"]
 
 
+class Focus():
+    def __init__(self, axes, linewidth=2):
+        self.axes = axes
+        ax = axes[0]
+        for side in ['top', 'bottom', 'left', 'right']:
+            ax.spines[side].set_linewidth(4)
+        self.focus_axis = ax
+        self.linewidth = linewidth
+
+    def __call__(self, ax):
+        if ax == 'next':
+            ind = (self.axes.index(self.focus_axis) - 1) % len(self.axes)
+            ax = self.axes[ind]
+        if self.focus_axis == ax or ax not in self.axes:
+            return
+        else:  # set new focus
+            for spine in ['top', 'bottom', 'left', 'right']:
+                self.focus_axis.spines[spine].set_linewidth(1)
+                ax.spines[spine].set_linewidth(self.linewidth)
+            self.focus_axis = ax
+
+
 # http://code.activestate.com/recipes/52308-the-simple-but-handy-collector-of-a-bunch-of-named/?in=user-97991
 # used to keep track of vars useful to widgets
 class Bunch(dict):
@@ -179,7 +201,7 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
     ax_title.set_axis_off()
     # NOTE: there are more axes here for more buttons / widgets in future plans
     # create lines
-    x_color = "#00BFBF"  # cyan with saturation increased
+    x_color = "#00BFBF"  # cyan with increased saturation
     y_color = "coral"
     line_sp_x = sp_x.plot([None], [None], visible=False, color=x_color)[0]
     line_sp_y = sp_y.plot([None], [None], visible=False, color=y_color)[0]
@@ -215,6 +237,7 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
                 alpha=0.5
             )
             slider.valtext.set_text(gen_ticklabels(axis.points)[0])
+    current_state.focus = Focus([ax0] + [slider.ax for slider in sliders.values()])
     # initial xyz start are from zero indices of additional axes
     current_state.dat = data.chop(
         xaxis.natural_name,
@@ -372,36 +395,39 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
         obj2D.set_clim(*clim)
         fig.canvas.draw_idle()
 
-    def update(info):
-        if isinstance(info, (float, int)):
-            current_state.dat.close()
-            current_state.dat = data.chop(
-                xaxis.natural_name,
-                yaxis.natural_name,
-                at={
-                    a.natural_name: (a[:].flat[int(sliders[a.natural_name].val)], a.units)
-                    for a in data.axes
-                    if a not in [xaxis, yaxis]
-                },
-                verbose=False,
-            )[0]
-            for k, s in sliders.items():
-                s.valtext.set_text(
-                    gen_ticklabels(data.axes[data.axis_names.index(k)].points)[int(s.val)]
-                )
-            obj2D.set_array(current_state.dat[channel.natural_name][:].ravel())
-            clim = get_clim(channel, current_state)
-            ticklabels = gen_ticklabels(np.linspace(*clim, 11), channel.signed)
-            if clim[0] == clim[1]:
-                clim = [-1 if channel.signed else 0, 1]
-            obj2D.set_clim(*clim)
-            colorbar.set_ticklabels(ticklabels)
-            sp_x.collections.clear()
-            sp_y.collections.clear()
-            draw_sideplot_projections()
-            if line_sp_x.get_visible() and line_sp_y.get_visible():
-                update_sideplot_slices()
-        if isinstance(info, mpl.backend_bases.MouseEvent) and info.inaxes == ax0:  # crosshairs
+    def update_slider(info):
+        current_state.dat.close()
+        current_state.dat = data.chop(
+            xaxis.natural_name,
+            yaxis.natural_name,
+            at={
+                a.natural_name: (a[:].flat[int(sliders[a.natural_name].val)], a.units)
+                for a in data.axes
+                if a not in [xaxis, yaxis]
+            },
+            verbose=False,
+        )[0]
+        for k, s in sliders.items():
+            s.valtext.set_text(
+                gen_ticklabels(data.axes[data.axis_names.index(k)].points)[int(s.val)]
+            )
+        obj2D.set_array(current_state.dat[channel.natural_name][:].ravel())
+        clim = get_clim(channel, current_state)
+        ticklabels = gen_ticklabels(np.linspace(*clim, 11), channel.signed)
+        if clim[0] == clim[1]:
+            clim = [-1 if channel.signed else 0, 1]
+        obj2D.set_clim(*clim)
+        colorbar.set_ticklabels(ticklabels)
+        sp_x.collections.clear()
+        sp_y.collections.clear()
+        draw_sideplot_projections()
+        if line_sp_x.get_visible() and line_sp_y.get_visible():
+            update_sideplot_slices()
+        fig.canvas.draw_idle()
+
+    def update_button_release(info):
+        # mouse button released
+        if info.inaxes == ax0:  # crosshairs
             x0 = info.xdata
             y0 = info.ydata
             if x0 is None or y0 is None:
@@ -426,8 +452,39 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
                     crosshair_vline.set_visible(False)
         fig.canvas.draw_idle()
 
+    def update_key_press(info):
+        print(info.key)
+        if info.key in ['left', 'right']:
+            if current_state.focus.focus_axis != ax0:  # sliders
+                slider = [
+                    slider for slider in sliders.values()
+                    if slider.ax == current_state.focus.focus_axis
+                ][0]
+                new_val = slider.val + 1 if info.key == 'right' else slider.val - 1
+                new_val %= slider.valmax + 1
+                slider.set_val(new_val)
+            else:
+                pass
+        elif info.key == 'tab':
+            print('changing focus')
+            current_state.focus('next')
+        fig.canvas.draw_idle()
+
+    def update(info):
+        # check focus
+        if isinstance(info, mpl.backend_bases.LocationEvent):
+            current_state.focus(info.inaxes)
+        if isinstance(info, (float, int)):  # slider
+            update_slider(info)
+        if isinstance(info, mpl.backend_bases.MouseEvent):  # crosshairs
+            update_button_release(info)
+        if isinstance(info, mpl.backend_bases.KeyEvent):
+            update_key_press(info)
+
+
     side_plotter = plt.matplotlib.widgets.AxesWidget(ax0)
     side_plotter.connect_event("button_release_event", update)
+    fig.canvas.mpl_connect("key_press_event", update)
 
     radio.on_clicked(update_local)
 
