@@ -17,16 +17,20 @@ __all__ = ["interact2D"]
 class Focus():
     def __init__(self, axes, linewidth=2):
         self.axes = axes
+        self.linewidth = linewidth
         ax = axes[0]
         for side in ['top', 'bottom', 'left', 'right']:
-            ax.spines[side].set_linewidth(4)
+            ax.spines[side].set_linewidth(self.linewidth)
         self.focus_axis = ax
-        self.linewidth = linewidth
 
     def __call__(self, ax):
-        if ax == 'next':
-            ind = (self.axes.index(self.focus_axis) - 1) % len(self.axes)
-            ax = self.axes[ind]
+        if type(ax) == str:
+            ind = self.axes.index(self.focus_axis)
+            if ax == 'next':
+                ind -= 1
+            elif ax == 'previous':
+                ind += 1
+            ax = self.axes[ind % len(self.axes)]
         if self.focus_axis == ax or ax not in self.axes:
             return
         else:  # set new focus
@@ -463,24 +467,24 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
                 new_val = slider.val + 1 if info.key == 'right' else slider.val - 1
                 new_val %= slider.valmax + 1
                 slider.set_val(new_val)
-            else:
+            else:  # crosshairs
                 pass
-        elif info.key == 'tab':
-            print('changing focus')
+        elif info.key in ['tab', 'down']:
             current_state.focus('next')
+        elif info.key in ['ctrl+tab', 'up']:
+            current_state.focus('previous')
         fig.canvas.draw_idle()
 
     def update(info):
         # check focus
-        if isinstance(info, mpl.backend_bases.LocationEvent):
-            current_state.focus(info.inaxes)
+        # if isinstance(info, mpl.backend_bases.LocationEvent):
         if isinstance(info, (float, int)):  # slider
             update_slider(info)
         if isinstance(info, mpl.backend_bases.MouseEvent):  # crosshairs
+            current_state.focus(info.inaxes)
             update_button_release(info)
         if isinstance(info, mpl.backend_bases.KeyEvent):
             update_key_press(info)
-
 
     side_plotter = plt.matplotlib.widgets.AxesWidget(ax0)
     side_plotter.connect_event("button_release_event", update)
