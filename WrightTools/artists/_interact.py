@@ -211,7 +211,8 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
     line_sp_y = sp_y.plot([None], [None], visible=False, color=y_color)[0]
     crosshair_hline = ax0.plot([None], [None], visible=False, color=x_color)[0]
     crosshair_vline = ax0.plot([None], [None], visible=False, color=y_color)[0]
-    current_state.xpos = crosshair_hline.get_ydata()[0]
+    current_state.xarg = 0
+    current_state.yarg = 0
     current_state.ypos = crosshair_vline.get_xdata()[0]
     current_state.bin_vs_x = True
     current_state.bin_vs_y = True
@@ -365,8 +366,8 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
             return
         xlim = ax0.get_xlim()
         ylim = ax0.get_ylim()
-        x0 = current_state.xpos
-        y0 = current_state.ypos
+        x0 = xaxis.points[current_state.xarg]
+        y0 = yaxis.points[current_state.yarg]
 
         crosshair_hline.set_data(np.array([xlim, [y0, y0]]))
         crosshair_vline.set_data(np.array([[x0, x0], ylim]))
@@ -429,49 +430,52 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
             update_sideplot_slices()
         fig.canvas.draw_idle()
 
-    def update_crosshairs(x0, y0, hide=False):
-        if x0 is None or y0 is None:
-            raise TypeError((x0, y0))
-        xlim = ax0.get_xlim()
-        ylim = ax0.get_ylim()
-        if x0 > xlim[0] and x0 < xlim[1] and y0 > ylim[0] and y0 < ylim[1]:
-            # find closest x and y pts in dataset
-            """
-            at_dict = _at_dict(data, sliders, xaxis, yaxis)
-            at_dict[xaxis.natural_name] = (x0, xaxis.units)
-            side_plot_data = data.chop(yaxis.natural_name, at=at_dict, verbose=False)
-            """
-            print('update_crosshairs', x0, y0)
-            current_state.xpos = xaxis.points[np.abs(xaxis.points - x0).argmin()]
-            current_state.ypos = yaxis.points[np.abs(yaxis.points - y0).argmin()]
-            if not hide: # update crosshairs and show
-                if verbose:
-                    print(current_state.xpos, current_state.ypos)
-                update_sideplot_slices()
-                line_sp_x.set_visible(True)
-                line_sp_y.set_visible(True)
-                crosshair_hline.set_visible(True)
-                crosshair_vline.set_visible(True)
-            else:  # do not update and hide crosshairs
-                line_sp_x.set_visible(False)
-                line_sp_y.set_visible(False)
-                crosshair_hline.set_visible(False)
-                crosshair_vline.set_visible(False)
+    def update_crosshairs(xarg, yarg, hide=False):
+        # if x0 is None or y0 is None:
+        #    raise TypeError((x0, y0))
+        # find closest x and y pts in dataset
+        print('update_crosshairs', xarg, yarg)
+        current_state.xarg = xarg
+        current_state.yarg = yarg
+        current_state.xpos = xaxis.points[xarg]
+        current_state.ypos = yaxis.points[yarg]
+        if not hide:  # update crosshairs and show
+            if verbose:
+                print(current_state.xpos, current_state.ypos)
+            update_sideplot_slices()
+            line_sp_x.set_visible(True)
+            line_sp_y.set_visible(True)
+            crosshair_hline.set_visible(True)
+            crosshair_vline.set_visible(True)
+        else:  # do not update and hide crosshairs
+            line_sp_x.set_visible(False)
+            line_sp_y.set_visible(False)
+            crosshair_hline.set_visible(False)
+            crosshair_vline.set_visible(False)
 
     def update_button_release(info):
-        # mouse button released
+        # mouse button release
         current_state.focus(info.inaxes)
-        if info.inaxes == ax0:  # crosshairs
-            if info.button == 1 or info.button is None: # left click
-                update_crosshairs(info.xdata, info.ydata)
-            elif info.button == 3:  # right click
-                update_crosshairs(info.xdata, info.ydata, hide=True)
+        if info.inaxes == ax0:
+            xlim = ax0.get_xlim()
+            ylim = ax0.get_ylim()
+            x0, y0 = info.xdata, info.ydata
+            if x0 > xlim[0] and x0 < xlim[1] and \
+               y0 > ylim[0] and y0 < ylim[1]:
+                xarg = np.abs(xaxis.points - x0).argmin()
+                yarg = np.abs(yaxis.points - y0).argmin()
+                if info.button == 1 or info.button is None:  # left click
+                    update_crosshairs(xarg, yarg)
+                elif info.button == 3:  # right click
+                    update_crosshairs(xarg, yarg, hide=True)
         fig.canvas.draw_idle()
 
     def update_key_press(info):
         print(info.key)
-        if info.key in ['left', 'right']:
+        if info.key in ['left', 'right', 'up', 'down']:
             if current_state.focus.focus_axis != ax0:  # sliders
+                if info.key in ['up', 'down']:
+                    return
                 slider = [
                     slider for slider in sliders.values()
                     if slider.ax == current_state.focus.focus_axis
@@ -480,10 +484,19 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
                 new_val %= slider.valmax + 1
                 slider.set_val(new_val)
             else:  # crosshairs
-                pass
-        elif info.key in ['tab', 'down']:
+                dx = dy = 0
+                if info.key == 'left':
+                    dx -= 1
+                elif info.key == 'right':
+                    dx += 1
+                elif info.key == 'up':
+                    dy += 1
+                elif info.key == 'down':
+                    dy -= 1
+                update_crosshairs(current_state.xarg + dx, current_state.yarg + dy)
+        elif info.key == 'tab':
             current_state.focus('next')
-        elif info.key in ['ctrl+tab', 'up']:
+        elif info.key == 'ctrl+tab':
             current_state.focus('previous')
         fig.canvas.draw_idle()
 
