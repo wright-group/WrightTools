@@ -211,8 +211,8 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
     line_sp_y = sp_y.plot([None], [None], visible=False, color=y_color)[0]
     crosshair_hline = ax0.plot([None], [None], visible=False, color=x_color)[0]
     crosshair_vline = ax0.plot([None], [None], visible=False, color=y_color)[0]
-    current_state.xarg = 0
-    current_state.yarg = 0
+    current_state.xarg = xaxis.points.flatten().size // 2
+    current_state.yarg = yaxis.points.flatten().size // 2
     current_state.ypos = crosshair_vline.get_xdata()[0]
     current_state.bin_vs_x = True
     current_state.bin_vs_y = True
