@@ -122,15 +122,15 @@ This includes scanned optomechanical hardware, but also still hardware, and othe
 A typical data object will have many variables (each a multidimensional array).
 Variables have the following key attributes:
 
-=========================================  ==========================================================
-attribute                                   description
------------------------------------------  ----------------------------------------------------------
-:attr:`~WrightTools.data.Variable.label`   LaTeX-formatted label, appropriate for plotting
-:meth:`~WrightTools.data.Variable.units`   variable maximum
-:meth:`~WrightTools.data.Variable.units`   variable minimum
-:attr:`~WrightTools.data.Variable.units`   variable name
-:attr:`~WrightTools.data.Variable.units`   variable units
-=========================================  ==========================================================
+===============================================  ==========================================================
+attribute                                        description
+-----------------------------------------------  ----------------------------------------------------------
+:attr:`~WrightTools.data.Variable.label`         LaTeX-formatted label, appropriate for plotting
+:meth:`~WrightTools.data.Variable.max`           variable maximum
+:meth:`~WrightTools.data.Variable.min`           variable minimum
+:attr:`~WrightTools.data.Variable.natural_name`  variable name
+:attr:`~WrightTools.data.Variable.units`         variable units
+===============================================  ==========================================================
 
 Axis
 ````
