@@ -429,32 +429,43 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
             update_sideplot_slices()
         fig.canvas.draw_idle()
 
+    def update_crosshairs(x0, y0, hide=False):
+        if x0 is None or y0 is None:
+            raise TypeError((x0, y0))
+        xlim = ax0.get_xlim()
+        ylim = ax0.get_ylim()
+        if x0 > xlim[0] and x0 < xlim[1] and y0 > ylim[0] and y0 < ylim[1]:
+            # find closest x and y pts in dataset
+            """
+            at_dict = _at_dict(data, sliders, xaxis, yaxis)
+            at_dict[xaxis.natural_name] = (x0, xaxis.units)
+            side_plot_data = data.chop(yaxis.natural_name, at=at_dict, verbose=False)
+            """
+            print('update_crosshairs', x0, y0)
+            current_state.xpos = xaxis.points[np.abs(xaxis.points - x0).argmin()]
+            current_state.ypos = yaxis.points[np.abs(yaxis.points - y0).argmin()]
+            if not hide: # update crosshairs and show
+                if verbose:
+                    print(current_state.xpos, current_state.ypos)
+                update_sideplot_slices()
+                line_sp_x.set_visible(True)
+                line_sp_y.set_visible(True)
+                crosshair_hline.set_visible(True)
+                crosshair_vline.set_visible(True)
+            else:  # do not update and hide crosshairs
+                line_sp_x.set_visible(False)
+                line_sp_y.set_visible(False)
+                crosshair_hline.set_visible(False)
+                crosshair_vline.set_visible(False)
+
     def update_button_release(info):
         # mouse button released
         current_state.focus(info.inaxes)
         if info.inaxes == ax0:  # crosshairs
-            x0 = info.xdata
-            y0 = info.ydata
-            if x0 is None or y0 is None:
-                raise TypeError(info)
-            xlim = ax0.get_xlim()
-            ylim = ax0.get_ylim()
-            if x0 > xlim[0] and x0 < xlim[1] and y0 > ylim[0] and y0 < ylim[1]:
-                current_state.xpos = info.xdata
-                current_state.ypos = info.ydata
-                if info.button == 1 or info.button is None:  # left click
-                    if verbose:
-                        print(current_state.xpos, current_state.ypos)
-                    update_sideplot_slices()
-                    line_sp_x.set_visible(True)
-                    line_sp_y.set_visible(True)
-                    crosshair_hline.set_visible(True)
-                    crosshair_vline.set_visible(True)
-                elif info.button == 3:  # right click
-                    line_sp_x.set_visible(False)
-                    line_sp_y.set_visible(False)
-                    crosshair_hline.set_visible(False)
-                    crosshair_vline.set_visible(False)
+            if info.button == 1 or info.button is None: # left click
+                update_crosshairs(info.xdata, info.ydata)
+            elif info.button == 3:  # right click
+                update_crosshairs(info.xdata, info.ydata, hide=True)
         fig.canvas.draw_idle()
 
     def update_key_press(info):
@@ -478,7 +489,6 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
 
     fig.canvas.mpl_connect("button_release_event", update_button_release)
     fig.canvas.mpl_connect("key_press_event", update_key_press)
-
     radio.on_clicked(update_local)
 
     for slider in sliders.values():
