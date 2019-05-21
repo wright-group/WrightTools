@@ -434,7 +434,6 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
         # if x0 is None or y0 is None:
         #    raise TypeError((x0, y0))
         # find closest x and y pts in dataset
-        print('update_crosshairs', xarg, yarg)
         current_state.xarg = xarg
         current_state.yarg = yarg
         current_state.xpos = xaxis.points[xarg]
@@ -471,7 +470,8 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
         fig.canvas.draw_idle()
 
     def update_key_press(info):
-        print(info.key)
+        if verbose:
+            print(info.key)
         if info.key in ['left', 'right', 'up', 'down']:
             if current_state.focus.focus_axis != ax0:  # sliders
                 if info.key in ['up', 'down']:
@@ -493,7 +493,10 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
                     dy += 1
                 elif info.key == 'down':
                     dy -= 1
-                update_crosshairs(current_state.xarg + dx, current_state.yarg + dy)
+                update_crosshairs(
+                    (current_state.xarg + dx) % xaxis.points.flatten().size,
+                    (current_state.yarg + dy) % yaxis.points.flatten().size
+                )
         elif info.key == 'tab':
             current_state.focus('next')
         elif info.key == 'ctrl+tab':
