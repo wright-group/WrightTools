@@ -213,7 +213,8 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
     crosshair_vline = ax0.plot([None], [None], visible=False, color=y_color)[0]
     current_state.xarg = xaxis.points.flatten().size // 2
     current_state.yarg = yaxis.points.flatten().size // 2
-    current_state.ypos = crosshair_vline.get_xdata()[0]
+    xdir = 1 if xaxis.points.flatten()[-1] - xaxis.points.flatten()[0] > 0 else -1
+    ydir = 1 if yaxis.points.flatten()[-1] - yaxis.points.flatten()[0] > 0 else -1
     current_state.bin_vs_x = True
     current_state.bin_vs_y = True
     # create buttons
@@ -494,8 +495,8 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
                 elif info.key == 'down':
                     dy -= 1
                 update_crosshairs(
-                    (current_state.xarg + dx) % xaxis.points.flatten().size,
-                    (current_state.yarg + dy) % yaxis.points.flatten().size
+                    (current_state.xarg + dx * xdir) % xaxis.points.flatten().size,
+                    (current_state.yarg + dy * ydir) % yaxis.points.flatten().size
                 )
         elif info.key == 'tab':
             current_state.focus('next')
