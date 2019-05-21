@@ -207,10 +207,10 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
     # create lines
     x_color = "#00BFBF"  # cyan with increased saturation
     y_color = "coral"
-    line_sp_x = sp_x.plot([None], [None], visible=False, color=x_color)[0]
-    line_sp_y = sp_y.plot([None], [None], visible=False, color=y_color)[0]
-    crosshair_hline = ax0.plot([None], [None], visible=False, color=x_color)[0]
-    crosshair_vline = ax0.plot([None], [None], visible=False, color=y_color)[0]
+    line_sp_x = sp_x.plot([None], [None], visible=False, color=x_color, linewidth=2)[0]
+    line_sp_y = sp_y.plot([None], [None], visible=False, color=y_color, linewidth=2)[0]
+    crosshair_hline = ax0.plot([None], [None], visible=False, color=x_color, linewidth=2)[0]
+    crosshair_vline = ax0.plot([None], [None], visible=False, color=y_color, linewidth=2)[0]
     current_state.xarg = xaxis.points.flatten().size // 2
     current_state.yarg = yaxis.points.flatten().size // 2
     xdir = 1 if xaxis.points.flatten()[-1] - xaxis.points.flatten()[0] > 0 else -1
@@ -437,6 +437,8 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
         # find closest x and y pts in dataset
         current_state.xarg = xarg
         current_state.yarg = yarg
+        xedge = xarg in [0, xaxis.points.flatten().size - 1]
+        yedge = yarg in [0, yaxis.points.flatten().size - 1]
         current_state.xpos = xaxis.points[xarg]
         current_state.ypos = yaxis.points[yarg]
         if not hide:  # update crosshairs and show
@@ -447,6 +449,9 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
             line_sp_y.set_visible(True)
             crosshair_hline.set_visible(True)
             crosshair_vline.set_visible(True)
+            # thicker lines if on the axis edges
+            crosshair_vline.set_linewidth(6 if xedge else 2)
+            crosshair_hline.set_linewidth(6 if yedge else 2)
         else:  # do not update and hide crosshairs
             line_sp_x.set_visible(False)
             line_sp_y.set_visible(False)
