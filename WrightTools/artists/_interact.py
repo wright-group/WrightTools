@@ -431,6 +431,7 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
 
     def update_button_release(info):
         # mouse button released
+        current_state.focus(info.inaxes)
         if info.inaxes == ax0:  # crosshairs
             x0 = info.xdata
             y0 = info.ydata
@@ -475,24 +476,12 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
             current_state.focus('previous')
         fig.canvas.draw_idle()
 
-    def update(info):
-        # check focus
-        # if isinstance(info, mpl.backend_bases.LocationEvent):
-        if isinstance(info, (float, int)):  # slider
-            update_slider(info)
-        if isinstance(info, mpl.backend_bases.MouseEvent):  # crosshairs
-            current_state.focus(info.inaxes)
-            update_button_release(info)
-        if isinstance(info, mpl.backend_bases.KeyEvent):
-            update_key_press(info)
-
-    side_plotter = plt.matplotlib.widgets.AxesWidget(ax0)
-    side_plotter.connect_event("button_release_event", update)
-    fig.canvas.mpl_connect("key_press_event", update)
+    fig.canvas.mpl_connect("button_release_event", update_button_release)
+    fig.canvas.mpl_connect("key_press_event", update_key_press)
 
     radio.on_clicked(update_local)
 
     for slider in sliders.values():
-        slider.on_changed(update)
+        slider.on_changed(update_slider)
 
-    return obj2D, sliders, side_plotter, crosshair_hline, crosshair_vline, radio, colorbar
+    return obj2D, sliders, crosshair_hline, crosshair_vline, radio, colorbar
