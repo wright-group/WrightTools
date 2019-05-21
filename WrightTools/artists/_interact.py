@@ -14,27 +14,27 @@ from .. import data as wt_data
 __all__ = ["interact2D"]
 
 
-class Focus():
+class Focus:
     def __init__(self, axes, linewidth=2):
         self.axes = axes
         self.linewidth = linewidth
         ax = axes[0]
-        for side in ['top', 'bottom', 'left', 'right']:
+        for side in ["top", "bottom", "left", "right"]:
             ax.spines[side].set_linewidth(self.linewidth)
         self.focus_axis = ax
 
     def __call__(self, ax):
         if type(ax) == str:
             ind = self.axes.index(self.focus_axis)
-            if ax == 'next':
+            if ax == "next":
                 ind -= 1
-            elif ax == 'previous':
+            elif ax == "previous":
                 ind += 1
             ax = self.axes[ind % len(self.axes)]
         if self.focus_axis == ax or ax not in self.axes:
             return
         else:  # set new focus
-            for spine in ['top', 'bottom', 'left', 'right']:
+            for spine in ["top", "bottom", "left", "right"]:
                 self.focus_axis.spines[spine].set_linewidth(1)
                 ax.spines[spine].set_linewidth(self.linewidth)
             self.focus_axis = ax
@@ -87,8 +87,8 @@ def get_colormap(channel):
     else:
         cmap = "default"
     cmap = colormaps[cmap]
-    cmap.set_bad([0.75] * 3, 1.)
-    cmap.set_under([0.75] * 3, 1.)
+    cmap.set_bad([0.75] * 3, 1.0)
+    cmap.set_under([0.75] * 3, 1.0)
     return cmap
 
 
@@ -465,8 +465,7 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
             xlim = ax0.get_xlim()
             ylim = ax0.get_ylim()
             x0, y0 = info.xdata, info.ydata
-            if x0 > xlim[0] and x0 < xlim[1] and \
-               y0 > ylim[0] and y0 < ylim[1]:
+            if x0 > xlim[0] and x0 < xlim[1] and y0 > ylim[0] and y0 < ylim[1]:
                 xarg = np.abs(xaxis.points - x0).argmin()
                 yarg = np.abs(yaxis.points - y0).argmin()
                 if info.button == 1 or info.button is None:  # left click
@@ -478,37 +477,41 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
     def update_key_press(info):
         if verbose:
             print(info.key)
-        if info.key in ['left', 'right', 'up', 'down']:
+        if info.key in ["left", "right", "up", "down"]:
             if current_state.focus.focus_axis != ax0:  # sliders
-                if info.key in ['up', 'down']:
+                if info.key in ["up", "down"]:
                     return
                 slider = [
-                    slider for slider in sliders.values()
+                    slider
+                    for slider in sliders.values()
                     if slider.ax == current_state.focus.focus_axis
                 ][0]
-                new_val = slider.val + 1 if info.key == 'right' else slider.val - 1
+                new_val = slider.val + 1 if info.key == "right" else slider.val - 1
                 new_val %= slider.valmax + 1
                 slider.set_val(new_val)
             else:  # crosshairs
                 dx = dy = 0
-                if info.key == 'left':
+                if info.key == "left":
                     dx -= 1
-                elif info.key == 'right':
+                elif info.key == "right":
                     dx += 1
-                elif info.key == 'up':
+                elif info.key == "up":
                     dy += 1
-                elif info.key == 'down':
+                elif info.key == "down":
                     dy -= 1
                 update_crosshairs(
                     (current_state.xarg + dx * xdir) % xaxis.points.flatten().size,
-                    (current_state.yarg + dy * ydir) % yaxis.points.flatten().size
+                    (current_state.yarg + dy * ydir) % yaxis.points.flatten().size,
                 )
-        elif info.key == 'tab':
-            current_state.focus('next')
-        elif info.key == 'ctrl+tab':
-            current_state.focus('previous')
+        elif info.key == "tab":
+            current_state.focus("next")
+        elif info.key == "ctrl+tab":
+            current_state.focus("previous")
+        else:
+            mpl.backend_bases.key_press_handler(info, fig.canvas, fig.canvas.toolbar)
         fig.canvas.draw_idle()
 
+    fig.canvas.mpl_disconnect(fig.canvas.manager.key_press_handler_id)
     fig.canvas.mpl_connect("button_release_event", update_button_release)
     fig.canvas.mpl_connect("key_press_event", update_key_press)
     radio.on_clicked(update_local)
