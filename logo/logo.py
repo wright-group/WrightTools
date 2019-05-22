@@ -39,7 +39,7 @@ matplotlib.rcParams["text.usetex"] = False
 
 # get arrays
 p = os.path.join(here, "peak.h5")
-h5 = h5py.File(p)
+h5 = h5py.File(p, "r")
 xi = np.array(h5["yi"])
 yi = np.array(h5["xi"])
 zi = np.transpose(np.array(h5["zi"]))
