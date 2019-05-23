@@ -112,7 +112,8 @@ left/right arrow  decrement/increment slice (slider focus) or change y slice (pl
 up/down arrow     change x slice (plot focus)
 ================  ========================================================================
 
-Note that the up/down arrow navigation overrides the built-in undo/redo action of the qt viewer.
+Note that the left/right arrow navigation overrides the built-in undo/redo action of the qt viewer.
+Users can still undo/redo with the 'c/v' key presses, or through the GUI toolbar above the figure.
 
 Colors
 ------
