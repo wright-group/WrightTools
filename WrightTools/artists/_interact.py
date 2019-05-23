@@ -475,8 +475,6 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
         fig.canvas.draw_idle()
 
     def update_key_press(info):
-        if verbose:
-            print(info.key)
         if info.key in ["left", "right", "up", "down"]:
             if current_state.focus.focus_axis != ax0:  # sliders
                 if info.key in ["up", "down"]:
