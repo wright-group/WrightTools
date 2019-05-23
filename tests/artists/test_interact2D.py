@@ -90,9 +90,9 @@ if __name__ == "__main__":
 
     plt.close("all")
     # store to variable to prevent garbage collection
-    # t0 = test_perovskite()
-    # t1 = test_MoS2()
-    # t2 = test_asymmetric()
-    # t3 = test_skewed()
+    t0 = test_perovskite()
+    t1 = test_MoS2()
+    t2 = test_asymmetric()
+    t3 = test_skewed()
     t4 = test_4D()
     plt.show()
