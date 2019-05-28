@@ -79,8 +79,8 @@ These functionalities are derived from :meth:`WrightTools.data.Data.chop`.
 Interactive artists
 -------------------
 
-:meth:`WrightTools.artists.interact2D` facilitates interaction with multidimensional
-datasets.
+:meth:`WrightTools.artists.interact2D` allows users to easily vizualize 2D slices of arbitrarily
+high dimension data.
 
 .. plot::
 
@@ -98,12 +98,22 @@ datasets.
     fig.canvas.button_release_event(160, 375, 1)
     plt.show()
 
-Side plots show x and y projections of the slice (shaded gray). Left
+Side plots show x and y projections of the slice (shaded gray). For `signed` channels, side plots will also show projections of the negatively signed components and positively signed components.  Left
 clicks on the main axes draw 1D slices on side plots at the coordinates
 selected. Right clicks remove the 1D slices. For 3+ dimensional data,
 sliders below the main axes are used to change which slice is viewed.
-:meth:`WrightTools.artists.interact2D` allows users to easily vizualize 2D slices of arbitrarily
-high dimension data.
+`interact2D` also supports keyboard navigation
+
+================  =======================================================================
+key               action                                                       
+----------------  -----------------------------------------------------------------------
+tab / ctrl+tab    cycle focus between the sliders and the plot 
+left/right arrow  decrement/increment slice (slider focus) or change y slice (plot focus)
+up/down arrow     change x slice (plot focus)
+================  =======================================================================
+
+Note that the left/right arrow navigation overrides the built-in undo/redo action of the qt viewer.
+Users can still undo/redo with the 'c/v' key presses, or through the GUI toolbar above the figure.
 
 Colors
 ------
