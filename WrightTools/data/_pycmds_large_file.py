@@ -117,13 +117,14 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True) -> Data:
     except KeyError:
         signed = itertools.repeat(False)
     for index, (kind, name) in enumerate(zip(headers["kind"], headers["name"])):
+        sh = shape
+        if "wa" in headers["name"] and name not in ("wa", "array_signal"):
+            sh = list(sh)
+            sh[-1] = 1
+            sh = tuple(sh)
         if name == "time":
-            data.create_variable(name="labtime", dtype=np.dtype(np.float64))
+            data.create_variable(name="labtime", dtype=np.dtype(np.float64), shape=sh)
         if kind == "hardware":
-            # sadly, recorded tolerances are not reliable
-            # so a bit of hard-coded hacking is needed
-            # if this ends up being too fragile, we might have to use the points arrays
-            # ---Blaise 2018-01-09
             units = headers["units"][index]
             label = headers["label"][index]
             if (
@@ -135,11 +136,11 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True) -> Data:
             else:
                 units = headers["units"][index]
             data.create_variable(
-                name, shape=shape, dtype=np.dtype(np.float64), units=units, label=label
+                name, shape=sh, dtype=np.dtype(np.float64), units=units, label=label
             )
         if kind == "channel":
             data.create_channel(
-                name=name, shape=shape, dtype=np.dtype(np.float64), signed=next(signed)
+                name=name, shape=sh, dtype=np.dtype(np.float64), signed=next(signed)
             )
     frame_size = shape[-1]
     file_.seek(0)
@@ -153,7 +154,10 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True) -> Data:
                 continue
             if name == "time":
                 name = "labtime"
-            h5py.Group.__getitem__(data, name)[index + (...,)] = arr[:, i]
+            if "wa" in headers["name"] and name not in ("wa", "array_signal"):
+                h5py.Group.__getitem__(data, name)[index + (...,)] = arr[:, i]
+            else:
+                h5py.Group.__getitem__(data, name)[index + (...,)] = arr[0, i]
         arr = np.genfromtxt(file_, max_rows=frame_size)
     file_.close()
     # axes
