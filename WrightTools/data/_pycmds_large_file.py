@@ -118,7 +118,7 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True) -> Data:
         signed = itertools.repeat(False)
     for index, (kind, name) in enumerate(zip(headers["kind"], headers["name"])):
         sh = shape
-        if "wa" in headers["name"] and name not in ("wa", "array_signal"):
+        if "wa" in headers["name"] and name not in ("wa", "array", "array_signal"):
             sh = list(sh)
             sh[-1] = 1
             sh = tuple(sh)
@@ -154,7 +154,7 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True) -> Data:
                 continue
             if name == "time":
                 name = "labtime"
-            if "wa" not in headers["name"] or name in ("wa", "array_signal"):
+            if "wa" not in headers["name"] or name in ("wa", "array", "array_signal"):
                 h5py.Group.__getitem__(data, name)[index + (...,)] = arr[:, i]
             else:
                 h5py.Group.__getitem__(data, name)[index + (...,)] = arr[0, i]
