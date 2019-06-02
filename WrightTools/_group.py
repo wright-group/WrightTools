@@ -392,7 +392,7 @@ class Group(h5py.Group, metaclass=MetaClass):
                 raise wt_exceptions.FileExistsError(filepath)
 
         # copy to new file
-        h5py.File(filepath)
+        h5py.File(filepath, "w")
         new = Group(filepath=filepath, edit_local=True)
         # attrs
         for k, v in self.attrs.items():
