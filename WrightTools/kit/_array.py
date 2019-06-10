@@ -245,8 +245,8 @@ def share_nans(*arrs) -> tuple:
 
 def smooth_1D(arr, n=10, smooth_type="flat") -> np.ndarray:
     """Smooth 1D data using a window function.
-    
-    Edge effects will be present. 
+
+    Edge effects will be present.
 
     Parameters
     ----------
@@ -257,7 +257,7 @@ def smooth_1D(arr, n=10, smooth_type="flat") -> np.ndarray:
     smooth_type : {'flat', 'hanning', 'hamming', 'bartlett', 'blackman'} (optional)
         Type of window function to convolve data with.
         'flat' window will produce a moving average smoothing.
-        
+
     Returns
     -------
     array_like
