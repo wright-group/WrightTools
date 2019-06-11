@@ -276,9 +276,6 @@ class Group(h5py.Group, metaclass=MetaClass):
         _instances dictionaries.
         Tempfiles, if they exist, will be removed
         """
-        from .collection import Collection
-        from .data._data import Channel, Data, Variable
-
         path = os.path.abspath(self.filepath) + "::"
         for key in list(Group._instances.keys()):
             if key.startswith(path):

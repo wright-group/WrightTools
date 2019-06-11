@@ -18,7 +18,7 @@ __all__ = ["close"]
 
 def close():
     """Close all open wt5 files.
-    
+
     Warning
     -------
     This will make any open objects unusable and delete unsaved temporary files.
