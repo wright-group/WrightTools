@@ -53,9 +53,10 @@ def open(filepath, edit_local=False):
             with ds.open(str(filepath), "rb") as f:
                 tff.write(f.read())
         filepath = tf[1]
-    f = h5py.File(filepath)
+    f = h5py.File(filepath, "r")
     class_name = f["/"].attrs["class"]
     name = f["/"].attrs["name"]
+    f.close()
     if class_name == "Data":
         obj = wt_data.Data(filepath=str(filepath), name=name, edit_local=True)
     elif class_name == "Collection":

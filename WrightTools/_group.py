@@ -276,9 +276,6 @@ class Group(h5py.Group, metaclass=MetaClass):
         _instances dictionaries.
         Tempfiles, if they exist, will be removed
         """
-        from .collection import Collection
-        from .data._data import Channel, Data, Variable
-
         path = os.path.abspath(self.filepath) + "::"
         for key in list(Group._instances.keys()):
             if key.startswith(path):
@@ -392,7 +389,7 @@ class Group(h5py.Group, metaclass=MetaClass):
                 raise wt_exceptions.FileExistsError(filepath)
 
         # copy to new file
-        h5py.File(filepath)
+        h5py.File(filepath, "w")
         new = Group(filepath=filepath, edit_local=True)
         # attrs
         for k, v in self.attrs.items():

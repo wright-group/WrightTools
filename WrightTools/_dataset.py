@@ -117,9 +117,12 @@ class Dataset(h5py.Dataset):
     @property
     def _leaf(self):
         out = self.natural_name
+        if self.size == 1:
+            out += f" = {self.points}"
         if self.units is not None:
             out += " ({0})".format(self.units)
-        out += " {0}".format(self.shape)
+        if self.size != 1:
+            out += " {0}".format(self.shape)
         return out
 
     @property

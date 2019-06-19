@@ -45,7 +45,7 @@ setup(
         "tidy_headers>=1.0.0",
     ],
     extras_require={
-        "docs": ["sphinx", "sphinx-gallery==0.1.12", "sphinx-rtd-theme"],
+        "docs": ["sphinx", "sphinx-gallery>=0.3.0", "sphinx-rtd-theme"],
         "dev": ["black", "pre-commit", "pydocstyle"],
     },
     version=version,

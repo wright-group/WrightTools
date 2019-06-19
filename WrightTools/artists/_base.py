@@ -8,7 +8,6 @@ import numpy as np
 
 import matplotlib
 from matplotlib.projections import register_projection
-from matplotlib.axes import SubplotBase, subplot_class_factory
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
@@ -341,7 +340,7 @@ class Axes(matplotlib.axes.Axes):
         if "fancybox" not in kwargs.keys():
             kwargs["fancybox"] = False
         if "framealpha" not in kwargs.keys():
-            kwargs["framealpha"] = 1.
+            kwargs["framealpha"] = 1.0
         return super().legend(*args, **kwargs)
 
     def pcolor(self, *args, **kwargs):

@@ -14,6 +14,32 @@ from .. import data as wt_data
 __all__ = ["interact2D"]
 
 
+class Focus:
+    def __init__(self, axes, linewidth=2):
+        self.axes = axes
+        self.linewidth = linewidth
+        ax = axes[0]
+        for side in ["top", "bottom", "left", "right"]:
+            ax.spines[side].set_linewidth(self.linewidth)
+        self.focus_axis = ax
+
+    def __call__(self, ax):
+        if type(ax) == str:
+            ind = self.axes.index(self.focus_axis)
+            if ax == "next":
+                ind -= 1
+            elif ax == "previous":
+                ind += 1
+            ax = self.axes[ind % len(self.axes)]
+        if self.focus_axis == ax or ax not in self.axes:
+            return
+        else:  # set new focus
+            for spine in ["top", "bottom", "left", "right"]:
+                self.focus_axis.spines[spine].set_linewidth(1)
+                ax.spines[spine].set_linewidth(self.linewidth)
+            self.focus_axis = ax
+
+
 # http://code.activestate.com/recipes/52308-the-simple-but-handy-collector-of-a-bunch-of-named/?in=user-97991
 # used to keep track of vars useful to widgets
 class Bunch(dict):
@@ -61,8 +87,8 @@ def get_colormap(channel):
     else:
         cmap = "default"
     cmap = colormaps[cmap]
-    cmap.set_bad([0.75] * 3, 1.)
-    cmap.set_under([0.75] * 3, 1.)
+    cmap.set_bad([0.75] * 3, 1.0)
+    cmap.set_under([0.75] * 3, 1.0)
     return cmap
 
 
@@ -179,14 +205,16 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
     ax_title.set_axis_off()
     # NOTE: there are more axes here for more buttons / widgets in future plans
     # create lines
-    x_color = "#00BFBF"  # cyan with saturation increased
+    x_color = "#00BFBF"  # cyan with increased saturation
     y_color = "coral"
-    line_sp_x = sp_x.plot([None], [None], visible=False, color=x_color)[0]
-    line_sp_y = sp_y.plot([None], [None], visible=False, color=y_color)[0]
-    crosshair_hline = ax0.plot([None], [None], visible=False, color=x_color)[0]
-    crosshair_vline = ax0.plot([None], [None], visible=False, color=y_color)[0]
-    current_state.xpos = crosshair_hline.get_ydata()[0]
-    current_state.ypos = crosshair_vline.get_xdata()[0]
+    line_sp_x = sp_x.plot([None], [None], visible=False, color=x_color, linewidth=2)[0]
+    line_sp_y = sp_y.plot([None], [None], visible=False, color=y_color, linewidth=2)[0]
+    crosshair_hline = ax0.plot([None], [None], visible=False, color=x_color, linewidth=2)[0]
+    crosshair_vline = ax0.plot([None], [None], visible=False, color=y_color, linewidth=2)[0]
+    current_state.xarg = xaxis.points.flatten().size // 2
+    current_state.yarg = yaxis.points.flatten().size // 2
+    xdir = 1 if xaxis.points.flatten()[-1] - xaxis.points.flatten()[0] > 0 else -1
+    ydir = 1 if yaxis.points.flatten()[-1] - yaxis.points.flatten()[0] > 0 else -1
     current_state.bin_vs_x = True
     current_state.bin_vs_y = True
     # create buttons
@@ -215,6 +243,7 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
                 alpha=0.5
             )
             slider.valtext.set_text(gen_ticklabels(axis.points)[0])
+    current_state.focus = Focus([ax0] + [slider.ax for slider in sliders.values()])
     # initial xyz start are from zero indices of additional axes
     current_state.dat = data.chop(
         xaxis.natural_name,
@@ -338,8 +367,8 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
             return
         xlim = ax0.get_xlim()
         ylim = ax0.get_ylim()
-        x0 = current_state.xpos
-        y0 = current_state.ypos
+        x0 = xaxis.points[current_state.xarg]
+        y0 = yaxis.points[current_state.yarg]
 
         crosshair_hline.set_data(np.array([xlim, [y0, y0]]))
         crosshair_vline.set_data(np.array([[x0, x0], ylim]))
@@ -372,66 +401,120 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
         obj2D.set_clim(*clim)
         fig.canvas.draw_idle()
 
-    def update(info):
-        if isinstance(info, (float, int)):
-            current_state.dat.close()
-            current_state.dat = data.chop(
-                xaxis.natural_name,
-                yaxis.natural_name,
-                at={
-                    a.natural_name: (a[:].flat[int(sliders[a.natural_name].val)], a.units)
-                    for a in data.axes
-                    if a not in [xaxis, yaxis]
-                },
-                verbose=False,
-            )[0]
-            for k, s in sliders.items():
-                s.valtext.set_text(
-                    gen_ticklabels(data.axes[data.axis_names.index(k)].points)[int(s.val)]
-                )
-            obj2D.set_array(current_state.dat[channel.natural_name][:].ravel())
-            clim = get_clim(channel, current_state)
-            ticklabels = gen_ticklabels(np.linspace(*clim, 11), channel.signed)
-            if clim[0] == clim[1]:
-                clim = [-1 if channel.signed else 0, 1]
-            obj2D.set_clim(*clim)
-            colorbar.set_ticklabels(ticklabels)
-            sp_x.collections.clear()
-            sp_y.collections.clear()
-            draw_sideplot_projections()
-            if line_sp_x.get_visible() and line_sp_y.get_visible():
-                update_sideplot_slices()
-        if isinstance(info, mpl.backend_bases.MouseEvent) and info.inaxes == ax0:  # crosshairs
-            x0 = info.xdata
-            y0 = info.ydata
-            if x0 is None or y0 is None:
-                raise TypeError(info)
-            xlim = ax0.get_xlim()
-            ylim = ax0.get_ylim()
-            if x0 > xlim[0] and x0 < xlim[1] and y0 > ylim[0] and y0 < ylim[1]:
-                current_state.xpos = info.xdata
-                current_state.ypos = info.ydata
-                if info.button == 1 or info.button is None:  # left click
-                    if verbose:
-                        print(current_state.xpos, current_state.ypos)
-                    update_sideplot_slices()
-                    line_sp_x.set_visible(True)
-                    line_sp_y.set_visible(True)
-                    crosshair_hline.set_visible(True)
-                    crosshair_vline.set_visible(True)
-                elif info.button == 3:  # right click
-                    line_sp_x.set_visible(False)
-                    line_sp_y.set_visible(False)
-                    crosshair_hline.set_visible(False)
-                    crosshair_vline.set_visible(False)
+    def update_slider(info):
+        current_state.dat.close()
+        current_state.dat = data.chop(
+            xaxis.natural_name,
+            yaxis.natural_name,
+            at={
+                a.natural_name: (a[:].flat[int(sliders[a.natural_name].val)], a.units)
+                for a in data.axes
+                if a not in [xaxis, yaxis]
+            },
+            verbose=False,
+        )[0]
+        for k, s in sliders.items():
+            s.valtext.set_text(
+                gen_ticklabels(data.axes[data.axis_names.index(k)].points)[int(s.val)]
+            )
+        obj2D.set_array(current_state.dat[channel.natural_name][:].ravel())
+        clim = get_clim(channel, current_state)
+        ticklabels = gen_ticklabels(np.linspace(*clim, 11), channel.signed)
+        if clim[0] == clim[1]:
+            clim = [-1 if channel.signed else 0, 1]
+        obj2D.set_clim(*clim)
+        colorbar.set_ticklabels(ticklabels)
+        sp_x.collections.clear()
+        sp_y.collections.clear()
+        draw_sideplot_projections()
+        if line_sp_x.get_visible() and line_sp_y.get_visible():
+            update_sideplot_slices()
         fig.canvas.draw_idle()
 
-    side_plotter = plt.matplotlib.widgets.AxesWidget(ax0)
-    side_plotter.connect_event("button_release_event", update)
+    def update_crosshairs(xarg, yarg, hide=False):
+        # if x0 is None or y0 is None:
+        #    raise TypeError((x0, y0))
+        # find closest x and y pts in dataset
+        current_state.xarg = xarg
+        current_state.yarg = yarg
+        xedge = xarg in [0, xaxis.points.flatten().size - 1]
+        yedge = yarg in [0, yaxis.points.flatten().size - 1]
+        current_state.xpos = xaxis.points[xarg]
+        current_state.ypos = yaxis.points[yarg]
+        if not hide:  # update crosshairs and show
+            if verbose:
+                print(current_state.xpos, current_state.ypos)
+            update_sideplot_slices()
+            line_sp_x.set_visible(True)
+            line_sp_y.set_visible(True)
+            crosshair_hline.set_visible(True)
+            crosshair_vline.set_visible(True)
+            # thicker lines if on the axis edges
+            crosshair_vline.set_linewidth(6 if xedge else 2)
+            crosshair_hline.set_linewidth(6 if yedge else 2)
+        else:  # do not update and hide crosshairs
+            line_sp_x.set_visible(False)
+            line_sp_y.set_visible(False)
+            crosshair_hline.set_visible(False)
+            crosshair_vline.set_visible(False)
 
+    def update_button_release(info):
+        # mouse button release
+        current_state.focus(info.inaxes)
+        if info.inaxes == ax0:
+            xlim = ax0.get_xlim()
+            ylim = ax0.get_ylim()
+            x0, y0 = info.xdata, info.ydata
+            if x0 > xlim[0] and x0 < xlim[1] and y0 > ylim[0] and y0 < ylim[1]:
+                xarg = np.abs(xaxis.points - x0).argmin()
+                yarg = np.abs(yaxis.points - y0).argmin()
+                if info.button == 1 or info.button is None:  # left click
+                    update_crosshairs(xarg, yarg)
+                elif info.button == 3:  # right click
+                    update_crosshairs(xarg, yarg, hide=True)
+        fig.canvas.draw_idle()
+
+    def update_key_press(info):
+        if info.key in ["left", "right", "up", "down"]:
+            if current_state.focus.focus_axis != ax0:  # sliders
+                if info.key in ["up", "down"]:
+                    return
+                slider = [
+                    slider
+                    for slider in sliders.values()
+                    if slider.ax == current_state.focus.focus_axis
+                ][0]
+                new_val = slider.val + 1 if info.key == "right" else slider.val - 1
+                new_val %= slider.valmax + 1
+                slider.set_val(new_val)
+            else:  # crosshairs
+                dx = dy = 0
+                if info.key == "left":
+                    dx -= 1
+                elif info.key == "right":
+                    dx += 1
+                elif info.key == "up":
+                    dy += 1
+                elif info.key == "down":
+                    dy -= 1
+                update_crosshairs(
+                    (current_state.xarg + dx * xdir) % xaxis.points.flatten().size,
+                    (current_state.yarg + dy * ydir) % yaxis.points.flatten().size,
+                )
+        elif info.key == "tab":
+            current_state.focus("next")
+        elif info.key == "ctrl+tab":
+            current_state.focus("previous")
+        else:
+            mpl.backend_bases.key_press_handler(info, fig.canvas, fig.canvas.toolbar)
+        fig.canvas.draw_idle()
+
+    fig.canvas.mpl_disconnect(fig.canvas.manager.key_press_handler_id)
+    fig.canvas.mpl_connect("button_release_event", update_button_release)
+    fig.canvas.mpl_connect("key_press_event", update_key_press)
     radio.on_clicked(update_local)
 
     for slider in sliders.values():
-        slider.on_changed(update)
+        slider.on_changed(update_slider)
 
-    return obj2D, sliders, side_plotter, crosshair_hline, crosshair_vline, radio, colorbar
+    return obj2D, sliders, crosshair_hline, crosshair_vline, radio, colorbar
