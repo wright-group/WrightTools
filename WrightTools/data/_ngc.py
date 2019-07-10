@@ -7,6 +7,7 @@
 import os
 import struct
 import pathlib
+import warnings
 
 import numpy as np
 
@@ -57,7 +58,7 @@ def from_ngc(filepath, name=None, parent=None, verbose=True) -> Data:
     if header != b"NGSNextGen\x01\x00\x00\x00\x01\x00\x00\x00\n":
         warnings.warn(f"Unexpected Header {header}, ngc parsing may not be valid")
     header = f.read(10)
-    if header != "DataMatrix":
+    if header != b"DataMatrix":
         warnings.warn(f"Unexpected Header {header}, ngc parsing may not be valid")
     instr = _readstr(f)
     iname = _readstr(f)
@@ -97,7 +98,6 @@ def from_ngc(filepath, name=None, parent=None, verbose=True) -> Data:
     # Endpoints of axes, needed if full array unavailable
     nend = struct.unpack("<h", f.read(2))[0]
     end = struct.unpack(f"<{'f'*nend}", f.read(4 * nend))
-    print("end", nend, end)
     # Unknown what value means, other than nonzero seems to indicate array present
     nunk = struct.unpack("<h", f.read(2))[0]
     unk = struct.unpack(f"<{'i'*nunk}", f.read(4 * nunk))
