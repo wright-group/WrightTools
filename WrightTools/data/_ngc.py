@@ -111,7 +111,7 @@ def from_ngc(filepath, name=None, parent=None, verbose=True) -> Data:
             sh = [1] * ndim
             sh[idx[i]] = shape[idx[i]]
             arr.shape = tuple(sh)
-            data.create_variable(labels[i], arr, units=units[i])
+            data.create_variable(labels[i], arr, units=units[i], label=labels[i])
 
     data.transform(*[labels[i] for i, ix in enumerate(idx) if ix < ndim])
     # finish
