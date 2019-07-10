@@ -55,9 +55,10 @@ def from_ngc(filepath, name=None, parent=None, verbose=True) -> Data:
     f = ds.open(filestr, "rb")
     header = f.readline()
     if header != b"NGSNextGen\x01\x00\x00\x00\x01\x00\x00\x00\n":
-        pass  # Warn that file version is unexpected
-    if f.read(10) != "DataMatrix":
-        pass  # Warn that header is unexpected
+        warnings.warn(f"Unexpected Header {header}, ngc parsing may not be valid")
+    header = f.read(10)
+    if header != "DataMatrix":
+        warnings.warn(f"Unexpected Header {header}, ngc parsing may not be valid")
     instr = _readstr(f)
     iname = _readstr(f)
     # parse name
