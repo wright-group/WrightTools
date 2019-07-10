@@ -18,8 +18,9 @@ WrightTools\.data package
    from_COLORS
    from_JASCO
    from_KENT
-   from_PyCMDS
+   from_ngc
    from_ocean_optics
+   from_PyCMDS
    from_shimadzu
    from_Solis
    from_spcm

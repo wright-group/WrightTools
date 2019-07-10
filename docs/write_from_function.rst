@@ -270,6 +270,7 @@ If variables in particular can be collapsed to a lower dimension, they should be
 For particularly complex parsing, see :meth:`~WrightTools.data.from_PyCMDS`,
 :meth:`~WrightTools.data.from_KENT`, and :meth:`~WrightTools.data.from_COLORS`.
 These are existing multidimensional formats used by the Wright Group, and can provide some insights.
+:meth:`~WrightTools.data.from_ngc` is an example of a multidimensional binary data format.
 Feel free to reach out to the maintainers (via our `issue tracker`_) if you have any questions.
 
 .. _issue tracker: https://github.com/wright-group/WrightTools/issues
