@@ -150,20 +150,20 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True) -> Data:
                         # unreliable in tolerance. And 3 fs vs 3 ps is a huge
                         # difference... KFS 2019-2-27
                         if units == "fs":
-                            tolerance = 3.
+                            tolerance = 3.0
                         else:
                             tolerance = 0.1
                     if "zero" in name:
                         tolerance = 1e-10
-                    try:
-                        assert i == headers["axis names"].index(name)
-                        tolerance = 0
-                    except (ValueError, AssertionError):
+                    if name in headers["axis names"]:
                         if (
-                            name in headers["axis names"]
-                            and "%s_centers" % name not in data.variable_names
+                            i == headers["axis names"].index(name)
+                            or f"{name}_centers" in data.variable_names
                         ):
+                            tolerance = 0
+                        else:
                             tolerance = np.inf
+
                     mean = np.nanmean(values, axis=i)
                     mean = np.expand_dims(mean, i)
                     values, meanexp = wt_kit.share_nans(values, mean)
