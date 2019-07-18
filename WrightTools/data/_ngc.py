@@ -78,8 +78,12 @@ def from_ngc(filepath, name=None, parent=None, verbose=True) -> Data:
     ndim = struct.unpack("<h", f.read(2))[0]
     shape = struct.unpack(f"<{'i'*ndim}", f.read(4 * ndim))
     f.seek(2 + 4, 1)  # skip '0xffff', size in bytes
-    arr = np.fromfile(f, "<f4", asize)
+    arr = np.fromfile(f, "<f4", np.prod(shape))
     arr.shape = shape
+    f.read((asize - arr.size) * 4)
+    while f.read(1) == b"\0":
+        pass
+    f.seek(-1, 1)
     nlab = struct.unpack("<h", f.read(2))[0]
     labels = [_readstr(f) for _ in range(nlab)]
     nunit = struct.unpack("<h", f.read(2))[0]
@@ -90,7 +94,7 @@ def from_ngc(filepath, name=None, parent=None, verbose=True) -> Data:
     f.seek(skip, 1)  # skip values that were all zero in test data
     # Which index in the shape aligns whith which label/unit
     nidx = struct.unpack("<h", f.read(2))[0]
-    idx = struct.unpack(f"<{'i'*nidx}", f.read(4 * nidx))
+    idx = struct.unpack(f"<{'h'*2*nidx}", f.read(4 * nidx))[::2]
 
     chidx = idx.index(ndim)
     data.create_channel(labels[chidx], arr, units=units[chidx])
