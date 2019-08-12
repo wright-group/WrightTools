@@ -140,22 +140,22 @@ class Subplot:
         arrow_end = self.energies[between[1]]
         if arrow_length > 0:
             direction = 1
-            y_poss = [self.energies[between[0]], self.energies[between[1]] - head_length]
+            y_pos = [self.energies[between[0]], self.energies[between[1]] - head_length]
         elif arrow_length < 0:
             direction = -1
-            y_poss = [self.energies[between[0]], self.energies[between[1]] + head_length]
+            y_pos = [self.energies[between[0]], self.energies[between[1]] + head_length]
         else:
             raise ValueError("between invalid!")
 
-        length = abs(y_poss[0] - y_poss[1])
+        length = abs(y_pos[0] - y_pos[1])
         if kind == "ket":
-            line = self.ax.plot(x_pos, y_poss, linestyle="-", color=color, linewidth=2, zorder=9)
+            line = self.ax.plot(x_pos, y_pos, linestyle="-", color=color, linewidth=2, zorder=9)
         elif kind == "bra":
-            line = self.ax.plot(x_pos, y_poss, linestyle="--", color=color, linewidth=2, zorder=9)
+            line = self.ax.plot(x_pos, y_pos, linestyle="--", color=color, linewidth=2, zorder=9)
         elif kind == "out":
-            yi = np.linspace(y_poss[0], y_poss[1], 100)
+            yi = np.linspace(y_pos[0], y_pos[1], 100)
             xi = (
-                np.sin((yi - y_poss[0]) * int((1 / length) * 20) * 2 * np.pi * length) / 40
+                np.sin((yi - y_pos[0]) * int((1 / length) * 20) * 2 * np.pi * length) / 40
                 + x_pos[0]
             )
             line = self.ax.plot(
@@ -164,10 +164,13 @@ class Subplot:
         else:
             raise ValueError("kind is not 'ket', 'out', or 'bra'.")
         # add arrow head
-        xytext = (xi[1] - dx * 1e-2, yi[1] - dy * 1e-2)
+        dx = x_pos[1] - x_pos[0]
+        dy = y_pos[1] - y_pos[0]
+
+        xytext = (x_pos[1] - dx * 1e-2, y_pos[1] - dy * 1e-2)
         annotation = self.ax.annotate(
             "",
-            xy=(xi[1], yi[1]),
+            xy=(x_pos[1], y_pos[1]),
             xytext=xytext,
             arrowprops=dict(
                 fc=color,
