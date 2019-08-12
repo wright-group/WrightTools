@@ -101,8 +101,8 @@ class Subplot:
         between,
         kind,
         label="",
-        head_length=0.1,
-        head_aspect=2,
+        head_length=10,
+        head_aspect=1,
         font_size=14,
         color="k",
     ):
