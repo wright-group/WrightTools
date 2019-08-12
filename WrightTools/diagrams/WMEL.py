@@ -164,18 +164,21 @@ class Subplot:
         else:
             raise ValueError("kind is not 'ket', 'out', or 'bra'.")
         # add arrow head
-        arrow_head = self.ax.arrow(
-            x_pos[1],
-            arrow_end - head_length * direction,
-            0,
-            0.0001 * direction,
-            head_width=head_length * head_aspect,
-            head_length=head_length,
-            fc=color,
-            ec=color,
-            linestyle="solid",
-            linewidth=0,
-            zorder=10,
+        xytext = (xi[1] - dx * 1e-2, yi[1] - dy * 1e-2)
+        annotation = self.ax.annotate(
+            "",
+            xy=(xi[1], yi[1]),
+            xytext=xytext,
+            arrowprops=dict(
+                fc=color,
+                ec=color,
+                shrink=0,
+                head_width=head_length * head_aspect,
+                head_length=head_length,
+                linewidth=0,
+                zorder=10,
+            ),
+            size=25,
         )
         # add text
         text = self.ax.text(
@@ -220,7 +223,7 @@ class Artist:
             Size of buffer around state text. Default is 0.5.
         """
         # create figure
-        figsize = [int(size[0] * ((number_of_interactions + 1.) / 6.)), size[1] * 2.5]
+        figsize = [int(size[0] * ((number_of_interactions + 1.0) / 6.0)), size[1] * 2.5]
         fig, (subplots) = plt.subplots(size[1], size[0], figsize=figsize)
         self.fig = fig
         # wrap subplots if need be
