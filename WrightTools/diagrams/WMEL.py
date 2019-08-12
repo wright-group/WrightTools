@@ -134,16 +134,15 @@ class Subplot:
         else:
             x_pos = [index] * 2
         x_pos = [np.linspace(0, 1, self.interactions)[i] for i in x_pos]
+        y_pos = [self.energies[between[0]], self.energies[between[1]]]
 
         # calculate arrow length
         arrow_length = self.energies[between[1]] - self.energies[between[0]]
         arrow_end = self.energies[between[1]]
         if arrow_length > 0:
             direction = 1
-            y_pos = [self.energies[between[0]], self.energies[between[1]] - head_length]
         elif arrow_length < 0:
             direction = -1
-            y_pos = [self.energies[between[0]], self.energies[between[1]] + head_length]
         else:
             raise ValueError("between invalid!")
 
@@ -176,8 +175,8 @@ class Subplot:
                 fc=color,
                 ec=color,
                 shrink=0,
-                head_width=head_length * head_aspect,
-                head_length=head_length,
+                headwidth=head_length * head_aspect,
+                headlength=head_length,
                 linewidth=0,
                 zorder=10,
             ),
@@ -187,7 +186,7 @@ class Subplot:
         text = self.ax.text(
             np.mean(x_pos), -0.15, label, fontsize=font_size, horizontalalignment="center"
         )
-        return line, arrow_head, text
+        return line, annotation.arrow_patch, text
 
 
 # --- artist --------------------------------------------------------------------------------------
