@@ -1,19 +1,28 @@
 language: python
 matrix:
-    include:
-        - python: 3.6
-          dist: xenial
-        - python: 3.7
-          dist: xenial
+  include:
+  - python: 3.6
+    dist: xenial
+  - python: 3.7
+    dist: xenial
 addons:
-    apt:
-        packages:
-            - libfreetype6-dev
-            - libopenblas-dev
+  apt:
+    packages:
+    - libfreetype6-dev
+    - libopenblas-dev
 install:
-  - pip install cython
-  - pip install .
-  - pip install -U pytest "coverage<5"
+- pip install cython
+- pip install .
+- pip install -U pytest "coverage<5"
 services:
-  - xvfb
+- xvfb
 script: python setup.py test
+deploy:
+  provider: pypi
+  user: __token__
+  password:
+    secure: LPUmp3zS165TUydfFIwo4MwMTf8xf0xxGbZIsy3mJ3X3JBVhzciM+I4U5i+e3+9le06ONeMFEBrxKSRVRVEJUtIVEyrxFfeBfUXhT6zx7azWLqvqYRHjji1YIhqYdSem8afkx3SWDxZd3ZU4Xa+2pH5AUOyO/HPfHGPSnG2nHQy7WKO9K9VHz2ZT9zaH4yOci9i0f2yP/8q2m6gy8mP+bMuA+xAU5tFABBW1jLOIpwpIxnon3b8kiFicwyPxgbtgPjTBLK1UwCWqZXMZiv5Js3hMejqGQT17ZxUKNFJ5FrCO2/7l+OsJOZx0fPMmipkM+5Bfc9JvPk3nNOJsxp3van2Mocmgm13XhRDYX+/XWawNBI6ChyKRUbpUvnq1GqjTzVY/8GSLpUp4ReXMbzhf4Ht/i7J8BK3FqwZjJ0z8RYoHB8Wj/dz8sSiFDjFI9oHWRYkgUYpQmb3n0sadimTRTeDDewQ/sZUDoHR0LcG2ix8QvloKfy+jI/rfdUu2Li1Szj/bYUWg3bOJ4dwzWEj8LcCPfKi7jTfmVmZ/jm6/t8QGBLAr/UylsL5yXkpj7YekPyHVvu535GfSZSyaCKOO8SzeBzq2N2fwRtOxTnt3RS403W1Rm0UEW/GnfzTi3bGgJJfDHPphETwIuhbYtcRMIQOFUAeo1Yq0Szz85cx50JE=
+  on:
+    tags: true
+  distributions: "sdist bdist_wheel"
+  skip_existing: true

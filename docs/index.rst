@@ -29,7 +29,7 @@ Status
 +-------------------+-------------------+
 | version           | |conda-version|   |
 +-------------------+-------------------+
-| status            | |cf-noarch|       |
+| status            | |azure-pipelines| |
 +-------------------+-------------------+
 | **Read the Docs**                     |
 +-------------------+-------------------+
@@ -67,8 +67,8 @@ Index
 * :ref:`modindex`
 * :ref:`search`
 
-.. |cf-noarch| image:: https://circleci.com/gh/conda-forge/wrighttools-feedstock.svg?style=shield
-    :target: https://circleci.com/gh/conda-forge/wrighttools-feedstock
+.. |azure-pipelines| image:: https://dev.azure.com/conda-forge/feedstock-builds/_apis/build/status/wrighttools-feedstock?branchName=master&style=shield
+    :target: https://dev.azure.com/conda-forge/feedstock-builds/_build/latest?definitionId=5100&branchName=master
 
 .. |conda-version| image:: https://anaconda.org/conda-forge/wrighttools/badges/version.svg
    :target: https://anaconda.org/conda-forge/wrighttools

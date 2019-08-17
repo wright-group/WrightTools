@@ -101,8 +101,8 @@ class Subplot:
         between,
         kind,
         label="",
-        head_length=0.1,
-        head_aspect=2,
+        head_length=10,
+        head_aspect=1,
         font_size=14,
         color="k",
     ):
@@ -134,28 +134,27 @@ class Subplot:
         else:
             x_pos = [index] * 2
         x_pos = [np.linspace(0, 1, self.interactions)[i] for i in x_pos]
+        y_pos = [self.energies[between[0]], self.energies[between[1]]]
 
         # calculate arrow length
         arrow_length = self.energies[between[1]] - self.energies[between[0]]
         arrow_end = self.energies[between[1]]
         if arrow_length > 0:
             direction = 1
-            y_poss = [self.energies[between[0]], self.energies[between[1]] - head_length]
         elif arrow_length < 0:
             direction = -1
-            y_poss = [self.energies[between[0]], self.energies[between[1]] + head_length]
         else:
             raise ValueError("between invalid!")
 
-        length = abs(y_poss[0] - y_poss[1])
+        length = abs(y_pos[0] - y_pos[1])
         if kind == "ket":
-            line = self.ax.plot(x_pos, y_poss, linestyle="-", color=color, linewidth=2, zorder=9)
+            line = self.ax.plot(x_pos, y_pos, linestyle="-", color=color, linewidth=2, zorder=9)
         elif kind == "bra":
-            line = self.ax.plot(x_pos, y_poss, linestyle="--", color=color, linewidth=2, zorder=9)
+            line = self.ax.plot(x_pos, y_pos, linestyle="--", color=color, linewidth=2, zorder=9)
         elif kind == "out":
-            yi = np.linspace(y_poss[0], y_poss[1], 100)
+            yi = np.linspace(y_pos[0], y_pos[1], 100)
             xi = (
-                np.sin((yi - y_poss[0]) * int((1 / length) * 20) * 2 * np.pi * length) / 40
+                np.sin((yi - y_pos[0]) * int((1 / length) * 20) * 2 * np.pi * length) / 40
                 + x_pos[0]
             )
             line = self.ax.plot(
@@ -164,24 +163,30 @@ class Subplot:
         else:
             raise ValueError("kind is not 'ket', 'out', or 'bra'.")
         # add arrow head
-        arrow_head = self.ax.arrow(
-            x_pos[1],
-            arrow_end - head_length * direction,
-            0,
-            0.0001 * direction,
-            head_width=head_length * head_aspect,
-            head_length=head_length,
-            fc=color,
-            ec=color,
-            linestyle="solid",
-            linewidth=0,
-            zorder=10,
+        dx = x_pos[1] - x_pos[0]
+        dy = y_pos[1] - y_pos[0]
+
+        xytext = (x_pos[1] - dx * 1e-2, y_pos[1] - dy * 1e-2)
+        annotation = self.ax.annotate(
+            "",
+            xy=(x_pos[1], y_pos[1]),
+            xytext=xytext,
+            arrowprops=dict(
+                fc=color,
+                ec=color,
+                shrink=0,
+                headwidth=head_length * head_aspect,
+                headlength=head_length,
+                linewidth=0,
+                zorder=10,
+            ),
+            size=25,
         )
         # add text
         text = self.ax.text(
             np.mean(x_pos), -0.15, label, fontsize=font_size, horizontalalignment="center"
         )
-        return line, arrow_head, text
+        return line, annotation.arrow_patch, text
 
 
 # --- artist --------------------------------------------------------------------------------------
@@ -220,7 +225,7 @@ class Artist:
             Size of buffer around state text. Default is 0.5.
         """
         # create figure
-        figsize = [int(size[0] * ((number_of_interactions + 1.) / 6.)), size[1] * 2.5]
+        figsize = [int(size[0] * ((number_of_interactions + 1.0) / 6.0)), size[1] * 2.5]
         fig, (subplots) = plt.subplots(size[1], size[0], figsize=figsize)
         self.fig = fig
         # wrap subplots if need be

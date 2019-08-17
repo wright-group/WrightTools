@@ -115,6 +115,7 @@ def test_autotune():
     p = os.path.join(here, "test_data", "autotune.data")
     data = wt.data.from_PyCMDS(p)
     assert data.shape == (20, 21)
+    assert data.w2_BBO.shape == (20, 21)
     assert data.axis_expressions == ("w2", "w2_BBO")
     assert "w2_BBO_points" in data.variable_names
     assert "w2_BBO_centers" in data.variable_names
@@ -125,6 +126,7 @@ def test_two_centers():
     p = os.path.join(here, "test_data", "two_centers.data")
     data = wt.data.from_PyCMDS(p)
     assert data.shape == (11, 21, 51)
+    assert data.w2_Mixer_1.shape == (11, 21, 1)
     assert data.axis_expressions == ("w2", "w2_Mixer_1", "wm")
     assert "wm_points" in data.variable_names
     assert "wm_centers" in data.variable_names
@@ -142,6 +144,18 @@ def test_no_collapse():
     assert data.wa_points.shape == (1, 256)
     assert data.wa.shape == (25, 256)
     assert data.d1.shape == (25, 1)
+    data.close()
+
+
+def test_two_centers():
+    p = os.path.join(here, "test_data", "centers_tolerance.data")
+    data = wt.data.from_PyCMDS(p)
+    assert data.shape == (25, 11, 11)
+    assert data.w1_Crystal_1.shape == (25, 11, 1)
+    assert data.w1_Delay_1.shape == (25, 1, 11)
+    assert data.axis_expressions == ("w1=wm", "w1_Crystal_1", "w1_Delay_1")
+    assert "w1_Delay_1_points" in data.variable_names
+    assert "w1_Delay_1_centers" in data.variable_names
     data.close()
 
 

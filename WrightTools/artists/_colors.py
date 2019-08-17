@@ -64,9 +64,9 @@ def make_cubehelix(name="WrightTools", gamma=0.5, s=0.25, r=-1, h=1.3, reverse=F
     plot_colormap_components
         Displays RGB components of colormaps.
     """
-    rr = .213 / .30
-    rg = .715 / .99
-    rb = .072 / .11
+    rr = 0.213 / 0.30
+    rg = 0.715 / 0.99
+    rb = 0.072 / 0.11
 
     def get_color_function(p0, p1):
         def color(x):
@@ -77,8 +77,8 @@ def make_cubehelix(name="WrightTools", gamma=0.5, s=0.25, r=-1, h=1.3, reverse=F
             if reverse:
                 lum = lum[::-1]
             a = lum.copy()
-            a[lum < 0.5] = h * lum[lum < 0.5] / 2.
-            a[lum >= 0.5] = h * (1 - lum[lum >= 0.5]) / 2.
+            a[lum < 0.5] = h * lum[lum < 0.5] / 2.0
+            a[lum >= 0.5] = h * (1 - lum[lum >= 0.5]) / 2.0
             phi = 2 * np.pi * (s / 3 + r * x)
             out = lum + a * (p0 * np.cos(phi) + p1 * np.sin(phi))
             return out
@@ -151,24 +151,24 @@ def nm_to_rgb(nm):
     w = int(nm)
     # color ---------------------------------------------------------------------------------------
     if w >= 380 and w < 440:
-        R = -(w - 440.) / (440. - 350.)
+        R = -(w - 440.0) / (440.0 - 350.0)
         G = 0.0
         B = 1.0
     elif w >= 440 and w < 490:
         R = 0.0
-        G = (w - 440.) / (490. - 440.)
+        G = (w - 440.0) / (490.0 - 440.0)
         B = 1.0
     elif w >= 490 and w < 510:
         R = 0.0
         G = 1.0
-        B = -(w - 510.) / (510. - 490.)
+        B = -(w - 510.0) / (510.0 - 490.0)
     elif w >= 510 and w < 580:
-        R = (w - 510.) / (580. - 510.)
+        R = (w - 510.0) / (580.0 - 510.0)
         G = 1.0
         B = 0.0
     elif w >= 580 and w < 645:
         R = 1.0
-        G = -(w - 645.) / (645. - 580.)
+        G = -(w - 645.0) / (645.0 - 580.0)
         B = 0.0
     elif w >= 645 and w <= 780:
         R = 1.0
@@ -188,7 +188,7 @@ def nm_to_rgb(nm):
     else:
         SSS = 0.0
     SSS *= 255
-    return [float(int(SSS * R) / 256.), float(int(SSS * G) / 256.), float(int(SSS * B) / 256.)]
+    return [float(int(SSS * R) / 256.0), float(int(SSS * G) / 256.0), float(int(SSS * B) / 256.0)]
 
 
 def plot_colormap_components(cmap):
@@ -201,7 +201,7 @@ def plot_colormap_components(cmap):
     ax = plt.subplot(gs[0])
     gradient = np.linspace(0, 1, 256)
     gradient = np.vstack((gradient, gradient))
-    ax.imshow(gradient, aspect="auto", cmap=cmap, vmin=0., vmax=1.)
+    ax.imshow(gradient, aspect="auto", cmap=cmap, vmin=0.0, vmax=1.0)
     ax.set_title(cmap.name, fontsize=20)
     ax.set_axis_off()
     # components
@@ -229,7 +229,7 @@ def plot_colormap_components(cmap):
     ax = plt.subplot(gs[2])
     gradient = np.linspace(0, 1, 256)
     gradient = np.vstack((gradient, gradient))
-    ax.imshow(gradient, aspect="auto", cmap=cmap, vmin=0., vmax=1.)
+    ax.imshow(gradient, aspect="auto", cmap=cmap, vmin=0.0, vmax=1.0)
     ax.set_axis_off()
 
 
@@ -311,19 +311,19 @@ isoluminant1 = make_colormap(
     [
         c(r_[1.000, 1.000, 1.000]),
         c(r_[0.847, 0.057, 0.057]),
-        1 / 6.,
+        1 / 6.0,
         c(r_[0.847, 0.057, 0.057]),
         c(r_[0.527, 0.527, 0.000]),
-        2 / 6.,
+        2 / 6.0,
         c(r_[0.527, 0.527, 0.000]),
         c(r_[0.000, 0.592, 0.000]),
-        3 / 6.,
+        3 / 6.0,
         c(r_[0.000, 0.592, 0.000]),
         c(r_[0.000, 0.559, 0.559]),
-        4 / 6.,
+        4 / 6.0,
         c(r_[0.000, 0.559, 0.559]),
         c(r_[0.316, 0.316, 0.991]),
-        5 / 6.,
+        5 / 6.0,
         c(r_[0.316, 0.316, 0.991]),
         c(r_[0.718, 0.000, 0.718]),
     ],
@@ -334,19 +334,19 @@ isoluminant2 = make_colormap(
     [
         c(r_[1.000, 1.000, 1.000]),
         c(r_[0.718, 0.000, 0.718]),
-        1 / 6.,
+        1 / 6.0,
         c(r_[0.718, 0.000, 0.718]),
         c(r_[0.316, 0.316, 0.991]),
-        2 / 6.,
+        2 / 6.0,
         c(r_[0.316, 0.316, 0.991]),
         c(r_[0.000, 0.559, 0.559]),
-        3 / 6.,
+        3 / 6.0,
         c(r_[0.000, 0.559, 0.559]),
         c(r_[0.000, 0.592, 0.000]),
-        4 / 6.,
+        4 / 6.0,
         c(r_[0.000, 0.592, 0.000]),
         c(r_[0.527, 0.527, 0.000]),
-        5 / 6.,
+        5 / 6.0,
         c(r_[0.527, 0.527, 0.000]),
         c(r_[0.847, 0.057, 0.057]),
     ],
@@ -357,16 +357,16 @@ isoluminant3 = make_colormap(
     [
         c(r_[1.000, 1.000, 1.000]),
         c(r_[0.316, 0.316, 0.991]),
-        1 / 5.,
+        1 / 5.0,
         c(r_[0.316, 0.316, 0.991]),
         c(r_[0.000, 0.559, 0.559]),
-        2 / 5.,
+        2 / 5.0,
         c(r_[0.000, 0.559, 0.559]),
         c(r_[0.000, 0.592, 0.000]),
-        3 / 5.,
+        3 / 5.0,
         c(r_[0.000, 0.592, 0.000]),
         c(r_[0.527, 0.527, 0.000]),
-        4 / 5.,
+        4 / 5.0,
         c(r_[0.527, 0.527, 0.000]),
         c(r_[0.847, 0.057, 0.057]),
     ],
@@ -438,21 +438,26 @@ skyebar_i = [
 
 wright = ["#FFFFFF", "#0000FF", "#00FFFF", "#00FF00", "#FFFF00", "#FF0000", "#881111"]
 
-colormaps = collections.OrderedDict()
-colormaps["coolwarm"] = plt.get_cmap("coolwarm")
+
+class cmapdict(dict):
+    def __getitem__(self, key):
+        if key in self:
+            return self.get(key)
+        self[key] = plt.get_cmap(key)
+        return self.get(key)
+
+
+colormaps = cmapdict()
+
 colormaps["cubehelix"] = plt.get_cmap("cubehelix_r")
 colormaps["default"] = cubehelix
-colormaps["flag"] = plt.get_cmap("flag")
+colormaps["signed"] = plt.get_cmap("bwr")
 colormaps["greenscale"] = mplcolors.LinearSegmentedColormap.from_list("greenscale", greenscale)
 colormaps["greyscale"] = mplcolors.LinearSegmentedColormap.from_list("greyscale", greyscale)
 colormaps["invisible"] = mplcolors.LinearSegmentedColormap.from_list("invisible", invisible)
 colormaps["isoluminant1"] = isoluminant1
 colormaps["isoluminant2"] = isoluminant2
 colormaps["isoluminant3"] = isoluminant3
-colormaps["prism"] = plt.get_cmap("prism")
-colormaps["rainbow"] = plt.get_cmap("rainbow")
-colormaps["seismic"] = plt.get_cmap("seismic")
-colormaps["signed"] = plt.get_cmap("bwr")
 colormaps["signed_old"] = mplcolors.LinearSegmentedColormap.from_list("signed", signed_old)
 colormaps["skyebar1"] = mplcolors.LinearSegmentedColormap.from_list("skyebar", skyebar)
 colormaps["skyebar2"] = mplcolors.LinearSegmentedColormap.from_list("skyebar dark", skyebar_d)

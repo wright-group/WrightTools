@@ -210,14 +210,13 @@ def _collapse_read_in(data, headers, axes, arr, signed, index, kind, name, shape
                         tolerance = 0.1
                 if "zero" in name:
                     tolerance = 1e-10
-                try:
-                    assert i == headers["axis names"].index(name)
-                    tolerance = 0
-                except (ValueError, AssertionError):
+                if name in headers["axis names"]:
                     if (
-                        name in headers["axis names"]
-                        and "%s_centers" % name not in data.variable_names
+                        i == headers["axis names"].index(name)
+                        or f"{name}_centers" in data.variable_names
                     ):
+                        tolerance = 0
+                    else:
                         tolerance = np.inf
                 mean = np.nanmean(values, axis=i)
                 mean = np.expand_dims(mean, i)
@@ -273,8 +272,6 @@ def _no_collapse_fill(data, headers, file_, shape):
     arr = np.genfromtxt(file_, max_rows=frame_size)
     while arr.size > 0:
         index = tuple(arr[0, 0 : len(shape) - 1].astype(np.int))
-        if index[-1] == 0:
-            print(index)
         for i, (kind, name) in enumerate(zip(headers["kind"], headers["name"])):
             if kind is None and name != "time":
                 continue
