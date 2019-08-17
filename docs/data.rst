@@ -29,7 +29,7 @@ Cary           Files from Varian's Cary® Spectrometers                         
 COLORS         Files from Control Lots Of Research in Spectroscopy               :meth:`~WrightTools.data.from_COLORS`
 JASCO          Files from JASCO_ optical spectrometers                           :meth:`~WrightTools.data.from_JASCO`
 KENT           Files from "ps control" by Kent Meyer                             :meth:`~WrightTools.data.from_KENT`
-ngc            Horiba_ ngc binary files                                          :meth:`~WrightTools.data.from_ngc`
+Aramis         Horiba_ Aramis ngc binary files                                   :meth:`~WrightTools.data.from_Aramis`
 Ocean Optics   .scope files from ocean optics spectrometers                      :meth:`~WrightTools.data.from_ocean_optics`
 PyCMDS         Files from PyCMDS_                                                :meth:`~WrightTools.data.from_PyCMDS`
 Shimadzu       Files from Shimadzu_ UV-VIS spectrophotometers                    :meth:`~WrightTools.data.from_shimadzu`
