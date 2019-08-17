@@ -127,7 +127,7 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True, *, collapse=True
         else:
             _no_collapse_create(data, headers, signed, index, kind, name, shape)
     if not collapse:
-        _no_collapse_fill(data, headers, file_, shape)
+        _no_collapse_fill(data, headers, file_, shape, verbose)
     file_.close()
     # axes
     for a in axes:
@@ -267,12 +267,14 @@ def _no_collapse_create(data, headers, signed, index, kind, name, shape):
         data.create_channel(name=name, shape=sh, dtype=np.dtype(np.float64), signed=next(signed))
 
 
-def _no_collapse_fill(data, headers, file_, shape):
+def _no_collapse_fill(data, headers, file_, shape, verbose):
     frame_size = shape[-1]
     file_.seek(0)
     arr = np.genfromtxt(file_, max_rows=frame_size)
     while arr.size > 0:
         index = tuple(arr[0, 0 : len(shape) - 1].astype(np.int))
+        if verbose:
+            print(index)
         for i, (kind, name) in enumerate(zip(headers["kind"], headers["name"])):
             if kind is None and name != "time":
                 continue
