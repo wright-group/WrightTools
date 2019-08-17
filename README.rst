@@ -24,7 +24,7 @@ Documentation at `wright.tools <http://wright.tools>`_.
    :target: http://wright.tools/en/latest/?badge=latest
 
 .. image:: https://img.shields.io/badge/code%20style-black-000000.svg
-   :target: https://github.com/python/black
+   :target: https://github.com/psf/black
 
 .. image:: http://joss.theoj.org/papers/10.21105/joss.01141/status.svg
    :target: https://doi.org/10.21105/joss.01141
