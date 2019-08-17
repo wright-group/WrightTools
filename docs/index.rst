@@ -12,10 +12,8 @@ Due to its diversity and dimensionality, MDS data is challenging to process and 
 It aims to be a core toolkit that is general enough to handle all MDS datasets and processing workloads.
 Being built for and by MDS practitioners, ``WrightTools`` has an intuitive, high-level, object-oriented interface for spectroscopists.
 
-For a more complete introduction to WrightTools, please click on the badge below to read our short three-page paper in the Journal of Open Source Software:
+For a more complete introduction to WrightTools, please click on the badge below to read our short three-page paper in the Journal of Open Source Software (https://doi.org/10.21105/joss.01141).
 
-.. image:: http://joss.theoj.org/papers/10.21105/joss.01141/status.svg
-   :target: https://doi.org/10.21105/joss.01141
 
 Status
 ------
@@ -36,6 +34,10 @@ Status
 | stable            | |rtd-stable|      |
 +-------------------+-------------------+
 | latest            | |rtd-latest|      |
++-------------------+-------------------+
+| **Published**                         |
++-------------------+-------------------+
+| JOSS              | |joss-badge|      |
 +-------------------+-------------------+
 
 Contents
@@ -81,3 +83,6 @@ Index
 
 .. |rtd-stable| image:: https://readthedocs.org/projects/wrighttools/badge/?version=stable
    :target: http://wright.tools/en/stable/?badge=stable
+
+.. |joss-badge| image:: http://joss.theoj.org/papers/10.21105/joss.01141/status.svg
+   :target: https://doi.org/10.21105/joss.01141
