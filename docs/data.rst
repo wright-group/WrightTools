@@ -27,11 +27,12 @@ name           description                                                      
 BrunoldrRaman  Files from Brunold_ lab resonance raman measurements              :meth:`~WrightTools.data.from_BrunoldrRaman`
 Cary           Files from Varian's Cary® Spectrometers                           :meth:`~WrightTools.collection.from_Cary`
 COLORS         Files from Control Lots Of Research in Spectroscopy               :meth:`~WrightTools.data.from_COLORS`
-JASCO          Files from JASCO_ optical spectrometers.                          :meth:`~WrightTools.data.from_JASCO`
+JASCO          Files from JASCO_ optical spectrometers                           :meth:`~WrightTools.data.from_JASCO`
 KENT           Files from "ps control" by Kent Meyer                             :meth:`~WrightTools.data.from_KENT`
-PyCMDS         Files from PyCMDS_.                                               :meth:`~WrightTools.data.from_PyCMDS`
+Aramis         Horiba_ Aramis ngc binary files                                   :meth:`~WrightTools.data.from_Aramis`
 Ocean Optics   .scope files from ocean optics spectrometers                      :meth:`~WrightTools.data.from_ocean_optics`
-Shimadzu       Files from Shimadzu_ UV-VIS spectrophotometers.                   :meth:`~WrightTools.data.from_shimadzu`
+PyCMDS         Files from PyCMDS_                                                :meth:`~WrightTools.data.from_PyCMDS`
+Shimadzu       Files from Shimadzu_ UV-VIS spectrophotometers                    :meth:`~WrightTools.data.from_shimadzu`
 SPCM           Files from Becker & Hickl spcm_ software                          :meth:`~WrightTools.data.from_spcm`
 Solis          Files from Andor Solis software                                   :meth:`~WrightTools.data.from_Solis`
 Tensor 27      Files from Bruker Tensor 27 FT-IR                                 :meth:`~WrightTools.data.from_Tensor27`
@@ -282,5 +283,6 @@ method                                              description                 
 .. _JASCO: https://jascoinc.com/products/spectroscopy/
 .. _NISE: https://github.com/wright-group/NISE
 .. _PyCMDS: https://github.com/wright-group/PyCMDS
+.. _Horiba: https://www.horiba.com/en_en/products/detail/action/show/Product/labspec-6-spectroscopy-suite-software-1843/
 .. _Shimadzu: http://www.ssi.shimadzu.com/products/productgroup.cfm?subcatlink=uvvisspectro
 .. _spcm: http://www.becker-hickl.com/software/spcm.htm

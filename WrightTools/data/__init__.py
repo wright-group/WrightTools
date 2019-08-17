@@ -14,6 +14,7 @@ from ._colors import *
 from ._data import *
 from ._jasco import *
 from ._kent import *
+from ._aramis import *
 from ._ocean_optics import *
 from ._pycmds import *
 from ._shimadzu import *
@@ -33,8 +34,9 @@ __all__ = [
     "from_COLORS",
     "from_JASCO",
     "from_KENT",
-    "from_PyCMDS",
+    "from_Aramis",
     "from_ocean_optics",
+    "from_PyCMDS",
     "from_shimadzu",
     "from_Solis",
     "from_spcm",
