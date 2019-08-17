@@ -33,6 +33,7 @@ def test_w1_wa_000():
     assert data.axis_expressions == ("w1=wm", "wa")
     assert data.wa_centers.shape == (25, 1)
     assert data.wa_points.shape == (1, 256)
+    assert data.d1.shape == (1, 1)
     data.close()
 
 
@@ -134,10 +135,21 @@ def test_two_centers():
     data.close()
 
 
-def test_two_centers():
+def test_no_collapse():
+    p = datasets.PyCMDS.w1_wa_000
+    data = wt.data.from_PyCMDS(p, collapse=False)
+    assert data.shape == (25, 256)
+    assert data.axis_expressions == ("w1=wm", "wa")
+    assert data.wa_centers.shape == (25, 1)
+    assert data.wa_points.shape == (1, 256)
+    assert data.wa.shape == (25, 256)
+    assert data.d1.shape == (25, 1)
+    data.close()
+
+
+def test_centers_tolerance():
     p = os.path.join(here, "test_data", "centers_tolerance.data")
     data = wt.data.from_PyCMDS(p)
-    data.print_tree()
     assert data.shape == (25, 11, 11)
     assert data.w1_Crystal_1.shape == (25, 11, 1)
     assert data.w1_Delay_1.shape == (25, 1, 11)
