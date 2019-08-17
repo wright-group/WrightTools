@@ -33,6 +33,7 @@ def test_w1_wa_000():
     assert data.axis_expressions == ("w1=wm", "wa")
     assert data.wa_centers.shape == (25, 1)
     assert data.wa_points.shape == (1, 256)
+    assert data.d1.shape == (1, 1)
     data.close()
 
 
@@ -77,7 +78,7 @@ def test_incomplete():
     assert data.shape == (9, 9)
     assert data.axis_expressions == ("d1", "d2")
     assert np.allclose(
-        data.d1.points, np.array([-1., -1.125, -1.25, -1.375, -1.5, -1.625, -1.75, -1.875, -2.])
+        data.d1.points, np.array([-1.0, -1.125, -1.25, -1.375, -1.5, -1.625, -1.75, -1.875, -2.0])
     )
     data.close()
 
@@ -129,6 +130,18 @@ def test_two_centers():
     assert "wm_centers" in data.variable_names
     assert "w2_Mixer_1_points" in data.variable_names
     assert "w2_Mixer_1_centers" in data.variable_names
+    data.close()
+
+
+def test_no_collapse():
+    p = datasets.PyCMDS.w1_wa_000
+    data = wt.data.from_PyCMDS(p, collapse=False)
+    assert data.shape == (25, 256)
+    assert data.axis_expressions == ("w1=wm", "wa")
+    assert data.wa_centers.shape == (25, 1)
+    assert data.wa_points.shape == (1, 256)
+    assert data.wa.shape == (25, 256)
+    assert data.d1.shape == (25, 1)
     data.close()
 
 
