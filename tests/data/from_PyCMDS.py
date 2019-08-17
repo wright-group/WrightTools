@@ -147,7 +147,7 @@ def test_no_collapse():
     data.close()
 
 
-def test_two_centers():
+def test_centers_tolerance():
     p = os.path.join(here, "test_data", "centers_tolerance.data")
     data = wt.data.from_PyCMDS(p)
     assert data.shape == (25, 11, 11)

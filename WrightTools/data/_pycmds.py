@@ -128,6 +128,7 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True, *, collapse=True
             _no_collapse_create(data, headers, signed, index, kind, name, shape)
     if not collapse:
         _no_collapse_fill(data, headers, file_, shape)
+    file_.close()
     # axes
     for a in axes:
         expression = a["identity"]
@@ -215,7 +216,7 @@ def _collapse_read_in(data, headers, axes, arr, signed, index, kind, name, shape
                         i == headers["axis names"].index(name)
                         or f"{name}_centers" in data.variable_names
                     ):
-                        tolerance = 0
+                        tolerance = 1e-10
                     else:
                         tolerance = np.inf
                 mean = np.nanmean(values, axis=i)
