@@ -152,7 +152,7 @@ class Axes(matplotlib.axes.Axes):
                         n = 6
                     kwargs["levels"] = np.linspace(kwargs.pop("vmin"), kwargs.pop("vmax"), n)[1:-1]
                 # colors
-                if "colors" not in kwargs.keys():
+                if "colors" not in kwargs.keys() and "cmap" not in kwargs.keys():
                     kwargs["colors"] = "k"
                 if "alpha" not in kwargs.keys():
                     kwargs["alpha"] = 0.5
