@@ -549,14 +549,14 @@ class Data(Group):
         # get axis index --------------------------------------------------------------------------
         axis_index = None
         if resultant is not None:
-            for i, (s, r) in enumerate(zip(self.shape, resultant)):
+            for i, (s, r) in enumerate(zip(wt_kit.joint_shape(*self.axes), resultant)):
                 if s != r and r == 1 and axis_index is None:
                     axis_index = i
                 elif s == r:
                     continue
                 else:
                     raise wt_exceptions.ValueError(
-                        f"Invalid resultant shape '{resultant}' for shape {self.shape}. "
+                        f"Invalid resultant shape '{resultant}' for shape {wt_kit.joint_shape(*self.axes)}. "
                         + "Consider using `wt.kit.joint_shape` to join non-collapsed axes."
                     )
 
