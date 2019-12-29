@@ -13,6 +13,8 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as mplcolors
 import matplotlib.gridspec as grd
 
+from ._turbo import turbo
+
 
 # --- define -------------------------------------------------------------------------------------
 
@@ -29,7 +31,9 @@ __all__ = [
 # --- functions ----------------------------------------------------------------------------------
 
 
-def make_cubehelix(name="WrightTools", gamma=0.5, s=0.25, r=-1, h=1.3, reverse=False, darkest=0.7):
+def make_cubehelix(
+    name="WrightTools", gamma=0.5, s=0.25, r=-1, h=1.3, reverse=False, darkest=0.7
+):
     """Define cubehelix type colorbars.
 
     Look `here`__ for more information.
@@ -188,7 +192,11 @@ def nm_to_rgb(nm):
     else:
         SSS = 0.0
     SSS *= 255
-    return [float(int(SSS * R) / 256.0), float(int(SSS * G) / 256.0), float(int(SSS * B) / 256.0)]
+    return [
+        float(int(SSS * R) / 256.0),
+        float(int(SSS * G) / 256.0),
+        float(int(SSS * B) / 256.0),
+    ]
 
 
 def plot_colormap_components(cmap):
@@ -247,7 +255,9 @@ def grayify_cmap(cmap):
     RGB_weight = [0.299, 0.587, 0.114]
     luminance = np.sqrt(np.dot(colors[:, :3] ** 2, RGB_weight))
     colors[:, :3] = luminance[:, np.newaxis]
-    return mplcolors.LinearSegmentedColormap.from_list(cmap.name + "_grayscale", colors, cmap.N)
+    return mplcolors.LinearSegmentedColormap.from_list(
+        cmap.name + "_grayscale", colors, cmap.N
+    )
 
 
 def get_color_cycle(n, cmap="rainbow", rotations=3):
@@ -388,8 +398,8 @@ signed = [
     "#FF7F00",
     "#FF5500",
     "#FF2A00",
-    "#FF0000",
-]  # red
+    "#FF0000",  # red
+]
 
 signed_old = [
     "#0000FF",  # blue
@@ -398,8 +408,8 @@ signed_old = [
     "#FFFFFF",  # white
     "#FFFF00",  # yellow
     "#FFBB00",  # orange
-    "#FF0000",
-]  # red
+    "#FF0000",  # red
+]
 
 skyebar = [
     "#FFFFFF",  # white
@@ -410,8 +420,8 @@ skyebar = [
     "#FFFF00",  # yellow
     "#FF8000",  # orange
     "#FF0000",  # red
-    "#800000",
-]  # dark red
+    "#800000",  # dark red
+]
 
 skyebar_d = [
     "#000000",  # black
@@ -421,8 +431,8 @@ skyebar_d = [
     "#FFFF00",  # yellow
     "#FF8000",  # orange
     "#FF0000",  # red
-    "#800000",
-]  # dark red
+    "#800000",  # dark red
+]
 
 skyebar_i = [
     "#000000",  # black
@@ -433,8 +443,8 @@ skyebar_i = [
     "#FFFF00",  # yellow
     "#FF8000",  # orange
     "#FF0000",  # red
-    "#800000",
-]  # dark red
+    "#800000",  # dark red
+]
 
 wright = ["#FFFFFF", "#0000FF", "#00FFFF", "#00FF00", "#FFFF00", "#FF0000", "#881111"]
 
@@ -452,16 +462,29 @@ colormaps = cmapdict()
 colormaps["cubehelix"] = plt.get_cmap("cubehelix_r")
 colormaps["default"] = cubehelix
 colormaps["signed"] = plt.get_cmap("bwr")
-colormaps["greenscale"] = mplcolors.LinearSegmentedColormap.from_list("greenscale", greenscale)
-colormaps["greyscale"] = mplcolors.LinearSegmentedColormap.from_list("greyscale", greyscale)
-colormaps["invisible"] = mplcolors.LinearSegmentedColormap.from_list("invisible", invisible)
+colormaps["greenscale"] = mplcolors.LinearSegmentedColormap.from_list(
+    "greenscale", greenscale
+)
+colormaps["greyscale"] = mplcolors.LinearSegmentedColormap.from_list(
+    "greyscale", greyscale
+)
+colormaps["invisible"] = mplcolors.LinearSegmentedColormap.from_list(
+    "invisible", invisible
+)
 colormaps["isoluminant1"] = isoluminant1
 colormaps["isoluminant2"] = isoluminant2
 colormaps["isoluminant3"] = isoluminant3
-colormaps["signed_old"] = mplcolors.LinearSegmentedColormap.from_list("signed", signed_old)
+colormaps["signed_old"] = mplcolors.LinearSegmentedColormap.from_list(
+    "signed", signed_old
+)
 colormaps["skyebar1"] = mplcolors.LinearSegmentedColormap.from_list("skyebar", skyebar)
-colormaps["skyebar2"] = mplcolors.LinearSegmentedColormap.from_list("skyebar dark", skyebar_d)
-colormaps["skyebar3"] = mplcolors.LinearSegmentedColormap.from_list("skyebar inverted", skyebar_i)
+colormaps["skyebar2"] = mplcolors.LinearSegmentedColormap.from_list(
+    "skyebar dark", skyebar_d
+)
+colormaps["skyebar3"] = mplcolors.LinearSegmentedColormap.from_list(
+    "skyebar inverted", skyebar_i
+)
+colormaps["turbo"] = turbo
 colormaps["wright"] = mplcolors.LinearSegmentedColormap.from_list("wright", wright)
 
 
