@@ -6,7 +6,6 @@
 
 import shutil
 import os
-import sys
 import pathlib
 import weakref
 import tempfile
@@ -82,7 +81,7 @@ class Group(h5py.Group, metaclass=MetaClass):
                     and isinstance(value[0], (str, os.PathLike))
                 ):
                     value = np.array(value, dtype="S")
-                elif sys.version_info > (3, 6):
+                else:
                     try:
                         value = os.fspath(value)
                     except TypeError:
