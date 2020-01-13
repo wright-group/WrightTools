@@ -70,7 +70,7 @@ def _title(fig, title, subtitle="", *, margin=1, fontsize=20, subfontsize=18):
     """
     fig.suptitle(title, fontsize=fontsize)
     height = fig.get_figheight()  # inches
-    distance = margin / 2.  # distance from top of plot, in inches
+    distance = margin / 2.0  # distance from top of plot, in inches
     ratio = 1 - distance / height
     fig.text(0.5, ratio, subtitle, fontsize=subfontsize, ha="center", va="top")
 
@@ -78,7 +78,7 @@ def _title(fig, title, subtitle="", *, margin=1, fontsize=20, subfontsize=18):
 def add_sideplot(
     ax,
     along,
-    pad=0.,
+    pad=0.0,
     *,
     grid=True,
     zero_line=True,
@@ -237,7 +237,7 @@ def create_figure(
     width="single",
     nrows=1,
     cols=[1],
-    margin=1.,
+    margin=1.0,
     hspace=0.25,
     wspace=0.25,
     cbar_width=0.25,
@@ -320,11 +320,11 @@ def create_figure(
     """
     # get width
     if width == "double":
-        figure_width = 14.
+        figure_width = 14.0
     elif width == "single":
         figure_width = 6.5
     elif width == "dissertation":
-        figure_width = 13.
+        figure_width = 13.0
     else:
         figure_width = float(width)
     # check if aspect constraints are valid
@@ -486,7 +486,7 @@ def get_scaled_bounds(ax, position, *, distance=0.1, factor=200):
         ha = "right"
     else:
         print("corner not recognized")
-        v_scaled = h_scaled = 1.
+        v_scaled = h_scaled = 1.0
         va = "center"
         ha = "center"
     return [h_scaled, v_scaled], [va, ha]
@@ -590,9 +590,10 @@ def plot_colorbar(
         WrightTools colormaps dictionary. Default is `default`.
     ticks : 1D array-like (optional)
         Ticks. Default is None.
-    clim : two element list (optional)
+    clim : two element list (optional, deprecated)
         The true limits of the colorbar, in the same units as ticks. If None,
         streaches the colorbar over the limits of ticks. Default is None.
+        Deprecated: Use ``vlim`` directly instead.
     vlim : two element list-like (optional)
         The limits of the displayed colorbar, in the same units as ticks. If
         None, displays over clim. Default is None.
@@ -644,6 +645,11 @@ def plot_colorbar(
     # parse clim
     if clim is None:
         clim = [min(ticks), max(ticks)]
+    else:
+        warnings.warn(
+            "Parameter 'clim' is deprecated, use 'vlim' instead",
+            wt_exceptions.VisibleDepricationWarning,
+        )
     # parse clim
     if vlim is None:
         vlim = clim
@@ -684,7 +690,6 @@ def plot_colorbar(
         extendrect=extendrect,
     )
     # coerce properties
-    cbar.set_clim(clim[0], clim[1])
     cbar.ax.tick_params(labelsize=tick_fontsize)
     if label:
         cbar.set_label(label, fontsize=label_fontsize)
@@ -692,7 +697,7 @@ def plot_colorbar(
     return cbar
 
 
-def plot_margins(*, fig=None, inches=1., centers=True, edges=True):
+def plot_margins(*, fig=None, inches=1.0, centers=True, edges=True):
     """Add lines onto a figure indicating the margins, centers, and edges.
 
     Useful for ensuring your figure design scripts work as intended, and for laying
@@ -972,12 +977,18 @@ def set_fig_labels(
     for ax in fig.axes:
         if ax.is_sideplot:
             continue
-        if row_start <= ax.rowNum <= row_stop and col_start <= ax.colNum <= col_stop:
-            if ax.colNum == col_start:
+        try:
+            rowNum = ax.get_subplotspec().rowspan.start
+            colNum = ax.get_subplotspec().colspan.start
+        except AttributeError:
+            rowNum = ax.rowNum
+            colNum = ax.colNum
+        if row_start <= rowNum <= row_stop and col_start <= colNum <= col_stop:
+            if colNum == col_start:
                 set_ax_labels(ax=ax, ylabel=ylabel, yticks=yticks, label_fontsize=label_fontsize)
             else:
                 set_ax_labels(ax=ax, ylabel="", yticks=False)
-            if ax.rowNum == row_stop:
+            if rowNum == row_stop:
                 set_ax_labels(ax=ax, xlabel=xlabel, xticks=xticks, label_fontsize=label_fontsize)
             else:
                 set_ax_labels(ax=ax, xlabel="", xticks=False)
