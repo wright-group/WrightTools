@@ -5,9 +5,10 @@
 
 
 import collections
+import warnings
 
 import numpy as np
-import warnings
+import numexpr
 
 
 # --- define --------------------------------------------------------------------------------------
@@ -20,7 +21,7 @@ import warnings
 angle = {"rad": ["x", "x", r"rad"], "deg": ["x/57.2958", "57.2958*x", r"deg"]}
 
 # delay units (native: fs)
-fs_per_mm = 3336.
+fs_per_mm = 3336.0
 delay = {
     "fs": ["x", "x", r"fs"],
     "ps": ["x*1e3", "x/1e3", r"ps"],
@@ -114,12 +115,12 @@ def converter(val, current_unit, destination_unit):
     for dic in dicts.values():
         if current_unit in dic.keys() and destination_unit in dic.keys():
             try:
-                native = eval(dic[current_unit][0])
+                native = numexpr.evaluate(dic[current_unit][0], {"x": x})
             except ZeroDivisionError:
                 native = np.inf
             x = native  # noqa: F841
             try:
-                out = eval(dic[destination_unit][1])
+                out = numexpr.evaluate(dic[destination_unit][1], {"x": x})
             except ZeroDivisionError:
                 out = np.inf
             return out
