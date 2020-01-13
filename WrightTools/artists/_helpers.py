@@ -978,6 +978,8 @@ def set_fig_labels(
         if ax.is_sideplot:
             continue
         try:
+            # [row|col]span were introduced in matplotlib 3.2
+            # this try/except can be removed when supprot for mpl < 3.2 is dropped
             rowNum = ax.get_subplotspec().rowspan.start
             colNum = ax.get_subplotspec().colspan.start
         except AttributeError:
