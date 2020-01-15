@@ -648,7 +648,7 @@ def plot_colorbar(
     else:
         warnings.warn(
             "Parameter 'clim' is deprecated, use 'vlim' instead",
-            wt_exceptions.VisibleDepricationWarning,
+            wt_exceptions.VisibleDeprecationWarning,
         )
     # parse clim
     if vlim is None:
