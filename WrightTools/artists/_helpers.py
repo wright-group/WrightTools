@@ -813,8 +813,11 @@ def plot_gridlines(ax=None, c="grey", lw=1, diagonal=False, zorder=2, makegrid=T
         ax.set_xlim(min_xi, max_xi)
 
 
-def savefig(path, fig=None, close=True, *, dpi=300):
+def savefig(path, fig=None, close=True, **kwargs):
     """Save a figure.
+
+    Note, that this method defaults to transparent background (``facecolor`` kwarg)
+    and to 300 dpi.
 
     Parameters
     ----------
@@ -825,22 +828,30 @@ def savefig(path, fig=None, close=True, *, dpi=300):
     close : bool (optional)
         Toggle closing of figure after saving. Default is True.
 
+    Keyword Parameters
+    ------------------
+    kwargs: any
+        All additional parameters are passed to the underlying matplotlib ``savefig`` call
+
     Returns
     -------
     str
         The full path where the figure was saved.
     """
-    # get fig
     if fig is None:
         fig = plt.gcf()
-    # get full path
+
     path = os.path.abspath(path)
-    # save
-    plt.savefig(path, dpi=dpi, transparent=False, pad_inches=1, facecolor="none")
-    # close
+
+    kwargs["dpi"] = kwargs.get("dpi", 300)
+    kwargs["transparent"] = kwargs.get("transparent", False)
+    kwargs["pad_inches"] = kwargs.get("pad_inches", 1)
+    kwargs["facecolor"] = kwargs.get("facecolor", "none")
+
+    fig.savefig(path, **kwargs)
+
     if close:
         plt.close(fig)
-    # finish
     return path
 
 
