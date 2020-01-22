@@ -151,7 +151,7 @@ def quick1D(
             else:
                 file_name = str(i).zfill(3)
             fpath = os.path.join(save_directory, file_name + ".png")
-            savefig(fpath, fig=fig)
+            savefig(fpath, fig=fig, facecolor="white")
             plt.close()
             if verbose:
                 print("image saved at", fpath)
@@ -233,8 +233,8 @@ def quick2D(
     else:
         cmap = "default"
     cmap = colormaps[cmap]
-    cmap.set_bad([0.75] * 3, 1.)
-    cmap.set_under([0.75] * 3, 1.)
+    cmap.set_bad([0.75] * 3, 1.0)
+    cmap.set_under([0.75] * 3, 1.0)
     # fname
     if fname is None:
         fname = data.natural_name
@@ -270,9 +270,9 @@ def quick2D(
             xr = xlim[1] - xlim[0]
             yr = ylim[1] - ylim[0]
             aspect = np.abs(yr / xr)
-            if 3 < aspect or aspect < 1 / 3.:
+            if 3 < aspect or aspect < 1 / 3.0:
                 # TODO: raise warning here
-                aspect = np.clip(aspect, 1 / 3., 3.)
+                aspect = np.clip(aspect, 1 / 3.0, 3.0)
         else:
             aspect = 1
         fig, gs = create_figure(
@@ -368,7 +368,7 @@ def quick2D(
             else:
                 file_name = str(i).zfill(3)
             fpath = os.path.join(save_directory, file_name + ".png")
-            savefig(fpath, fig=fig)
+            savefig(fpath, fig=fig, facecolor="white")
             plt.close()
             if verbose:
                 print("image saved at", fpath)
