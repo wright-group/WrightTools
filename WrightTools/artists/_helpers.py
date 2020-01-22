@@ -499,6 +499,10 @@ def get_scaled_bounds(ax, position, *, distance=0.1, factor=200):
 def pcolor_helper(xi, yi, zi=None):
     """Prepare a set of arrays for plotting using `pcolor`.
 
+    This function is Deprecated as of WrightTools <TODO: put wt version number>.
+    Matplotlib introduced the ``shading="nearest"`` in version <TODO: put mpl version number> on pcolor and associated
+    methods, which accomplishes the same goal, in a much cleaner way.
+
     The return values are suitable for feeding directly into ``matplotlib.pcolor``
     such that the pixels are properly centered.
 
@@ -520,6 +524,12 @@ def pcolor_helper(xi, yi, zi=None):
     zi : 2D ndarray
         if zi parameter is not None, returns zi parameter unchanged
     """
+    warnings.warn(
+        "``pcolor_helper`` is deprecated and will be removed in a future version. "
+        + "Use ``shading='nearest'`` as an argument to ``pcolor*`` instead",
+        wt_exceptions.VisibleDeprecationWarning,
+    )
+
     xi = xi.copy()
     yi = yi.copy()
     if xi.ndim == 1:
