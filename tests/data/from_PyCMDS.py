@@ -160,7 +160,7 @@ def test_centers_tolerance():
 
 
 def test_remote():
-    data = wt.data.from_PyCMDS("https://osf.io/download/rdn7v")
+    data = wt.data.from_PyCMDS("https://osf.io/rdn7v/download")
     assert data.shape == (21, 81)
     assert data.axis_expressions == ("wm", "w2=w1")
     data.close()
