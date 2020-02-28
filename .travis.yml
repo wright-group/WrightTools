@@ -12,7 +12,7 @@ addons:
     - libopenblas-dev
 install:
 - pip install cython
-- pip install .
+- pip install .[docs]
 - pip install -U pytest "coverage<5" pytest-cov
 services:
 - xvfb
