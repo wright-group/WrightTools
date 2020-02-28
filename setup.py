@@ -32,8 +32,6 @@ setup(
     packages=find_packages(exclude=("tests", "tests.*")),
     package_data=extra_files,
     python_requires=">=3.6",
-    setup_requires=["pytest-runner"],
-    tests_require=["pytest", "pytest-cov", "sphinx", "sphinx-gallery==0.1.12", "sphinx-rtd-theme"],
     install_requires=[
         "h5py",
         "imageio",
