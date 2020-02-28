@@ -16,7 +16,7 @@ install:
 - pip install -U pytest "coverage<5"
 services:
 - xvfb
-script: python setup.py test
+script: pytest
 deploy:
   provider: pypi
   user: __token__
