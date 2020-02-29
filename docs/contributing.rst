@@ -32,7 +32,7 @@ Preparing
 
     .. code-block:: bash
 
-        $ python setup.py test
+        $ pytest
 
    Note: On ``*nix`` machines (unfortunately this does not work on Windows),
    the tests may be multiprocessed using `pytest-mp <https://github.com/ansible/pytest-mp>`_:
@@ -40,7 +40,7 @@ Preparing
    .. code-block:: bash
        
        $ pip install pytest-mp
-       $ python setup.py test --addopts "--mp"
+       $ pytest --mp
 
 
 Contributing
@@ -60,7 +60,7 @@ Contributing
 
     .. code-block:: bash
 
-        $ python setup.py test
+        $ pytest
 
 #. make your changes, commiting often
 

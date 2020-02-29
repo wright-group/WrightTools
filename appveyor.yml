@@ -18,9 +18,10 @@ init:
   - "%PYTHON%/python -c \"import struct;print(8 * struct.calcsize(\'P\'))\""
 
 install:
-  - "%PYTHON%\\Scripts\\pip3 install -e ."
+  - "%PYTHON%\\Scripts\\pip3 install -e .[docs]"
+  - "%PYTHON%\\Scripts\\pip3 install pytest pytest-cov"
 
 build: false  # Not a C# project, build stuff at the test step instead.
 
 test_script:
-  - "%PYTHON%/python setup.py test"
+  - "%PYTHON%/python -m pytest"

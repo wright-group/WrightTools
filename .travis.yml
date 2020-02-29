@@ -12,11 +12,11 @@ addons:
     - libopenblas-dev
 install:
 - pip install cython
-- pip install .
-- pip install -U pytest "coverage<5"
+- pip install .[docs]
+- pip install -U pytest "coverage<5" pytest-cov
 services:
 - xvfb
-script: python setup.py test
+script: pytest
 deploy:
   provider: pypi
   user: __token__
