@@ -162,4 +162,5 @@ def symmetric_sqrt(x, out=None):
     """
     factor = np.sign(x)
     out = np.sqrt(np.abs(x), out=out)
-    return out * factor
+    out *= factor
+    return out
