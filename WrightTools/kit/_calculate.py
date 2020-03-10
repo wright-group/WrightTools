@@ -137,8 +137,8 @@ def nm_width(center, width, units="wn") -> float:
     number
         Width in nm.
     """
-    red = wt_units.converter(center - width / 2., units, "nm")
-    blue = wt_units.converter(center + width / 2., units, "nm")
+    red = wt_units.converter(center - width / 2.0, units, "nm")
+    blue = wt_units.converter(center + width / 2.0, units, "nm")
     return red - blue
 
 

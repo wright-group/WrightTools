@@ -21,7 +21,7 @@ __all__ = ["zoom2D", "Spline"]
 # --- functions -----------------------------------------------------------------------------------
 
 
-def zoom2D(xi, yi, zi, xi_zoom=3., yi_zoom=3., order=3, mode="nearest", cval=0.):
+def zoom2D(xi, yi, zi, xi_zoom=3.0, yi_zoom=3.0, order=3, mode="nearest", cval=0.0):
     """Zoom a 2D array, with axes.
 
     Parameters

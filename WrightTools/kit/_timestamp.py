@@ -159,7 +159,7 @@ class TimeStamp:
         format_string = "%Y-%m-%dT%H:%M:%S.%f"
         out = self.datetime.strftime(format_string)
         # timezone
-        if delta_sec == 0.:
+        if delta_sec == 0.0:
             out += "Z"
         else:
             if delta_sec > 0:
