@@ -87,7 +87,7 @@ def add_sideplot(
     ymin=0,
     ymax=1.1,
     height=0.75,
-    c="C0"
+    c="C0",
 ):
     """Add a sideplot to an axis. Sideplots share their corresponding axis.
 
@@ -171,11 +171,12 @@ def corner_text(
     corner="UL",
     factor=200,
     bbox=True,
-    fontsize=18,
     background_alpha=1,
-    edgecolor=None
+    edgecolor=None,
+    **kwargs,
 ):
     """Place some text in the corner of the figure.
+
 
     Parameters
     ----------
@@ -191,8 +192,6 @@ def corner_text(
         Scaling factor. Default is 200.
     bbox : boolean (optional)
         Toggle bounding box. Default is True.
-    fontsize : number (optional)
-        Text fontsize. If None, uses the matplotlib default. Default is 18.
     background_alpha : number (optional)
         Opacity of background bounding box. Default is 1.
     edgecolor : string (optional)
@@ -203,6 +202,12 @@ def corner_text(
     -------
     text
         The matplotlib text object.
+    
+    Other Parameters
+    ----------------
+    **kwargs : matplotlib.text.Text properties.
+            Other miscellaneous text parameters passed to ax.text.
+            Default font size is 18.
     """
     # get axis
     if ax is None:
@@ -216,15 +221,14 @@ def corner_text(
     # apply text
     props = dict(boxstyle="square", facecolor="white", alpha=background_alpha, edgecolor=edgecolor)
     args = [v_scaled, h_scaled, text]
-    kwargs = {}
-    kwargs["fontsize"] = fontsize
-    kwargs["verticalalignment"] = va
-    kwargs["horizontalalignment"] = ha
+    kwargs.setdefault("fontsize", 18)
+    kwargs.setdefault("verticalalignment", va)
+    kwargs.setdefault("horizontalalignment", ha)
     if bbox:
-        kwargs["bbox"] = props
+        kwargs.setdefault("bbox", props)
     else:
-        kwargs["path_effects"] = [PathEffects.withStroke(linewidth=3, foreground="w")]
-    kwargs["transform"] = ax.transAxes
+        kwargs.setdefault("path_effects", [PathEffects.withStroke(linewidth=3, foreground="w")])
+    kwargs.setdefault("transform", ax.transAxes)
     if "zlabel" in ax.properties().keys():  # axis is 3D projection
         out = ax.text2D(*args, **kwargs)
     else:
@@ -242,7 +246,7 @@ def create_figure(
     wspace=0.25,
     cbar_width=0.25,
     aspects=[],
-    default_aspect=1
+    default_aspect=1,
 ):
     """Re-parameterization of matplotlib figure creation tools, exposing convenient variables.
 
