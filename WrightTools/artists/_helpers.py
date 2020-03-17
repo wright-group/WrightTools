@@ -173,7 +173,8 @@ def corner_text(
     bbox=True,
     fontsize=18,
     background_alpha=1,
-    edgecolor=None
+    edgecolor=None,
+    **kwargs,
 ):
     """Place some text in the corner of the figure.
 
@@ -203,6 +204,11 @@ def corner_text(
     -------
     text
         The matplotlib text object.
+    
+    Other Parameters
+    ----------------
+    **kwargs : matplotlib.text.Text properties.
+            Other miscellaneous text parameters.
     """
     # get axis
     if ax is None:
@@ -216,7 +222,7 @@ def corner_text(
     # apply text
     props = dict(boxstyle="square", facecolor="white", alpha=background_alpha, edgecolor=edgecolor)
     args = [v_scaled, h_scaled, text]
-    kwargs = {}
+    kwargs = {**kwargs}
     kwargs["fontsize"] = fontsize
     kwargs["verticalalignment"] = va
     kwargs["horizontalalignment"] = ha
