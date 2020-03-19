@@ -6,46 +6,47 @@ An example showing how to use moments and sideplots.
 """
 
 import WrightTools as wt
+from WrightTools import datasets
 import matplotlib.pyplot as plt
-import numpy as np
 
-# create original arrays
-x = np.linspace(-3, 3, 41)[:, None]
-y = np.linspace(-3, 3, 40)[None, :]
-z = np.exp(-1 * (x ** 2 + y ** 2))  # create data object
-# create data object
-d = wt.data.Data()
-d.create_variable("x", values=x)
-d.create_variable("y", values=y)
-d.create_channel("z", z)
-d.transform("x", "y")
+# get dataset
+p = datasets.PyCMDS.d1_d2_000
+d = wt.data.from_PyCMDS(p)
+d.convert("fs")
+d.channels[0].symmetric_root(2)
+d.channels[0].normalize()
+d.channels[0].clip(min=0, replace="value")
+# calculate moments
+d.moment(axis="d1", channel=0, moment=0)  # integral
+d["signal_diff_d1_moment_0"].normalize()
+d.moment(axis="d1", channel=0, moment=1)  # center of mass
+d.moment(axis="d2", channel=0, moment=0)  # integral
+d["signal_diff_d2_moment_0"].normalize()
+d.moment(axis="d2", channel=0, moment=1)  # center of mass
 
 # create figure
 fig, gs = wt.artists.create_figure(cols=[1, "cbar"])
 ax = plt.subplot(gs[0])
 # instantiate sideplots
-axcorrx = ax.add_sideplot(along="x", pad=0.1, ymin=-0.1, ymax=2)
-axcorry = ax.add_sideplot(along="y", pad=0.1, ymin=-0.1, ymax=2)
+axcorrx = ax.add_sideplot(along="x", pad=0.1, ymin=-0.1, ymax=1.1)
+axcorry = ax.add_sideplot(along="y", pad=0.1, ymin=-0.1, ymax=1.1)
 # plot data
 ax.pcolor(d, autolabel="both")
-# calculate moments
-d.moment(axis="x", channel=0, moment=0)  # integral
-d.moment(axis="x", channel=0, moment=1)  # center of mass
-d.moment(axis="y", channel=0, moment=0)  # integral
-d.moment(axis="y", channel=0, moment=1)  # center of mass
 # plot integral moments in sideplot
-axcorrx.plot(d, channel="z_y_moment_0", color="k", linewidth=3, label="mean along x")
+axcorrx.plot(d, channel="signal_diff_d2_moment_0", color="k", linewidth=3)
 # this sideplot is uncouth.
 # the independent axis is 'y' and the dependent is 'x'
-y_ = d.y.points
-x_ = d["z_x_moment_0"].points
-axcorry.plot(x_, y_, color="k", linewidth=3, label="mean along y")
+y_ = d.d2.points
+x_ = d["signal_diff_d1_moment_0"].points
+axcorry.plot(x_, y_, color="k", linewidth=3)
 # plot center of mass for each slice
-ax.plot(d["z_x_moment_1"].points, d.y.points, label="COM along y")
-ax.plot(d.x.points, d["z_y_moment_1"].points, label="COM along x")
-# legends
-for ax_ in [ax, axcorrx]:
-    ax_.legend(fontsize=8)
+ax.plot(d["signal_diff_d2_moment_1"].points, d.d2.points, label="COM along y")
+ax.plot(d.d1.points, d["signal_diff_d1_moment_1"].points, label="COM along x")
+ax.legend(fontsize=8)
+# grids
+for ax_ in [ax, axcorrx, axcorry]:
+    ax_.grid()
+axcorrx.set_title(r"$\mathsf{\vec{k}_1 - \vec{k}_2 + \vec{k}_{2^\prime}}$", fontsize=20)
 # plot colorbar
 cax = plt.subplot(gs[-1])
-wt.artists.plot_colorbar(cax=cax, label="z")
+wt.artists.plot_colorbar(cax=cax, label="amplitude")
