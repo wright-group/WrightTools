@@ -12,7 +12,7 @@ from scipy.special import wofz
 # --- define -------------------------------------------------------------
 
 
-__all__ = ["gaussian", "lorentzian_complex", "lorentzian_real", "voight"]
+__all__ = ["gaussian", "lorentzian_complex", "lorentzian_real", "voigt"]
 
 
 # --- functions ----------------------------------------------------------
@@ -106,10 +106,10 @@ def lorentzian_real(x, x0, G, norm="height"):
         return arr / (G * np.pi)
 
 
-def voight(x, x0, FWHM, G):
-    """Calculate an unnormalized Voight lineshape using Scipy's Faddeeva function
+def voigt(x, x0, FWHM, G):
+    """Calculate an unnormalized Voigt lineshape using Scipy's Faddeeva function
     
-    `Link to Voight article on Wikipedia`__
+    `Link to Voigt article on Wikipedia`__
 
     __ https://en.wikipedia.org/wiki/Voigt_profile  
 
@@ -127,7 +127,7 @@ def voight(x, x0, FWHM, G):
     Returns
     -------
     array_like or number
-        Voight lineshape.
+        Voigt lineshape.
     """
     c = FWHM / (2 * np.sqrt(2 * np.log(2)))
     arr = (x - x0 + 1j * G) / (c * np.sqrt(2))

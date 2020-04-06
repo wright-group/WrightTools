@@ -32,8 +32,8 @@ y = wt.kit.lorentzian_real(x, x0, G, norm="height")
 ax.plot(x, y, label="Lorentzian, height")
 y = wt.kit.lorentzian_real(x, x0, G, norm="area")
 ax.plot(x, y, label="Lorentzian, area")
-y = wt.kit.voight(x, x0, FWHM, G)
-ax.plot(x, y / y.max(), label="Voight")
+y = wt.kit.voigt(x, x0, FWHM, G)
+ax.plot(x, y / y.max(), label="Voigt")
 # plot the complex variants
 ax = axs[1]
 y = wt.kit.lorentzian_complex(x, x0, G, norm="height_imag")

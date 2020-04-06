@@ -42,14 +42,14 @@ def test_lorentzian_real():
     assert np.isclose(y.max(), 1, rtol=1e-3, atol=1e-3)
 
 
-def test_voight():
+def test_voigt():
     x = np.linspace(-2, 2, 1001)
     x0 = 0
     G = 0.5
     FWHM = 1
     gauss = wt.kit.gaussian(x, x0, FWHM, norm="height")
     lor = wt.kit.lorentzian_real(x, x0, G, norm="height")
-    y = wt.kit.voight(x, x0, FWHM, 0)
+    y = wt.kit.voigt(x, x0, FWHM, 0)
     assert np.all(np.isclose(y / y.max(), gauss, rtol=1e-3, atol=1e-3))
-    y = wt.kit.voight(x, x0, 1e-6, G)
+    y = wt.kit.voigt(x, x0, 1e-6, G)
     assert np.all(np.isclose(y / y.max(), lor, rtol=1e-3, atol=1e-3))
