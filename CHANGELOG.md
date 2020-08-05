@@ -210,6 +210,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ### Added
 - initial release
 
+[Unreleased]: https://github.com/wright-group/WrightTools/compare/3.2.7...HEAD
+[3.2.7]: https://github.com/wright-group/WrightTools/compare/3.2.6...3.2.7
 [3.2.6]: https://github.com/wright-group/WrightTools/compare/3.2.5...3.2.6
 [3.2.5]: https://github.com/wright-group/WrightTools/compare/3.2.4...3.2.5
 [3.2.4]: https://github.com/wright-group/WrightTools/compare/3.2.3...3.2.4
