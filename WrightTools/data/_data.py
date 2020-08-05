@@ -45,25 +45,29 @@ class Data(Group):
         self._axes = []
         self._constants = []
         Group.__init__(self, *args, **kwargs)
-        # populate axes from attrs string
+        # populate axes, constants from attrs string
         for identifier in self.attrs.get("axes", []):
             identifier = identifier.decode()
             expression, units = identifier.split("{")
-            units = units.replace("}", "")
+            units = units.replace("}", "").strip()
+            if units == "None":
+                units = None
             # Should not be needed for wt5 >= 1.0.3, kept for opening older wt5 files.
             for i in identifier_to_operator.keys():
                 expression = expression.replace(i, identifier_to_operator[i])
             expression = expression.replace(" ", "")  # remove all whitespace
-            axis = Axis(self, expression, units.strip())
+            axis = Axis(self, expression, units)
             self._axes.append(axis)
         for identifier in self.attrs.get("constants", []):
             identifier = identifier.decode()
             expression, units = identifier.split("{")
-            units = units.replace("}", "")
+            units = units.replace("}", "").strip()
+            if units == "None":
+                units = None
             for i in identifier_to_operator.keys():
                 expression = expression.replace(i, identifier_to_operator[i])
             expression = expression.replace(" ", "")  # remove all whitespace
-            const = Constant(self, expression, units.strip())
+            const = Constant(self, expression, units)
             self._constants.append(const)
         self._current_axis_identities_in_natural_namespace = []
         self._on_constants_updated()
