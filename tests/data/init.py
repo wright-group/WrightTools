@@ -16,6 +16,6 @@ def test_axes_NoneType_units():
     a.create_variable("x", np.array([0]), units=None)
     a.transform("x")
     a = a.copy()
-    assert a.units is None
+    assert a.x.units is None
     a.close()
 
