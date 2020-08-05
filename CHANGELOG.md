@@ -5,14 +5,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Added
+- lineshapes in kit: `gaussian`, `lorentzian_complex`, `lorentzian_real`, `voight`
+
+### Changed
+- misc text effects within `artists.corner_text`
+
+### Fixed
+- none-type units improperly handled by split through save/load
+
 ## [3.2.7]
 
 ### Added
 - matplotlib framework classifier
 
 ### Fixed
-- Fix error when giving an explicit output array to symmetric_sqrt
-- Remove deprecated pytest runner from setup.py (#
+- Fix error when giving an explicit output array to `symmetric_sqrt`
+- Remove deprecated pytest runner from setup.py
 
 ## [3.2.6]
 
