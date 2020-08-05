@@ -499,8 +499,8 @@ def get_scaled_bounds(ax, position, *, distance=0.1, factor=200):
 def pcolor_helper(xi, yi, zi=None):
     """Prepare a set of arrays for plotting using `pcolor`.
 
-    This function is Deprecated as of WrightTools <TODO: put wt version number>.
-    Matplotlib introduced the ``shading="nearest"`` in version <TODO: put mpl version number> on pcolor and associated
+    This function is Deprecated as of WrightTools 3.3.0.
+    Matplotlib introduced the ``shading="nearest"`` in version 3.3.0 on pcolor and associated
     methods, which accomplishes the same goal, in a much cleaner way.
 
     The return values are suitable for feeding directly into ``matplotlib.pcolor``
