@@ -132,11 +132,7 @@ class Axes(matplotlib.axes.Axes):
                 ndim = 2
             if not zi.ndim == ndim:
                 raise wt_exceptions.DimensionalityError(ndim, data.ndim)
-            if plot_type in ["pcolor", "pcolormesh"]:
-                X, Y = pcolor_helper(xi, yi)
-            else:
-                X, Y = xi, yi
-            args = [X, Y, zi] + args
+            args = [xi, yi, zi] + args
             # limits
             kwargs = self._parse_limits(
                 data=data, channel_index=channel_index, dynamic_range=dynamic_range, **kwargs
@@ -160,13 +156,6 @@ class Axes(matplotlib.axes.Axes):
                 kwargs = self._parse_cmap(data=data, channel_index=channel_index, **kwargs)
         else:
             xi, yi, zi = args[:3]
-            if plot_type in ["pcolor", "pcolormesh"]:
-                # only apply pcolor_helper if it looks like it hasn't been applied
-                if (xi.ndim == 1 and xi.size == zi.shape[1]) or (
-                    xi.ndim == 2 and xi.shape == zi.shape
-                ):
-                    xi, yi = pcolor_helper(xi, yi)
-                    args[:3] = [xi.T.copy(), yi.T.copy(), zi]
             data = None
             channel_index = 0
             kwargs = self._parse_limits(zi=args[2], **kwargs)
@@ -183,9 +172,12 @@ class Axes(matplotlib.axes.Axes):
             data=data,
             channel_index=channel_index,
         )
-        # decoration
+
         if plot_type != "contour":
             self.set_facecolor([0.75] * 3)
+        if plot_type.startswith("pcolor"):
+            kwargs["shading"] = kwargs.get("shading", "auto")
+
         return args, kwargs
 
     def add_sideplot(self, along, pad=0, height=0.75, ymin=0, ymax=1.1):
@@ -351,8 +343,8 @@ class Axes(matplotlib.axes.Axes):
         has ``ndim==2`` and the first two axes do not span dimensions
         other than those spanned by that channel.
 
-        Uses pcolor_helper to ensure that color boundaries are drawn
-        bisecting point positions, when possible.
+        Defaults to ``shading="auto"`` to ensure that color boundaries
+        are drawn bisecting point positions, when possible.
 
         Parameters
         ----------
@@ -389,8 +381,9 @@ class Axes(matplotlib.axes.Axes):
         has ``ndim==2`` and the first two axes do not span dimensions
         other than those spanned by that channel.
 
-        Uses pcolor_helper to ensure that color boundaries are drawn
-        bisecting point positions, when possible.
+        Defaults to ``shading="auto"`` to ensure that color boundaries
+        are drawn bisecting point positions, when possible.
+
         Quicker than pcolor
 
         Parameters
@@ -544,6 +537,3 @@ def apply_rcparams(kind="fast"):
         matplotlib.rcParams["font.size"] = 14
         matplotlib.rcParams["legend.edgecolor"] = "grey"
         matplotlib.rcParams["contour.negative_linestyle"] = "solid"
-
-
-from ._helpers import pcolor_helper  # flake8: noqa (circular import)
