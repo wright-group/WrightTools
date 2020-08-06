@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ### Changed
 - misc text effects within `artists.corner_text`
+- deprecate `pcolor_helper`, remove from internal plotting functions
 
 ### Fixed
 - none-type units improperly handled by split through save/load
