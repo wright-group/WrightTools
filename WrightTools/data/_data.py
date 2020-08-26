@@ -1730,7 +1730,7 @@ class Data(Group):
                     new_axis = new_data.axes[0]
                     print(
                         "  {0} : {1:0.2f} to {2:0.2f} {3} {4}".format(
-                            i, lo, hi, new_axis.units, new_axis.shape
+                            i, lo, hi, self.axes[0].units, new_axis.shape
                         )
                     )
 
@@ -1739,10 +1739,10 @@ class Data(Group):
                 d.transform(*old_expr)
                 keep = []
                 keep_units = []
-                for ax in d.axes:
+                for ax, u in zip(d.axes, old_units):
                     if ax.size > 1:
                         keep.append(ax.expression)
-                        keep_units.append(ax.units)
+                        keep_units.append(u)
                     else:
                         d.create_constant(ax.expression, verbose=False)
                 d.transform(*keep)
