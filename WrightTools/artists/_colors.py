@@ -4,6 +4,7 @@
 # --- import --------------------------------------------------------------------------------------
 
 import collections
+import copy
 
 import numpy as np
 from numpy import r_
@@ -31,9 +32,7 @@ __all__ = [
 # --- functions ----------------------------------------------------------------------------------
 
 
-def make_cubehelix(
-    name="WrightTools", gamma=0.5, s=0.25, r=-1, h=1.3, reverse=False, darkest=0.7
-):
+def make_cubehelix(name="WrightTools", gamma=0.5, s=0.25, r=-1, h=1.3, reverse=False, darkest=0.7):
     """Define cubehelix type colorbars.
 
     Look `here`__ for more information.
@@ -255,9 +254,7 @@ def grayify_cmap(cmap):
     RGB_weight = [0.299, 0.587, 0.114]
     luminance = np.sqrt(np.dot(colors[:, :3] ** 2, RGB_weight))
     colors[:, :3] = luminance[:, np.newaxis]
-    return mplcolors.LinearSegmentedColormap.from_list(
-        cmap.name + "_grayscale", colors, cmap.N
-    )
+    return mplcolors.LinearSegmentedColormap.from_list(cmap.name + "_grayscale", colors, cmap.N)
 
 
 def get_color_cycle(n, cmap="rainbow", rotations=3):
@@ -459,31 +456,19 @@ class cmapdict(dict):
 
 colormaps = cmapdict()
 
-colormaps["cubehelix"] = plt.get_cmap("cubehelix_r")
+colormaps["cubehelix"] = copy.copy(plt.get_cmap("cubehelix_r"))
 colormaps["default"] = cubehelix
-colormaps["signed"] = plt.get_cmap("bwr")
-colormaps["greenscale"] = mplcolors.LinearSegmentedColormap.from_list(
-    "greenscale", greenscale
-)
-colormaps["greyscale"] = mplcolors.LinearSegmentedColormap.from_list(
-    "greyscale", greyscale
-)
-colormaps["invisible"] = mplcolors.LinearSegmentedColormap.from_list(
-    "invisible", invisible
-)
+colormaps["signed"] = copy.copy(plt.get_cmap("bwr"))
+colormaps["greenscale"] = mplcolors.LinearSegmentedColormap.from_list("greenscale", greenscale)
+colormaps["greyscale"] = mplcolors.LinearSegmentedColormap.from_list("greyscale", greyscale)
+colormaps["invisible"] = mplcolors.LinearSegmentedColormap.from_list("invisible", invisible)
 colormaps["isoluminant1"] = isoluminant1
 colormaps["isoluminant2"] = isoluminant2
 colormaps["isoluminant3"] = isoluminant3
-colormaps["signed_old"] = mplcolors.LinearSegmentedColormap.from_list(
-    "signed", signed_old
-)
+colormaps["signed_old"] = mplcolors.LinearSegmentedColormap.from_list("signed", signed_old)
 colormaps["skyebar1"] = mplcolors.LinearSegmentedColormap.from_list("skyebar", skyebar)
-colormaps["skyebar2"] = mplcolors.LinearSegmentedColormap.from_list(
-    "skyebar dark", skyebar_d
-)
-colormaps["skyebar3"] = mplcolors.LinearSegmentedColormap.from_list(
-    "skyebar inverted", skyebar_i
-)
+colormaps["skyebar2"] = mplcolors.LinearSegmentedColormap.from_list("skyebar dark", skyebar_d)
+colormaps["skyebar3"] = mplcolors.LinearSegmentedColormap.from_list("skyebar inverted", skyebar_i)
 colormaps["turbo"] = turbo
 colormaps["wright"] = mplcolors.LinearSegmentedColormap.from_list("wright", wright)
 
