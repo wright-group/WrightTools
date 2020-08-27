@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ### Fixed
 - none-type units improperly handled by split through save/load
 - Copy colormaps to avoid editing default mpl colormaps
+- Correct units in output of split to be the same as input for axes
 
 ## [3.2.7]
 

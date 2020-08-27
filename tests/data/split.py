@@ -28,6 +28,7 @@ def test_split():
     print(split[0].shape)
     assert split[0].shape == (14, 11, 11)
     assert split[1].shape == (21, 11, 11)
+    assert a.units == split[0].units
     a.close()
     split.close()
 
