@@ -22,10 +22,10 @@ import WrightTools as wt
 
 here = os.path.abspath(os.path.dirname(__file__))
 
-cmap = matplotlib.colors.LinearSegmentedColormap.from_list("bw_temp", ["#AAAAAA", "#000000"])
+cmap = wt.artists.colormaps["default"]
 cmap.set_under(color="w", alpha=0)
 
-text_effects = [PathEffects.withStroke(linewidth=5, foreground="#CCC")]
+text_effects = [PathEffects.withStroke(linewidth=5, foreground="w")]
 
 
 # --- logo ----------------------------------------------------------------------------------------
@@ -59,7 +59,7 @@ levels = np.linspace(cutoff, np.nanmax(zi), 10)
 
 # contours
 ax.contourf(xi, yi, zi, cmap=cmap, alpha=1, vmin=cutoff, vmax=np.nanmax(zi), levels=levels)
-ax.contour(xi, yi, zi, levels=levels, colors="k", lw=5, alpha=0.1)
+ax.contour(xi, yi, zi, levels=levels, colors="k", lw=5, alpha=0.5)
 ax.contour(xi, yi, zi, levels=[cutoff], colors="k", lw=5, alpha=1)
 
 # decorate
