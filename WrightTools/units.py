@@ -21,7 +21,7 @@ import numexpr
 angle = {"rad": ["x", "x", r"rad"], "deg": ["x/57.2958", "57.2958*x", r"deg"]}
 
 # delay units (native: fs)
-fs_per_mm = 3336.0
+fs_per_mm = 3335.64095198
 delay = {
     "fs": ["x", "x", r"fs"],
     "ps": ["x*1e3", "x/1e3", r"ps"],
