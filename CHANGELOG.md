@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 - none-type units improperly handled by split through save/load
 - Copy colormaps to avoid editing default mpl colormaps
 - Correct units in output of split to be the same as input for axes
+- Conversion to/from inches was incorrect
 
 ## [3.2.7]
 
