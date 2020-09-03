@@ -52,7 +52,7 @@ position = {
     "um": ["x/1000.", "1000.*x", r"um"],
     "mm": ["x", "x", r"mm"],
     "cm": ["10.*x", "x/10.", r"cm"],
-    "in": ["x*0.039370", "0.039370*x", r"in"],
+    "in": ["x*25.4", "x/25.4", r"in"],
 }
 
 # pulse width units (native: FWHM)
