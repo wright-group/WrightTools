@@ -4,20 +4,14 @@
 # --- import --------------------------------------------------------------------------------------
 
 
-import collections
 import warnings
 
-import numpy as np
-import numexpr
-
 import pint
-
-ureg = pint.UnitRegistry()
-ureg.enable_contexts("spectroscopy")
 
 
 # --- define --------------------------------------------------------------------------------------
 
+ureg = pint.UnitRegistry()
 ureg.define("[fluence] = [energy] / [area]")
 
 ureg.define("OD = [] ")
@@ -35,13 +29,16 @@ ureg.define("@alias degC = deg_C")
 ureg.define("@alias degF = deg_F")
 ureg.define("@alias degR = deg_R")
 
-# delay units (native: fs)
-fs_per_mm = 3336.0
-delay = {
-    "fs": ["x", "x", r"fs"],
-    "ps": ["x*1e3", "x/1e3", r"ps"],
-    "mm_delay": ["x*2*fs_per_mm", "x/(2*fs_per_mm)", r"mm"],
-}
+ureg.define("@alias mm = mm_delay")
+
+delay = pint.Context("delay", defaults={"n": 1, "num_pass": 2})
+delay.add_transformation(
+    "[length]", "[time]", lambda ureg, x, n=1, num_pass=2: num_pass * x / ureg.speed_of_light * n
+)
+delay.add_transformation(
+    "[time]", "[length]", lambda ureg, x, n=1, num_pass=2: x / num_pass * ureg.speed_of_light / n
+)
+ureg.enable_contexts("spectroscopy", delay)
 
 # --- functions -----------------------------------------------------------------------------------
 
