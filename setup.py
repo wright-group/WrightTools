@@ -40,6 +40,7 @@ setup(
         "matplotlib>=3.3.0",
         "numexpr",
         "numpy>=1.15.0",
+        "pint",
         "python-dateutil",
         "scipy",
         "tidy_headers>=1.0.0",

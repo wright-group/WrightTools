@@ -100,11 +100,9 @@ class Axis(object):
                 vl = "%s_{%s}" % (symbol, v.label)
                 vl = vl.replace("_{}", "")  # label can be empty, no empty subscripts
                 label = label.replace(v.natural_name, vl)
-            units_dictionary = getattr(wt_units, self.units_kind)
-            label += r"\,"
-            label += r"\left("
-            label += units_dictionary[self.units][2]
-            label += r"\right)"
+
+            label += fr"\,\left({wt_units.ureg.Unit(self.units):~}\right)"
+
         label = r"$\mathsf{%s}$" % label
         return label
 

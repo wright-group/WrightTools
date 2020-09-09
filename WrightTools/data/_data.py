@@ -776,11 +776,9 @@ class Data(Group):
             Convert a single axis object to compatable units. Call on an
             axis object in data.axes.
         """
-        # get kind of units
-        units_kind = wt_units.kind(destination_units)
         # apply to all compatible axes
         for axis in self.axes:
-            if axis.units_kind == units_kind:
+            if wt_units.is_valid_conversion(axis.units, destination_units):
                 orig = axis.units
                 axis.convert(destination_units, convert_variables=convert_variables)
                 if verbose:
@@ -791,7 +789,7 @@ class Data(Group):
                     )
         # apply to all compatible constants
         for constant in self.constants:
-            if constant.units_kind == units_kind:
+            if wt_units.is_valid_conversion(constant.units, destination_units):
                 orig = constant.units
                 constant.convert(destination_units, convert_variables=convert_variables)
                 if verbose:
@@ -802,7 +800,7 @@ class Data(Group):
                     )
         if convert_variables:
             for var in self.variables:
-                if wt_units.kind(var.units) == units_kind:
+                if wt_units.is_valid_conversion(var.units, destination_units):
                     orig = var.units
                     var.convert(destination_units)
                     if verbose:

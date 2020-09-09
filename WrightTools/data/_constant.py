@@ -74,9 +74,7 @@ class Constant(Axis):
                 )
         label += r"\,=\,{}".format(format(val, self.format_spec))
         if self.units_kind:
-            units_dictionary = getattr(wt_units, self.units_kind)
-            label += r"\,"
-            label += units_dictionary[self.units][2]
+            label += fr"\,{wt_units.ureg.Unit(self.units):~}"
         label = r"$\mathsf{%s}$" % label
         return label
 
