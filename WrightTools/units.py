@@ -29,7 +29,7 @@ ureg.define("@alias degC = deg_C")
 ureg.define("@alias degF = deg_F")
 ureg.define("@alias degR = deg_R")
 
-ureg.define("@alias mm = mm_delay")
+ureg.define("@alias m = m_delay")
 
 delay = pint.Context("delay", defaults={"n": 1, "num_pass": 2})
 delay.add_transformation(
