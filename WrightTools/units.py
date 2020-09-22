@@ -49,7 +49,7 @@ od = {"mOD": ["1e3*x", "x/1e3", r"mOD"], "OD": ["x", "x", r"OD"]}
 # position units (native: mm)
 position = {
     "nm_p": ["x/1e6", "1e6*x", r"nm"],
-    "um": ["x/1000.", "1000.*x", r"um"],
+    "um": ["x/1000.", "1000.*x", r"\mu m"],
     "mm": ["x", "x", r"mm"],
     "cm": ["10.*x", "x/10.", r"cm"],
     "in": ["x*25.4", "x/25.4", r"in"],
@@ -71,7 +71,7 @@ time = {
     "fs_t": ["x/1e15", "x*1e15", r"fs"],
     "ps_t": ["x/1e12", "x*1e12", r"ps"],
     "ns_t": ["x/1e9", "x*1e9", r"ns"],
-    "us_t": ["x/1e6", "x*1e6", r"us"],
+    "us_t": ["x/1e6", "x*1e6", r"\mu s"],
     "ms_t": ["x/1000.", "x*1000.", r"ms"],
     "s_t": ["x", "x", r"s"],
     "m_t": ["x*60.", "x/60.", r"m"],
