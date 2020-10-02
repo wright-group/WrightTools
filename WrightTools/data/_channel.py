@@ -66,13 +66,14 @@ class Channel(Dataset):
         self.units = units
         self.dimensionality = len(self.shape)
         # attrs
-        self.attrs.update(kwargs)
-        self.attrs["name"] = h5py.h5i.get_name(self.id).decode().split("/")[-1]
-        self.attrs["class"] = "Channel"
-        if signed is not None:
-            self.attrs["signed"] = signed
-        if null is not None:
-            self.attrs["null"] = null
+        if self._parent.file.mode is not None and self._parent.file.mode != "r":
+            self.attrs.update(kwargs)
+            self.attrs["name"] = h5py.h5i.get_name(self.id).decode().split("/")[-1]
+            self.attrs["class"] = "Channel"
+            if signed is not None:
+                self.attrs["signed"] = signed
+            if null is not None:
+                self.attrs["null"] = null
         for key, value in self.attrs.items():
             identifier = wt_kit.string2identifier(key)
             if not hasattr(self, identifier):
@@ -112,7 +113,7 @@ class Channel(Dataset):
         """Channel magnitude (maximum deviation from null)."""
         return self.major_extent
 
-    def normalize(self, mag=1.):
+    def normalize(self, mag=1.0):
         """Normalize a Channel, set `null` to 0 and the mag to given value.
 
         Parameters

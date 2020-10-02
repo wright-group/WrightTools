@@ -70,12 +70,14 @@ class Data(Group):
             const = Constant(self, expression, units)
             self._constants.append(const)
         self._current_axis_identities_in_natural_namespace = []
-        self._on_constants_updated()
-        self._on_axes_updated()
-        # the following are populated if not already recorded
-        self.channel_names
-        self.source
-        self.variable_names
+        print(f"File mode: {self.file.mode}")
+        if self.file.mode is not None and self.file.mode != "r":
+            self._on_constants_updated()
+            self._on_axes_updated()
+            # the following are populated if not already recorded
+            self.channel_names
+            self.source
+            self.variable_names
 
     def __repr__(self) -> str:
         return "<WrightTools.Data '{0}' {1} at {2}>".format(

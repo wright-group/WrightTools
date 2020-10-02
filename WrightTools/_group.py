@@ -66,9 +66,11 @@ class Group(h5py.Group, metaclass=MetaClass):
         h5py.Group.__init__(self, bind=file[str(path)].id)
         self.__n = 0
         self.fid = self.file.id
-        self.natural_name = name
+        if "name" not in self.attrs.keys():
+            self.natural_name = name
         # attrs
-        self.attrs["class"] = self.class_name
+        if "class" not in self.attrs.keys():
+            self.attrs["class"] = self.class_name
         if "created" not in self.attrs.keys():
             self.attrs["created"] = wt_kit.TimeStamp().RFC3339
         for key, value in kwargs.items():
