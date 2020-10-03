@@ -66,8 +66,7 @@ class Group(h5py.Group, metaclass=MetaClass):
         h5py.Group.__init__(self, bind=file[str(path)].id)
         self.__n = 0
         self.fid = self.file.id
-        if "name" not in self.attrs.keys():
-            self.natural_name = name
+        self.natural_name = name
         # attrs
         if "class" not in self.attrs.keys():
             self.attrs["class"] = self.class_name
@@ -255,7 +254,9 @@ class Group(h5py.Group, metaclass=MetaClass):
             for k in dskeys:
                 obj = Dataset._instances.pop(k)
                 Dataset._instances[obj.fullpath] = obj
-        self._natural_name = self.attrs["name"] = value
+        self._natural_name = value
+        if self.file.mode is not None and self.file.mode != "r":
+            self.attrs["name"] = value
 
     @property
     def parent(self):
