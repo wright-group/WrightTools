@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Added
+- pytest and pytest-cov to dev requirements
+
 ### Fixed
 - representation of units with micro prefix
 - Do not attempt to write attrs when file is read only
