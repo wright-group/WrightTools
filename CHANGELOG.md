@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ### Fixed
 - representation of units with micro prefix
+- Do not attempt to write attrs when file is read only
 
 ## [3.3.0]
 

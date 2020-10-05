@@ -6,6 +6,7 @@
 
 import os
 import pytest
+import h5py
 
 import WrightTools as wt
 from WrightTools import datasets
@@ -87,6 +88,14 @@ def test_open_context():
         assert os.path.isfile(d.filepath)
     assert not os.path.isfile(d.filepath)
     assert d.id.valid == 0
+
+
+def test_open_readonly():
+    p = datasets.wt5.v1p0p1_MoS2_TrEE_movie
+    f = h5py.File(p, "r")
+    d = wt.Data(f)
+    assert d.file.mode == "r"
+    d.close()
 
 
 def test_close():
