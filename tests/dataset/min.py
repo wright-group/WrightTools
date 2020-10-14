@@ -4,6 +4,7 @@
 # --- import --------------------------------------------------------------------------------------
 
 
+import h5py
 import numpy as np
 
 import WrightTools as wt
@@ -42,6 +43,17 @@ def test_PyCMDS_wm_w2_w1_000():
     data.close()
 
 
+def test_read_only():
+    p = datasets.wt5.v1p0p1_MoS2_TrEE_movie
+    f = h5py.File(p, "r")
+    d = wt.Data(f)
+    assert np.isclose(d.w2.min(), 584.7953254198521)
+    assert "min" not in d.ai0.attrs
+    assert np.isclose(d.ai0.min(), -0.008888)
+    assert "min" not in d.ai0.attrs
+    d.close()
+
+
 # --- run -----------------------------------------------------------------------------------------
 
 
@@ -49,3 +61,4 @@ if __name__ == "__main__":
     test_COLORS_v2p2_WL_wigner()
     test_JASCO_PbSe_batch_4_2012_02_21()
     test_PyCMDS_wm_w2_w1_000()
+    test_read_only()
