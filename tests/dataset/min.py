@@ -51,6 +51,7 @@ def test_read_only():
     assert "min" not in d.ai0.attrs
     assert np.isclose(d.ai0.min(), -0.008888)
     assert "min" not in d.ai0.attrs
+    d.close()
 
 
 # --- run -----------------------------------------------------------------------------------------

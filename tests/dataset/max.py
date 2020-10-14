@@ -51,6 +51,7 @@ def test_read_only():
     assert "max" not in d.ai0.attrs
     assert np.isclose(d.ai0.max(), 0.2560301283785622)
     assert "max" not in d.ai0.attrs
+    d.close()
 
 
 # --- run -----------------------------------------------------------------------------------------
