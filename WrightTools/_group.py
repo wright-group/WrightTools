@@ -309,8 +309,12 @@ class Group(h5py.Group, metaclass=MetaClass):
                 warnings.warn("SystemError: {0}".format(e))
             finally:
                 if hasattr(self, "_tmpfile"):
-                    os.close(self._tmpfile[0])
-                    os.remove(self._tmpfile[1])
+                    try:
+                        os.close(self._tmpfile[0])
+                        os.remove(self._tmpfile[1])
+                    except OSError:
+                        # File already closed, e.g.
+                        pass
 
     def copy(self, parent=None, name=None, verbose=True):
         """Create a copy under parent.
