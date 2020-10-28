@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## Added
+- `wt_for_numpy_users` Jupyter notebook illustrating differences between numpy and WrightTools workflow
+
 ### Fixed
 - Return min and max when file is read only
 - try/except the os.close call for tempfile (may already be gone in SWMR mode)
