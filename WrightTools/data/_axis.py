@@ -191,6 +191,7 @@ class Axis(object):
             for v in self.variables:
                 v.convert(destination_units)
         self.units = destination_units
+        self.parent._on_axes_updated()
 
     def max(self):
         """Axis max."""
