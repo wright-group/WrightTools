@@ -83,7 +83,7 @@ Having trouble connecting the WrightTools `Data` structure to bare `numpy` array
 We have a notebook that takes a look at how many common `numpy.ndarray` operations--
 slicing, element-wise math, broadcasting, etc.--have analogues within the WrightTools data structure: 
 .. image:: https://mybinder.org/badge_logo.svg
- :target: https://mybinder.org/v2/gh/wright-group/WrightTools/wt-for-np-users-notebook?filepath=examples%2Fwt%20for%20np%20users.ipynb
+ :target: https://mybinder.org/v2/gh/wright-group/WrightTools/master?filepath=examples%2Fwt%20for%20np%20users.ipynb
 
 Structure & Attributes
 ----------------------
