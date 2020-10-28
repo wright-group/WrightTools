@@ -23,6 +23,20 @@ def test_convert_variables():
     data.close()
 
 
+def test_convert_variable():
+    d1 = wt.Data()
+    d1.create_variable(name="color", values=np.array([1]), units="nm")
+    d1.create_variable(name="length", values=np.array([1]), units="nm")
+    d1.transform("color", "length")
+
+    d1.color.convert("wn")
+    d2 = d1.copy()
+    assert d2.units == d1.units
+    assert d2.units == ("wn", "nm")
+    d2.close()
+    d1.close()
+
+
 def test_exception():
     p = datasets.PyCMDS.w1_000
     data = wt.data.from_PyCMDS(p)
@@ -63,6 +77,7 @@ def test_wigner():
 
 if __name__ == "__main__":
     test_convert_variables()
+    test_convert_variable()
     test_exception()
     test_w1_wa()
     test_wigner()
