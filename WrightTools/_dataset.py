@@ -375,6 +375,13 @@ class Dataset(h5py.Dataset):
             def f(dataset, s):
                 return np.nanmax(dataset[s])
 
+            max_ = np.nanmax(list(self.chunkwise(f).values()))
+            try:
+                self.attrs["max"] = max_
+            except OSError:
+                # Cannot write file, just return, can't cache
+                return max_
+
             self.attrs["max"] = np.nanmax(list(self.chunkwise(f).values()))
         return self.attrs["max"]
 
@@ -385,7 +392,13 @@ class Dataset(h5py.Dataset):
             def f(dataset, s):
                 return np.nanmin(dataset[s])
 
-            self.attrs["min"] = np.nanmin(list(self.chunkwise(f).values()))
+            min_ = np.nanmin(list(self.chunkwise(f).values()))
+            try:
+                self.attrs["min"] = min_
+            except OSError:
+                # Cannot write file, just return, can't cache
+                return min_
+
         return self.attrs["min"]
 
     def slices(self):

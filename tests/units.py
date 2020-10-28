@@ -3,6 +3,7 @@
 
 # --- import -------------------------------------------------------------------------------------
 
+import numpy as np
 
 import WrightTools as wt
 from WrightTools import datasets
@@ -20,3 +21,8 @@ def test_axis_convert_exception():
         assert True
     else:
         assert False
+
+
+def test_in_mm_conversion():
+    assert np.isclose(wt.units.convert(25.4, "mm", "in"), 1.0)
+    assert np.isclose(wt.units.convert(1.0, "in", "mm"), 25.4)

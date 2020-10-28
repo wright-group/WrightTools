@@ -27,6 +27,8 @@ extra_files = {
 with open(os.path.join(here, "WrightTools", "VERSION")) as version_file:
     version = version_file.read().strip()
 
+docs_require = ["sphinx", "sphinx-gallery>=0.3.0", "sphinx-rtd-theme"]
+    
 setup(
     name="WrightTools",
     packages=find_packages(exclude=("tests", "tests.*")),
@@ -43,8 +45,8 @@ setup(
         "tidy_headers>=1.0.0",
     ],
     extras_require={
-        "docs": ["sphinx", "sphinx-gallery>=0.3.0", "sphinx-rtd-theme"],
-        "dev": ["black", "pre-commit", "pydocstyle"],
+        "docs": docs_require,
+        "dev": ["black", "pre-commit", "pydocstyle", "pytest", "pytest-cov"] + docs_require,
     },
     version=version,
     description="Tools for loading, processing, and plotting multidimensional spectroscopy data.",

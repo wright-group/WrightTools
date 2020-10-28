@@ -68,7 +68,8 @@ class Group(h5py.Group, metaclass=MetaClass):
         self.fid = self.file.id
         self.natural_name = name
         # attrs
-        self.attrs["class"] = self.class_name
+        if "class" not in self.attrs.keys():
+            self.attrs["class"] = self.class_name
         if "created" not in self.attrs.keys():
             self.attrs["created"] = wt_kit.TimeStamp().RFC3339
         for key, value in kwargs.items():
@@ -253,7 +254,9 @@ class Group(h5py.Group, metaclass=MetaClass):
             for k in dskeys:
                 obj = Dataset._instances.pop(k)
                 Dataset._instances[obj.fullpath] = obj
-        self._natural_name = self.attrs["name"] = value
+        self._natural_name = value
+        if self.file.mode is not None and self.file.mode != "r":
+            self.attrs["name"] = value
 
     @property
     def parent(self):
@@ -306,8 +309,12 @@ class Group(h5py.Group, metaclass=MetaClass):
                 warnings.warn("SystemError: {0}".format(e))
             finally:
                 if hasattr(self, "_tmpfile"):
-                    os.close(self._tmpfile[0])
-                    os.remove(self._tmpfile[1])
+                    try:
+                        os.close(self._tmpfile[0])
+                        os.remove(self._tmpfile[1])
+                    except OSError:
+                        # File already closed, e.g.
+                        pass
 
     def copy(self, parent=None, name=None, verbose=True):
         """Create a copy under parent.

@@ -38,9 +38,10 @@ class Variable(Dataset):
         if units is not None:
             self.units = units
         # attrs
-        self.attrs.update(kwargs)
-        self.attrs["name"] = h5py.h5i.get_name(self.id).decode().split("/")[-1]
-        self.attrs["class"] = self.class_name
+        if self._parent.file.mode is not None and self._parent.file.mode != "r":
+            self.attrs.update(kwargs)
+            self.attrs["name"] = h5py.h5i.get_name(self.id).decode().split("/")[-1]
+            self.attrs["class"] = self.class_name
 
     @property
     def label(self) -> str:

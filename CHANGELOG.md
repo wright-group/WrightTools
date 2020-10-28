@@ -5,6 +5,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Fixed
+- Return min and max when file is read only
+- try/except the os.close call for tempfile (may already be gone in SWMR mode)
+
+## [3.3.1]
+
+### Added
+- pytest and pytest-cov to dev requirements
+
+### Fixed
+- representation of units with micro prefix
+- Do not attempt to write attrs when file is read only
+
+## [3.3.0]
+
 ### Added
 - lineshapes in kit: `gaussian`, `lorentzian_complex`, `lorentzian_real`, `voight`
 
@@ -16,6 +31,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 - none-type units improperly handled by split through save/load
 - Copy colormaps to avoid editing default mpl colormaps
 - Correct units in output of split to be the same as input for axes
+- Conversion to/from inches was incorrect
 
 ## [3.2.7]
 
@@ -222,7 +238,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ### Added
 - initial release
 
-[Unreleased]: https://github.com/wright-group/WrightTools/compare/3.2.7...HEAD
+[Unreleased]: https://github.com/wright-group/WrightTools/compare/3.3.1...HEAD
+[3.3.1]: https://github.com/wright-group/WrightTools/compare/3.3.0...3.3.1
+[3.3.0]: https://github.com/wright-group/WrightTools/compare/3.2.7...3.3.0
 [3.2.7]: https://github.com/wright-group/WrightTools/compare/3.2.6...3.2.7
 [3.2.6]: https://github.com/wright-group/WrightTools/compare/3.2.5...3.2.6
 [3.2.5]: https://github.com/wright-group/WrightTools/compare/3.2.4...3.2.5
