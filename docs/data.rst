@@ -79,6 +79,12 @@ Our favorite is `genfromtxt <https://docs.scipy.org/doc/numpy/reference/generate
 Lean on these functions to read in data from unsuported file formats, then pass in the data as arrays.
 Of course, if you find yourself processing a lot of data from a particular file format, consider contributing a new from function to WrightTools.
 
+Having trouble connecting the WrightTools `Data` structure to bare `numpy` arrays?
+We have a notebook that takes a look at how many common `numpy.ndarray` operations--
+slicing, element-wise math, broadcasting, etc.--have analogues within the WrightTools data structure: 
+.. image:: https://mybinder.org/badge_logo.svg
+ :target: https://mybinder.org/v2/gh/wright-group/WrightTools/master?filepath=examples%2Fwt%20for%20np%20users.ipynb
+
 Structure & Attributes
 ----------------------
 
