@@ -23,7 +23,7 @@ def test_convert_variables():
     data.close()
 
 
-def test_convert_variable():
+def test_units_preserved_on_copy():
     d1 = wt.Data()
     d1.create_variable(name="color", values=np.array([1]), units="nm")
     d1.create_variable(name="length", values=np.array([1]), units="nm")
@@ -77,7 +77,7 @@ def test_wigner():
 
 if __name__ == "__main__":
     test_convert_variables()
-    test_convert_variable()
+    test_units_preserved_on_copy()
     test_exception()
     test_w1_wa()
     test_wigner()
