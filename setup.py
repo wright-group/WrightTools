@@ -28,14 +28,14 @@ with open(os.path.join(here, "WrightTools", "VERSION")) as version_file:
     version = version_file.read().strip()
 
 docs_require = ["sphinx", "sphinx-gallery>=0.3.0", "sphinx-rtd-theme"]
-    
+
 setup(
     name="WrightTools",
     packages=find_packages(exclude=("tests", "tests.*")),
     package_data=extra_files,
     python_requires=">=3.6",
     install_requires=[
-        "h5py",
+        "h5py<3",
         "imageio",
         "matplotlib>=3.3.0",
         "numexpr",
