@@ -22,5 +22,5 @@ jobs:
         python -m pip install --upgrade .[dev]
     - name: Test with pytest
       run: |
-        pytest
+        pytest --color=yes
 
