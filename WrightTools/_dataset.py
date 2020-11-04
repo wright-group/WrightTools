@@ -378,7 +378,7 @@ class Dataset(h5py.Dataset):
             max_ = np.nanmax(list(self.chunkwise(f).values()))
             try:
                 self.attrs["max"] = max_
-            except OSError:
+            except (OSError, RuntimeError):
                 # Cannot write file, just return, can't cache
                 return max_
 
@@ -395,7 +395,7 @@ class Dataset(h5py.Dataset):
             min_ = np.nanmin(list(self.chunkwise(f).values()))
             try:
                 self.attrs["min"] = min_
-            except OSError:
+            except (OSError, RuntimeError):
                 # Cannot write file, just return, can't cache
                 return min_
 
