@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 - Return min and max when file is read only
 - try/except the os.close call for tempfile (may already be gone in SWMR mode)
 - data objects retain units of individual axes when copied
+- h5py 3.0 string handling
 
 ## [3.3.1]
 

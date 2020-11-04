@@ -47,7 +47,8 @@ class Data(Group):
         Group.__init__(self, *args, **kwargs)
         # populate axes, constants from attrs string
         for identifier in self.attrs.get("axes", []):
-            identifier = identifier.decode()
+            if hasattr(identifier, "decode"):
+                identifier = identifier.decode()
             expression, units = identifier.split("{")
             units = units.replace("}", "").strip()
             if units == "None":
@@ -59,7 +60,8 @@ class Data(Group):
             axis = Axis(self, expression, units)
             self._axes.append(axis)
         for identifier in self.attrs.get("constants", []):
-            identifier = identifier.decode()
+            if hasattr(identifier, "decode"):
+                identifier = identifier.decode()
             expression, units = identifier.split("{")
             units = units.replace("}", "").strip()
             if units == "None":

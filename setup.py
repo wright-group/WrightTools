@@ -35,7 +35,7 @@ setup(
     package_data=extra_files,
     python_requires=">=3.6",
     install_requires=[
-        "h5py<3",
+        "h5py",
         "imageio",
         "matplotlib>=3.3.0",
         "numexpr",
