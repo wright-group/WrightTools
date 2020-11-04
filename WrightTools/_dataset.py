@@ -195,7 +195,7 @@ class Dataset(h5py.Dataset):
                 arr = dataset[s]
                 try:
                     amin = np.nanargmax(arr)
-                except ValueError:
+                except (ValueError, RuntimeError):
                     amin = 0
                 idx = np.unravel_index(amin, arr.shape)
                 val = arr[idx]
@@ -215,7 +215,7 @@ class Dataset(h5py.Dataset):
                 arr = dataset[s]
                 try:
                     amin = np.nanargmin(arr)
-                except ValueError:
+                except (ValueError, RuntimeError):
                     amin = 0
                 idx = np.unravel_index(amin, arr.shape)
                 val = arr[idx]
@@ -378,7 +378,7 @@ class Dataset(h5py.Dataset):
             max_ = np.nanmax(list(self.chunkwise(f).values()))
             try:
                 self.attrs["max"] = max_
-            except OSError:
+            except (OSError, RuntimeError):
                 # Cannot write file, just return, can't cache
                 return max_
 
@@ -395,7 +395,7 @@ class Dataset(h5py.Dataset):
             min_ = np.nanmin(list(self.chunkwise(f).values()))
             try:
                 self.attrs["min"] = min_
-            except OSError:
+            except (OSError, RuntimeError):
                 # Cannot write file, just return, can't cache
                 return min_
 
