@@ -195,7 +195,7 @@ class Dataset(h5py.Dataset):
                 arr = dataset[s]
                 try:
                     amin = np.nanargmax(arr)
-                except ValueError:
+                except ValueError, RuntimeError:
                     amin = 0
                 idx = np.unravel_index(amin, arr.shape)
                 val = arr[idx]
@@ -215,7 +215,7 @@ class Dataset(h5py.Dataset):
                 arr = dataset[s]
                 try:
                     amin = np.nanargmin(arr)
-                except ValueError:
+                except ValueError, RuntimeError:
                     amin = 0
                 idx = np.unravel_index(amin, arr.shape)
                 val = arr[idx]
