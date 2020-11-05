@@ -6,10 +6,10 @@ WrightTools.data.Axis
 .. autoclass:: Axis
    :show-inheritance:
 
-   
+
    .. automethod:: __init__
 
-   
+
    .. rubric:: Methods
 
    .. autosummary::
@@ -18,16 +18,16 @@ WrightTools.data.Axis
       ~Axis.convert
       ~Axis.max
       ~Axis.min
-   
-   
 
-   
-   
+
+
+
+
    .. rubric:: Attributes
 
    .. autosummary::
       :toctree: WrightTools.data.Axis
-   
+
       ~Axis.full
       ~Axis.identity
       ~Axis.label
@@ -39,5 +39,5 @@ WrightTools.data.Axis
       ~Axis.size
       ~Axis.units_kind
       ~Axis.variables
-   
-   
+
+

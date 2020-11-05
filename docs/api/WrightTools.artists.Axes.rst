@@ -6,12 +6,12 @@ WrightTools.artists.Axes
 .. autoclass:: Axes
    :show-inheritance:
 
-   
+
    .. rubric:: Methods
 
    .. autosummary::
       :toctree: WrightTools.artists.Axes
-   
+
       ~Axes.add_sideplot
       ~Axes.contour
       ~Axes.contourf

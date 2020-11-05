@@ -12,7 +12,7 @@ wt5
 
 ``wt5`` files are hdf5 files with particular structure and attributes defined.
 ``wt5`` objects may appear embedded within a larger hdf5 file or vise-versa, however this is untested.
-At the root of a ``wt5`` file, a :class:`~WrightTools.collection.Collection` or :class:`~WrightTools.data.Data` object is found. 
+At the root of a ``wt5`` file, a :class:`~WrightTools.collection.Collection` or :class:`~WrightTools.data.Data` object is found.
 :class:`~WrightTools.collection.Collection` and :class:`~WrightTools.data.Data` are hdf5 groups.
 A :class:`~WrightTools.collection.Collection` may have children consisting of :class:`~WrightTools.collection.Collection` and/or :class:`~WrightTools.data.Data`.
 A :class:`~WrightTools.data.Data` may have children consisting of :class:`~WrightTools.data.Variable` and/or :class:`~WrightTools.data.Channel`.

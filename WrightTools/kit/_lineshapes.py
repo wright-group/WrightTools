@@ -33,7 +33,7 @@ def gaussian(x, x0, FWHM, norm="height"):
         Type of normalization.
         height specifies that the maximum value is 1.
         area specifies that the lineshape integrates to 1.
-        Default is height.        
+        Default is height.
 
     Returns
     -------
@@ -63,7 +63,7 @@ def lorentzian_complex(x, x0, G, norm="height_imag"):
         Type of normalization.
         height_imag specifies that the maximum value of the imaginary component is 1.
         area_int specifies that the square magnitude of the lineshape integrates to 1.
-        Default is height_imag.       
+        Default is height_imag.
 
     Returns
     -------
@@ -92,7 +92,7 @@ def lorentzian_real(x, x0, G, norm="height"):
         Type of normalization.
         height specifies that the maximum value is 1.
         area specifies that the lineshape integrates to 1.
-        Default is height.        
+        Default is height.
 
     Returns
     -------
@@ -108,10 +108,10 @@ def lorentzian_real(x, x0, G, norm="height"):
 
 def voigt(x, x0, FWHM, G):
     """Calculate an unnormalized Voigt lineshape using Scipy's Faddeeva function
-    
+
     `Link to Voigt article on Wikipedia`__
 
-    __ https://en.wikipedia.org/wiki/Voigt_profile  
+    __ https://en.wikipedia.org/wiki/Voigt_profile
 
     Parameters
     ----------
@@ -122,7 +122,7 @@ def voigt(x, x0, FWHM, G):
     FHWM : array_like or number
         Full-width-at-half-maximum of Gaussian part of lineshape.
     G : array_like or number
-        Half-width-at-half-maximum of Lorentzian part of lineshape.  
+        Half-width-at-half-maximum of Lorentzian part of lineshape.
 
     Returns
     -------

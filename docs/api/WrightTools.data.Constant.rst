@@ -6,28 +6,28 @@ WrightTools.data.Constant
 .. autoclass:: Constant
    :show-inheritance:
 
-   
+
    .. automethod:: __init__
 
-   
+
    .. rubric:: Methods
 
    .. autosummary::
       :toctree: WrightTools.data.Constant
-   
+
       ~Constant.convert
       ~Constant.max
       ~Constant.min
-   
-   
 
-   
-   
+
+
+
+
    .. rubric:: Attributes
 
    .. autosummary::
       :toctree: WrightTools.data.Constant
-   
+
       ~Constant.full
       ~Constant.identity
       ~Constant.label
@@ -41,5 +41,5 @@ WrightTools.data.Constant
       ~Constant.units_kind
       ~Constant.value
       ~Constant.variables
-   
-   
+
+

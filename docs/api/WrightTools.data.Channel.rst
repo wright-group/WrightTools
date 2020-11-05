@@ -6,15 +6,15 @@ WrightTools.data.Channel
 .. autoclass:: Channel
    :show-inheritance:
 
-   
+
    .. automethod:: __init__
 
-   
+
    .. rubric:: Methods
 
    .. autosummary::
       :toctree: WrightTools.data.Channel
-   
+
       ~Channel.argmax
       ~Channel.argmin
       ~Channel.chunkwise
@@ -30,16 +30,16 @@ WrightTools.data.Channel
       ~Channel.slices
       ~Channel.symmetric_root
       ~Channel.trim
-   
-   
 
-   
-   
+
+
+
+
    .. rubric:: Attributes
 
    .. autosummary::
       :toctree: WrightTools.data.Channel
-   
+
       ~Channel.attrs
       ~Channel.class_name
       ~Channel.dtype
@@ -61,5 +61,5 @@ WrightTools.data.Channel
       ~Channel.size
       ~Channel.units
       ~Channel.value
-   
-   
+
+

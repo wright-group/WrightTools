@@ -15,14 +15,14 @@ Preparing
 ---------
 
 #. fork the `WrightTools repository <https://github.com/wright-group/WrightTools>`_ (if you have push access to the main repository you can skip this step)
-#. clone WrightTools to your machine: 
+#. clone WrightTools to your machine:
 
     .. code-block:: bash
 
         $ git clone <your fork>
 
 
-#. in the cloned directory (note, to install to system python, you may need to use ``sudo`` for this command): 
+#. in the cloned directory (note, to install to system python, you may need to use ``sudo`` for this command):
 
     .. code-block:: bash
 
@@ -38,7 +38,7 @@ Preparing
    the tests may be multiprocessed using `pytest-mp <https://github.com/ansible/pytest-mp>`_:
 
    .. code-block:: bash
-       
+
        $ pip install pytest-mp
        $ pytest --mp
 
@@ -53,7 +53,7 @@ Contributing
     .. code-block:: bash
 
         $ # Create the branch, including remote
-        $ git branch <your branch> --set-upstream-to origin origin/<your branch>  
+        $ git branch <your branch> --set-upstream-to origin origin/<your branch>
         $ git checkout <your branch> # Switch to the newly created branch
 
 #. run all tests to ensure that nothing is broken right off the start
@@ -71,7 +71,7 @@ Contributing
         $ git add <files you wish to commit>
         $ git commit -m "Description of changes" -m "More detail if needed"
 
-#. mark your issues as resolved (within your commit message): 
+#. mark your issues as resolved (within your commit message):
 
     .. code-block:: bash
 
@@ -103,14 +103,14 @@ Style
 -----
 
 Internally we use the following abbreviations:
-    WrightTools 
-        ``import WrightTools as wt`` 
-    Matplotlib 
-        ``import matplotlib as mpl`` 
-    Pyplot 
+    WrightTools
+        ``import WrightTools as wt``
+    Matplotlib
+        ``import matplotlib as mpl``
+    Pyplot
         ``from matplotlib import pyplot as plt``
-    NumPy 
-        ``import numpy as np`` 
+    NumPy
+        ``import numpy as np``
 
 WrightTools follows `pep8 <https://www.python.org/dev/peps/pep-0008/>`_, with the following modifications:
 
@@ -141,7 +141,7 @@ Black is an opinionated code formatter for unambiguous standardization.
 .. code-block:: bash
 
      $ git commit -m "Describe changes"
-     $ black file.py 
+     $ black file.py
      $ git diff # review changes
      $ git add file.py
      $ git commit -m "black style fixes"
@@ -150,7 +150,7 @@ We also provide a configuration to use git hooks to automatically apply ``black`
 This hook can be installed using ``pre-commit``:
 
 .. code-block:: bash
-     
+
      $ pre-commit install
 
 When committing, it will automatically apply the style, and prevent the commit from completing if changes are made.

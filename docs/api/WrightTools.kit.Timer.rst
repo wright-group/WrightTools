@@ -13,7 +13,7 @@ WrightTools.kit.Timer
       Timestamp for start in seconds.
 
    .. attribute:: end
-   
+
       Timestamp for end in seconds.
 
    .. attribute:: interval
