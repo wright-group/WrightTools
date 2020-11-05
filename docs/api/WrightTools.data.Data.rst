@@ -6,15 +6,15 @@ WrightTools.data.Data
 .. autoclass:: Data
    :show-inheritance:
 
-   
+
    .. automethod:: __init__
 
-   
+
    .. rubric:: Methods
 
    .. autosummary::
       :toctree: WrightTools.data.Data
-   
+
       ~Data.bring_to_front
       ~Data.chop
       ~Data.clear
@@ -52,16 +52,16 @@ WrightTools.data.Data
       ~Data.transform
       ~Data.update
       ~Data.zoom
-   
-   
 
-   
-   
+
+
+
+
    .. rubric:: Attributes
 
    .. autosummary::
       :toctree: WrightTools.data.Data
-   
+
       ~Data.attrs
       ~Data.axes
       ~Data.axis_expressions
@@ -92,5 +92,5 @@ WrightTools.data.Data
       ~Data.units
       ~Data.variable_names
       ~Data.variables
-   
-   
+
+

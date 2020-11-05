@@ -1,48 +1,48 @@
 {
-    "license": {"id": "MIT"}, 
-    "title": "WrightTools", 
-    "upload_type": "software", 
+    "license": {"id": "MIT"},
+    "title": "WrightTools",
+    "upload_type": "software",
     "creators": [
         {
-            "orcid": "0000-0002-3845-824X", 
-            "affiliation": "University of Wisconsin–Madison", 
+            "orcid": "0000-0002-3845-824X",
+            "affiliation": "University of Wisconsin–Madison",
             "name": "Blaise J. Thompson"
-        }, 
+        },
         {
-            "orcid": "0000-0001-6167-8059", 
-            "affiliation": "University of Wisconsin–Madison", 
+            "orcid": "0000-0001-6167-8059",
+            "affiliation": "University of Wisconsin–Madison",
             "name": "Kyle F. Sunden"
-        }, 
+        },
         {
-            "orcid": "0000-0002-8922-8049", 
-            "affiliation": "University of Wisconsin–Madison", 
+            "orcid": "0000-0002-8922-8049",
+            "affiliation": "University of Wisconsin–Madison",
             "name": "Darien J. Morrow"
-        }, 
+        },
         {
-            "orcid": "0000-0003-4602-2961", 
-            "affiliation": "University of Wisconsin–Madison", 
+            "orcid": "0000-0003-4602-2961",
+            "affiliation": "University of Wisconsin–Madison",
             "name": "Daniel D. Kohler"
-        }, 
+        },
         {
-            "orcid": "0000-0002-9453-3590", 
-            "affiliation": "University of Wisconsin–Madison", 
+            "orcid": "0000-0002-9453-3590",
+            "affiliation": "University of Wisconsin–Madison",
             "name": "Nathan Andrew Neff-Mallon"
-        }, 
+        },
         {
-            "affiliation": "University of Wisconsin–Madison", 
+            "affiliation": "University of Wisconsin–Madison",
             "name": "Kyle J. Czech"
-        }, 
+        },
         {
-            "orcid": "0000-0001-6718-8341", 
-            "affiliation": "University of Wisconsin–Madison", 
+            "orcid": "0000-0001-6718-8341",
+            "affiliation": "University of Wisconsin–Madison",
             "name": "Emily M. Kaufman"
-        }, 
+        },
         {
             "name": "Thomas Parker"
-        }, 
+        },
         {
             "name": "Rachel Swedin"
         }
-    ], 
+    ],
     "access_right": "open"
 }

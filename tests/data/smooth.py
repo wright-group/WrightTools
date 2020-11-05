@@ -48,7 +48,7 @@ def test_2():
     data.transform("x1", "x2")
     # smooth
     data.smooth(90, channel="z")
-    assert np.allclose(data.z[:], .5, rtol=.1, atol=.4)
+    assert np.allclose(data.z[:], 0.5, rtol=0.1, atol=0.4)
 
 
 def test_3():
@@ -60,11 +60,11 @@ def test_3():
     x = np.linspace(0, 4 * np.pi, 1000)
     z_big = np.sin(x)
     z_small = np.sin(x * 50)
-    z_comb = z_big + .1 * z_small
+    z_comb = z_big + 0.1 * z_small
     # create channels and variables
     data.create_variable(name="x", values=x, units=None)
     data.create_channel(name="z_comb", values=z_comb)
     data.transform("x")
     # smooth
     data.smooth(10, channel="z_comb")
-    assert np.allclose(data.z_comb[:], z_big, rtol=.1, atol=.05)
+    assert np.allclose(data.z_comb[:], z_big, rtol=0.1, atol=0.05)

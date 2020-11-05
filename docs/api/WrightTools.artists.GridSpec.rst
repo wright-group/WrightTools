@@ -6,9 +6,9 @@ WrightTools.artists.GridSpec
 .. autoclass:: GridSpec
    :show-inheritance:
 
-   
-   
 
-   
-   
-   
+
+
+
+
+

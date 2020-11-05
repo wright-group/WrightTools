@@ -277,7 +277,7 @@ def join(
         print("  channels:")
         for channel in out.channels:
             percent_nan = np.around(
-                100. * (np.isnan(channel[:]).sum() / float(channel.size)), decimals=2
+                100.0 * (np.isnan(channel[:]).sum() / float(channel.size)), decimals=2
             )
             print(
                 "    {0} : {1} to {2} ({3}% NaN)".format(

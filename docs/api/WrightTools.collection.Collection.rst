@@ -6,10 +6,10 @@ WrightTools.collection.Collection
 .. autoclass:: Collection
    :show-inheritance:
 
-   
+
    .. automethod:: __init__
 
-   
+
    .. rubric:: Methods
 
    .. autosummary::
@@ -22,15 +22,15 @@ WrightTools.collection.Collection
       ~Collection.flush
       ~Collection.print_tree
       ~Collection.save
-   
 
-   
-   
+
+
+
    .. rubric:: Attributes
 
    .. autosummary::
       :toctree: WrightTools.collection.Collection
-   
+
       ~Collection.attrs
       ~Collection.class_name
       ~Collection.created
@@ -40,5 +40,5 @@ WrightTools.collection.Collection
       ~Collection.name
       ~Collection.natural_name
       ~Collection.parent
-   
-   
+
+

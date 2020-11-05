@@ -18,7 +18,7 @@ a = d.split("w2", [7000, 8000])
 b = d.split("w1+w2+7000", [20400, 23000], units="wn")
 # A particularly strange split
 d.create_variable("strange", values=d.channels[0].points / d.channels[0].max())
-c = d.split("strange", [.2, .4])
+c = d.split("strange", [0.2, 0.4])
 
 # Plot the splits in columns
 fig, gs = wt.artists.create_figure(nrows=len(c), cols=[1, 1, 1])

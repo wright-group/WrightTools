@@ -18,7 +18,7 @@ from matplotlib import pyplot as plt
 p = datasets.Cary.filters
 col = wt.collection.from_Cary(p)
 
-fig, gs = wt.artists.create_figure(width="double", default_aspect=.5)
+fig, gs = wt.artists.create_figure(width="double", default_aspect=0.5)
 ax = plt.subplot(gs[0])
 
 for data in col.values():

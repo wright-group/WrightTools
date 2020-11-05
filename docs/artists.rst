@@ -105,9 +105,9 @@ sliders below the main axes are used to change which slice is viewed.
 `interact2D` also supports keyboard navigation
 
 ================  =======================================================================
-key               action                                                       
+key               action
 ----------------  -----------------------------------------------------------------------
-tab / ctrl+tab    cycle focus between the sliders and the plot 
+tab / ctrl+tab    cycle focus between the sliders and the plot
 left/right arrow  decrement/increment slice (slider focus) or change y slice (plot focus)
 up/down arrow     change x slice (plot focus)
 ================  =======================================================================
@@ -128,14 +128,14 @@ Your choice of colormap is a crucial part of how your data is perceived.
    import numpy as np
    import matplotlib.pyplot as plt
    import WrightTools as wt
-   
+
    num = len(wt.artists.colormaps)
    fig, axes = plt.subplots(nrows=num*3, figsize=(6, num/2.5))
    fig.subplots_adjust(top=0.95, bottom=0.01, left=0.2, right=0.99)
    gradient = np.linspace(0, 1, 256)
    gradient = np.vstack((gradient, gradient))
    axis_index = 0
-   
+
    for name, cmap in wt.artists.colormaps.items():
        # color
        ax = axes[axis_index]
@@ -149,7 +149,7 @@ Your choice of colormap is a crucial part of how your data is perceived.
        y_text = pos[1] + pos[3]
        fig.text(x_text, y_text, name, va='center', ha='right', fontsize=10)
        axis_index += 2
-   
+
    for ax in axes:
            ax.set_axis_off()
 
@@ -166,7 +166,7 @@ By default, WrightTools will use the "default" colormap when plotting unsigned c
 There are many great resources on how to choose the best colormap.
 `Choosing Colormaps`_ is a great place to start reading.
 WrightTools tries to use perceptual colormaps wherever possible.
-When a large dynamic range is needed, the data can always be scaled to accommodate. 
+When a large dynamic range is needed, the data can always be scaled to accommodate.
 
 The default colormap is based on the wonderful cubehelix color scheme. [#green2006]_
 The cubehelix parameters have been fine-tuned to roughly mimic the colors of the historically popular "jet" colormap.
@@ -222,7 +222,7 @@ This is demonstrated with the color bar axes here, which takes up two rows in th
    aspects = [[[0, 0], .3]]
    fig, gs = wt.artists.create_figure(
        width="double", cols=cols, nrows=3, aspects=aspects, wspace=1.35, hspace=.35
-   )   
+   )
    # plot wigners
    indxs = [(row, col) for row in range(1, 3) for col in range(2)]
    for indx, wigner, color in zip(indxs, wigners, wigner_colors):
@@ -319,7 +319,7 @@ If you wish to change margin padding or transparancy settings, the matplotlib fu
    wt.artists.savefig("custom_fig.png", fig=fig, close=False)
 
 
-.. _Choosing Colormaps: https://matplotlib.org/users/colormaps.html#choosing-colormaps  
+.. _Choosing Colormaps: https://matplotlib.org/users/colormaps.html#choosing-colormaps
 
 .. [#green2006] **A colour scheme for the display of astronomical intensity images**
                 Dave Green

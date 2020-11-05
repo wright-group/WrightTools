@@ -17,7 +17,7 @@ def test_basic_smoothing_functionality():
     x = np.linspace(0, 10, 1000)
     y = np.sin(x)
     np.random.seed(seed=12)
-    r = np.random.rand(1000) - .5
+    r = np.random.rand(1000) - 0.5
     yr = y + r
     # iterate through window types
     windows = ["flat", "hanning", "hamming", "bartlett", "blackman"]
@@ -25,7 +25,7 @@ def test_basic_smoothing_functionality():
         out = wt.kit.smooth_1D(yr, n=101, smooth_type=w)
         check_arr = out - y
         check_arr = check_arr[50:-50]  # get rid of edge effects
-        assert np.allclose(check_arr, 0, rtol=.2, atol=.2)
+        assert np.allclose(check_arr, 0, rtol=0.2, atol=0.2)
 
 
 # --- run -----------------------------------------------------------------------------------------

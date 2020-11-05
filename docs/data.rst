@@ -81,7 +81,7 @@ Of course, if you find yourself processing a lot of data from a particular file 
 
 Having trouble connecting the WrightTools `Data` structure to bare `numpy` arrays?
 We have a notebook that takes a look at how many common `numpy.ndarray` operations--
-slicing, element-wise math, broadcasting, etc.--have analogues within the WrightTools data structure: 
+slicing, element-wise math, broadcasting, etc.--have analogues within the WrightTools data structure:
 .. image:: https://mybinder.org/badge_logo.svg
  :target: https://mybinder.org/v2/gh/wright-group/WrightTools/master?filepath=examples%2Fwt%20for%20np%20users.ipynb
 
@@ -171,7 +171,7 @@ Note that there is nothing enforcing that the value is actually static: constant
 shapes and can be indexed to get the underlying numpy array.
 
 You can control how this label is generated using the attributes ``format_spec`` an ``round_spec``.
-``label`` uses the python builtin ``format``, an thus format_spec is a specification as in the 
+``label`` uses the python builtin ``format``, an thus format_spec is a specification as in the
 `Format Specification Mini-Language`_.
 Common examples would be "0.2f" or "0.3e" for decimal representation with two digits past the decimal
 and engineers notation with 3 digits past the decimal, respectively.

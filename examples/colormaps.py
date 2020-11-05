@@ -45,6 +45,4 @@ cmap = cm.viridis
 fill_row(2, cmap)
 
 # label
-wt.artists.set_fig_labels(
-    xlabel=data.w1__e__wm.label, ylabel=data.w2.label, col=slice(0, 1)
-)
+wt.artists.set_fig_labels(xlabel=data.w1__e__wm.label, ylabel=data.w2.label, col=slice(0, 1))

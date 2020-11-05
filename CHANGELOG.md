@@ -117,7 +117,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ## [3.2.0]
 
 ### Added
-- new method: moment - Take the Nth moment of a channel along an axis 
+- new method: moment - Take the Nth moment of a channel along an axis
 - new method: trim - Use statistical test in channels to remove outlier points
 - Support for remote files in `from_` functions
 
@@ -154,7 +154,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ### Added
 - Plotting functions like plot, pcolor, and contour now will plot channels e.g. 2D channels within a 3D data object
 - Quick plotting methods now have lines and labels for constants
-- π release 
+- π release
 
 ## [3.1.3]
 
@@ -273,5 +273,5 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 [2.13.8]: https://github.com/wright-group/WrightTools/compare/2.13.7...2.13.8
 [2.13.7]: https://github.com/wright-group/WrightTools/compare/2.13.6...2.13.7
 [2.13.6]: https://github.com/wright-group/WrightTools/compare/2.13.5...2.13.6
-[2.13.5]: https://github.com/wright-group/WrightTools/releases/tag/2.13.5 
+[2.13.5]: https://github.com/wright-group/WrightTools/releases/tag/2.13.5
 

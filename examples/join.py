@@ -16,7 +16,7 @@ a.create_variable("y", np.linspace(0, 10, 51)[None, :])
 b.create_variable("y", np.linspace(0, 10, 51)[None, :])
 
 a.create_channel("z", np.sin(a.x[:]) * np.cos(a.y[:]) + 1)
-b.create_channel("z", 5 * np.exp(-(b.x[:] - 10) ** 2) * np.exp(-(b.y[:] - 5) ** 2) + 1)
+b.create_channel("z", 5 * np.exp(-((b.x[:] - 10) ** 2)) * np.exp(-((b.y[:] - 5) ** 2)) + 1)
 a.transform("x", "y")
 b.transform("x", "y")
 

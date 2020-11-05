@@ -58,18 +58,18 @@ def test_subtract_constant():
     data = wt.data.from_PyCMDS(p)
     data.transform("w2-7000", "wm")
     assert data.axis_names == ("w2__m__7000", "wm")
-    assert np.allclose(data.w2__m__7000[:], data["w2"][:] - 7000.)
+    assert np.allclose(data.w2__m__7000[:], data["w2"][:] - 7000.0)
     assert np.allclose(data.wm[:], data["wm"][:])
     data.close()
 
 
 def test_copy_decimal():
     d = wt.Data()
-    d.create_variable("a", np.array([10.]))
+    d.create_variable("a", np.array([10.0]))
     d.transform("a/2.0")
-    assert d.a__d__2_0[0] == 5.
+    assert d.a__d__2_0[0] == 5.0
     d2 = d.copy()
-    assert d2.a__d__2_0[0] == 5.
+    assert d2.a__d__2_0[0] == 5.0
     d.close()
     d2.close()
 

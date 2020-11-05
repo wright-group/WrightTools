@@ -540,7 +540,7 @@ class Data(Group):
         resultant : tuple of int
             The resultant shape after the moment operation.
             By default, it is intuited by the axis along which the moment is being taken.
-            This default only works if that axis is 1D, so resultant is required if a 
+            This default only works if that axis is 1D, so resultant is required if a
             multidimensional axis is passed as the first argument.
             The requirement of monotonicity applies on a per pixel basis.
 
@@ -1325,7 +1325,7 @@ class Data(Group):
 
     def prune(self, keep_channels=True, *, verbose=True):
         """Remove unused variables and (optionally) channels from the Data object.
-            
+
         Unused variables are those that are not included in either axes or constants.
         Unused channels are those not specified in keep_channels, or the first channel.
 
@@ -1848,7 +1848,7 @@ class Data(Group):
             Expression for the new constant.
         verbose : boolean (optional)
             Toggle talkback. Default is True
-            
+
         See Also
         --------
         set_constants
@@ -1878,7 +1878,7 @@ class Data(Group):
             Expression for the new constant.
         verbose : boolean (optional)
             Toggle talkback. Default is True
-            
+
         See Also
         --------
         set_constants
