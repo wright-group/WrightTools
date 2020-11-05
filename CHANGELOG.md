@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## [3.3.2]
+
 ## Added
 - `wt_for_numpy_users` Jupyter notebook illustrating differences between numpy and WrightTools workflow
 
@@ -243,7 +245,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ### Added
 - initial release
 
-[Unreleased]: https://github.com/wright-group/WrightTools/compare/3.3.1...HEAD
+[Unreleased]: https://github.com/wright-group/WrightTools/compare/3.3.2...HEAD
+[3.3.2]: https://github.com/wright-group/WrightTools/compare/3.3.1...3.3.2
 [3.3.1]: https://github.com/wright-group/WrightTools/compare/3.3.0...3.3.1
 [3.3.0]: https://github.com/wright-group/WrightTools/compare/3.2.7...3.3.0
 [3.2.7]: https://github.com/wright-group/WrightTools/compare/3.2.6...3.2.7
