@@ -23,7 +23,7 @@ def test_heal_gauss():
     # create damaged array
     arr2 = arr.copy()
     np.random.seed(11)  # set seed for reproducibility
-    arr2[np.random.random(arr2.shape) < .2] = np.nan
+    arr2[np.random.random(arr2.shape) < 0.2] = np.nan
     # create data object
     d = wt.data.Data()
     d.create_variable("x", values=x)

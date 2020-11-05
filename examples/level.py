@@ -29,7 +29,7 @@ ax.contour(chop)
 ax = plt.subplot(gs[0, 1])
 data.level(0, 2, -3)
 chop = data.chop("w1=wm", "d2", at={"w2": [1.7, "eV"]})[0]
-chop.ai0.clip(min=0, replace='value')
+chop.ai0.clip(min=0, replace="value")
 ax.pcolor(chop, vmin=0)
 ax.contour(chop)
 

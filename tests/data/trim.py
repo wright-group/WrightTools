@@ -23,7 +23,7 @@ def test_trim_2Dgauss():
     # create damaged array
     arr2 = arr.copy()
     np.random.seed(11)  # set seed for reproducibility
-    arr2[np.random.random(arr2.shape) < .05] = 2
+    arr2[np.random.random(arr2.shape) < 0.05] = 2
     # create data object
     d = wt.data.Data()
     d.create_variable("x", values=x)
@@ -60,7 +60,7 @@ def test_trim_3Dgauss():
     # create damaged array
     arr2 = arr.copy()
     np.random.seed(11)  # set seed for reproducibility
-    arr2[np.random.random(arr2.shape) < .05] = 1
+    arr2[np.random.random(arr2.shape) < 0.05] = 1
     # create data object
     d = wt.data.Data()
     d.create_variable("x", values=x)

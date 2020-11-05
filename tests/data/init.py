@@ -18,4 +18,3 @@ def test_axes_NoneType_units():
     a = a.copy()
     assert a.x.units is None
     a.close()
-

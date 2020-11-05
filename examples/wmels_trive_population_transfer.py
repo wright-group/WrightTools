@@ -12,7 +12,7 @@ import WrightTools.diagrams.WMEL as WMEL
 
 artist = WMEL.Artist(
     size=[4, 3],
-    energies=[0., 0.4, 0.5, 0.8, 0.9, 1.],
+    energies=[0.0, 0.4, 0.5, 0.8, 0.9, 1.0],
     number_of_interactions=6,
     state_names=["g", "1S", "1P", "2x 1S", "1S+1P", "2x 1P"],
 )

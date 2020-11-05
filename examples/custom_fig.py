@@ -40,9 +40,9 @@ wigner_colors = ["C0", "C1", "C2", "C3"]
 trace_colors = ["#FE4EDA", "#00B7EB"]
 # prepare figure gridspec
 cols = [1, 1, "cbar"]
-aspects = [[[0, 0], .3]]
+aspects = [[[0, 0], 0.3]]
 fig, gs = wt.artists.create_figure(
-    width="double", cols=cols, nrows=3, aspects=aspects, wspace=.35, hspace=.35
+    width="double", cols=cols, nrows=3, aspects=aspects, wspace=0.35, hspace=0.35
 )
 # plot wigners
 indxs = [(row, col) for row in range(1, 3) for col in range(2)]
@@ -58,9 +58,9 @@ for indx, wigner, color in zip(indxs, wigners, wigner_colors):
     wt.artists.corner_text(wigner.constants[0].label, ax=ax)
     # plot overlines
     for d2, t_color in zip(d2_vals, trace_colors):
-        ax.axhline(d2, color=t_color, alpha=.5, linewidth=6)
+        ax.axhline(d2, color=t_color, alpha=0.5, linewidth=6)
     # plot w2 placement
-    ax.axvline(wigner.w2.points, color="grey", alpha=.75, linewidth=6)
+    ax.axvline(wigner.w2.points, color="grey", alpha=0.75, linewidth=6)
 # plot traces
 indxs = [(0, col) for col in range(2)]
 for indx, color, traces in zip(indxs, trace_colors, tracess):

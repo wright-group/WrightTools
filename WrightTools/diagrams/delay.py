@@ -115,7 +115,7 @@ if __name__ == "__main__":
         labelbottom="off",
     )
 
-    ax.set_aspect(1.)
+    ax.set_aspect(1.0)
 
     plt.savefig("TRIEE_delay_space.png", transparent=True)
 
@@ -160,6 +160,6 @@ if __name__ == "__main__":
         labelbottom="off",
     )
 
-    ax.set_aspect(1.)
+    ax.set_aspect(1.0)
 
     plt.savefig("TRIEE_delay_space_as_collected.png", transparent=True)

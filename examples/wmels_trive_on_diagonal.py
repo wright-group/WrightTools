@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 
 import WrightTools.diagrams.WMEL as WMEL
 
-artist = WMEL.Artist(size=[6, 3], energies=[0., .5, 1.], state_names=["g", "a", "b", "a+b"])
+artist = WMEL.Artist(size=[6, 3], energies=[0.0, 0.5, 1.0], state_names=["g", "a", "b", "a+b"])
 
 artist.label_rows([r"$\mathrm{\alpha}$", r"$\mathrm{\beta}$", r"$\mathrm{\gamma}$"])
 artist.label_columns(["I", "II", "III", "IV", "V", "VI"])
