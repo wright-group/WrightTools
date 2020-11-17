@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Changed
+- Improved chopping with axes that span the kept axes removed
+
 ## [3.3.2]
 
 ## Added
