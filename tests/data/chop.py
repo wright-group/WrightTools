@@ -166,8 +166,8 @@ def test_rmd_axis_full_shape():
     c = data.chop("x", "y")
 
     assert len(c) == 2
-    assert c[0].shape == (6,3)
-    
+    assert c[0].shape == (6, 3)
+
 
 # --- run -----------------------------------------------------------------------------------------
 
