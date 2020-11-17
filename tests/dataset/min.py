@@ -53,7 +53,8 @@ def test_read_only():
     assert np.isclose(d.ai0.min(), -0.008888)
     assert "min" not in d.ai0.attrs
     d.close()
-    
+
+
 def test_read_only_with_max_cached():
     p = pathlib.Path(__file__).parent / "max_cached.wt5"
     f = h5py.File(p, "r")
@@ -62,7 +63,6 @@ def test_read_only_with_max_cached():
     assert np.isclose(d.x.min(), -1)
     assert "min" not in d.x.attrs
     d.close()
-
 
 
 # --- run -----------------------------------------------------------------------------------------
