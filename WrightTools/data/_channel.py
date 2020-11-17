@@ -67,13 +67,17 @@ class Channel(Dataset):
         self.dimensionality = len(self.shape)
         # attrs
         if self._parent.file.mode is not None and self._parent.file.mode != "r":
-            self.attrs.update(kwargs)
-            self.attrs["name"] = h5py.h5i.get_name(self.id).decode().split("/")[-1]
-            self.attrs["class"] = "Channel"
-            if signed is not None:
-                self.attrs["signed"] = signed
-            if null is not None:
-                self.attrs["null"] = null
+            try:
+                self.attrs.update(kwargs)
+                self.attrs["name"] = h5py.h5i.get_name(self.id).decode().split("/")[-1]
+                self.attrs["class"] = "Channel"
+                if signed is not None:
+                    self.attrs["signed"] = signed
+                if null is not None:
+                    self.attrs["null"] = null
+            except (RuntimeError, KeyError):
+                # e.g. readonly file
+                pass
         for key, value in self.attrs.items():
             identifier = wt_kit.string2identifier(key)
             if not hasattr(self, identifier):

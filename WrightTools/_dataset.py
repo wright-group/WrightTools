@@ -105,14 +105,18 @@ class Dataset(h5py.Dataset):
         return super().__setitem__(index, value)
 
     def _clear_array_attributes_cache(self):
-        if "max" in self.attrs.keys():
-            del self.attrs["max"]
-        if "min" in self.attrs.keys():
-            del self.attrs["min"]
-        if "argmax" in self.attrs.keys():
-            del self.attrs["argmax"]
-        if "argmin" in self.attrs.keys():
-            del self.attrs["argmin"]
+        try:
+            if "max" in self.attrs.keys():
+                del self.attrs["max"]
+            if "min" in self.attrs.keys():
+                del self.attrs["min"]
+            if "argmax" in self.attrs.keys():
+                del self.attrs["argmax"]
+            if "argmin" in self.attrs.keys():
+                del self.attrs["argmin"]
+        except KeyError:
+            # e.g. readonly file
+            pass
 
     @property
     def _leaf(self):
@@ -252,7 +256,11 @@ class Dataset(h5py.Dataset):
         for s in self.slices():
             key = tuple(sss.start for sss in s)
             out[key] = func(self, s, *args, **kwargs)
-        self._clear_array_attributes_cache()
+        try:
+            self._clear_array_attributes_cache()
+        except KeyError:
+            # e.g. readonly file
+            pass
         return out
 
     def clip(self, min=None, max=None, replace=np.nan):
