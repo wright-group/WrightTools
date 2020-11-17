@@ -389,6 +389,9 @@ class Data(Group):
         for i in at.keys():
             if type(i) == int:
                 removed_shape[i] = 1
+        for ax in kept_axes:
+            if ax.shape.count(1) == ax.ndim - 1:
+                removed_shape[ax.shape.index(ax.size)] = 1
         removed_shape = tuple(removed_shape)
         # iterate
         i = 0

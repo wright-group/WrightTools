@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ### Fixed
 - Further handling for readonly files
+- Improved chopping with axes that span the kept axes removed
 
 ## [3.3.2]
 
