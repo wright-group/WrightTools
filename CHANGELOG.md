@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Fixed
+- Further handling for readonly files
+
 ## [3.3.2]
 
 ## Added
