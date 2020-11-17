@@ -150,6 +150,25 @@ def test_transformed():
     assert d[0]["y"].shape == (1,)
 
 
+def test_rmd_axis_full_shape():
+    x = np.arange(6)
+    y = x[::2].copy()
+    z = np.arange(x.size * y.size * 2).reshape(x.size, y.size, 2).astype("float")
+    z[:, y < 2] *= 0
+    data = wt.data.Data(name="data")
+    data.create_channel("signal", values=z, signed=False)
+    data.create_variable("x", values=x[:, None, None], units="wn")
+    data.create_variable("y", values=y[None, :, None], units="wn")
+    data.create_variable("z", values=z, units="wn")
+
+    data.transform("x", "y", "z")
+
+    c = data.chop("x", "y")
+
+    assert len(c) == 2
+    assert c[0].shape == (6,3)
+    
+
 # --- run -----------------------------------------------------------------------------------------
 
 
