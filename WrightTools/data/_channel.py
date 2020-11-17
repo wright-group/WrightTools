@@ -76,6 +76,7 @@ class Channel(Dataset):
                 if null is not None:
                     self.attrs["null"] = null
             except (RuntimeError, KeyError):
+                # e.g. readonly file
                 pass
         for key, value in self.attrs.items():
             identifier = wt_kit.string2identifier(key)

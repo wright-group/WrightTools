@@ -115,6 +115,7 @@ class Dataset(h5py.Dataset):
             if "argmin" in self.attrs.keys():
                 del self.attrs["argmin"]
         except KeyError:
+            # e.g. readonly file
             pass
 
     @property
@@ -258,6 +259,7 @@ class Dataset(h5py.Dataset):
         try:
             self._clear_array_attributes_cache()
         except KeyError:
+            # e.g. readonly file
             pass
         return out
 
