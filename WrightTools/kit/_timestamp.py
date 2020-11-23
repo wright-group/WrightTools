@@ -118,6 +118,9 @@ class TimeStamp:
         """Readable representation."""
         return self.RFC3339
 
+    def __eq__(self, other):
+        return self.datetime == other.datetime
+
     @property
     def date(self):
         """year-month-day."""
@@ -151,27 +154,7 @@ class TimeStamp:
 
         __ https://www.ietf.org/rfc/rfc3339.txt
         """
-        # get timezone offset
-        delta_sec = time.timezone
-        m, s = divmod(delta_sec, 60)
-        h, m = divmod(m, 60)
-        # timestamp
-        format_string = "%Y-%m-%dT%H:%M:%S.%f"
-        out = self.datetime.strftime(format_string)
-        # timezone
-        if delta_sec == 0.0:
-            out += "Z"
-        else:
-            if delta_sec > 0:
-                sign = "+"
-            elif delta_sec < 0:
-                sign = "-"
-
-            def as_string(num):
-                return str(np.abs(int(num))).zfill(2)
-
-            out += sign + as_string(h) + ":" + as_string(m)
-        return out
+        return self.datetime.isoformat()
 
     @property
     def RFC5322(self):
