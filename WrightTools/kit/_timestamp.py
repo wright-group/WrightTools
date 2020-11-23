@@ -117,7 +117,7 @@ class TimeStamp:
     def __str__(self):
         """Readable representation."""
         return self.RFC3339
-    
+
     def __eq__(self, other):
         return self.datetime == other.datetime
 
