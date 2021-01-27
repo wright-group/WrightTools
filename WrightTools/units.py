@@ -11,6 +11,41 @@ import pint
 
 # --- define --------------------------------------------------------------------------------------
 
+blessed_units = (
+    "rad",
+    "deg",
+    "fs",
+    "ps",
+    "ns",
+    "mm_delay",
+    "nm",
+    "wn",
+    "eV",
+    "meV",
+    "Hz",
+    "THz",
+    "GHz",
+    "mOD",
+    "np_p",
+    "um",
+    "mm",
+    "cm",
+    "in",
+    "K",
+    "deg_C",
+    "deg_F",
+    "deg_R",
+    "fs_t",
+    "ps_t",
+    "ns_t",
+    "us_t",
+    "ns_t",
+    "s_t",
+    "m_t",
+    "h_t",
+    "d_t",
+)
+
 ureg = pint.UnitRegistry()
 ureg.define("[fluence] = [energy] / [area]")
 
@@ -106,19 +141,21 @@ def get_symbol(units) -> str:
         return kind(units)
 
 
-def get_valid_conversions(units) -> tuple:
-    return ()
-    try:
-        valid = list(dicts[kind(units)])
-    except KeyError:
-        return ()
-    valid.remove(units)
-    return tuple(valid)
+def get_valid_conversions(units, options=blessed_units) -> tuple:
+    return tuple(i for i in blessed_units if is_valid_conversion(units, i))
 
 
 def is_valid_conversion(a, b) -> bool:
     if a is None:
         return b is None
+    if a in blessed_units and b in blessed_units:
+        blessed_energy_units = {"nm", "wn", "eV", "meV", "Hz", "THz", "GHz"}
+        if a in blessed_energy_units:
+            return b in blessed_energy_units
+        blessed_delay_units = {"fs", "ps", "ns", "mm_delay"}
+        if a in blessed_delay_units:
+            return b in blessed_delay_units
+        return ureg.Unit(a).dimensionality == ureg.Unit(b).dimensionality
     try:
         return ureg.Unit(a).is_compatible_with(b, "spectroscopy")
     except pint.UndefinedUnitError:
@@ -139,5 +176,5 @@ def kind(units):
         The kind of the given units. If no match is found, returns None.
     """
     if units is None:
-        return
+        return None
     return str(ureg.Unit(units).dimensionality)
