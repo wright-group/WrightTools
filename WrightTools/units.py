@@ -12,12 +12,15 @@ import pint
 # --- define --------------------------------------------------------------------------------------
 
 blessed_units = (
+    # angle
     "rad",
     "deg",
+    # delay
     "fs",
     "ps",
     "ns",
     "mm_delay",
+    # energy
     "nm",
     "wn",
     "eV",
@@ -25,16 +28,20 @@ blessed_units = (
     "Hz",
     "THz",
     "GHz",
+    # optical density
     "mOD",
+    # position
     "np_p",
     "um",
     "mm",
     "cm",
     "in",
+    # absolute temperature
     "K",
     "deg_C",
     "deg_F",
     "deg_R",
+    # time
     "fs_t",
     "ps_t",
     "ns_t",
@@ -145,10 +152,10 @@ def get_valid_conversions(units, options=blessed_units) -> tuple:
     return tuple(i for i in blessed_units if is_valid_conversion(units, i))
 
 
-def is_valid_conversion(a, b) -> bool:
+def is_valid_conversion(a, b, blessed=True) -> bool:
     if a is None:
         return b is None
-    if a in blessed_units and b in blessed_units:
+    if blessed and a in blessed_units and b in blessed_units:
         blessed_energy_units = {"nm", "wn", "eV", "meV", "Hz", "THz", "GHz"}
         if a in blessed_energy_units:
             return b in blessed_energy_units
