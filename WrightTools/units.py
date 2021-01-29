@@ -154,7 +154,7 @@ def get_symbol(units) -> str:
     if dimensionality == "[temperature]":
         return "T"
     else:
-        return kind(units)
+        return None
 
 
 def get_valid_conversions(units, options=blessed_units) -> tuple:
@@ -179,7 +179,7 @@ def is_valid_conversion(a, b, blessed=True) -> bool:
 
 
 def kind(units):
-    """Find the kind of given units.
+    """Find the dimensionality of given units.
 
     Parameters
     ----------

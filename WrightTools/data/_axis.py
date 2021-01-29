@@ -96,10 +96,12 @@ class Axis(object):
         label = self.expression.replace("_", "\\;")
         if self.units_kind:
             symbol = wt_units.get_symbol(self.units)
-            for v in self.variables:
-                vl = "%s_{%s}" % (symbol, v.label)
-                vl = vl.replace("_{}", "")  # label can be empty, no empty subscripts
-                label = label.replace(v.natural_name, vl)
+            if symbol is not None:
+                for v in self.variables:
+                    vl = "%s_{%s}" % (symbol, v.label)
+                    vl = vl.replace("_{}", "")  # label can be empty, no empty subscripts
+
+                    label = label.replace(v.natural_name, vl)
 
             label += fr"\,\left({wt_units.ureg.Unit(self.units):~}\right)"
 
