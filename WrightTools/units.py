@@ -138,21 +138,23 @@ def get_symbol(units) -> str:
     string
         LaTeX formatted symbol.
     """
-    dimensionality = str(ureg.Unit(units).dimensionality)
-    if dimensionality == "[length]":
+    quantity = 1 * ureg[units]
+    if quantity.check("[length]"):
         return r"\lambda"
-    if dimensionality == "1 / [length]":
+    elif quantity.check("1 / [length]"):
         return r"\bar\nu"
-    if dimensionality == "[length] ** 2 * [mass] / [time] ** 2":
+    elif quantity.check("[energy]"):
         return r"\hslash\omega"
-    if dimensionality == "1 / [time]":
+    elif quantity.check("1 / [time]"):
         return "f"
-    if dimensionality == "[time]":
+    elif quantity.check("[time]"):
         return r"\tau"
-    if dimensionality == "[mass] / [time] ** 2":
+    elif quantity.check("[fluence]"):
         return r"\mathcal{F}"
-    if dimensionality == "[temperature]":
+    elif quantity.check("[temperature]"):
         return "T"
+    elif ureg[units] in (ureg.deg, ureg.radian):
+        return r"\omega"
     else:
         return None
 
