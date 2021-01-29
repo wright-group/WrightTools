@@ -31,7 +31,7 @@ blessed_units = (
     # optical density
     "mOD",
     # position
-    "np_p",
+    "nm_p",
     "um",
     "mm",
     "cm",
@@ -58,7 +58,7 @@ ureg.define("[fluence] = [energy] / [area]")
 
 ureg.define("OD = [] ")
 
-ureg.define("wavenumber = 1 / cm = wn")
+ureg.define("wavenumber = 1 / cm = cm^{-1} = wn")
 
 
 # Aliases for backwards compatability
