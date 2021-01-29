@@ -11,6 +11,15 @@ import pint
 
 # --- define --------------------------------------------------------------------------------------
 
+# Thise "blessed" units are here primarily for backwards compatibility, in particular
+# to enable the behavior of `data.convert` which will convert freely between the energy units
+# but does not go to time (where delay will)
+# Since both of these context can convert to [length] units, they are interconvertible, but we
+# do not want them to automatically do so.
+# This list is (at creation time) purely reflective of historical units supported pre pint
+# There is nothing preventing other units from being used and converted to, only to enable
+# expected behavior
+# 2021-01-29 KFS
 blessed_units = (
     # angle
     "rad",
