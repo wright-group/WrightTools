@@ -109,9 +109,9 @@ class Collection(Group):
         units: string
             Units to convert to.
         """
-        self.convert(units)
+
         for data in self.data:
-            data.convert(units)
+            wt_data.convert(data, units)
 
 
     def create_data(self, name="data", position=None, **kwargs):
