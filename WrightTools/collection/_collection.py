@@ -102,6 +102,18 @@ class Collection(Group):
         setattr(self, name, collection)
         return collection
 
+    def convert(self, units):
+        """Convert units of a collection.
+        Parameters
+        ----------
+        units: string
+            Units to convert to.
+        """
+        self.convert(units)
+        for data in self.data:
+            data.convert(units)
+
+
     def create_data(self, name="data", position=None, **kwargs):
         """Create a new child data.
 
