@@ -113,7 +113,6 @@ class Collection(Group):
         for data in self.data:
             wt_data.convert(data, units)
 
-
     def create_data(self, name="data", position=None, **kwargs):
         """Create a new child data.
 
