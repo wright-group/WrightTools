@@ -102,7 +102,7 @@ class Collection(Group):
         setattr(self, name, collection)
         return collection
 
-    def convert(self, units):
+    def convert(self, units, convert_variables=False, verbose=True):
         """Convert units of a collection.
         Parameters
         ----------
@@ -110,9 +110,14 @@ class Collection(Group):
             Units to convert to.
         """
 
-        for data in self.data:
-            wt_data.convert(data, units)
-
+        for name in self.item_names:
+            item = self[name]
+            if isinstance(item,wt_data.Data):
+                item.convert(units, convert_variables=convert_variables, verbose=verbose)
+            elif isinstance(item,Collection):
+                Collection.convert(item, units, convert_variables=convert_variables, verbose=verbose)
+            else:
+                pass
 
     def create_data(self, name="data", position=None, **kwargs):
         """Create a new child data.
