@@ -1,6 +1,5 @@
-import WrightTools as wt
+ import WrightTools as wt
 
-<<<<<<< HEAD
 results = wt.Collection(name='results')
 results.create_data(name='neat')
 results.create_data(name='messy')
@@ -27,17 +26,3 @@ print(isinstance(results.displays.figure1.units(), 'eV'))
 print(isinstance(results.displays.displayfig2.units(), 'eV'))
 print(isinstance(results.displays.displayfig2.main.units(), 'eV'))
 print(isinstance(results.displays.displayfig2.inset.units(), 'eV'))
-=======
-results = wt.Collection(name="results")
-results.create_data(name="neat")
-results.create_data(name="messy")
-results.create_data(name="confusing")
-calibration = results.create_collection(name="calibration")
-calibration.create_data(name="OPA1_tune_test")
-calibration.create_data(name="OPA2_tune_test")
-
-for name in results.item_names:
-    item = results[name]
-    print(isinstance(item, wt.Data))
-    print(item)
->>>>>>> bddd943db8c1726e0219403cf8cd30ec19bcaf54
