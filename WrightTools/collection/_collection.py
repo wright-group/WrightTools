@@ -112,10 +112,12 @@ class Collection(Group):
 
         for name in self.item_names:
             item = self[name]
-            if isinstance(item,wt_data.Data):
+            if isinstance(item, wt_data.Data):
                 item.convert(units, convert_variables=convert_variables, verbose=verbose)
-            elif isinstance(item,Collection):
-                Collection.convert(item, units, convert_variables=convert_variables, verbose=verbose)
+            elif isinstance(item, Collection):
+                Collection.convert(
+                    item, units, convert_variables=convert_variables, verbose=verbose
+                )
             else:
                 pass
 
