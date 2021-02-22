@@ -16,10 +16,10 @@ zi = my_resonance(xi, yi)
 
 results = wt.Collection(name="results")
 results.create_data(name="neat")
-results.neat.create_variable(name="w1", units="wn", values=xi)
+results.neat.create_variable(name="T1", units="fs", values=xi)
 results.neat.create_variable(name="w2", units="wn", values=yi)
 results.neat.create_channel(name="signal", values=zi)
-results.neat.transform("w1", "w2")
+results.neat.transform("T1", "w2")
 
 results.create_data(name="messy")
 results.messy.create_variable(name="w1", units="wn", values=xi)
@@ -69,7 +69,8 @@ displayfig2.inset.transform("w1", "w2")
 wt.Collection.convert(results, units="eV")
 
 # alternating indices should be enough to prove all are eV
-print(results.neat.units[0] == "eV")
+print(results.neat.units[0] == "fs") #verifies conversion of diff. kind is excluded
+print(results.neat.units[1] == "eV")
 print(results.messy.units[1] == "eV")
 print(results.confusing.units[0] == "eV")
 print(results.calibration.OPA1_tune_test.units[1] == "eV")
