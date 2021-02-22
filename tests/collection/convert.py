@@ -1,12 +1,13 @@
 import WrightTools as wt
 import numpy as np
 
+
 def test_collection_convert():
     def my_resonance(xi, yi, intensity=1, FWHM=500, x0=7000):
         def single(arr, intensity=intensity, FWHM=FWHM, x0=x0):
             return intensity * (0.5 * FWHM) ** 2 / ((xi - x0) ** 2 + (0.5 * FWHM) ** 2)
-        return single(xi) * single(yi)
 
+        return single(xi) * single(yi)
 
     xi = np.linspace(6000, 8000, 75)[:, None]
     yi = np.linspace(6000, 8000, 75)[None, :]
@@ -76,6 +77,7 @@ def test_collection_convert():
     assert results.displays.figure1.units[1] == "eV"
     assert results.displays.figure2.main.units[0] == "eV"
     assert results.displays.figure2.inset.units[1] == "eV"
+
 
 if __name__ == "__main__":
     test_collection_convert()

@@ -113,8 +113,6 @@ class Collection(Group):
         for name in self.item_names:
             item = self[name]
             item.convert(units, convert_variables=convert_variables, verbose=verbose)
-            
-            
 
     def create_data(self, name="data", position=None, **kwargs):
         """Create a new child data.
