@@ -69,7 +69,7 @@ displayfig2.inset.transform("w1", "w2")
 wt.Collection.convert(results, units="eV")
 
 # alternating indices should be enough to prove all are eV
-print(results.neat.units[0] == "fs") #verifies conversion of diff. kind is excluded
+print(results.neat.units[0] == "fs")  # verifies conversion of diff. kind is excluded
 print(results.neat.units[1] == "eV")
 print(results.messy.units[1] == "eV")
 print(results.confusing.units[0] == "eV")
