@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Fixed
+- Avoid passing both `vmin/vmax` and `norm` to `pcolor*` methods
+
 ## [3.3.3]
 
 ### Fixed
