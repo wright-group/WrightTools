@@ -1672,7 +1672,7 @@ class Data(Group):
 
         self.transform(expression)
         if units:
-            self.convert(units, verbose=verbose)
+            self.convert(units, verbose=False)
 
         try:
             positions = [-np.inf] + sorted(list(positions)) + [np.inf]
