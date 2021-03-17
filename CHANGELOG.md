@@ -11,7 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 - Collection.convert method for converting all units of a single kind of a collection's data to another unit (with test script)
 
 ### Fixed
-- Absence of verbose kwarg propogation in data.split
+- Absence of verbose kwarg propogation in data.split, silenced convert call.
 - Further handling for readonly files
 - Improved chopping with axes that span the kept axes removed
 - Timezone offset for `wt.kit.TimeStamp.RFC3339`
