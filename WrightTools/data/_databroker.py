@@ -2,6 +2,16 @@ from . import Data
 
 
 def from_databroker(run, dataset="primary"):
+    """Import a dataset from a bluesky run into the WrightTools Data format.
+
+    Parameters
+    ----------
+    run: BlueskyRun
+        The bluesky run as returned by e.g. catalog["<uid>"]
+    dataset: str
+        The string identifier of the stream to import from the bluesky run.
+        By default "primary" is used, but e.g. "baseline" is also common
+    """
     describe = run.describe()
     md = describe["metadata"]
     start = md["start"]
@@ -10,9 +20,7 @@ def from_databroker(run, dataset="primary"):
 
     detectors = start.get("detectors", [])
 
-    data = Data()
-    print(md)
-    # data.attrs.update(md)
+    data = Data(name=ds["uid"])
     for var in ds:
         if var == "uid":
             continue
