@@ -12,6 +12,7 @@ from ._solis import *
 from ._brunold import *
 from ._colors import *
 from ._data import *
+from ._databroker import *
 from ._jasco import *
 from ._kent import *
 from ._aramis import *
@@ -32,6 +33,7 @@ __all__ = [
     # From methods in alphabetic order
     "from_BrunoldrRaman",
     "from_COLORS",
+    "from_databroker",
     "from_JASCO",
     "from_KENT",
     "from_Aramis",
