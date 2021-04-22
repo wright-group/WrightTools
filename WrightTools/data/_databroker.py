@@ -20,7 +20,7 @@ def from_databroker(run, dataset="primary"):
 
     detectors = start.get("detectors", [])
 
-    data = Data(name=ds["uid"])
+    data = Data(name=start["uid"])
     for var in ds:
         if var == "uid":
             continue
