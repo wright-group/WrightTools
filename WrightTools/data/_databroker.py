@@ -1,4 +1,6 @@
-from . import Data
+__all__ = ["from_databroker"]
+
+from ._data import Data
 
 
 def from_databroker(run, dataset="primary"):
