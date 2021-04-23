@@ -68,11 +68,7 @@ class Constant(Axis):
                     vl = "%s_{%s}" % (symbol, v.label)
                     vl = vl.replace("_{}", "")  # label can be empty, no empty subscripts
                     label = label.replace(v.natural_name, vl)
-                    val = (
-                        round(self.value, self.round_spec)
-                        if self.round_spec is not None
-                        else self.value
-                    )
+        val = round(self.value, self.round_spec) if self.round_spec is not None else self.value
         label += r"\,=\,{}".format(format(val, self.format_spec))
         if self.units_kind:
             label += fr"\,{wt_units.ureg.Unit(self.units):~}"
