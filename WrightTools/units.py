@@ -138,7 +138,7 @@ def get_symbol(units) -> str:
     string
         LaTeX formatted symbol.
     """
-    quantity = 1 * ureg[units]
+    quantity = ureg.Quantity(1, ureg[units])
     if quantity.check("[length]"):
         return r"\lambda"
     elif quantity.check("1 / [length]"):
