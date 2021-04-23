@@ -43,7 +43,7 @@ To upgrade:
     pip install wrighttools --upgrade
 
 .. _Conda: https://conda.io/docs/intro.html
-.. _installing Anaconda: https://www.continuum.io/downloads
+.. _installing Anaconda: https://www.anaconda.com/products/individual#Downloads
 .. _conda-forge: https://conda-forge.org/
 .. _conda-forge contains a WrightTools feedstock: https://github.com/conda-forge/wrighttools-feedstock
 .. _miniconda: https://conda.io/miniconda.html

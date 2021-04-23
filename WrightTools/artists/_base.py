@@ -82,6 +82,8 @@ class Axes(matplotlib.axes.Axes):
             self.set_ylabel(ylabel, fontsize=18)
 
     def _parse_limits(self, zi=None, data=None, channel_index=None, dynamic_range=False, **kwargs):
+        if "norm" in kwargs:
+            return kwargs
         if zi is not None:
             if "levels" in kwargs.keys():
                 levels = kwargs["levels"]
