@@ -18,7 +18,7 @@ Additionally this unit registry automatically enables the spectroscopy context a
 
 The pint unit registry can be directly accessed at ``wt.units.ureg``.
 
-To query wheteher a specific conversion is applicable, you can use :meth:`wt.units.is_valid_conversion`.
+To query whether a specific conversion is applicable, you can use :meth:`wt.units.is_valid_conversion`.
 To get a list of commonly used units that are valid conversions, you can use :meth:`wt.units.get_valid_conversions`.
 
 This same units system enables the units-aware properties throughout WrightTools.
