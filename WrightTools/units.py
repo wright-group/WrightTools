@@ -113,7 +113,7 @@ def converter(val, current_unit, destination_unit):
     """
     try:
         val = ureg.Quantity(val, current_unit).to(destination_unit).magnitude
-    except pint.errors.DimensionalityError, AttributeError:
+    except (pint.errors.DimensionalityError, AttributeError):
         warnings.warn(
             "conversion {0} to {1} not valid: returning input".format(
                 current_unit, destination_unit
