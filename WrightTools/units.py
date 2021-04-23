@@ -160,7 +160,7 @@ def get_symbol(units) -> str:
 
 
 def get_valid_conversions(units, options=blessed_units) -> tuple:
-    return tuple(i for i in blessed_units if is_valid_conversion(units, i))
+    return tuple(i for i in options if is_valid_conversion(units, i) and units != i)
 
 
 def is_valid_conversion(a, b, blessed=True) -> bool:
