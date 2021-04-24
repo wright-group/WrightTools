@@ -46,7 +46,16 @@ setup(
     ],
     extras_require={
         "docs": docs_require,
-        "dev": ["black", "pre-commit", "pydocstyle", "pytest", "pytest-cov"] + docs_require,
+        "dev": [
+            "black",
+            "pre-commit",
+            "pydocstyle",
+            "pytest",
+            "pytest-cov",
+            "databroker>=1.2",
+            "msgpack",
+        ]
+        + docs_require,
     },
     version=version,
     description="Tools for loading, processing, and plotting multidimensional spectroscopy data.",

@@ -16,6 +16,7 @@ WrightTools\.data package
    join
    from_BrunoldrRaman
    from_COLORS
+   from_databroker
    from_JASCO
    from_KENT
    from_Aramis
