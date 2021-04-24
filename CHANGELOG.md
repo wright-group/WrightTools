@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Added
+- `from_databroker` method to import Data objects from databroker catalogs
+
 ### Changed
 - complete units overhaul, now using pint library
 
