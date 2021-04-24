@@ -31,8 +31,8 @@ def test_w1_wa():
     data = wt.data.from_PyCMDS(p)
     assert data["wa"].units == "nm"
     data["wa"].convert("eV")
-    assert np.isclose(data["wa"].max(), 1.5802564757220569)
-    assert np.isclose(data["wa"].min(), 0.6726385958618104)
+    assert np.isclose(data["wa"].max(), 1.5800551001941774)
+    assert np.isclose(data["wa"].min(), 0.6725528801867734)
     data.close()
 
 

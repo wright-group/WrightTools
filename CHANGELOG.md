@@ -8,6 +8,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ### Added
 - `from_databroker` method to import Data objects from databroker catalogs
 
+### Changed
+- complete units overhaul, now using pint library
+
 ### Fixed
 - Avoid passing both `vmin/vmax` and `norm` to `pcolor*` methods
 

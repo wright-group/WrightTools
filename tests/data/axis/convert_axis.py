@@ -57,8 +57,8 @@ def test_w1_wa():
     assert data.wa.units == "wn"
     data.wa.convert("eV")
     assert data.wa.units == "eV"
-    assert np.isclose(data.wa.max(), 1.5802564757220569)
-    assert np.isclose(data.wa.min(), 0.6726385958618104)
+    assert np.isclose(data.wa.max(), 1.5800551001941774)
+    assert np.isclose(data.wa.min(), 0.6725528801867734)
     assert data["wa"].units == "nm"
     data.close()
 

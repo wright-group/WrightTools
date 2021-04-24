@@ -8,8 +8,9 @@ WrightTools\.units module
 .. autosummary::
    :toctree: ../api
 
-   converter
+   convert
    get_symbol
    get_valid_conversions
    is_valid_conversion
    kind
+   ureg
