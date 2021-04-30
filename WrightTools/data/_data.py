@@ -221,7 +221,7 @@ class Data(Group):
         Propagates updated axes properly.
         """
         # update attrs
-        self.attrs["axes"] = [a.identity.encode() for a in self._axes]
+        self.attrs["axes"] = np.array([a.identity.encode() for a in self._axes], dtype="S")
         # remove old attributes
         while len(self._current_axis_identities_in_natural_namespace) > 0:
             key = self._current_axis_identities_in_natural_namespace.pop(0)
