@@ -241,7 +241,9 @@ class Data(Group):
         Propagates updated constants properly.
         """
         # update attrs
-        self.attrs["constants"] = np.array([a.identity.encode() for a in self._constants], dtype="S")
+        self.attrs["constants"] = np.array(
+            [a.identity.encode() for a in self._constants], dtype="S"
+        )
 
     def _print_branch(self, prefix, depth, verbose):
         def print_leaves(prefix, lis, vline=True):
