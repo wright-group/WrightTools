@@ -221,7 +221,7 @@ class Data(Group):
         Propagates updated axes properly.
         """
         # update attrs
-        self.attrs["axes"] = [a.identity.encode() for a in self._axes]
+        self.attrs["axes"] = np.array([a.identity.encode() for a in self._axes], dtype="S")
         # remove old attributes
         while len(self._current_axis_identities_in_natural_namespace) > 0:
             key = self._current_axis_identities_in_natural_namespace.pop(0)
@@ -241,7 +241,9 @@ class Data(Group):
         Propagates updated constants properly.
         """
         # update attrs
-        self.attrs["constants"] = [a.identity.encode() for a in self._constants]
+        self.attrs["constants"] = np.array(
+            [a.identity.encode() for a in self._constants], dtype="S"
+        )
 
     def _print_branch(self, prefix, depth, verbose):
         def print_leaves(prefix, lis, vline=True):

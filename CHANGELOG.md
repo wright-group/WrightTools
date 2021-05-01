@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ### Changed
 - complete units overhaul, now using pint library
+- explicitly store axes as fixed string dtype
 
 ### Fixed
 - Avoid passing both `vmin/vmax` and `norm` to `pcolor*` methods
