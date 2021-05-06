@@ -180,7 +180,7 @@ def from_COLORS(
     # channels
     points = tuple(arr[axes[key.split("=")[0]]["idx"]] for key in scanned.keys())
     if len(scanned) == 1:  # 1D data
-        xi, = scanned.values()
+        (xi,) = scanned.values()
         for key in channels.keys():
             channel = channels[key]
             zi = arr[channel["idx"]]
