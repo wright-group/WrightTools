@@ -178,14 +178,15 @@ def from_COLORS(
                 label = dic["label"]
                 data.create_variable(name=key, values=a, units=units, label=label)
     # channels
+    points = tuple(arr[axes[key.split("=")[0]]["idx"]] for key in scanned.keys())
     if len(scanned) == 1:  # 1D data
+        xi, = scanned.values()
         for key in channels.keys():
             channel = channels[key]
             zi = arr[channel["idx"]]
-            data.create_channel(name=key, values=zi)
+            grid_i = griddata(points, zi, xi, method="nearest")
+            data.create_channel(name=key, values=grid_i)
     else:  # all other dimensionalities
-        # channels
-        points = tuple(arr[axes[key.split("=")[0]]["idx"]] for key in scanned.keys())
         xi = tuple(np.meshgrid(*scanned.values(), indexing="ij"))
         for key in channels.keys():
             channel = channels[key]
