@@ -987,13 +987,13 @@ def set_fig_labels(
     if fig is None:
         fig = plt.gcf()
     # interpret row
-    numRows = fig.axes[0].numRows
+    numRows = fig.axes[0].get_gridspec().nrows
     if isinstance(row, int):
         row %= numRows
         row = slice(0, row)
     row_start, row_stop, _ = row.indices(numRows)
     # interpret col
-    numCols = fig.axes[0].numCols
+    numCols = fig.axes[0].get_gridspec().ncols
     if isinstance(col, int):
         col %= numCols
         col = slice(col, -1)

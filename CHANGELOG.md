@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ### Fixed
 - Fixed bug in `from_COLORS` that misordered the relationship between variables and channels for 1D datasets.
 - Avoid passing both `vmin/vmax` and `norm` to `pcolor*` methods
+- Fixed matplotlib depreciation in artists._helpers
 
 ## [3.3.3]
 
