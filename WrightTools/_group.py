@@ -19,6 +19,7 @@ import h5py
 from ._dataset import Dataset
 from . import kit as wt_kit
 from . import exceptions as wt_exceptions
+from . import units as wt_units
 from . import __wt5_version__
 
 
@@ -270,6 +271,18 @@ class Group(h5py.Group, metaclass=MetaClass):
             self._parent = Group._instances[key]
         finally:
             return self._parent
+
+    @property
+    def units(self):
+        return self._units
+
+    @units.setter
+    def units(self, value):
+        if value == "None":
+            value = None
+        if value is not None and value not in wt_units.ureg:
+            raise ValueError(f"'{value}' is not in the unit registry")
+        self._units = value
 
     def close(self):
         """Close the file that contains the Group.

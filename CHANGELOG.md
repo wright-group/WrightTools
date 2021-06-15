@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ### Changed
 - complete units overhaul, now using pint library
 - explicitly store axes as fixed string dtype
+- validate units are in the unit registry on set
 
 ### Fixed
 - Fixed bug in `from_COLORS` that misordered the relationship between variables and channels for 1D datasets.
