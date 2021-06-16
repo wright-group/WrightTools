@@ -13,6 +13,7 @@ from WrightTools import datasets
 
 here = os.path.abspath(os.path.dirname(__file__))
 
+wt.units.ureg.define("steps = []")
 
 # --- test ----------------------------------------------------------------------------------------
 
