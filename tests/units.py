@@ -30,7 +30,6 @@ def test_in_mm_conversion():
 
 def unit_registry_test1():
     values = np.linspace(-1, 1, 51)
-    arr = np.linspace(0, 1, 51)
     d = wt.Data(name="test")
     try:
         d.create_variable("Bgood", values=values, units="tesla")
@@ -43,7 +42,6 @@ def unit_registry_test1():
 
 def unit_registry_test2():
     values = np.linspace(-1, 1, 51)
-    arr = np.linspace(0, 1, 51)
     d = wt.Data(name="test")
     try:
         d.create_variable("Bbad", values=values, units="Tesla")
