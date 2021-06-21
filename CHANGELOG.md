@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ## [Unreleased]
 
 ### Added
+
+### Changed
+
+### Fixed
+
+## [3.4.0]
+
+### Added
 - `from_databroker` method to import Data objects from databroker catalogs
 
 ### Changed
