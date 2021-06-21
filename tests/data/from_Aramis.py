@@ -11,6 +11,8 @@ import pathlib
 
 here = pathlib.Path(__file__).parent
 
+wt.units.ureg.define("@alias count = Cnt")
+
 # --- test ----------------------------------------------------------------------------------------
 
 

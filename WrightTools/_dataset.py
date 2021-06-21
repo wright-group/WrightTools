@@ -185,6 +185,8 @@ class Dataset(h5py.Dataset):
         if value is None:
             if "units" in self.attrs.keys():
                 self.attrs.pop("units")
+        elif value not in wt_units.ureg:
+            raise ValueError(f"'{value}' is not in the unit registry")
         else:
             try:
                 self.attrs["units"] = value

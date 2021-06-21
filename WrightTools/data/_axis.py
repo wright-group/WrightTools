@@ -142,6 +142,18 @@ class Axis(object):
         return functools.reduce(operator.mul, self.shape)
 
     @property
+    def units(self):
+        return self._units
+
+    @units.setter
+    def units(self, value):
+        if value == "None":
+            value = None
+        if value is not None and value not in wt_units.ureg:
+            raise ValueError(f"'{value}' is not in the unit registry")
+        self._units = value
+
+    @property
     def units_kind(self) -> str:
         """Units kind."""
         return wt_units.kind(self.units)
