@@ -1,0 +1,24 @@
+cff-version: 1.1.0
+message: "If you use WrightTools, please cite it as below."
+authors:
+  - family-names: "Thompson"
+    given-names: "Blaise J."
+    orcid: https://orcid.org/0000-0002-3845-824X
+  - family-names: "Sunden"
+    given-names: "Kyle F."
+    orcid: https://orcid.org/0000-0001-6167-8059
+  - family-names: "Darien"
+    given-names: "Morrow J."
+    orcid: https://orcid.org/0000-0002-8922-8049
+  - family-names: "Kohler"
+    given-names: "Daniel D."
+    orcid: https://orcid.org/0000-0003-4602-2961
+  - family-names: "Wright"
+    given-names: "John C."
+    orcid: https://orcid.org/0000-0002-6926-183 7
+title: "WrightTools: a Python package for multidimensional spectroscopy"
+journal: "Journal of Open Source Software"
+issue: 4
+start: 33
+doi: 10.21105/joss.01141
+date-released: 2019-01-17
