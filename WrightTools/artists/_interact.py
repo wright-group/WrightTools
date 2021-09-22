@@ -138,7 +138,7 @@ def norm(arr, signed, ignore_zero=True):
     return arr
 
 
-def interact2D(data:wt_data.Data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
+def interact2D(data: wt_data.Data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
     """Interactive 2D plot of the dataset.
     Side plots show x and y projections of the slice (shaded gray).
     Left clicks on the main axes draw 1D slices on side plots at the coordinates selected.
