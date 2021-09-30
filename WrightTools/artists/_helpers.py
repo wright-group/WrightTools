@@ -253,8 +253,7 @@ def create_figure(
     Figures are defined primarily by their width. Height is defined by the
     aspect ratios of the subplots contained within. hspace, wspace, and
     cbar_width are defined in inches, making it easier to make consistent
-    plots. Margins are enforced to be equal around the entire plot, starting
-    from the edges of the subplots.
+    plots. 
 
     Parameters
     ----------
@@ -268,10 +267,12 @@ def create_figure(
         A list of numbers, defining the number and width-ratios of the
         figure columns. May also contain the special string 'cbar', defining
         a column as a colorbar-containing column. Default is [1].
-    margin : float (optional)
-        Margin in inches. Margin is applied evenly around the figure, starting
-        from the subplot boundaries (so that ticks and labels appear in the
-        margin). Default is 1.
+    margin : float or length 4 list (optional)
+        Spacing, in inches, between the figure edge and the subplot boundary 
+        (i.e. ticks and labels appear in the margin space). If margin is a
+        float, uniform spacing is applied to all four sides of the figure. If
+        margin is a list, unique spacing is applied along each side [top,
+        right, bottom, left]. Default is 1.
     hspace : float (optional)
         The 'height space' (space seperating two subplots vertically), in
         inches. Default is 0.25.
@@ -331,12 +332,16 @@ def create_figure(
         figure_width = 13.0
     else:
         figure_width = float(width)
+    if isinstance(margin, float) or isinstance(margin, int):
+        mtop, mright, mbottom, mleft = [margin] * 4
+    else:
+        mtop, mright, mbottom, mleft = margin
     # check if aspect constraints are valid
     rows_in_aspects = [item[0][0] for item in aspects]
     if not len(rows_in_aspects) == len(set(rows_in_aspects)):
         raise Exception("can only specify aspect for one plot in each row")
     # get width avalible to subplots (not including colorbars)
-    total_subplot_width = figure_width - 2 * margin
+    total_subplot_width = figure_width - mleft - mright
     total_subplot_width -= (len(cols) - 1) * wspace  # whitespace in width
     total_subplot_width -= cols.count("cbar") * cbar_width  # colorbar width
     # converters
@@ -376,13 +381,14 @@ def create_figure(
     height_ratios = subplot_heights
     figure_height = sum(subplot_heights)
     figure_height += (nrows - 1) * hspace
-    figure_height += 2 * margin
+    figure_height += mtop + mbottom
     # make figure
     fig = plt.figure(figsize=[figure_width, figure_height], FigureClass=Figure)
     # get hspace, wspace in relative units
-    hspace = in_to_mpl(hspace, figure_height - 2 * margin, nrows)
-    wspace = in_to_mpl(wspace, figure_width - 2 * margin, len(cols))
+    hspace = in_to_mpl(hspace, figure_height - mtop - mbottom, nrows)
+    wspace = in_to_mpl(wspace, figure_width - mleft - mright, len(cols))
     # make gridpsec
+    print(width_ratios, height_ratios)
     gs = GridSpec(
         nrows,
         len(cols),
@@ -1039,10 +1045,18 @@ def subplots_adjust(fig=None, inches=1):
     """
     if fig is None:
         fig = plt.gcf()
-    size = fig.get_size_inches()
-    vert = inches / size[0]
-    horz = inches / size[1]
-    fig.subplots_adjust(vert, horz, 1 - vert, 1 - horz)
+    size = fig.get_size_inches()  # [H, V]
+    print("size", size)
+    if isinstance(inches, float) or isinstance(inches, int):
+        vert = inches / size[1]
+        horz = inches / size[0]
+        fig.subplots_adjust(bottom=vert, left=horz, top=1 - vert, right=1 - horz)
+    elif isinstance(inches, list):
+        top = 1 - inches[0] / size[1]
+        bottom = inches[2] / size[1]
+        right = 1 - inches[1] / size[0]
+        left = inches[3] / size[0]
+        fig.subplots_adjust(top=top, right=right, bottom=bottom, left=left)
 
 
 def stitch_to_animation(images, outpath=None, *, duration=0.5, palettesize=256, verbose=True):
