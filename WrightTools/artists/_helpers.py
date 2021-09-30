@@ -388,7 +388,6 @@ def create_figure(
     hspace = in_to_mpl(hspace, figure_height - mtop - mbottom, nrows)
     wspace = in_to_mpl(wspace, figure_width - mleft - mright, len(cols))
     # make gridpsec
-    print(width_ratios, height_ratios)
     gs = GridSpec(
         nrows,
         len(cols),
@@ -1046,7 +1045,6 @@ def subplots_adjust(fig=None, inches=1):
     if fig is None:
         fig = plt.gcf()
     size = fig.get_size_inches()  # [H, V]
-    print("size", size)
     if isinstance(inches, float) or isinstance(inches, int):
         vert = inches / size[1]
         horz = inches / size[0]
