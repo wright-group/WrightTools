@@ -253,7 +253,7 @@ def create_figure(
     Figures are defined primarily by their width. Height is defined by the
     aspect ratios of the subplots contained within. hspace, wspace, and
     cbar_width are defined in inches, making it easier to make consistent
-    plots. 
+    plots.
 
     Parameters
     ----------
@@ -268,7 +268,7 @@ def create_figure(
         figure columns. May also contain the special string 'cbar', defining
         a column as a colorbar-containing column. Default is [1].
     margin : float or length 4 list (optional)
-        Spacing, in inches, between the figure edge and the subplot boundary 
+        Spacing, in inches, between the figure edge and the subplot boundary
         (i.e. ticks and labels appear in the margin space). If margin is a
         float, uniform spacing is applied to all four sides of the figure. If
         margin is a list, unique spacing is applied along each side [top,
