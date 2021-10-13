@@ -4,6 +4,7 @@
 # --- import -------------------------------------------------------------------------------------
 
 import numpy as np
+import pytest
 
 import WrightTools as wt
 from WrightTools import datasets
@@ -28,25 +29,21 @@ def test_in_mm_conversion():
     assert np.isclose(wt.units.convert(1.0, "in", "mm"), 25.4)
 
 
-def unit_registry_test1():
+def test_unit_registry():
     values = np.linspace(-1, 1, 51)
     d = wt.Data(name="test")
-    try:
-        d.create_variable("Bgood", values=values, units="tesla")
-        d.transform("Bgood")
-    except ValueError:
-        assert False
-    else:
-        assert True
+    d.create_variable("Bgood", values=values, units="tesla")
+    d.transform("Bgood")
 
 
-def unit_registry_test2():
+def test_bad_unit_registry():
     values = np.linspace(-1, 1, 51)
     d = wt.Data(name="test")
-    try:
+    with pytest.raises(ValueError):
         d.create_variable("Bbad", values=values, units="Tesla")
         d.transform("Bbad")
-    except ValueError:
-        assert True
-    else:
-        assert False
+
+
+def test_0_inf():
+    assert wt.units.convert(0, "wn", "nm") == np.inf
+    assert wt.units.convert(0, "nm", "wn") == np.inf
