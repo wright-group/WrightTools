@@ -340,8 +340,6 @@ class Group(h5py.Group, metaclass=MetaClass):
         if name is None:
             name = self.natural_name
         if parent is None:
-            from ._open import open as wt_open  # circular import
-
             new = Group()  # root of new tempfile
             # attrs
             new.attrs.update(self.attrs)
@@ -350,8 +348,8 @@ class Group(h5py.Group, metaclass=MetaClass):
             for k, v in self.items():
                 super().copy(v, new, name=v.natural_name)
             new.flush()
-            p = new.filepath
-            new = wt_open(p)
+            # Converts to appropriate Data/Collection object
+            new = new["/"]
         else:
             # copy
             self.file.copy(self.name, parent, name=name)

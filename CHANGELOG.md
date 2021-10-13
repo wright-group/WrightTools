@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Fixed
+- PermissionError on windows when copying Data/Collection objects
+
 ## [3.4.0]
 
 ### Added
