@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Fixed
+- ZeroDivisionError when converting units (e.g. wn to nm) now returns inf instead of raising
+
 ## [3.4.0]
 
 ### Added
