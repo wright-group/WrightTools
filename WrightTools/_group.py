@@ -343,13 +343,13 @@ class Group(h5py.Group, metaclass=MetaClass):
             new = Group()  # root of new tempfile
             # attrs
             new.attrs.update(self.attrs)
-            new.natural_name = name
             # children
             for k, v in self.items():
                 super().copy(v, new, name=v.natural_name)
             new.flush()
             # Converts to appropriate Data/Collection object
             new = new["/"]
+            new.natural_name = name
         else:
             # copy
             self.file.copy(self.name, parent, name=name)
