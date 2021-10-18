@@ -1030,10 +1030,21 @@ def set_fig_labels(
 
 
 def subplots_adjust(fig=None, inches=1):
-    """Enforce margin to be equal around figure, starting at subplots.
-
+    """Enforce margins for generated figure, starting at subplots.
     .. note::
         You probably should be using wt.artists.create_figure instead.
+
+    Parameters
+    ----------
+    fig : matplotlib.figure.Figure (optional)
+        figure to adjust.  If not specified, current figure (plt.gcf) will be 
+        adjusted.
+    inches : float or length 4 list (optional)
+        Spacing, in inches, between the figure edge and the subplot boundary
+        (i.e. ticks and labels appear in the margin space). If margin is a
+        float, uniform spacing is applied to all four sides of the figure. If
+        margin is a list, unique spacing is applied along each side [top,
+        right, bottom, left]. Default is 1.
 
     See Also
     --------

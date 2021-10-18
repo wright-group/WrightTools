@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Added
+- `artists.create_figure`: kwarg `margin` allows unique margins on all sides 
+
 ## [3.4.0]
 
 ### Added
