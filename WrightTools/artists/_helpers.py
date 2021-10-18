@@ -753,18 +753,14 @@ def plot_margins(*, fig=None, inches=1.0, centers=True, edges=True):
         m_right = 1 - inches[1] / size[0]
         m_left = inches[3] / size[0]
 
-    left = matplotlib.lines.Line2D(
-        [m_left, m_left], [0, 1], transform=fig.transFigure, figure=fig
-    )
+    left = matplotlib.lines.Line2D([m_left, m_left], [0, 1], transform=fig.transFigure, figure=fig)
     right = matplotlib.lines.Line2D(
         [m_right, m_right], [0, 1], transform=fig.transFigure, figure=fig
     )
     bottom = matplotlib.lines.Line2D(
         [0, 1], [m_bottom, m_bottom], transform=fig.transFigure, figure=fig
     )
-    top = matplotlib.lines.Line2D(
-        [0, 1], [m_top, m_top], transform=fig.transFigure, figure=fig
-    )
+    top = matplotlib.lines.Line2D([0, 1], [m_top, m_top], transform=fig.transFigure, figure=fig)
     fig.lines.extend([left, right, bottom, top])
 
     if centers:
