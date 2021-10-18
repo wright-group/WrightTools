@@ -726,8 +726,12 @@ def plot_margins(*, fig=None, inches=1.0, centers=True, edges=True):
     ----------
     fig : matplotlib.figure.Figure object (optional)
         The figure to plot onto. If None, gets current figure. Default is None.
-    inches : float (optional)
-        The size of the figure margin, in inches. Default is 1.
+    inches : float or length 4 list (optional)
+        Spacing, in inches, between the figure edge and the subplot boundary
+        (i.e. ticks and labels appear in the margin space). If margin is a
+        float, uniform spacing is applied to all four sides of the figure. If
+        margin is a list, unique spacing is applied along each side [top,
+        right, bottom, left]. Default is 1 inch margins.
     centers : bool (optional)
         Toggle for plotting lines indicating the figure center. Default is
         True.
@@ -737,21 +741,32 @@ def plot_margins(*, fig=None, inches=1.0, centers=True, edges=True):
     if fig is None:
         fig = plt.gcf()
     size = fig.get_size_inches()  # [H, V]
-    trans_vert = inches / size[0]
+
+    if isinstance(inches, float):
+        m_bottom = inches / size[1]
+        m_top = 1 - bottom
+        m_left = inches / size[0]
+        m_right = 1 - left
+    elif isinstance(inches, list):
+        m_top = 1 - inches[0] / size[1]
+        m_bottom = inches[2] / size[1]
+        m_right = 1 - inches[1] / size[0]
+        m_left = inches[3] / size[0]
+
     left = matplotlib.lines.Line2D(
-        [trans_vert, trans_vert], [0, 1], transform=fig.transFigure, figure=fig
+        [m_left, m_left], [0, 1], transform=fig.transFigure, figure=fig
     )
     right = matplotlib.lines.Line2D(
-        [1 - trans_vert, 1 - trans_vert], [0, 1], transform=fig.transFigure, figure=fig
+        [m_right, m_right], [0, 1], transform=fig.transFigure, figure=fig
     )
-    trans_horz = inches / size[1]
     bottom = matplotlib.lines.Line2D(
-        [0, 1], [trans_horz, trans_horz], transform=fig.transFigure, figure=fig
+        [0, 1], [m_bottom, m_bottom], transform=fig.transFigure, figure=fig
     )
     top = matplotlib.lines.Line2D(
-        [0, 1], [1 - trans_horz, 1 - trans_horz], transform=fig.transFigure, figure=fig
+        [0, 1], [m_top, m_top], transform=fig.transFigure, figure=fig
     )
     fig.lines.extend([left, right, bottom, top])
+
     if centers:
         vert = matplotlib.lines.Line2D(
             [0.5, 0.5], [0, 1], transform=fig.transFigure, figure=fig, c="r"
@@ -760,6 +775,7 @@ def plot_margins(*, fig=None, inches=1.0, centers=True, edges=True):
             [0, 1], [0.5, 0.5], transform=fig.transFigure, figure=fig, c="r"
         )
         fig.lines.extend([vert, horiz])
+
     if edges:
         left = matplotlib.lines.Line2D(
             [0, 0], [0, 1], transform=fig.transFigure, figure=fig, c="k"
