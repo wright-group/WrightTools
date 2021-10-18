@@ -1037,7 +1037,7 @@ def subplots_adjust(fig=None, inches=1):
     Parameters
     ----------
     fig : matplotlib.figure.Figure (optional)
-        figure to adjust.  If not specified, current figure (plt.gcf) will be 
+        figure to adjust.  If not specified, current figure (plt.gcf) will be
         adjusted.
     inches : float or length 4 list (optional)
         Spacing, in inches, between the figure edge and the subplot boundary
