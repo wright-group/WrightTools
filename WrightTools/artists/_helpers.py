@@ -747,7 +747,7 @@ def plot_margins(*, fig=None, inches=1.0, centers=True, edges=True):
         m_top = 1 - m_bottom
         m_left = inches / size[0]
         m_right = 1 - m_left
-    elif isinstance(inches, list):
+    else:  # isinstance(inches, list):
         m_top = 1 - inches[0] / size[1]
         m_bottom = inches[2] / size[1]
         m_right = 1 - inches[1] / size[0]
