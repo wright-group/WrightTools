@@ -138,7 +138,7 @@ def norm(arr, signed, ignore_zero=True):
     return arr
 
 
-def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
+def interact2D(data: wt_data.Data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
     """Interactive 2D plot of the dataset.
     Side plots show x and y projections of the slice (shaded gray).
     Left clicks on the main axes draw 1D slices on side plots at the coordinates selected.
@@ -163,19 +163,8 @@ def interact2D(data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
     # avoid changing passed data object
     data = data.copy()
     # unpack
+    data.prune(keep_channels=channel)
     channel = get_channel(data, channel)
-    for ch in data.channel_names:
-        if ch != channel.natural_name:
-            data.remove_channel(ch, verbose=False)
-    varis = list(data.variable_names)
-    for ax in data.axes:
-        for v in ax.variables:
-            try:
-                varis.remove(v.natural_name)
-            except ValueError:
-                pass  # Already removed, can't double count
-    for v in varis:
-        data.remove_variable(v, implied=False, verbose=False)
     xaxis, yaxis = get_axes(data, [xaxis, yaxis])
     cmap = get_colormap(channel)
     current_state = Bunch()

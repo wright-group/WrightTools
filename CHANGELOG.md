@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ### Fixed
 - PermissionError on windows when copying Data/Collection objects
+- Fixed bug in `wt.artists.interact2D` where constants were not handled properly.
 
 ## [3.4.0]
 
