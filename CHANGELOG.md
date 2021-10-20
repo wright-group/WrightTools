@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ### Fixed
 - ZeroDivisionError when converting units (e.g. wn to nm) now returns inf instead of raising
+- Fixed bug in `wt.artists.interact2D` where constants were not handled properly.
 
 ## [3.4.0]
 
