@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Fixed
+- Fixed bug in `wt.artists.interact2D` where constants were not handled properly.
+
 ## [3.4.0]
 
 ### Added
