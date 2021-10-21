@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## [3.4.1]
+
 ### Added
 - `artists.create_figure`: kwarg `margin` allows unique margins on all sides
 
@@ -279,7 +281,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ### Added
 - initial release
 
-[Unreleased]: https://github.com/wright-group/WrightTools/compare/3.4.0...HEAD
+[Unreleased]: https://github.com/wright-group/WrightTools/compare/3.4.1...HEAD
+[3.4.1]: https://github.com/wright-group/WrightTools/compare/3.4.0...3.4.1
 [3.4.0]: https://github.com/wright-group/WrightTools/compare/3.3.3...3.4.0
 [3.3.3]: https://github.com/wright-group/WrightTools/compare/3.3.2...3.3.3
 [3.3.2]: https://github.com/wright-group/WrightTools/compare/3.3.1...3.3.2
