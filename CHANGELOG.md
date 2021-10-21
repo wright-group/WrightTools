@@ -8,6 +8,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ### Added
 - `artists.create_figure`: kwarg `margin` allows unique margins on all sides
 
+### Fixed
+- Fixed bug in `wt.artists.interact2D` where constants were not handled properly.
+
 ## [3.4.0]
 
 ### Added
