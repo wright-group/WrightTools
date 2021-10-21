@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 - `artists.create_figure`: kwarg `margin` allows unique margins on all sides
 
 ### Fixed
+- ZeroDivisionError when converting units (e.g. wn to nm) now returns inf instead of raising
 - PermissionError on windows when copying Data/Collection objects
 - Fixed bug in `wt.artists.interact2D` where constants were not handled properly.
 
