@@ -104,8 +104,10 @@ def test_simple_copy():
     new = original.copy()
     assert original.fullpath != new.fullpath
     for k, v in original.attrs.items():
+        print(k)
         assert_equal(new.attrs[k], v)
     for k, v in original.items():
+        print(k)
         assert_equal(new[k], v)
     original.close()
     new.close()
