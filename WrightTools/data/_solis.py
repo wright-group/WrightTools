@@ -30,7 +30,7 @@ def from_Solis(filepath, name=None, parent=None, verbose=True) -> Data:
     Parameters
     ----------
     filepath : path-like
-        Path to .txt file.
+        Path to file (should be .asc format).
         Can be either a local or remote file (http/ftp).
         Can be compressed with gz/bz2, decompression based on file name.
     name : string (optional)
@@ -61,15 +61,33 @@ def from_Solis(filepath, name=None, parent=None, verbose=True) -> Data:
     axis0 = []
     arr = []
     attrs = {}
-    while True:
+    for i in range(2):
         line = f.readline().strip()[:-1]
-        if len(line) == 0:
-            break
-        else:
-            line = line.split(",")
-            line = [float(x) for x in line]
-            axis0.append(line.pop(0))
-            arr.append(line)
+        line = [float(x) for x in line.split(",")]  # TODO: robust to space, tab, comma
+        axis0.append(line.pop(0))
+        arr.append(line)
+    axis0_increasing = axis0[1] - axis0[0] > 0
+
+    def get_frames(f, arr, axis0, increasing):
+        axis0_written = False
+        while True:
+            line = f.readline().strip()[:-1]
+            if len(line) == 0:
+                break
+            else:
+                line = [float(x) for x in line.split(",")]
+                # signature of new frames is restart of axis0
+                if not axis0_written and ((line[0] - axis0[-1] > 0) != increasing):
+                    axis0_written = True
+                if axis0_written:
+                    line.pop(0)
+                else:
+                    axis0.append(line.pop(0))
+                arr.append(line)
+        return arr, axis0
+
+    arr, axis0 = get_frames(f, arr, axis0, axis0_increasing)
+    nframes = len(arr) // len(axis0)
 
     i = 0
     while i < 3:
@@ -94,10 +112,7 @@ def from_Solis(filepath, name=None, parent=None, verbose=True) -> Data:
         data = Data(**kwargs)
     else:
         data = parent.create_data(**kwargs)
-    arr = np.array(arr)
-    arr /= float(attrs["Exposure Time (secs)"])
-    # signal has units of Hz because time normalized
-    arr = data.create_channel(name="signal", values=arr, signed=False, units="Hz")
+
     axis0 = np.array(axis0)
     if float(attrs["Grating Groove Density (l/mm)"]) == 0:
         xname = "xindex"
@@ -105,9 +120,25 @@ def from_Solis(filepath, name=None, parent=None, verbose=True) -> Data:
     else:
         xname = "wm"
         xunits = "nm"
-    data.create_variable(name=xname, values=axis0[:, None], units=xunits)
-    data.create_variable(name="yindex", values=np.arange(arr.shape[1])[None, :], units=None)
-    data.transform(data.variables[0].natural_name, "yindex")
+    axes = [xname, "yindex"]
+
+    if nframes == 1:
+        arr = np.array(arr)
+        data.create_variable(name=xname, values=axis0[:, None], units=xunits)
+        data.create_variable(name="yindex", values=np.arange(arr.shape[-1])[None, :], units=None)
+    else:
+        arr = np.array(arr).reshape(nframes, len(axis0), len(arr[0]))
+        data.create_variable(name="frame", values=np.arange(nframes)[:, None, None], units=None)
+        data.create_variable(name=xname, values=axis0[None, :, None], units=xunits)
+        data.create_variable(name="yindex", values=np.arange(arr.shape[-1])[None, None, :], units=None)
+        axes = ["frame"] + axes
+
+    data.transform(*axes)
+    print(f"arr.shape {arr.shape}")
+    print(f'nframes {nframes}')
+    arr /= float(attrs["Exposure Time (secs)"])
+    # signal has units of Hz because time normalized
+    data.create_channel(name="signal", values=arr, signed=False, units="Hz")
 
     for key, val in attrs.items():
         data.attrs[key] = val
