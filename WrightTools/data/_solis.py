@@ -130,12 +130,14 @@ def from_Solis(filepath, name=None, parent=None, verbose=True) -> Data:
         arr = np.array(arr).reshape(nframes, len(axis0), len(arr[0]))
         data.create_variable(name="frame", values=np.arange(nframes)[:, None, None], units=None)
         data.create_variable(name=xname, values=axis0[None, :, None], units=xunits)
-        data.create_variable(name="yindex", values=np.arange(arr.shape[-1])[None, None, :], units=None)
+        data.create_variable(
+            name="yindex", values=np.arange(arr.shape[-1])[None, None, :], units=None
+        )
         axes = ["frame"] + axes
 
     data.transform(*axes)
     print(f"arr.shape {arr.shape}")
-    print(f'nframes {nframes}')
+    print(f"nframes {nframes}")
     arr /= float(attrs["Exposure Time (secs)"])
     # signal has units of Hz because time normalized
     data.create_channel(name="signal", values=arr, signed=False, units="Hz")
