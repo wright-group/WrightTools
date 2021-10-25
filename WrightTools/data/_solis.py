@@ -61,14 +61,13 @@ def from_Solis(filepath, name=None, parent=None, verbose=True) -> Data:
     axis0 = []
     arr = []
     attrs = {}
-    for i in range(2):
-        line = f.readline().strip()[:-1]
-        line = [float(x) for x in line.split(",")]  # TODO: robust to space, tab, comma
-        axis0.append(line.pop(0))
-        arr.append(line)
-    axis0_increasing = axis0[1] - axis0[0] > 0
 
-    def get_frames(f, arr, axis0, increasing):
+    line0 = f.readline().strip()[:-1]
+    line0 = [float(x) for x in line0.split(",")]  # TODO: robust to space, tab, comma
+    axis0.append(line0.pop(0))
+    arr.append(line0)
+
+    def get_frames(f, arr, axis0):
         axis0_written = False
         while True:
             line = f.readline().strip()[:-1]
@@ -77,7 +76,7 @@ def from_Solis(filepath, name=None, parent=None, verbose=True) -> Data:
             else:
                 line = [float(x) for x in line.split(",")]
                 # signature of new frames is restart of axis0
-                if not axis0_written and ((line[0] - axis0[-1] > 0) != increasing):
+                if not axis0_written and (line[0] == axis0[0]):
                     axis0_written = True
                 if axis0_written:
                     line.pop(0)
@@ -86,7 +85,7 @@ def from_Solis(filepath, name=None, parent=None, verbose=True) -> Data:
                 arr.append(line)
         return arr, axis0
 
-    arr, axis0 = get_frames(f, arr, axis0, axis0_increasing)
+    arr, axis0 = get_frames(f, arr, axis0)
     nframes = len(arr) // len(axis0)
 
     i = 0
@@ -136,8 +135,6 @@ def from_Solis(filepath, name=None, parent=None, verbose=True) -> Data:
         axes = ["frame"] + axes
 
     data.transform(*axes)
-    print(f"arr.shape {arr.shape}")
-    print(f"nframes {nframes}")
     arr /= float(attrs["Exposure Time (secs)"])
     # signal has units of Hz because time normalized
     data.create_channel(name="signal", values=arr, signed=False, units="Hz")
