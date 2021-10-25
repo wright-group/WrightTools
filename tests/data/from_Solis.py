@@ -28,6 +28,7 @@ def test_xpos_ypos_fluorescence():
     assert data.units == (None, None)
     data.close()
 
+
 def test_kinetic():
     p = datasets.Solis.kinetic
     data = wt.data.from_Solis(p)
