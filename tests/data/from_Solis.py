@@ -28,7 +28,16 @@ def test_xpos_ypos_fluorescence():
     assert data.units == (None, None)
     data.close()
 
+def test_kinetic():
+    p = datasets.Solis.kinetic
+    data = wt.data.from_Solis(p)
+    assert data.shape == (10, 20, 20)
+    assert data.axis_expressions == ("frame", "xindex", "yindex")
+    assert data.units == (None, None, None)
+    data.close()
+
 
 if __name__ == "__main__":
     test_wm_ypos_fluorescence_with_filter()
     test_xpos_ypos_fluorescence()
+    test_kinetic()
