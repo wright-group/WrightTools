@@ -105,6 +105,17 @@ def from_Solis(filepath, name=None, parent=None, verbose=True) -> Data:
     else:
         xname = "wm"
         xunits = "nm"
+    # is cropped?
+    if "{left,right,bottom,top}" in data.attrs.keys():
+        left, right, bottom, top = data.attrs["{left,right,bottom,top}"].split(",")
+        # in our tests, xindex is retained in the asc file, so screen for change
+        if "xindex" in data.variable_names and data["xindex"].min() == 0:
+            xindex = data["xindex"]
+            xindex += int(left)  
+        if "yindex" in data.variable_names and data["yindex"].min() == 0:
+            yindex = data["yindex"]
+            yindex += int(bottom)
+
     data.create_variable(name=xname, values=axis0[:, None], units=xunits)
     data.create_variable(name="yindex", values=np.arange(arr.shape[1])[None, :], units=None)
     data.transform(data.variables[0].natural_name, "yindex")
