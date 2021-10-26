@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Added
+- `data.from_Solis`: "kinetic series" acquisition type now supported.
+
 ## [3.4.1]
 
 ### Added
