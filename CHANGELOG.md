@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## [3.4.2]
+
 ### Added
 - `data.from_Solis`: "kinetic series" acquisition type now supported.
 
@@ -284,7 +286,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ### Added
 - initial release
 
-[Unreleased]: https://github.com/wright-group/WrightTools/compare/3.4.1...HEAD
+[Unreleased]: https://github.com/wright-group/WrightTools/compare/3.4.2...HEAD
+[3.4.2]: https://github.com/wright-group/WrightTools/compare/3.4.1...3.4.2
 [3.4.1]: https://github.com/wright-group/WrightTools/compare/3.4.0...3.4.1
 [3.4.0]: https://github.com/wright-group/WrightTools/compare/3.3.3...3.4.0
 [3.3.3]: https://github.com/wright-group/WrightTools/compare/3.3.2...3.3.3
