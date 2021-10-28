@@ -112,7 +112,7 @@ class Axes(matplotlib.axes.Axes):
 
     def _parse_plot_args(self, *args, **kwargs):
         plot_type = kwargs.pop("plot_type")
-        if plot_type not in ["pcolor", "pcolormesh", "contourf", "contour"]:
+        if plot_type not in ["pcolor", "pcolormesh", "contourf", "contour", "imshow"]:
             raise NotImplementedError
         args = list(args)  # offer pop, append etc
         dynamic_range = kwargs.pop("dynamic_range", False)
@@ -126,15 +126,49 @@ class Axes(matplotlib.axes.Axes):
             for sq, xs, ys in zip(squeeze, xa.shape, ya.shape):
                 if sq and (xs != 1 or ys != 1):
                     raise wt_exceptions.ValueError("Cannot squeeze axis to fit channel")
-            squeeze = tuple([0 if i else slice(None) for i in squeeze])
             zi = data.channels[channel_index].points
-            xi = xa.full[squeeze]
-            yi = ya.full[squeeze]
-            if plot_type in ["pcolor", "pcolormesh", "contourf", "contour"]:
+            if plot_type in ["pcolor", "pcolormesh", "contourf", "contour", "imshow"]:
                 ndim = 2
             if not zi.ndim == ndim:
                 raise wt_exceptions.DimensionalityError(ndim, data.ndim)
-            args = [xi, yi, zi] + args
+            squeeze = tuple([0 if i else slice(None) for i in squeeze])
+            if plot_type == "imshow":
+                if "aspect" not in kwargs.keys():
+                    kwargs["aspect"] = "auto"
+                if "origin" not in kwargs.keys():
+                    kwargs["origin"] = "lower"
+                xi = xa[:][squeeze]
+                yi = ya[:][squeeze]
+                # ensure orthogonal axes
+                sx = np.array(xi.shape)
+                sy = np.array(yi.shape)
+                data.print_tree()
+                if (sx.prod() == xi.size) and (sy.prod() == yi.size):
+                    # determine index of x and y axes
+                    if (sx[0] == 1) and (sy[1] == 1):
+                        # zi[y,x]
+                        args = [zi] + args
+                    elif (sx[1] == 1) and (sy[0] == 1):
+                        # zi[x,y]; imshow expects zi[rows, cols]
+                        args = [zi.T] + args
+                    else:
+                        raise TypeError(
+                            f"Incompatible XYZ shapes: {xi.shape}, {yi.shape}, {zi.shape}"
+                        )
+                else:
+                    raise TypeError(f"Axes are not grid aligned: {xi.shape}, {yi.shape}")
+                # extract extent, plot lims
+                xlim = [xa[0,0], xa[-1,-1]]
+                ylim = [ya[0,0], ya[-1,-1]]
+                extent = [*xlim, *ylim]
+                if "extent" not in kwargs.keys():
+                    kwargs["extent"] = extent
+                    # super().set_xlim(*sorted(xlim))
+                    # super().set_ylim(*sorted(ylim))
+            else:
+                xi = xa.full[squeeze]
+                yi = ya.full[squeeze]
+                args = [xi, yi, zi] + args
             # limits
             kwargs = self._parse_limits(
                 data=data, channel_index=channel_index, dynamic_range=dynamic_range, **kwargs
@@ -154,17 +188,20 @@ class Axes(matplotlib.axes.Axes):
                     kwargs["colors"] = "k"
                 if "alpha" not in kwargs.keys():
                     kwargs["alpha"] = 0.5
-            if plot_type in ["pcolor", "pcolormesh", "contourf"]:
+            if plot_type in ["pcolor", "pcolormesh", "contourf", "imshow"]:
                 kwargs = self._parse_cmap(data=data, channel_index=channel_index, **kwargs)
         else:
-            xi, yi, zi = args[:3]
+            if plot_type == "imshow":
+                kwargs = self._parse_limits(zi=args[0], **kwargs)
+            else:
+                xi, yi, zi = args[:3]
+                kwargs = self._parse_limits(zi=args[2], **kwargs)
             data = None
             channel_index = 0
-            kwargs = self._parse_limits(zi=args[2], **kwargs)
             if plot_type == "contourf":
                 if "levels" not in kwargs.keys():
                     kwargs["levels"] = np.linspace(kwargs["vmin"], kwargs["vmax"], 256)
-            if plot_type in ["pcolor", "pcolormesh", "contourf"]:
+            if plot_type in ["pcolor", "pcolormesh", "contourf", "imshow"]:
                 kwargs = self._parse_cmap(**kwargs)
         # labels
         self._apply_labels(
@@ -374,6 +411,52 @@ class Axes(matplotlib.axes.Axes):
         """
         args, kwargs = self._parse_plot_args(*args, **kwargs, plot_type="pcolor")
         return super().pcolor(*args, **kwargs)
+
+    def imshow(self, *args, **kwargs):
+        """Create a pseudocolor plot of a 2-D array.  The array is plotted
+        with uniform spacing.  Quicker than pcolor, pcolormesh.
+
+        **Requires that the plotted axes are grid aligned (i.e. the `squeeze`
+         of each axis has ``ndim==1``).**
+
+        If a 3D or higher Data object is passed, a lower dimensional
+        channel can be plotted, provided the ``squeeze`` of the channel
+        has ``ndim==2``.
+
+        Defaults to ``aspect="auto"` (pixels are stretched to fit the 
+        subplot axes).
+
+        `extent` defaults to ensure that pixels are drawn bisecting point 
+        positions.
+        
+        Parameters
+        ----------
+        data : 2D WrightTools.data.Data object
+            Data to plot.
+        channel : int or string (optional)
+            Channel index or name. Default is 0.
+        dynamic_range : boolean (optional)
+            Force plotting of all contours, overloading for major extent. Only applies to signed
+            data. Default is False.
+        autolabel : {'none', 'both', 'x', 'y'}  (optional)
+            Parameterize application of labels directly from data object. Default is none.
+        xlabel : string (optional)
+            xlabel. Default is None.
+        ylabel : string (optional)
+            ylabel. Default is None.
+        **kwargs
+            matplotlib.axes.Axes.pcolormesh__ optional keyword arguments.
+
+            __ https://matplotlib.org/api/_as_gen/matplotlib.pyplot.imshow.html
+
+        Returns
+        -------
+        matplotlib.image.AxesImage
+        """
+        args, kwargs = self._parse_plot_args(*args, **kwargs, plot_type="imshow")
+        print(kwargs)
+        return super().imshow(*args, **kwargs)
+
 
     def pcolormesh(self, *args, **kwargs):
         """Create a pseudocolor plot of a 2-D array.
