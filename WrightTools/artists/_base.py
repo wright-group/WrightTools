@@ -142,7 +142,6 @@ class Axes(matplotlib.axes.Axes):
                 # ensure orthogonal axes
                 sx = np.array(xi.shape)
                 sy = np.array(yi.shape)
-                data.print_tree()
                 if (sx.prod() == xi.size) and (sy.prod() == yi.size):
                     # determine index of x and y axes
                     if (sx[0] == 1) and (sy[1] == 1):
@@ -454,9 +453,7 @@ class Axes(matplotlib.axes.Axes):
         matplotlib.image.AxesImage
         """
         args, kwargs = self._parse_plot_args(*args, **kwargs, plot_type="imshow")
-        print(kwargs)
         return super().imshow(*args, **kwargs)
-
 
     def pcolormesh(self, *args, **kwargs):
         """Create a pseudocolor plot of a 2-D array.
