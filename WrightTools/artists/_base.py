@@ -127,9 +127,7 @@ class Axes(matplotlib.axes.Axes):
                 if sq and (xs != 1 or ys != 1):
                     raise wt_exceptions.ValueError("Cannot squeeze axis to fit channel")
             zi = data.channels[channel_index].points
-            if plot_type in ["pcolor", "pcolormesh", "contourf", "contour", "imshow"]:
-                ndim = 2
-            if not zi.ndim == ndim:
+            if not zi.ndim == 2:
                 raise wt_exceptions.DimensionalityError(ndim, data.ndim)
             squeeze = tuple([0 if i else slice(None) for i in squeeze])
             if plot_type == "imshow":
@@ -182,7 +180,6 @@ class Axes(matplotlib.axes.Axes):
             if plot_type == "imshow":
                 kwargs = self._parse_limits(zi=args[0], **kwargs)
             else:
-                xi, yi, zi = args[:3]
                 kwargs = self._parse_limits(zi=args[2], **kwargs)
             data = None
             channel_index = 0

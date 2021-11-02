@@ -17,7 +17,6 @@ def test_imshow():
     data.convert("eV")
     data.ai0.symmetric_root(2)
     chop = data.chop("w1=wm", "w2", at={"d2": [-600, "fs"]})[0]
-    # chop = chop.split("w2", [2])[0]
 
     fig, gs = wt.artists.create_figure(cols=[1, 1])
     ax = plt.subplot(gs[0])
@@ -32,4 +31,3 @@ def test_imshow():
 
 if __name__ == "__main__":
     test_imshow()
-    plt.show()
