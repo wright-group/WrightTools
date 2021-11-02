@@ -19,7 +19,7 @@ def test_imshow():
     chop = data.chop("w1=wm", "w2", at={"d2": [-600, "fs"]})[0]
     # chop = chop.split("w2", [2])[0]
 
-    fig, gs = wt.artists.create_figure(cols=[1,1])
+    fig, gs = wt.artists.create_figure(cols=[1, 1])
     ax = plt.subplot(gs[0])
     ax.pcolormesh(chop)
 

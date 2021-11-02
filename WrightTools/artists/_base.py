@@ -138,16 +138,16 @@ class Axes(matplotlib.axes.Axes):
                 if "origin" not in kwargs.keys():
                     kwargs["origin"] = "lower"
                 if "interpolation" not in kwargs.keys():
-                    if max(zi.shape) < 10**3:  # TODO: better decision logic
-                        kwargs["interpolation"] = "nearest" 
+                    if max(zi.shape) < 10 ** 3:  # TODO: better decision logic
+                        kwargs["interpolation"] = "nearest"
                     else:
-                        kwargs["interpolation"] = "antialiased" 
+                        kwargs["interpolation"] = "antialiased"
                 xi = xa[:][squeeze]
                 yi = ya[:][squeeze]
                 args = [zi.transpose(_order_for_imshow(xi, yi))] + args
                 # extract extent, plot lims
-                xlim = [xa[0,0], xa[-1,-1]]
-                ylim = [ya[0,0], ya[-1,-1]]
+                xlim = [xa[0, 0], xa[-1, -1]]
+                ylim = [ya[0, 0], ya[-1, -1]]
                 extent = [*xlim, *ylim]
                 if "extent" not in kwargs.keys():
                     kwargs["extent"] = extent
@@ -411,15 +411,15 @@ class Axes(matplotlib.axes.Axes):
         channel can be plotted, provided the ``squeeze`` of the channel
         has ``ndim==2``.
 
-        Defaults to ``aspect="auto"`` (pixels are stretched to fit the 
-        subplot axes) 
-        
-        If `interpolation` method is not specified, defaults to either 
+        Defaults to ``aspect="auto"`` (pixels are stretched to fit the
+        subplot axes)
+
+        If `interpolation` method is not specified, defaults to either
         "antialiased" (for large images) or "nearest" (for small arrays).
 
-        `extent` defaults to ensure that pixels are drawn bisecting point 
+        `extent` defaults to ensure that pixels are drawn bisecting point
         positions.
-        
+
         Parameters
         ----------
         data : 2D WrightTools.data.Data object
@@ -627,15 +627,11 @@ def _order_for_imshow(xi, yi):
         # determine index of x and y axes
         if (sx[0] == 1) and (sy[1] == 1):
             # zi[y,x]
-            return (0,1)
+            return (0, 1)
         elif (sx[1] == 1) and (sy[0] == 1):
             # zi[x,y]; imshow expects zi[rows, cols]
-            return (1,0)
+            return (1, 0)
         else:
-            raise TypeError(
-                f"x and y must be orthogonal; shapes are: {xi.shape}, {yi.shape}"
-            )
+            raise TypeError(f"x and y must be orthogonal; shapes are: {xi.shape}, {yi.shape}")
     else:
         raise TypeError(f"Axes are not 1D: {xi.shape}, {yi.shape}")
-
-

@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider, RadioButtons
 from types import SimpleNamespace
 
-from ._helpers import create_figure, plot_colorbar, add_sideplot 
+from ._helpers import create_figure, plot_colorbar, add_sideplot
 from ._base import _order_for_imshow
 from ._colors import colormaps
 from ..exceptions import DimensionalityError
@@ -132,7 +132,9 @@ def norm(arr, signed, ignore_zero=True):
     return arr
 
 
-def interact2D(data: wt_data.Data, xaxis=0, yaxis=1, channel=0, local=False, use_imshow=False, verbose=True):
+def interact2D(
+    data: wt_data.Data, xaxis=0, yaxis=1, channel=0, local=False, use_imshow=False, verbose=True
+):
     """Interactive 2D plot of the dataset.
     Side plots show x and y projections of the slice (shaded gray).
     Left clicks on the main axes draw 1D slices on side plots at the coordinates selected.
@@ -152,8 +154,8 @@ def interact2D(data: wt_data.Data, xaxis=0, yaxis=1, channel=0, local=False, use
     local : boolean (optional)
         Toggle plotting locally. Default is False.
     use_imshow : boolean (optional)
-        If true, matplotlib imshow is used to render the 2D slice.  
-        Can give better performance, but is only accurate for 
+        If true, matplotlib imshow is used to render the 2D slice.
+        Can give better performance, but is only accurate for
         uniform grids.  Default is False.
     verbose : boolean (optional)
         Toggle talkback. Default is True.
@@ -412,9 +414,7 @@ def interact2D(data: wt_data.Data, xaxis=0, yaxis=1, channel=0, local=False, use
                 current_state[yaxis.natural_name][:],
             )
             # TODO:  orient according to orthogonal axes (i.e. may need transpose)
-            obj2D.set_data(
-                current_state.dat[channel.natural_name][:].transpose(transpose)
-            )
+            obj2D.set_data(current_state.dat[channel.natural_name][:].transpose(transpose))
         else:
             obj2D.set_array(current_state.dat[channel.natural_name][:].ravel())
         clim = get_clim(channel, current_state)
