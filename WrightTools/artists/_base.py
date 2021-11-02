@@ -20,7 +20,7 @@ from ._colors import colormaps
 # --- define -------------------------------------------------------------------------------------
 
 
-__all__ = ["Axes", "Figure", "GridSpec", "apply_rcparams"]
+__all__ = ["Axes", "Figure", "GridSpec", "apply_rcparams", "_order_for_imshow"]
 
 
 # --- classes -------------------------------------------------------------------------------------
@@ -139,23 +139,7 @@ class Axes(matplotlib.axes.Axes):
                     kwargs["origin"] = "lower"
                 xi = xa[:][squeeze]
                 yi = ya[:][squeeze]
-                # ensure orthogonal axes
-                sx = np.array(xi.shape)
-                sy = np.array(yi.shape)
-                if (sx.prod() == xi.size) and (sy.prod() == yi.size):
-                    # determine index of x and y axes
-                    if (sx[0] == 1) and (sy[1] == 1):
-                        # zi[y,x]
-                        args = [zi] + args
-                    elif (sx[1] == 1) and (sy[0] == 1):
-                        # zi[x,y]; imshow expects zi[rows, cols]
-                        args = [zi.T] + args
-                    else:
-                        raise TypeError(
-                            f"Incompatible XYZ shapes: {xi.shape}, {yi.shape}, {zi.shape}"
-                        )
-                else:
-                    raise TypeError(f"Axes are not grid aligned: {xi.shape}, {yi.shape}")
+                args = [zi.transpose(_order_for_imshow(xi, yi))] + args
                 # extract extent, plot lims
                 xlim = [xa[0,0], xa[-1,-1]]
                 ylim = [ya[0,0], ya[-1,-1]]
@@ -620,3 +604,31 @@ def apply_rcparams(kind="fast"):
         matplotlib.rcParams["font.size"] = 14
         matplotlib.rcParams["legend.edgecolor"] = "grey"
         matplotlib.rcParams["contour.negative_linestyle"] = "solid"
+
+
+def _order_for_imshow(xi, yi):
+    """
+    looks at x and y axis shape to determine order of zi axes
+    **requires orthogonal, 1D axes**
+    returns boolean:  whether or not to transpose zi
+    """
+    sx = np.array(xi.shape)
+    sy = np.array(yi.shape)
+    # check that each axis is 1D (i.e. for ndim, number of axes with size 1 is >= ndim - 1 )
+    if (sx.prod() == xi.size) and (sy.prod() == yi.size):
+        # check that axes are orthogonal and orient z accordingly
+        # determine index of x and y axes
+        if (sx[0] == 1) and (sy[1] == 1):
+            # zi[y,x]
+            return (0,1)
+        elif (sx[1] == 1) and (sy[0] == 1):
+            # zi[x,y]; imshow expects zi[rows, cols]
+            return (1,0)
+        else:
+            raise TypeError(
+                f"x and y must be orthogonal; shapes are: {xi.shape}, {yi.shape}"
+            )
+    else:
+        raise TypeError(f"Axes are not 1D: {xi.shape}, {yi.shape}")
+
+

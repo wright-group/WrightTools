@@ -6,7 +6,8 @@ import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider, RadioButtons
 from types import SimpleNamespace
 
-from ._helpers import create_figure, plot_colorbar, add_sideplot
+from ._helpers import create_figure, plot_colorbar, add_sideplot 
+from ._base import _order_for_imshow
 from ._colors import colormaps
 from ..exceptions import DimensionalityError
 from .. import kit as wt_kit
@@ -48,29 +49,6 @@ def _at_dict(data, sliders, xaxis, yaxis):
         if a not in [xaxis, yaxis]
     }
 
-
-def _transpose_z_for_imshow(xi, yi):
-    """
-    looks at axes shape to determine order of zi axes
-    requires orthogonal axes
-    returns bool:  whether or not to transpose zi
-    """
-    sx = np.array(xi.shape)
-    sy = np.array(yi.shape)
-    # check that each axis is 1D (i.e. for ndim, number of axes with size 1 is >= ndim - 1 )
-    if (sx.prod() == xi.size) and (sy.prod() == yi.size):
-        # check that axes are orthogonal and orient z accordingly
-        # determine index of x and y axes
-        if (sx[0] == 1) and (sy[1] == 1):
-            # zi[y,x]
-            return False
-        elif (sx[1] == 1) and (sy[0] == 1):
-            # zi[x,y]; imshow expects zi[rows, cols]
-            return True
-        else:
-            raise TypeError(
-                f"x and y must be orthogonal; got: {xi.shape}, {yi.shape}"
-            )
 
 def get_axes(data, axes):
     xaxis, yaxis = axes
@@ -429,15 +407,13 @@ def interact2D(data: wt_data.Data, xaxis=0, yaxis=1, channel=0, local=False, use
                 gen_ticklabels(data.axes[data.axis_names.index(k)].points)[int(s.val)]
             )
         if use_imshow:
-            transpose = _orient_for_imshow(
+            transpose = _order_for_imshow(
                 current_state[xaxis.natural_name][:],
                 current_state[yaxis.natural_name][:],
-                current_state[channel.natural_name][:]
             )
             # TODO:  orient according to orthogonal axes (i.e. may need transpose)
             obj2D.set_data(
-                current_state.dat[channel.natural_name][:].T
-                if transpose else current_state.dat[channel.natural_name][:].T
+                current_state.dat[channel.natural_name][:].transpose(transpose)
             )
         else:
             obj2D.set_array(current_state.dat[channel.natural_name][:].ravel())
