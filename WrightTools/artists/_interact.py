@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider, RadioButtons
+from types import SimpleNamespace
 
 from ._helpers import create_figure, plot_colorbar, add_sideplot
 from ._colors import colormaps
@@ -38,14 +39,6 @@ class Focus:
                 self.focus_axis.spines[spine].set_linewidth(1)
                 ax.spines[spine].set_linewidth(self.linewidth)
             self.focus_axis = ax
-
-
-# http://code.activestate.com/recipes/52308-the-simple-but-handy-collector-of-a-bunch-of-named/?in=user-97991
-# used to keep track of vars useful to widgets
-class Bunch(dict):
-    def __init__(self, **kw):
-        dict.__init__(self, kw)
-        self.__dict__ = self
 
 
 def _at_dict(data, sliders, xaxis, yaxis):
@@ -167,7 +160,7 @@ def interact2D(data: wt_data.Data, xaxis=0, yaxis=1, channel=0, local=False, ver
     channel = get_channel(data, channel)
     xaxis, yaxis = get_axes(data, [xaxis, yaxis])
     cmap = get_colormap(channel)
-    current_state = Bunch()
+    current_state = SimpleNamespace()
     # create figure
     nsliders = data.ndim - 2
     if nsliders < 0:
