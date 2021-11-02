@@ -444,7 +444,7 @@ class Axes(matplotlib.axes.Axes):
         ylabel : string (optional)
             ylabel. Default is None.
         **kwargs
-            matplotlib.axes.Axes.pcolormesh__ optional keyword arguments.
+            matplotlib.axes.Axes.imshow__ optional keyword arguments.
 
             __ https://matplotlib.org/api/_as_gen/matplotlib.pyplot.imshow.html
 
@@ -453,6 +453,7 @@ class Axes(matplotlib.axes.Axes):
         matplotlib.image.AxesImage
         """
         args, kwargs = self._parse_plot_args(*args, **kwargs, plot_type="imshow")
+        kwargs["interpolation"] = "nearest"
         return super().imshow(*args, **kwargs)
 
     def pcolormesh(self, *args, **kwargs):

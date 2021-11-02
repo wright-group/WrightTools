@@ -49,6 +49,29 @@ def _at_dict(data, sliders, xaxis, yaxis):
     }
 
 
+def _transpose_z_for_imshow(xi, yi):
+    """
+    looks at axes shape to determine order of zi axes
+    requires orthogonal axes
+    returns bool:  whether or not to transpose zi
+    """
+    sx = np.array(xi.shape)
+    sy = np.array(yi.shape)
+    # check that each axis is 1D (i.e. for ndim, number of axes with size 1 is >= ndim - 1 )
+    if (sx.prod() == xi.size) and (sy.prod() == yi.size):
+        # check that axes are orthogonal and orient z accordingly
+        # determine index of x and y axes
+        if (sx[0] == 1) and (sy[1] == 1):
+            # zi[y,x]
+            return False
+        elif (sx[1] == 1) and (sy[0] == 1):
+            # zi[x,y]; imshow expects zi[rows, cols]
+            return True
+        else:
+            raise TypeError(
+                f"x and y must be orthogonal; got: {xi.shape}, {yi.shape}"
+            )
+
 def get_axes(data, axes):
     xaxis, yaxis = axes
     if type(xaxis) in [int, str]:
@@ -131,7 +154,7 @@ def norm(arr, signed, ignore_zero=True):
     return arr
 
 
-def interact2D(data: wt_data.Data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
+def interact2D(data: wt_data.Data, xaxis=0, yaxis=1, channel=0, local=False, use_imshow=False, verbose=True):
     """Interactive 2D plot of the dataset.
     Side plots show x and y projections of the slice (shaded gray).
     Left clicks on the main axes draw 1D slices on side plots at the coordinates selected.
@@ -150,6 +173,10 @@ def interact2D(data: wt_data.Data, xaxis=0, yaxis=1, channel=0, local=False, ver
         Name or index of channel to plot. Default is 0.
     local : boolean (optional)
         Toggle plotting locally. Default is False.
+    use_imshow : boolean (optional)
+        If true, matplotlib imshow is used to render the 2D slice.  
+        Can give better performance, but is only accurate for 
+        uniform grids.  Default is False.
     verbose : boolean (optional)
         Toggle talkback. Default is True.
     """
@@ -237,7 +264,9 @@ def interact2D(data: wt_data.Data, xaxis=0, yaxis=1, channel=0, local=False, ver
     ticklabels = gen_ticklabels(np.linspace(*clim, 11), channel.signed)
     if clim[0] == clim[1]:
         clim = [-1 if channel.signed else 0, 1]
-    obj2D = ax0.pcolormesh(
+
+    gen_mesh = ax0.pcolormesh if not use_imshow else ax0.imshow
+    obj2D = gen_mesh(
         current_state.dat,
         cmap=cmap,
         vmin=clim[0],
@@ -383,7 +412,7 @@ def interact2D(data: wt_data.Data, xaxis=0, yaxis=1, channel=0, local=False, ver
         obj2D.set_clim(*clim)
         fig.canvas.draw_idle()
 
-    def update_slider(info):
+    def update_slider(info, use_imshow=use_imshow):
         current_state.dat.close()
         current_state.dat = data.chop(
             xaxis.natural_name,
@@ -399,7 +428,19 @@ def interact2D(data: wt_data.Data, xaxis=0, yaxis=1, channel=0, local=False, ver
             s.valtext.set_text(
                 gen_ticklabels(data.axes[data.axis_names.index(k)].points)[int(s.val)]
             )
-        obj2D.set_array(current_state.dat[channel.natural_name][:].ravel())
+        if use_imshow:
+            transpose = _orient_for_imshow(
+                current_state[xaxis.natural_name][:],
+                current_state[yaxis.natural_name][:],
+                current_state[channel.natural_name][:]
+            )
+            # TODO:  orient according to orthogonal axes (i.e. may need transpose)
+            obj2D.set_data(
+                current_state.dat[channel.natural_name][:].T
+                if transpose else current_state.dat[channel.natural_name][:].T
+            )
+        else:
+            obj2D.set_array(current_state.dat[channel.natural_name][:].ravel())
         clim = get_clim(channel, current_state)
         ticklabels = gen_ticklabels(np.linspace(*clim, 11), channel.signed)
         if clim[0] == clim[1]:
