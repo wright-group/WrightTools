@@ -137,6 +137,11 @@ class Axes(matplotlib.axes.Axes):
                     kwargs["aspect"] = "auto"
                 if "origin" not in kwargs.keys():
                     kwargs["origin"] = "lower"
+                if "interpolation" not in kwargs.keys():
+                    if max(zi.shape) < 10**3:  # TODO: better decision logic
+                        kwargs["interpolation"] = "nearest" 
+                    else:
+                        kwargs["interpolation"] = "antialiased" 
                 xi = xa[:][squeeze]
                 yi = ya[:][squeeze]
                 args = [zi.transpose(_order_for_imshow(xi, yi))] + args
@@ -406,8 +411,11 @@ class Axes(matplotlib.axes.Axes):
         channel can be plotted, provided the ``squeeze`` of the channel
         has ``ndim==2``.
 
-        Defaults to ``aspect="auto"` (pixels are stretched to fit the 
-        subplot axes).
+        Defaults to ``aspect="auto"`` (pixels are stretched to fit the 
+        subplot axes) 
+        
+        If `interpolation` method is not specified, defaults to either 
+        "antialiased" (for large images) or "nearest" (for small arrays).
 
         `extent` defaults to ensure that pixels are drawn bisecting point 
         positions.
@@ -437,7 +445,6 @@ class Axes(matplotlib.axes.Axes):
         matplotlib.image.AxesImage
         """
         args, kwargs = self._parse_plot_args(*args, **kwargs, plot_type="imshow")
-        kwargs["interpolation"] = "nearest"
         return super().imshow(*args, **kwargs)
 
     def pcolormesh(self, *args, **kwargs):
