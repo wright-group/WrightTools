@@ -20,7 +20,7 @@ from ._colors import colormaps
 # --- define -------------------------------------------------------------------------------------
 
 
-__all__ = ["Axes", "Figure", "GridSpec", "apply_rcparams", "_order_for_imshow"]
+__all__ = ["Axes", "Figure", "GridSpec", "apply_rcparams"]
 
 
 # --- classes -------------------------------------------------------------------------------------
@@ -615,7 +615,7 @@ def _order_for_imshow(xi, yi):
     """
     looks at x and y axis shape to determine order of zi axes
     **requires orthogonal, 1D axes**
-    returns boolean:  whether or not to transpose zi
+    returns 2-ple:  the transpose order to apply to zi
     """
     sx = np.array(xi.shape)
     sy = np.array(yi.shape)
