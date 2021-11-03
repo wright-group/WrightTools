@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Fixed
+- `artists._parse_limits` now recognizes channel `null` for signed data limits.
+
 ## [3.4.2]
 
 ### Added
