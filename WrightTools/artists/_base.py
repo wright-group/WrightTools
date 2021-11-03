@@ -94,14 +94,15 @@ class Axes(matplotlib.axes.Axes):
                 vmax = np.nanmax(zi)
         elif data is not None:
             signed = data.channels[channel_index].signed
+            null = data.channels[channel_index].null
             if signed and dynamic_range:
-                vmin = -data.channels[channel_index].minor_extent
-                vmax = +data.channels[channel_index].minor_extent
+                vmin = -data.channels[channel_index].minor_extent + null
+                vmax = +data.channels[channel_index].minor_extent + null
             elif signed and not dynamic_range:
-                vmin = -data.channels[channel_index].major_extent
-                vmax = +data.channels[channel_index].major_extent
+                vmin = -data.channels[channel_index].major_extent + null
+                vmax = +data.channels[channel_index].major_extent + null
             else:
-                vmin = data.channels[channel_index].null
+                vmin = null
                 vmax = data.channels[channel_index].max()
         # don't overwrite
         if "vmin" not in kwargs.keys():
