@@ -4,8 +4,10 @@ import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider, RadioButtons
+from types import SimpleNamespace
 
 from ._helpers import create_figure, plot_colorbar, add_sideplot
+from ._base import _order_for_imshow
 from ._colors import colormaps
 from ..exceptions import DimensionalityError
 from .. import kit as wt_kit
@@ -38,14 +40,6 @@ class Focus:
                 self.focus_axis.spines[spine].set_linewidth(1)
                 ax.spines[spine].set_linewidth(self.linewidth)
             self.focus_axis = ax
-
-
-# http://code.activestate.com/recipes/52308-the-simple-but-handy-collector-of-a-bunch-of-named/?in=user-97991
-# used to keep track of vars useful to widgets
-class Bunch(dict):
-    def __init__(self, **kw):
-        dict.__init__(self, kw)
-        self.__dict__ = self
 
 
 def _at_dict(data, sliders, xaxis, yaxis):
@@ -138,7 +132,9 @@ def norm(arr, signed, ignore_zero=True):
     return arr
 
 
-def interact2D(data: wt_data.Data, xaxis=0, yaxis=1, channel=0, local=False, verbose=True):
+def interact2D(
+    data: wt_data.Data, xaxis=0, yaxis=1, channel=0, local=False, use_imshow=False, verbose=True
+):
     """Interactive 2D plot of the dataset.
     Side plots show x and y projections of the slice (shaded gray).
     Left clicks on the main axes draw 1D slices on side plots at the coordinates selected.
@@ -157,6 +153,10 @@ def interact2D(data: wt_data.Data, xaxis=0, yaxis=1, channel=0, local=False, ver
         Name or index of channel to plot. Default is 0.
     local : boolean (optional)
         Toggle plotting locally. Default is False.
+    use_imshow : boolean (optional)
+        If true, matplotlib imshow is used to render the 2D slice.
+        Can give better performance, but is only accurate for
+        uniform grids.  Default is False.
     verbose : boolean (optional)
         Toggle talkback. Default is True.
     """
@@ -167,7 +167,7 @@ def interact2D(data: wt_data.Data, xaxis=0, yaxis=1, channel=0, local=False, ver
     channel = get_channel(data, channel)
     xaxis, yaxis = get_axes(data, [xaxis, yaxis])
     cmap = get_colormap(channel)
-    current_state = Bunch()
+    current_state = SimpleNamespace()
     # create figure
     nsliders = data.ndim - 2
     if nsliders < 0:
@@ -244,7 +244,9 @@ def interact2D(data: wt_data.Data, xaxis=0, yaxis=1, channel=0, local=False, ver
     ticklabels = gen_ticklabels(np.linspace(*clim, 11), channel.signed)
     if clim[0] == clim[1]:
         clim = [-1 if channel.signed else 0, 1]
-    obj2D = ax0.pcolormesh(
+
+    gen_mesh = ax0.pcolormesh if not use_imshow else ax0.imshow
+    obj2D = gen_mesh(
         current_state.dat,
         cmap=cmap,
         vmin=clim[0],
@@ -390,7 +392,7 @@ def interact2D(data: wt_data.Data, xaxis=0, yaxis=1, channel=0, local=False, ver
         obj2D.set_clim(*clim)
         fig.canvas.draw_idle()
 
-    def update_slider(info):
+    def update_slider(info, use_imshow=use_imshow):
         current_state.dat.close()
         current_state.dat = data.chop(
             xaxis.natural_name,
@@ -406,7 +408,14 @@ def interact2D(data: wt_data.Data, xaxis=0, yaxis=1, channel=0, local=False, ver
             s.valtext.set_text(
                 gen_ticklabels(data.axes[data.axis_names.index(k)].points)[int(s.val)]
             )
-        obj2D.set_array(current_state.dat[channel.natural_name][:].ravel())
+        if use_imshow:
+            transpose = _order_for_imshow(
+                current_state[xaxis.natural_name][:],
+                current_state[yaxis.natural_name][:],
+            )
+            obj2D.set_data(current_state.dat[channel.natural_name][:].transpose(transpose))
+        else:
+            obj2D.set_array(current_state.dat[channel.natural_name][:].ravel())
         clim = get_clim(channel, current_state)
         ticklabels = gen_ticklabels(np.linspace(*clim, 11), channel.signed)
         if clim[0] == clim[1]:

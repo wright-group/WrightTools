@@ -113,7 +113,7 @@ class Axes(matplotlib.axes.Axes):
 
     def _parse_plot_args(self, *args, **kwargs):
         plot_type = kwargs.pop("plot_type")
-        if plot_type not in ["pcolor", "pcolormesh", "contourf", "contour"]:
+        if plot_type not in ["pcolor", "pcolormesh", "contourf", "contour", "imshow"]:
             raise NotImplementedError
         args = list(args)  # offer pop, append etc
         dynamic_range = kwargs.pop("dynamic_range", False)
@@ -127,15 +127,39 @@ class Axes(matplotlib.axes.Axes):
             for sq, xs, ys in zip(squeeze, xa.shape, ya.shape):
                 if sq and (xs != 1 or ys != 1):
                     raise wt_exceptions.ValueError("Cannot squeeze axis to fit channel")
-            squeeze = tuple([0 if i else slice(None) for i in squeeze])
             zi = data.channels[channel_index].points
-            xi = xa.full[squeeze]
-            yi = ya.full[squeeze]
-            if plot_type in ["pcolor", "pcolormesh", "contourf", "contour"]:
-                ndim = 2
-            if not zi.ndim == ndim:
+            if not zi.ndim == 2:
                 raise wt_exceptions.DimensionalityError(ndim, data.ndim)
-            args = [xi, yi, zi] + args
+            squeeze = tuple([0 if i else slice(None) for i in squeeze])
+            if plot_type == "imshow":
+                if "aspect" not in kwargs.keys():
+                    kwargs["aspect"] = "auto"
+                if "origin" not in kwargs.keys():
+                    kwargs["origin"] = "lower"
+                if "interpolation" not in kwargs.keys():
+                    if max(zi.shape) < 10 ** 3:  # TODO: better decision logic
+                        kwargs["interpolation"] = "nearest"
+                    else:
+                        kwargs["interpolation"] = "antialiased"
+                xi = xa[:][squeeze]
+                yi = ya[:][squeeze]
+
+                zi = zi.transpose(_order_for_imshow(xi, yi))
+                # extract extent
+                if "extent" not in kwargs.keys():
+                    xlim = [xi[0, 0], xi[-1, -1]]
+                    ylim = [yi[0, 0], yi[-1, -1]]
+                    xstep = (xlim[1] - xlim[0]) / (2 * xi.size)
+                    ystep = (ylim[1] - ylim[0]) / (2 * yi.size)
+                    x_extent = [xlim[0] - xstep, xlim[1] + xstep]
+                    y_extent = [ylim[0] - ystep, ylim[1] + ystep]
+                    extent = [*x_extent, *y_extent]
+                    kwargs["extent"] = extent
+                args = [zi] + args
+            else:
+                xi = xa.full[squeeze]
+                yi = ya.full[squeeze]
+                args = [xi, yi, zi] + args
             # limits
             kwargs = self._parse_limits(
                 data=data, channel_index=channel_index, dynamic_range=dynamic_range, **kwargs
@@ -155,17 +179,19 @@ class Axes(matplotlib.axes.Axes):
                     kwargs["colors"] = "k"
                 if "alpha" not in kwargs.keys():
                     kwargs["alpha"] = 0.5
-            if plot_type in ["pcolor", "pcolormesh", "contourf"]:
+            if plot_type in ["pcolor", "pcolormesh", "contourf", "imshow"]:
                 kwargs = self._parse_cmap(data=data, channel_index=channel_index, **kwargs)
         else:
-            xi, yi, zi = args[:3]
+            if plot_type == "imshow":
+                kwargs = self._parse_limits(zi=args[0], **kwargs)
+            else:
+                kwargs = self._parse_limits(zi=args[2], **kwargs)
             data = None
             channel_index = 0
-            kwargs = self._parse_limits(zi=args[2], **kwargs)
             if plot_type == "contourf":
                 if "levels" not in kwargs.keys():
                     kwargs["levels"] = np.linspace(kwargs["vmin"], kwargs["vmax"], 256)
-            if plot_type in ["pcolor", "pcolormesh", "contourf"]:
+            if plot_type in ["pcolor", "pcolormesh", "contourf", "imshow"]:
                 kwargs = self._parse_cmap(**kwargs)
         # labels
         self._apply_labels(
@@ -376,6 +402,65 @@ class Axes(matplotlib.axes.Axes):
         args, kwargs = self._parse_plot_args(*args, **kwargs, plot_type="pcolor")
         return super().pcolor(*args, **kwargs)
 
+    def imshow(self, *args, **kwargs):
+        """Create a pseudocolor plot of a 2-D array.  The array is plotted
+        with uniform spacing.  Quicker than pcolor, pcolormesh.
+
+        **Requires that the plotted axes are grid aligned (i.e. the `squeeze`
+         of each axis has ``ndim==1``).**
+
+        If a 3D or higher Data object is passed, a lower dimensional
+        channel can be plotted, provided the ``squeeze`` of the channel
+        has ``ndim==2``.
+
+        Defaults to ``aspect="auto"`` (pixels are stretched to fit the
+        subplot axes)
+
+        If `interpolation` method is not specified, defaults to either
+        "antialiased" (for large images) or "nearest" (for small arrays).
+
+        `extent` defaults to ensure that pixels are drawn bisecting point
+        positions.
+
+        Parameters
+        ----------
+        data : 2D WrightTools.data.Data object
+            Data to plot.
+        channel : int or string (optional)
+            Channel index or name. Default is 0.
+        dynamic_range : boolean (optional)
+            Force plotting of all contours, overloading for major extent. Only applies to signed
+            data. Default is False.
+        autolabel : {'none', 'both', 'x', 'y'}  (optional)
+            Parameterize application of labels directly from data object. Default is none.
+        xlabel : string (optional)
+            xlabel. Default is None.
+        ylabel : string (optional)
+            ylabel. Default is None.
+        **kwargs
+            matplotlib.axes.Axes.imshow__ optional keyword arguments.
+
+            __ https://matplotlib.org/api/_as_gen/matplotlib.pyplot.imshow.html
+
+        Returns
+        -------
+        matplotlib.image.AxesImage
+        """
+        xlim, ylim = super().get_xlim(), super().get_ylim()
+        old_signs = list(map(lambda x: (x[1] - x[0]) > 0, [xlim, ylim]))
+
+        args, kwargs = self._parse_plot_args(*args, **kwargs, plot_type="imshow")
+        out = super().imshow(*args, **kwargs)
+
+        # undo axis order if it was flipped
+        xlim, ylim = super().get_xlim(), super().get_ylim()
+        new_signs = list(map(lambda x: (x[1] - x[0]) > 0, [xlim, ylim]))
+        if old_signs[0] != new_signs[0]:
+            super().invert_xaxis()
+        if old_signs[1] != new_signs[1]:
+            super().invert_yaxis()
+        return out
+
     def pcolormesh(self, *args, **kwargs):
         """Create a pseudocolor plot of a 2-D array.
 
@@ -540,3 +625,27 @@ def apply_rcparams(kind="fast"):
         matplotlib.rcParams["font.size"] = 14
         matplotlib.rcParams["legend.edgecolor"] = "grey"
         matplotlib.rcParams["contour.negative_linestyle"] = "solid"
+
+
+def _order_for_imshow(xi, yi):
+    """
+    looks at x and y axis shape to determine order of zi axes
+    **requires orthogonal, 1D axes**
+    returns 2-ple:  the transpose order to apply to zi
+    """
+    sx = np.array(xi.shape)
+    sy = np.array(yi.shape)
+    # check that each axis is 1D (i.e. for ndim, number of axes with size 1 is >= ndim - 1 )
+    if (sx.prod() == xi.size) and (sy.prod() == yi.size):
+        # check that axes are orthogonal and orient z accordingly
+        # determine index of x and y axes
+        if (sx[0] == 1) and (sy[1] == 1):
+            # zi[y,x]
+            return (0, 1)
+        elif (sx[1] == 1) and (sy[0] == 1):
+            # zi[x,y]; imshow expects zi[rows, cols]
+            return (1, 0)
+        else:
+            raise TypeError(f"x and y must be orthogonal; shapes are: {xi.shape}, {yi.shape}")
+    else:
+        raise TypeError(f"Axes are not 1D: {xi.shape}, {yi.shape}")
