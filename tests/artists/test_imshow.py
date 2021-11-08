@@ -41,8 +41,9 @@ def test_imshow_approx_pcolormesh():
     meshbox = [bbox.x0, bbox.x1, bbox.y0, bbox.y1]
     imagebox = image.get_extent()
 
-    assert np.allclose(meshbox, imagebox, atol=1e-3, rtol=1e-3), \
-        f"unequal limits: mesh {meshbox} image {imagebox}"
+    assert np.allclose(
+        meshbox, imagebox, atol=1e-3, rtol=1e-3
+    ), f"unequal limits: mesh {meshbox} image {imagebox}"
 
     assert np.isclose(mesh.norm.vmin, image.norm.vmin), "unequal norm.vmin"
     assert np.isclose(mesh.norm.vmax, image.norm.vmax), "unequal norm.vmax"
