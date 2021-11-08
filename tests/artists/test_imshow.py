@@ -28,7 +28,7 @@ def test_imshow_transform():
 
 
 def test_imshow_approx_pcolormesh():
-    p = datasets.PyCMDS.d1_d2_000
+    p = datasets.PyCMDS.w2_w1_000
     data = wt.data.from_PyCMDS(p)
 
     fig, gs = wt.artists.create_figure(cols=[1, 1])
@@ -37,10 +37,17 @@ def test_imshow_approx_pcolormesh():
     ax1 = plt.subplot(gs[1])
     image = ax1.imshow(data)
 
-    bbox = mesh.get_datalim(ax0.transData)
+    lim0 = ax0.get_xlim() + ax0.get_ylim()
+    lim1 = ax1.get_xlim() + ax1.get_ylim()
+    assert np.allclose(
+        lim0, lim1,
+        atol=1e-3, rtol=1
+    ), f"unequal axis limits: {lim0}, {lim1}"
+
+    bbox = mesh.get_datalim(ax0.transData)  
     meshbox = [bbox.x0, bbox.x1, bbox.y0, bbox.y1]
     imagebox = image.get_extent()
-
+    imagebox = [*sorted(imagebox[:2]), *sorted(imagebox[2:])]
     assert np.allclose(
         meshbox, imagebox, atol=1e-3, rtol=1e-3
     ), f"unequal limits: mesh {meshbox} image {imagebox}"

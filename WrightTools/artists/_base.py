@@ -446,8 +446,20 @@ class Axes(matplotlib.axes.Axes):
         -------
         matplotlib.image.AxesImage
         """
+        xlim, ylim = super().get_xlim(), super().get_ylim()
+        old_signs = list(map(lambda x: (x[1] - x[0]) > 0, [xlim, ylim]))
+
         args, kwargs = self._parse_plot_args(*args, **kwargs, plot_type="imshow")
-        return super().imshow(*args, **kwargs)
+        out = super().imshow(*args, **kwargs)
+
+        # undo axis order if it was flipped
+        xlim, ylim = super().get_xlim(), super().get_ylim()
+        new_signs = list(map(lambda x: (x[1] - x[0]) > 0, [xlim, ylim]))
+        if old_signs[0] != new_signs[0]:
+            super().invert_xaxis()
+        if old_signs[1] != new_signs[1]:
+            super().invert_yaxis()        
+        return out
 
     def pcolormesh(self, *args, **kwargs):
         """Create a pseudocolor plot of a 2-D array.
