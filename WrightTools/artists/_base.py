@@ -458,7 +458,7 @@ class Axes(matplotlib.axes.Axes):
         if old_signs[0] != new_signs[0]:
             super().invert_xaxis()
         if old_signs[1] != new_signs[1]:
-            super().invert_yaxis()        
+            super().invert_yaxis()
         return out
 
     def pcolormesh(self, *args, **kwargs):
