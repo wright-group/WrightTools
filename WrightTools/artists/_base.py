@@ -143,15 +143,19 @@ class Axes(matplotlib.axes.Axes):
                         kwargs["interpolation"] = "antialiased"
                 xi = xa[:][squeeze]
                 yi = ya[:][squeeze]
-                args = [zi.transpose(_order_for_imshow(xi, yi))] + args
-                # extract extent, plot lims
-                xlim = [xa[0, 0], xa[-1, -1]]
-                ylim = [ya[0, 0], ya[-1, -1]]
-                extent = [*xlim, *ylim]
+
+                zi = zi.transpose(_order_for_imshow(xi, yi))
+                # extract extent
                 if "extent" not in kwargs.keys():
+                    xlim = [xi[0, 0], xi[-1, -1]]
+                    ylim = [yi[0, 0], yi[-1, -1]]
+                    xstep = xlim[1] - xlim[0] / (2 * xi.size)
+                    ystep = ylim[1] - ylim[0] / (2 * yi.size)
+                    x_extent = [xlim[0] - xstep, xlim[1] + xstep]
+                    y_extent = [ylim[0] - ystep, ylim[1] + ystep]
+                    extent = [*x_extent, *y_extent]
                     kwargs["extent"] = extent
-                    # super().set_xlim(*sorted(xlim))
-                    # super().set_ylim(*sorted(ylim))
+                args = [zi] + args
             else:
                 xi = xa.full[squeeze]
                 yi = ya.full[squeeze]

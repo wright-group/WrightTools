@@ -413,7 +413,6 @@ def interact2D(
                 current_state[xaxis.natural_name][:],
                 current_state[yaxis.natural_name][:],
             )
-            # TODO:  orient according to orthogonal axes (i.e. may need transpose)
             obj2D.set_data(current_state.dat[channel.natural_name][:].transpose(transpose))
         else:
             obj2D.set_array(current_state.dat[channel.natural_name][:].ravel())

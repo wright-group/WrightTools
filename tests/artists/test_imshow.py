@@ -4,30 +4,52 @@
 import WrightTools as wt
 from WrightTools import datasets
 from matplotlib import pyplot as plt
+import numpy as np
 import shutil
 import os
 
 
-def test_imshow():
-    p = datasets.wt5.v1p0p1_MoS2_TrEE_movie
-    p = shutil.copy(p, "./test_imshow.wt5")
-    data = wt.open(p)
-    os.unlink(p)
-    data.level(0, 2, -3)
-    data.convert("eV")
-    data.ai0.symmetric_root(2)
-    chop = data.chop("w1=wm", "w2", at={"d2": [-600, "fs"]})[0]
+def test_imshow_transform():
+    p = datasets.PyCMDS.d1_d2_000
+    data = wt.data.from_PyCMDS(p)
 
     fig, gs = wt.artists.create_figure(cols=[1, 1])
-    ax = plt.subplot(gs[0])
-    ax.pcolormesh(chop)
+    ax0 = plt.subplot(gs[0])
+    data.transform("d1", "d2")
+    im1 = ax0.imshow(data)
 
     ax1 = plt.subplot(gs[1])
-    ax1.imshow(chop)
+    data.transform("d2", "d1")
+    im2 = ax1.imshow(data)
+
+    assert np.all(im1.get_array() == im2.get_array().T)
 
     data.close()
-    chop.close()
+
+
+def test_imshow_approx_pcolormesh():
+    p = datasets.PyCMDS.d1_d2_000
+    data = wt.data.from_PyCMDS(p)
+
+    fig, gs = wt.artists.create_figure(cols=[1, 1])
+    ax0 = plt.subplot(gs[0])
+    mesh = ax0.pcolormesh(data)
+    ax1 = plt.subplot(gs[1])
+    image = ax1.imshow(data)
+
+    bbox = mesh.get_datalim(ax0.transData)
+    meshbox = [bbox.x0, bbox.x1, bbox.y0, bbox.y1]
+    imagebox = image.get_extent()
+
+    assert np.allclose(meshbox, imagebox, atol=1e-3, rtol=1e-3), \
+        f"unequal limits: mesh {meshbox} image {imagebox}"
+
+    assert np.isclose(mesh.norm.vmin, image.norm.vmin), "unequal norm.vmin"
+    assert np.isclose(mesh.norm.vmax, image.norm.vmax), "unequal norm.vmax"
+
+    data.close()
 
 
 if __name__ == "__main__":
-    test_imshow()
+    test_imshow_transform()
+    test_imshow_approx_pcolormesh()
