@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Added
+- `artists` now has a wrapper for matplotlib's `imshow`.  Make sure to use uniform grids.
+
 ### Fixed
 - `artists._parse_limits` now recognizes channel `null` for signed data limits.
 
