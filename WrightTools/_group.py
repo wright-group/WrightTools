@@ -148,7 +148,7 @@ class Group(h5py.Group, metaclass=MetaClass):
     def __new__(cls, *args, **kwargs):
         """New object formation handler."""
         # extract
-        filepath = args[0] if len(args) > 0 else kwargs.get("filepath", None)
+        filepath = args[0] if len(args) > 0 else kwargs.pop("filepath", None)
         parent = args[1] if len(args) > 1 else kwargs.get("parent", None)
         natural_name = args[2] if len(args) > 2 else kwargs.get("name", cls.class_name.lower())
         edit_local = args[3] if len(args) > 3 else kwargs.pop("edit_local", False)

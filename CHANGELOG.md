@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ### Fixed
 - `artists._parse_limits` now recognizes channel `null` for signed data limits.
+- fixed bug where `Data.map_variable` did not interpolate on `yaqc-cmds` type Data
 
 ## [3.4.2]
 
