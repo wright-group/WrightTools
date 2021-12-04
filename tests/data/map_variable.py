@@ -5,6 +5,7 @@
 
 
 import numpy as np
+import pytest
 
 import WrightTools as wt
 from WrightTools import datasets
@@ -42,11 +43,12 @@ def test_excess_data_kwarg_1D():
     data.close()
 
 
-def test_excess_data_kwarg_3D():
+@pytest.mark.skip("It's a long test")
+def test_v1p0p0():
     p = datasets.wt5.v1p0p0_perovskite_TA
     data = wt.open(p)
-    mapped = data.map_variable("w2", 11)
-    assert mapped.w2.size == 11
+    mapped = data.map_variable("w2", 2)
+    assert mapped.w2.size == 2
     data.close()
 
 
@@ -57,4 +59,4 @@ if __name__ == "__main__":
     test_array()
     test_int()
     test_excess_data_kwarg_1D()
-    test_excess_data_kwarg_3D()
+    test_v1p0p0()
