@@ -37,7 +37,7 @@ def test_int():
 
 def test_excess_data_kwarg_1D():
     p = datasets.wt5.v1p0p0_perovskite_TA
-    data = wt.open(p).chop("w2", at={"w1=wm": [1.6, "eV"], "d2":[0, "fs"]})[0]
+    data = wt.open(p).chop("w2", at={"w1=wm": [1.6, "eV"], "d2": [0, "fs"]})[0]
     mapped = data.map_variable("w2", 11)
     assert mapped.w2.size == 11
     data.close()
