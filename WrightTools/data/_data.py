@@ -1135,7 +1135,15 @@ class Data(Group):
         else:
             points = wt_units.converter(points, input_units, variable.units)
         # construct new data object
-        special = ["name", "axes", "constants", "channel_names", "variable_names"]
+        special = [
+            "name",
+            "axes",
+            "constants",
+            "channel_names",
+            "variable_names",
+            "filepath",
+            "edit_local",
+        ]
         kwargs = {k: v for k, v in self.attrs.items() if k not in special}
         if name is None:
             name = "{0}_{1}_mapped".format(self.natural_name, variable.natural_name)
