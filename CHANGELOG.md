@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## [3.4.3]
+
 ### Added
 - `artists` now has a wrapper for matplotlib's `imshow`.  Make sure to use uniform grids.
 
@@ -293,7 +295,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ### Added
 - initial release
 
-[Unreleased]: https://github.com/wright-group/WrightTools/compare/3.4.2...HEAD
+[Unreleased]: https://github.com/wright-group/WrightTools/-/compare/3.4.3...master
+[3.4.2]: https://github.com/wright-group/WrightTools/compare/3.4.2...3.4.3
 [3.4.2]: https://github.com/wright-group/WrightTools/compare/3.4.1...3.4.2
 [3.4.1]: https://github.com/wright-group/WrightTools/compare/3.4.0...3.4.1
 [3.4.0]: https://github.com/wright-group/WrightTools/compare/3.3.3...3.4.0
