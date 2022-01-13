@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## Fixed
+- `data.from_Solis`: import works without metadata
+
+
 ## [3.4.3]
 
 ### Added
