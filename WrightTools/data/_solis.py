@@ -7,6 +7,7 @@
 import os
 import pathlib
 import time
+import warnings
 
 import numpy as np
 
@@ -44,7 +45,7 @@ def from_Solis(filepath, name=None, parent=None, verbose=True) -> Data:
     Returns
     -------
     data
-        New data object.
+        New data object.  
     """
     # parse filepath
     filestr = os.fspath(filepath)
@@ -102,9 +103,15 @@ def from_Solis(filepath, name=None, parent=None, verbose=True) -> Data:
                 attrs[key.strip()] = val.strip()
 
     f.close()
-    created = attrs["Date and Time"]  # is this UTC?
-    created = time.strptime(created, "%a %b %d %H:%M:%S %Y")
-    created = timestamp.TimeStamp(time.mktime(created)).RFC3339
+
+    try:
+        created = attrs["Date and Time"]  # is this UTC?
+        created = time.strptime(created, "%a %b %d %H:%M:%S %Y")
+        created = timestamp.TimeStamp(time.mktime(created)).RFC3339
+    except KeyError:  # use file creation time
+        created = os.stat(filepath).st_mtime
+        created = timestamp.TimeStamp(created).RFC3339
+        warnings.warn(f"{filepath.name} has no 'Date and Time' field: using file modified time instead: {created}")
 
     kwargs = {"name": name, "kind": "Solis", "source": filestr, "created": created}
     if parent is None:
@@ -113,7 +120,13 @@ def from_Solis(filepath, name=None, parent=None, verbose=True) -> Data:
         data = parent.create_data(**kwargs)
 
     axis0 = np.array(axis0)
-    if float(attrs["Grating Groove Density (l/mm)"]) == 0:
+    try:
+        groove_density = float(attrs["Grating Groove Density (l/mm)"])
+    except KeyError:  # assume no grating
+        warnings.warn(f"{filepath.name} has no 'Grating Groove Density (1/mm)' field: guessing x axis units.")
+        groove_density = isinstance(axis0[0], float)
+
+    if groove_density == 0:
         xname = "xindex"
         xunits = None
     else:
@@ -135,9 +148,17 @@ def from_Solis(filepath, name=None, parent=None, verbose=True) -> Data:
         axes = ["frame"] + axes
 
     data.transform(*axes)
-    arr /= float(attrs["Exposure Time (secs)"])
-    # signal has units of Hz because time normalized
-    data.create_channel(name="signal", values=arr, signed=False, units="Hz")
+    try:
+        exposure_time = float(attrs["Exposure Time (secs)"])
+        if exposure_time == 0:
+            raise ZeroDivisionError
+        arr /= exposure_time
+    except (KeyError, ZeroDivisionError) as e:  # assume no grating
+        warnings.warn(f"{filepath.name} camera signal cannot be given as a count rate.")
+        data.create_channel(name="signal", values=arr, signed=False)
+    else:
+        # signal has units of Hz because time normalized
+        data.create_channel(name="signal", values=arr, signed=False, units="Hz")
 
     for key, val in attrs.items():
         data.attrs[key] = val
