@@ -45,7 +45,7 @@ def from_Solis(filepath, name=None, parent=None, verbose=True) -> Data:
     Returns
     -------
     data
-        New data object.  
+        New data object.
     """
     # parse filepath
     filestr = os.fspath(filepath)
@@ -111,7 +111,9 @@ def from_Solis(filepath, name=None, parent=None, verbose=True) -> Data:
     except KeyError:  # use file creation time
         created = os.stat(filepath).st_mtime
         created = timestamp.TimeStamp(created).RFC3339
-        warnings.warn(f"{filepath.name} has no 'Date and Time' field: using file modified time instead: {created}")
+        warnings.warn(
+            f"{filepath.name} has no 'Date and Time' field: using file modified time instead: {created}"
+        )
 
     kwargs = {"name": name, "kind": "Solis", "source": filestr, "created": created}
     if parent is None:
@@ -123,7 +125,9 @@ def from_Solis(filepath, name=None, parent=None, verbose=True) -> Data:
     try:
         groove_density = float(attrs["Grating Groove Density (l/mm)"])
     except KeyError:  # assume no grating
-        warnings.warn(f"{filepath.name} has no 'Grating Groove Density (1/mm)' field: guessing x axis units.")
+        warnings.warn(
+            f"{filepath.name} has no 'Grating Groove Density (1/mm)' field: guessing x axis units."
+        )
         groove_density = isinstance(axis0[0], float)
 
     if groove_density == 0:
