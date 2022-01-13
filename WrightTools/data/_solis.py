@@ -44,8 +44,20 @@ def from_Solis(filepath, name=None, parent=None, verbose=True) -> Data:
 
     Returns
     -------
-    data
+    data : WrightTools.Data
         New data object.
+        Channels: `signal`.  If exposure time is in metadata, signal is given as a count rate (Hz).
+        Variables, Axes: `yindex` and `xindex` (no grating) or `wm` (grating)
+
+    Notes
+    -----
+    When exporting as ascii, including metadata is optional.
+    It is _strongly recommended_ that you include metadata in exports.
+    Metadata informs the image creation date, exposure time, and axes. 
+    However, if metadata is not present, this importer will make its best guesses to populate these fields accurately.
+
+    Saving processed data (e.g. vertically-binned data) in Solis software can remove/omit important metadata, so we advise exporting the raw camera images.  
+
     """
     # parse filepath
     filestr = os.fspath(filepath)
@@ -157,7 +169,7 @@ def from_Solis(filepath, name=None, parent=None, verbose=True) -> Data:
         if exposure_time == 0:
             raise ZeroDivisionError
         arr /= exposure_time
-    except (KeyError, ZeroDivisionError) as e:  # assume no grating
+    except (KeyError, ZeroDivisionError) as e:  # do not normalize
         warnings.warn(f"{filepath.name} camera signal cannot be given as a count rate.")
         data.create_channel(name="signal", values=arr, signed=False)
     else:
