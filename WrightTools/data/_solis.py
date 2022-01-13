@@ -53,10 +53,10 @@ def from_Solis(filepath, name=None, parent=None, verbose=True) -> Data:
     -----
     When exporting as ascii, including metadata is optional.
     It is _strongly recommended_ that you include metadata in exports.
-    Metadata informs the image creation date, exposure time, and axes. 
+    Metadata informs the image creation date, exposure time, and axes.
     However, if metadata is not present, this importer will make its best guesses to populate these fields accurately.
 
-    Saving processed data (e.g. vertically-binned data) in Solis software can remove/omit important metadata, so we advise exporting the raw camera images.  
+    Saving processed data (e.g. vertically-binned data) in Solis software can remove/omit important metadata, so we advise exporting the raw camera images.
 
     """
     # parse filepath
