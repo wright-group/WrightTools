@@ -1,0 +1,18 @@
+* distribution
+** make a new release on GitHub
+** release to PyPI (if not done by Travis)
+*** checkout master on your machine
+*** ensure twine is installed / setup on your machine
+*** run scripts/upload.sh
+*** takes a few minutes before it appears on pip (?)
+** release on conda-forge (If not done by regro-cf-autotick-bot)
+*** grab tar.gz SHA from https://pypi.org/project/WrightTools/ (under Download Files)
+*** update meta.yaml https://github.com/wright-group/wrighttools-feedstock/blob/master/recipe/meta.yaml
+**** version
+**** SHA256
+**** build number (should be 0 for version bump)
+**** dependencies
+*** make a PR to conda-forge master
+*** wait for checks to complete
+*** merge
+** update master VERSION

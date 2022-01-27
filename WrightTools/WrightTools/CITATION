@@ -1,0 +1,13 @@
+@article{Thompson2019,
+  doi = {10.21105/joss.01141},
+  url = {https://doi.org/10.21105/joss.01141},
+  year  = {2019},
+  month = {jan},
+  publisher = {The Open Journal},
+  volume = {4},
+  number = {33},
+  pages = {1141},
+  author = {Blaise Thompson and Kyle Sunden and Darien Morrow and Daniel Kohler and John Wright},
+  title = {{WrightTools}: a Python package for multidimensional spectroscopy},
+  journal = {Journal of Open Source Software}
+}
