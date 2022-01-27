@@ -1080,7 +1080,7 @@ def subplots_adjust(fig=None, inches=1):
         fig.subplots_adjust(top=top, right=right, bottom=bottom, left=left)
 
 
-def stitch_to_animation(images, outpath=None, *, duration=0.5, palettesize=256, verbose=True):
+def stitch_to_animation(images, outpath=None, *, duration=0.5, palettesize=256, verbose=True, format="gif"):
     """Stitch a series of images into an animation.
 
     Currently supports animated gifs, other formats coming as needed.
@@ -1101,18 +1101,42 @@ def stitch_to_animation(images, outpath=None, *, duration=0.5, palettesize=256, 
         Toggle talkback. Default is True.
     """
     # parse filename
-    if outpath is None:
-        outpath = os.path.splitext(images[0])[0] + ".gif"
+    
+    if (format=="gif"):
+        if outpath is None:
+            outpath = os.path.splitext(images[0])[0] + ".gif"
     # write
-    t = wt_kit.Timer(verbose=False)
-    with t, imageio.get_writer(
-        outpath, mode="I", duration=duration, palettesize=palettesize
-    ) as writer:
-        for p in images:
-            image = imageio.imread(p)
-            writer.append_data(image)
+        t = wt_kit.Timer(verbose=False)
+        with t, imageio.get_writer(
+        outpath, format="PIL-GIF", mode="I", duration=duration, palettesize=palettesize 
+        ) as writer:
+            for p in images:
+                image = imageio.imread(p)
+                writer.append_data(image)
     # finish
-    if verbose:
-        interval = np.round(t.interval, 2)
-        print("gif generated in {0} seconds - saved at {1}".format(interval, outpath))
-    return outpath
+        if verbose:
+            interval = np.round(t.interval, 2)
+            print("gif generated in {0} seconds - saved at {1}".format(interval, outpath))
+        return outpath
+
+    elif (format=="FFMPEG"):
+        if outpath is None:
+            outpath = os.path.splitext(images[0])[0] + ".mp4"
+    # write
+        t = wt_kit.Timer(verbose=False)
+        fps=int(1/duration)
+        with t, imageio.get_writer(
+        outpath, format="FFMPEG", mode="I", fps=fps 
+        ) as writer:
+            for p in images:
+                image = imageio.imread(p)
+                writer.append_data(image)
+    # finish
+        if verbose:
+            interval = np.round(t.interval, 2)
+            print("MP4 generated in {0} seconds - saved at {1}".format(interval, outpath))
+        return outpath
+
+    else:
+        raise ValueError ("unsupported format")
+        
