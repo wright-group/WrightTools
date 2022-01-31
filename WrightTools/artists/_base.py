@@ -137,7 +137,7 @@ class Axes(matplotlib.axes.Axes):
                 if "origin" not in kwargs.keys():
                     kwargs["origin"] = "lower"
                 if "interpolation" not in kwargs.keys():
-                    if max(zi.shape) < 10 ** 3:  # TODO: better decision logic
+                    if max(zi.shape) < 10**3:  # TODO: better decision logic
                         kwargs["interpolation"] = "nearest"
                     else:
                         kwargs["interpolation"] = "antialiased"

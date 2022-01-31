@@ -21,7 +21,7 @@ def test_d1_d2():
     value = random.randint(0, 5)
     original_max = data.ai0.max()
     data.ai0 **= value
-    assert data.ai0.max() == original_max ** value
+    assert data.ai0.max() == original_max**value
     data.close()
 
 
@@ -31,7 +31,7 @@ def test_d1_d2_array():
     value = np.random.randint(0, 5, data.shape)
     original = data.ai0[:]
     data.ai0 **= value
-    assert np.array_equal(data.ai0, original ** value)
+    assert np.array_equal(data.ai0, original**value)
     data.close()
 
 
@@ -41,7 +41,7 @@ def test_w1():
     value = random.randint(0, 5)
     original_max = data.signal.max()
     data.signal **= value
-    assert data.signal.max() == original_max ** value
+    assert data.signal.max() == original_max**value
     data.close()
 
 
@@ -51,7 +51,7 @@ def test_w1_array():
     value = np.random.randint(0, 5, data.shape)
     original = data.signal[:]
     data.signal **= value
-    assert np.array_equal(data.signal, original ** value)
+    assert np.array_equal(data.signal, original**value)
     data.close()
 
 
@@ -61,7 +61,7 @@ def test_w1_wa():
     value = random.randint(0, 5)
     original_max = data.array_signal.max()
     data.array_signal **= value
-    assert data.array_signal.max() == original_max ** value
+    assert data.array_signal.max() == original_max**value
     data.close()
 
 
@@ -71,7 +71,7 @@ def test_w1_wa_array():
     value = np.random.randint(0, 5, data.shape)
     original = data.array_signal[:]
     data.array_signal **= value
-    assert np.array_equal(data.array_signal, original ** value)
+    assert np.array_equal(data.array_signal, original**value)
     data.close()
 
 

@@ -637,7 +637,7 @@ class Data(Group):
                 sigma.shape = new_shape
                 sigma /= norm
                 sigma **= 0.5
-                norm *= sigma ** moment
+                norm *= sigma**moment
 
             values = np.trapz((x - about) ** moment * y, x, axis=axis_index)
             values = np.array(values)
