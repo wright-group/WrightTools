@@ -12,7 +12,7 @@ import WrightTools as wt
 # create original arrays
 x = np.linspace(-3, 3, 31)[:, None]
 y = np.linspace(-3, 3, 31)[None, :]
-arr = np.exp(-1 * (x ** 2 + y ** 2))
+arr = np.exp(-1 * (x**2 + y**2))
 # create damaged array
 arr2 = arr.copy()
 np.random.seed(11)  # set seed for reproducibility

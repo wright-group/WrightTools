@@ -41,7 +41,7 @@ def gaussian(x, x0, FWHM, norm="height"):
         Gaussian lineshape.
     """
     c = FWHM / (2 * np.sqrt(2 * np.log(2)))
-    arr = np.exp(-1 * (x - x0) ** 2 / (2 * c ** 2))
+    arr = np.exp(-1 * (x - x0) ** 2 / (2 * c**2))
     if norm == "height":
         return arr
     elif norm == "area":
@@ -99,7 +99,7 @@ def lorentzian_real(x, x0, G, norm="height"):
     array_like or number
         Lorentzian lineshape.
     """
-    arr = G ** 2 / ((x - x0) ** 2 + G ** 2)
+    arr = G**2 / ((x - x0) ** 2 + G**2)
     if norm == "height":
         return arr
     if norm == "area":

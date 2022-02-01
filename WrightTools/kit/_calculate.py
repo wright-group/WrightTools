@@ -63,10 +63,10 @@ def fluence(
     # calculate beam area
     if area_type == "even":
         radius_cm = wt_units.converter(beam_radius, beam_radius_units, "cm")
-        area_cm2 = np.pi * radius_cm ** 2  # cm^2
+        area_cm2 = np.pi * radius_cm**2  # cm^2
     elif area_type == "average":
         radius_cm = wt_units.converter(beam_radius, beam_radius_units, "cm")
-        area_cm2 = np.pi * radius_cm ** 2  # cm^2
+        area_cm2 = np.pi * radius_cm**2  # cm^2
         area_cm2 /= 0.7213  # weight by average intensity felt by oscillator inside of FWHM
     else:
         raise NotImplementedError

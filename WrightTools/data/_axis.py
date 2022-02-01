@@ -103,7 +103,7 @@ class Axis(object):
 
                     label = label.replace(v.natural_name, vl)
 
-            label += fr"\,\left({wt_units.ureg.Unit(self.units):~}\right)"
+            label += rf"\,\left({wt_units.ureg.Unit(self.units):~}\right)"
 
         label = r"$\mathsf{%s}$" % label
         return label

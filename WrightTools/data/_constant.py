@@ -71,7 +71,7 @@ class Constant(Axis):
         val = round(self.value, self.round_spec) if self.round_spec is not None else self.value
         label += r"\,=\,{}".format(format(val, self.format_spec))
         if self.units_kind:
-            label += fr"\,{wt_units.ureg.Unit(self.units):~}"
+            label += rf"\,{wt_units.ureg.Unit(self.units):~}"
         label = r"$\mathsf{%s}$" % label
         return label
 
