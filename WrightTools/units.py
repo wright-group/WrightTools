@@ -11,7 +11,7 @@ import pint
 
 # --- define --------------------------------------------------------------------------------------
 
-# Thise "blessed" units are here primarily for backwards compatibility, in particular
+# These "blessed" units are here primarily for backwards compatibility, in particular
 # to enable the behavior of `data.convert` which will convert freely between the energy units
 # but does not go to time (where delay will)
 # Since both of these context can convert to [length] units, they are interconvertible, but we
@@ -84,10 +84,14 @@ ureg.define("@alias m = m_delay")
 
 delay = pint.Context("delay", defaults={"n": 1, "num_pass": 2})
 delay.add_transformation(
-    "[length]", "[time]", lambda ureg, x, n=1, num_pass=2: num_pass * x / ureg.speed_of_light * n
+    "[length]",
+    "[time]",
+    lambda ureg, x, n=1, num_pass=2: num_pass * x / ureg.speed_of_light * n,
 )
 delay.add_transformation(
-    "[time]", "[length]", lambda ureg, x, n=1, num_pass=2: x / num_pass * ureg.speed_of_light / n
+    "[time]",
+    "[length]",
+    lambda ureg, x, n=1, num_pass=2: x / num_pass * ureg.speed_of_light / n,
 )
 ureg.enable_contexts("spectroscopy", delay)
 
@@ -96,6 +100,7 @@ ureg.enable_contexts("spectroscopy", delay)
 
 def converter(val, current_unit, destination_unit):
     """Convert from one unit to another.
+    If current_unit and/or destination_unit are None, input is returned.
 
     Parameters
     ----------
@@ -111,12 +116,15 @@ def converter(val, current_unit, destination_unit):
     number
         Converted value.
     """
-    try:
-        val = ureg.Quantity(val, current_unit).to(destination_unit).magnitude
-    except (pint.errors.DimensionalityError, pint.errors.UndefinedUnitError, AttributeError):
+    if (current_unit == None) and (destination_unit == None):
+        return val
+    if (current_unit == None) or (destination_unit == None):
         warnings.warn(
             f"conversion {current_unit} to {destination_unit} not valid: returning input"
         )
+        return val
+    try:
+        val = ureg.Quantity(val, current_unit).to(destination_unit).magnitude
     except ZeroDivisionError:
         warnings.warn(
             f"conversion {current_unit} to {destination_unit} resulted in ZeroDivisionError: returning inf"
