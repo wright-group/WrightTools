@@ -225,7 +225,7 @@ Use :meth:`~WrightTools.data.Data.transform` to choose a different set of axes f
 
 .. code-block:: python
 
-   data.ai0.transform('w1=wm', 'w2-wm', 'd2')
+   data.transform('w1=wm', 'w2-wm', 'd2')
 
 .. plot::
    :include-source: False
