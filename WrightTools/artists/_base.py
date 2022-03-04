@@ -461,12 +461,11 @@ class Axes(matplotlib.axes.Axes):
             super().invert_yaxis()
         return out
 
-
     def scatter_heatmap(self, *args, **kwargs):
-        """Scatter plot a channel against two _variables_.  
-        Scatter point color reflects channel values.  
+        """Scatter plot a channel against two _variables_.
+        Scatter point color reflects channel values.
         Data need not be structured.
-        
+
         Parameters
         ----------
         data : 2D WrightTools.data.Data object
@@ -499,14 +498,13 @@ class Axes(matplotlib.axes.Axes):
         data = args.pop(0)
         x = data[args[0]][:].flatten()
         y = data[args[1]][:].flatten()
-        args = [x,y] + args[2:]
+        args = [x, y] + args[2:]
         channel = kwargs.pop("channel", 0)
         channel_index = wt_kit.get_index(data.channel_names, channel)
         z = data.channels[channel_index][:].flatten()
         cmap = self._parse_cmap(data, channel_index=channel_index)["cmap"]
         cmap = cmap(z)
         return super().scatter(x, y, **kwargs, c=cmap)
-
 
     def pcolormesh(self, *args, **kwargs):
         """Create a pseudocolor plot of a 2-D array.
