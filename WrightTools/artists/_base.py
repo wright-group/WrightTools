@@ -461,6 +461,53 @@ class Axes(matplotlib.axes.Axes):
             super().invert_yaxis()
         return out
 
+
+    def scatter_heatmap(self, *args, **kwargs):
+        """Scatter plot a channel against two _variables_.  
+        Scatter point color reflects channel values.  
+        Data need not be structured.
+        
+        Parameters
+        ----------
+        data : 2D WrightTools.data.Data object
+            Data to plot.
+        x : Variable
+            azimuth variable
+        y : Variable
+            ordinate variable
+        channel : int or string (optional)
+            Channel index or name. Default is 0.
+        dynamic_range : boolean (optional)
+            Force plotting of all contours, overloading for major extent. Only applies to signed
+            data. Default is False.
+        autolabel : {'none', 'both', 'x', 'y'}  (optional)
+            Parameterize application of labels directly from data object. Default is none.
+        xlabel : string (optional)
+            xlabel. Default is None.
+        ylabel : string (optional)
+            ylabel. Default is None.
+        **kwargs
+            matplotlib.axes.Axes.scatter__ optional keyword arguments.
+
+            __ https://matplotlib.org/api/_as_gen/matplotlib.pyplot.scatter.html
+
+        Returns
+        -------
+        matplotlib.collections.PathCollection
+        """
+        args = list(args)
+        data = args.pop(0)
+        x = data[args[0]][:].flatten()
+        y = data[args[1]][:].flatten()
+        args = [x,y] + args[2:]
+        channel = kwargs.pop("channel", 0)
+        channel_index = wt_kit.get_index(data.channel_names, channel)
+        z = data.channels[channel_index][:].flatten()
+        cmap = self._parse_cmap(data, channel_index=channel_index)["cmap"]
+        cmap = cmap(z)
+        return super().scatter(x, y, **kwargs, c=cmap)
+
+
     def pcolormesh(self, *args, **kwargs):
         """Create a pseudocolor plot of a 2-D array.
 
