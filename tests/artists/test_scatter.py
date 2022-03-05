@@ -12,7 +12,7 @@ def test_scatter_heatmap_unstructured():
     data.create_channel("z", values=np.exp(-(data.x[:] ** 2 + data.y[:] ** 2)))
     fig, gs = wt.artists.create_figure()
     ax = plt.subplot(gs[0])
-    ax.scatter_heatmap(data, "x", "y", channel="z")
+    ax.scatter(data, "x", "y", channel="z")
     plt.show()
 
 

@@ -461,19 +461,20 @@ class Axes(matplotlib.axes.Axes):
             super().invert_yaxis()
         return out
 
-    def scatter_heatmap(self, *args, **kwargs):
+    def scatter(self, *args, **kwargs):
         """Scatter plot a channel against two _variables_.
         Scatter point color reflects channel values.
         Data need not be structured.
 
         Parameters
         ----------
-        data : 2D WrightTools.data.Data object
-            Data to plot.
-        x : Variable
-            azimuth variable
-        y : Variable
-            ordinate variable
+        data : 2D WrightTools.data.Data object (optional)
+            Data to plot.  If not provided, scatter reverts to 
+            [parent behavior](https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.scatter.html?highlight=scatter#matplotlib.axes.Axes.scatter)
+        x : WrightTools.data.Variable
+            azimuth variable.
+        y : WrightTools.data.Variable
+            ordinate variable.
         channel : int or string (optional)
             Channel index or name. Default is 0.
         dynamic_range : boolean (optional)
@@ -495,16 +496,20 @@ class Axes(matplotlib.axes.Axes):
         matplotlib.collections.PathCollection
         """
         args = list(args)
-        data = args.pop(0)
-        x = data[args[0]][:].flatten()
-        y = data[args[1]][:].flatten()
-        args = [x, y] + args[2:]
-        channel = kwargs.pop("channel", 0)
-        channel_index = wt_kit.get_index(data.channel_names, channel)
-        z = data.channels[channel_index][:].flatten()
-        cmap = self._parse_cmap(data, channel_index=channel_index)["cmap"]
-        cmap = cmap(z)
-        return super().scatter(x, y, **kwargs, c=cmap)
+        if isinstance(args[0], Data):
+            data = args.pop(0)
+            x = data[args[0]][:].flatten()
+            y = data[args[1]][:].flatten()
+            args = [x, y] + args[2:]
+
+            channel = kwargs.pop("channel", 0)
+            channel_index = wt_kit.get_index(data.channel_names, channel)
+            cmap = self._parse_cmap(data, channel_index=channel_index, **kwargs)["cmap"]
+            z = data.channels[channel_index][:].flatten()
+            z = cmap(z)
+            kwargs["c"] = z
+        
+        return super().scatter(*args, **kwargs)
 
     def pcolormesh(self, *args, **kwargs):
         """Create a pseudocolor plot of a 2-D array.
