@@ -470,7 +470,7 @@ class Axes(matplotlib.axes.Axes):
         Parameters
         ----------
         data : 2D WrightTools.data.Data object (optional)
-            Data to plot.  If not provided, scatter reverts to 
+            Data to plot.  If not provided, scatter reverts to
             [parent behavior](https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.scatter.html?highlight=scatter#matplotlib.axes.Axes.scatter)
         x : WrightTools.data.Variable
             azimuth variable.
@@ -524,7 +524,7 @@ class Axes(matplotlib.axes.Axes):
                 data=data,
                 channel_index=channel_index,
             )
-        
+
         return super().scatter(*args, **kwargs)
 
     def pcolormesh(self, *args, **kwargs):
