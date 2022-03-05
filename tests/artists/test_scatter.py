@@ -13,7 +13,6 @@ def test_scatter_heatmap_unstructured():
     fig, gs = wt.artists.create_figure()
     ax = plt.subplot(gs[0])
     ax.scatter(data, "x", "y", channel="z", s=20, alpha=0.5)
-    plt.show()
 
 
 def test_scatter_broadcast_vars():
@@ -26,10 +25,10 @@ def test_scatter_broadcast_vars():
     fig, gs = wt.artists.create_figure()
     ax = plt.subplot(gs[0])
     ax.scatter(data, "x", "y", channel="z", s=20, alpha=0.5)
-    plt.show()
 
 
 if __name__ == "__main__":
     # test_scatter_heatmap_unstructured()
-    test_scatter_broadcast_vars()
-
+    # test_scatter_broadcast_vars()
+    # plt.show()
+    pass
