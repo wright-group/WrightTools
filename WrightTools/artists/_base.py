@@ -8,6 +8,7 @@ import numpy as np
 
 import matplotlib
 from matplotlib.projections import register_projection
+from matplotlib.colors import Normalize
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
@@ -498,16 +499,31 @@ class Axes(matplotlib.axes.Axes):
         args = list(args)
         if isinstance(args[0], Data):
             data = args.pop(0)
-            x = data[args[0]][:].flatten()
-            y = data[args[1]][:].flatten()
+            x = data[args[0]].full.flatten()
+            y = data[args[1]].full.flatten()
             args = [x, y] + args[2:]
 
             channel = kwargs.pop("channel", 0)
             channel_index = wt_kit.get_index(data.channel_names, channel)
+
+            limits = {}
+            limits = self._parse_limits(data=data, channel_index=channel_index, **limits)
+            norm = Normalize(**limits)
+
             cmap = self._parse_cmap(data, channel_index=channel_index, **kwargs)["cmap"]
+
             z = data.channels[channel_index][:].flatten()
+            z = norm(z)
             z = cmap(z)
             kwargs["c"] = z
+
+            self._apply_labels(
+                autolabel=kwargs.pop("autolabel", False),
+                xlabel=kwargs.pop("xlabel", None),
+                ylabel=kwargs.pop("ylabel", None),
+                data=data,
+                channel_index=channel_index,
+            )
         
         return super().scatter(*args, **kwargs)
 
