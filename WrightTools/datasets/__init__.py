@@ -69,6 +69,9 @@ KENT._from_directory(here / "KENT" / "LDS821 TRSF")
 KENT._from_directory(here / "KENT" / "LDS821 DOVE")
 KENT._from_directory(here / "KENT" / "PbSe 2D delay B")
 
+LabRAM = DatasetContainer()
+LabRAM._from_files(here / "LabRAM")
+
 ocean_optics = DatasetContainer()
 ocean_optics._from_files("ocean_optics")
 
