@@ -470,17 +470,14 @@ class Axes(matplotlib.axes.Axes):
         Parameters
         ----------
         data : 2D WrightTools.data.Data object (optional)
-            Data to plot.  If not provided, scatter reverts to
-            [parent behavior](https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.scatter.html?highlight=scatter#matplotlib.axes.Axes.scatter)
+            Data to plot.  If not provided, scatter reverts to the
+            [matplotlib parent method](https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.scatter.html?highlight=scatter#matplotlib.axes.Axes.scatter)
         x : WrightTools.data.Variable
             azimuth variable.
         y : WrightTools.data.Variable
             ordinate variable.
         channel : int or string (optional)
             Channel index or name. Default is 0.
-        dynamic_range : boolean (optional)
-            Force plotting of all contours, overloading for major extent. Only applies to signed
-            data. Default is False.
         autolabel : {'none', 'both', 'x', 'y'}  (optional)
             Parameterize application of labels directly from data object. Default is none.
         xlabel : string (optional)
