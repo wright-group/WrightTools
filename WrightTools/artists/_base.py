@@ -473,9 +473,9 @@ class Axes(matplotlib.axes.Axes):
             Data to plot.  If not provided, scatter reverts to the
             [matplotlib parent method](https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.scatter.html?highlight=scatter#matplotlib.axes.Axes.scatter)
         x : WrightTools.data.Variable
-            azimuth variable.
+            x (abscissa) variable.
         y : WrightTools.data.Variable
-            ordinate variable.
+            y (ordinate) variable.
         channel : int or string (optional)
             Channel index or name. Default is 0.
         autolabel : {'none', 'both', 'x', 'y'}  (optional)

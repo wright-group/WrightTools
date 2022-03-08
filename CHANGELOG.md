@@ -5,7 +5,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
-## Fixed
+### Added
+- `artists.Axes.scatter`: plot one variable against another, with scatter point color determined by a channel.
+
+### Fixed
 - `data.from_Solis`: import works without metadata
 
 
