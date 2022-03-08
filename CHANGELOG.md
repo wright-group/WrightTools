@@ -6,6 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ## [Unreleased]
 
 ## Fixed
+- docs: from method JASCO example updated
 - `data.from_Solis`: import works without metadata
 
 

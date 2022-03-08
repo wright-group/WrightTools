@@ -34,15 +34,15 @@ We will walk through by way of example, using :meth:`~WrightTools.data.from_JASC
     # --- define ---------------------------------------------------------------
     __all__ = ["from_JASCO"]
     # --- from function --------------------------------------------------------
-    def from_JASCO(filepath, name=None, parent=None, *, verbose=True):
+    def from_JASCO(filepath, name=None, parent=None, verbose=True) -> Data:
         """Create a data object from JASCO UV-Vis spectrometers.
 
         Parameters
         ----------
         filepath : path-like
-           Path to .txt file.
-           Can be either a local or remote file (http/ftp).
-           Can be compressed with gz/bz2, decompression based on file name.
+            Path to .txt file.
+            Can be either a local or remote file (http/ftp).
+            Can be compressed with gz/bz2, decompression based on file name.
         name : string (optional)
             Name to give to the created data object. If None, filename is used.
             Default is None.
@@ -57,13 +57,14 @@ We will walk through by way of example, using :meth:`~WrightTools.data.from_JASC
             New data object(s).
         """
         # parse filepath
-        filestr = ps.fspath(filepath)
+        filestr = os.fspath(filepath)
         filepath = pathlib.Path(filepath)
+
         if not ".txt" in filepath.suffixes:
             wt_exceptions.WrongFileTypeWarning.warn(filepath, ".txt")
         # parse name
         if not name:
-            name = os.path.basename(filepath).split(".")[0]
+            name = filepath.name.split(".")[0]
         # create data
         kwargs = {"name": name, "kind": "JASCO", "source": filestr}
         if parent is None:
@@ -75,7 +76,8 @@ We will walk through by way of example, using :meth:`~WrightTools.data.from_JASC
         f = ds.open(filestr, "rt")
         arr = np.genfromtxt(f, skip_header=18).T
         f.close()
-        # add variable and channels
+
+        # chew through all scans
         data.create_variable(name="energy", values=arr[0], units="nm")
         data.create_channel(name="signal", values=arr[1])
         data.transform("energy")
@@ -121,7 +123,7 @@ Check out the existing examples for formatting, such as the example from :meth:`
 
 .. code-block:: python
 
-    def from_JASCO(filepath, name=None, parent=None, *, verbose=True):
+    def from_JASCO(filepath, name=None, parent=None, verbose=True) -> Data:
         """Create a data object from JASCO UV-Vis spectrometers.
 
         Parameters
