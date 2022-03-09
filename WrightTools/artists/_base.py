@@ -468,10 +468,13 @@ class Axes(matplotlib.axes.Axes):
         Data need not be structured.
         If data object is not provided, scatter reverts to the [matplotlib parent method](https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.scatter.html?highlight=scatter#matplotlib.axes.Axes.scatter)
 
-        Parameters
-        ----------
+        args
+        ---------
         data : 2D WrightTools.data.Data object
             Data to plot.
+
+        kwargs
+        ----------
         x : int or string (optional)
             variable name or index for x (abscissa) axis.  Default is 0
         y : int or string (optional)
@@ -503,7 +506,7 @@ class Axes(matplotlib.axes.Axes):
             y = kwargs.pop("y", 1)
             y = wt_kit.get_index(data.variable_names, y)
             y = data.variables[y].full.flatten()
-            args = [x, y] + args[2:]
+            args = [x, y] + args[1:]
 
             channel = kwargs.pop("channel", 0)
             channel_index = wt_kit.get_index(data.channel_names, channel)
@@ -514,10 +517,11 @@ class Axes(matplotlib.axes.Axes):
 
             cmap = self._parse_cmap(data, channel_index=channel_index, **kwargs)["cmap"]
 
-            z = data.channels[channel_index][:].flatten()
-            z = norm(z)
-            z = cmap(z)
-            kwargs["c"] = z
+            if "c" not in kwargs.keys():
+                z = data.channels[channel_index][:].flatten()
+                z = norm(z)
+                z = cmap(z)
+                kwargs["c"] = z
 
             self._apply_labels(
                 autolabel=kwargs.pop("autolabel", False),
