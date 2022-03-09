@@ -466,16 +466,16 @@ class Axes(matplotlib.axes.Axes):
         """Scatter plot a channel against two _variables_.
         Scatter point color reflects channel values.
         Data need not be structured.
+        If data object is not provided, scatter reverts to the [matplotlib parent method](https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.scatter.html?highlight=scatter#matplotlib.axes.Axes.scatter)
 
         Parameters
         ----------
-        data : 2D WrightTools.data.Data object (optional)
-            Data to plot.  If not provided, scatter reverts to the
-            [matplotlib parent method](https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.scatter.html?highlight=scatter#matplotlib.axes.Axes.scatter)
-        x : WrightTools.data.Variable
-            x (abscissa) variable.
-        y : WrightTools.data.Variable
-            y (ordinate) variable.
+        data : 2D WrightTools.data.Data object
+            Data to plot.
+        x : int or string (optional)
+            variable name or index for x (abscissa) axis.  Default is 0
+        y : int or string (optional)
+            variable name or index for y (ordinate) axis.  Default is 1
         channel : int or string (optional)
             Channel index or name. Default is 0.
         autolabel : {'none', 'both', 'x', 'y'}  (optional)
@@ -496,8 +496,13 @@ class Axes(matplotlib.axes.Axes):
         args = list(args)
         if isinstance(args[0], Data):
             data = args.pop(0)
-            x = data[args[0]].full.flatten()
-            y = data[args[1]].full.flatten()
+            x = kwargs.pop("x", 0)
+            x = wt_kit.get_index(data.variable_names, x)
+            x = data.variables[x].full.flatten()
+
+            y = kwargs.pop("y", 1)
+            y = wt_kit.get_index(data.variable_names, y)
+            y = data.variables[y].full.flatten()
             args = [x, y] + args[2:]
 
             channel = kwargs.pop("channel", 0)
