@@ -63,37 +63,36 @@ def from_LabRAM(filepath, name=None, parent=None, verbose=True) -> Data:
     # header
     header = {}
     spectral_units = None
-    with open(filepath) as f:
-        while True:
-            line: str = f.readline()
-            if not line.startswith("#"):
-                break
-            key, val = [s.strip() for s in line[1:].split("=", 1)]
-            if "Acq. time" in key:
-                val = float(val)
-            elif "Accumulations" in line:
-                val = int(val)
-            elif "Range (" in line:
-                if "cm" in line:
-                    spectral_units = "wn"
-                else:
-                    spectral_units = "nm"
-            elif "Spectro" in line:
-                if "cm" in line:
-                    spectral_units = "wn"
-                else:
-                    spectral_units = "nm"
-            header[key] = val
+
+    ds = np.DataSource(None)
+    f = ds.open(filestr, "rt", encoding="ISO-8859-1")
+    while True:
+        line = f.readline()
+        if not line.startswith("#"):
+            wm = np.array([np.nan if i=="" else float(i) for i in line.split("\t")])
+            break
+        key, val = [s.strip() for s in line[1:].split("=", 1)]
+        if "Acq. time" in key:
+            val = float(val)
+        elif "Accumulations" in line:
+            val = int(val)
+        elif "Range (" in line:
+            if 'cm' in line:
+                spectral_units='wn'
+            else:
+                spectral_units='nm'
+        elif 'Spectro' in line:
+            if 'cm' in line:
+                spectral_units='wn'
+            else:
+                spectral_units='nm'
+        header[key] = val
     acquisition_time = header["Acq. time (s)"] * header["Accumulations"]
 
     # array
-    ds = np.DataSource(None)
-    f = ds.open(filestr, "rt")
     arr = np.genfromtxt(f, delimiter="\t")
     f.close()
 
-    wm = arr[0]
-    arr = arr[1:]
     spatial_ndim = np.isnan(wm).sum()
     wm = wm[spatial_ndim:]
 
