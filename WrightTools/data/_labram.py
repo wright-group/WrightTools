@@ -69,7 +69,7 @@ def from_LabRAM(filepath, name=None, parent=None, verbose=True) -> Data:
     while True:
         line = f.readline()
         if not line.startswith("#"):
-            wm = np.array([np.nan if i=="" else float(i) for i in line.split("\t")])
+            wm = np.array([np.nan if i == "" else float(i) for i in line.split("\t")])
             break
         key, val = [s.strip() for s in line[1:].split("=", 1)]
         if "Acq. time" in key:
@@ -77,15 +77,15 @@ def from_LabRAM(filepath, name=None, parent=None, verbose=True) -> Data:
         elif "Accumulations" in line:
             val = int(val)
         elif "Range (" in line:
-            if 'cm' in line:
-                spectral_units='wn'
+            if "cm" in line:
+                spectral_units = "wn"
             else:
-                spectral_units='nm'
-        elif 'Spectro' in line:
-            if 'cm' in line:
-                spectral_units='wn'
+                spectral_units = "nm"
+        elif "Spectro" in line:
+            if "cm" in line:
+                spectral_units = "wn"
             else:
-                spectral_units='nm'
+                spectral_units = "nm"
         header[key] = val
     acquisition_time = header["Acq. time (s)"] * header["Accumulations"]
 
