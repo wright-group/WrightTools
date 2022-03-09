@@ -8,7 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ## Fixed
 - `data.from_Solis`: import works without metadata
 - better error messages for some functions
-
+- remove unused imports
+- remove unused variables
 
 ## [3.4.3]
 

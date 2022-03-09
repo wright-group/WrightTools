@@ -9,7 +9,6 @@ import numpy as np
 import h5py
 
 import warnings
-import numbers
 
 from .. import kit as wt_kit
 from .._dataset import Dataset

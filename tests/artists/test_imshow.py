@@ -5,8 +5,6 @@ import WrightTools as wt
 from WrightTools import datasets
 from matplotlib import pyplot as plt
 import numpy as np
-import shutil
-import os
 
 
 def test_imshow_transform():
