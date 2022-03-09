@@ -7,7 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## Fixed
 - `data.from_Solis`: import works without metadata
-
+- remove unused imports
 
 ## [3.4.3]
 
