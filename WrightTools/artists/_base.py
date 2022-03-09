@@ -233,6 +233,8 @@ class Axes(matplotlib.axes.Axes):
         elif along == "y":
             ax = self.sidey = divider.append_axes("right", height, pad=pad, sharey=self)
             ax.transposed = True
+        else:
+            raise ValueError("unexpacted value for 'along': {along}, expected 'x' or 'y'")
         # beautify
         if along == "x":
             ax.set_ylim(ymin, ymax)
