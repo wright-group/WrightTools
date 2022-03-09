@@ -1904,9 +1904,7 @@ class Data(Group):
         elif isinstance(constant, Constant):
             constant_index = wt_kit.get_index(self.constants, constant)
         else:
-            raise TypeError(
-                f"unsupported type for 'constant_index': {type(constant_index).__name__}"
-            )
+            raise TypeError(f"unsupported type for 'constant': {type(constant).__name__}")
         constant = self._constants[constant_index]
         self._constants.pop(constant_index)
         self.flush()
