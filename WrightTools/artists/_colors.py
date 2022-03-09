@@ -3,7 +3,6 @@
 
 # --- import --------------------------------------------------------------------------------------
 
-import collections
 import copy
 
 import numpy as np

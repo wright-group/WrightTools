@@ -10,8 +10,6 @@ import dateutil
 from dateutil import tz
 import datetime
 
-import numpy as np
-
 
 # --- define --------------------------------------------------------------------------------------
 
