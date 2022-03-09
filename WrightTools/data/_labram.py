@@ -1,5 +1,3 @@
-
-
 # --- import --------------------------------------------------------------------------------------
 
 
@@ -67,8 +65,8 @@ def from_LabRAM(filepath, name=None, parent=None, verbose=True) -> Data:
     spectral_units = None
     with open(filepath) as f:
         while True:
-            line:str = f.readline()
-            if not line.startswith("#"):          
+            line: str = f.readline()
+            if not line.startswith("#"):
                 break
             key, val = [s.strip() for s in line[1:].split("=", 1)]
             if "Acq. time" in key:
@@ -76,15 +74,15 @@ def from_LabRAM(filepath, name=None, parent=None, verbose=True) -> Data:
             elif "Accumulations" in line:
                 val = int(val)
             elif "Range (" in line:
-                if 'cm' in line:
-                    spectral_units='wn'
+                if "cm" in line:
+                    spectral_units = "wn"
                 else:
-                    spectral_units='nm'
-            elif 'Spectro' in line:
-                if 'cm' in line:
-                    spectral_units='wn'
+                    spectral_units = "nm"
+            elif "Spectro" in line:
+                if "cm" in line:
+                    spectral_units = "wn"
                 else:
-                    spectral_units='nm'
+                    spectral_units = "nm"
             header[key] = val
     acquisition_time = header["Acq. time (s)"] * header["Accumulations"]
 
@@ -105,7 +103,7 @@ def from_LabRAM(filepath, name=None, parent=None, verbose=True) -> Data:
         data.transform("wm")
     elif spatial_ndim == 1:  # spectrum vs (x or xindex)
         data.create_variable("wm", values=wm[:, None], units=spectral_units)
-        data.create_channel("signal", values=arr[:,1:].T / acquisition_time, units="cps")
+        data.create_channel("signal", values=arr[:, 1:].T / acquisition_time, units="cps")
         x = arr[:, 0]
         if np.all(np.diff(x) == 1):  # xindex
             data.create_variable("xindex", values=x[None, :])
@@ -128,4 +126,3 @@ def from_LabRAM(filepath, name=None, parent=None, verbose=True) -> Data:
         data.transform("wm", "x", "ypts")
 
     return data
-
