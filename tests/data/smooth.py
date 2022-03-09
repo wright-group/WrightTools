@@ -8,8 +8,6 @@ import numpy as np
 
 import WrightTools as wt
 
-import matplotlib.pyplot as plt
-
 
 # --- test ----------------------------------------------------------------------------------------
 

@@ -1,5 +1,4 @@
 """Test building the documentation."""
-from sphinx import cmd
 from sphinx.cmd import build
 import os
 import shutil
