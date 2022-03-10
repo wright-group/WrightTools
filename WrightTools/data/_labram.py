@@ -76,7 +76,7 @@ def from_LabRAM(filepath, name=None, parent=None, verbose=True) -> Data:
         has_header = True
         key, val = [s.strip() for s in line[1:].split("=", 1)]
         header[key] = val
-    
+
     if not header:
         raise NotImplementedError(
             "At this time, we require metadata to parse LabRAM data. \
@@ -134,7 +134,9 @@ def from_LabRAM(filepath, name=None, parent=None, verbose=True) -> Data:
                 data.transform("wm", "x")
         elif extra_dims == 2:  # spectrum vs x vs y
             # fold to 3D
-            x = sorted(set(arr[:, 0]), reverse=arr[0,0] > arr[-1, 0])  # 0th column is stepped always (?)
+            x = sorted(
+                set(arr[:, 0]), reverse=arr[0, 0] > arr[-1, 0]
+            )  # 0th column is stepped always (?)
             x = np.array(list(x))
             x = x.reshape(1, -1, 1)
             y = arr[:, 1].reshape(1, x.size, -1)
