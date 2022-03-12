@@ -24,9 +24,7 @@ def test_default():
     assert yo.shape == (300,)
     assert zo.shape == (300, 300)
 
-    assert np.all(
-        np.isclose(zo, zcheck, 0.01)
-    )  # all values within 1 percent of "actual"
+    assert np.all(np.isclose(zo, zcheck, 0.01))  # all values within 1 percent of "actual"
 
 
 def test_non_default():
@@ -43,9 +41,7 @@ def test_non_default():
     assert yo.shape == (400,)
     assert zo.shape == (200, 400)
 
-    assert np.all(
-        np.isclose(zo, zcheck, 0.01)
-    )  # all values within 1 percent of "actual"
+    assert np.all(np.isclose(zo, zcheck, 0.01))  # all values within 1 percent of "actual"
 
 
 # --- run -----------------------------------------------------------------------------------------

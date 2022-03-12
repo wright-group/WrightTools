@@ -23,13 +23,9 @@ def test_gradient():
     data.gradient("v2")
 
     assert data.ch_v1_gradient.shape == (6,)
-    assert np.allclose(
-        data.ch_v1_gradient.points, np.array([1.0, 1.5, 2.5, 3.5, 4.5, 5.0])
-    )
+    assert np.allclose(data.ch_v1_gradient.points, np.array([1.0, 1.5, 2.5, 3.5, 4.5, 5.0]))
     assert data.ch_v2_gradient.shape == (6,)
-    assert np.allclose(
-        data.ch_v2_gradient.points, np.array([0.5, 0.75, 1.25, 1.75, 2.25, 2.5])
-    )
+    assert np.allclose(data.ch_v2_gradient.points, np.array([0.5, 0.75, 1.25, 1.75, 2.25, 2.5]))
 
 
 # --- run -----------------------------------------------------------------------------------------

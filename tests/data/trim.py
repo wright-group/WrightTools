@@ -17,7 +17,7 @@ def test_trim_2Dgauss():
     # create original arrays
     x = np.linspace(-3, 3, 31)[:, None]
     y = np.linspace(-3, 3, 31)[None, :]
-    arr = np.exp(-1 * (x ** 2 + y ** 2))
+    arr = np.exp(-1 * (x**2 + y**2))
     # create damaged array
     arr2 = arr.copy()
     np.random.seed(11)  # set seed for reproducibility
@@ -54,7 +54,7 @@ def test_trim_3Dgauss():
     x = np.linspace(-3, 3, 31)[:, None, None]
     y = np.linspace(-3, 3, 31)[None, :, None]
     z = np.linspace(-3, 3, 31)[None, None, :]
-    arr = np.exp(-1 * (x ** 2 + y ** 2 + z ** 2))
+    arr = np.exp(-1 * (x**2 + y**2 + z**2))
     # create damaged array
     arr2 = arr.copy()
     np.random.seed(11)  # set seed for reproducibility

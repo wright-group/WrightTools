@@ -68,9 +68,7 @@ def test_collection_convert():
     results.convert("eV")
 
     # alternating indices should be enough to prove all are eV
-    assert (
-        results.neat.units[0] == "fs"
-    )  # verifies conversion of diff. kind is excluded
+    assert results.neat.units[0] == "fs"  # verifies conversion of diff. kind is excluded
     assert results.neat.units[1] == "eV"
     assert results.messy.units[1] == "eV"
     assert results.confusing.units[0] == "eV"

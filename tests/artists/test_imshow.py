@@ -37,9 +37,7 @@ def test_imshow_approx_pcolormesh():
 
     lim0 = ax0.get_xlim() + ax0.get_ylim()
     lim1 = ax1.get_xlim() + ax1.get_ylim()
-    assert np.allclose(
-        lim0, lim1, atol=1e-3, rtol=1
-    ), f"unequal axis limits: {lim0}, {lim1}"
+    assert np.allclose(lim0, lim1, atol=1e-3, rtol=1), f"unequal axis limits: {lim0}, {lim1}"
 
     bbox = mesh.get_datalim(ax0.transData)
     meshbox = [bbox.x0, bbox.x1, bbox.y0, bbox.y1]

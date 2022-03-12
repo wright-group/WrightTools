@@ -15,9 +15,7 @@ def test_now():
 
 
 def test_utc():
-    wt.kit.timestamp_from_RFC3339(
-        "2017-11-13 16:09:17Z"
-    )  # exception will be raised upon failure
+    wt.kit.timestamp_from_RFC3339("2017-11-13 16:09:17Z")  # exception will be raised upon failure
 
 
 def test_date():
