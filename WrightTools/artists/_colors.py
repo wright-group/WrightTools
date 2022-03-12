@@ -3,7 +3,6 @@
 
 # --- import --------------------------------------------------------------------------------------
 
-import collections
 import copy
 
 import numpy as np
@@ -293,18 +292,6 @@ def get_color_cycle(n, cmap="rainbow", rotations=3):
 
 cubehelix = make_cubehelix()
 
-experimental = [
-    "#FFFFFF",
-    "#0000FF",
-    "#0080FF",
-    "#00FFFF",
-    "#00FF00",
-    "#FFFF00",
-    "#FF8000",
-    "#FF0000",
-    "#881111",
-]
-
 greenscale = ["#000000", "#00FF00"]  # black  # green
 
 greyscale = ["#FFFFFF", "#000000"]  # white  # black
@@ -379,24 +366,6 @@ isoluminant3 = make_colormap(
     ],
     name="isoluminant3",
 )
-
-signed = [
-    "#0000FF",  # blue
-    "#002AFF",
-    "#0055FF",
-    "#007FFF",
-    "#00AAFF",
-    "#00D4FF",
-    "#00FFFF",
-    "#FFFFFF",  # white
-    "#FFFF00",
-    "#FFD400",
-    "#FFAA00",
-    "#FF7F00",
-    "#FF5500",
-    "#FF2A00",
-    "#FF0000",  # red
-]
 
 signed_old = [
     "#0000FF",  # blue
