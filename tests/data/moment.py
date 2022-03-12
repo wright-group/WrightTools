@@ -29,7 +29,9 @@ def test_moment_nd():
     p = datasets.PyCMDS.w1_wa_000
     data = wt.data.from_PyCMDS(p)
     data.convert("nm")
-    data.create_variable("x", (data.wa[:] - data.w1[:]).mean(axis=0, keepdims=True), units="nm")
+    data.create_variable(
+        "x", (data.wa[:] - data.w1[:]).mean(axis=0, keepdims=True), units="nm"
+    )
 
     data.transform("w1", "x")
 

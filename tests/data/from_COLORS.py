@@ -50,7 +50,9 @@ def test_v0p2_d1_d2_diagonal():
 def test_v2p1_MoS2_TrEE_movie():
     ps = sorted(
         glob.glob(
-            os.path.join(__here__, "test_data", "COLORS", "v2.1", "MoS2 TrEE movie", "*.dat")
+            os.path.join(
+                __here__, "test_data", "COLORS", "v2.1", "MoS2 TrEE movie", "*.dat"
+            )
         )
     )
     data = wt.data.from_COLORS(ps)

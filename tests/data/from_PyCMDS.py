@@ -79,7 +79,8 @@ def test_incomplete():
     assert data.shape == (9, 9)
     assert data.axis_expressions == ("d1", "d2")
     assert np.allclose(
-        data.d1.points, np.array([-1.0, -1.125, -1.25, -1.375, -1.5, -1.625, -1.75, -1.875, -2.0])
+        data.d1.points,
+        np.array([-1.0, -1.125, -1.25, -1.375, -1.5, -1.625, -1.75, -1.875, -2.0]),
     )
     data.close()
 

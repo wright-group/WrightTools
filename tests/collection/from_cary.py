@@ -23,7 +23,9 @@ def test_filters():
     p = datasets.Cary.filters
     col = wt.collection.from_Cary(p)
     assert len(col) == 11
-    for d, sh in zip(col.values(), (121, 196, 301, 301, 301, 301, 301, 301, 301, 401, 101)):
+    for d, sh in zip(
+        col.values(), (121, 196, 301, 301, 301, 301, 301, 301, 301, 401, 101)
+    ):
         assert d.axis_names == ("wavelength",)
         assert d.channels[0].natural_name in ("abs", "%t")
         assert d.shape == (sh,)

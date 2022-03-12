@@ -116,9 +116,9 @@ def converter(val, current_unit, destination_unit):
     number
         Converted value.
     """
-    if (current_unit == None) and (destination_unit == None):
+    if (current_unit is None) and (destination_unit is None):
         return val
-    if (current_unit == None) or (destination_unit == None):
+    if (current_unit is None) or (destination_unit is None):
         warnings.warn(
             f"conversion {current_unit} to {destination_unit} not valid: returning input"
         )

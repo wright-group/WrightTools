@@ -36,6 +36,8 @@ def test_repr():
     data.z.label = "z"
     data.set_constants("x-y", "z")
     assert (
-        re.match(r"\<WrightTools\.Constant x-y = 0\.0 None at .*\>", repr(data.constants[0]))
+        re.match(
+            r"\<WrightTools\.Constant x-y = 0\.0 None at .*\>", repr(data.constants[0])
+        )
         is not None
     )
