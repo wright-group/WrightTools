@@ -5,8 +5,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
-## Fixed
+### Added
+- Invalid `unit` conversions now throw a `pint` error.
+
+### Fixed
 - `data.from_Solis`: import works without metadata
+- `unit` conversions of `None` to `None` no longer throws a warning.
 - better error messages for some functions
 - remove unused imports
 - remove unused variables
