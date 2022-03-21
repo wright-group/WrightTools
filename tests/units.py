@@ -5,6 +5,7 @@
 
 import numpy as np
 import pytest
+import pint
 
 import WrightTools as wt
 from WrightTools import datasets
@@ -47,3 +48,34 @@ def test_bad_unit_registry():
 def test_0_inf():
     assert wt.units.convert(0, "wn", "nm") == np.inf
     assert wt.units.convert(0, "nm", "wn") == np.inf
+
+
+def test_round_trip():
+    start = 12500.0
+    halftrip = wt.units.convert(start, "wn", "eV")
+    fulltrip = wt.units.convert(halftrip, "eV", "wn")
+    assert np.isclose(start, fulltrip)
+
+
+def test_return_input_noerror():
+    val = 12500
+    out = wt.units.convert(val, current_unit=None, destination_unit=None)
+    assert val == out
+
+
+def test_return_input_warning():
+    val = 12500
+    with pytest.warns(UserWarning):
+        out = wt.units.convert(val, None, "eV")
+        assert val == out
+    with pytest.warns(UserWarning):
+        out = wt.units.convert(val, "wn", None)
+        assert val == out
+
+
+def test_error():
+    val = 12500
+    with pytest.raises(pint.errors.DimensionalityError):
+        wt.units.convert(val, "wn", "W")
+    with pytest.raises(pint.errors.DimensionalityError):
+        wt.units.convert(val, "W", "wn")
