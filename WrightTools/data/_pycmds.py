@@ -50,7 +50,6 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True, *, collapse=True
         A Data instance.
     """
     filestr = os.fspath(filepath)
-    filepath = pathlib.Path(filepath)
 
     # header
     ds = np.DataSource(None)
@@ -254,14 +253,6 @@ def _no_collapse_create(data, headers, signed, index, kind, name, shape):
     if kind == "hardware":
         units = headers["units"][index]
         label = headers["label"][index]
-        if (
-            "w" in name
-            and name.startswith(tuple(data.variable_names))
-            and name not in headers["axis names"]
-        ):
-            inherited_shape = data[name.split("_")[0]].shape
-        else:
-            units = headers["units"][index]
         data.create_variable(name, shape=sh, dtype=np.dtype(np.float64), units=units, label=label)
     if kind == "channel":
         data.create_channel(name=name, shape=sh, dtype=np.dtype(np.float64), signed=next(signed))

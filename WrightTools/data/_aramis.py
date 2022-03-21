@@ -60,7 +60,7 @@ def from_Aramis(filepath, name=None, parent=None, verbose=True) -> Data:
     header = f.read(10)
     if header != b"DataMatrix":
         warnings.warn(f"Unexpected Header {header}, Aramis parsing may not be valid")
-    instr = _readstr(f)
+    _ = _readstr(f)  # instr, not used but needs to be read
     iname = _readstr(f)
     # parse name
     if not name:
