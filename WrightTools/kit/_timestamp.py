@@ -10,8 +10,6 @@ import dateutil
 from dateutil import tz
 import datetime
 
-import numpy as np
-
 
 # --- define --------------------------------------------------------------------------------------
 
@@ -137,10 +135,6 @@ class TimeStamp:
     @property
     def human(self):
         """Human-readable timestamp."""
-        # get timezone offset
-        delta_sec = time.timezone
-        m, s = divmod(delta_sec, 60)
-        h, m = divmod(m, 60)
         # create output
         format_string = "%Y-%m-%d %H:%M:%S"
         out = self.datetime.strftime(format_string)

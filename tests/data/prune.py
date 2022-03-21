@@ -62,7 +62,6 @@ def test_prune_string():
 def test_prune_tuple():
     p = datasets.PyCMDS.wm_w2_w1_000
     data = wt.data.from_PyCMDS(p)
-    num_channels = len(data.channels)
     data.prune(("pyro1", 3, 4), verbose=False)
     assert len(data.variables) == 3
     assert set(data.variable_names) == {"wm", "w2", "w1"}

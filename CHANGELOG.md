@@ -5,10 +5,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
-## Fixed
+### Added
+- Invalid `unit` conversions now throw a `pint` error.
+- `data.from_LabRAM`: import Horiba LabRAM txt files
+
+### Fixed
 - docs: from method JASCO example updated
 - `data.from_Solis`: import works without metadata
-
+- `unit` conversions of `None` to `None` no longer throws a warning.
+- remove unused imports
+- remove unused variables
 
 ## [3.4.3]
 

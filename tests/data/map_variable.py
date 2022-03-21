@@ -20,7 +20,7 @@ def test_array():
     assert data.shape == (1801,)
     new = np.linspace(6000, 8000, 55)
     mapped = data.map_variable("energy", new, "wn")
-    assert data.axes[0][:].all() == new.all()
+    assert np.allclose(mapped.axes[0][:], 1e7 / new)
     data.close()
 
 
