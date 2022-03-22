@@ -476,9 +476,11 @@ class Axes(matplotlib.axes.Axes):
         kwargs
         ----------
         x : int or string (optional)
-            variable name or index for x (abscissa) axis.  Default is 0
+            axis name or index for x (abscissa) axis.  Default is 0.  
+            If x does not match an axis, searches variable names for match.
         y : int or string (optional)
-            variable name or index for y (ordinate) axis.  Default is 1
+            axis name or index for y (ordinate) axis.  Default is 1.
+            If y does not match an axis, searches variable names for match.
         channel : int or string (optional)
             Channel index or name. Default is 0.
         autolabel : {'none', 'both', 'x', 'y'}  (optional)
@@ -499,14 +501,18 @@ class Axes(matplotlib.axes.Axes):
         args = list(args)
         if isinstance(args[0], Data):
             data = args.pop(0)
-            x = kwargs.pop("x", 0)
-            x = wt_kit.get_index(data.variable_names, x)
-            x = data.variables[x].full.flatten()
 
-            y = kwargs.pop("y", 1)
-            y = wt_kit.get_index(data.variable_names, y)
-            y = data.variables[y].full.flatten()
-            args = [x, y] + args[1:]
+            coords = []
+            for axis in [kwargs.pop("x", 0), kwargs.pop("y", 1)]:
+                try:  # check axes
+                    axis = wt_kit.get_index(data.axis_names, axis)
+                    axis = data.axes[axis].full.flatten()
+                except (ValueError, IndexError):  # check vars
+                    axis = wt_kit.get_index(data.variable_names, axis)
+                    axis = data.variables[axis].full.flatten()
+                coords.append(axis)
+
+            args = coords + args
 
             channel = kwargs.pop("channel", 0)
             channel_index = wt_kit.get_index(data.channel_names, channel)
