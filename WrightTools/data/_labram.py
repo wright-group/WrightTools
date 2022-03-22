@@ -5,7 +5,6 @@ import os
 import pathlib
 import warnings
 import time
-import re
 
 import numpy as np
 
@@ -73,7 +72,6 @@ def from_LabRAM(filepath, name=None, parent=None, verbose=True) -> Data:
         if not line.startswith("#"):
             wm = np.array([np.nan if i == "" else float(i) for i in line.split("\t")])
             break
-        has_header = True
         key, val = [s.strip() for s in line[1:].split("=", 1)]
         header[key] = val
 
@@ -94,7 +92,7 @@ def from_LabRAM(filepath, name=None, parent=None, verbose=True) -> Data:
         acquisition_time = float(header["Acq. time (s)"]) * int(header["Accumulations"])
         channel_units = "cps"
     except KeyError:
-        raise Warning(f"{data.filename}: could not determine signal acquisition time")
+        warnings.warn(f"{filepath.name}: could not determine signal acquisition time.")
         acquisition_time = 1
         channel_units = None
 
@@ -105,7 +103,8 @@ def from_LabRAM(filepath, name=None, parent=None, verbose=True) -> Data:
     elif "nm" in k_spec:
         spectral_units = "nm"
     else:
-        raise Warning(f"spectral units are unrecognized: {k_spec}")
+        warnings.warn(f"spectral units are unrecognized: {k_spec}")
+        spectral_units = None
 
     # dimensionality
     extra_dims = np.isnan(wm).sum()
@@ -115,7 +114,7 @@ def from_LabRAM(filepath, name=None, parent=None, verbose=True) -> Data:
         wm, arr = np.genfromtxt(f, delimiter="\t", unpack=True)
         f.close()
         data.create_variable("wm", values=wm, units=spectral_units)
-        data.create_channel("signal", values=arr / acquisition_time, units="cps")
+        data.create_channel("signal", values=arr / acquisition_time, units=channel_units)
         data.transform("wm")
     else:
         arr = np.genfromtxt(f, delimiter="\t")
@@ -124,7 +123,7 @@ def from_LabRAM(filepath, name=None, parent=None, verbose=True) -> Data:
 
         if extra_dims == 1:  # spectrum vs (x or survey)
             data.create_variable("wm", values=wm[:, None], units=spectral_units)
-            data.create_channel("signal", values=arr[:, 1:].T / acquisition_time, units="cps")
+            data.create_channel("signal", values=arr[:, 1:].T / acquisition_time, units=channel_units)
             x = arr[:, 0]
             if np.all(x == np.arange(x.size) + 1):  # survey
                 data.create_variable("index", values=x[None, :])
@@ -146,7 +145,7 @@ def from_LabRAM(filepath, name=None, parent=None, verbose=True) -> Data:
             data.create_variable("x", values=x, units="um")
             data.create_variable("y", values=y, units="um")
             data.create_variable("y_points", values=ypts, units="um")
-            data.create_channel("signal", values=sig / acquisition_time, units="cps")
+            data.create_channel("signal", values=sig / acquisition_time, units=channel_units)
             data.transform("wm", "x", "y_points")
 
     if verbose:
