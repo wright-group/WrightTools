@@ -478,7 +478,7 @@ class Axes(matplotlib.axes.Axes):
         kwargs
         ----------
         x : int or string (optional)
-            axis name or index for x (abscissa) axis.  Default is 0.  
+            axis name or index for x (abscissa) axis.  Default is 0.
             If x does not match an axis, searches variable names for match.
         y : int or string (optional)
             axis name or index for y (ordinate) axis.  Default is 1.
@@ -520,7 +520,7 @@ class Axes(matplotlib.axes.Axes):
                     "'c' kwarg not allowed when data object provided. \
                     Use `cmap` instead to control colors."
                 )
-            
+
             channel = kwargs.pop("channel", 0)
             channel_index = wt_kit.get_index(data.channel_names, channel)
 
