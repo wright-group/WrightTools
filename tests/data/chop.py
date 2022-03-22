@@ -95,7 +95,7 @@ def test_3D_to_2D_signed():
     chop = data.chop("wm", "w2")
     assert len(chop) == 11
     for d in chop.values():
-        assert data.signal_diff.signed
+        assert d.signal_diff.signed
     data.close()
     chop.close()
 
