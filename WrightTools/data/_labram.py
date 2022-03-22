@@ -123,7 +123,9 @@ def from_LabRAM(filepath, name=None, parent=None, verbose=True) -> Data:
 
         if extra_dims == 1:  # spectrum vs (x or survey)
             data.create_variable("wm", values=wm[:, None], units=spectral_units)
-            data.create_channel("signal", values=arr[:, 1:].T / acquisition_time, units=channel_units)
+            data.create_channel(
+                "signal", values=arr[:, 1:].T / acquisition_time, units=channel_units
+            )
             x = arr[:, 0]
             if np.all(x == np.arange(x.size) + 1):  # survey
                 data.create_variable("index", values=x[None, :])
