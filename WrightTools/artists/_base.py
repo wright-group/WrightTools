@@ -506,14 +506,19 @@ class Axes(matplotlib.axes.Axes):
             for axis in [kwargs.pop("x", 0), kwargs.pop("y", 1)]:
                 try:  # check axes
                     axis = wt_kit.get_index(data.axis_names, axis)
-                    axis = data.axes[axis].full.flatten()
+                    axis = data.axes[axis][:]
                 except (ValueError, IndexError):  # check vars
                     axis = wt_kit.get_index(data.variable_names, axis)
-                    axis = data.variables[axis].full.flatten()
+                    axis = data.variables[axis][:]
+                # broadcast up to channel shape
                 coords.append(axis)
 
-            args = coords + args
-
+            if "c" in kwargs.keys():
+                raise KeyError(
+                    "'c' kwarg not allowed when data object provided. \
+                    Use `cmap` instead to control colors."
+                )
+            
             channel = kwargs.pop("channel", 0)
             channel_index = wt_kit.get_index(data.channel_names, channel)
 
@@ -523,11 +528,23 @@ class Axes(matplotlib.axes.Axes):
 
             cmap = self._parse_cmap(data, channel_index=channel_index, **kwargs)["cmap"]
 
-            if "c" not in kwargs.keys():
-                z = data.channels[channel_index][:].flatten()
-                z = norm(z)
-                z = cmap(z)
-                kwargs["c"] = z
+            z = data.channels[channel_index][:]
+
+            # fill x, y, z to joint shape
+            shape = wt_kit.joint_shape(z, *coords)
+
+            def full(arr, shape):
+                for i in range(arr.ndim):
+                    if arr.shape[i] == 1:
+                        arr = np.repeat(arr, shape[i], axis=i)
+                return arr
+
+            args = [full(ax, shape).flatten() for ax in coords] + args
+
+            z = full(z, shape).flatten()
+            z = norm(z)
+            z = cmap(z)
+            kwargs["c"] = z
 
             self._apply_labels(
                 autolabel=kwargs.pop("autolabel", False),
