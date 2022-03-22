@@ -377,6 +377,8 @@ class Artist:
             line = subplot.plot(
                 xi, yi, linestyle="-", color=color, linewidth=2, solid_capstyle="butt"
             )
+        else:
+            raise ValueError("unexpected value for 'kind': {kind}, expected ('ket', 'bra', 'out')")
         # add arrow head
         arrow_head = subplot.arrow(
             self.x_pos[number],

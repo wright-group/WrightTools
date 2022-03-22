@@ -130,6 +130,8 @@ def add_sideplot(
         axCorr = divider.append_axes("top", height, pad=pad, sharex=ax)
     elif along == "y":
         axCorr = divider.append_axes("right", height, pad=pad, sharey=ax)
+    else:
+        raise ValueError(f"unexpected 'along': {along}, expected 'x' or 'y'")
     axCorr.autoscale(False)
     axCorr.set_adjustable("box")
     # bin
