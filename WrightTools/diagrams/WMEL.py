@@ -450,9 +450,7 @@ class Artist:
         if close:
             plt.close()
 
-
-
-    def add_cascade(self, diagram, number, number_of_interactions=4, titles=[None], title_font_size=16, state_names=None, virtual=[None], state_font_size=14, state_text_buffer=0.5, label_side="left", bbox_adjust=[0.2, 0.9, 0.2, 0.78]) :
+    def add_cascade(self, diagram, number, number_of_interactions=4, titles=[None], title_font_size=16, state_names=None, virtual=[None], state_font_size=14, state_text_buffer=0.5, label_side="left", bbox_adjust=[0.2, 0.9, 0.2, 0.78], transfer_arrow_linewidth = 1.5, transfer_arrow_offset=[0.5,5]) :
         """Add cascading process as plot. 
         
         Parameters
@@ -460,7 +458,7 @@ class Artist:
         diagram : [row,column]
             row and column positions to place the cascade in the artist grid.
         number : int
-            number of cascading processes
+            number of cascading processes to add in series
         number_of_interactions : int (optional)
             number of interactions for each sub process. 
             Equal for all subprocesses. Default is 4.
@@ -480,9 +478,12 @@ class Artist:
             set the side on which the state label will appear. Either 'left' or 'right'. Default is 'left'
         bbox_adjust : list of floats (optional)
             adjusts the left, right, bottom, and top bounds of the cascade diagram. Default is bbox_adjust=[0.2, 0.9, 0.2, 0.78]
-        
-        
+        transfer_arrow_linewidth = float (ooptional)
+            adjusts the thickness of the arrow between cascading WMEL diagrams
+        transfer_arrow_offset = [x_offset, y_offset] (optional)
+            adjusts the label of the energy transfer arrow along the x and y axis 
         """
+
         x,y = diagram[0], diagram[1]
         self.clear_diagram([x,y]) #clear prev. added single process in grid
         self.cascades[f'[{x},{y}]']=[] #store list of cascades in grid for iteration
@@ -496,16 +497,17 @@ class Artist:
         casc_subplot = sfig.subplots(1,3*number-3, gridspec_kw=spec, subplot_kw={'position':bbox}) #make subplots
         
         #empirical adjustment to subfigure bbox to align levels with other row plots
-        sfig.subplots_adjust(left=0.3, bottom=0.2, right=0.9, top=0.78)
+        sfig.subplots_adjust(left=bbox_adjust[0], bottom=bbox_adjust[2], right=bbox_adjust[1], top=bbox_adjust[3])
         
         #plot the arrows between cascading processes as a sine arrow
         for arrowindex, arrowplot in enumerate(casc_subplot.flatten()[:-1]):
             if arrowindex%2==1:
                 xout = np.linspace(0,4,100)
                 yout = [np.sin(x*2*np.pi) for x in xout]
-                arrowplot.plot(xout,yout, color='k', linewidth=2)
+                arrowplot.plot(xout,yout, color='k', linewidth=transfer_arrow_linewidth)
                 arrowplot.set_ylim(-20,20) #sets the visible amplitude of the sine wave
-                arrowplot.annotate(r'h$\mathrm{\nu}$',[xout[len(xout)//2]-0.5,yout[len(yout)//2]+3]) #adds hv label
+                arr_lbl_x, arr_lbl_y = transfer_arrow_offset[0], transfer_arrow_offset[1]
+                arrowplot.annotate(r'$\mathrm{\hbar}$$\mathrm{\omega}$',[xout[len(xout)//4]-arr_lbl_x,yout[len(yout)//2]+arr_lbl_y]) #adds hv label
                 arrowplot.arrow(xout[-2],yout[-2], 0.0001, 0, head_width=2, head_length=1, fc='k', ec='k') #add arrowhead
         
         #plot the cascade's processes' diagrams
@@ -519,16 +521,18 @@ class Artist:
                         subtitles.append("")
                 elif titles==[None]: subtitles=['']*(2*number_of_interactions)
                 print(subtitles)
-                if ind==0:
+                if ind==0 and label_side=='left':
                     casc_wmel = Subplot(plot,energies=self.energies, number_of_interactions=number_of_interactions, title=subtitles[ind], title_font_size=title_font_size, state_names=state_names, virtual=virtual, state_font_size=state_font_size, state_text_buffer=state_text_buffer, label_side=label_side) #Uses the Subplot class to make the each process diagram      
+                
+                if ind==len(subtitles)-2 and label_side=='right':
+                    casc_wmel = Subplot(plot,energies=self.energies, number_of_interactions=number_of_interactions, title=subtitles[ind], title_font_size=title_font_size, state_names=state_names, virtual=virtual, state_font_size=state_font_size, state_text_buffer=state_text_buffer, label_side=label_side) #Uses the Subplot class to make the each process diagram      
+                
+                
                 else:   
                     casc_wmel = Subplot(plot,energies=self.energies, number_of_interactions=number_of_interactions, title=subtitles[ind], title_font_size=title_font_size, virtual=virtual) #Uses the Subplot class to make the each process diagram    
                 self.cascades[f'[{x},{y}]'].append(casc_wmel) 
-                
-        
-                
-                
-    def add_cascade_arrow(self, diagram, cascade_number, number, between, kind, label="", head_length=10, head_aspect=1, font_size=14, color='k'):
+                         
+    def add_cascade_arrow(self, diagram, cascade_number, index, between, kind, label="", head_length=10, head_aspect=1, font_size=14, color='k'):
         """Add arrow to cascade subprocess.
         
         Parameters
@@ -538,7 +542,7 @@ class Artist:
             row and column indices location of the cascade in the figure. 
         cascade_number : int
             index of subprocess to add the arrow
-        number : int
+        index : int
             interaction index in the subprocess to which the arrow will be added
         between : [start,stop]
             start and stop energy level indeces from which the arrow will point to
@@ -555,7 +559,6 @@ class Artist:
         color : str (optional)
             set arrow color. Default is black
          """
+        
         x,y = diagram[0],diagram[1]
-        self.cascades[f'[{x},{y}]'][cascade_number].add_arrow(number,between,kind, label=label, head_length=head_length, head_aspect=head_aspect, font_size=font_size, color=color)
-         
-            
+        self.cascades[f'[{x},{y}]'][cascade_number].add_arrow(index,between,kind, label=label, head_length=head_length, head_aspect=head_aspect, font_size=font_size, color=color)
