@@ -521,14 +521,11 @@ class Artist:
                         subtitles.append("")
                 elif titles==[None]: subtitles=['']*(2*number_of_interactions)
                 print(subtitles)
-                if ind==0 and label_side=='left':
+                if ind==0 and label_side=='left': #append label only to left of left-most plot
                     casc_wmel = Subplot(plot,energies=self.energies, number_of_interactions=number_of_interactions, title=subtitles[ind], title_font_size=title_font_size, state_names=state_names, virtual=virtual, state_font_size=state_font_size, state_text_buffer=state_text_buffer, label_side=label_side) #Uses the Subplot class to make the each process diagram      
-                
-                if ind==len(subtitles)-2 and label_side=='right':
+                if ind==len(subtitles)-2 and label_side=='right': #append label only to right of right-most plot
                     casc_wmel = Subplot(plot,energies=self.energies, number_of_interactions=number_of_interactions, title=subtitles[ind], title_font_size=title_font_size, state_names=state_names, virtual=virtual, state_font_size=state_font_size, state_text_buffer=state_text_buffer, label_side=label_side) #Uses the Subplot class to make the each process diagram      
-                
-                
-                else:   
+                else: #make non-labeled plots  
                     casc_wmel = Subplot(plot,energies=self.energies, number_of_interactions=number_of_interactions, title=subtitles[ind], title_font_size=title_font_size, virtual=virtual) #Uses the Subplot class to make the each process diagram    
                 self.cascades[f'[{x},{y}]'].append(casc_wmel) 
                          
