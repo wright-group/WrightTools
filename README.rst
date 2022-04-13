@@ -33,5 +33,3 @@ Documentation at `wright.tools <http://wright.tools>`_.
    :scale: 25 %
    :alt: WrightTools
    :align: center
-
-blaise was here
