@@ -6,6 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ## [Unreleased]
 
 ### Added
+- `artists.Axes.scatter`: plot one variable against another, with scatter point color determined by a channel.
 - Invalid `unit` conversions now throw a `pint` error.
 - `data.from_LabRAM`: import Horiba LabRAM txt files
 
