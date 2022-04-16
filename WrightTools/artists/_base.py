@@ -468,7 +468,7 @@ class Axes(matplotlib.axes.Axes):
         """Scatter plot a channel against two _variables_.
         Scatter point color reflects channel values.
         Data need not be structured.
-        If data object is not provided, scatter reverts to the [matplotlib parent method](https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.scatter.html?highlight=scatter#matplotlib.axes.Axes.scatter)
+        If data object is not provided, scatter reverts to the `matplotlib parent method <https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.scatter.html>`_.
 
         args
         ---------
