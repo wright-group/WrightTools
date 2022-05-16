@@ -173,6 +173,8 @@ class Group(h5py.Group, metaclass=MetaClass):
                 shutil.copyfile(src=str(filepath), dst=p)
         elif edit_local and filepath:
             p = filepath
+        else:
+            raise ValueError("filepath must be provided if edit_local is True")
         p = str(p)
         for i in Group._instances.keys():
             if i.startswith(os.path.abspath(p) + "::"):
@@ -290,6 +292,7 @@ class Group(h5py.Group, metaclass=MetaClass):
             # ---Blaise 2018-01-08
             try:
                 self.file.flush()
+                fd = None
                 try:
                     # Obtaining the file descriptor must be done prior to closing
                     fd = self.fid.get_vfd_handle()

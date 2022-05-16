@@ -303,7 +303,7 @@ class Data(Group):
         new.insert(0, new.pop(channel_index))
         self.channel_names = new
 
-    def chop(self, *args, at={}, parent=None, verbose=True) -> wt_collection.Collection:
+    def chop(self, *args, at=None, parent=None, verbose=True) -> wt_collection.Collection:
         """Divide the dataset into its lower-dimensionality components.
 
         Parameters
@@ -370,6 +370,8 @@ class Data(Group):
                 args[i] = wt_kit.string2identifier(arg)
 
         # normalize the at keys to the natural name
+        if at is None:
+            at = {}
         for k in [ak for ak in at.keys() if type(ak) == str]:
             for op in operators:
                 if op in k:
@@ -637,7 +639,7 @@ class Data(Group):
                 sigma.shape = new_shape
                 sigma /= norm
                 sigma **= 0.5
-                norm *= sigma ** moment
+                norm *= sigma**moment
 
             values = np.trapz((x - about) ** moment * y, x, axis=axis_index)
             values = np.array(values)
@@ -1901,6 +1903,8 @@ class Data(Group):
             constant_index = wt_kit.get_index(self.constant_expressions, constant)
         elif isinstance(constant, Constant):
             constant_index = wt_kit.get_index(self.constants, constant)
+        else:
+            raise TypeError(f"unsupported type for 'constant': {type(constant).__name__}")
         constant = self._constants[constant_index]
         self._constants.pop(constant_index)
         self.flush()

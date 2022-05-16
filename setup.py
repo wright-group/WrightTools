@@ -8,7 +8,8 @@ here = os.path.abspath(os.path.dirname(__file__))
 
 
 def read(fname):
-    return open(os.path.join(here, fname)).read()
+    with open(os.path.join(here, fname)) as f:
+        return f.read()
 
 
 extra_files = {

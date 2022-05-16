@@ -49,7 +49,8 @@ def test_average():
     assert data.ch_0_average.shape == (1, 10)
     assert data.ch_0_average_1_mean.shape == (1, 1)
     assert np.allclose(
-        data.ch_1_mean.points, np.array([0.0, 4.5, 9.0, 13.5, 18.0, 22.5, 27.0, 31.5, 36.0, 40.5])
+        data.ch_1_mean.points,
+        np.array([0.0, 4.5, 9.0, 13.5, 18.0, 22.5, 27.0, 31.5, 36.0, 40.5]),
     )
     assert np.allclose(
         data.ch_0_average.points,
@@ -96,7 +97,8 @@ def test_max():
     assert data.ch_v1_maximum.shape == (10, 1)
     assert data.ch_v1_maximum_v2_max.shape == (1, 1)
     assert np.allclose(
-        data.ch_v2_max.points, np.array([0.0, 9.0, 18.0, 27.0, 36.0, 45.0, 54.0, 63.0, 72.0, 81.0])
+        data.ch_v2_max.points,
+        np.array([0.0, 9.0, 18.0, 27.0, 36.0, 45.0, 54.0, 63.0, 72.0, 81.0]),
     )
     assert np.allclose(
         data.ch_v1_maximum.points,
@@ -119,10 +121,12 @@ def test_min():
     assert data.ch_v1_minimum.shape == (10, 1)
     assert data.ch_v1_minimum_v2_min.shape == (1, 1)
     assert np.allclose(
-        data.ch_v2_min.points, np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+        data.ch_v2_min.points,
+        np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
     )
     assert np.allclose(
-        data.ch_v1_minimum.points, np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+        data.ch_v1_minimum.points,
+        np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
     )
     assert np.allclose(data.ch_v1_minimum_v2_min.points, np.array(0))
     assert len(data.channel_names) == 4

@@ -130,6 +130,8 @@ def add_sideplot(
         axCorr = divider.append_axes("top", height, pad=pad, sharex=ax)
     elif along == "y":
         axCorr = divider.append_axes("right", height, pad=pad, sharey=ax)
+    else:
+        raise ValueError(f"unexpected 'along': {along}, expected 'x' or 'y'")
     axCorr.autoscale(False)
     axCorr.set_adjustable("box")
     # bin
@@ -686,7 +688,7 @@ def plot_colorbar(
         else:
             # scientific notation
             def fmt(x, _):
-                return "%.1f" % (x / float(10 ** magnitude))
+                return "%.1f" % (x / float(10**magnitude))
 
             format = matplotlib.ticker.FuncFormatter(fmt)
             magnitude_label = r"  $\mathsf{\times 10^{%d}}$" % magnitude

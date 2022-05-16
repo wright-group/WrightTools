@@ -192,7 +192,7 @@ def test_2D_to_3D_overlap():
     y = np.linspace(-1, 1, 11)
     z = np.arange(1, 10)
 
-    ch1 = lambda x, y, z: 5 * (x / 2.5) ** 2 + y ** 2 + (z / 10) ** 2
+    ch1 = lambda x, y, z: 5 * (x / 2.5) ** 2 + y**2 + (z / 10) ** 2
     ch2 = lambda x, y, z: 4 * np.exp(-x / 10) - 3 * y + z
     ch3 = lambda x, y, z: 5 + np.cos(x) - np.sin(z + y)
 
