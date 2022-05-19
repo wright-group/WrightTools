@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 - better error messages for some functions
 - remove unused imports
 - remove unused variables
+- complex array support for data object operations
 
 ## [3.4.3]
 
