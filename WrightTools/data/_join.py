@@ -168,7 +168,7 @@ def join(
         out.create_channel(
             shape=get_shape(out, datas, channel_name),
             **datas[0][channel_name].attrs,
-            dtype=datas[0][channel_name].dtype
+            dtype=datas[0][channel_name][:].dtype
         )
         count[channel_name] = np.zeros_like(out[channel_name], dtype=int)
     for variable_name in variable_names:
@@ -184,10 +184,12 @@ def join(
     def combine(data, out, item_name, new_idx, transpose, slice_):
         old = data[item_name]
         new = out[item_name]
-        vals = np.empty_like(new)
+        vals = np.empty_like(new, dtype=old.dtype)
         # Default fill value based on whether dtype is floating or not
-        if vals.dtype.kind in "fcmM":
+        if vals.dtype.kind in "fmM":        
             vals[:] = np.nan
+        elif vals.dtype.kind in "c":
+            vals[:] = np.complex128(np.nan)  
         else:
             vals[:] = 0
         # Use advanced indexing to populate vals, a temporary array with same shape as out

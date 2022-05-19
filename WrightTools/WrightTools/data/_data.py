@@ -859,8 +859,10 @@ class Data(Group):
                 require_kwargs["dtype"] = np.dtype(np.float64)
             else:
                 require_kwargs["dtype"] = dtype
-            if require_kwargs["dtype"].kind in "fcmM":
+            if require_kwargs["dtype"].kind in "fmM":
                 require_kwargs["fillvalue"] = np.nan
+            elif require_kwargs["dtype"].kind in "c":
+                require_kwargs["fillvalue"] = np.complex128(np.nan)
             else:
                 require_kwargs["fillvalue"] = 0
         else:
@@ -1703,7 +1705,7 @@ class Data(Group):
                     continue
                 omask = wt_kit.enforce_mask_shape(omask, var.shape)
                 omask.shape = tuple([s for s, c in zip(omask.shape, cut) if not c])
-                out_arr = np.full(omask.shape, np.nan)
+                out_arr = np.full(omask.shape, np.nan, dtype=var.dtype)
                 imask = wt_kit.enforce_mask_shape(imask, var.shape)
                 out_arr[omask] = var[:][imask]
                 out[i].create_variable(values=out_arr, **var.attrs)
@@ -1715,7 +1717,7 @@ class Data(Group):
                     continue
                 omask = wt_kit.enforce_mask_shape(omask, ch.shape)
                 omask.shape = tuple([s for s, c in zip(omask.shape, cut) if not c])
-                out_arr = np.full(omask.shape, np.nan)
+                out_arr = np.full(omask.shape, np.nan, dtype=ch.dtype)
                 imask = wt_kit.enforce_mask_shape(imask, ch.shape)
                 out_arr[omask] = ch[:][imask]
                 out[i].create_channel(values=out_arr, **ch.attrs)
