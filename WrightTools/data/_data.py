@@ -861,8 +861,10 @@ class Data(Group):
                 require_kwargs["dtype"] = np.dtype(np.float64)
             else:
                 require_kwargs["dtype"] = dtype
-            if require_kwargs["dtype"].kind in "fcmM":
+            if require_kwargs["dtype"].kind in "fmM":
                 require_kwargs["fillvalue"] = np.nan
+            elif require_kwargs["dtype"].kind in "c":
+                require_kwargs["fillvalue"] = np.complex128(np.nan)
             else:
                 require_kwargs["fillvalue"] = 0
         else:
@@ -917,8 +919,10 @@ class Data(Group):
                 shape = self.shape
             if dtype is None:
                 dtype = np.dtype(np.float64)
-            if dtype.kind in "fcmM":
+            if dtype.kind in "fmM":
                 fillvalue = np.nan
+            elif dtype.kind in "c":
+                fillvalue = np.complex128(np.nan)
             else:
                 fillvalue = 0
         else:
@@ -1716,7 +1720,7 @@ class Data(Group):
                 out_arr = np.full(omask.shape, np.nan)
                 imask = wt_kit.enforce_mask_shape(imask, var.shape)
                 out_arr[omask] = var[:][imask]
-                out[i].create_variable(values=out_arr, **var.attrs)
+                out[i].create_variable(values=out_arr, **var.attrs, dtype=var.dtype)
 
         for ch in self.channels:
             for i, (imask, omask, cut) in enumerate(zip(masks, omasks, cuts)):
@@ -1725,10 +1729,10 @@ class Data(Group):
                     continue
                 omask = wt_kit.enforce_mask_shape(omask, ch.shape)
                 omask.shape = tuple([s for s, c in zip(omask.shape, cut) if not c])
-                out_arr = np.full(omask.shape, np.nan)
+                out_arr = np.full(omask.shape, np.nan, dtype=ch.dtype)
                 imask = wt_kit.enforce_mask_shape(imask, ch.shape)
                 out_arr[omask] = ch[:][imask]
-                out[i].create_channel(values=out_arr, **ch.attrs)
+                out[i].create_channel(values=out_arr, **ch.attrs, dtype=ch.dtype)
 
         if verbose:
             for d in out.values():

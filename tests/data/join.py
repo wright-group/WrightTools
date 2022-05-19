@@ -185,6 +185,28 @@ def test_2D_overlap_offset():
     joined.close()
 
 
+def test_2D_overlap_offset_complexarray():
+    a = wt.Data()
+    b = wt.Data()
+
+    a.create_variable("x", np.linspace(0, 10, 11)[:, None])
+    a.create_variable("y", np.linspace(0, 10, 11)[None, :])
+    b.create_variable("x", np.linspace(5, 15, 11)[:, None])
+    b.create_variable("y", np.linspace(0.5, 10.5, 11)[None, :])
+    a.create_channel("z", np.full(a.shape, 1j, dtype=np.complex128), dtype=np.complex128)
+    b.create_channel("z", np.full(b.shape, 2j, dtype=np.complex128), dtype=np.complex128)
+    a.transform("x", "y")
+    b.transform("x", "y")
+
+    joined = wt.data.join([a, b])
+
+    assert joined.shape == (16, 22)
+    assert joined.z[:].dtype == np.complex128
+    a.close()
+    b.close()
+    joined.close()
+
+
 def test_2D_to_3D_overlap():
     x1 = np.arange(-2.5, 2.5, 0.5)
     x2 = np.arange(1, 10, 1)
@@ -701,6 +723,7 @@ if __name__ == "__main__":
     test_1D_overlap_offset()
     test_2D_no_overlap_aligned()
     test_2D_no_overlap_offset()
+    test_2D_overlap_offset_complexarray()
     test_2D_overlap_identical()
     test_2D_overlap_offset()
     test_1D_to_2D_aligned()

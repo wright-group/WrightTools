@@ -186,8 +186,10 @@ def join(
         new = out[item_name]
         vals = np.empty_like(new)
         # Default fill value based on whether dtype is floating or not
-        if vals.dtype.kind in "fcmM":
+        if vals.dtype.kind in "fmM":
             vals[:] = np.nan
+        elif vals.dtype.kind in "c":
+            vals[:] = np.complex128(np.nan)
         else:
             vals[:] = 0
         # Use advanced indexing to populate vals, a temporary array with same shape as out

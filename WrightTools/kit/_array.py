@@ -237,7 +237,9 @@ def share_nans(*arrs) -> tuple:
     list
         List of nD arrays in same order as given, with nan indicies syncronized.
     """
-    nans = np.zeros(joint_shape(*arrs))
+    for arr in arrs:
+        typ = arr.dtype
+    nans = np.zeros(joint_shape(*arrs), dtype=typ)
     for arr in arrs:
         nans *= arr
     return tuple([a + nans for a in arrs])
