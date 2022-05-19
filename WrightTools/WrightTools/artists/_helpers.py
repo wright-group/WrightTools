@@ -681,7 +681,7 @@ def plot_colorbar(
         else:
             # scientific notation
             def fmt(x, _):
-                return "%.1f" % (x / float(10 ** magnitude))
+                return "%.1f" % (x / float(10**magnitude))
 
             format = matplotlib.ticker.FuncFormatter(fmt)
             magnitude_label = r"  $\mathsf{\times 10^{%d}}$" % magnitude

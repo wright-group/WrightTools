@@ -75,7 +75,7 @@ def make_cubehelix(name="WrightTools", gamma=0.5, s=0.25, r=-1, h=1.3, reverse=F
         def color(x):
             # Calculate amplitude and angle of deviation from the black to
             # white diagonal in the plane of constant perceived intensity.
-            xg = darkest * x ** gamma
+            xg = darkest * x**gamma
             lum = 1 - xg  # starts at 1
             if reverse:
                 lum = lum[::-1]
