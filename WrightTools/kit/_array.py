@@ -237,8 +237,14 @@ def share_nans(*arrs) -> tuple:
     list
         List of nD arrays in same order as given, with nan indicies syncronized.
     """
+    typ = int
     for arr in arrs:
-        typ = arr.dtype
+        if arr.dtype.kind in "fmM":
+            if typ != np.complex128:
+                typ = arr.dtype
+        if arr.dtype.kind in "c":
+            typ = arr.dtype
+
     nans = np.zeros(joint_shape(*arrs), dtype=typ)
     for arr in arrs:
         nans *= arr
