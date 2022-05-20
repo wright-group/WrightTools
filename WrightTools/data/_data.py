@@ -861,9 +861,11 @@ class Data(Group):
                 require_kwargs["dtype"] = np.dtype(np.float64)
             else:
                 require_kwargs["dtype"] = dtype
-            if require_kwargs["dtype"].kind in "fmM":
+            if require_kwargs["dtype"].kind == "f":
                 require_kwargs["fillvalue"] = np.nan
-            elif require_kwargs["dtype"].kind in "c":
+            elif require_kwargs["dtype"].kind == "M":
+                require_kwargs["fillvalue"] = np.datetime64("NaT")
+            elif require_kwargs["dtype"].kind == "c":
                 require_kwargs["fillvalue"] = complex(np.nan, np.nan)
             else:
                 require_kwargs["fillvalue"] = 0
@@ -919,8 +921,10 @@ class Data(Group):
                 shape = self.shape
             if dtype is None:
                 dtype = np.dtype(np.float64)
-            if dtype.kind in "fmM":
+            if dtype.kind in "f":
                 fillvalue = np.nan
+            elif dtype.kind in "M":
+                fillvalue = np.datetime64("NaT")
             elif dtype.kind in "c":
                 fillvalue = complex(np.nan, np.nan)
             else:

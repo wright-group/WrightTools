@@ -186,9 +186,11 @@ def join(
         new = out[item_name]
         vals = np.empty_like(new)
         # Default fill value based on whether dtype is floating or not
-        if vals.dtype.kind in "fmM":
+        if vals.dtype.kind == "f":
             vals[:] = np.nan
-        elif vals.dtype.kind in "c":
+        elif vals.dtype.kind == "M":
+            vals[:] = np.datetime64("NaT")
+        elif vals.dtype.kind == "c":
             vals[:] = complex(np.nan, np.nan)
         else:
             vals[:] = 0
