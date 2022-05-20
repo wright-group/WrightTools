@@ -237,7 +237,7 @@ def share_nans(*arrs) -> tuple:
     list
         List of nD arrays in same order as given, with nan indicies syncronized.
     """
-    kinds = {arr.dtype.kinds for arr in arrs}
+    kinds = {arr.dtype.kind for arr in arrs}
     if "c" in kinds:
         dtype = complex
     elif "f" in kinds:
