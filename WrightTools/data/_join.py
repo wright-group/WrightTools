@@ -189,7 +189,7 @@ def join(
         if vals.dtype.kind in "fmM":
             vals[:] = np.nan
         elif vals.dtype.kind in "c":
-            vals[:] = np.complex128(np.nan)
+            vals[:] = complex(np.nan, np.nan)
         else:
             vals[:] = 0
         # Use advanced indexing to populate vals, a temporary array with same shape as out
