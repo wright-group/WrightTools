@@ -37,16 +37,11 @@ def test_split_complexarray():
     p = datasets.PyCMDS.wm_w2_w1_000
     a = wt.data.from_PyCMDS(p)
     a.create_channel(name="complex", values=np.complex128(a.channels[0][:]), dtype=np.complex128)
-    exprs = a.axis_expressions
     split = a.split(0, [19700], units="wn")
-    assert exprs == a.axis_expressions
-    assert exprs == split[0].axis_expressions
     assert len(split) == 2
-    print(split[0].shape)
     assert split[0].shape == (14, 11, 11)
     assert split[1].shape == (21, 11, 11)
     assert split[0].complex[:].dtype == np.complex128
-
     assert a.units == split[0].units
     a.close()
     split.close()

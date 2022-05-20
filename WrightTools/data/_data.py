@@ -864,7 +864,7 @@ class Data(Group):
             if require_kwargs["dtype"].kind in "fmM":
                 require_kwargs["fillvalue"] = np.nan
             elif require_kwargs["dtype"].kind in "c":
-                require_kwargs["fillvalue"] = np.complex128(np.nan)
+                require_kwargs["fillvalue"] = complex(np.nan, np.nan)
             else:
                 require_kwargs["fillvalue"] = 0
         else:
@@ -922,7 +922,7 @@ class Data(Group):
             if dtype.kind in "fmM":
                 fillvalue = np.nan
             elif dtype.kind in "c":
-                fillvalue = np.complex128(np.nan)
+                fillvalue = complex(np.nan, np.nan)
             else:
                 fillvalue = 0
         else:
