@@ -242,8 +242,6 @@ def share_nans(*arrs) -> tuple:
         dtype = complex
     elif "f" in kinds:
         dtype = float
-    elif "i" in kinds:
-        dtype = int
     else:
         dtype = arrs[0].dtype
 
