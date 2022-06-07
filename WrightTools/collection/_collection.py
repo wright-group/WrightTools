@@ -48,7 +48,7 @@ class Collection(Group):
     def __dir__(self) -> list:
         default = object.__dir__(self)
         return default + list(self._ipython_key_completions_())
-    
+
     def _ipython_key_completions_(self) -> list:
         return list(self.item_names)
 
