@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ## [Unreleased]
 
 ## Added
-- iPython autocomplete recognizes axis, variable, and channel names
+- iPython integration: autocomplete includes axis, variable, and channel names
 
 ## [3.4.4]
 
