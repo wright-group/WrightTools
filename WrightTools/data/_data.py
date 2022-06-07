@@ -85,6 +85,13 @@ class Data(Group):
             self.natural_name, str(self.axis_names), "::".join([self.filepath, self.name])
         )
 
+    def __dir__(self) -> List[str]:
+        default = object.__dir__(self)
+        axes = [ax.natural_name for ax in self.axes]
+        channels = [ch.natural_name for ch in self.channels]
+        variables = [v.natural_name for v in self.variables]
+        return default + axes + channels + variables
+
     @property
     def axes(self) -> tuple:
         return tuple(self._axes)
