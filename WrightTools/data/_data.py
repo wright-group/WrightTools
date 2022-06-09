@@ -1829,7 +1829,7 @@ class Data(Group):
 
     def to_txt(self, filepath, delimiter="\t", channels=None, variables=None, fmt=".5g"):
         """
-        Express data as a serialized, readable list. Each line denotes a seperate data point. 
+        Express data as a serialized, readable list. Each line denotes a seperate data point.
         Each column represents a unique variable or channel. Axes are neglected.
 
         Parameters
@@ -1848,7 +1848,7 @@ class Data(Group):
 
         Returns
         -------
-        
+
         None
         """
 
@@ -1858,11 +1858,11 @@ class Data(Group):
         is_broadcast = []
         for var in variables:
             columns.append(f"{var} ({self[var].units})")
-            is_broadcast.append([i==1 for i in self[var].shape])
+            is_broadcast.append([i == 1 for i in self[var].shape])
         channels = list(self.channel_names) if channels is None else channels
         for ch in channels:
             columns.append(f"{ch} ({self[ch].units})")
-            is_broadcast.append([i==1 for i in self[ch].shape])
+            is_broadcast.append([i == 1 for i in self[ch].shape])
 
         with open(filepath, "w") as f:
             f.write(delimiter.join(columns) + "\n")
@@ -1880,7 +1880,6 @@ class Data(Group):
                 sys.stdout.flush()
         sys.stdout.write(f"[{'=' * 60}] {100:0.1f}% ...done! \r")
         sys.stdout.flush()
-
 
     def set_constants(self, *constants, verbose=True):
         """Set the constants associated with the data.
