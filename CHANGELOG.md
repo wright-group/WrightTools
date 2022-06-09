@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## [3.4.4]
+
 ### Added
 - `artists.Axes.scatter`: plot one variable against another, with scatter point color determined by a channel.
 - Invalid `unit` conversions now throw a `pint` error.
@@ -17,6 +19,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 - better error messages for some functions
 - remove unused imports
 - remove unused variables
+- complex array support for data object operations
 
 ## [3.4.3]
 
@@ -308,7 +311,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ### Added
 - initial release
 
-[Unreleased]: https://github.com/wright-group/WrightTools/-/compare/3.4.3...master
+[Unreleased]: https://github.com/wright-group/WrightTools/-/compare/3.4.4...master
+[3.4.4]: https://github.com/wright-group/WrightTools/compare/3.4.3...3.4.4
 [3.4.3]: https://github.com/wright-group/WrightTools/compare/3.4.2...3.4.3
 [3.4.2]: https://github.com/wright-group/WrightTools/compare/3.4.1...3.4.2
 [3.4.1]: https://github.com/wright-group/WrightTools/compare/3.4.0...3.4.1
