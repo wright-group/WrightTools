@@ -10,6 +10,7 @@ import functools
 import warnings
 
 import numpy as np
+import sys
 
 import h5py
 
@@ -1825,6 +1826,61 @@ class Data(Group):
             print("Look she turned me into a newt")
         elif verbose and newt and not nownewt:
             print("I got better")
+
+    def to_txt(self, filepath, delimiter="\t", channels=None, variables=None, fmt=".5g"):
+        """
+        Express data as a serialized, readable list. Each line denotes a seperate data point. 
+        Each column represents a unique variable or channel. Axes are neglected.
+
+        Parameters
+        ----------
+
+        filepath: path-like
+            path to output file.
+        delimiter: str
+            separation character.  Defaults to "\t"
+        channels: list[str] (optional)
+            List of channel names to include. Default is all channels.
+        variables: list[str] (optional)
+            List of variable names to include. Default is all variables.
+        fmt: [python format spec](https://docs.python.org/3/library/string.html#formatspec)
+            format specifier for variables and channels
+
+        Returns
+        -------
+        
+        None
+        """
+
+        columns = [f"a_{i}" for i in range(self.ndim)]
+        columns.append("|")
+        variables = list(self.variable_names) if variables is None else variables
+        is_broadcast = []
+        for var in variables:
+            columns.append(f"{var} ({self[var].units})")
+            is_broadcast.append([i==1 for i in self[var].shape])
+        channels = list(self.channel_names) if channels is None else channels
+        for ch in channels:
+            columns.append(f"{ch} ({self[ch].units})")
+            is_broadcast.append([i==1 for i in self[ch].shape])
+
+        with open(filepath, "w") as f:
+            f.write(delimiter.join(columns) + "\n")
+            for i, ndi in enumerate(np.ndindex(self.shape)):
+                line = [str(i) for i in ndi]
+                line += ["|"]
+                for j, name in enumerate(variables + channels):
+                    arr = self[name]
+                    # broadcast reduced dimensions arrays to full
+                    idxs = tuple(xi * (not yi) for xi, yi in zip(ndi, is_broadcast[j]))
+                    line.append(f"{arr[idxs]:{fmt}}")
+                f.write(delimiter.join(line) + "\n")
+                frac = round(i / self.size, 3)
+                sys.stdout.write(f"[{'=' * int(frac * 60): <60}] {frac * 100:0.1f}% ...to_txt\r")
+                sys.stdout.flush()
+        sys.stdout.write(f"[{'=' * 60}] {100:0.1f}% ...done! \r")
+        sys.stdout.flush()
+
 
     def set_constants(self, *constants, verbose=True):
         """Set the constants associated with the data.
