@@ -135,7 +135,14 @@ def norm(arr, signed, ignore_zero=True):
 
 
 def interact2D(
-    data: wt_data.Data, xaxis=0, yaxis=1, channel=0, cmap=None, local=False, use_imshow=False, verbose=True
+    data: wt_data.Data,
+    xaxis=0,
+    yaxis=1,
+    channel=0,
+    cmap=None,
+    local=False,
+    use_imshow=False,
+    verbose=True,
 ):
     """Interactive 2D plot of the dataset.
     Side plots show x and y projections of the slice (shaded gray).
@@ -233,7 +240,7 @@ def interact2D(
                 *slider.ax.get_ylim(),
                 colors="k",
                 linestyle=":",
-                alpha=0.5
+                alpha=0.5,
             )
             slider.valtext.set_text(gen_ticklabels(axis.points)[0])
     current_state.focus = Focus([ax0] + [slider.ax for slider in sliders.values()])
