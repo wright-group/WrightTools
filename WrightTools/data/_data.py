@@ -1829,7 +1829,7 @@ class Data(Group):
 
     def to_txt(self, filepath, delimiter="\t", channels=None, variables=None, fmt=".5g"):
         """
-        Express data as a serialized, readable list. Each line denotes a seperate data point.
+        Express data as a serialized, readable list. Each line (row) denotes a seperate data point.
         Each column represents a unique variable or channel. Axes are neglected.
 
         Parameters
