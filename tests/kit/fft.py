@@ -22,6 +22,17 @@ def test_1_sin():
     assert np.isclose(freq, 1, rtol=1e-3, atol=1e-3)
 
 
+def test_plancherel():
+    t = np.linspace(-10, 10, 10000)
+    z = np.sin(2 * np.pi * t)
+    wi, zi = wt.kit.fft(t, z)
+    intensity_time = (z**2).sum() * (t[1] - t[0])
+    intensity_freq = (zi * zi.conjugate()).real.sum() * (wi[1] - wi[0])
+    rel_error = np.abs(intensity_time - intensity_freq) / (intensity_time + intensity_freq)
+    print(intensity_time, intensity_freq, rel_error)
+    assert rel_error < 1e-12
+
+
 def test_5_sines():
     t = np.linspace(-20, 20, 10000)
     freqs = np.linspace(1, 5, 5)

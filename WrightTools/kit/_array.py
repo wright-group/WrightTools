@@ -145,10 +145,11 @@ def fft(xi, yi, axis=0) -> tuple:
         raise wt_exceptions.DimensionalityError(1, xi.ndim)
     # xi must be evenly spaced
     spacing = np.diff(xi)
-    if not np.allclose(spacing, spacing.mean()):
+    spacing_mean = spacing.mean()
+    if not np.allclose(spacing, spacing_mean):
         raise RuntimeError("WrightTools.kit.fft: argument xi must be evenly spaced")
     # fft
-    yi = np.fft.fft(yi, axis=axis)
+    yi = np.fft.fft(yi, axis=axis) * spacing_mean
     d = (xi.max() - xi.min()) / (xi.size - 1)
     xi = np.fft.fftfreq(xi.size, d=d)
     # shift
