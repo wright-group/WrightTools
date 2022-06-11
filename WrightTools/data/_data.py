@@ -1829,8 +1829,9 @@ class Data(Group):
 
     def to_txt(self, filepath, delimiter="\t", channels=None, variables=None, fmt=".5g"):
         """
-        Express data as a serialized, readable list. Each line (row) denotes a seperate data point.
-        Each column represents a unique variable or channel. Axes are neglected.
+        Write to file a serialized, readable list of the channels and
+        variables. Each line (row) denotes a seperate data point. Each column
+        represents a unique variable or channel. Axes are neglected.
 
         Parameters
         ----------
@@ -1854,11 +1855,13 @@ class Data(Group):
 
         columns = [f"a_{i}" for i in range(self.ndim)]
         columns.append("|")
-        variables = list(self.variable_names) if variables is None else variables
         is_broadcast = []
+
+        variables = list(self.variable_names) if variables is None else variables
         for var in variables:
             columns.append(f"{var} ({self[var].units})")
             is_broadcast.append([i == 1 for i in self[var].shape])
+
         channels = list(self.channel_names) if channels is None else channels
         for ch in channels:
             columns.append(f"{ch} ({self[ch].units})")

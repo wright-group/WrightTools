@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Added
+- `Data.to_txt`: serialize a data object and write as a text file
+
 ## [3.4.4]
 
 ### Added
