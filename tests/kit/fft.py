@@ -57,10 +57,3 @@ def test_even_spacing_error():
         xi = np.logspace(0, 2, 50)
         yi = xi.copy()
         wt.kit.fft(xi, yi)
-
-
-if __name__ == "__main__":
-    test_analytic_fft()
-    test_plancherel()
-    test_even_spacing_error()
-    print("here!")
