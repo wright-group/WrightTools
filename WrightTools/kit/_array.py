@@ -142,7 +142,7 @@ def fft(xi, yi, axis=0) -> Tuple[np.ndarray, np.ndarray]:
     -------
     xi : 1D numpy.ndarray
         1D array. Conjugate coordinates to input xi. Example: if input `xi`
-        is time coordinates, output `xi` coordinates are (cyclic) frequency.
+        is time coordinates, output `xi` is (cyclic) frequency coordinates.
     yi : complex numpy.ndarray
         Transformed data. Has the same shape as the input array (yi).
     """
