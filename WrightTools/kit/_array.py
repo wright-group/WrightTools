@@ -123,7 +123,7 @@ def diff(xi, yi, order=1) -> np.ndarray:
 
 
 def fft(xi, yi, axis=0) -> Tuple[np.ndarray, np.ndarray]:
-    """Compute a discrete Fourier Transform along one axis of an N-dimensional array and also compute the 1D frequency coordinates of the transform. The Fourier coefficients and frequency coordinates are ordered so that the coordinates are monotonic (`numpy.fft.fftshift`). 
+    """Compute a discrete Fourier Transform along one axis of an N-dimensional array and also compute the 1D frequency coordinates of the transform. The Fourier coefficients and frequency coordinates are ordered so that the coordinates are monotonic (`numpy.fft.fftshift`).
 
     Parameters
     ----------
@@ -132,7 +132,7 @@ def fft(xi, yi, axis=0) -> Tuple[np.ndarray, np.ndarray]:
     yi : n-dimensional numpy.ndarray
         Dependent variable. ND array with values to FFT.
     axis : int
-        axis of yi to perform FFT over    
+        axis of yi to perform FFT over
 
     Returns
     -------
