@@ -131,7 +131,7 @@ def fft(xi, yi, axis=0) -> Tuple[np.ndarray, np.ndarray]:
     Parameters
     ----------
     ti : 1D numpy.ndarray
-        Independent variable specifying data coordinates. Must be monotonic, 
+        Independent variable specifying data coordinates. Must be monotonic,
         linearly spaced data. `ti.size` must be equal to `yi.shape[axis]`
     yi : n-dimensional numpy.ndarray
         Dependent variable. ND array with values to FFT.
