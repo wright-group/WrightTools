@@ -14,12 +14,14 @@ import WrightTools as wt
 # --- test ----------------------------------------------------------------------------------------
 
 
-def test_1_sin():
-    t = np.linspace(-10, 10, 10000)
-    z = np.sin(2 * np.pi * t)
+def test_analytic_fft():
+    a = 1 - 1j
+    t = np.linspace(0, 10, 10000)
+    z = np.heaviside(t, 0.5) * np.exp(-a*t)  # np.sin(2 * np.pi * t)
     wi, zi = wt.kit.fft(t, z)
-    freq = np.abs(wi[np.argmax(zi)])
-    assert np.isclose(freq, 1, rtol=1e-3, atol=1e-3)
+    zi_analytical = 1 / (a + 1j * 2 * np.pi * wi)
+    assert np.all(np.isclose(zi.real, zi_analytical.real, atol=1e-3))
+    assert np.all(np.isclose(zi.imag, zi_analytical.imag, atol=1e-3))
 
 
 def test_plancherel():
