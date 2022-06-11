@@ -8,6 +8,8 @@ import numpy as np
 
 from .. import exceptions as wt_exceptions
 
+from types import Tuple
+
 
 # --- define --------------------------------------------------------------------------------------
 
@@ -120,25 +122,24 @@ def diff(xi, yi, order=1) -> np.ndarray:
     return yi
 
 
-def fft(xi, yi, axis=0) -> tuple:
-    """Take the 1D FFT of an N-dimensional array and return "sensible" properly shifted arrays.
+def fft(xi, yi, axis=0) -> Tuple[np.ndarray, np.ndarray]:
+    """Compute a discrete Fourier Transform along one axis of an N-dimensional array and also compute the 1D frequency coordinates of the transform. The Fourier coefficients and frequency coordinates are ordered so that the coordinates are monotonic (`numpy.fft.fftshift`). 
 
     Parameters
     ----------
-    xi : numpy.ndarray
-        1D array over which the points to be FFT'ed are defined
-    yi : numpy.ndarray
-        ND array with values to FFT
+    ti : 1D numpy.ndarray
+        Independent variable specifying data coordinates. Must be monotonic, linearly spaced data. `ti.size` must be equal to `yi.shape[axis]`
+    yi : n-dimensional numpy.ndarray
+        Dependent variable. ND array with values to FFT.
     axis : int
-        axis of yi to perform FFT over
+        axis of yi to perform FFT over    
 
     Returns
     -------
     xi : 1D numpy.ndarray
-        1D array. Conjugate to input xi. Example: if input xi is in the time
-        domain, output xi is in frequency domain.
-    yi : ND numpy.ndarray
-        FFT. Has the same shape as the input array (yi).
+        1D array. Conjugate coordinates to input xi. Example: if input `xi` is in the time domain, output `xi` is in frequency domain.
+    yi : complex numpy.ndarray
+        Transformed data. Has the same shape as the input array (yi).
     """
     # xi must be 1D
     if xi.ndim != 1:

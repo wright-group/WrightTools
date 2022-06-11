@@ -20,8 +20,8 @@ def test_analytic_fft():
     z = np.heaviside(t, 0.5) * np.exp(-a * t)
     wi, zi = wt.kit.fft(t, z)
     zi_analytical = 1 / (a + 1j * 2 * np.pi * wi)
-    assert np.all(np.isclose(zi.real, zi_analytical.real, atol=1e-3))
-    assert np.all(np.isclose(zi.imag, zi_analytical.imag, atol=1e-3))
+    assert np.allclose(zi.real, zi_analytical.real, atol=1e-3)
+    assert np.allclose(zi.imag, zi_analytical.imag, atol=1e-3)
 
 
 def test_plancherel():
@@ -40,7 +40,7 @@ def test_5_sines():
     z = np.sin(2 * np.pi * freqs[None, :] * t[:, None])
     wi, zi = wt.kit.fft(t, z, axis=0)
     freq = np.abs(wi[np.argmax(zi, axis=0)])
-    assert np.all(np.isclose(freq, freqs, rtol=1e-3, atol=1e-3))
+    assert np.allclose(freq, freqs, rtol=1e-3, atol=1e-3)
 
 
 def test_dimensionality_error():
@@ -55,5 +55,12 @@ def test_dimensionality_error():
 def test_even_spacing_error():
     with pytest.raises(RuntimeError):
         xi = np.logspace(0, 2, 50)
-        yi = 0
+        yi = xi.copy()
         wt.kit.fft(xi, yi)
+
+
+if __name__ == "__main__":
+    test_analytic_fft()
+    test_plancherel()
+    test_even_spacing_error()
+    print("here!")

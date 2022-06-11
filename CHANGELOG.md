@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Fixed
+- `kit.fft`: fixed bug where Fourier coefficients were off by a scalar factor.
+
 ## [3.4.4]
 
 ### Added
