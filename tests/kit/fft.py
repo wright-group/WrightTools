@@ -55,5 +55,5 @@ def test_dimensionality_error():
 def test_even_spacing_error():
     with pytest.raises(RuntimeError):
         xi = np.logspace(0, 2, 50)
-        yi = xi.copy()
+        yi = 0
         wt.kit.fft(xi, yi)
