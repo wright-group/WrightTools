@@ -17,7 +17,7 @@ import WrightTools as wt
 def test_analytic_fft():
     a = 1 - 1j
     t = np.linspace(0, 10, 10000)
-    z = np.heaviside(t, 0.5) * np.exp(-a * t)  # np.sin(2 * np.pi * t)
+    z = np.heaviside(t, 0.5) * np.exp(-a * t)
     wi, zi = wt.kit.fft(t, z)
     zi_analytical = 1 / (a + 1j * 2 * np.pi * wi)
     assert np.all(np.isclose(zi.real, zi_analytical.real, atol=1e-3))
@@ -31,7 +31,6 @@ def test_plancherel():
     intensity_time = (z**2).sum() * (t[1] - t[0])
     intensity_freq = (zi * zi.conjugate()).real.sum() * (wi[1] - wi[0])
     rel_error = np.abs(intensity_time - intensity_freq) / (intensity_time + intensity_freq)
-    print(intensity_time, intensity_freq, rel_error)
     assert rel_error < 1e-12
 
 
