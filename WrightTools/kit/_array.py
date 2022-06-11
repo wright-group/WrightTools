@@ -8,8 +8,6 @@ import numpy as np
 
 from .. import exceptions as wt_exceptions
 
-from types import Tuple
-
 
 # --- define --------------------------------------------------------------------------------------
 
@@ -122,7 +120,7 @@ def diff(xi, yi, order=1) -> np.ndarray:
     return yi
 
 
-def fft(xi, yi, axis=0) -> Tuple[np.ndarray, np.ndarray]:
+def fft(xi, yi, axis=0) -> tuple[np.ndarray, np.ndarray]:
     """Compute a discrete Fourier Transform along one axis of an N-dimensional array and also compute the 1D frequency coordinates of the transform. The Fourier coefficients and frequency coordinates are ordered so that the coordinates are monotonic (`numpy.fft.fftshift`).
 
     Parameters
