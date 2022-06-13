@@ -1854,7 +1854,7 @@ class Data(Group):
 
         Notes
         -----
-        
+
         * This is a lossy write procedure; many properties, such as axes
         and attrs dict are not recorded.
         * The shape structure of the data is recorded as a series of indexes
