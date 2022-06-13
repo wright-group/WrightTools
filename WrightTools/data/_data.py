@@ -1827,10 +1827,10 @@ class Data(Group):
         elif verbose and newt and not nownewt:
             print("I got better")
 
-    def to_txt(self, filepath, delimiter="\t", channels=None, variables=None, fmt=".5g"):
+    def translate_to_txt(self, filepath, delimiter="\t", channels=None, variables=None, fmt=".5g"):
         """
-        Write to file a serialized, readable list of the channels and
-        variables. Each line (row) denotes a seperate data point. Each column
+        Write a serialized, readable list of the channels and variables to
+        file. Each line (row) denotes a seperate data point. Each column
         represents a unique variable or channel. Axes are neglected.
 
         Parameters
@@ -1851,6 +1851,16 @@ class Data(Group):
         -------
 
         None
+
+        Notes
+        -----
+        
+        * This is a lossy write procedure; many properties, such as axes
+        and attrs dict are not recorded.
+        * The shape structure of the data is recorded as a series of indexes
+        (`{a_i}`) comprising the first few columns.  A vertical line separates
+        these indexes from variables and channels
+
         """
 
         columns = [f"a_{i}" for i in range(self.ndim)]
