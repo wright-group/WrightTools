@@ -1860,7 +1860,11 @@ class Data(Group):
         * The shape structure of the data is recorded as a series of indexes
         (`{a_i}`) comprising the first few columns. A vertical line separates
         these indexes from variables and channels
-
+        * wt5, the native file format for Data objects, is a specific variant
+        of the HDF5 file format. HDF5 has well-developed tools for working with
+        generic datasets.  See
+        https://portal.hdfgroup.org/display/knowledge/How+to+convert+an+HDF4+or+HDF5+file+to+ASCII+%28text%29+or+Excel
+        for more information.
         """
 
         columns = [f"a_{i}" for i in range(self.ndim)]
