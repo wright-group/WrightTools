@@ -333,7 +333,7 @@ class Data(Group):
 
         Notes
         -----
-        * _most attrs are not retained in the new data object_ 
+        * _most attrs are not retained in the new data object_
 
 
         See Also
@@ -467,8 +467,7 @@ class Data(Group):
         return out
 
     def _at_to_slice(self, **at) -> np.array:
-        """create array slice using at
-        """
+        """create array slice using at"""
         idx = np.array([slice(None)] * len(self._axes))
         for axis, point in at.items():
             point, units = point
@@ -479,18 +478,14 @@ class Data(Group):
             axis = self._axes[axis_index]
             idx_index = np.array(axis.shape) > 1
             if np.sum(idx_index) > 1:
-                # we don't know how to handle a position that is specified in 
+                # we don't know how to handle a position that is specified in
                 #   multiple array dimensions
-                raise wt_exceptions.MultidimensionalAxisError(
-                    "at_to_slice",
-                    axis.natural_name
-                )
+                raise wt_exceptions.MultidimensionalAxisError("at_to_slice", axis.natural_name)
             idx_index = list(idx_index).index(True)
             idx[idx_index] = np.argmin(
                 np.abs(axis[tuple(idx)] - point)
             )  # the index entry that has the specific axis point
         return idx
-
 
     def gradient(self, axis, *, channel=0):
         """
