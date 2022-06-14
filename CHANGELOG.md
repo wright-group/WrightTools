@@ -8,6 +8,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ## Added
 - iPython integration: autocomplete includes axis, variable, and channel names
 
+### Fixed
+- `kit.fft`: fixed bug where Fourier coefficients were off by a scalar factor.
+
 ## [3.4.4]
 
 ### Added
