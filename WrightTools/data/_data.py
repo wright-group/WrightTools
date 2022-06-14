@@ -343,7 +343,7 @@ class Data(Group):
         """
 
         # generate data from slice
-        idx = wt_kit.at_to_slice(self, **at)
+        idx = self._at_to_slice(self, **at)
         return wt_kit.slice_data(self, idx, name=name, parent=parent)
 
     def chop(self, *args, at=None, parent=None, verbose=True) -> wt_collection.Collection:
