@@ -303,7 +303,7 @@ class Data(Group):
         new.insert(0, new.pop(channel_index))
         self.channel_names = new
 
-    def at(self, parent, name, **at) -> object:
+    def at(self, parent=None, name=None, **at) -> object:
         """Return data of a subset of the data at specified axis position(s).
 
         kwargs
@@ -342,6 +342,11 @@ class Data(Group):
         Data.chop : also reduces dimensionality, but returns a collection of one or more
             data objects. Kept axes can be sliced into a collection
         """
+        for k in list(at.keys()):
+            nk = wt_kit.string2identifier(k)
+            at[nk] = at[k]
+            at.pop(k)
+            k = nk
         idx = self._at_to_slice(**at)
         return wt_kit.slice_data(self, idx, name=name, parent=parent)
 
@@ -423,7 +428,6 @@ class Data(Group):
         constants = [a for a in self.axis_expressions if a not in new_axes]
 
         removed_axes = [a for a in self._axes if a not in kept_axes]
-        print(removed_axes)
         removed_shape = wt_kit.joint_shape(*removed_axes)
         if removed_shape == ():
             removed_shape = (1,) * self.ndim
@@ -445,7 +449,7 @@ class Data(Group):
             idx = np.array(idx, dtype=object)
             idx[np.array(removed_shape) == 1] = slice(None)
             idx[at_axes] = at_idx[at_axes]
-            data = wt_kit.data_from_slice(self, idx, name=name, parent=out)
+            data = self._from_slice(idx, name=name, parent=out)
             data.transform(*new_axes)
             for ax in constants:
                 data.create_constant(ax, verbose=False)
@@ -455,13 +459,17 @@ class Data(Group):
             print("chopped data into %d piece(s)" % len(out), "in", out[0].axis_expressions)
         return out
 
-    # def __getitem__(self, *args) -> object:
-    #     """
-    #     data[5, :3]; return new data object with those array slices
-    #     """
-    #     # TODO: distinguish between channel names and string names
-    #     # e.g. overwrites data[channel_name], etc.
-    #     return wt_kit.data_from_slice(self, args)
+    def __getitem__(self, key) -> object:
+        """
+        data[5, :3]; return new data object with those array slices
+        """
+        if type(key) in [int, slice]:
+            return self._from_slice(key)
+        elif (type(key) == list) and \
+        np.all([type(ki) in [int, slice] for ki in key]):
+            return self._from_slice(*key)
+        else:
+            return super().__getitem__(key)
 
     def _at_to_slice(self, **at) -> np.array:
         """create array slice using at"""
@@ -482,6 +490,41 @@ class Data(Group):
             idx_index = list(idx_index).index(True)
             idx[idx_index] = np.argmin(np.abs(axis[tuple(idx)] - point))
         return idx
+
+    def _from_slice(self, idx, name=None, parent=None):
+        """create self from an array slice of the parent self"""
+        if parent is None:
+            out = Data(name=name)
+        else:
+            out = parent.create_data(name=name)
+
+        for v in self.variables:
+            kwargs = {}
+            kwargs["name"] = v.natural_name
+            kwargs["values"] = v[idx]
+            kwargs["units"] = v.units
+            kwargs["label"] = v.label
+            kwargs.update(v.attrs)
+            out.create_variable(**kwargs)
+        for c in self.channels:
+            kwargs = {}
+            kwargs["name"] = c.natural_name
+            kwargs["values"] = c[idx]
+            kwargs["units"] = c.units
+            kwargs["label"] = c.label
+            kwargs["signed"] = c.signed
+            kwargs.update(c.attrs)
+            out.create_channel(**kwargs)
+
+        new_axis_units = [a.units for a in self.axes]
+        out.transform(*self.axis_expressions)
+
+        for const in self.constant_expressions:
+            out.create_constant(const, verbose=False)
+        for j, units in enumerate(new_axis_units):
+            out.axes[j].convert(units)
+
+        return out
 
     def gradient(self, axis, *, channel=0):
         """
