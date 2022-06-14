@@ -6,23 +6,29 @@
 
 import time
 import string
+from .._axes import operator_to_identifier, operators
 
 
 # --- define --------------------------------------------------------------------------------------
 
 
-__all__ = ["string2identifier", "Timer", "data_from_slice"]
+__all__ = [
+    "string2identifier",
+    "data_from_slice", 
+    "Timer",
+]
 
 
 # --- functions -----------------------------------------------------------------------------------
 
 
 def string2identifier(s):
-    """Turn a string into a valid python identifier.
+    """Turn a string into a valid Axis identifier.
 
-    Currently only allows ASCII letters and underscore. Illegal characters
-    are replaced with underscore. This is slightly more opinionated than
-    python 3 itself, and may be refactored in future (see PEP 3131).
+    Currently only allows ASCII letters and underscore. Operators are replaced 
+    with dunder string representations. Other illegal characters are replaced
+    with underscore. This is slightly more opinionated than python 3 itself,
+    and may be refactored in future (see PEP 3131).
 
     Parameters
     ----------
@@ -32,7 +38,7 @@ def string2identifier(s):
     Returns
     -------
     str
-        valid python identifier.
+        valid Axis identifier.
     """
     # https://docs.python.org/3/reference/lexical_analysis.html#identifiers
     # https://www.python.org/dev/peps/pep-3131/
@@ -43,7 +49,9 @@ def string2identifier(s):
     valids = string.ascii_letters + string.digits + "_"
     out = ""
     for i, char in enumerate(s):
-        if char in valids:
+        if char in operators:
+            out += operator_to_identifier(char)
+        elif char in valids:
             out += char
         else:
             out += "_"
@@ -75,9 +83,8 @@ def data_from_slice(data, idx, name=None, parent=None):
         kwargs.update(c.attrs)
         out.create_channel(**kwargs)
 
-    new_axes = [a.expression for a in data._axes]
-    new_axis_units = [a.units for a in data._axes]
-    out.transform(*new_axes)
+    new_axis_units = [a.units for a in data.axes]
+    out.transform(*data.axis_expressions)
 
     for const in data.constant_expressions:
         out.create_constant(const, verbose=False)
