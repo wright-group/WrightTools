@@ -16,7 +16,7 @@ __all__ = [
     "identifier_to_operator",
     "operators",
     "string2identifier",
-    "data_from_slice", 
+    "data_from_slice",
     "Timer",
 ]
 
@@ -36,7 +36,7 @@ operators = "".join(operator_to_identifier.keys())
 def string2identifier(s):
     """Turn a string into a valid Axis identifier.
 
-    Currently only allows ASCII letters and underscore. Operators are replaced 
+    Currently only allows ASCII letters and underscore. Operators are replaced
     with dunder string representations. Other illegal characters are replaced
     with underscore. This is slightly more opinionated than python 3 itself,
     and may be refactored in future (see PEP 3131).

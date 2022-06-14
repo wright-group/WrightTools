@@ -476,11 +476,11 @@ class Data(Group):
             if np.sum(idx_index) > 1:
                 # we don't know how to handle a position within multiple array
                 #   dimensions
-                raise wt_exceptions.MultidimensionalAxisError("Data._at_to_slice", axis.natural_name)
+                raise wt_exceptions.MultidimensionalAxisError(
+                    "Data._at_to_slice", axis.natural_name
+                )
             idx_index = list(idx_index).index(True)
-            idx[idx_index] = np.argmin(
-                np.abs(axis[tuple(idx)] - point)
-            )
+            idx[idx_index] = np.argmin(np.abs(axis[tuple(idx)] - point))
         return idx
 
     def gradient(self, axis, *, channel=0):
