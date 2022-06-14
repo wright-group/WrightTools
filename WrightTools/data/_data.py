@@ -3,8 +3,7 @@
 
 # --- import --------------------------------------------------------------------------------------
 
-
-from __future__ import annotations
+import sys
 
 import collections
 import operator
@@ -305,7 +304,7 @@ class Data(Group):
         new.insert(0, new.pop(channel_index))
         self.channel_names = new
 
-    def _at(self, idx, removed_shape, removed_axes, kept_axes, parent, name, **at) -> Data:
+    def _at(self, idx, removed_shape, removed_axes, kept_axes, parent, name, **at):
         idx = np.array(idx, dtype=object)
         idx[np.array(removed_shape) == 1] = slice(None)
         for axis, point in at.items():
@@ -357,7 +356,7 @@ class Data(Group):
         if parent is None:
             return out
 
-    def at(self, parent=None, name=None, **coordinates) -> Data:
+    def at(self, parent=None, name=None, **coordinates):
         """Return data of a subset of the data at specified axis value(s).  
 
         kwargs
