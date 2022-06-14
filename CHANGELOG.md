@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## Added
+- iPython integration: autocomplete includes axis, variable, and channel names
+
 ### Fixed
 - `kit.fft`: fixed bug where Fourier coefficients were off by a scalar factor.
 
