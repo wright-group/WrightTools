@@ -357,7 +357,7 @@ class Data(Group):
             return out
 
     def at(self, parent=None, name=None, **coordinates):
-        """Return data of a subset of the data at specified axis value(s).  
+        """Return data of a subset of the data at specified axis value(s).
 
         kwargs
         ------
@@ -365,7 +365,7 @@ class Data(Group):
 
         name : string (optional)
 
-        **coordinates : 
+        **coordinates :
         keys are axes, values lists of format [val, unit]
 
         Returns
@@ -490,7 +490,15 @@ class Data(Group):
         # iterate
         i_digits = int(np.log10(np.prod(removed_shape))) + 1
         for i, idx in enumerate(np.ndindex(removed_shape)):
-            self._at(idx, removed_shape, removed_axes, kept_axes, parent=out, name=f"chop{i:0>{i_digits}}", **at)
+            self._at(
+                idx,
+                removed_shape,
+                removed_axes,
+                kept_axes,
+                parent=out,
+                name=f"chop{i:0>{i_digits}}",
+                **at,
+            )
         out.flush()
         # return
         if verbose:
