@@ -353,7 +353,9 @@ class Data(Group):
             if np.sum(idx_index) > 1:
                 raise wt_exceptions.MultidimensionalAxisError("chop", axis.natural_name)
             idx_index = list(idx_index).index(True)
-            idx[idx_index] = np.argmin(np.abs(axis[tuple(idx)] - point))  # the index entry that has the specific axis point
+            idx[idx_index] = np.argmin(
+                np.abs(axis[tuple(idx)] - point)
+            )  # the index entry that has the specific axis point
         # generate data from slice
         if parent is None:
             out = Data(name=name)
@@ -473,7 +475,9 @@ class Data(Group):
         # get output collection
         out = wt_collection.Collection(name="chop", parent=parent)
         # get output shape
-        kept = args + [ak for ak in at.keys() if type(ak) == str]  # DDK: why is there this clause for at.keys type?
+        kept = args + [
+            ak for ak in at.keys() if type(ak) == str
+        ]  # DDK: why is there this clause for at.keys type?
         kept_axes = [self._axes[self.axis_names.index(a)] for a in kept]
         removed_axes = [a for a in self._axes if a not in kept_axes]
         removed_shape = wt_kit.joint_shape(*removed_axes)
