@@ -343,7 +343,7 @@ class Data(Group):
         """
 
         # generate data from slice
-        idx = self._at_to_slice(self, **at)
+        idx = self._at_to_slice(**at)
         return wt_kit.slice_data(self, idx, name=name, parent=parent)
 
     def chop(self, *args, at=None, parent=None, verbose=True) -> wt_collection.Collection:
@@ -427,7 +427,6 @@ class Data(Group):
         kept = args + [ak for ak in at.keys()]
         kept_axes = [self._axes[self.axis_names.index(a)] for a in kept]
         new_axes = [a.expression for a in kept_axes if a.expression not in at.keys()]
-        new_axis_units = [a.units for a in kept_axes if a.expression not in at.keys()]
         constants = [a for a in self.axis_expressions if a not in new_axes]
 
         removed_axes = [a for a in self._axes if a not in kept_axes]
