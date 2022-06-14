@@ -11,7 +11,7 @@ import string
 # --- define --------------------------------------------------------------------------------------
 
 
-__all__ = ["string2identifier", "Timer"]
+__all__ = ["string2identifier", "Timer", "data_from_slice"]
 
 
 # --- functions -----------------------------------------------------------------------------------
@@ -47,6 +47,44 @@ def string2identifier(s):
             out += char
         else:
             out += "_"
+    return out
+
+
+def data_from_slice(data, idx, name=None, parent=None):
+    """create data from an array slice of the parent data
+    """
+    if parent is None:
+        out = Data(name=name)
+    else:
+        out = parent.create_data(name=name)
+
+    for v in data.variables:
+        kwargs = {}
+        kwargs["name"] = v.natural_name
+        kwargs["values"] = v[idx]
+        kwargs["units"] = v.units
+        kwargs["label"] = v.label
+        kwargs.update(v.attrs)
+        out.create_variable(**kwargs)
+    for c in data.channels:
+        kwargs = {}
+        kwargs["name"] = c.natural_name
+        kwargs["values"] = c[idx]
+        kwargs["units"] = c.units
+        kwargs["label"] = c.label
+        kwargs["signed"] = c.signed
+        kwargs.update(c.attrs)
+        out.create_channel(**kwargs)
+
+    new_axes = [a.expression for a in data._axes]
+    new_axis_units = [a.units for a in data._axes]
+    out.transform(*new_axes)
+
+    for const in data.constant_expressions:
+        out.create_constant(const, verbose=False)
+    for j, units in enumerate(new_axis_units):
+        out.axes[j].convert(units)
+
     return out
 
 

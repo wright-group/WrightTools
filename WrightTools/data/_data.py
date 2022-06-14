@@ -304,22 +304,24 @@ class Data(Group):
         new.insert(0, new.pop(channel_index))
         self.channel_names = new
 
-    def at(self, parent, name, idx=None, kept_axes=None, **at) -> Union[object, None]:
-        """Return data of a subset of the data at specified axis value(s).
+    def at(self, parent, name, **at) -> Union[object, None]:
+        """Return data of a subset of the data at specified axis position(s).
 
         kwargs
         ------
         parent : WrightTools.Collection (optional)
-            parent of new object
+            parent of new object. Default is no parent.
         name : string (optional)
-            name of new data object.  Defaults to names of axes specified.
-        **coordinates :
-        keys are axes, values lists of format [val, unit]
+            if specified, name of new data object.
+        **at :
+        keys are axes, values lists of format [position, unit]
+            if no coordinates are specified, returns a copy of the array.
+            _specified axes must be one-dimensional in the array_
 
         Returns
         -------
         out : wt.Data
-            Data that retains axes of all unspecified coordinates.
+            Data that retains the dimension of unspecified axes.
 
         Example
         -------
@@ -329,65 +331,20 @@ class Data(Group):
         >>> zero_delay_data = data.at(d2=[0, "fs"])
         ```
 
+        Notes
+        -----
+        * _most attrs are not retained in the new data object_ 
+
+
         See Also
         --------
         Data.chop : also reduces dimensionality, but returns a collection of one or more
             data objects. Kept axes can be sliced into a collection
         """
-        if idx is None:
-            idx = np.array([slice(None)] * len(self._axes))
-        for axis, point in at.items():
-            point, units = point
-            destination_units = self._axes[self.axis_names.index(axis)].units
-            point = wt_units.converter(point, units, destination_units)
-            # axis string to index; must be single index
-            axis_index = self.axis_names.index(axis)
-            axis = self._axes[axis_index]
-            idx_index = np.array(axis.shape) > 1
-            if np.sum(idx_index) > 1:
-                raise wt_exceptions.MultidimensionalAxisError("chop", axis.natural_name)
-            idx_index = list(idx_index).index(True)
-            idx[idx_index] = np.argmin(
-                np.abs(axis[tuple(idx)] - point)
-            )  # the index entry that has the specific axis point
+
         # generate data from slice
-        if parent is None:
-            out = Data(name=name)
-        data = parent.create_data(name=name)
-        for v in self.variables:
-            kwargs = {}
-            kwargs["name"] = v.natural_name
-            kwargs["values"] = v[idx]
-            kwargs["units"] = v.units
-            kwargs["label"] = v.label
-            kwargs.update(v.attrs)
-            data.create_variable(**kwargs)
-        for c in self.channels:
-            kwargs = {}
-            kwargs["name"] = c.natural_name
-            kwargs["values"] = c[idx]
-            kwargs["units"] = c.units
-            kwargs["label"] = c.label
-            kwargs["signed"] = c.signed
-            kwargs.update(c.attrs)
-            data.create_channel(**kwargs)
-
-        if kept_axes is None:
-            kept_axes = self._axes
-        new_axes = [a.expression for a in kept_axes if a.expression not in at.keys()]
-        new_axis_units = [a.units for a in kept_axes if a.expression not in at.keys()]
-        data.transform(*new_axes)
-
-        for const in self.constant_expressions:
-            data.create_constant(const, verbose=False)
-        for ax in self.axis_expressions:
-            if ax not in new_axes:
-                data.create_constant(ax, verbose=False)
-        for j, units in enumerate(new_axis_units):
-            data.axes[j].convert(units)
-
-        if parent is None:
-            return out
+        idx = wt_kit.at_to_slice(self, **at)
+        return wt_kit.slice_data(self, idx, name=name, parent=parent)
 
     def chop(self, *args, at=None, parent=None, verbose=True) -> wt_collection.Collection:
         """Divide the dataset into its lower-dimensionality components.
@@ -466,42 +423,74 @@ class Data(Group):
                     at.pop(k)
                     k = nk
 
-        # get output collection
-        out = wt_collection.Collection(name="chop", parent=parent)
         # get output shape
         kept = args + [ak for ak in at.keys()]
         kept_axes = [self._axes[self.axis_names.index(a)] for a in kept]
+        new_axes = [a.expression for a in kept_axes if a.expression not in at.keys()]
+        new_axis_units = [a.units for a in kept_axes if a.expression not in at.keys()]
+        constants = [a for a in self.axis_expressions if a not in new_axes]
+
         removed_axes = [a for a in self._axes if a not in kept_axes]
         removed_shape = wt_kit.joint_shape(*removed_axes)
         if removed_shape == ():
             removed_shape = (1,) * self.ndim
         removed_shape = list(removed_shape)
-        for i in at.keys():
-            if type(i) == int:
-                removed_shape[i] = 1
         for ax in kept_axes:
             if ax.shape.count(1) == ax.ndim - 1:
                 removed_shape[ax.shape.index(ax.size)] = 1
         removed_shape = tuple(removed_shape)
 
+        at_idx = self._at_to_slice(**at)
+
+        # get output collection
+        out = wt_collection.Collection(name="chop", parent=parent)
         # iterate
         i_digits = int(np.log10(np.prod(removed_shape))) + 1
-        # at keyword should determine indexes outside of loop?
         for i, idx in enumerate(np.ndindex(removed_shape)):
             idx = np.array(idx, dtype=object)
             idx[np.array(removed_shape) == 1] = slice(None)
-            self.at(
-                parent=out,
+            idx[at_idx != slice(None)] = at_idx[at_idx != slice(None)]
+            data = wt_kit.data_from_slice(
+                self,
+                idx,
                 name=f"chop{i:0>{i_digits}}",
-                idx=idx,
-                kept_axes=kept_axes,
-                **at,
+                parent=out,
             )
+            data.transform(*new_axes)
+            for ax in constants:
+                data.create_constant(ax, verbose=False)
+
         out.flush()
         # return
         if verbose:
             print("chopped data into %d piece(s)" % len(out), "in", out[0].axis_expressions)
         return out
+
+    def _at_to_slice(self, **at) -> np.array:
+        """create array slice using at
+        """
+        idx = np.array([slice(None)] * len(self._axes))
+        for axis, point in at.items():
+            point, units = point
+            destination_units = self._axes[self.axis_names.index(axis)].units
+            point = wt_units.converter(point, units, destination_units)
+            # axis string to index; must be single index
+            axis_index = self.axis_names.index(axis)
+            axis = self._axes[axis_index]
+            idx_index = np.array(axis.shape) > 1
+            if np.sum(idx_index) > 1:
+                # we don't know how to handle a position that is specified in 
+                #   multiple array dimensions
+                raise wt_exceptions.MultidimensionalAxisError(
+                    "at_to_slice",
+                    axis.natural_name
+                )
+            idx_index = list(idx_index).index(True)
+            idx[idx_index] = np.argmin(
+                np.abs(axis[tuple(idx)] - point)
+            )  # the index entry that has the specific axis point
+        return idx
+
 
     def gradient(self, axis, *, channel=0):
         """
