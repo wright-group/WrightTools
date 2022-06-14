@@ -332,16 +332,13 @@ class Data(Group):
 
         Notes
         -----
-        * _most attrs are not retained in the new data object_
-
+        * _most attrs are not retained in the new data object_.
 
         See Also
         --------
         Data.chop : also reduces dimensionality, but returns a collection of one or more
             data objects. Kept axes can be sliced into a collection
         """
-
-        # generate data from slice
         idx = self._at_to_slice(**at)
         return wt_kit.slice_data(self, idx, name=name, parent=parent)
 
@@ -439,25 +436,21 @@ class Data(Group):
         removed_shape = tuple(removed_shape)
 
         at_idx = self._at_to_slice(**at)
+        at_axes = at_idx != slice(None)
 
         # get output collection
         out = wt_collection.Collection(name="chop", parent=parent)
-        # iterate
         i_digits = int(np.log10(np.prod(removed_shape))) + 1
+        # iterate
         for i, idx in enumerate(np.ndindex(removed_shape)):
+            name = f"chop{i:0>{i_digits}}"
             idx = np.array(idx, dtype=object)
             idx[np.array(removed_shape) == 1] = slice(None)
-            idx[at_idx != slice(None)] = at_idx[at_idx != slice(None)]
-            data = wt_kit.data_from_slice(
-                self,
-                idx,
-                name=f"chop{i:0>{i_digits}}",
-                parent=out,
-            )
+            idx[at_axes] = at_idx[at_axes]
+            data = wt_kit.data_from_slice(self, idx, name=name, parent=out)
             data.transform(*new_axes)
             for ax in constants:
                 data.create_constant(ax, verbose=False)
-
         out.flush()
         # return
         if verbose:
@@ -471,18 +464,17 @@ class Data(Group):
             point, units = point
             destination_units = self._axes[self.axis_names.index(axis)].units
             point = wt_units.converter(point, units, destination_units)
-            # axis string to index; must be single index
             axis_index = self.axis_names.index(axis)
             axis = self._axes[axis_index]
             idx_index = np.array(axis.shape) > 1
             if np.sum(idx_index) > 1:
-                # we don't know how to handle a position that is specified in
-                #   multiple array dimensions
-                raise wt_exceptions.MultidimensionalAxisError("at_to_slice", axis.natural_name)
+                # we don't know how to handle a position within multiple array
+                #   dimensions
+                raise wt_exceptions.MultidimensionalAxisError("Data._at_to_slice", axis.natural_name)
             idx_index = list(idx_index).index(True)
             idx[idx_index] = np.argmin(
                 np.abs(axis[tuple(idx)] - point)
-            )  # the index entry that has the specific axis point
+            )
         return idx
 
     def gradient(self, axis, *, channel=0):
