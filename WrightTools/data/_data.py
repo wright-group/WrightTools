@@ -15,7 +15,6 @@ import h5py
 
 import scipy
 from scipy.interpolate import griddata, interp1d
-from typing import Union
 
 from .._group import Group
 from .. import collection as wt_collection
@@ -304,7 +303,7 @@ class Data(Group):
         new.insert(0, new.pop(channel_index))
         self.channel_names = new
 
-    def at(self, parent, name, **at) -> Union[object, None]:
+    def at(self, parent, name, **at) -> object:
         """Return data of a subset of the data at specified axis position(s).
 
         kwargs
