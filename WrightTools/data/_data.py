@@ -3,7 +3,6 @@
 
 # --- import --------------------------------------------------------------------------------------
 
-import sys
 
 import collections
 import operator
@@ -16,6 +15,7 @@ import h5py
 
 import scipy
 from scipy.interpolate import griddata, interp1d
+from typing import Union
 
 from .._group import Group
 from .. import collection as wt_collection
@@ -324,9 +324,9 @@ class Data(Group):
         Example
         -------
         ```
-        from WrightTools import datasets
-        data = wt.open(datasets.wt5.v1p0p1_MoS2_TrEE_movie)  # axes w2, w1=wm, d2
-        zero_delay_data = data.at(d2=[0, "fs"])
+        >>> from WrightTools import datasets
+        >>> data = wt.open(datasets.wt5.v1p0p1_MoS2_TrEE_movie)  # axes w2, w1=wm, d2
+        >>> zero_delay_data = data.at(d2=[0, "fs"])
         ```
 
         See Also
@@ -337,13 +337,7 @@ class Data(Group):
         if idx is None:
             idx = np.array([slice(None)] * len(self._axes))
         for axis, point in at.items():
-            # DDK: is this stuff necessary?  axis must be str says docs...
-            #   this is some hidden way to deal with Axis indices?
-            if type(axis) == int:
-                idx[axis] = point
-                continue
             point, units = point
-            # convert units
             destination_units = self._axes[self.axis_names.index(axis)].units
             point = wt_units.converter(point, units, destination_units)
             # axis string to index; must be single index
