@@ -5,6 +5,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Added
+- `Data.at` method: syntactic sugar for chop with "at" argument.
+
+### Changed
+- `Data.chop` refactored to make steps modular
+
 ### Fixed
 - `kit.fft`: fixed bug where Fourier coefficients were off by a scalar factor.
 
