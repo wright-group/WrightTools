@@ -14,7 +14,7 @@ from .._axes import operator_to_identifier, operators
 
 __all__ = [
     "string2identifier",
-    "data_from_slice", 
+    "data_from_slice",
     "Timer",
 ]
 
@@ -25,7 +25,7 @@ __all__ = [
 def string2identifier(s):
     """Turn a string into a valid Axis identifier.
 
-    Currently only allows ASCII letters and underscore. Operators are replaced 
+    Currently only allows ASCII letters and underscore. Operators are replaced
     with dunder string representations. Other illegal characters are replaced
     with underscore. This is slightly more opinionated than python 3 itself,
     and may be refactored in future (see PEP 3131).
