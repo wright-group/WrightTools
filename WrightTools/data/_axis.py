@@ -21,15 +21,9 @@ from .. import units as wt_units
 
 __all__ = ["Axis"]
 
-operator_to_identifier = {}
-operator_to_identifier["/"] = "__d__"
-operator_to_identifier["="] = "__e__"
-operator_to_identifier["-"] = "__m__"
-operator_to_identifier["+"] = "__p__"
-operator_to_identifier["*"] = "__t__"
-identifier_to_operator = {value: key for key, value in operator_to_identifier.items()}
-operators = "".join(operator_to_identifier.keys())
-
+operators = wt_kit.operators
+identifier_to_operator = wt_kit.identifier_to_operator
+operator_to_identifier = wt_kit.operator_to_identifier
 
 # --- class ---------------------------------------------------------------------------------------
 

@@ -6,17 +6,28 @@
 
 import time
 import string
-from .._axes import operator_to_identifier, operators
 
 
 # --- define --------------------------------------------------------------------------------------
 
 
 __all__ = [
+    "operator_to_identifier",
+    "identifier_to_operator",
+    "operators",
     "string2identifier",
     "data_from_slice", 
     "Timer",
 ]
+
+operator_to_identifier = {}
+operator_to_identifier["/"] = "__d__"
+operator_to_identifier["="] = "__e__"
+operator_to_identifier["-"] = "__m__"
+operator_to_identifier["+"] = "__p__"
+operator_to_identifier["*"] = "__t__"
+identifier_to_operator = {value: key for key, value in operator_to_identifier.items()}
+operators = "".join(operator_to_identifier.keys())
 
 
 # --- functions -----------------------------------------------------------------------------------
@@ -50,7 +61,7 @@ def string2identifier(s):
     out = ""
     for i, char in enumerate(s):
         if char in operators:
-            out += operator_to_identifier(char)
+            out += operator_to_identifier[char]
         elif char in valids:
             out += char
         else:
