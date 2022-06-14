@@ -310,9 +310,9 @@ class Data(Group):
         kwargs
         ------
         parent : WrightTools.Collection (optional)
-
+            parent of new object
         name : string (optional)
-
+            name of new data object.  Defaults to names of axes specified.
         **coordinates :
         keys are axes, values lists of format [val, unit]
 
@@ -332,7 +332,7 @@ class Data(Group):
         See Also
         --------
         Data.chop : also reduces dimensionality, but returns a collection of one or more
-        data objects. Kept axes can be sliced into a collection
+            data objects. Kept axes can be sliced into a collection
         """
         if idx is None:
             idx = np.array([slice(None)] * len(self._axes))
@@ -469,9 +469,7 @@ class Data(Group):
         # get output collection
         out = wt_collection.Collection(name="chop", parent=parent)
         # get output shape
-        kept = args + [
-            ak for ak in at.keys() if type(ak) == str
-        ]  # DDK: why is there this clause for at.keys type?
+        kept = args + [ak for ak in at.keys()]
         kept_axes = [self._axes[self.axis_names.index(a)] for a in kept]
         removed_axes = [a for a in self._axes if a not in kept_axes]
         removed_shape = wt_kit.joint_shape(*removed_axes)
@@ -486,20 +484,17 @@ class Data(Group):
                 removed_shape[ax.shape.index(ax.size)] = 1
         removed_shape = tuple(removed_shape)
 
-        print(kept, kept_axes, removed_axes, removed_shape)
-
         # iterate
         i_digits = int(np.log10(np.prod(removed_shape))) + 1
         # at keyword should determine indexes outside of loop?
         for i, idx in enumerate(np.ndindex(removed_shape)):
             idx = np.array(idx, dtype=object)
             idx[np.array(removed_shape) == 1] = slice(None)
-            # print(i, idx)
-            self._at(
-                kept_axes,
+            self.at(
                 parent=out,
                 name=f"chop{i:0>{i_digits}}",
                 idx=idx,
+                kept_axes=kept_axes,
                 **at,
             )
         out.flush()
