@@ -51,8 +51,7 @@ def string2identifier(s):
 
 
 def data_from_slice(data, idx, name=None, parent=None):
-    """create data from an array slice of the parent data
-    """
+    """create data from an array slice of the parent data"""
     if parent is None:
         out = Data(name=name)
     else:
