@@ -313,7 +313,7 @@ class Data(Group):
         name : string (optional)
             if specified, name of new data object.
         **at :
-        keys are axes, values lists of format [position, unit]
+        keys are axis identifiers, values lists of format [position, unit]
             if no coordinates are specified, returns a copy of the array.
             _specified axes must be one-dimensional in the array_
 
@@ -333,6 +333,9 @@ class Data(Group):
         Notes
         -----
         * _most attrs are not retained in the new data object_.
+        * some axis natural names use forbidden dictkey characters (e.g. "=").
+            For these case, you must use the string substitution
+            (e.g "=" -> "__eq__").
 
         See Also
         --------
@@ -394,7 +397,6 @@ class Data(Group):
         split
             Split the dataset while maintaining its dimensionality.
         """
-        from ._axis import operators, operator_to_identifier
 
         # parse args
         args = list(args)
@@ -402,22 +404,17 @@ class Data(Group):
             if isinstance(arg, int):
                 args[i] = self._axes[arg].natural_name
             elif isinstance(arg, str):
-                # same normalization that occurs in the natural_name @property
                 arg = arg.strip()
-                for op in operators:
-                    arg = arg.replace(op, operator_to_identifier[op])
                 args[i] = wt_kit.string2identifier(arg)
 
         # normalize the at keys to the natural name
         if at is None:
             at = {}
-        for k in [ak for ak in at.keys() if type(ak) == str]:
-            for op in operators:
-                if op in k:
-                    nk = k.replace(op, operator_to_identifier[op])
-                    at[nk] = at[k]
-                    at.pop(k)
-                    k = nk
+        for k in list(at.keys()):
+            nk = wt_kit.string2identifier(k)
+            at[nk] = at[k]
+            at.pop(k)
+            k = nk
 
         # get output shape
         kept = args + [ak for ak in at.keys()]
@@ -426,6 +423,7 @@ class Data(Group):
         constants = [a for a in self.axis_expressions if a not in new_axes]
 
         removed_axes = [a for a in self._axes if a not in kept_axes]
+        print(removed_axes)
         removed_shape = wt_kit.joint_shape(*removed_axes)
         if removed_shape == ():
             removed_shape = (1,) * self.ndim
@@ -456,6 +454,14 @@ class Data(Group):
         if verbose:
             print("chopped data into %d piece(s)" % len(out), "in", out[0].axis_expressions)
         return out
+
+    # def __getitem__(self, *args) -> object:
+    #     """
+    #     data[5, :3]; return new data object with those array slices
+    #     """
+    #     # TODO: distinguish between channel names and string names
+    #     # e.g. overwrites data[channel_name], etc.
+    #     return wt_kit.data_from_slice(self, args)
 
     def _at_to_slice(self, **at) -> np.array:
         """create array slice using at"""
