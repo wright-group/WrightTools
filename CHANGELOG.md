@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ### Added
 - `Data.at` method: syntactic sugar for chop with "at" argument.
+- iPython integration: autocomplete includes axis, variable, and channel names
 
 ### Changed
 - `Data.chop` refactored to make steps modular
