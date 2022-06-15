@@ -6,7 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ## [Unreleased]
 
 ### Added
-- `Data.at` method: syntactic sugar for chop with "at" argument.
+- new `Data.at` method: syntactic sugar for chop with "at" argument.
+- `Data.__getitem__` supports array slicing
 - iPython integration: autocomplete includes axis, variable, and channel names
 
 ### Changed
