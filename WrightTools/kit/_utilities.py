@@ -36,16 +36,19 @@ def string2identifier(s, replace=None):
     """Turn a string into a valid Axis identifier.
 
     Currently only allows ASCII letters and underscore. Operators are replaced
-    with dunder string representations. Other illegal characters are replaced
-    with underscore. This is slightly more opinionated than python 3 itself,
-    and may be refactored in future (see PEP 3131).
+    with dunder string representations. Other illegal characters are replaced. 
+    Replacement assignments can be customized with the replace argument. This
+    is slightly more opinionated than python 3 itself, and may be refactored in
+    future (see PEP 3131).
 
     Parameters
     ----------
     s : string
         string to convert
-    replace_dict: dictionary[str, str]
-        dictionary of characters and their replacements.
+    replace: dictionary[str, str] (optional)
+        dictionary of characters (keys) and their replacements (values). Values
+        should be ASCII or underscore. Unspecified non-ascii characters are
+        converted to underscore.
 
     Returns
     -------
@@ -60,7 +63,7 @@ def string2identifier(s, replace=None):
     out = ""
     for i, char in enumerate(s):
         if replace and (char in replace.keys()):
-            out += replace_dict[char]
+            out += replace[char]
         elif char in valids:
             out += char
         else:
