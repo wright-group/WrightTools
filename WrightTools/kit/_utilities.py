@@ -36,7 +36,7 @@ def string2identifier(s, replace=None):
     """Turn a string into a valid Axis identifier.
 
     Currently only allows ASCII letters and underscore. Operators are replaced
-    with dunder string representations. Other illegal characters are replaced. 
+    with dunder string representations. Other illegal characters are replaced.
     Replacement assignments can be customized with the replace argument. This
     is slightly more opinionated than python 3 itself, and may be refactored in
     future (see PEP 3131).
