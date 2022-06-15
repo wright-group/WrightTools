@@ -21,13 +21,14 @@ __all__ = [
 
 
 def string2identifier(s, replace=None):
-    """Turn a string into a valid Axis identifier.
+    """Turn a string into a valid python identifier. 
+    
+    This method restricts identifier characters to characters ASCII letters,
+    numbers, and underscore. The characters are slightly more restricted than
+    python 3 itself, and may be refactored in future (see PEP 3131).
 
-    Currently only allows ASCII letters and underscore. Operators are replaced
-    with dunder string representations. Other illegal characters are replaced.
-    Replacement assignments can be customized with the replace argument. This
-    is slightly more opinionated than python 3 itself, and may be refactored in
-    future (see PEP 3131).
+    For non-valid characters, the default replacement is "_". Replacement
+    assignments can be customized with the replace kwarg. 
 
     Parameters
     ----------

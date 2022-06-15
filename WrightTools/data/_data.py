@@ -345,7 +345,8 @@ class Data(Group):
         * _most attrs are not retained in the new data object_.
         * some axis natural names use forbidden dictkey characters (e.g. "=").
             For these case, you must use the string substitution
-            (e.g "=" -> "__eq__").
+            (e.g "=" -> "__eq__"). Consider using kit.string2identifier to
+            filter.
 
         See Also
         --------
@@ -358,7 +359,7 @@ class Data(Group):
                 at[nk] = at[k]
                 at.pop(k)
         idx = self._at_to_slice(**at)
-        return wt_kit.slice_data(self, idx, name=name, parent=parent)
+        return self._from_slice(idx, name=name, parent=parent)
 
     def chop(self, *args, at=None, parent=None, verbose=True) -> wt_collection.Collection:
         """Divide the dataset into its lower-dimensionality components.
@@ -425,6 +426,7 @@ class Data(Group):
             at = {}
         # normalize the at keys to the natural name
         for k in list(at.keys()):
+            k = k.strip()
             nk = wt_kit.string2identifier(k, replace=operator_to_identifier)
             if nk != k:
                 at[nk] = at[k]
