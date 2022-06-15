@@ -21,7 +21,7 @@ from .. import collection as wt_collection
 from .. import exceptions as wt_exceptions
 from .. import kit as wt_kit
 from .. import units as wt_units
-from ._axis import Axis
+from ._axis import Axis, identifier_to_operator, operator_to_identifier
 from ._channel import Channel
 from ._constant import Constant
 from ._variable import Variable
@@ -54,8 +54,8 @@ class Data(Group):
             if units == "None":
                 units = None
             # Should not be needed for wt5 >= 1.0.3, kept for opening older wt5 files.
-            for i in wt_kit.identifier_to_operator.keys():
-                expression = expression.replace(i, wt_kit.identifier_to_operator[i])
+            for i in identifier_to_operator.keys():
+                expression = expression.replace(i, identifier_to_operator[i])
             expression = expression.replace(" ", "")  # remove all whitespace
             axis = Axis(self, expression, units)
             self._axes.append(axis)
@@ -353,7 +353,7 @@ class Data(Group):
             data objects. Kept axes can be sliced into a collection
         """
         for k in list(at.keys()):
-            nk = wt_kit.string2identifier(k, replace=wt_kit.operator_to_identifier)
+            nk = wt_kit.string2identifier(k, replace=operator_to_identifier)
             at[nk] = at[k]
             at.pop(k)
         idx = self._at_to_slice(**at)
@@ -411,7 +411,6 @@ class Data(Group):
         split
             Split the dataset while maintaining its dimensionality.
         """
-
         # parse args
         args = list(args)
         for i, arg in enumerate(args):
@@ -419,13 +418,13 @@ class Data(Group):
                 args[i] = self._axes[arg].natural_name
             elif isinstance(arg, str):
                 arg = arg.strip()
-                args[i] = wt_kit.string2identifier(arg, replace=wt_kit.operator_to_identifier)
+                args[i] = wt_kit.string2identifier(arg, replace=operator_to_identifier)
 
-        # normalize the at keys to the natural name
         if at is None:
             at = {}
+        # normalize the at keys to the natural name
         for k in list(at.keys()):
-            nk = wt_kit.string2identifier(k, replace=wt_kit.operator_to_identifier)
+            nk = wt_kit.string2identifier(k, replace=operator_to_identifier)
             at[nk] = at[k]
             at.pop(k)
 

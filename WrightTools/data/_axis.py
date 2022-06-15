@@ -21,6 +21,15 @@ from .. import units as wt_units
 
 __all__ = ["Axis"]
 
+operator_to_identifier = {}
+operator_to_identifier["/"] = "__d__"
+operator_to_identifier["="] = "__e__"
+operator_to_identifier["-"] = "__m__"
+operator_to_identifier["+"] = "__p__"
+operator_to_identifier["*"] = "__t__"
+identifier_to_operator = {value: key for key, value in operator_to_identifier.items()}
+operators = "".join(operator_to_identifier.keys())
+
 
 # --- class ---------------------------------------------------------------------------------------
 
@@ -103,9 +112,7 @@ class Axis(object):
     def natural_name(self) -> str:
         """Valid python identifier representation of the expession."""
         name = self.expression.strip()
-        for op in wt_kit.operators:
-            name = name.replace(op, wt_kit.operator_to_identifier[op])
-        return wt_kit.string2identifier(name)
+        return wt_kit.string2identifier(name, replace=operator_to_identifier)
 
     @property
     def ndim(self) -> int:
@@ -155,7 +162,7 @@ class Axis(object):
         try:
             assert self._variables is not None
         except (AssertionError, AttributeError):
-            pattern = "|".join(map(re.escape, wt_kit.operators))
+            pattern = "|".join(map(re.escape, operators))
             keys = re.split(pattern, self.expression)
             indices = []
             for key in keys:

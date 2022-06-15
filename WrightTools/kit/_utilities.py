@@ -12,21 +12,9 @@ import string
 
 
 __all__ = [
-    "operator_to_identifier",
-    "identifier_to_operator",
-    "operators",
     "string2identifier",
     "Timer",
 ]
-
-operator_to_identifier = {}
-operator_to_identifier["/"] = "__d__"
-operator_to_identifier["="] = "__e__"
-operator_to_identifier["-"] = "__m__"
-operator_to_identifier["+"] = "__p__"
-operator_to_identifier["*"] = "__t__"
-identifier_to_operator = {value: key for key, value in operator_to_identifier.items()}
-operators = "".join(operator_to_identifier.keys())
 
 
 # --- functions -----------------------------------------------------------------------------------
