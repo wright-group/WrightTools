@@ -39,7 +39,7 @@ def string2identifier(s, replace=None):
     Returns
     -------
     str
-        valid Axis identifier.
+        valid python identifier.
     """
     if len(s) == 0:
         return "_"
