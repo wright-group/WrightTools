@@ -354,8 +354,9 @@ class Data(Group):
         """
         for k in list(at.keys()):
             nk = wt_kit.string2identifier(k, replace=operator_to_identifier)
-            at[nk] = at[k]
-            at.pop(k)
+            if nk != k:
+                at[nk] = at[k]
+                at.pop(k)
         idx = self._at_to_slice(**at)
         return wt_kit.slice_data(self, idx, name=name, parent=parent)
 
@@ -425,15 +426,19 @@ class Data(Group):
         # normalize the at keys to the natural name
         for k in list(at.keys()):
             nk = wt_kit.string2identifier(k, replace=operator_to_identifier)
-            at[nk] = at[k]
-            at.pop(k)
-
+            if nk != k:
+                at[nk] = at[k]
+                at.pop(k)
         # get output shape
         kept = args + [ak for ak in at.keys()]
         kept_axes = [self._axes[self.axis_names.index(a)] for a in kept]
         new_axes = [a.expression for a in kept_axes if a.expression not in at.keys()]
         constants = [a for a in self.axis_expressions if a not in new_axes]
 
+        at_idx = self._at_to_slice(**at)
+        at_axes = at_idx != slice(None)
+
+        # get shape of looping index
         removed_axes = [a for a in self._axes if a not in kept_axes]
         removed_shape = wt_kit.joint_shape(*removed_axes)
         if removed_shape == ():
@@ -443,9 +448,6 @@ class Data(Group):
             if ax.shape.count(1) == ax.ndim - 1:
                 removed_shape[ax.shape.index(ax.size)] = 1
         removed_shape = tuple(removed_shape)
-
-        at_idx = self._at_to_slice(**at)
-        at_axes = at_idx != slice(None)
 
         # get output collection
         out = wt_collection.Collection(name="chop", parent=parent)
