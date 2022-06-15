@@ -32,7 +32,7 @@ operators = "".join(operator_to_identifier.keys())
 # --- functions -----------------------------------------------------------------------------------
 
 
-def string2identifier(s):
+def string2identifier(s, replace=None):
     """Turn a string into a valid Axis identifier.
 
     Currently only allows ASCII letters and underscore. Operators are replaced
@@ -44,14 +44,14 @@ def string2identifier(s):
     ----------
     s : string
         string to convert
+    replace_dict: dictionary[str, str]
+        dictionary of characters and their replacements.
 
     Returns
     -------
     str
         valid Axis identifier.
     """
-    # https://docs.python.org/3/reference/lexical_analysis.html#identifiers
-    # https://www.python.org/dev/peps/pep-3131/
     if len(s) == 0:
         return "_"
     if s[0] not in string.ascii_letters:
@@ -59,8 +59,8 @@ def string2identifier(s):
     valids = string.ascii_letters + string.digits + "_"
     out = ""
     for i, char in enumerate(s):
-        if char in operators:
-            out += operator_to_identifier[char]
+        if replace and (char in replace.keys()):
+            out += replace_dict[char]
         elif char in valids:
             out += char
         else:

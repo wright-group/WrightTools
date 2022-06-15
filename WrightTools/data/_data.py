@@ -353,7 +353,7 @@ class Data(Group):
             data objects. Kept axes can be sliced into a collection
         """
         for k in list(at.keys()):
-            nk = wt_kit.string2identifier(k)
+            nk = wt_kit.string2identifier(k, replace=wt_kit.operator_to_identifier)
             at[nk] = at[k]
             at.pop(k)
         idx = self._at_to_slice(**at)
@@ -419,13 +419,19 @@ class Data(Group):
                 args[i] = self._axes[arg].natural_name
             elif isinstance(arg, str):
                 arg = arg.strip()
-                args[i] = wt_kit.string2identifier(arg)
+                args[i] = wt_kit.string2identifier(
+                    arg,
+                    replace=wt_kit.operator_to_identifier
+                )
 
         # normalize the at keys to the natural name
         if at is None:
             at = {}
         for k in list(at.keys()):
-            nk = wt_kit.string2identifier(k)
+            nk = wt_kit.string2identifier(
+                k,
+                replace=wt_kit.operator_to_identifier
+            )
             at[nk] = at[k]
             at.pop(k)
 
