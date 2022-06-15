@@ -66,8 +66,8 @@ class Data(Group):
             units = units.replace("}", "").strip()
             if units == "None":
                 units = None
-            for i in wt_kit.identifier_to_operator.keys():
-                expression = expression.replace(i, wt_kit.identifier_to_operator[i])
+            for i in identifier_to_operator.keys():
+                expression = expression.replace(i, identifier_to_operator[i])
             expression = expression.replace(" ", "")  # remove all whitespace
             const = Constant(self, expression, units)
             self._constants.append(const)
