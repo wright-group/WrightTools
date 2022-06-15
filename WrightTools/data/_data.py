@@ -21,7 +21,7 @@ from .. import collection as wt_collection
 from .. import exceptions as wt_exceptions
 from .. import kit as wt_kit
 from .. import units as wt_units
-from ._axis import Axis, identifier_to_operator
+from ._axis import Axis
 from ._channel import Channel
 from ._constant import Constant
 from ._variable import Variable
@@ -54,8 +54,8 @@ class Data(Group):
             if units == "None":
                 units = None
             # Should not be needed for wt5 >= 1.0.3, kept for opening older wt5 files.
-            for i in identifier_to_operator.keys():
-                expression = expression.replace(i, identifier_to_operator[i])
+            for i in wt_kit.identifier_to_operator.keys():
+                expression = expression.replace(i, wt_kit.identifier_to_operator[i])
             expression = expression.replace(" ", "")  # remove all whitespace
             axis = Axis(self, expression, units)
             self._axes.append(axis)
@@ -66,8 +66,8 @@ class Data(Group):
             units = units.replace("}", "").strip()
             if units == "None":
                 units = None
-            for i in identifier_to_operator.keys():
-                expression = expression.replace(i, identifier_to_operator[i])
+            for i in wt_kit.identifier_to_operator.keys():
+                expression = expression.replace(i, wt_kit.identifier_to_operator[i])
             expression = expression.replace(" ", "")  # remove all whitespace
             const = Constant(self, expression, units)
             self._constants.append(const)
@@ -356,7 +356,6 @@ class Data(Group):
             nk = wt_kit.string2identifier(k)
             at[nk] = at[k]
             at.pop(k)
-            k = nk
         idx = self._at_to_slice(**at)
         return wt_kit.slice_data(self, idx, name=name, parent=parent)
 
@@ -429,7 +428,6 @@ class Data(Group):
             nk = wt_kit.string2identifier(k)
             at[nk] = at[k]
             at.pop(k)
-            k = nk
 
         # get output shape
         kept = args + [ak for ak in at.keys()]
