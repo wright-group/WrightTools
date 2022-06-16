@@ -25,7 +25,7 @@ def test_3D_to_1D():
 def test_chop_equivalence():
     data = wt.open(datasets.wt5.v1p0p1_MoS2_TrEE_movie)
     at_data = data.at(d2=[-50, "fs"], w2=[700, "nm"])
-    chop_data = data.chop("w1=wm", at={"d2":[-50, "fs"], "w2":[700, "nm"]})[0]
+    chop_data = data.chop("w1=wm", at={"d2": [-50, "fs"], "w2": [700, "nm"]})[0]
     assert at_data.shape == chop_data.shape
     assert at_data.axis_expressions == chop_data.axis_expressions
 

@@ -348,7 +348,7 @@ class Data(Group):
             For these case, you must use the string substitution
             (e.g "=" -> "__e__"). Use `Data.axis_names` or `Axis.natural_name`
             to check the identifier form of the expression. Also consider using
-            kit.string2identifier to filter. 
+            kit.string2identifier to filter.
 
         See Also
         --------
