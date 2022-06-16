@@ -323,9 +323,9 @@ class Data(Group):
         name : string (optional)
             if specified, name of new data object.
         **at :
-        keys are axis identifiers, values lists of format [position, unit]
-            if no coordinates are specified, returns a copy of the array.
-            _specified axes must be one-dimensional in the array_
+        keys are axis identifiers (Axis.natural_name), values lists of format
+            [position, unit] if no coordinates are specified, returns a copy of
+            the array. _specified axes must be one-dimensional in the array_
 
         Returns
         -------
@@ -337,6 +337,7 @@ class Data(Group):
         ```
         >>> from WrightTools import datasets
         >>> data = wt.open(datasets.wt5.v1p0p1_MoS2_TrEE_movie)  # axes w2, w1=wm, d2
+        >>> probed_at_resonance = data.at(w1__e__wm=[690, "nm"])
         >>> zero_delay_data = data.at(d2=[0, "fs"])
         ```
 
@@ -345,20 +346,15 @@ class Data(Group):
         * _most attrs are not retained in the new data object_.
         * some axis expressions use forbidden dictkey characters (e.g. "=").
             For these case, you must use the string substitution
-            (e.g "=" -> "__e__"). Consider using kit.string2identifier to
-            filter. Also take a look at Data.axis_names to check the identifier
-            form of the expression.
+            (e.g "=" -> "__e__"). Use `Data.axis_names` or `Axis.natural_name`
+            to check the identifier form of the expression. Also consider using
+            kit.string2identifier to filter. 
 
         See Also
         --------
         Data.chop : also reduces dimensionality, but returns a collection of one or more
             data objects. Kept axes can be sliced into a collection
         """
-        for k in list(at.keys()):
-            nk = wt_kit.string2identifier(k, replace=operator_to_identifier)
-            if nk != k:
-                at[nk] = at[k]
-                at.pop(k)
         idx = self._at_to_slice(**at)
         return self._from_slice(idx, name=name, parent=parent)
 
@@ -432,14 +428,14 @@ class Data(Group):
             if nk != k:
                 at[nk] = at[k]
                 at.pop(k)
-        # get output shape
-        kept = args + [ak for ak in at.keys()]
-        kept_axes = [self._axes[self.axis_names.index(a)] for a in kept]
 
+        # distinguish looping and non-looping indices
         at_idx = self._at_to_slice(**at)
         at_axes = at_idx != slice(None)
 
-        # get shape of looping index
+        kept = args + [ak for ak in at.keys()]
+        kept_axes = [self._axes[self.axis_names.index(a)] for a in kept]
+
         removed_axes = [a for a in self._axes if a not in kept_axes]
         removed_shape = wt_kit.joint_shape(*removed_axes)
         if removed_shape == ():
@@ -459,7 +455,7 @@ class Data(Group):
             idx = np.array(idx, dtype=object)
             idx[np.array(removed_shape) == 1] = slice(None)
             idx[at_axes] = at_idx[at_axes]
-            data = self._from_slice(idx, name=name, parent=out)
+            self._from_slice(idx, name=name, parent=out)
         out.flush()
         # return
         if verbose:
@@ -479,6 +475,9 @@ class Data(Group):
 
     def _at_to_slice(self, **at) -> np.array:
         """create array slice using at"""
+        for k in at.keys():
+            if k not in self.axis_names:
+                raise ValueError(f"Axis identifier {k} not in Axes: {self.axis_names}")
         idx = np.array([slice(None)] * len(self._axes))
         for axis, point in at.items():
             point, units = point
