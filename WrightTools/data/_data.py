@@ -346,7 +346,7 @@ class Data(Group):
         * some axis expressions use forbidden dictkey characters (e.g. "=").
             For these case, you must use the string substitution
             (e.g "=" -> "__e__"). Consider using kit.string2identifier to
-            filter. Also take a look at Data.axis_names to check the identifier 
+            filter. Also take a look at Data.axis_names to check the identifier
             form of the expression.
 
         See Also
