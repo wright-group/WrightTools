@@ -5,6 +5,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Added
+- `artists.interact2D` supports `cmap` kwarg.
+
+### Changed
+- `artists.interact2D` uses matplotlib norm objects to control colormap scaling
+
 ## [3.4.4]
 
 ### Added
