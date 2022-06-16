@@ -83,7 +83,7 @@ def get_colormap(signed):
     return cmap
 
 
-def get_norm(channel, current_state):
+def get_norm(channel, current_state) -> object:
     if channel.signed:
         if not current_state.local:
             norm = mpl.colors.CenteredNorm(vcenter=channel.null, halfrange=channel.mag())
@@ -100,8 +100,17 @@ def get_norm(channel, current_state):
             norm.autoscale_None(current_state.dat[channel.natural_name][:])
         if norm.vmax == norm.vmin:
             norm.vmax += 1
-    print(f"norm: {norm.vmin} {norm.vmax}")
     return norm
+
+
+def norm_to_ticks(norm) -> np.array:
+    if type(norm) == mpl.colors.CenteredNorm:
+        vmin = norm.vcenter - norm.halfrange
+        vmax = norm.vcenter + norm.halfrange
+    else:  # mpl.colors.Normalize
+        vmin = norm.vmin
+        vmax = norm.vmax
+    return np.linspace(vmin, vmax, 11)
 
 
 def gen_ticklabels(points, signed=None):
@@ -263,9 +272,10 @@ def interact2D(
     )
     ax0.grid(b=True)
     # colorbar
-    ticklabels = gen_ticklabels(np.linspace(norm.vmin, norm.vmax, 11), channel.signed)
+    ticks = norm_to_ticks(norm)
+    ticklabels = gen_ticklabels(ticks, channel.signed)
     colorbar = plot_colorbar(
-        cax, cmap=cmap, label=channel.natural_name, ticks=np.linspace(norm.vmin, norm.vmax, 11)
+        cax, cmap=cmap, label=channel.natural_name, ticks=ticks
     )
     colorbar.set_ticklabels(ticklabels)
     fig.canvas.draw_idle()
@@ -424,7 +434,9 @@ def interact2D(
             obj2D.set_array(current_state.dat[channel.natural_name][:].ravel())
         norm = get_norm(channel, current_state)
         obj2D.set_norm(norm)
-        ticklabels = gen_ticklabels(np.linspace(norm.vmin, norm.vmax, 11), channel.signed)
+
+        ticks = norm_to_ticks(norm)
+        ticklabels = gen_ticklabels(ticks, channel.signed)
         colorbar.set_ticklabels(ticklabels)
         sp_x.collections.clear()
         sp_y.collections.clear()
