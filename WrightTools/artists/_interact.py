@@ -274,9 +274,7 @@ def interact2D(
     # colorbar
     ticks = norm_to_ticks(norm)
     ticklabels = gen_ticklabels(ticks, channel.signed)
-    colorbar = plot_colorbar(
-        cax, cmap=cmap, label=channel.natural_name, ticks=ticks
-    )
+    colorbar = plot_colorbar(cax, cmap=cmap, label=channel.natural_name, ticks=ticks)
     colorbar.set_ticklabels(ticklabels)
     fig.canvas.draw_idle()
 
