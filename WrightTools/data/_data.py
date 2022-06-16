@@ -434,8 +434,6 @@ class Data(Group):
         # get output shape
         kept = args + [ak for ak in at.keys()]
         kept_axes = [self._axes[self.axis_names.index(a)] for a in kept]
-        new_axes = [a.expression for a in kept_axes if a.expression not in at.keys()]
-        constants = [a for a in self.axis_expressions if a not in new_axes]
 
         at_idx = self._at_to_slice(**at)
         at_axes = at_idx != slice(None)
@@ -461,9 +459,6 @@ class Data(Group):
             idx[np.array(removed_shape) == 1] = slice(None)
             idx[at_axes] = at_idx[at_axes]
             data = self._from_slice(idx, name=name, parent=out)
-            data.transform(*new_axes)
-            for ax in constants:
-                data.create_constant(ax, verbose=False)
         out.flush()
         # return
         if verbose:
@@ -526,10 +521,13 @@ class Data(Group):
             kwargs.update(c.attrs)
             out.create_channel(**kwargs)
 
-        new_axis_units = [a.units for a in self.axes]
-        out.transform(*self.axis_expressions)
+        new_axes = [a.expression for a in self.axes if a[idx].size > 1]
+        out.transform(*new_axes)
 
-        for const in self.constant_expressions:
+        constants = [a for a in self.axis_expressions if a not in new_axes]
+        new_axis_units = [a.units for a in self.axes if a.expression in out.axis_expressions]
+
+        for const in list(self.constant_expressions) + constants:
             out.create_constant(const, verbose=False)
         for j, units in enumerate(new_axis_units):
             out.axes[j].convert(units)
