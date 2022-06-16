@@ -343,10 +343,11 @@ class Data(Group):
         Notes
         -----
         * _most attrs are not retained in the new data object_.
-        * some axis natural names use forbidden dictkey characters (e.g. "=").
+        * some axis expressions use forbidden dictkey characters (e.g. "=").
             For these case, you must use the string substitution
-            (e.g "=" -> "__eq__"). Consider using kit.string2identifier to
-            filter.
+            (e.g "=" -> "__e__"). Consider using kit.string2identifier to
+            filter. Also take a look at Data.axis_names to check the identifier 
+            form of the expression.
 
         See Also
         --------
