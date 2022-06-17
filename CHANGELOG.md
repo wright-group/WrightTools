@@ -7,9 +7,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ### Added
 - `artists.interact2D` supports `cmap` kwarg.
+- iPython integration: autocomplete includes axis, variable, and channel names
 
 ### Changed
 - `artists.interact2D` uses matplotlib norm objects to control colormap scaling
+
+### Fixed
+- `kit.fft`: fixed bug where Fourier coefficients were off by a scalar factor.
 
 ## [3.4.4]
 
