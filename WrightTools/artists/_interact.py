@@ -94,7 +94,7 @@ def get_norm(channel, current_state) -> object:
             norm.halfrange = 1
     else:
         if not current_state.local:
-            norm = mpl.colors.Normalize(vmin=channel.null, vmax=channel.mag())
+            norm = mpl.colors.Normalize(vmin=channel.null, vmax=channel.max())
         else:
             norm = mpl.colors.Normalize(vmin=channel.null)
             norm.autoscale_None(current_state.dat[channel.natural_name][:])
@@ -174,7 +174,7 @@ def interact2D(
     local : boolean (optional)
         Toggle plotting locally. Default is False.
     use_imshow : boolean (optional)
-        If true, matplotlib imshow is used to render the 2D slice.
+        If True, matplotlib imshow is used to render the 2D slice.
         Can give better performance, but is only accurate for
         uniform grids.  Default is False.
     verbose : boolean (optional)
@@ -183,7 +183,7 @@ def interact2D(
     # avoid changing passed data object
     data = data.copy()
     # unpack
-    data.prune(keep_channels=channel)
+    data.prune(keep_channels=channel, verbose=False)
     channel = get_channel(data, channel)
     xaxis, yaxis = get_axes(data, [xaxis, yaxis])
     cmap = cmap if cmap is not None else get_colormap(channel.signed)
