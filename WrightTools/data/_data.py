@@ -1876,6 +1876,9 @@ class Data(Group):
         https://portal.hdfgroup.org/display/knowledge/How+to+convert+an+HDF4+or+HDF5+file+to+ASCII+%28text%29+or+Excel
         for more information.
         """
+        # attrs
+        import tidy_headers
+        tidy_headers.write(filepath, {k:v for k, v in self.attrs.items()})
 
         columns = [f"a_{i}" for i in range(self.ndim)]
         columns.append("|")
@@ -1891,7 +1894,7 @@ class Data(Group):
             columns.append(f"{ch} ({self[ch].units})")
             is_broadcast.append([i == 1 for i in self[ch].shape])
 
-        with open(filepath, "w") as f:
+        with open(filepath, "a") as f:
             f.write(delimiter.join(columns) + "\n")
             for i, ndi in enumerate(np.ndindex(self.shape)):
                 line = [str(i) for i in ndi]
@@ -1902,9 +1905,10 @@ class Data(Group):
                     idxs = tuple(xi * (not yi) for xi, yi in zip(ndi, is_broadcast[j]))
                     line.append(f"{arr[idxs]:{fmt}}")
                 f.write(delimiter.join(line) + "\n")
-                frac = round(i / self.size, 3)
-                sys.stdout.write(f"[{'=' * int(frac * 60): <60}] {frac * 100:0.1f}% ...to_txt\r")
-                sys.stdout.flush()
+                if (i==0) or (not (i % 10)):
+                    frac = round(i / self.size, 3)
+                    sys.stdout.write(f"[{'=' * int(frac * 60): <60}] {frac * 100:0.1f}% ...to_txt\r")
+                    sys.stdout.flush()
         sys.stdout.write(f"[{'=' * 60}] {100:0.1f}% ...done! \r")
         sys.stdout.flush()
 
