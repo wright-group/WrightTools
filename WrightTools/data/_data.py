@@ -3,6 +3,7 @@
 
 # --- import --------------------------------------------------------------------------------------
 
+from __future__ import annotations
 
 import collections
 import operator
@@ -313,7 +314,7 @@ class Data(Group):
         new.insert(0, new.pop(channel_index))
         self.channel_names = new
 
-    def at(self, parent=None, name=None, **at) -> object:
+    def at(self, parent=None, name=None, **at) -> Data:
         """Return data of a subset of the data at specified axis position(s).
 
         kwargs
@@ -462,7 +463,7 @@ class Data(Group):
             print("chopped data into %d piece(s)" % len(out), "in", out[0].axis_expressions)
         return out
 
-    def __getitem__(self, key) -> object:
+    def __getitem__(self, key) -> Data:
         """
         data[5, :3]; return new data object with those array slices
         """
@@ -496,7 +497,7 @@ class Data(Group):
             idx[idx_index] = np.argmin(np.abs(axis[tuple(idx)] - point))
         return idx
 
-    def _from_slice(self, idx, name=None, parent=None):
+    def _from_slice(self, idx, name=None, parent=None) -> Data:
         """create self from an array slice of the parent self"""
         if parent is None:
             out = Data(name=name)
