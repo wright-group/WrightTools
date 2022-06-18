@@ -1878,7 +1878,8 @@ class Data(Group):
         """
         # attrs
         import tidy_headers
-        tidy_headers.write(filepath, {k:v for k, v in self.attrs.items()})
+
+        tidy_headers.write(filepath, {k: v for k, v in self.attrs.items()})
 
         columns = [f"a_{i}" for i in range(self.ndim)]
         columns.append("|")
@@ -1905,9 +1906,11 @@ class Data(Group):
                     idxs = tuple(xi * (not yi) for xi, yi in zip(ndi, is_broadcast[j]))
                     line.append(f"{arr[idxs]:{fmt}}")
                 f.write(delimiter.join(line) + "\n")
-                if (i==0) or (not (i % 10)):
+                if (i == 0) or (not (i % 10)):
                     frac = round(i / self.size, 3)
-                    sys.stdout.write(f"[{'=' * int(frac * 60): <60}] {frac * 100:0.1f}% ...to_txt\r")
+                    sys.stdout.write(
+                        f"[{'=' * int(frac * 60): <60}] {frac * 100:0.1f}% ...to_txt\r"
+                    )
                     sys.stdout.flush()
         sys.stdout.write(f"[{'=' * 60}] {100:0.1f}% ...done! \r")
         sys.stdout.flush()
