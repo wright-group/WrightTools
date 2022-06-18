@@ -86,6 +86,16 @@ class Data(Group):
             self.natural_name, str(self.axis_names), "::".join([self.filepath, self.name])
         )
 
+    def __dir__(self) -> list:
+        default = object.__dir__(self)
+        axes = [ax.natural_name for ax in self.axes]
+        return default + axes + self._ipython_key_completions_()
+
+    def _ipython_key_completions_(self) -> list:
+        channels = [ch.natural_name for ch in self.channels]
+        variables = [v.natural_name for v in self.variables]
+        return channels + variables
+
     @property
     def axes(self) -> tuple:
         return tuple(self._axes)
