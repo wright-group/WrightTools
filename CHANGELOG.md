@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ### Fixed
 - `kit.fft`: fixed bug where Fourier coefficients were off by a scalar factor.
+- ensure `artists.quickND` plotters always close chopped data files
 
 ## [3.4.4]
 
