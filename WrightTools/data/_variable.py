@@ -34,6 +34,7 @@ class Variable(Dataset):
             Additional keys and values to be written into dataset attrs.
         """
         self._parent = parent
+        super_kwargs = {k: kwargs[k] for k in ("compression", "shuffle") if k in kwargs}
         super().__init__(id)
         if units is not None:
             self.units = units

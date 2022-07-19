@@ -885,6 +885,12 @@ class Data(Group):
             require_kwargs["dtype"] = values.dtype
         if np.prod(require_kwargs["shape"]) == 1:
             require_kwargs["chunks"] = None
+        if "compression" in kwargs:
+            require_kwargs["compression"] = kwargs["compression"]
+        if "compression_opts" in kwargs:
+            require_kwargs["compression_opts"] = kwargs["compression_opts"]
+        if "shuffle" in kwargs:
+            require_kwargs["shuffle"] = kwargs["shuffle"]
         # create dataset
         dataset_id = self.require_dataset(name=name, **require_kwargs).id
         channel = Channel(self, dataset_id, units=units, **kwargs)
@@ -943,9 +949,18 @@ class Data(Group):
             shape = values.shape
             dtype = values.dtype
             fillvalue = None
+        require_kwargs = {"chunks": True}
+        if "compression" in kwargs:
+            require_kwargs["compression"] = kwargs["compression"]
+        if "compression_opts" in kwargs:
+            require_kwargs["compression_opts"] = kwargs["compression_opts"]
+        if "shuffle" in kwargs:
+            require_kwargs["shuffle"] = kwargs["shuffle"]
+        if np.prod(shape) == 1:
+            require_kwargs["chunks"] = None
         # create dataset
         id = self.require_dataset(
-            name=name, data=values, shape=shape, dtype=dtype, fillvalue=fillvalue
+            name=name, data=values, shape=shape, dtype=dtype, fillvalue=fillvalue, **require_kwargs
         ).id
         variable = Variable(self, id, units=units, **kwargs)
         # finish
