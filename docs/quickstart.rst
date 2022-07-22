@@ -325,7 +325,7 @@ Collections can be saved inside of wt5 files, so be aware that :meth:`~WrightToo
 
 Manipulating Your Data -- A 1D Plot Example
 ----------------------
-Now that you have learned how to manipulate data provided within WrightTools itself, it is time to investigate manipulation of personal, experimental data.
+Now that you have learned how to manipulate data provided within WrightTools itself, it is time to investigate manipulation of personal, experimental data. Above, data was already put in WrightTools and was in the .wt5 file format, which permitted use of 'wt.open()'. Here, this will no longer be the case, and other avenues must be explored for performing analysis in WrightTools. Below we will investigate plotting an infrared spectrum from a typical laboratory instrument (Bruker Tensor 27).
 
 First thing, you need to obtain some experimental data. We provide an example infrared spectrum for you to manipulate `here <https://raw.githubusercontent.com/wright-group/WrightTools/master/WrightTools/datasets/Tensor27/CuPCtS_powder_ATR.dpt>`_. Once you access this page, right click and save this file to your computer in an easily findable directory.
 
