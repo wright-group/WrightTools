@@ -323,6 +323,54 @@ Much like data objects, collection objects have a method :meth:`~WrightTools.col
 
 Collections can be saved inside of wt5 files, so be aware that :meth:`~WrightTools.open` may return a collection or a data object based on the contents of your wt5 file.
 
+Manipulating Your Data -- A 1D Plot Example
+----------------------
+Now that you have leanred how to manipulate data provided within WrightTools itself, it is time to investigate manipulation of personal, experimental data. 
+
+First thing, you need to obtain some experimental data. We provide an example infrared spectrum for you to manipulate `here <https://raw.githubusercontent.com/wright-group/WrightTools/master/WrightTools/datasets/Tensor27/CuPCtS_powder_ATR.dpt>`_. Once you access this page, right click and save this file to your computer in an easily findable directory.
+
+Now, open up your favorite Python IDE so you can continue. First, make sure that both WrightTools is imported:
+
+.. code-block:: python
+
+   >>> import WrightTools as wt
+  
+  
+The next step is easier than you think. Identify the location of your file. For example, on Windows, if your username is user and the file is on your Desktop, then as far as Python is concerned, the file location is
+
+.. code-block:: python
+
+   'C:\\Users\\user\\Desktop\\IR_spec.dpt'
+
+Note that I renamed the file to "IR_spec.dpt" to make it easier to plug into my script. I find it easiest to do this in Notepad.
+
+We now need to import the file and (importantly), define it as a variable / data object. If the file is not imported as a data object, WrightTools will be confused.
+
+To do this, we can use an import data command. Fortunately, the data object for a Bruker Tensor 27 Infrared Spectrometer is already programmed into WrightTools, which eases the import process. 
+
+For simplicity, I will define the data object as "d". Then, to import this file into WrightTools, one simply types:
+
+.. code-block:: python
+
+   d = wt.data.from_Tensor27('C:\\Users\\user\\Desktop\\IR_spec.dpt')
+
+If you are successful, you will receive the following output:
+
+.. code-block:: python
+
+   range: 3999.21896 to 499.54073 (wn)
+   size: 7259
+
+At this point, data manipulation (described later on in this) will become useful for creating figures of interest. For now, let's make a quick and dirty plot so we can confirm that the spectrum can be plotted via WrightTools. 
+
+We do this as described earlier. Since we defined the data object as d above, we simply run the command:
+
+.. code-block:: python
+   
+   wt.artists.quick1D(d)
+
+And that is it! This is how you can easily graph 1D data in WrightTools from your own data sets. To see all the wonderful data formats supported by WrightTools, please access this `page <https://wright.tools/en/stable/data.html#from-supported-file-types>`_. In general, you can use wt.data.from_x, and replace x with the relevant instrument of interest. See the above page for more information. 
+
 Learning More
 -------------
 
