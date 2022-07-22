@@ -353,7 +353,7 @@ For simplicity, I will define the data object as "d". Then, to import this file 
 
 .. code-block:: python
 
-   d = wt.data.from_Tensor27('C:\\Users\\user\\Desktop\\IR_spec.dpt')
+   >>> d = wt.data.from_Tensor27('C:\\Users\\user\\Desktop\\IR_spec.dpt')
 
 If you are successful, you will receive the following output:
 
