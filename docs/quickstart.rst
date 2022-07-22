@@ -325,11 +325,11 @@ Collections can be saved inside of wt5 files, so be aware that :meth:`~WrightToo
 
 Manipulating Your Data -- A 1D Plot Example
 ----------------------
-Now that you have leanred how to manipulate data provided within WrightTools itself, it is time to investigate manipulation of personal, experimental data.
+Now that you have learned how to manipulate data provided within WrightTools itself, it is time to investigate manipulation of personal, experimental data.
 
 First thing, you need to obtain some experimental data. We provide an example infrared spectrum for you to manipulate `here <https://raw.githubusercontent.com/wright-group/WrightTools/master/WrightTools/datasets/Tensor27/CuPCtS_powder_ATR.dpt>`_. Once you access this page, right click and save this file to your computer in an easily findable directory.
 
-Now, open up your favorite Python IDE so you can continue. First, make sure that both WrightTools is imported:
+Now, open up your favorite Python IDE so you can continue. First, make sure that WrightTools is imported:
 
 .. code-block:: python
 
@@ -342,9 +342,9 @@ The next step is easier than you think. Identify the location of your file. For 
 
    'C:\\Users\\user\\Desktop\\IR_spec.dpt'
 
-Note that I renamed the file to "IR_spec.dpt" to make it easier to plug into my script. I find it easiest to do this in Notepad.
+Note that I renamed the file to "IR_spec.dpt" to make it easier to plug into my script. I find it easiest to do this in Notepad (open in Notepad, then save as "all files" and name the file IR_spec.dpt")
 
-We now need to import the file and (importantly), define it as a variable / data object. If the file is not imported as a data object, WrightTools will be confused.
+We now need to import the file and (importantly) define it as a variable / data object. If the file is not imported as a data object, WrightTools will be confused.
 
 To do this, we can use an import data command. Fortunately, the data object for a Bruker Tensor 27 Infrared Spectrometer is already programmed into WrightTools, which eases the import process.
 
