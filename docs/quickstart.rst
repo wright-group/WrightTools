@@ -368,7 +368,7 @@ We do this as described earlier. Since we defined the data object as d above, we
 
 .. code-block:: python
 
-   wt.artists.quick1D(d)
+   >>> wt.artists.quick1D(d)
 
 And that is it! This is how you can easily graph 1D data in WrightTools from your own data sets. To see all the wonderful data formats supported by WrightTools, please access this `page <https://wright.tools/en/stable/data.html#from-supported-file-types>`_. In general, you can use wt.data.from_x, and replace x with the relevant instrument of interest. See the above page for more information.
 
