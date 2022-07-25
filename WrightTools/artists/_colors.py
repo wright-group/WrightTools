@@ -25,6 +25,7 @@ __all__ = [
     "grayify_cmap",
     "overline_colors",
     "plot_colormap_components",
+    "rotate_colormap",
 ]
 
 
@@ -139,7 +140,7 @@ def rotate_colormap(cmap, rotations, eps=0.0001):
     a new colormap.   Note:  these rotations are limited by the use of epsilon
     and may cause errors if the number of rotations is very large.  The last index value
     will be off by eps x rotations.   The method only works on tuples and arrays for segmentdata;
-    use the r parameter instead for make_cubehelix.
+    use the r parameter instead for make_cubehelix.   Not used for ListedColormaps.
 
     Parameters
     ----------
@@ -195,13 +196,13 @@ def rotate_colormap(cmap, rotations, eps=0.0001):
             for i in range(lnal):
                 arr = list(alphas[i])
                 arral.append(arr)
-            alphas = np.array(arral, dtpye=float)
+            alphas = np.array(arral, dtype=float)
     else:
-        reds = colors["red"]
-        greens = colors["green"]
-        blues = colors["blue"]
+        reds = np.array(colors["red"], dtype=float)
+        greens = np.array(colors["green"], dtype=float)
+        blues = np.array(colors["blue"], dtype=float)
         try:
-            alphas = colors["alpha"]
+            alphas = np.array(colors["alpha"], dtype=float)
             lnal = 1
         except:
             alphas = None
