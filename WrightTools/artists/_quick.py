@@ -168,6 +168,7 @@ def quick2D(
     channel=0,
     *,
     contours=0,
+    cmap=None,
     pixelated=True,
     dynamic_range=False,
     local=False,
@@ -228,13 +229,17 @@ def quick2D(
     chopped = data.chop(xaxis, yaxis, at=at, verbose=False)
     # colormap
     # get colormap
-    if data.channels[channel_index].signed:
-        cmap = "signed"
-    else:
-        cmap = "default"
-    cmap = colormaps[cmap]
-    cmap.set_bad([0.75] * 3, 1.0)
-    cmap.set_under([0.75] * 3, 1.0)
+    if isinstance(cmap, type(None)):
+        if data.channels[channel_index].signed:
+            cmap = "signed"
+            cmap = colormaps[cmap]
+            cmap.set_bad([0.75] * 3, 1.0)
+            cmap.set_under([0.75] * 3, 1.0)
+        else:
+            cmap = "default"
+            cmap = colormaps[cmap]
+            cmap.set_bad([0.75] * 3, 1.0)
+            cmap.set_under([0.75] * 3, 1.0)
     # fname
     if fname is None:
         fname = data.natural_name

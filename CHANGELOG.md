@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ### Added
 - `artists.interact2D` supports `cmap` kwarg.
 - iPython integration: autocomplete includes axis, variable, and channel names
+- `artists.quick2D` supports `cmap` kwarg.
+- `artists.rotate_colormap` allows multiple rotations of color cycles
 
 ### Changed
 - `artists.interact2D` uses matplotlib norm objects to control colormap scaling

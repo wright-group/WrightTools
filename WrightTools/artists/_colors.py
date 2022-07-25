@@ -133,6 +133,158 @@ def make_colormap(seq, name="CustomMap", plot=False):
     return cmap
 
 
+def rotate_colormap(cmap, rotations, eps=0.0001):
+    """
+    From a LinearSegmentedColormap, rotate an integer number of times, and return
+    a new colormap.   Note:  these rotations are limited by the use of epsilon
+    and may cause errors if the number of rotations is very large.  The last index value
+    will be off by eps x rotations.   The method only works on tuples and arrays for segmentdata;
+    use the r parameter instead for make_cubehelix.
+
+    Parameters
+    ----------
+    cmap : matplotlib.colors.LinearSegmentedColormap
+        Colormap to be cycled.
+    rotations : int
+        number of rotations
+    eps:  difference between end of first cycle and beginning of next cycle
+        which may need to be specified if the colormap has many index values
+
+    Returns
+    -------
+    matplotlib.colors.LinearSegmentedColormap
+
+    """
+    colors = cmap._segmentdata
+    newmap = cmap.copy()
+
+    if isinstance(colors["red"], tuple):
+        re = colors["red"]
+        gr = colors["green"]
+        bl = colors["blue"]
+        try:
+            alphas = colors["alpha"]
+            lnal = len(alphas)
+        except:
+            lnal = 0
+            alphas = None
+
+        lnre = len(re)
+        lngr = len(gr)
+        lnbl = len(bl)
+
+        arre = list()
+        argr = list()
+        arbl = list()
+
+        for i in range(lnre):
+            arr = list(re[i])
+            arre.append(arr)
+        for i in range(lngr):
+            arr = list(gr[i])
+            argr.append(arr)
+        for i in range(lnbl):
+            arr = list(bl[i])
+            arbl.append(arr)
+
+        reds = np.array(arre, dtype=float)
+        greens = np.array(argr, dtype=float)
+        blues = np.array(arbl, dtype=float)
+        if lnal != 0:
+            arral = list()
+            for i in range(lnal):
+                arr = list(alphas[i])
+                arral.append(arr)
+            alphas = np.array(arral, dtpye=float)
+    else:
+        reds = colors["red"]
+        greens = colors["green"]
+        blues = colors["blue"]
+        try:
+            alphas = colors["alpha"]
+            lnal = 1
+        except:
+            alphas = None
+            lnal = 0
+
+    redvec = reds[:, 0][:, None]
+    greenvec = greens[:, 0][:, None]
+    bluevec = blues[:, 0][:, None]
+
+    redmat = reds[:, 1:]
+    greenmat = greens[:, 1:]
+    bluemat = blues[:, 1:]
+
+    redf = reds[-1, :][None, :]
+    greenf = greens[-1, :][None, :]
+    bluef = blues[-1, :][None, :]
+
+    redvecr = redvec / rotations
+    greenvecr = greenvec / rotations
+    bluevecr = bluevec / rotations
+
+    redveca = redvecr
+    greenveca = greenvecr
+    blueveca = bluevecr
+
+    if lnal != 0:
+        alphavec = alphas[:, 0][:, None]
+        alphamat = alphas[:, 1:]
+        alphaf = alphas[-1, :][None, :]
+        alphavecr = alphavec / rotations
+        alphaveca = alphavecr
+
+    for i in range(rotations):
+        if i == 0:
+            red = np.append(redveca, redmat, axis=1)
+            green = np.append(greenveca, greenmat, axis=1)
+            blue = np.append(blueveca, bluemat, axis=1)
+            newmap._segmentdata["red"] = red
+            newmap._segmentdata["green"] = green
+            newmap._segmentdata["blue"] = blue
+            if lnal != 0:
+                alpha = np.append(alphaveca[0:-1, :], alphamat[0:-1, :], axis=1)
+                newmap._segmentdata["alpha"] = alpha
+        else:
+            red = np.append(redveca + i * eps, redmat, axis=1)
+            green = np.append(greenveca + i * eps, greenmat, axis=1)
+            blue = np.append(blueveca + i * eps, bluemat, axis=1)
+            newmap._segmentdata["red"] = np.append(newmap._segmentdata["red"], red, axis=0)
+            newmap._segmentdata["green"] = np.append(newmap._segmentdata["green"], green, axis=0)
+            newmap._segmentdata["blue"] = np.append(newmap._segmentdata["blue"], blue, axis=0)
+            if lnal != 0:
+                alpha = np.append(alphaveca[1:, :] + eps, alphamat[1:, :], axis=1)
+                newmap._segmentdata["alpha"] = np.append(
+                    newmap._segmentdata["alpha"], alpha, axis=0
+                )
+
+        redoff = redveca[len(redveca) - 1]
+        greenoff = greenveca[len(greenveca) - 1]
+        blueoff = blueveca[len(blueveca) - 1]
+
+        redveca = redvecr + redoff
+        greenveca = greenvecr + greenoff
+        blueveca = bluevecr + blueoff
+        if lnal != 0:
+            alphaoff = alphaveca[len(alphaveca) - 1]
+            alphaveca = alphavecr + alphaoff
+
+    # a single cycle doesn't have the last index mapped so it has to be tacked on here
+    if rotations == 1:
+        newmap._segmentdata["red"] = np.append(newmap._segmentdata["red"], redf, axis=0)
+        newmap._segmentdata["green"] = np.append(newmap._segmentdata["green"], greenf, axis=0)
+        newmap._segmentdata["blue"] = np.append(newmap._segmentdata["blue"], bluef, axis=0)
+        if lnal != 0:
+            newmap._segmentdata["alpha"] = np.append(newmap._segmentdata["alpha"], alphaf, axis=0)
+    else:
+        newmap._segmentdata["red"][-1, 0] = 1.000
+        newmap._segmentdata["green"][-1, 0] = 1.000
+        newmap._segmentdata["blue"][-1, 0] = 1.000
+        if lnal != 0:
+            newmap._segmentdata["alpha"][-1, 0] = 1.000
+    return newmap
+
+
 def nm_to_rgb(nm):
     """Convert a wavelength to corresponding RGB values [0.0-1.0].
 
