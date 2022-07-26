@@ -60,6 +60,5 @@ WrightTools.data.Channel
       ~Channel.signed
       ~Channel.size
       ~Channel.units
-      ~Channel.value
 
 
