@@ -4,12 +4,11 @@
 # --- import --------------------------------------------------------------------------------------
 
 
-import numpy as np
+import pathlib
 import pytest
 
 import WrightTools as wt
 from WrightTools import datasets
-import pathlib
 
 # --- tests ---------------------------------------------------------------------------------------
 
