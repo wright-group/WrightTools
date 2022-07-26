@@ -5,6 +5,7 @@
 
 
 import numpy as np
+import pytest
 
 import WrightTools as wt
 from WrightTools import datasets
