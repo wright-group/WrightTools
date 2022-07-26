@@ -1838,13 +1838,7 @@ class Data(Group):
             print("I got better")
 
     def translate_to_txt(
-        self,
-        filepath,
-        delimiter="\t",
-        channels=None,
-        variables=None,
-        fmt=".5g",
-        verbose=True
+        self, filepath, delimiter="\t", channels=None, variables=None, fmt=".5g", verbose=True
     ):
         """
         Write a serialized, readable list of the channels and variables to
