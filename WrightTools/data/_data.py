@@ -1837,7 +1837,15 @@ class Data(Group):
         elif verbose and newt and not nownewt:
             print("I got better")
 
-    def translate_to_txt(self, filepath, delimiter="\t", channels=None, variables=None, fmt=".5g"):
+    def translate_to_txt(
+        self,
+        filepath,
+        delimiter="\t",
+        channels=None,
+        variables=None,
+        fmt=".5g",
+        verbose=True
+    ):
         """
         Write a serialized, readable list of the channels and variables to
         file. Each line (row) denotes a seperate data point. Each column
@@ -1865,9 +1873,9 @@ class Data(Group):
         Notes
         -----
 
-        * This is a lossy write procedure; many properties, such as axes
-        and attrs dict are not recorded.
-        * The shape structure of the data is recorded as a series of indexes
+        * This is a lossy write procedure; some properties, such as axes, are
+        not recorded.
+        * The shape structure of the data is recorded as a series of indices
         (`{a_i}`) comprising the first few columns. A vertical line separates
         these indexes from variables and channels
         * wt5, the native file format for Data objects, is a specific variant
@@ -1906,14 +1914,15 @@ class Data(Group):
                     idxs = tuple(xi * (not yi) for xi, yi in zip(ndi, is_broadcast[j]))
                     line.append(f"{arr[idxs]:{fmt}}")
                 f.write(delimiter.join(line) + "\n")
-                if (i == 0) or (not (i % 10)):
+                if verbose and ((i == 0) or (not (i % 10))):
                     frac = round(i / self.size, 3)
                     sys.stdout.write(
                         f"[{'=' * int(frac * 60): <60}] {frac * 100:0.1f}% ...to_txt\r"
                     )
                     sys.stdout.flush()
-        sys.stdout.write(f"[{'=' * 60}] {100:0.1f}% ...done! \r")
-        sys.stdout.flush()
+        if verbose:
+            sys.stdout.write(f"[{'=' * 60}] {100:0.1f}% ...done! \r")
+            sys.stdout.flush()
 
     def set_constants(self, *constants, verbose=True):
         """Set the constants associated with the data.
