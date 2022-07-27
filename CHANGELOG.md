@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 - `Data.__getitem__` supports array slicing
 - `artists.interact2D` supports `cmap` kwarg.
 - iPython integration: autocomplete includes axis, variable, and channel names
+- Allow `create_variable` and `create_channel` to create compressed datasets
 
 ### Changed
 - `Data.chop` refactored to make steps modular
