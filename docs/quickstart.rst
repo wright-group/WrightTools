@@ -17,7 +17,7 @@ Creating a Data Object & Importing Data
 
 There are many ways to create a WrightTools data object.
 One strategy is to create a data object from your own data. Another is to open an existing wt5 file.
-First, we will explore importing your own data. 
+First, we will explore importing your own data.
 
 We provide an example infrared spectrum for you to manipulate `here <https://raw.githubusercontent.com/wright-group/WrightTools/master/WrightTools/datasets/Tensor27/CuPCtS_powder_ATR.dpt>`_. Once you access this page, right click and save this file to your computer in an easily findable directory.
 
@@ -36,7 +36,7 @@ The next step is easier than you think. Identify the location of your file. For 
 
 Note that I renamed the file to "IR_spec.dpt" to make it easier to plug into my script. I find it easiest to do this in Notepad (open in Notepad, then save as "all files" and name the file IR_spec.dpt")
 
-We now need to import the file and (importantly) define it as a variable / data object. If the file is not imported as a data object, WrightTools will be confused. This is very important -- if the file is not imported into WrightTools as a data object, nothing useful will happen. 
+We now need to import the file and (importantly) define it as a variable / data object. If the file is not imported as a data object, WrightTools will be confused. This is very important -- if the file is not imported into WrightTools as a data object, nothing useful will happen.
 
 To do this, we can use an import data command. Fortunately, the data object for a Bruker Tensor 27 Infrared Spectrometer is already programmed into WrightTools, which eases the import process.
 
@@ -53,21 +53,21 @@ If you are successful, you will receive the following output:
    range: 3999.21896 to 499.54073 (wn)
    size: 7259
 
-At this point, data manipulation (described later on in this) will become useful for creating figures of interest. 
+At this point, data manipulation (described later on in this) will become useful for creating figures of interest.
 
 
 
 Creating a Quick and Dirty 1D Plot
 --------------------
 
-In WrightTools, there are a variety of methods for plotting. Below, you can interact with some pre-installed data objects to explore these options. For now, we will stick to the IR Spectrum imported above. 
+In WrightTools, there are a variety of methods for plotting. Below, you can interact with some pre-installed data objects to explore these options. For now, we will stick to the IR Spectrum imported above.
 
 To create a quick and dirty 1D plot, the command is
 
 .. code-block:: python
 
    >>> wt.artists.quick1D()
-   
+
 In the parentheses, you insert your data object. Recall that we imported this infrared spectrum and identified it in WrightTools as a data obkect called "d". Therefore, to make a quick 1D plot, simply issue the command
 
 .. code-block:: python
