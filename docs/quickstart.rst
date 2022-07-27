@@ -4,18 +4,82 @@ Quick Start
 ===========
 
 This "quick start" page is designed to introduce a few commonly-used features that you should know immediately as a user of WrightTools.
-We assume that you have installed WrightTools and that you are somewhat comfortable using Python.
-If you are brand new to Python, it's typically useful to run Python within an integrated development environment---our favorite is `Spyder <https://www.spyder-ide.org/>`_.
+At the beginning, we assume that you have installed WrightTools but are somewhat new to Python.
+If you are brand new to Python, it's typically useful to run Python within an integrated development environment - our favorite is `Spyder <https://www.spyder-ide.org/>`_.
 
 Each of the following code blocks builds on top of the previous code.
 Read this document like a series of commands typed into a Python shell.
 We recommend following along on your own machine.
 
-Create a Data Object
+
+Creating a Data Object & Importing Data
 --------------------
 
 There are many ways to create a WrightTools data object.
-One strategy is to open an existing wt5 file.
+One strategy is to create a data object from your own data. Another is to open an existing wt5 file.
+First, we will explore importing your own data. 
+
+We provide an example infrared spectrum for you to manipulate `here <https://raw.githubusercontent.com/wright-group/WrightTools/master/WrightTools/datasets/Tensor27/CuPCtS_powder_ATR.dpt>`_. Once you access this page, right click and save this file to your computer in an easily findable directory.
+
+Now, open up your favorite Python IDE so you can continue. First, make sure that WrightTools is imported:
+
+.. code-block:: python
+
+   >>> import WrightTools as wt
+
+
+The next step is easier than you think. Identify the location of your file. For example, on Windows, if your username is user and the file is on your Desktop, then as far as Python is concerned, the file location is
+
+.. code-block:: python
+
+   'C:\\Users\\user\\Desktop\\IR_spec.dpt'
+
+Note that I renamed the file to "IR_spec.dpt" to make it easier to plug into my script. I find it easiest to do this in Notepad (open in Notepad, then save as "all files" and name the file IR_spec.dpt")
+
+We now need to import the file and (importantly) define it as a variable / data object. If the file is not imported as a data object, WrightTools will be confused. This is very important -- if the file is not imported into WrightTools as a data object, nothing useful will happen. 
+
+To do this, we can use an import data command. Fortunately, the data object for a Bruker Tensor 27 Infrared Spectrometer is already programmed into WrightTools, which eases the import process.
+
+For simplicity, I will define the data object as "d". Then, to import this file into WrightTools, one simply types:
+
+.. code-block:: python
+
+   >>> d = wt.data.from_Tensor27('C:\\Users\\user\\Desktop\\IR_spec.dpt')
+
+If you are successful, you will receive the following output:
+
+.. code-block:: python
+
+   range: 3999.21896 to 499.54073 (wn)
+   size: 7259
+
+At this point, data manipulation (described later on in this) will become useful for creating figures of interest. 
+
+
+
+Creating a Quick and Dirty 1D Plot
+--------------------
+
+In WrightTools, there are a variety of methods for plotting. Below, you can interact with some pre-installed data objects to explore these options. For now, we will stick to the IR Spectrum imported above. 
+
+To create a quick and dirty 1D plot, the command is
+
+.. code-block:: python
+
+   >>> wt.artists.quick1D()
+   
+In the parentheses, you insert your data object. Recall that we imported this infrared spectrum and identified it in WrightTools as a data obkect called "d". Therefore, to make a quick 1D plot, simply issue the command
+
+.. code-block:: python
+
+   >>> wt.artists.quick1D(d)
+
+And that is it! This is how you can easily graph 1D data in WrightTools from your own data sets. To see all the wonderful data formats supported by WrightTools, please access this `page <https://wright.tools/en/stable/data.html#from-supported-file-types>`_. In general, you can use wt.data.from_x, and replace x with the relevant instrument of interest. See the above page for more information.
+
+
+More on Manipulating Data Objects in WrightTools
+--------------------
+
 When you downloaded WrightTools you also downloaded a few example files.
 The :mod:`WrightTools.datasets` package allows you to easily access the path to these files.
 Let's create a data object now:
@@ -323,54 +387,7 @@ Much like data objects, collection objects have a method :meth:`~WrightTools.col
 
 Collections can be saved inside of wt5 files, so be aware that :meth:`~WrightTools.open` may return a collection or a data object based on the contents of your wt5 file.
 
-Manipulating Your Data -- A 1D Plot Example
--------------------------------------------
 
-Now that you have learned how to manipulate data provided within WrightTools itself, it is time to investigate manipulation of personal, experimental data. Above, data was already put in WrightTools and was in the .wt5 file format, which permitted use of 'wt.open()'. Here, this will no longer be the case, and other avenues must be explored for performing analysis in WrightTools. Below we will investigate plotting an infrared spectrum from a typical laboratory instrument (Bruker Tensor 27).
-
-First thing, you need to obtain some experimental data. We provide an example infrared spectrum for you to manipulate `here <https://raw.githubusercontent.com/wright-group/WrightTools/master/WrightTools/datasets/Tensor27/CuPCtS_powder_ATR.dpt>`_. Once you access this page, right click and save this file to your computer in an easily findable directory.
-
-Now, open up your favorite Python IDE so you can continue. First, make sure that WrightTools is imported:
-
-.. code-block:: python
-
-   >>> import WrightTools as wt
-
-
-The next step is easier than you think. Identify the location of your file. For example, on Windows, if your username is user and the file is on your Desktop, then as far as Python is concerned, the file location is
-
-.. code-block:: python
-
-   'C:\\Users\\user\\Desktop\\IR_spec.dpt'
-
-Note that I renamed the file to "IR_spec.dpt" to make it easier to plug into my script. I find it easiest to do this in Notepad (open in Notepad, then save as "all files" and name the file IR_spec.dpt")
-
-We now need to import the file and (importantly) define it as a variable / data object. If the file is not imported as a data object, WrightTools will be confused.
-
-To do this, we can use an import data command. Fortunately, the data object for a Bruker Tensor 27 Infrared Spectrometer is already programmed into WrightTools, which eases the import process.
-
-For simplicity, I will define the data object as "d". Then, to import this file into WrightTools, one simply types:
-
-.. code-block:: python
-
-   >>> d = wt.data.from_Tensor27('C:\\Users\\user\\Desktop\\IR_spec.dpt')
-
-If you are successful, you will receive the following output:
-
-.. code-block:: python
-
-   range: 3999.21896 to 499.54073 (wn)
-   size: 7259
-
-At this point, data manipulation (described later on in this) will become useful for creating figures of interest. For now, let's make a quick and dirty plot so we can confirm that the spectrum can be plotted via WrightTools.
-
-We do this as described earlier. Since we defined the data object as d above, we simply run the command:
-
-.. code-block:: python
-
-   >>> wt.artists.quick1D(d)
-
-And that is it! This is how you can easily graph 1D data in WrightTools from your own data sets. To see all the wonderful data formats supported by WrightTools, please access this `page <https://wright.tools/en/stable/data.html#from-supported-file-types>`_. In general, you can use wt.data.from_x, and replace x with the relevant instrument of interest. See the above page for more information.
 
 Learning More
 -------------
