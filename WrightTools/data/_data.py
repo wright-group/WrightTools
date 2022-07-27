@@ -470,7 +470,7 @@ class Data(Group):
         if type(key) in [int, slice]:
             return self._from_slice(key)
         elif (type(key) == tuple) and np.all([type(ki) in [int, slice] for ki in key]):
-            return self._from_slice(*key)
+            return self._from_slice(key)
         else:
             return super().__getitem__(key)
 
