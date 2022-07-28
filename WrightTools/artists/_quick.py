@@ -192,7 +192,7 @@ def quick2D(
         Dictionary of parameters in non-plotted dimension(s). If not
         provided, plots will be made at each coordinate.
     cmap : Colormap
-        Colormap to use.  If None, will use "default".
+        Colormap to use.  If None, will use "default" or "signed" depending on channel values.
     channel : string or integer (optional)
         Name or index of channel to plot. Default is 0.
     contours : integer (optional)
