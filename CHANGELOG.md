@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 - `artists.interact2D` supports `cmap` kwarg.
 - iPython integration: autocomplete includes axis, variable, and channel names
 - `artists.quick2D`:  supports `cmap` kwarg.
+- Allow `create_variable` and `create_channel` to create compressed datasets
 
 ### Changed
 - `Data.chop` refactored to make steps modular
