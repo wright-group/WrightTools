@@ -123,6 +123,23 @@ def test_parent():
     assert chop.parent is parent
 
 
+def test_axes_order():
+    x = np.arange(6)
+    y = x[::2].copy()
+    z = x[::3].copy()
+    chan = np.arange(x.size * y.size * z.size).reshape(x.size, y.size, z.size).astype("float")
+    data = wt.data.Data(name="data")
+    data.create_channel("chan", values=chan, signed=False)
+    data.create_variable("x", values=x[:, None, None], units="wn")
+    data.create_variable("y", values=y[None, :, None], units="wn")
+    data.create_variable("z", values=z[None, None, :], units="wn")
+
+    data.transform("y", "x", "z")
+
+    d = data.chop("z", "x", at={"y": (2, "wn")})[0]
+    assert d.axis_names == ("z", "x")
+
+
 def test_transformed():
     x = np.arange(6)
     y = x[::2].copy()
@@ -174,6 +191,7 @@ def test_rmd_axis_full_shape():
 
 if __name__ == "__main__":
     test_transformed()
+    test_axes_order()
     test_2D_to_1D()
     test_3D_to_1D()
     test_3D_to_1D_at()
