@@ -167,6 +167,7 @@ def quick2D(
     at={},
     channel=0,
     *,
+    cmap=None,
     contours=0,
     pixelated=True,
     dynamic_range=False,
@@ -190,6 +191,8 @@ def quick2D(
     at : dictionary (optional)
         Dictionary of parameters in non-plotted dimension(s). If not
         provided, plots will be made at each coordinate.
+    cmap : Colormap
+        Colormap to use.  If None, will use "default" or "signed" depending on channel values.
     channel : string or integer (optional)
         Name or index of channel to plot. Default is 0.
     contours : integer (optional)
@@ -228,13 +231,14 @@ def quick2D(
     chopped = data.chop(xaxis, yaxis, at=at, verbose=False)
     # colormap
     # get colormap
-    if data.channels[channel_index].signed:
-        cmap = "signed"
-    else:
-        cmap = "default"
-    cmap = colormaps[cmap]
-    cmap.set_bad([0.75] * 3, 1.0)
-    cmap.set_under([0.75] * 3, 1.0)
+    if cmap is None:
+        if data.channels[channel_index].signed:
+            cmap = "signed"
+        else:
+            cmap = "default"
+        cmap = colormaps[cmap]
+        cmap.set_bad([0.75] * 3, 1.0)
+        cmap.set_under([0.75] * 3, 1.0)
     # fname
     if fname is None:
         fname = data.natural_name
