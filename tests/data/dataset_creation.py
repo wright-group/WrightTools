@@ -4,6 +4,8 @@ import WrightTools as wt
 import numpy as np
 import pytest
 
+import os
+
 
 def test_create_variable():
     data = wt.Data()
@@ -29,6 +31,13 @@ def test_exception():
     d.create_variable(name="w1", points=points, units="eV")
     with pytest.raises(wt.exceptions.NameNotUniqueError):
         d.create_channel(name="w1")
+
+
+def test_create_compressed_channel():
+    data = wt.Data()
+    child1 = data.create_channel("hi", shape=(1024, 1024), compression="gzip")
+    data["hi"][:] = 0
+    assert os.path.getsize(data.filepath) < 1e6
 
 
 if __name__ == "__main__":

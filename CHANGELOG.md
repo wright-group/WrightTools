@@ -6,10 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ## [Unreleased]
 
 ### Added
+- new `Data.at` method: syntactic sugar for chop with "at" argument.
+- `Data.__getitem__` supports array slicing
 - `artists.interact2D` supports `cmap` kwarg.
 - iPython integration: autocomplete includes axis, variable, and channel names
+- `artists.quick2D`:  supports `cmap` kwarg.
+- Allow `create_variable` and `create_channel` to create compressed datasets
 
 ### Changed
+- `Data.chop` refactored to make steps modular
 - `artists.interact2D` uses matplotlib norm objects to control colormap scaling
 
 ### Fixed
