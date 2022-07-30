@@ -413,6 +413,7 @@ class Data(Group):
         """
         # parse args
         args = list(args)
+        transform_args = args.copy()
         for i, arg in enumerate(args):
             if isinstance(arg, int):
                 args[i] = self._axes[arg].natural_name
@@ -457,7 +458,7 @@ class Data(Group):
             idx[np.array(removed_shape) == 1] = slice(None)
             idx[at_axes] = at_idx[at_axes]
             self._from_slice(idx, name=name, parent=out)
-            out[name].transform(*args)
+            out[name].transform(*transform_args)
         out.flush()
         # return
         if verbose:
