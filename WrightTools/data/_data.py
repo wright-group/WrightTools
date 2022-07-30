@@ -413,13 +413,14 @@ class Data(Group):
         """
         # parse args
         args = list(args)
-        transform_args = args.copy()
         for i, arg in enumerate(args):
             if isinstance(arg, int):
                 args[i] = self._axes[arg].natural_name
             elif isinstance(arg, str):
                 arg = arg.strip()
                 args[i] = wt_kit.string2identifier(arg, replace=operator_to_identifier)
+
+        transform_expression = [self._axes[self.axis_names.index(a)].expression for a in args]
 
         if at is None:
             at = {}
@@ -458,7 +459,7 @@ class Data(Group):
             idx[np.array(removed_shape) == 1] = slice(None)
             idx[at_axes] = at_idx[at_axes]
             self._from_slice(idx, name=name, parent=out)
-            out[name].transform(*transform_args)
+            out[name].transform(*transform_expression)
         out.flush()
         # return
         if verbose:
