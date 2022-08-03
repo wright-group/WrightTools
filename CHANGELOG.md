@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## [3.4.5]
+
 ### Added
 - new `Data.at` method: syntactic sugar for chop with "at" argument.
 - `Data.__getitem__` supports array slicing
@@ -328,6 +330,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 - initial release
 
 [Unreleased]: https://github.com/wright-group/WrightTools/-/compare/3.4.4...master
+[3.4.5]: https://github.com/wright-group/WrightTools/compare/3.4.4...3.4.5
 [3.4.4]: https://github.com/wright-group/WrightTools/compare/3.4.3...3.4.4
 [3.4.3]: https://github.com/wright-group/WrightTools/compare/3.4.2...3.4.3
 [3.4.2]: https://github.com/wright-group/WrightTools/compare/3.4.1...3.4.2
