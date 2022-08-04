@@ -187,8 +187,7 @@ def test_rmd_axis_full_shape():
 
 
 def test_non_spanning_axes():
-    """axes do not span shape of data
-    """
+    """axes do not span shape of data"""
 
     x = np.arange(6)
 
