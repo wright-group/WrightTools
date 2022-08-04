@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Fixed
+
+- `Data.chop` : fixed bug where chop did not succeed if axes did not span data ndim
+
 ## [3.4.5]
 
 ### Added
