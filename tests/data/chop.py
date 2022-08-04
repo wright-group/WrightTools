@@ -186,12 +186,32 @@ def test_rmd_axis_full_shape():
     assert c[0].shape == (6, 3)
 
 
+def test_non_spanning_axes():
+    """axes do not span shape of data"""
+
+    x = np.arange(6)
+
+    d = wt.Data(name="test")
+    d.create_variable("x", values=x[:, None, None])
+    d.create_variable("y", values=x[None, ::2, None])
+    d.create_variable("z", values=x[None, None, ::3])
+    d.transform("x", "y")
+
+    c = d.chop(1)
+    assert c[0].axis_names == ("y",)
+    assert c[0].shape == d.shape[1:]
+
+    d.close()
+    c.close()
+
+
 # --- run -----------------------------------------------------------------------------------------
 
 
 if __name__ == "__main__":
     test_transformed()
     test_axes_order()
+    test_non_spanning_axes()
     test_2D_to_1D()
     test_3D_to_1D()
     test_3D_to_1D_at()
