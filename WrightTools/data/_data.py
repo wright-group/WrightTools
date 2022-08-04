@@ -482,7 +482,7 @@ class Data(Group):
         for k in at.keys():
             if k not in self.axis_names:
                 raise ValueError(f"Axis identifier {k} not in Axes: {self.axis_names}")
-        idx = np.array([slice(None)] * len(self._axes))
+        idx = np.array([slice(None)] * len(self.shape))
         for axis, point in at.items():
             point, units = point
             destination_units = self._axes[self.axis_names.index(axis)].units
