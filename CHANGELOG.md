@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## [3.4.6]
+
 ### Fixed
 
 - `Data.chop` : fixed bug where chop did not succeed if axes did not span data ndim
@@ -333,7 +335,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ### Added
 - initial release
 
-[Unreleased]: https://github.com/wright-group/WrightTools/-/compare/3.4.4...master
+[Unreleased]: https://github.com/wright-group/WrightTools/-/compare/3.4.6...master
+[3.4.6]: https://github.com/wright-group/WrightTools/compare/3.4.5...3.4.6
 [3.4.5]: https://github.com/wright-group/WrightTools/compare/3.4.4...3.4.5
 [3.4.4]: https://github.com/wright-group/WrightTools/compare/3.4.3...3.4.4
 [3.4.3]: https://github.com/wright-group/WrightTools/compare/3.4.2...3.4.3
