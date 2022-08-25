@@ -52,8 +52,8 @@ class Axis(object):
         self.parent = parent
         self.expression = expression.replace(" ", "")  # ignore spaces
         if " " in expression:
-            wt_exceptions.WrightToolsWarning(
-                f"Removing whitespace from expression: {expression} -> {self.expression}"
+            wt_exceptions.warnings.warn(
+                f"Spaces are not allowed in expression; removing ({expression} -> {self.expression})"
             )
         if units is None:
             self.units = self.variables[0].units
