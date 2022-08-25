@@ -50,7 +50,11 @@ class Axis(object):
             Axis units. Default is None.
         """
         self.parent = parent
-        self.expression = expression
+        self.expression = expression.replace(" ", "")  # ignore spaces
+        if " " in expression:
+            wt_exceptions.WrightToolsWarning(
+                f"Removing whitespace from expression: {expression} -> {self.expression}"
+            )
         if units is None:
             self.units = self.variables[0].units
         else:
