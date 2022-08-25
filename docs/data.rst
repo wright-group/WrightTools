@@ -158,6 +158,7 @@ Axis
 The :class:`WrightTools.data.Axis` class defines the coordinates of a data object.
 Each ``Axis`` contains an ``expression``, which dictates its relationship with one or more variables.
 Given 5 variables with names [``'w1'``, ``'w2'``, ``'wm'``, ``'d1'``, ``'d2'``] , example valid expressions include ``'w1'``, ``'w1=wm'``, ``'w1+w2'``, ``'2*w1'``, ``'d1-d2'``, and ``'wm-w1+w2'``.
+WrightTools ignores the space character in expressions, so ``'w1 = w2'`` will be interpreted as ``'w1=w2'``.
 Axes behave like arrays: you can slice into them, view their shape, get a min and max etc.
 But actually axes do not contain any new array information: they simply refer to the Variable arrays.
 Axes have the following key attributes:

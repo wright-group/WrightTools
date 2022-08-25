@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## Changed
+- `Axis`: space character ("\s") is no longer allowed in expressions.
+
 ## [3.4.6]
 
 ### Fixed
