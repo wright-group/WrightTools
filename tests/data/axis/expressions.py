@@ -9,5 +9,6 @@ def test_space_character():
     assert d.axis_names == ("w1__p__w2",)
     assert d.axis_expressions == ("w1+w2",)
 
+
 if __name__ == "__main__":
     test_space_character()
