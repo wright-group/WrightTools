@@ -32,7 +32,7 @@ def join(
 
     Joined datas must have the same axes and axes order.
     The axes define the array structure for the joined dataset.
-    As such, each axis must 
+    As such, each axis must
         * map to a single Variable
         * project along one or no dimension of the data shape (i.e. axis shapes should have no more than one dimension with shape greater than 1)
         * be orthogonal to all other axes
