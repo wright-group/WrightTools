@@ -183,9 +183,9 @@ def interact2D(
     # avoid changing passed data object
     data = data.copy()
     # unpack
-    data.prune(keep_channels=channel, verbose=False)
     channel = get_channel(data, channel)
     xaxis, yaxis = get_axes(data, [xaxis, yaxis])
+    data.prune(keep_channels=channel.natural_name, verbose=False)
     cmap = cmap if cmap is not None else get_colormap(channel.signed)
     current_state = SimpleNamespace()
     # create figure
