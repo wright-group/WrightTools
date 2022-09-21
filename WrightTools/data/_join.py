@@ -27,12 +27,15 @@ __all__ = ["join"]
 def join(
     datas, *, atol=None, rtol=None, name="join", parent=None, method="first", verbose=True
 ) -> Data:
-    """Join a list of data objects together.
+    """Join a list of data objects into one data object.
+    The underlying dataset arrays are merged.
 
-    Joined datas must have the same transformation applied.
-    This transformation will define the array order for the joined dataset.
-    All axes in the applied transformation must be a single variable,
-    the result will have sorted numbers.
+    Joined datas must have the same axes and axes order.
+    The axes define the array structure for the joined dataset.
+    As such, each axis must
+        * map to a single Variable
+        * project along one or no dimension of the data shape (i.e. axis shapes should have no more than one dimension with shape greater than 1)
+        * be orthogonal to all other axes
 
     Join does not perform any interpolation.
     For that, look to ``Data.map_variable`` or ``Data.heal``
@@ -40,7 +43,7 @@ def join(
     Parameters
     ----------
     datas : list of data or WrightTools.Collection
-        The list or collection of data objects to join together.
+        The list or collection of data objects to join together.  Data must have matching axes.
     atol : numeric or list of numeric
         The absolute tolerance to use (in ``np.isclose``) to consider points overlapped.
         If given as a single number, applies to all axes.
