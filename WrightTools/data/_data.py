@@ -1214,7 +1214,7 @@ class Data(Group):
             between.
         input_units : str (optional)
             The units of the new points. Default is same, which assumes
-            the new points have the same units as the axis.
+            the new points have the same units as the variable.
         name : string (optional)
             The name of the new data object. If None, generated from
             natural_name. Default is None.
