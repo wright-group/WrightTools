@@ -6,6 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ## [Unreleased]
 
 ## Changed
+- data.join now has MultidimensionalAxisError exception message
 - `Axis`: space character ("\s") in expressions are culled.
 - fixed `interact2D` bug: channel/axes can now be specified with non-zero index arguments
 
