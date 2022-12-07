@@ -88,6 +88,14 @@ def join(
     for d in datas[1:]:
         if d.axis_expressions != axis_expressions:
             raise wt_exceptions.ValueError("Joined data must have same axis_expressions")
+        for a in d.axes:
+            if len(np.squeeze(a.variables[0][:]).shape) > 1:
+                raise wt_exceptions.ValueError("Axis '" + a.natural_name + "' of datas[" + 
+                                                str(datas.index(d)) +"] ('" + d.natural_name+
+                                                "') must be 1D, but currently has " + 
+                                                str(len(np.squeeze(a.variables[0][:]).shape)) +
+                                                ' nontrivial axes'
+                                                )  
         variable_names &= set(d.variable_names)
         channel_names &= set(d.channel_names)
     variable_names = list(variable_names)
@@ -103,6 +111,13 @@ def join(
     for a in datas[0].axes:
         if len(a.variables) > 1:
             raise wt_exceptions.ValueError("Applied transform must have single variable axes")
+        if len(np.squeeze(a.variables[0][:]).shape) > 1:
+            raise wt_exceptions.ValueError("Axis '" + a.natural_name + "' of datas[" + 
+                                            str(datas.index(d)) +"] ('" + d.natural_name+
+                                            "') must be 1D, but currently has " + 
+                                            str(len(np.squeeze(a.variables[0][:]).shape)) +
+                                            ' nontrivial axes'
+                                            ) 
         for v in a.variables:
             axis_variable_names.append(v.natural_name)
             axis_variable_units.append(v.units)
