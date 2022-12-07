@@ -91,7 +91,7 @@ def join(
         for a in d.axes:
             if a.variables[0][:].squeeze().ndim > 1:
                 raise wt_exceptions.MultidimensionalAxisError(a.natural_name, "join")
-                                                  
+
         variable_names &= set(d.variable_names)
         channel_names &= set(d.channel_names)
     variable_names = list(variable_names)
