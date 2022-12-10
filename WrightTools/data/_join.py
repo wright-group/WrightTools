@@ -88,6 +88,10 @@ def join(
     for d in datas[1:]:
         if d.axis_expressions != axis_expressions:
             raise wt_exceptions.ValueError("Joined data must have same axis_expressions")
+        for a in d.axes:
+            if a.variables[0][:].squeeze().ndim > 1:
+                raise wt_exceptions.MultidimensionalAxisError(a.natural_name, "join")
+
         variable_names &= set(d.variable_names)
         channel_names &= set(d.channel_names)
     variable_names = list(variable_names)
@@ -103,6 +107,8 @@ def join(
     for a in datas[0].axes:
         if len(a.variables) > 1:
             raise wt_exceptions.ValueError("Applied transform must have single variable axes")
+        if a.variables[0][:].squeeze().ndim > 1:
+            raise wt_exceptions.MultidimensionalAxisError(a.natural_name, "join")
         for v in a.variables:
             axis_variable_names.append(v.natural_name)
             axis_variable_units.append(v.units)
