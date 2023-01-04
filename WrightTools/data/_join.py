@@ -247,6 +247,7 @@ def join(
                 slice_.append(slice(None))
             # If p is scalar, a new axis must be added, no transpose needed
             else:
+                transpose.append(np.argmax(data[variable_name].shape))
                 slice_.append(np.newaxis)
             # Triple subscripting needed because newaxis only applys to numpy array
             # New axis added so that subtracting p will broadcast
