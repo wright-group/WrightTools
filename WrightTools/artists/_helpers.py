@@ -355,7 +355,7 @@ def create_figure(
         return (total / (n + mpl * (n - 1))) * mpl
 
     # calculate column widths, width_ratio
-    subplot_ratios = np.array([i for i in cols if not i == "cbar"], dtype=np.float)
+    subplot_ratios = np.array([i for i in cols if not i == "cbar"], dtype=np.float64)
     subplot_ratios /= sum(subplot_ratios)
     subplot_widths = total_subplot_width * subplot_ratios
     width_ratios = []
