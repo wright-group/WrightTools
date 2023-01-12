@@ -1991,6 +1991,7 @@ class Data(Group):
 
         with open(filepath, "a") as f:
             f.write(delimiter.join(columns) + "\n")
+            chunk = ""
             for i, ndi in enumerate(np.ndindex(self.shape)):
                 line = [str(i) for i in ndi]
                 line += ["|"]
@@ -1999,13 +2000,19 @@ class Data(Group):
                     # broadcast reduced dimensions arrays to full
                     idxs = tuple(xi * (not yi) for xi, yi in zip(ndi, is_broadcast[j]))
                     line.append(f"{arr[idxs]:{fmt}}")
-                f.write(delimiter.join(line) + "\n")
                 if verbose and ((i == 0) or (not (i % 10))):
                     frac = round(i / self.size, 3)
                     sys.stdout.write(
                         f"[{'=' * int(frac * 60): <60}] {frac * 100:0.1f}% ...to_txt\r"
                     )
                     sys.stdout.flush()
+                chunk += delimiter.join(line) + "\n"
+                if not (i % 100):  # write to disk periodically
+                    f.write(chunk)
+                    chunk = ""
+            if chunk:
+                f.write(chunk)
+
         if verbose:
             sys.stdout.write(f"[{'=' * 60}] {100:0.1f}% ...done! \r")
             sys.stdout.flush()
