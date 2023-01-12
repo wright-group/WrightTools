@@ -263,7 +263,7 @@ def _no_collapse_fill(data, headers, file_, shape, verbose):
     file_.seek(0)
     arr = np.genfromtxt(file_, max_rows=frame_size)
     while arr.size > 0:
-        index = tuple(arr[0, 0 : len(shape) - 1].astype(np.int))
+        index = tuple(arr[0, 0 : len(shape) - 1].astype(np.int64))
         if verbose:
             print(index)
         for i, (kind, name) in enumerate(zip(headers["kind"], headers["name"])):

@@ -45,12 +45,12 @@ class Axis(object):
         parent : WrightTools.Data
             Parent data object.
         expression : string
-            Axis expression.
+            Axis expression. Space characters are ignored.
         units : string (optional)
             Axis units. Default is None.
         """
         self.parent = parent
-        self.expression = expression
+        self.expression = expression.replace(" ", "")  # ignore spaces
         if units is None:
             self.units = self.variables[0].units
         else:
