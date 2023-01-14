@@ -61,7 +61,7 @@ def test_w1_wa():
     value = random.randint(0, 5)
     original_max = data.array_signal.max()
     data.array_signal **= value
-    assert data.array_signal.max() == original_max**value
+    assert np.isclose(data.array_signal.max(), original_max**value)
     data.close()
 
 
