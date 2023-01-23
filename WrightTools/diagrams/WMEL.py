@@ -504,7 +504,7 @@ class Artist:
             set the side on which the state label will appear. Either 'left' or 'right'. Default is 'left'
         bbox_adjust : list of floats (optional)
             adjusts the left, right, bottom, and top bounds of the cascade diagram. Default is bbox_adjust=[0.2, 0.9, 0.2, 0.78]
-        transfer_arrow_linewidth = float (ooptional)
+        transfer_arrow_linewidth = float (optional)
             adjusts the thickness of the arrow between cascading WMEL diagrams
         transfer_arrow_offset = [x_offset, y_offset] (optional)
             adjusts the label of the energy transfer arrow along the x and y axis
