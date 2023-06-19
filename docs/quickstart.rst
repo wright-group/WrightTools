@@ -11,7 +11,7 @@ Each of the following code blocks builds on top of the previous code.
 Read this document like a series of commands typed into a Python shell.
 We recommend following along on your own machine.
 
-We will introduce some important basics of WrightTools: 
+We will introduce some important basics of WrightTools:
 
    *Creating Data Objects from personal data (both non .wt5 files AND .wt5 files)
 
@@ -27,7 +27,7 @@ Create a Data Object
 
 There are many ways to create a WrightTools data object.
 One strategy is to create a data object from your own data. Another is to open an existing wt5 file.
-First, we will explore importing your own data. 
+First, we will explore importing your own data.
 
 We provide an example infrared spectrum for you to manipulate `here <https://raw.githubusercontent.com/wright-group/WrightTools/master/WrightTools/datasets/Tensor27/CuPCtS_powder_ATR.dpt>`_. Once you access this page, right click and save this file to your computer in an easily findable directory.
 
@@ -46,7 +46,7 @@ The next step is easier than you think. Identify the location of your file. For 
 
 Note that I renamed the file to "IR_spec.dpt" to make it easier to plug into my script. I find it easiest to do this in Notepad (open in Notepad, then save as "all files" and name the file IR_spec.dpt"). I added the 'r' in front of the path directory to let pathlib know this is a Windows directory.
 
-We now need to import the file and (importantly) define it as a variable / data object. If the file is not imported as a data object, WrightTools will be confused. This is very important -- if the file is not imported into WrightTools as a data object, nothing useful will happen. 
+We now need to import the file and (importantly) define it as a variable / data object. If the file is not imported as a data object, WrightTools will be confused. This is very important -- if the file is not imported into WrightTools as a data object, nothing useful will happen.
 
 To do this, we can use an import data command. Fortunately, the data object for a Bruker Tensor 27 Infrared Spectrometer is already programmed into WrightTools, which eases the import process.
 
@@ -70,7 +70,7 @@ The final useful step here is to save as a .wt5 file, the natural file format of
 
    d.save('file_name')
 
-where you substitute file_name with what you intend to name the dataset. This will save it in the original directory as a .wt5 file. 
+where you substitute file_name with what you intend to name the dataset. This will save it in the original directory as a .wt5 file.
 To reopen the file, you simply issue the command:
 
 .. code-block:: python
@@ -83,14 +83,14 @@ Data manipulation can be done on this 'd' object, which is what we will explore 
 Creating a Quick and Dirty 1D Plot
 --------------------
 
-In WrightTools, there are a variety of methods for plotting. Below, you can interact with some pre-installed data objects to explore these options. For now, we will stick to the IR Spectrum imported above. 
+In WrightTools, there are a variety of methods for plotting. Below, you can interact with some pre-installed data objects to explore these options. For now, we will stick to the IR Spectrum imported above.
 
 To create a quick and dirty 1D plot, the command is
 
 .. code-block:: python
 
    >>> wt.artists.quick1D()
-   
+
 In the parentheses, you insert your data object. Recall that we imported this infrared spectrum and identified it in WrightTools as a data object called "d". Therefore, to make a quick 1D plot, simply issue the command
 
 .. code-block:: python
@@ -104,14 +104,14 @@ And that is it! This is how you can easily graph 1D data in WrightTools from you
 Creating a Quick and Dirty 2D Plot
 --------------------
 
-:meth:`~WrightTools.artists.quick2D` 
-is built with the same goals as :meth:`~WrightTools.artists.quick1D`, 
+:meth:`~WrightTools.artists.quick2D`
+is built with the same goals as :meth:`~WrightTools.artists.quick1D`,
 but for two dimensional representations.
 
 This time, we have to specify two axes to plot along---``w1=wm`` and ``d2``, in this example.
 Again, we use the ``at`` keyword argument so only one plot will be generated.
 
-We need to open a data object which involves a 2D data set. The FT-IR spectrum you manipulated above is NOT a 2D data set, but we provide a variety of published data sets for manipulation purposes. 
+We need to open a data object which involves a 2D data set. The FT-IR spectrum you manipulated above is NOT a 2D data set, but we provide a variety of published data sets for manipulation purposes.
 
 We have stored these in a collection 'datasets'. We open an arbitrary dataset as:
 
@@ -123,12 +123,12 @@ We have stored these in a collection 'datasets'. We open an arbitrary dataset as
    p = datasets.wt5.v1p0p1_MoS2_TrEE_movie
    data = wt.open(p)
 
-Let us see what channels we can plot with. This lets us choose, in the quick2D method, which axes we plot and furthermore, the data to be plotted as a function of these two axes. 
-We do this by printing the tree of the data object, or 
+Let us see what channels we can plot with. This lets us choose, in the quick2D method, which axes we plot and furthermore, the data to be plotted as a function of these two axes.
+We do this by printing the tree of the data object, or
 
 .. code-block:: python
 
-   data.print_tree() 
+   data.print_tree()
 
 Issuing this command yields the following information:
 
@@ -156,7 +156,7 @@ Issuing this command yields the following information:
        ├── 4: ai4 (41, 41, 23)
        └── 5: mc (41, 41, 23)
 
-So, we have 3 possible axes (w1, w2, d2) and 5 channels (ai0, ai1, ai2, ai3, ai4, ai5). By default, WrightTools will plot the first channel (ai0) in a quick2D plot. So let's give it a whirl by plotting this data. Let's plot the data with one axis as w1, the second axis as d2, and choose the third channel (w2) to be constant at 2 eV. This last constraint is important because this is a 3D data set - for each w1, w2, or d2 value, we can produce a 2D plot. So we simply choose a single w2 value (2 eV) to understand the spectral response at that specific point (w1, d2, 2 eV) = (w1, d2, w2). 
+So, we have 3 possible axes (w1, w2, d2) and 5 channels (ai0, ai1, ai2, ai3, ai4, ai5). By default, WrightTools will plot the first channel (ai0) in a quick2D plot. So let's give it a whirl by plotting this data. Let's plot the data with one axis as w1, the second axis as d2, and choose the third channel (w2) to be constant at 2 eV. This last constraint is important because this is a 3D data set - for each w1, w2, or d2 value, we can produce a 2D plot. So we simply choose a single w2 value (2 eV) to understand the spectral response at that specific point (w1, d2, 2 eV) = (w1, d2, w2).
 
 Now we have enough to create the 2D plot. By issuing the commands:
 
@@ -189,7 +189,7 @@ Now let's actually modify the arrays that make up our data object. Note that the
 Convert
 ^^^^^^^
 
-As we saw above, WrightTools has built in units support. 
+As we saw above, WrightTools has built in units support.
 This enables us to easily convert our data object from one unit system to another:
 
 .. code-block:: python
@@ -210,9 +210,9 @@ For more information see :ref:`units`.
 Split
 ^^^^^
 
-Use :meth:`~WrightTools.data.Data.split` to break your dataset into smaller pieces. This is useful if you want to look at specific regions. 
+Use :meth:`~WrightTools.data.Data.split` to break your dataset into smaller pieces. This is useful if you want to look at specific regions.
 
-Consider the above 3D data object that we just used to create a 2D plot. Let's say we are only interested in d2 dynamics after d2 = 0. We split the d2 axis at d2 = 0, which will yield two new objects: before 0 and after 0. 
+Consider the above 3D data object that we just used to create a 2D plot. Let's say we are only interested in d2 dynamics after d2 = 0. We split the d2 axis at d2 = 0, which will yield two new objects: before 0 and after 0.
 
 To do this, we need to introduce a new data object, which we will call col. We thus split the data as follows:
 
@@ -224,9 +224,9 @@ To do this, we need to introduce a new data object, which we will call col. We t
      1 : 0.00 to inf fs (1, 1, 8)
 
 Now, col is an object which has two components, col.split000 and col.split001.
-These are d2<0 and d2>0, respectively. To plot the data of interest, d2 > 0, we simply employ the quick2D code before and plot col.split001. 
+These are d2<0 and d2>0, respectively. To plot the data of interest, d2 > 0, we simply employ the quick2D code before and plot col.split001.
 
-You can additionally employ for loops and other methods to create a program which automatically splits the data and plots them individually, as seen below. 
+You can additionally employ for loops and other methods to create a program which automatically splits the data and plots them individually, as seen below.
 
 .. code-block:: python
 
@@ -269,7 +269,7 @@ Note that :meth:`~WrightTools.data.Data.split` accepts axis expressions and unit
 Clip
 ^^^^
 
-Use :meth:`~WrightTools.data.Channel.clip` to ignore/remove points of a channel outside of a specific range. For example, if you are interested in only looking at less intense values in a spectrum, you can cut out (clip) the larger values of interest. For example, if you would like to only look at spectral values with intensity between 0 to 0.1, we simply need to clip the intensity values larger than that. 
+Use :meth:`~WrightTools.data.Channel.clip` to ignore/remove points of a channel outside of a specific range. For example, if you are interested in only looking at less intense values in a spectrum, you can cut out (clip) the larger values of interest. For example, if you would like to only look at spectral values with intensity between 0 to 0.1, we simply need to clip the intensity values larger than that.
 
 We perform this through the command
 
@@ -305,7 +305,7 @@ This effectively constrains all plotted values between 0 to 0.1. We can plot it 
 Transform
 ^^^^^^^^^
 
-Use :meth:`~WrightTools.data.Data.transform` to choose a different set of axes for your data object. For example, you have a data set of axes w1 and w2. Pretend for example you have a spectral object that should exist at w2 = w + w1. If we believe this, we can transform the axes to generate a plot that will explicitly show the 'w' frequency, instead of the w2 axis. This makes it easier to plot. 
+Use :meth:`~WrightTools.data.Data.transform` to choose a different set of axes for your data object. For example, you have a data set of axes w1 and w2. Pretend for example you have a spectral object that should exist at w2 = w + w1. If we believe this, we can transform the axes to generate a plot that will explicitly show the 'w' frequency, instead of the w2 axis. This makes it easier to plot.
 
 We perform this through the data transform. Importing the data object as 'data', we issue the command:
 
@@ -313,7 +313,7 @@ We perform this through the data transform. Importing the data object as 'data',
 
    data.transform('w1=wm', 'w2-wm', 'd2')
 
-Note that this did exactly as intended. Since w1 was transformed as being identical to wm, the transformation w2 -> w2 - wm is identical to w, as w = w2 - wm = w2 - w1. The resultant spectrum (plotted below) makes this clear. 
+Note that this did exactly as intended. Since w1 was transformed as being identical to wm, the transformation w2 -> w2 - wm is identical to w, as w = w2 - wm = w2 - w1. The resultant spectrum (plotted below) makes this clear.
 
 .. plot::
 
@@ -329,7 +329,7 @@ Note that this did exactly as intended. Since w1 was transformed as being identi
 
 Creating a 1D plot from 2D data objects
 --------------------
-The idea is here is that you are interested in spectral information across a certain axis. For example, let's say you should see many modes coupled to w1 = 1.5 eV. We can effectively create a 1D spectrum with w1 stagnant at 1.5 eV and w2 spanning its entire range to identify coupled features. 
+The idea is here is that you are interested in spectral information across a certain axis. For example, let's say you should see many modes coupled to w1 = 1.5 eV. We can effectively create a 1D spectrum with w1 stagnant at 1.5 eV and w2 spanning its entire range to identify coupled features.
 
 This method employs all the tricks from above. We first chop the data at specific w1 values:
 
@@ -337,7 +337,7 @@ This method employs all the tricks from above. We first chop the data at specifi
 
    data1 = data.chop('w2', at={'w1=wm':[1.5, 'eV']})[0]
 
-Since we have multiple data1 values (at different delays -- we have many d2 points!) we just choose an arbitrary one. For laziness, we choose the first point, so we add the [0] index to the end. 
+Since we have multiple data1 values (at different delays -- we have many d2 points!) we just choose an arbitrary one. For laziness, we choose the first point, so we add the [0] index to the end.
 We can then plot this:
 
 .. code-block:: python
