@@ -188,7 +188,7 @@ class Data(Group):
         if "source" not in self.attrs.keys():
             self.attrs["source"] = "None"
         value = self.attrs["source"]
-        return value if not value == "None" else None
+        return value if isinstance(value, str) and not value == "None" else None
 
     @property
     def units(self) -> tuple:
