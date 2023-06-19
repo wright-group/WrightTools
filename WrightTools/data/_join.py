@@ -27,12 +27,15 @@ __all__ = ["join"]
 def join(
     datas, *, atol=None, rtol=None, name="join", parent=None, method="first", verbose=True
 ) -> Data:
-    """Join a list of data objects together.
+    """Join a list of data objects into one data object.
+    The underlying dataset arrays are merged.
 
-    Joined datas must have the same transformation applied.
-    This transformation will define the array order for the joined dataset.
-    All axes in the applied transformation must be a single variable,
-    the result will have sorted numbers.
+    Joined datas must have the same axes and axes order.
+    The axes define the array structure for the joined dataset.
+    As such, each axis must
+        * map to a single Variable
+        * project along one or no dimension of the data shape (i.e. axis shapes should have no more than one dimension with shape greater than 1)
+        * be orthogonal to all other axes
 
     Join does not perform any interpolation.
     For that, look to ``Data.map_variable`` or ``Data.heal``
@@ -40,7 +43,7 @@ def join(
     Parameters
     ----------
     datas : list of data or WrightTools.Collection
-        The list or collection of data objects to join together.
+        The list or collection of data objects to join together.  Data must have matching axes.
     atol : numeric or list of numeric
         The absolute tolerance to use (in ``np.isclose``) to consider points overlapped.
         If given as a single number, applies to all axes.
@@ -85,6 +88,10 @@ def join(
     for d in datas[1:]:
         if d.axis_expressions != axis_expressions:
             raise wt_exceptions.ValueError("Joined data must have same axis_expressions")
+        for a in d.axes:
+            if a.variables[0][:].squeeze().ndim > 1:
+                raise wt_exceptions.MultidimensionalAxisError(a.natural_name, "join")
+
         variable_names &= set(d.variable_names)
         channel_names &= set(d.channel_names)
     variable_names = list(variable_names)
@@ -100,6 +107,8 @@ def join(
     for a in datas[0].axes:
         if len(a.variables) > 1:
             raise wt_exceptions.ValueError("Applied transform must have single variable axes")
+        if a.variables[0][:].squeeze().ndim > 1:
+            raise wt_exceptions.MultidimensionalAxisError(a.natural_name, "join")
         for v in a.variables:
             axis_variable_names.append(v.natural_name)
             axis_variable_units.append(v.units)

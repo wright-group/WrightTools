@@ -5,15 +5,37 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
-### Added
-- `artists.interact2D` supports `cmap` kwarg.
-- iPython integration: autocomplete includes axis, variable, and channel names
+### Fixed
+- numpy deprecated the `np.float` alias, so use `np.float64` to be more precise
 
 ### Changed
+- data.join now has MultidimensionalAxisError exception message
+- `Axis`: space character ("\s") in expressions are culled.
+- fixed `interact2D` bug: channel/axes can now be specified with non-zero index arguments
+
+## [3.4.6]
+
+### Fixed
+
+- `Data.chop` : fixed bug where chop did not succeed if axes did not span data ndim
+
+## [3.4.5]
+
+### Added
+- new `Data.at` method: syntactic sugar for chop with "at" argument.
+- `Data.__getitem__` supports array slicing
+- `artists.interact2D` supports `cmap` kwarg.
+- iPython integration: autocomplete includes axis, variable, and channel names
+- `artists.quick2D`:  supports `cmap` kwarg.
+- Allow `create_variable` and `create_channel` to create compressed datasets
+
+### Changed
+- `Data.chop` refactored to make steps modular
 - `artists.interact2D` uses matplotlib norm objects to control colormap scaling
 
 ### Fixed
 - `kit.fft`: fixed bug where Fourier coefficients were off by a scalar factor.
+- ensure `artists.quickND` plotters always close chopped data files
 
 ## [3.4.4]
 
@@ -321,7 +343,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ### Added
 - initial release
 
-[Unreleased]: https://github.com/wright-group/WrightTools/-/compare/3.4.4...master
+[Unreleased]: https://github.com/wright-group/WrightTools/-/compare/3.4.6...master
+[3.4.6]: https://github.com/wright-group/WrightTools/compare/3.4.5...3.4.6
+[3.4.5]: https://github.com/wright-group/WrightTools/compare/3.4.4...3.4.5
 [3.4.4]: https://github.com/wright-group/WrightTools/compare/3.4.3...3.4.4
 [3.4.3]: https://github.com/wright-group/WrightTools/compare/3.4.2...3.4.3
 [3.4.2]: https://github.com/wright-group/WrightTools/compare/3.4.1...3.4.2
