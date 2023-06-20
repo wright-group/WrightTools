@@ -19,7 +19,7 @@ def test_datasets_mos2():
 
     with NamedTemporaryFile(delete=False) as tmp:
         d.translate_to_txt(tmp.name, verbose=True)
- 
+
         with open(tmp.name, "r") as f:
             for i in range(100):
                 f.readline()
@@ -29,8 +29,7 @@ def test_datasets_mos2():
             datum_wt5 = d[int(id1), int(id2)]
             for i, vari in enumerate(d.variable_names):
                 # print(vari, values[i], datum_wt5[vari][:])
-                assert (values[i] - datum_wt5[vari][:])**2 <= (1e-4 * values[i])**2
-
+                assert (values[i] - datum_wt5[vari][:]) ** 2 <= (1e-4 * values[i]) ** 2
 
     d.close()
 
