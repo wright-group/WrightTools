@@ -1973,7 +1973,7 @@ class Data(Group):
         # attrs
         import tidy_headers
 
-        tidy_headers.write(filepath, {k: v for k, v in self.attrs.items()})
+        tidy_headers.write(filepath, {k:v for k, v in self.attrs.items()})
 
         columns = [f"a_{i}" for i in range(self.ndim)]
         columns.append("|")
@@ -2007,7 +2007,7 @@ class Data(Group):
                     )
                     sys.stdout.flush()
                 chunk += delimiter.join(line) + "\n"
-                if not (i % 100):  # write to disk periodically
+                if (i % 100) == 99:  # write to disk periodically
                     f.write(chunk)
                     chunk = ""
             if chunk:
