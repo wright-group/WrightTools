@@ -80,7 +80,6 @@ def label_sectors(
 
 
 if __name__ == "__main__":
-
     plt.close()
     fig = plt.figure()
     ax = fig.add_subplot(111)

@@ -270,7 +270,7 @@ def interact2D(
         ylabel=yaxis.label,
         xlabel=xaxis.label,
     )
-    ax0.grid(b=True)
+    ax0.grid(True)
     # colorbar
     ticks = norm_to_ticks(norm)
     ticklabels = gen_ticklabels(ticks, channel.signed)
