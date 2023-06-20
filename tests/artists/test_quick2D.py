@@ -15,7 +15,7 @@ def test_perovskite():
             break
         except:
             pass
-    return wt.artists.quick2D(data, xaxis=0, yaxis=2, at={"w2": [1.7, "eV"]})
+    wt.artists.quick2D(data, xaxis=0, yaxis=2, at={"w2": [1.7, "eV"]})
 
 
 def test_4D():
@@ -36,14 +36,13 @@ def test_4D():
     data.create_variable("w3", values=w3[None, None, :, None], units="wn", label="3")
     data.create_variable("d1", values=tau[None, None, None, :], units="ps")
     data.transform("w1", "w2", "w3", "d1")
-    return wt.artists.quick2D(data, xaxis=0, yaxis=1)
+    wt.artists.quick2D(data, xaxis=0, yaxis=1)
 
 
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
 
     plt.close("all")
-    # store to variable to prevent garbage collection
-    t0 = test_perovskite()
-    t1 = test_4D()
+    test_perovskite()
+    test_4D()
     plt.show()

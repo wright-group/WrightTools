@@ -246,7 +246,8 @@ def grayify_cmap(cmap):
 
     __ https://jakevdp.github.io/blog/2014/10/16/how-bad-is-your-colormap/
     """
-    cmap = matplotlib.colormaps.get_cmap(cmap)
+    if not isinstance(cmap, matplotlib.colors.Colormap):
+        cmap = matplotlib.colormaps[cmap]
     colors = cmap(np.arange(cmap.N))
     # convert RGBA to perceived greyscale luminance
     # cf. http://alienryderflex.com/hsp.html
