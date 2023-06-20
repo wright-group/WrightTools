@@ -1973,7 +1973,7 @@ class Data(Group):
         # attrs
         import tidy_headers
 
-        tidy_headers.write(filepath, {k:v for k, v in self.attrs.items()})
+        tidy_headers.write(filepath, {k: v for k, v in self.attrs.items()})
 
         columns = [f"a_{i}" for i in range(self.ndim)]
         columns.append("|")
