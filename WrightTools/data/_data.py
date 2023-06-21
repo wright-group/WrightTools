@@ -188,7 +188,7 @@ class Data(Group):
         if "source" not in self.attrs.keys():
             self.attrs["source"] = "None"
         value = self.attrs["source"]
-        return value if not value == "None" else None
+        return value if isinstance(value, str) and not value == "None" else None
 
     @property
     def units(self) -> tuple:
@@ -2029,7 +2029,7 @@ class Data(Group):
         See `scipy ndimage`__ for more info.
 
         __ http://docs.scipy.org/doc/scipy/reference/
-                    generated/scipy.ndimage.interpolation.zoom.html
+                    generated/scipy.ndimage.zoom.html
 
         Parameters
         ----------
@@ -2045,10 +2045,10 @@ class Data(Group):
 
         # axes
         for axis in self._axes:
-            axis[:] = scipy.ndimage.interpolation.zoom(axis[:], factor, order=order)
+            axis[:] = scipy.ndimage.zoom(axis[:], factor, order=order)
         # channels
         for channel in self.channels:
-            channel[:] = scipy.ndimage.interpolation.zoom(channel[:], factor, order=order)
+            channel[:] = scipy.ndimage.zoom(channel[:], factor, order=order)
         # return
         if verbose:
             print("data zoomed to new shape:", self.shape)

@@ -69,7 +69,6 @@ ureg.define("OD = [] ")
 
 ureg.define("wavenumber = 1 / cm = cm^{-1} = wn")
 
-
 # Aliases for backwards compatability
 ureg.define("@alias s = s_t")
 ureg.define("@alias min = m_t")
@@ -149,7 +148,7 @@ def get_symbol(units) -> str:
     string
         LaTeX formatted symbol.
     """
-    quantity = ureg.Quantity(1, ureg[units])
+    quantity = ureg.Quantity(1, ureg(units))
     if quantity.check("[length]"):
         return r"\lambda"
     elif quantity.check("1 / [length]"):
@@ -164,7 +163,7 @@ def get_symbol(units) -> str:
         return r"\mathcal{F}"
     elif quantity.check("[temperature]"):
         return "T"
-    elif ureg[units] in (ureg.deg, ureg.radian):
+    elif ureg(units) in (ureg.deg, ureg.radian):
         return r"\omega"
     else:
         return None
