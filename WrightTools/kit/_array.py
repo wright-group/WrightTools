@@ -27,7 +27,8 @@ __all__ = [
     "unique",
     "valid_index",
     "mask_reduce",
-    "enforce_mask_shape",
+    "enforce_mask_shape"
+    "signed",
 ]
 
 
@@ -433,3 +434,22 @@ def enforce_mask_shape(mask, shape):
     """
     red = tuple([i for i in range(len(shape)) if shape[i] == 1])
     return mask.max(axis=red, keepdims=True)
+
+
+
+def signed(d0):
+    """Tells bluesky whether to sign data. We have a 7.5 % tolerance right now.%"""
+
+   
+    maxd0 = np.max(d0)
+    mind0 = np.min(d0)
+    
+    tolerance = (maxd0 - np.absolute(mind0))/(maxd0 + np.absolute(mind0))
+      
+    if tolerance < 7.5*10**(-2):
+        if min(d0) > 0:
+            return False
+        else: return True
+    
+    else:
+        return False
