@@ -436,20 +436,19 @@ def enforce_mask_shape(mask, shape):
     return mask.max(axis=red, keepdims=True)
 
 
-
 def signed(d0):
     """Tells bluesky whether to sign data. We have a 7.5 % tolerance right now.%"""
 
-   
     maxd0 = np.max(d0)
     mind0 = np.min(d0)
-    
-    tolerance = (maxd0 - np.absolute(mind0))/(maxd0 + np.absolute(mind0))
-      
-    if tolerance < 7.5*10**(-2):
+
+    tolerance = (maxd0 - np.absolute(mind0)) / (maxd0 + np.absolute(mind0))
+
+    if tolerance < 7.5 * 10 ** (-2):
         if min(d0) > 0:
             return False
-        else: return True
-    
+        else:
+            return True
+
     else:
         return False
