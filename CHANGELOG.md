@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ### Fixed
 - numpy deprecated the `np.float` alias, so use `np.float64` to be more precise
+- artists support matplotlib >= 3.7
 
 ### Changed
 - data.join now has MultidimensionalAxisError exception message

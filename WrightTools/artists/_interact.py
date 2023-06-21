@@ -50,6 +50,20 @@ def _at_dict(data, sliders, xaxis, yaxis):
     }
 
 
+def create_local_global_radio(ax, local):
+    if mpl.__version__ >= "3.7":
+        radio = RadioButtons(ax, (" global", " local"), radio_props={"s": 100})
+    else:
+        radio = RadioButtons(ax, (" global", " local"))
+        for circle in radio.circles:
+            circle.set_radius(0.14)
+    if local:
+        radio.set_active(1)
+    else:
+        radio.set_active(0)
+    return radio
+
+
 def get_axes(data, axes):
     xaxis, yaxis = axes
     if type(xaxis) in [int, str]:
@@ -226,13 +240,11 @@ def interact2D(
     ydir = 1 if yaxis.points.flatten()[-1] - yaxis.points.flatten()[0] > 0 else -1
     current_state.bin_vs_x = True
     current_state.bin_vs_y = True
+
     # create buttons
     current_state.local = local
-    radio = RadioButtons(ax_local, (" global", " local"), radio_props={"s": 100})
-    if local:
-        radio.set_active(1)
-    else:
-        radio.set_active(0)
+    radio = create_local_global_radio(ax_local, local)
+
     # create sliders
     sliders = {}
     for axis in data.axes:
@@ -435,8 +447,8 @@ def interact2D(
         ticklabels = gen_ticklabels(ticks, channel.signed)
         colorbar.set_ticklabels(ticklabels)
 
-        sp_x.clear()  # collections.cla()
-        sp_y.clear()  # .collections.cla()
+        sp_x.clear()
+        sp_y.clear()
         draw_sideplot_projections()
         if line_sp_x.get_visible() and line_sp_y.get_visible():
             update_sideplot_slices()
