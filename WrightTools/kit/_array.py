@@ -437,7 +437,22 @@ def enforce_mask_shape(mask, shape):
 
 
 def signed(d0):
-    """Tells bluesky whether to sign data. We have a 7.5 % tolerance right now.%"""
+    """Tells bluesky whether to sign data. We have a 7.5 % tolerance right now.%
+    
+    Parameters
+    -------------
+    d0: An array
+    maxd0: number
+       Maximum value in the array.
+       
+    mind0: number
+       Minimum value in the array.
+       
+
+    Returns
+    -------
+    A boolean; True if the data is signed and False if the data is not. 
+    """
 
     maxd0 = np.max(d0)
     mind0 = np.min(d0)
