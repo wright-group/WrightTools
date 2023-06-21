@@ -441,12 +441,8 @@ def signed(d0):
 
     Parameters
     -------------
-    d0: An array
-    maxd0: number
-       Maximum value in the array.
+    d0: Input data array
 
-    mind0: number
-       Minimum value in the array.
 
 
     Returns
