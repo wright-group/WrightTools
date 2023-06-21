@@ -44,9 +44,9 @@ def zoom2D(xi, yi, zi, xi_zoom=3.0, yi_zoom=3.0, order=3, mode="nearest", cval=0
     cval : scalar (optional)
         Value used for constant mode. Default is 0.0.
     """
-    xi = ndimage.interpolation.zoom(xi, xi_zoom, order=order, mode="nearest")
-    yi = ndimage.interpolation.zoom(yi, yi_zoom, order=order, mode="nearest")
-    zi = ndimage.interpolation.zoom(zi, (xi_zoom, yi_zoom), order=order, mode=mode, cval=cval)
+    xi = ndimage.zoom(xi, xi_zoom, order=order, mode="nearest")
+    yi = ndimage.zoom(yi, yi_zoom, order=order, mode="nearest")
+    zi = ndimage.zoom(zi, (xi_zoom, yi_zoom), order=order, mode=mode, cval=cval)
     return xi, yi, zi
 
 
