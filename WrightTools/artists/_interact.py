@@ -228,13 +228,11 @@ def interact2D(
     current_state.bin_vs_y = True
     # create buttons
     current_state.local = local
-    radio = RadioButtons(ax_local, (" global", " local"))
+    radio = RadioButtons(ax_local, (" global", " local"), radio_props={"s": 100})
     if local:
         radio.set_active(1)
     else:
         radio.set_active(0)
-    for circle in radio.circles:
-        circle.set_radius(0.14)
     # create sliders
     sliders = {}
     for axis in data.axes:
@@ -436,8 +434,9 @@ def interact2D(
         ticks = norm_to_ticks(norm)
         ticklabels = gen_ticklabels(ticks, channel.signed)
         colorbar.set_ticklabels(ticklabels)
-        sp_x.collections.clear()
-        sp_y.collections.clear()
+
+        sp_x.clear() # collections.cla()
+        sp_y.clear() # .collections.cla()
         draw_sideplot_projections()
         if line_sp_x.get_visible() and line_sp_y.get_visible():
             update_sideplot_slices()
