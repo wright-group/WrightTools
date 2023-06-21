@@ -128,7 +128,7 @@ We do this by printing the tree of the data object, or
 
 .. code-block:: python
 
-   data.print_tree()
+   >>> data.print_tree()
 
 Issuing this command yields the following information:
 
