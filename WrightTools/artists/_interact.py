@@ -435,8 +435,8 @@ def interact2D(
         ticklabels = gen_ticklabels(ticks, channel.signed)
         colorbar.set_ticklabels(ticklabels)
 
-        sp_x.clear() # collections.cla()
-        sp_y.clear() # .collections.cla()
+        sp_x.clear()  # collections.cla()
+        sp_y.clear()  # .collections.cla()
         draw_sideplot_projections()
         if line_sp_x.get_visible() and line_sp_y.get_visible():
             update_sideplot_slices()
