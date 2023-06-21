@@ -13,6 +13,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 - `Axis`: space character ("\s") in expressions are culled.
 - fixed `interact2D` bug: channel/axes can now be specified with non-zero index arguments
 
+### Added
+- `Data.translate_to_txt`: serialize channels and variables and write as a text file.
+
 ## [3.4.6]
 
 ### Fixed
@@ -22,7 +25,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ## [3.4.5]
 
 ### Added
-- `Data.translate_to_txt`: serialize channels and variables and write as a text file.
 - new `Data.at` method: syntactic sugar for chop with "at" argument.
 - `Data.__getitem__` supports array slicing
 - `artists.interact2D` supports `cmap` kwarg.
