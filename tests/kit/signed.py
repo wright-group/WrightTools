@@ -17,10 +17,6 @@ def test_5():
     assert wt.kit.signed(arr) == True
 
 
-
 def test_5_multiple():
     arr = np.array([1, 3, 4, 11, 12])
     assert wt.kit.signed(arr) == False
-
-
-
