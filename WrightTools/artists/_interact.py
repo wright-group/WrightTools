@@ -258,7 +258,15 @@ def interact2D(
             if axis.size > np.prod(axis.shape):
                 raise NotImplementedError("Cannot use multivariable axis as a slider")
             slider_axes = plt.subplot(gs[~len(sliders), :]).axes
-            slider = Slider(slider_axes, axis.label, 0, axis.points.size - 1, valinit=0, valstep=1, track_color="lightgrey")            
+            slider = Slider(
+                slider_axes,
+                axis.label,
+                0,
+                axis.points.size - 1,
+                valinit=0,
+                valstep=1,
+                track_color="lightgrey",
+            )
             sliders[axis.natural_name] = slider
             slider_axes.set_gid(axis.natural_name)
             # axis_to_slider[slider_axes.]
