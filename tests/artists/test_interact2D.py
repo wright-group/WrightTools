@@ -76,12 +76,12 @@ def test_4D():
 
     data = wt.data.Data(name="data")
     data.create_channel("signal", values=signal, signed=True)
-    data.create_variable("w1", values=w1[:, None, None, None], units="wn")
-    data.create_variable("w2", values=w2[None, :, None, None], units="wn")
-    data.create_variable("w3", values=w3[None, None, :, None], units="wn")
-    data.create_variable("d1", values=tau[None, None, None, :], units="ps")
+    data.create_variable("w_1", values=w1[:, None, None, None], units="wn")
+    data.create_variable("w_2", values=w2[None, :, None, None], units="wn")
+    data.create_variable("w_3", values=w3[None, None, :, None], units="wn")
+    data.create_variable("d_1", values=tau[None, None, None, :], units="ps")
 
-    data.transform("w1", "w2", "w3", "d1")
+    data.transform("w_1", "w_2", "w_3", "d_1")
     wt.artists.interact2D(data, xaxis=0, yaxis=1, local=True)
 
 
