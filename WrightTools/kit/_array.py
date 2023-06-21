@@ -27,7 +27,7 @@ __all__ = [
     "unique",
     "valid_index",
     "mask_reduce",
-    "enforce_mask_shape"
+    "enforce_mask_shape",
     "signed",
 ]
 
@@ -203,7 +203,7 @@ def orthogonal(*args) -> bool:
         if hasattr(arg, "shape"):
             args[i] = arg.shape
     for s in zip(*args):
-        if np.prod(s) != max(s):
+        if np.product(s) != max(s):
             return False
     return True
 
