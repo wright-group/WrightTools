@@ -57,7 +57,7 @@ def _at_dict(data, sliders, xaxis, yaxis):
 
 
 def create_local_global_radio(ax, local):
-    if mpl.__version__ >= "3.7":
+    if mpl.__version_info__ >= (3, 7):
         radio = RadioButtons(ax, (" global", " local"), radio_props={"s": 100})
     else:
         radio = RadioButtons(ax, (" global", " local"))
