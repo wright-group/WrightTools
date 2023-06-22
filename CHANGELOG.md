@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ### Fixed
 - numpy deprecated the `np.float` alias, so use `np.float64` to be more precise
 - artists support matplotlib >= 3.7
-- interact2D: fixed bug sliders did not change appearance on focus
+- interact2D: fixed bug where sliders did not change appearance on focus
 
 ### Changed
 - data.join now has MultidimensionalAxisError exception message
