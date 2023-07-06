@@ -375,7 +375,6 @@ def interact2D(
     ax0.set_xlim(xaxis.points.min(), xaxis.points.max())
     ax0.set_ylim(yaxis.points.min(), yaxis.points.max())
 
-
     sp_x.set_ylim(-0.05, 1.05)
     sp_y.set_xlim(-0.05, 1.05)
 
@@ -452,7 +451,7 @@ def interact2D(
 
         [item.remove() for item in sp_x.collections]
         [item.remove() for item in sp_y.collections]
-        if len(sp_x.collections) >  0:  # mpl < 3.7
+        if len(sp_x.collections) > 0:  # mpl < 3.7
             sp_x.collections.clear()
             sp_y.collections.clear()
 
