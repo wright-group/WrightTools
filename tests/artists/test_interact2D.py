@@ -37,7 +37,7 @@ def test_asymmetric():
     data.create_variable("x", values=x[:, None], units="wn")
     data.create_variable("y", values=y[None, :], units="wn")
     data.transform("x", "y")
-    wt.artists.interact2D(data, xaxis=1, yaxis=0)
+    return wt.artists.interact2D(data, xaxis=1, yaxis=0)
 
 
 def test_skewed():
@@ -46,7 +46,7 @@ def test_skewed():
     data = wt.data.from_PyCMDS(p)
     data.convert("wn", convert_variables=True)
     data.transform("wm", "w1")  # wm = w1 + 2*w2
-    wt.artists.interact2D(data, xaxis=0, yaxis=1)
+    return wt.artists.interact2D(data, xaxis=0, yaxis=1)
 
 
 def test_4D():
@@ -91,7 +91,7 @@ if __name__ == "__main__":
     plt.close("all")
     out1 = test_perovskite()
     out2 = test_MoS2()
-    # test_asymmetric()
-    # test_skewed()
-    # out = test_4D()
+    out3 = test_asymmetric()
+    out4 = test_skewed()
+    out5 = test_4D()
     plt.show()
