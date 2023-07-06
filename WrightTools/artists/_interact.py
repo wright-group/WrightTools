@@ -467,7 +467,7 @@ def interact2D(
 
         [item.remove() for item in sp_x.collections]
         [item.remove() for item in sp_y.collections]
-        if len(sp_x.collections) >  0:  # mpl < 3.7
+        if len(sp_x.collections) > 0:  # mpl < 3.7
             sp_x.collections.clear()
             sp_y.collections.clear()
 
