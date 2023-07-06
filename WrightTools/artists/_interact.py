@@ -218,6 +218,7 @@ def interact2D(
         raise DimensionalityError(">= 2", data.ndim)
     # TODO: implement aspect; doesn't work currently because of our incorporation of colorbar
     fig, gs = create_figure(width="single", nrows=7 + nsliders, cols=[1, 1, 1, 1, 1, "cbar"])
+    plt.get_current_fig_manager().set_window_title(f"interact2D: {data.natural_name}")
     # create axes
     ax0 = plt.subplot(gs[1:6, 0:5])
     ax0.patch.set_facecolor("w")
@@ -382,8 +383,8 @@ def interact2D(
     ax0.set_xlim(xaxis.points.min(), xaxis.points.max())
     ax0.set_ylim(yaxis.points.min(), yaxis.points.max())
 
-    sp_x.set_ylim(-0.05, 1.05)
-    sp_y.set_xlim(-0.05, 1.05)
+    sp_x.set_ylim(0, 1)
+    sp_y.set_xlim(0, 1)
 
     def update_sideplot_slices():
         # TODO:  if bins is only available along one axis, slicing should be valid along the other
@@ -423,6 +424,9 @@ def interact2D(
         obj2D.set_norm(current_state.norm.norm)
         ticklabels = gen_ticklabels(current_state.norm.ticks, channel.signed)
         colorbar.set_ticklabels(ticklabels)
+
+        update_sideplots(sp_x, sp_y, line_sp_x, line_sp_y)
+
         fig.canvas.draw_idle()
 
     def update_slider(info, use_imshow=use_imshow):
@@ -456,6 +460,10 @@ def interact2D(
         ticklabels = gen_ticklabels(ticks, channel.signed)
         colorbar.set_ticklabels(ticklabels)
 
+        update_sideplots(sp_x, sp_y, line_sp_x, line_sp_y)
+        fig.canvas.draw_idle()
+
+    def update_sideplots(sp_x, sp_y, line_sp_x, line_sp_y):
         [item.remove() for item in sp_x.collections]
         [item.remove() for item in sp_y.collections]
         if len(sp_x.collections) > 0:  # mpl < 3.7
@@ -465,7 +473,6 @@ def interact2D(
         draw_sideplot_projections()
         if line_sp_x.get_visible() and line_sp_y.get_visible():
             update_sideplot_slices()
-        fig.canvas.draw_idle()
 
     def update_crosshairs(xarg, yarg, hide=False):
         # find closest x and y pts in dataset
