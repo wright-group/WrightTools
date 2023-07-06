@@ -118,7 +118,6 @@ class Norm:
             if not self.current_state.local:
                 norm = mpl.colors.CenteredNorm(vcenter=channel.null, halfrange=channel.mag())
             else:
-                print("local")
                 norm = mpl.colors.CenteredNorm(vcenter=channel.null)
                 norm.autoscale_None(
                     np.ma.masked_invalid(self.current_state.dat[channel.natural_name][:])
@@ -321,16 +320,19 @@ def interact2D(
             )
             > 1
         ).index(True)
+
+        norm = current_state.norm
+
         if channel.signed:
             temp_arr = np.ma.masked_array(arr, np.isnan(arr), copy=True)
             temp_arr[temp_arr < 0] = 0
-            x_proj_pos = np.nanmean(temp_arr, axis=yind)
-            y_proj_pos = np.nanmean(temp_arr, axis=xind)
+            x_proj_pos = np.nanmax(temp_arr, axis=yind)
+            y_proj_pos = np.nanmax(temp_arr, axis=xind)
 
             temp_arr = np.ma.masked_array(arr, np.isnan(arr), copy=True)
             temp_arr[temp_arr > 0] = 0
-            x_proj_neg = np.nanmean(temp_arr, axis=yind)
-            y_proj_neg = np.nanmean(temp_arr, axis=xind)
+            x_proj_neg = np.nanmin(temp_arr, axis=yind)
+            y_proj_neg = np.nanmin(temp_arr, axis=xind)
 
             x_proj = np.nanmean(arr, axis=yind)
             y_proj = np.nanmean(arr, axis=xind)
@@ -338,7 +340,6 @@ def interact2D(
             alpha = 0.4
             blue = "#517799"  # start with #87C7FF and change saturation
             red = "#994C4C"  # start with #FF7F7F and change saturation
-            norm = current_state.norm
 
             if current_state.bin_vs_x:
                 try:
@@ -360,18 +361,18 @@ def interact2D(
                     sp_y.set_visible(False)
         else:
             if current_state.bin_vs_x:
-                x_proj = np.nanmean(arr, axis=yind)
-                x_proj = current_state.norm(x_proj)
+                x_proj = np.nanmax(arr, axis=yind)
+                # x_proj = current_state.norm(x_proj)
                 try:
-                    sp_x.fill_between(xaxis.points, x_proj, 0, color="k", alpha=0.3)
+                    sp_x.fill_between(xaxis.points, norm(x_proj), 0, color="k", alpha=0.3)
                 except ValueError:
                     current_state.bin_vs_x = False
                     sp_x.set_visible(False)
             if current_state.bin_vs_y:
-                y_proj = np.nanmean(arr, axis=xind)
-                y_proj = current_state.norm(y_proj)
+                y_proj = np.nanmax(arr, axis=xind)
+                # y_proj = current_state.norm(y_proj)
                 try:
-                    sp_y.fill_betweenx(yaxis.points, y_proj, 0, color="k", alpha=0.3)
+                    sp_y.fill_betweenx(yaxis.points, norm(y_proj), 0, color="k", alpha=0.3)
                 except ValueError:
                     current_state.bin_vs_y = False
                     sp_y.set_visible(False)

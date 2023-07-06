@@ -15,7 +15,7 @@ def test_perovskite():
             break
         except:
             pass
-    wt.artists.interact2D(data, xaxis=2, yaxis=1)
+    return wt.artists.interact2D(data, xaxis=2, yaxis=1)
 
 
 def test_MoS2():
@@ -23,7 +23,7 @@ def test_MoS2():
     data = wt.open(p)
     data.convert("eV")
     data.level(0, 2, -4)
-    wt.artists.interact2D(data, xaxis=0, yaxis=1, local=True)
+    return wt.artists.interact2D(data, xaxis=0, yaxis=1, local=True)
 
 
 def test_asymmetric():
@@ -82,16 +82,16 @@ def test_4D():
     data.create_variable("d_1", values=tau[None, None, None, :], units="ps")
 
     data.transform("w_1", "w_2", "w_3", "d_1")
-    wt.artists.interact2D(data, xaxis=0, yaxis=1, local=True)
+    return wt.artists.interact2D(data, xaxis=0, yaxis=1, local=True)
 
 
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
 
     plt.close("all")
-    test_perovskite()
-    test_MoS2()
-    test_asymmetric()
-    test_skewed()
-    test_4D()
+    out1 = test_perovskite()
+    out2 = test_MoS2()
+    # test_asymmetric()
+    # test_skewed()
+    # out = test_4D()
     plt.show()
