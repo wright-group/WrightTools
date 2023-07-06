@@ -269,7 +269,6 @@ def interact2D(
             )
             sliders[axis.natural_name] = slider
             slider_axes.set_gid(axis.natural_name)
-            # axis_to_slider[slider_axes.]
             slider.ax.vlines(
                 range(axis.points.size - 1),
                 *slider.ax.get_ylim(),
@@ -468,6 +467,9 @@ def interact2D(
 
         [item.remove() for item in sp_x.collections]
         [item.remove() for item in sp_y.collections]
+        if len(sp_x.collections) >  0:  # mpl < 3.7
+            sp_x.collections.clear()
+            sp_y.collections.clear()
 
         if channel.signed:
             sp_x.set_ylim(-1.1, 1.1)
@@ -482,8 +484,6 @@ def interact2D(
         fig.canvas.draw_idle()
 
     def update_crosshairs(xarg, yarg, hide=False):
-        # if x0 is None or y0 is None:
-        #    raise TypeError((x0, y0))
         # find closest x and y pts in dataset
         current_state.xarg = xarg
         current_state.yarg = yarg
