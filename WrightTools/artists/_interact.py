@@ -17,8 +17,9 @@ __all__ = ["interact2D"]
 
 
 class Focus:
-    def __init__(self, axes, linewidth=2):
+    def __init__(self, axes, sliders, linewidth=2):
         self.axes = axes
+        self.sliders = sliders
         self.linewidth = linewidth
         ax = axes[0]
         for side in ["top", "bottom", "left", "right"]:
@@ -36,6 +37,11 @@ class Focus:
         if self.focus_axis == ax or ax not in self.axes:
             return
         else:  # set new focus
+            if self.focus_axis.get_gid() in self.sliders.keys():
+                self.sliders[self.focus_axis.get_gid()].track.set_facecolor("lightgrey")
+            if ax.get_gid() in self.sliders.keys():
+                self.sliders[ax.get_gid()].track.set_facecolor("darkgrey")
+
             for spine in ["top", "bottom", "left", "right"]:
                 self.focus_axis.spines[spine].set_linewidth(1)
                 ax.spines[spine].set_linewidth(self.linewidth)
@@ -48,6 +54,20 @@ def _at_dict(data, sliders, xaxis, yaxis):
         for a in data.axes
         if a not in [xaxis, yaxis]
     }
+
+
+def create_local_global_radio(ax, local):
+    if mpl.__version_info__ >= (3, 7):
+        radio = RadioButtons(ax, (" global", " local"), radio_props={"s": 100})
+    else:
+        radio = RadioButtons(ax, (" global", " local"))
+        for circle in radio.circles:
+            circle.set_radius(0.14)
+    if local:
+        radio.set_active(1)
+    else:
+        radio.set_active(0)
+    return radio
 
 
 def get_axes(data, axes):
@@ -226,15 +246,11 @@ def interact2D(
     ydir = 1 if yaxis.points.flatten()[-1] - yaxis.points.flatten()[0] > 0 else -1
     current_state.bin_vs_x = True
     current_state.bin_vs_y = True
+
     # create buttons
     current_state.local = local
-    radio = RadioButtons(ax_local, (" global", " local"))
-    if local:
-        radio.set_active(1)
-    else:
-        radio.set_active(0)
-    for circle in radio.circles:
-        circle.set_radius(0.14)
+    radio = create_local_global_radio(ax_local, local)
+
     # create sliders
     sliders = {}
     for axis in data.axes:
@@ -242,8 +258,17 @@ def interact2D(
             if axis.size > np.prod(axis.shape):
                 raise NotImplementedError("Cannot use multivariable axis as a slider")
             slider_axes = plt.subplot(gs[~len(sliders), :]).axes
-            slider = Slider(slider_axes, axis.label, 0, axis.points.size - 1, valinit=0, valstep=1)
+            slider = Slider(
+                slider_axes,
+                axis.label,
+                0,
+                axis.points.size - 1,
+                valinit=0,
+                valstep=1,
+                track_color="lightgrey",
+            )
             sliders[axis.natural_name] = slider
+            slider_axes.set_gid(axis.natural_name)
             slider.ax.vlines(
                 range(axis.points.size - 1),
                 *slider.ax.get_ylim(),
@@ -252,7 +277,7 @@ def interact2D(
                 alpha=0.5,
             )
             slider.valtext.set_text(gen_ticklabels(axis.points)[0])
-    current_state.focus = Focus([ax0] + [slider.ax for slider in sliders.values()])
+    current_state.focus = Focus([ax0] + [slider.ax for slider in sliders.values()], sliders)
     # initial xyz start are from zero indices of additional axes
     current_state.dat = data.chop(
         xaxis.natural_name,
@@ -365,6 +390,9 @@ def interact2D(
     if channel.signed:
         sp_x.set_ylim(-1.1, 1.1)
         sp_y.set_xlim(-1.1, 1.1)
+    else:
+        sp_x.set_ylim(0, 1.1)
+        sp_y.set_xlim(0, 1.1)
 
     def update_sideplot_slices():
         # TODO:  if bins is only available along one axis, slicing should be valid along the other
@@ -436,16 +464,26 @@ def interact2D(
         ticks = norm_to_ticks(norm)
         ticklabels = gen_ticklabels(ticks, channel.signed)
         colorbar.set_ticklabels(ticklabels)
-        sp_x.collections.clear()
-        sp_y.collections.clear()
+
+        [item.remove() for item in sp_x.collections]
+        [item.remove() for item in sp_y.collections]
+        if len(sp_x.collections) > 0:  # mpl < 3.7
+            sp_x.collections.clear()
+            sp_y.collections.clear()
+
+        if channel.signed:
+            sp_x.set_ylim(-1.1, 1.1)
+            sp_y.set_xlim(-1.1, 1.1)
+        else:
+            sp_x.set_ylim(0, 1.1)
+            sp_y.set_xlim(0, 1.1)
+
         draw_sideplot_projections()
         if line_sp_x.get_visible() and line_sp_y.get_visible():
             update_sideplot_slices()
         fig.canvas.draw_idle()
 
     def update_crosshairs(xarg, yarg, hide=False):
-        # if x0 is None or y0 is None:
-        #    raise TypeError((x0, y0))
         # find closest x and y pts in dataset
         current_state.xarg = xarg
         current_state.yarg = yarg
