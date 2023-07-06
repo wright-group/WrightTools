@@ -120,7 +120,9 @@ class Norm:
             else:
                 print("local")
                 norm = mpl.colors.CenteredNorm(vcenter=channel.null)
-                norm.autoscale_None(np.ma.masked_invalid(self.current_state.dat[channel.natural_name][:]))
+                norm.autoscale_None(
+                    np.ma.masked_invalid(self.current_state.dat[channel.natural_name][:])
+                )
             if norm.halfrange == 0:
                 norm.halfrange = 1
         else:
@@ -128,7 +130,9 @@ class Norm:
                 norm = mpl.colors.Normalize(vmin=channel.null, vmax=np.nanmax(channel[:]))
             else:
                 norm = mpl.colors.Normalize(vmin=channel.null)
-                norm.autoscale_None(np.ma.masked_invalid(self.current_state.dat[channel.natural_name][:]))
+                norm.autoscale_None(
+                    np.ma.masked_invalid(self.current_state.dat[channel.natural_name][:])
+                )
             if norm.vmax == norm.vmin:
                 norm.vmax += 1
         self.norm = norm
@@ -347,7 +351,9 @@ def interact2D(
             if current_state.bin_vs_y:
                 try:
                     sp_y.fill_betweenx(yaxis.points, norm(y_proj_pos), 0.5, color=red, alpha=alpha)
-                    sp_y.fill_betweenx(yaxis.points, 0.5, norm(y_proj_neg), color=blue, alpha=alpha)
+                    sp_y.fill_betweenx(
+                        yaxis.points, 0.5, norm(y_proj_neg), color=blue, alpha=alpha
+                    )
                     sp_y.fill_betweenx(yaxis.points, norm(y_proj), 0.5, color="k", alpha=0.3)
                 except ValueError:
                     current_state.bin_vs_y = False
