@@ -362,7 +362,7 @@ class Data(Group):
 
     def squeeze(self, name=None, parent=None):
         """Reduce the data to the dimensionality of the (non-trivial) span of the axes.
-        i.e. if the joint shape of the axes has an array dimension with length 1, this 
+        i.e. if the joint shape of the axes has an array dimension with length 1, this
         array dimension is squeezed.
 
         channels and variables that span beyond the axes are omitted.
@@ -378,7 +378,7 @@ class Data(Group):
         Returns
         -------
         out : wt.Data
-            new data object.  The new data object has dimensions 
+            new data object.  The new data object has dimensions
 
         Examples
         --------
@@ -386,17 +386,27 @@ class Data(Group):
 
         See also
         --------
-        Data.chop: Divide the dataset into its lower-dimensionality components. 
+        Data.chop: Divide the dataset into its lower-dimensionality components.
         ...
         """
         new = Data(name=name, parent=parent)
 
         attrs = {
-            k:v for k,v in self.attrs.items() 
-            if k not in ["axes", "channel_names", "constants", "name", "source", "item_names", "variable_names"]
+            k: v
+            for k, v in self.attrs.items()
+            if k
+            not in [
+                "axes",
+                "channel_names",
+                "constants",
+                "name",
+                "source",
+                "item_names",
+                "variable_names",
+            ]
         }
         new.attrs.update(attrs)
-                
+
         # TODO: deal with constants?  establish new constants?
 
         joint_shape = wt_kit.joint_shape(*[ai[:] for ai in self.axes])
@@ -416,7 +426,7 @@ class Data(Group):
             kwargs["values"] = c[sl]
             new.create_channel(**kwargs)
 
-        new.transform(*self.axis_expressions)       
+        new.transform(*self.axis_expressions)
         return new
 
     def chop(self, *args, at=None, parent=None, verbose=True) -> wt_collection.Collection:

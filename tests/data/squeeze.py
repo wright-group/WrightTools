@@ -20,12 +20,12 @@ def test_squeeze():
     d.create_variable("redundant_array", values=np.tile(np.arange(3), (5, 4, 1)))
 
     d.create_channel("keep", values=d.x[:] + d.y[:])
-    d.create_channel("throw_away", values=np.zeros((5,4,3)))
+    d.create_channel("throw_away", values=np.zeros((5, 4, 3)))
 
     d.transform("x", "y")
     d = d.squeeze()  # make sure it runs error free
     assert d.ndim == 2
-    assert d.shape == (5,4)
+    assert d.shape == (5, 4)
 
 
 if __name__ == "__main__":

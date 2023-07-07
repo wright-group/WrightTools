@@ -235,4 +235,3 @@ class Channel(Dataset):
         out["signed"] = self.signed
         out.update(self.attrs)
         return out
-
