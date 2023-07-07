@@ -225,3 +225,14 @@ class Channel(Dataset):
         if verbose:
             print("%i outliers removed" % len(outliers))
         return outliers
+
+    def _to_dict(self):
+        out = {}
+        out["name"] = self.natural_name
+        out["values"] = self[:]
+        out["units"] = self.units
+        out["label"] = self.label
+        out["signed"] = self.signed
+        out.update(self.attrs)
+        return out
+

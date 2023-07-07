@@ -205,6 +205,21 @@ def test_non_spanning_axes():
     c.close()
 
 
+def test_drop_kwarg():
+    d = wt.Data(name="test")
+    d.create_variable("x", values=np.arange(5)[:, None, None])
+    d.create_variable("y", values=np.arange(4)[None, :, None])
+    d.create_variable("redundant_array", values=np.tile(np.arange(3), (5, 4, 1)))
+
+    d.create_channel("keep", values=d.x[:] + d.y[:])
+    d.create_channel("throw_away", values=np.zeros((5,4,3)))
+
+    d.transform("x", "y")
+    d = d.drop()  # make sure it runs error free
+    assert d.ndim == 2
+    assert d.shape == (5,4)
+
+
 # --- run -----------------------------------------------------------------------------------------
 
 
@@ -219,3 +234,4 @@ if __name__ == "__main__":
     test_3D_to_2D_signed()
     test_3D_to_2D_units()
     test_parent()
+    test_drop_kwarg()

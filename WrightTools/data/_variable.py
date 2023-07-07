@@ -50,3 +50,12 @@ class Variable(Dataset):
     @label.setter
     def label(self, label):
         self.attrs["label"] = label
+
+    def _to_dict(self):
+        out = {}
+        out["name"] = self.natural_name
+        out["values"] = self[:]
+        out["units"] = self.units
+        out["label"] = self.label
+        out.update(self.attrs)
+        return out

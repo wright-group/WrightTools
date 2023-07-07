@@ -360,6 +360,36 @@ class Data(Group):
         idx = self._at_to_slice(**at)
         return self._from_slice(idx, name=name, parent=parent)
 
+    def drop(self):
+        """cull variables and channels that have non-trivial shape where the broadcast axes have shape 1.
+        similar to chop
+
+        Parameters
+        ----------
+        ...
+        """
+        joint_shape = wt_kit.joint_shape(*[ai[:] for ai in self.axes])
+        cull_dims = [j == 1 for j in joint_shape]
+        sl = [0 if cull else slice(None) for cull in cull_dims]
+        matches_broadcast_axes = lambda a: all(
+            [a.shape[i] == 1 for i in range(self.ndim) if cull_dims[i]]
+        )
+
+        new = Data()
+
+        for v in filter(matches_broadcast_axes, self.variables):
+            kwargs = v._to_dict()
+            kwargs["values"] = v[sl]
+            new.create_variable(**kwargs)
+
+        for c in filter(matches_broadcast_axes, self.channels):
+            kwargs = c._to_dict()
+            kwargs["values"] = c[sl]
+            new.create_channel(**kwargs)
+
+        new.transform(*self.axis_expressions)       
+        return new
+
     def chop(self, *args, at=None, parent=None, verbose=True) -> wt_collection.Collection:
         """Divide the dataset into its lower-dimensionality components.
 
@@ -509,21 +539,12 @@ class Data(Group):
             out = parent.create_data(name=name)
 
         for v in self.variables:
-            kwargs = {}
-            kwargs["name"] = v.natural_name
+            kwargs = v._to_dict()
             kwargs["values"] = v[idx]
-            kwargs["units"] = v.units
-            kwargs["label"] = v.label
-            kwargs.update(v.attrs)
             out.create_variable(**kwargs)
         for c in self.channels:
-            kwargs = {}
-            kwargs["name"] = c.natural_name
+            kwargs = c._to_dict()
             kwargs["values"] = c[idx]
-            kwargs["units"] = c.units
-            kwargs["label"] = c.label
-            kwargs["signed"] = c.signed
-            kwargs.update(c.attrs)
             out.create_channel(**kwargs)
 
         new_axes = [a.expression for a in self.axes if a[idx].size > 1]
