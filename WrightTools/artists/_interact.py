@@ -363,7 +363,6 @@ def interact2D(
         else:
             if current_state.bin_vs_x:
                 x_proj = np.nanmax(arr, axis=yind)
-                # x_proj = current_state.norm(x_proj)
                 try:
                     sp_x.fill_between(xaxis.points, norm(x_proj), 0, color="k", alpha=0.3)
                 except ValueError:
@@ -371,7 +370,6 @@ def interact2D(
                     sp_x.set_visible(False)
             if current_state.bin_vs_y:
                 y_proj = np.nanmax(arr, axis=xind)
-                # y_proj = current_state.norm(y_proj)
                 try:
                     sp_y.fill_betweenx(yaxis.points, norm(y_proj), 0, color="k", alpha=0.3)
                 except ValueError:

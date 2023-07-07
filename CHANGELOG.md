@@ -8,13 +8,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ### Fixed
 - numpy deprecated the `np.float` alias, so use `np.float64` to be more precise
 - artists support matplotlib >= 3.7
-- interact2D: fixed bug where sliders did not change appearance on focus
+- `interact2D`: fixed bug where sliders did not change appearance on focus
+- `interact2D`: fixed buggy side plots windowing
 
 ### Changed
-- data.join now has MultidimensionalAxisError exception message
+- `Data.join` now has MultidimensionalAxisError exception message
 - `Axis`: space character ("\s") in expressions are culled.
 - fixed `interact2D` bug: channel/axes can now be specified with non-zero index arguments
-- `interact2D`: side plots project the extremes along each axis, rather than the mean.
+- `interact2D`: side plots project the extremes along each axis, rather than the average.
 
 ### Added
 - `interact2D` has informative figure window names
@@ -23,7 +24,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ## [3.4.6]
 
 ### Fixed
-
 - `Data.chop` : fixed bug where chop did not succeed if axes did not span data ndim
 
 ## [3.4.5]
