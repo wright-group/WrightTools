@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ### Added
 - `Data.translate_to_txt`: serialize channels and variables and write as a text file.
+- `Data.squeeze`: squeezing the data object to the shape of the axes.
 
 ## [3.4.6]
 

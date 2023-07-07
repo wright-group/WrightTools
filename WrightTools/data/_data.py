@@ -360,22 +360,51 @@ class Data(Group):
         idx = self._at_to_slice(**at)
         return self._from_slice(idx, name=name, parent=parent)
 
-    def drop(self):
-        """cull variables and channels that have non-trivial shape where the broadcast axes have shape 1.
-        similar to chop
+    def squeeze(self, name=None, parent=None):
+        """Reduce the data to the dimensionality of the (non-trivial) span of the axes.
+        i.e. if the joint shape of the axes has an array dimension with length 1, this 
+        array dimension is squeezed.
+
+        channels and variables that span beyond the axes are omitted.
 
         Parameters
         ----------
+        name : string (optional)
+            name of the new Data.
+        parent : WrightTools Collection instance (optional)
+            Collection to place the new "chop" collection within. Default is
+            None (new parent).
+
+        Returns
+        -------
+        out : wt.Data
+            new data object.  The new data object has dimensions 
+
+        Examples
+        --------
+        >>> ...
+
+        See also
+        --------
+        Data.chop: Divide the dataset into its lower-dimensionality components. 
         ...
         """
+        new = Data(name=name, parent=parent)
+
+        attrs = {
+            k:v for k,v in self.attrs.items() 
+            if k not in ["axes", "channel_names", "constants", "name", "source", "item_names", "variable_names"]
+        }
+        new.attrs.update(attrs)
+                
+        # TODO: deal with constants?  establish new constants?
+
         joint_shape = wt_kit.joint_shape(*[ai[:] for ai in self.axes])
         cull_dims = [j == 1 for j in joint_shape]
         sl = [0 if cull else slice(None) for cull in cull_dims]
         matches_broadcast_axes = lambda a: all(
             [a.shape[i] == 1 for i in range(self.ndim) if cull_dims[i]]
         )
-
-        new = Data()
 
         for v in filter(matches_broadcast_axes, self.variables):
             kwargs = v._to_dict()
