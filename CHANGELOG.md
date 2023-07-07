@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ### Added
 - `Data.translate_to_txt`: serialize channels and variables and write as a text file.
+- Python supported versions:  add 3.10, 3.11, and drop 3.7
 
 ## [3.4.6]
 
