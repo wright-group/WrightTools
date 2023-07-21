@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## [3.5.0]
+
 ### Fixed
 - numpy deprecated the `np.float` alias, so use `np.float64` to be more precise
 - artists support matplotlib >= 3.7
@@ -351,7 +353,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ### Added
 - initial release
 
-[Unreleased]: https://github.com/wright-group/WrightTools/-/compare/3.4.6...master
+[Unreleased]: https://github.com/wright-group/WrightTools/-/compare/3.5.0...master
+[3.5.0]: https://github.com/wright-group/WrightTools/compare/3.4.6...3.5.0
 [3.4.6]: https://github.com/wright-group/WrightTools/compare/3.4.5...3.4.6
 [3.4.5]: https://github.com/wright-group/WrightTools/compare/3.4.4...3.4.5
 [3.4.4]: https://github.com/wright-group/WrightTools/compare/3.4.3...3.4.4
