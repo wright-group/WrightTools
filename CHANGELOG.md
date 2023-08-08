@@ -5,24 +5,31 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Added
+- `Data.squeeze`: squeezing the data object to the shape of the axes.
+
+## [3.5.0]
+
 ### Fixed
 - numpy deprecated the `np.float` alias, so use `np.float64` to be more precise
 - artists support matplotlib >= 3.7
-- interact2D: fixed bug where sliders did not change appearance on focus
+- `interact2D`: fixed bug where sliders did not change appearance on focus
+- `interact2D`: fixed buggy side plots windowing
 
 ### Changed
-- data.join now has MultidimensionalAxisError exception message
+- `Data.join` now has MultidimensionalAxisError exception message
 - `Axis`: space character ("\s") in expressions are culled.
 - fixed `interact2D` bug: channel/axes can now be specified with non-zero index arguments
+- `interact2D`: side plots project the extremes along each axis, rather than the average.
 
 ### Added
+- `interact2D` has informative figure window names
 - `Data.translate_to_txt`: serialize channels and variables and write as a text file.
-- `Data.squeeze`: squeezing the data object to the shape of the axes.
+- Python supported versions:  add 3.10, 3.11, and drop 3.7
 
 ## [3.4.6]
 
 ### Fixed
-
 - `Data.chop` : fixed bug where chop did not succeed if axes did not span data ndim
 
 ## [3.4.5]
@@ -349,7 +356,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ### Added
 - initial release
 
-[Unreleased]: https://github.com/wright-group/WrightTools/-/compare/3.4.6...master
+[Unreleased]: https://github.com/wright-group/WrightTools/-/compare/3.5.0...master
+[3.5.0]: https://github.com/wright-group/WrightTools/compare/3.4.6...3.5.0
 [3.4.6]: https://github.com/wright-group/WrightTools/compare/3.4.5...3.4.6
 [3.4.5]: https://github.com/wright-group/WrightTools/compare/3.4.4...3.4.5
 [3.4.4]: https://github.com/wright-group/WrightTools/compare/3.4.3...3.4.4
