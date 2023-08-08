@@ -378,7 +378,8 @@ class Data(Group):
         Returns
         -------
         out : wt.Data
-            new data object.  The new data object has dimensions
+            new data object.  The new data object has dimensions of the 
+            (non-trivial) span of the current axes
 
         Examples
         --------
