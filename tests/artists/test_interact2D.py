@@ -89,9 +89,9 @@ if __name__ == "__main__":
     import matplotlib.pyplot as plt
 
     plt.close("all")
-    # out1 = test_perovskite()
-    # out2 = test_MoS2()
-    # out3 = test_asymmetric()
-    # out4 = test_skewed()
+    out1 = test_perovskite()
+    out2 = test_MoS2()
+    out3 = test_asymmetric()
+    out4 = test_skewed()
     out5 = test_4D()
     plt.show()
