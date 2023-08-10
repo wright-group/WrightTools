@@ -445,8 +445,8 @@ def interact2D(
             )
         if use_imshow:
             transpose = _order_for_imshow(
-                current_state[xaxis.natural_name][:],
-                current_state[yaxis.natural_name][:],
+                current_state.dat[xaxis.natural_name][:],
+                current_state.dat[yaxis.natural_name][:],
             )
             obj2D.set_data(current_state.dat[channel.natural_name][:].transpose(transpose))
         else:
