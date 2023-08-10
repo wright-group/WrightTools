@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Fixed
+- `interact2D`: fixed bug where use_imshow broke the sliders
+
 ## [3.5.0]
 
 ### Fixed

@@ -82,16 +82,16 @@ def test_4D():
     data.create_variable("d_1", values=tau[None, None, None, :], units="ps")
 
     data.transform("w_1", "w_2", "w_3", "d_1")
-    return wt.artists.interact2D(data, xaxis=0, yaxis=1, local=True)
+    return wt.artists.interact2D(data, xaxis=0, yaxis=1, local=True, use_imshow=True)
 
 
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
 
     plt.close("all")
-    out1 = test_perovskite()
-    out2 = test_MoS2()
-    out3 = test_asymmetric()
-    out4 = test_skewed()
+    # out1 = test_perovskite()
+    # out2 = test_MoS2()
+    # out3 = test_asymmetric()
+    # out4 = test_skewed()
     out5 = test_4D()
     plt.show()
