@@ -130,7 +130,7 @@ class Axes(matplotlib.axes.Axes):
                     raise wt_exceptions.ValueError("Cannot squeeze axis to fit channel")
             zi = data.channels[channel_index].points
             if not zi.ndim == 2:
-                raise wt_exceptions.DimensionalityError(zi.ndim, data.ndim)
+                raise wt_exceptions.DimensionalityError(2, zi.ndim)
             squeeze = tuple([0 if i else slice(None) for i in squeeze])
             if plot_type == "imshow":
                 if "aspect" not in kwargs.keys():
@@ -646,7 +646,7 @@ class Axes(matplotlib.axes.Axes):
             zi = data.channels[channel_index].points
             xi = xa[squeeze]
             if not zi.ndim == 1:
-                raise wt_exceptions.DimensionalityError(1, data.ndim)
+                raise wt_exceptions.DimensionalityError(1, zi.ndim)
             args = [xi, zi] + args
         else:
             data = None
