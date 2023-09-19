@@ -6,7 +6,8 @@ build:
 python:
   version: 3.8
   pip_install: true
-  extra_requirements: [docs]
+  install:
+    - requirements: docs/requirements.txt
 
 formats:
   - epub
