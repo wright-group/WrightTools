@@ -27,6 +27,19 @@ def test_squeeze():
     assert d.ndim == 2
     assert d.shape == (5, 4)
 
+def test_constants():
+    d = wt.Data(name="test")
+    d.create_variable("x", values=np.array([1]).reshape(1,1))
+    d.create_constant("x")
+    d.create_variable("y", values=np.linspace(3,5,4).reshape(-1,1))
+    d.create_variable("z", values=np.linspace(0,1,6).reshape(1,-1))
+    d.transform("y")
+    ds = d.squeeze()
+    assert "x" in ds.constant_expressions
+    d.print_tree()
+    ds.print_tree()
+
 
 if __name__ == "__main__":
     test_squeeze()
+    test_constants()

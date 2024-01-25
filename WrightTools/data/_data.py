@@ -365,7 +365,7 @@ class Data(Group):
         i.e. if the joint shape of the axes has an array dimension with length 1, this
         array dimension is squeezed.
 
-        channels and variables that span beyond the axes are omitted.
+        channels and variables that span beyond the axes are removed.
 
         Parameters
         ----------
@@ -408,8 +408,6 @@ class Data(Group):
         }
         new.attrs.update(attrs)
 
-        # TODO: deal with constants?  establish new constants?
-
         joint_shape = wt_kit.joint_shape(*[ai[:] for ai in self.axes])
         cull_dims = [j == 1 for j in joint_shape]
         sl = [0 if cull else slice(None) for cull in cull_dims]
@@ -426,6 +424,10 @@ class Data(Group):
             kwargs = c._to_dict()
             kwargs["values"] = c[sl]
             new.create_channel(**kwargs)
+
+        # inherit constants
+        for c in self.constants:
+            new.create_constant(c.expression)
 
         new.transform(*self.axis_expressions)
         return new
