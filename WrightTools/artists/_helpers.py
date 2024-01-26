@@ -1111,11 +1111,7 @@ def stitch_to_animation(paths, outpath=None, *, duration=0.5, palettesize=256, v
         for p in paths:
             frame = iio.imread(p)
             gif.write(
-                frame,
-                plugin="pillow",
-                duration=duration*1e3,
-                loop=0,
-                palettesize=palettesize
+                frame, plugin="pillow", duration=duration * 1e3, loop=0, palettesize=palettesize
             )
     if verbose:
         interval = np.round(t.interval, 2)
