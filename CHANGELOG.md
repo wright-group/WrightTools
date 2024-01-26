@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ### Fixed
 - `interact2D`: fixed bug where use_imshow broke the sliders
+- `artists.stitch_to_animation`: use imageio v3 api and declare pillow plugin
 
 ## [3.5.0]
 
