@@ -462,10 +462,10 @@ def guess_signed(chan, tol=1e-1):
         null = 0
 
     # avoid zero division for comparison
-    bottom = np.abs(maxc-null) + np.abs(minc-null)
+    bottom = np.abs(maxc - null) + np.abs(minc - null)
     if not bottom:  # (maxc-null)=-(minc-null)
         return True
 
-    comparison = np.abs(maxc + minc - 2*null) / bottom
+    comparison = np.abs(maxc + minc - 2 * null) / bottom
     # should be < 1 if signed
     return comparison < 1 - tol
