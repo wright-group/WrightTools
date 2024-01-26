@@ -28,7 +28,7 @@ __all__ = [
     "valid_index",
     "mask_reduce",
     "enforce_mask_shape",
-    "signed",
+    "guess_signed",
 ]
 
 
@@ -436,30 +436,35 @@ def enforce_mask_shape(mask, shape):
     return mask.max(axis=red, keepdims=True)
 
 
-def signed(d0):
-    """Tells bluesky whether to sign data. We have a 7.5 % tolerance right now.%
-
+def guess_signed(chan, tol=7.5e-2):
+    """guess whether or not a channel is signed by comparing range to min and max values.
+    
     Parameters
     -------------
-    d0: Input data array
-
-
+    chan : array-like
+        Input channel or array
+    tol : float (optional)
+        Tolerance value used to judge signed. `tol` should be much less than 1. To prefer signed guesses, use negative tolerance values.
 
     Returns
     -------
-    A boolean; True if the data is signed and False if the data is not.
+    guess : bool
+        True if the data seems signed and False otherwise.
     """
 
-    maxd0 = np.max(d0)
-    mind0 = np.min(d0)
-
-    tolerance = (maxd0 - np.absolute(mind0)) / (maxd0 + np.absolute(mind0))
-
-    if tolerance < 7.5 * 10 ** (-2):
-        if min(d0) > 0:
-            return False
-        else:
-            return True
-
+    maxc = chan.max()
+    minc = chan.min()
+    from ..data import Channel
+    if isinstance(chan, Channel):
+        null = chan.null
     else:
-        return False
+        null = 0
+
+    # avoid zero division for comparison
+    bottom = np.abs(maxc + minc - 2 * null)
+    if not bottom: # (maxc-null)=-(minc-null), so probably signed
+        return maxc != null
+
+    # should be <~ 1 for unsigned data
+    comparison = np.abs(maxc - minc) / np.abs(maxc + minc - 2 * null)
+    return comparison < 1 + tol
