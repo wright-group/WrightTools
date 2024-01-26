@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patheffects as PathEffects
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-import imageio
+import imageio.v3 as iio
 import warnings
 
 from .. import exceptions as wt_exceptions
@@ -1082,14 +1082,14 @@ def subplots_adjust(fig=None, inches=1):
         fig.subplots_adjust(top=top, right=right, bottom=bottom, left=left)
 
 
-def stitch_to_animation(images, outpath=None, *, duration=0.5, palettesize=256, verbose=True):
+def stitch_to_animation(paths, outpath=None, *, duration=0.5, palettesize=256, verbose=True):
     """Stitch a series of images into an animation.
 
     Currently supports animated gifs, other formats coming as needed.
 
     Parameters
     ----------
-    images : list of strings
+    paths : list of strings
         Filepaths to the images to stitch together, in order of apperence.
     outpath : string (optional)
         Path of output, including extension. If None, bases output path on path
@@ -1104,20 +1104,19 @@ def stitch_to_animation(images, outpath=None, *, duration=0.5, palettesize=256, 
     """
     # parse filename
     if outpath is None:
-        outpath = os.path.splitext(images[0])[0] + ".gif"
+        outpath = os.path.splitext(paths[0])[0] + ".gif"
     # write
     t = wt_kit.Timer(verbose=False)
-    with t:
-        frames = np.stack([imageio.v3.imread(image) for image in images], axis=0)
-
-        imageio.v3.imwrite(
-            outpath,
-            frames,
-            plugin="pillow",
-            duration=duration * 1e3,
-            loop=0,
-            palettesize=palettesize,
-        )
+    with t, iio.imopen(outpath, "w") as gif:
+        for p in paths:
+            frame = iio.imread(p)
+            gif.write(
+                frame,
+                plugin="pillow",
+                duration=duration*1e3,
+                loop=0,
+                palettesize=palettesize
+            )
     if verbose:
         interval = np.round(t.interval, 2)
         print("gif generated in {0} seconds - saved at {1}".format(interval, outpath))
