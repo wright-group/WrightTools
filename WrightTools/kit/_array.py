@@ -436,8 +436,8 @@ def enforce_mask_shape(mask, shape):
     return mask.max(axis=red, keepdims=True)
 
 
-def guess_signed(chan, tol=7.5e-2):
-    """guess whether or not a channel is signed by comparing range to min and max values.
+def guess_signed(chan, tol=1e-1):
+    """guess whether or not a channel is signed by examining min and max values.
 
     Parameters
     -------------
@@ -462,10 +462,10 @@ def guess_signed(chan, tol=7.5e-2):
         null = 0
 
     # avoid zero division for comparison
-    bottom = np.abs(maxc + minc - 2 * null)
-    if not bottom:  # (maxc-null)=-(minc-null), so probably signed
-        return maxc != null
+    bottom = np.abs(maxc-null) + np.abs(minc-null)
+    if not bottom:  # (maxc-null)=-(minc-null)
+        return True
 
-    # should be <~ 1 for unsigned data
-    comparison = np.abs(maxc - minc) / np.abs(maxc + minc - 2 * null)
-    return comparison < 1 + tol
+    comparison = np.abs(maxc + minc - 2*null) / bottom
+    # should be < 1 if signed
+    return comparison < 1 - tol
