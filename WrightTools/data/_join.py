@@ -76,6 +76,9 @@ def join(
     warnings.warn("join", category=wt_exceptions.EntireDatasetInMemoryWarning)
     if isinstance(datas, Collection):
         datas = datas.values()
+    valid_methods = ["first", "last", "min", "max", "mean", "sum"] 
+    if method not in valid_methods:
+        raise ValueError(f"invalid method expected {valid_methods}, not {method!r}")
     datas = list(datas)
     if not isinstance(atol, collections.abc.Iterable):
         atol = [atol] * len(datas[0].axes)

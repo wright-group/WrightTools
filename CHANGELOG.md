@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ### Fixed
 - `interact2D`: fixed bug where use_imshow broke the sliders
+- 'join' ensures valid `method` is selected
 
 ## [3.5.0]
 
