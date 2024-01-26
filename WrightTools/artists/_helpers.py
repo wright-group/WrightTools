@@ -1098,7 +1098,7 @@ def stitch_to_animation(images, outpath=None, *, duration=0.5, palettesize=256, 
         Duration of (each) frame in seconds. Default is 0.5.
     palettesize : int (optional)
         The number of colors in the resulting animation. Input is rounded to
-        the nearest power of 2. Default is 1024.
+        the nearest power of 2. Default is 256.
     verbose : bool (optional)
         Toggle talkback. Default is True.
     """
@@ -1106,15 +1106,14 @@ def stitch_to_animation(images, outpath=None, *, duration=0.5, palettesize=256, 
     if outpath is None:
         outpath = os.path.splitext(images[0])[0] + ".gif"
     # write
-    t = wt_kit.Timer(verbose=False)
-    with t, imageio.get_writer(
-        outpath, mode="I", duration=duration, palettesize=palettesize
-    ) as writer:
-        for p in images:
-            image = imageio.imread(p)
-            writer.append_data(image)
-    # finish
-    if verbose:
-        interval = np.round(t.interval, 2)
-        print("gif generated in {0} seconds - saved at {1}".format(interval, outpath))
+    frames = np.stack([imageio.v3.imread(image) for image in images], axis=0)
+
+    imageio.v3.imwrite(
+        outpath,
+        frames,
+        plugin="pillow",
+        duration=duration*1e3,
+        loop=0,
+        palettesize=palettesize
+    )
     return outpath
