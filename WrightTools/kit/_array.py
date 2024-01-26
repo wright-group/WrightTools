@@ -203,7 +203,7 @@ def orthogonal(*args) -> bool:
         if hasattr(arg, "shape"):
             args[i] = arg.shape
     for s in zip(*args):
-        if np.product(s) != max(s):
+        if np.prod(s) != max(s):
             return False
     return True
 
