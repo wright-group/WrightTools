@@ -37,7 +37,7 @@ setup(
     python_requires=">=3.7",
     install_requires=[
         "h5py",
-        "imageio",
+        "imageio>2.28",
         "matplotlib>=3.4.0",
         "numexpr",
         "numpy>=1.15.0",
