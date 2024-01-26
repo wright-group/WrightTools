@@ -76,7 +76,7 @@ def join(
     warnings.warn("join", category=wt_exceptions.EntireDatasetInMemoryWarning)
     if isinstance(datas, Collection):
         datas = datas.values()
-    valid_methods = ["first", "last", "min", "max", "mean", "sum"]
+    valid_methods = ["first", "last", "min", "max", "mean"]
     if method not in valid_methods:
         raise ValueError(f"invalid method expected {valid_methods}, not {method!r}")
     datas = list(datas)
