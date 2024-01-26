@@ -1106,9 +1106,14 @@ def stitch_to_animation(images, outpath=None, *, duration=0.5, palettesize=256, 
     if outpath is None:
         outpath = os.path.splitext(images[0])[0] + ".gif"
     # write
-    frames = np.stack([imageio.v3.imread(image) for image in images], axis=0)
+    t = wt_kit.Timer(verbose=False)
+    with t:
+        frames = np.stack([imageio.v3.imread(image) for image in images], axis=0)
 
-    imageio.v3.imwrite(
-        outpath, frames, plugin="pillow", duration=duration * 1e3, loop=0, palettesize=palettesize
-    )
+        imageio.v3.imwrite(
+            outpath, frames, plugin="pillow", duration=duration * 1e3, loop=0, palettesize=palettesize
+        )
+    if verbose:
+        interval = np.round(t.interval, 2)
+        print("gif generated in {0} seconds - saved at {1}".format(interval, outpath))
     return outpath
