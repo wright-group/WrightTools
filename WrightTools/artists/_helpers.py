@@ -1109,11 +1109,6 @@ def stitch_to_animation(images, outpath=None, *, duration=0.5, palettesize=256, 
     frames = np.stack([imageio.v3.imread(image) for image in images], axis=0)
 
     imageio.v3.imwrite(
-        outpath,
-        frames,
-        plugin="pillow",
-        duration=duration*1e3,
-        loop=0,
-        palettesize=palettesize
+        outpath, frames, plugin="pillow", duration=duration * 1e3, loop=0, palettesize=palettesize
     )
     return outpath
