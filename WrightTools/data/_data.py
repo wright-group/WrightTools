@@ -11,6 +11,7 @@ import functools
 import warnings
 
 import numpy as np
+import sys
 
 import h5py
 
@@ -1927,6 +1928,94 @@ class Data(Group):
             print("Look she turned me into a newt")
         elif verbose and newt and not nownewt:
             print("I got better")
+
+    def translate_to_txt(
+        self, filepath, delimiter="\t", channels=None, variables=None, fmt=".5g", verbose=True
+    ):
+        """
+        Write a serialized, readable list of the channels and variables to
+        file. Each line (row) denotes a seperate data point. Each column
+        represents a unique variable or channel. Axes are neglected.
+
+        Parameters
+        ----------
+
+        filepath: path-like
+            path to output file.
+        delimiter: str
+            separation character.  Defaults to "\t"
+        channels: list[str] (optional)
+            List of channel names to include. Default is all channels.
+        variables: list[str] (optional)
+            List of variable names to include. Default is all variables.
+        fmt: [python format spec](https://docs.python.org/3/library/string.html#formatspec)
+            format specifier for variables and channels
+
+        Returns
+        -------
+
+        None
+
+        Notes
+        -----
+
+        * This is a lossy write procedure; some properties, such as axes, are
+        not recorded.
+        * The shape structure of the data is recorded as a series of indices
+        (`{a_i}`) comprising the first few columns. A vertical line separates
+        these indexes from variables and channels
+        * wt5, the native file format for Data objects, is a specific variant
+        of the HDF5 file format. HDF5 has well-developed tools for working with
+        generic datasets.  See
+        https://portal.hdfgroup.org/display/knowledge/How+to+convert+an+HDF4+or+HDF5+file+to+ASCII+%28text%29+or+Excel
+        for more information.
+        """
+        # attrs
+        import tidy_headers
+
+        tidy_headers.write(filepath, {k: v for k, v in self.attrs.items()})
+
+        columns = [f"a_{i}" for i in range(self.ndim)]
+        columns.append("|")
+        is_broadcast = []
+
+        variables = list(self.variable_names) if variables is None else variables
+        for var in variables:
+            columns.append(f"{var} ({self[var].units})")
+            is_broadcast.append([i == 1 for i in self[var].shape])
+
+        channels = list(self.channel_names) if channels is None else channels
+        for ch in channels:
+            columns.append(f"{ch} ({self[ch].units})")
+            is_broadcast.append([i == 1 for i in self[ch].shape])
+
+        with open(filepath, "a") as f:
+            f.write(delimiter.join(columns) + "\n")
+            chunk = ""
+            for i, ndi in enumerate(np.ndindex(self.shape)):
+                line = [str(i) for i in ndi]
+                line += ["|"]
+                for j, name in enumerate(variables + channels):
+                    arr = self[name]
+                    # broadcast reduced dimensions arrays to full
+                    idxs = tuple(xi * (not yi) for xi, yi in zip(ndi, is_broadcast[j]))
+                    line.append(f"{arr[idxs]:{fmt}}")
+                if verbose and ((i == 0) or (not (i % 10))):
+                    frac = round(i / self.size, 3)
+                    sys.stdout.write(
+                        f"[{'=' * int(frac * 60): <60}] {frac * 100:0.1f}% ...to_txt\r"
+                    )
+                    sys.stdout.flush()
+                chunk += delimiter.join(line) + "\n"
+                if (i % 100) == 99:  # write to disk periodically
+                    f.write(chunk)
+                    chunk = ""
+            if chunk:
+                f.write(chunk)
+
+        if verbose:
+            sys.stdout.write(f"[{'=' * 60}] {100:0.1f}% ...done! \r")
+            sys.stdout.flush()
 
     def set_constants(self, *constants, verbose=True):
         """Set the constants associated with the data.
