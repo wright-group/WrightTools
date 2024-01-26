@@ -76,7 +76,7 @@ def join(
     warnings.warn("join", category=wt_exceptions.EntireDatasetInMemoryWarning)
     if isinstance(datas, Collection):
         datas = datas.values()
-    valid_methods = ["first", "last", "min", "max", "mean", "sum"] 
+    valid_methods = ["first", "last", "min", "max", "mean", "sum"]
     if method not in valid_methods:
         raise ValueError(f"invalid method expected {valid_methods}, not {method!r}")
     datas = list(datas)
@@ -180,7 +180,7 @@ def join(
         out.create_channel(
             shape=get_shape(out, datas, channel_name),
             **datas[0][channel_name].attrs,
-            dtype=datas[0][channel_name].dtype
+            dtype=datas[0][channel_name].dtype,
         )
         count[channel_name] = np.zeros_like(out[channel_name], dtype=int)
     for variable_name in variable_names:
@@ -189,7 +189,7 @@ def join(
             out.create_variable(
                 shape=get_shape(out, datas, variable_name),
                 **datas[0][variable_name].attrs,
-                dtype=datas[0][variable_name].dtype
+                dtype=datas[0][variable_name].dtype,
             )
             count[variable_name] = np.zeros_like(out[variable_name], dtype=int)
 
