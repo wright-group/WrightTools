@@ -1,4 +1,5 @@
 """Collection class and associated."""
+
 # flake8: noqa
 
 

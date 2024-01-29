@@ -4,6 +4,7 @@ Join
 
 Some examples of how joining works.
 """
+
 import numpy as np
 from matplotlib import pyplot as plt
 import WrightTools as wt
