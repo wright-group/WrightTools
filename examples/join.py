@@ -25,12 +25,11 @@ first = wt.data.join([a, b], name="first")
 last = wt.data.join([a, b], method="last", name="last")
 min = wt.data.join([a, b], method="min", name="min")
 max = wt.data.join([a, b], method="max", name="max")
-sum = wt.data.join([a, b], method="sum", name="sum")
 mean = wt.data.join([a, b], method="mean", name="mean")
 
 # Plot the splits in columns
 fig, gs = wt.artists.create_figure(nrows=4, cols=[1, 1])
-for i, da in enumerate([a, b, first, last, min, max, sum, mean]):
+for i, da in enumerate([a, b, first, last, min, max, mean]):
     ax = plt.subplot(gs[i])
     ax.pcolor(da, vmin=0, vmax=6)
     wt.artists.corner_text(da.natural_name, ax=ax)
