@@ -1201,9 +1201,13 @@ class Data(Group):
     def map_variable(
         self, variable, points, input_units="same", *, name=None, parent=None, verbose=True
     ) -> "Data":
-        """Map points of an axis to new points using linear interpolation.
-
+        """
+        Map points of an axis to new points using linear interpolation.
+        
         Out-of-bounds points are written nan.
+
+        Non-mapped variables are kept in the data object only if they are 
+        orthogonal to the mapped variable (see `kit.orthogonal`).  
 
         Parameters
         ----------
