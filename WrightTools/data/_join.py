@@ -62,7 +62,7 @@ def join(
         The name for the data object which is created. Default is 'join'.
     parent : WrightTools.Collection (optional)
         The location to place the joined data object. Default is new temp file at root.
-    method : {'first', 'last', 'min', 'max', 'sum', 'mean'}
+    method : {'first', 'last', 'min', 'max', 'mean'}
         Mode to use for merged points in the joined space.
         Default is 'first'.
     verbose : bool (optional)
@@ -78,7 +78,9 @@ def join(
         datas = datas.values()
     valid_methods = ["first", "last", "min", "max", "mean"]
     if method not in valid_methods:
-        raise ValueError(f"invalid method expected {valid_methods}, not {method!r}")
+        if method == "sum":
+            raise ValueError(f"method 'sum' is deprecated; consider 'mean' instead.")
+        raise ValueError(f"invalid method {method!r}: expected {valid_methods}")
     datas = list(datas)
     if not isinstance(atol, collections.abc.Iterable):
         atol = [atol] * len(datas[0].axes)
