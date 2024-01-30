@@ -15,7 +15,9 @@ def cli():
 
 @cli.command(name="tree", help="Print a given data tree.")
 @click.argument("path", nargs=1)
-@click.option("--internal_path", default="/", help="specify a path internal to the file.  Defaults to root")
+@click.option(
+    "--internal_path", default="/", help="specify a path internal to the file.  Defaults to root"
+)
 @click.option("--depth", "-d", "-L", type=int, default=9, help="Depth to print.")
 @click.option("--verbose", "-v", is_flag=True, default=False, help="Print a more detailed tree.")
 def tree(path, internal_path, depth=9, verbose=False):
@@ -33,6 +35,7 @@ def tree(path, internal_path, depth=9, verbose=False):
 @click.argument("path")
 def load(path):
     import code
+
     d = wt.open(d)
     ...
 
@@ -40,7 +43,12 @@ def load(path):
 @cli.command(name="crawl", help="Crawl a directory and survey the wt5 objects found.")
 @click.argument("directory", nargs=-1, default=None)
 @click.option("--recursive", "-r", is_flag=True, help="explore all levels of the directory")
-@click.option("--pausing", "-p", is_flag=True, help="pause at each file readout. Interaction with data is possible.")
+@click.option(
+    "--pausing",
+    "-p",
+    is_flag=True,
+    help="pause at each file readout. Interaction with data is possible.",
+)
 def crawl(directory=(), recursive=False, pausing=False):
     import glob, os
 
@@ -55,12 +63,9 @@ def crawl(directory=(), recursive=False, pausing=False):
         def raise_sys_exit():
             raise SystemExit
 
-        shell = code.InteractiveConsole(locals={
-            "exit": raise_sys_exit,
-            "quit": raise_sys_exit
-        })
+        shell = code.InteractiveConsole(locals={"exit": raise_sys_exit, "quit": raise_sys_exit})
 
-    print("-"*100)
+    print("-" * 100)
     for pathname in glob.iglob("**/*.wt5", root_dir=directory, recursive=recursive):
         print(pathname)
         d = wt.open(os.path.join(directory, pathname))
@@ -86,15 +91,15 @@ def crawl(directory=(), recursive=False, pausing=False):
 
                 [shell.push(line) for line in lines]
                 banner = "--- INTERACTING --- (to continue, call exit() or quit())\n"
-                banner += "\n".join([">>> "+line for line in lines])
-                
+                banner += "\n".join([">>> " + line for line in lines])
+
                 try:
                     shell.interact(banner=banner)
                 except SystemExit:
                     pass
             else:
                 continue
-        print("-"*100)
+        print("-" * 100)
         d.close()
 
 
@@ -114,19 +119,16 @@ def convert(number, unit, destination_unit=None):
         exponent = int(f"{new:e}".split("e")[1])
         if exponent > 6 or exponent < -3:
             return f"{new:{sig_figs}e}"
-        else: # if a "normal" size number
-            if sig_figs-exponent <= 0:
+        else:  # if a "normal" size number
+            if sig_figs - exponent <= 0:
                 return f"{int(round(new, sig_figs-exponent))}"
             else:
                 return f"{round(new, sig_figs-exponent)}"
 
-
     if len(destination_unit):  # units provided
         destination_unit = destination_unit[0]
         if not wt.units.is_valid_conversion(unit, destination_unit):
-            raise wt.exceptions.UnitsError(
-                wt.units.get_valid_conversions(unit), destination_unit
-            )
+            raise wt.exceptions.UnitsError(wt.units.get_valid_conversions(unit), destination_unit)
         new = wt.units.convert(number, unit, destination_unit)
         print(f"{number} {unit} = {fmt(new)} {destination_unit}")
     else:
@@ -138,4 +140,3 @@ def convert(number, unit, destination_unit=None):
 
 if __name__ == "__main__":
     cli()
-
