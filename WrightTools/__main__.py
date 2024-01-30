@@ -40,7 +40,7 @@ def load(path):
 @cli.command(name="crawl", help="Crawl a directory and survey the wt5 objects found.")
 @click.argument("directory", nargs=-1, default=None)
 @click.option("--recursive", "-r", is_flag=True, help="explore all levels of the directory")
-@click.option("--pausing", "-p", is_flag=True, help="pause at each file and give option to interact.")
+@click.option("--pausing", "-p", is_flag=True, help="pause at each file readout. Interaction with data is possible.")
 def crawl(directory=(), recursive=False, pausing=False):
     import glob, os
 
@@ -51,8 +51,16 @@ def crawl(directory=(), recursive=False, pausing=False):
 
     if pausing:
         import code
-        shell = code.InteractiveConsole()
 
+        def raise_sys_exit():
+            raise SystemExit
+
+        shell = code.InteractiveConsole(locals={
+            "exit": raise_sys_exit,
+            "quit": raise_sys_exit
+        })
+
+    print("-"*100)
     for pathname in glob.iglob("**/*.wt5", root_dir=directory, recursive=recursive):
         print(pathname)
         d = wt.open(os.path.join(directory, pathname))
@@ -76,8 +84,14 @@ def crawl(directory=(), recursive=False, pausing=False):
                 elif isinstance(d, wt.Collection):
                     lines.append(f"c = wt.open(r'{os.path.join(directory, pathname)}')")
 
-                [shell.push(line) for line in lines]                
-                shell.interact(banner="\n".join([">>> "+line for line in lines]))
+                [shell.push(line) for line in lines]
+                banner = "--- INTERACTING --- (to continue, call exit() or quit())\n"
+                banner += "\n".join([">>> "+line for line in lines])
+                
+                try:
+                    shell.interact(banner=banner)
+                except SystemExit:
+                    pass
             else:
                 continue
         print("-"*100)
