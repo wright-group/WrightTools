@@ -6,6 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ## [Unreleased]
 
 ### Added
+- `kit.guess_signed` for empirically guessing channel sign (useful for automated workflows)
 - `Data.squeeze`: squeezing the data object to the shape of the axes.
 
 ### Fixed
