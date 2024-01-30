@@ -1,6 +1,5 @@
 """Central data class and associated."""
 
-
 # --- import --------------------------------------------------------------------------------------
 
 from __future__ import annotations

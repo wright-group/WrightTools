@@ -8,6 +8,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ### Fixed
 - `interact2D`: fixed bug where use_imshow broke the sliders
 - `artists.stitch_to_animation`: use imageio v3 api and declare pillow plugin
+- `data.join` ensures valid `method` is selected
+
+### Changed
+- `data.join` no longer supports `sum` method
 
 ## [3.5.0]
 
