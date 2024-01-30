@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## [3.5.1]
+
 ### Added
 - `kit.guess_signed` for empirically guessing channel sign (useful for automated workflows)
 - `Data.squeeze`: squeezing the data object to the shape of the axes.
@@ -365,7 +367,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ### Added
 - initial release
 
-[Unreleased]: https://github.com/wright-group/WrightTools/-/compare/3.5.0...master
+[Unreleased]: https://github.com/wright-group/WrightTools/-/compare/3.5.1...master
+[3.5.1]: https://github.com/wright-group/WrightTools/compare/3.5.0...3.5.1
 [3.5.0]: https://github.com/wright-group/WrightTools/compare/3.4.6...3.5.0
 [3.4.6]: https://github.com/wright-group/WrightTools/compare/3.4.5...3.4.6
 [3.4.5]: https://github.com/wright-group/WrightTools/compare/3.4.4...3.4.5
