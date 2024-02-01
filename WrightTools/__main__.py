@@ -35,19 +35,23 @@ def tree(path, internal_path, depth=9, verbose=False):
 @click.argument("path")
 def load(path):
     import code
+
     # def raise_sys_exit():
     #     raise SystemExit
-    shell = code.InteractiveConsole() # locals={"exit": raise_sys_exit, "quit": raise_sys_exit})
+    shell = code.InteractiveConsole()  # locals={"exit": raise_sys_exit, "quit": raise_sys_exit})
     _interact(shell, path)
 
 
 @cli.command(name="crawl", help="Crawl a directory and survey the wt5 objects found.")
-@click.option("--directory", "-d", default=None, help="Directory to crawl.  Defaults to current directory.")
+@click.option(
+    "--directory", "-d", default=None, help="Directory to crawl.  Defaults to current directory."
+)
 @click.option("--recursive", "-r", is_flag=True, help="Explore all levels of the directory")
 @click.option("--format", "-f", default=None, help="Formatting keys (default only atm)")
 # TODO: write output as an option; format kwarg?
 def crawl(directory=None, recursive=False, format=None):
     import glob, os, code
+
     # from rich.console import Console
     from rich.live import Live
     from rich.table import Table
@@ -72,12 +76,22 @@ def crawl(directory=None, recursive=False, format=None):
             nvars = len(wt5.variables)
             nchan = len(wt5.channels)
         elif isinstance(wt5, wt.Collection):
-            shape = axes = nvars = nchan = "---"            
+            shape = axes = nvars = nchan = "---"
         return [
-            str(i), relpath, f"{size:0.1f}", created, name, str(shape), str(axes), str(nvars), str(nchan) 
+            str(i),
+            relpath,
+            f"{size:0.1f}",
+            created,
+            name,
+            str(shape),
+            str(axes),
+            str(nvars),
+            str(nchan),
         ]
 
-    table = Table(title=directory + f" ({len(paths)} wt5 file{'s' if len(paths) != 1 else None} found)")
+    table = Table(
+        title=directory + f" ({len(paths)} wt5 file{'s' if len(paths) != 1 else None} found)"
+    )
     table.add_column("", justify="right")  # index
     table.add_column("path", max_width=60, no_wrap=True)
     table.add_column("size (MB)", justify="center")
@@ -92,15 +106,17 @@ def crawl(directory=None, recursive=False, format=None):
         for i, path in enumerate(paths):
             table.add_row(*_parse_entry(i, path))
             live.update(table)
-    
+
     # give option to interact
     shell = code.InteractiveConsole()
-    msg = shell.raw_input("Do you wish to load an entry? (specify an index to load, or don't and exit) ")
+    msg = shell.raw_input(
+        "Do you wish to load an entry? (specify an index to load, or don't and exit) "
+    )
     try:
         valid = 0 < int(msg) + 1 < len(paths)
     except ValueError:
         print("invalid index")
-        return    
+        return
     if valid:
         _interact(shell, os.path.join(directory, paths[int(msg)]))
 
