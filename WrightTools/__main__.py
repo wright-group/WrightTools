@@ -35,111 +35,81 @@ def tree(path, internal_path, depth=9, verbose=False):
 @click.argument("path")
 def load(path):
     import code
-
-    d = wt.open(d)
-    ...
+    # def raise_sys_exit():
+    #     raise SystemExit
+    shell = code.InteractiveConsole() # locals={"exit": raise_sys_exit, "quit": raise_sys_exit})
+    _interact(shell, path)
 
 
 @cli.command(name="crawl", help="Crawl a directory and survey the wt5 objects found.")
 @click.option("--directory", "-d", default=None, help="Directory to crawl.  Defaults to current directory.")
 @click.option("--recursive", "-r", is_flag=True, help="Explore all levels of the directory")
-@click.option(
-    "--pausing",
-    "-p",
-    is_flag=True,
-    help="pause at each file readout. Interaction with data is possible.",
-)
 @click.option("--format", "-f", default=None, help="Formatting keys (default only atm)")
-# TODO: write output as an option
-def crawl(directory=None, recursive=False, pausing=False, format=None):
-    import glob, os
+# TODO: write output as an option; format kwarg?
+def crawl(directory=None, recursive=False, format=None):
+    import glob, os, code
+    # from rich.console import Console
+    from rich.live import Live
+    from rich.table import Table
 
     if directory is None:
         directory = os.getcwd()
 
-    if pausing:
-        import code
-
-        def raise_sys_exit():
-            raise SystemExit
-
-        shell = code.InteractiveConsole(locals={"exit": raise_sys_exit, "quit": raise_sys_exit})
-
     paths = glob.glob("**/*.wt5", root_dir=directory, recursive=recursive)
-    print(f"{len(paths)} wt5 file{'s' if len(paths) != 1 else None} found in {directory}")
 
-    from rich.console import Console
-    from rich.table import Table
+    def _parse_entry(i, relpath):
+        size = os.path.getsize(os.path.join(directory, relpath)) / 1e6
+        wt5 = wt.open(os.path.join(directory, relpath))
+        name = wt5.natural_name
+        try:
+            created = wt5.created.human
+        except:  # likely an old timestamp that cannot be parsed
+            created = wt5.attrs["created"]
 
-    console = Console()
+        if isinstance(wt5, wt.Data):
+            shape = wt5.shape
+            axes = wt5.axis_expressions
+            nvars = len(wt5.variables)
+            nchan = len(wt5.channels)
+        elif isinstance(wt5, wt.Collection):
+            shape = axes = nvars = nchan = "---"            
+        return [
+            str(i), relpath, f"{size:0.1f}", created, name, str(shape), str(axes), str(nvars), str(nchan) 
+        ]
 
-    table = Table(title=directory)
+    table = Table(title=directory + f" ({len(paths)} wt5 file{'s' if len(paths) != 1 else None} found)")
     table.add_column("", justify="right")  # index
-    table.add_column("path", max_width=60)
+    table.add_column("path", max_width=60, no_wrap=True)
     table.add_column("size (MB)", justify="center")
     table.add_column("created", max_width=30)
     table.add_column("name")
     table.add_column("shape")
-    table.add_column("axes")
+    table.add_column("axes", max_width=50)
     table.add_column("variables")
     table.add_column("channels")
 
-
-    for i, pathname in enumerate(paths):
-        path = os.path.join(directory, pathname)
-        d = wt.open(path)
-        infos = [str(i), pathname, str(int(os.path.getsize(path)/1e6)), *_format_entry(d)]
-        table.add_row(*infos)
-
-        if pausing:
-            msg = shell.raw_input("Interact ([n=no]/y=yes/q=quit)? ")
-            if msg.lower() in ["q", "quit"]:
-                break
-            elif msg.lower() in ["y", "yes"]:
-                _interact(shell, os.path.join(directory, pathname), isinstance(d, wt.Collection))
-                print("-" * 100)
-            else:
-                continue
-        d.close()
-
-
-from typing import Tuple, Optional
-class TableEntry:
-    created: str = ""
-    name: str = ""
-    shape: Optional(Tuple(int))
-    axes: Optional(Tuple(str))
-    nvars: Optional(int)
-    nchan: Optional(int)
-    def __init__(self, wt5):
-        self.name = wt5.natural_name
-        self.created = wt5.attrs["created"].date
-        if isinstance(wt5, wt.Data):
-            self.shape = wt5.shape
-            self.axes = wt5.axis_expressions
-            self.nvars = len(wt5.variables)
-            self.nchan = len(wt5.channels)
-
+    with Live(table) as live:
+        for i, path in enumerate(paths):
+            table.add_row(*_parse_entry(i, path))
+            live.update(table)
     
+    # give option to interact
+    shell = code.InteractiveConsole()
+    msg = shell.raw_input("Do you wish to load an entry? (specify an index to load, or don't and exit) ")
+    try:
+        valid = 0 < int(msg) + 1 < len(paths)
+    except ValueError:
+        print("invalid index")
+        return    
+    if valid:
+        _interact(shell, os.path.join(directory, paths[int(msg)]))
 
 
-
-
-def _format_entry(wt5, format=None):
-    if isinstance(wt5, wt.Data):
-        values = [f"{wt5.attrs['created']}", wt5.natural_name, f"{wt5.shape}", f"{wt5.axis_expressions}", str(len(wt5.variables)), str(len(wt5.channels))]
-    elif isinstance(wt5, wt.Collection):
-        values = ["---"] + [wt5.natural_name] + ["---"] * 4
-    else:
-        values = ["---"] + ["<unknown>"] + ["---"] * 4
-    return values
-
-
-def _interact(shell, path, is_collection):
+def _interact(shell, path):
     lines = [
         "import WrightTools as wt",
         "import matplotlib.pyplot as plt",
-        f"{'c' if is_collection else 'd'} = wt.open(r'{path}')",
+        f"d = wt.open(r'{path}')",
     ]
 
     [shell.push(line) for line in lines]
