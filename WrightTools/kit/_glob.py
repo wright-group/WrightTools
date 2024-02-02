@@ -9,7 +9,7 @@ from .._open import open
 __all__ = ["describe_wt5", "glob_wt5s"]
 
 
-def describe_wt5(path: Union[str, os.PathLike])->dict:
+def describe_wt5(path: Union[str, os.PathLike]) -> dict:
     """report useful general information about a wt5 file"""
     wt5 = open(path)
     desc = dict()
