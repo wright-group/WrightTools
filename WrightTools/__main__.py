@@ -54,9 +54,7 @@ def scan(directory=None, no_recursion=False):
     if directory is None:
         directory = os.getcwd()
 
-    table = Table(
-        title=directory
-    )
+    table = Table(title=directory)
     table.add_column("", justify="right")  # index
     table.add_column("path", max_width=60, no_wrap=True)
     table.add_column("size (MB)", justify="center")
@@ -80,7 +78,7 @@ def scan(directory=None, no_recursion=False):
                 str(desc[k])
                 for k in ["path", "filesize", "created", "name", "shape", "axes", "nvars", "nchan"]
             ]
-            table.title = update_title(i+1)
+            table.title = update_title(i + 1)
             table.add_row(*row)
             live.update(table)
 
@@ -88,17 +86,18 @@ def scan(directory=None, no_recursion=False):
     def raise_sys_exit():
         raise SystemExit
 
-    shell = code.InteractiveConsole(locals={
-        "exit": raise_sys_exit,
-        "quit": raise_sys_exit
-    })
+    shell = code.InteractiveConsole(locals={"exit": raise_sys_exit, "quit": raise_sys_exit})
 
     while True:
-        msg = shell.raw_input(" ".join([
-            "Specify an index to load that entry.",
-            "Use 't' to rerender table.",
-            "Use no argument to exit.",
-        ]))
+        msg = shell.raw_input(
+            " ".join(
+                [
+                    "Specify an index to load that entry.",
+                    "Use 't' to rerender table.",
+                    "Use no argument to exit.",
+                ]
+            )
+        )
         if msg == "t":
             with Live(table) as live:
                 pass
