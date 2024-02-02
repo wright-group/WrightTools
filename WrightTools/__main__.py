@@ -36,9 +36,7 @@ def tree(path, internal_path, depth=9, verbose=False):
 def load(path):
     import code
 
-    # def raise_sys_exit():
-    #     raise SystemExit
-    shell = code.InteractiveConsole()  # locals={"exit": raise_sys_exit, "quit": raise_sys_exit})
+    shell = code.InteractiveConsole()
     _interact(shell, path)
 
 
@@ -46,48 +44,16 @@ def load(path):
 @click.option(
     "--directory", "-d", default=None, help="Directory to crawl.  Defaults to current directory."
 )
-@click.option("--recursive", "-r", is_flag=True, help="Explore all levels of the directory")
-@click.option("--format", "-f", default=None, help="Formatting keys (default only atm)")
-# TODO: write output as an option; format kwarg?
-def crawl(directory=None, recursive=False, format=None):
+# TODO: formatting options (e.g. json)?
+def crawl(directory=None):
     import glob, os, code
-
-    # from rich.console import Console
     from rich.live import Live
     from rich.table import Table
 
     if directory is None:
         directory = os.getcwd()
 
-    paths = glob.glob("**/*.wt5", root_dir=directory, recursive=recursive)
-
-    def _parse_entry(i, relpath):
-        size = os.path.getsize(os.path.join(directory, relpath)) / 1e6
-        wt5 = wt.open(os.path.join(directory, relpath))
-        name = wt5.natural_name
-        try:
-            created = wt5.created.human
-        except:  # likely an old timestamp that cannot be parsed
-            created = wt5.attrs["created"]
-
-        if isinstance(wt5, wt.Data):
-            shape = wt5.shape
-            axes = wt5.axis_expressions
-            nvars = len(wt5.variables)
-            nchan = len(wt5.channels)
-        elif isinstance(wt5, wt.Collection):
-            shape = axes = nvars = nchan = "---"
-        return [
-            str(i),
-            relpath,
-            f"{size:0.1f}",
-            created,
-            name,
-            str(shape),
-            str(axes),
-            str(nvars),
-            str(nchan),
-        ]
+    paths = list(wt.kit.find_wt5s(directory))
 
     table = Table(
         title=directory + f" ({len(paths)} wt5 file{'s' if len(paths) != 1 else None} found)"
@@ -104,7 +70,20 @@ def crawl(directory=None, recursive=False, format=None):
 
     with Live(table) as live:
         for i, path in enumerate(paths):
-            table.add_row(*_parse_entry(i, path))
+            desc = wt.kit.describe_wt5(path)
+            desc["filesize"] = f"{os.path.getsize(path) / 1e6:.1f}"
+            desc["path"] = str(path.relative_to(directory))
+            row = [str(i)] + [str(desc[k]) for k in [
+                "path",
+                "filesize",
+                "created",
+                "name",
+                "shape",
+                "axes",
+                "nvars",
+                "nchan"
+            ]]
+            table.add_row(*row)
             live.update(table)
 
     # give option to interact
@@ -113,12 +92,11 @@ def crawl(directory=None, recursive=False, format=None):
         "Do you wish to load an entry? (specify an index to load, or don't and exit) "
     )
     try:
-        valid = 0 < int(msg) + 1 < len(paths)
+        valid = 0 <= int(msg) < len(paths)
     except ValueError:
-        print("invalid index")
         return
     if valid:
-        _interact(shell, os.path.join(directory, paths[int(msg)]))
+        _interact(shell, str(paths[int(msg)]))
 
 
 def _interact(shell, path):

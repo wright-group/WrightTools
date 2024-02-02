@@ -46,6 +46,7 @@ setup(
         "scipy",
         "click",
         "tidy_headers>=1.0.0",
+        "rich",
     ],
     extras_require={
         "docs": docs_require,

@@ -13,3 +13,5 @@ from ._path import *
 from ._timestamp import *
 from ._unicode import *
 from ._utilities import *
+from ._glob import *
+
