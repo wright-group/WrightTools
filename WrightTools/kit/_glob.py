@@ -31,6 +31,8 @@ def describe_wt5(path: Union[str, os.PathLike]) -> dict:
     return desc
 
 
-def glob_wt5s(directory: Union[str, os.PathLike]):
+def glob_wt5s(directory: Union[str, os.PathLike], recursive=True):
     """find all wt5 files in a directory"""
-    return pathlib.Path(directory).glob("**/*.wt5")
+    pattern = "**/*.wt5" if recursive else "*.wt5"
+    print(pattern)
+    return pathlib.Path(directory).glob(pattern)

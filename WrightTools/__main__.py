@@ -40,23 +40,22 @@ def load(path):
     _interact(shell, path)
 
 
-@cli.command(name="crawl", help="Crawl a directory and survey the wt5 objects found.")
+@cli.command(name="scan", help="scan a directory and survey the wt5 objects found.")
 @click.option(
-    "--directory", "-d", default=None, help="Directory to crawl.  Defaults to current directory."
+    "--directory", "-d", default=None, help="Directory to scan.  Defaults to current directory."
 )
+@click.option("--no-recursion", is_flag=True, help="Turns recursive scan off.")
 # TODO: formatting options (e.g. json)?
-def crawl(directory=None):
-    import glob, os, code
+def scan(directory=None, no_recursion=False):
+    import os, code
     from rich.live import Live
     from rich.table import Table
 
     if directory is None:
         directory = os.getcwd()
 
-    paths = list(wt.kit.find_wt5s(directory))
-
     table = Table(
-        title=directory + f" ({len(paths)} wt5 file{'s' if len(paths) != 1 else None} found)"
+        title=directory
     )
     table.add_column("", justify="right")  # index
     table.add_column("path", max_width=60, no_wrap=True)
@@ -68,8 +67,12 @@ def crawl(directory=None):
     table.add_column("variables")
     table.add_column("channels")
 
+    update_title = lambda n: directory + f" ({n} wt5 file{'s' if n != 1 else None} found)"
+    paths = []
+
     with Live(table) as live:
-        for i, path in enumerate(paths):
+        for i, path in enumerate(wt.kit.glob_wt5s(directory, not no_recursion)):
+            paths.append(path)
             desc = wt.kit.describe_wt5(path)
             desc["filesize"] = f"{os.path.getsize(path) / 1e6:.1f}"
             desc["path"] = str(path.relative_to(directory))
@@ -77,20 +80,36 @@ def crawl(directory=None):
                 str(desc[k])
                 for k in ["path", "filesize", "created", "name", "shape", "axes", "nvars", "nchan"]
             ]
+            table.title = update_title(i+1)
             table.add_row(*row)
             live.update(table)
 
     # give option to interact
-    shell = code.InteractiveConsole()
-    msg = shell.raw_input(
-        "Do you wish to load an entry? (specify an index to load, or don't and exit) "
-    )
-    try:
-        valid = 0 <= int(msg) < len(paths)
-    except ValueError:
-        return
-    if valid:
-        _interact(shell, str(paths[int(msg)]))
+    def raise_sys_exit():
+        raise SystemExit
+
+    shell = code.InteractiveConsole(locals={
+        "exit": raise_sys_exit,
+        "quit": raise_sys_exit
+    })
+
+    while True:
+        msg = shell.raw_input(" ".join([
+            "Specify an index to load that entry.",
+            "Use 't' to rerender table.",
+            "Use no argument to exit.",
+        ]))
+        if msg == "t":
+            with Live(table) as live:
+                pass
+            continue
+        try:
+            valid = 0 <= int(msg) < len(paths)
+        except ValueError:
+            break
+        if valid:
+            _interact(shell, str(paths[int(msg)]))
+            continue
 
 
 def _interact(shell, path):
