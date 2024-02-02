@@ -73,16 +73,10 @@ def crawl(directory=None):
             desc = wt.kit.describe_wt5(path)
             desc["filesize"] = f"{os.path.getsize(path) / 1e6:.1f}"
             desc["path"] = str(path.relative_to(directory))
-            row = [str(i)] + [str(desc[k]) for k in [
-                "path",
-                "filesize",
-                "created",
-                "name",
-                "shape",
-                "axes",
-                "nvars",
-                "nchan"
-            ]]
+            row = [str(i)] + [
+                str(desc[k])
+                for k in ["path", "filesize", "created", "name", "shape", "axes", "nvars", "nchan"]
+            ]
             table.add_row(*row)
             live.update(table)
 

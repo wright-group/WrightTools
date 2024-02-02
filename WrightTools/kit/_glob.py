@@ -31,7 +31,6 @@ def describe_wt5(path: Union[str, os.PathLike]):
     return desc
 
 
-def glob_wt5s(directory: Union[str,os.PathLike]):
+def glob_wt5s(directory: Union[str, os.PathLike]):
     """find all wt5 files in a directory"""
     return pathlib.Path(directory).glob("**/*.wt5")
-    
