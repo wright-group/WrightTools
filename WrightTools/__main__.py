@@ -74,8 +74,12 @@ def scan(directory=None, no_recursion=False):
             desc["filesize"] = f"{os.path.getsize(path) / 1e6:.1f}"
             path = path.relative_to(directory)
             print(path.parent)
-            desc["path"] = f"[link={path.parent}]{path.parent}[/link]" + r"\\" if str(path.parent) != "." else ""
-            desc["path"] +=  f"[bold]{path.name}[/bold]"
+            desc["path"] = (
+                f"[link={path.parent}]{path.parent}[/link]" + r"\\"
+                if str(path.parent) != "."
+                else ""
+            )
+            desc["path"] += f"[bold]{path.name}[/bold]"
             # desc["path"] = f"[link={str(path)}]{path}[/link]"
             row = [f"{i}"] + [
                 str(desc[k])
