@@ -40,7 +40,7 @@ def load(path):
     _interact(shell, path)
 
 
-@cli.command(name="scan", help="scan a directory and survey the wt5 objects found.")
+@cli.command(name="glob", help="Scan a directory and survey the wt5 objects found.")
 @click.option(
     "--directory", "-d", default=None, help="Directory to scan.  Defaults to current directory."
 )
@@ -56,25 +56,28 @@ def scan(directory=None, no_recursion=False):
 
     table = Table(title=directory)
     table.add_column("", justify="right")  # index
-    table.add_column("path", max_width=60, no_wrap=True)
-    table.add_column("size (MB)", justify="center")
-    table.add_column("created", max_width=30)
-    table.add_column("name")
-    table.add_column("shape")
-    table.add_column("axes", max_width=50)
-    table.add_column("variables")
-    table.add_column("channels")
+    table.add_column("path", max_width=60, no_wrap=True, style="blue")
+    table.add_column("size (MB)", justify="center", style="blue")
+    table.add_column("created", max_width=30, style="blue")
+    table.add_column("name", style="blue")
+    table.add_column("shape", style="blue")
+    table.add_column("axes", max_width=50, style="blue")
+    table.add_column("variables", style="blue")
+    table.add_column("channels", style="blue")
 
     update_title = lambda n: directory + f" ({n} wt5 file{'s' if n != 1 else None} found)"
     paths = []
 
     with Live(table) as live:
         for i, path in enumerate(wt.kit.glob_wt5s(directory, not no_recursion)):
-            paths.append(path)
             desc = wt.kit.describe_wt5(path)
             desc["filesize"] = f"{os.path.getsize(path) / 1e6:.1f}"
-            desc["path"] = str(path.relative_to(directory))
-            row = [str(i)] + [
+            path = path.relative_to(directory)
+            print(path.parent)
+            desc["path"] = f"[link={path.parent}]{path.parent}[/link]" + r"\\" if str(path.parent) != "." else ""
+            desc["path"] +=  f"[bold]{path.name}[/bold]"
+            # desc["path"] = f"[link={str(path)}]{path}[/link]"
+            row = [f"{i}"] + [
                 str(desc[k])
                 for k in ["path", "filesize", "created", "name", "shape", "axes", "nvars", "nchan"]
             ]
@@ -93,7 +96,7 @@ def scan(directory=None, no_recursion=False):
             " ".join(
                 [
                     "Specify an index to load that entry.",
-                    "Use 't' to rerender table.",
+                    "Use `t` to rerender table.",
                     "Use no argument to exit.",
                 ]
             )
