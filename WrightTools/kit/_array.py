@@ -1,6 +1,5 @@
 """Array interaction tools."""
 
-
 # --- import --------------------------------------------------------------------------------------
 
 
@@ -28,6 +27,7 @@ __all__ = [
     "valid_index",
     "mask_reduce",
     "enforce_mask_shape",
+    "guess_signed",
 ]
 
 
@@ -433,3 +433,38 @@ def enforce_mask_shape(mask, shape):
     """
     red = tuple([i for i in range(len(shape)) if shape[i] == 1])
     return mask.max(axis=red, keepdims=True)
+
+
+def guess_signed(chan, tol=1e-1):
+    """guess whether or not a channel is signed by examining min and max values.
+
+    Parameters
+    -------------
+    chan : array-like
+        Input channel or array
+    tol : float (optional)
+        Tolerance value used to judge signed. `tol` should be much less than 1. To prefer signed guesses, use negative tolerance values.
+
+    Returns
+    -------
+    guess : bool
+        True if the data seems signed and False otherwise.
+    """
+
+    maxc = chan.max()
+    minc = chan.min()
+    from ..data import Channel
+
+    if isinstance(chan, Channel):
+        null = chan.null
+    else:
+        null = 0
+
+    # avoid zero division for comparison
+    bottom = np.abs(maxc - null) + np.abs(minc - null)
+    if not bottom:  # (maxc-null)=-(minc-null)
+        return True
+
+    comparison = np.abs(maxc + minc - 2 * null) / bottom
+    # should be < 1 if signed
+    return comparison < 1 - tol

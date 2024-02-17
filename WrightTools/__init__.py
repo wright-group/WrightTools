@@ -1,4 +1,5 @@
 """WrightTools init."""
+
 # flake8: noqa
 
 

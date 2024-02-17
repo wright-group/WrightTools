@@ -1,6 +1,5 @@
 """Join multiple data objects together."""
 
-
 # --- import --------------------------------------------------------------------------------------
 
 
@@ -62,7 +61,7 @@ def join(
         The name for the data object which is created. Default is 'join'.
     parent : WrightTools.Collection (optional)
         The location to place the joined data object. Default is new temp file at root.
-    method : {'first', 'last', 'min', 'max', 'sum', 'mean'}
+    method : {'first', 'last', 'min', 'max', 'mean'}
         Mode to use for merged points in the joined space.
         Default is 'first'.
     verbose : bool (optional)
@@ -76,6 +75,11 @@ def join(
     warnings.warn("join", category=wt_exceptions.EntireDatasetInMemoryWarning)
     if isinstance(datas, Collection):
         datas = datas.values()
+    valid_methods = ["first", "last", "min", "max", "mean"]
+    if method not in valid_methods:
+        if method == "sum":
+            raise ValueError(f"method 'sum' is deprecated; consider 'mean' instead.")
+        raise ValueError(f"invalid method {method!r}: expected {valid_methods}")
     datas = list(datas)
     if not isinstance(atol, collections.abc.Iterable):
         atol = [atol] * len(datas[0].axes)
@@ -177,7 +181,7 @@ def join(
         out.create_channel(
             shape=get_shape(out, datas, channel_name),
             **datas[0][channel_name].attrs,
-            dtype=datas[0][channel_name].dtype
+            dtype=datas[0][channel_name].dtype,
         )
         count[channel_name] = np.zeros_like(out[channel_name], dtype=int)
     for variable_name in variable_names:
@@ -186,7 +190,7 @@ def join(
             out.create_variable(
                 shape=get_shape(out, datas, variable_name),
                 **datas[0][variable_name].attrs,
-                dtype=datas[0][variable_name].dtype
+                dtype=datas[0][variable_name].dtype,
             )
             count[variable_name] = np.zeros_like(out[variable_name], dtype=int)
 
