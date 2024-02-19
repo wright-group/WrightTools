@@ -8,17 +8,12 @@ import WrightTools as wt
 # --- define --------------------------------------------------------------------------------------
 
 
-@click.group()
+@click.command()
 @click.version_option(wt.__version__)
-def cli():
-    pass
-
-
-@cli.command(name="convert")
 @click.argument("number", type=float, nargs=1)
 @click.argument("unit", nargs=1)
 @click.argument("destination_unit", default=None, nargs=-1)
-def convert(number, unit, destination_unit=None):
+def cli(number, unit, destination_unit=None):
     """Convert numbers to different units."""
 
     if int(number) == number:
