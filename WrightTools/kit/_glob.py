@@ -6,7 +6,7 @@ from ..collection import Collection
 from .._open import open
 
 
-__all__ = ["describe_wt5", "filter_wt5s", "glob_wt5s", "search_for_attrs",]
+__all__ = ["describe_wt5", "filter_wt5s", "glob_handler", "glob_wt5s", "search_for_attrs",]
 
 
 def describe_wt5(path: Union[str, PathLike]) -> dict:
@@ -37,6 +37,30 @@ def glob_wt5s(directory: Union[str, PathLike], recursive=True) -> Iterator:
     return pathlib.Path(directory).glob(pattern)
 
 
+def glob_handler(extension, folder=None, identifier=None, recursive=True) -> List[pathlib.Path]:
+    """Return a list of all files matching specified inputs.
+
+    Parameters
+    ----------
+    extension : string
+        File extension.
+    folder : string (optional)
+        Folder to search within. Default is None (current working
+        directory).
+    identifier : string
+        Unique identifier. Default is None.
+    recursive : bool
+        When true, searches folder and all subfolders for identifier
+
+    Returns
+    -------
+    list of pathlib.Path objects
+        path objects for matching files.
+    """
+    pattern = f"**/*.{extension}" if recursive else f"*.{extension}"
+    return [x for x in filter(lambda x: identifier in str(x), pathlib.Path(folder).glob(pattern))]
+
+
 def search_for_attrs(
         directory: Union[str, PathLike],
         recursive=True,
@@ -63,7 +87,7 @@ def search_for_attrs(
     
     Example
     -------
-    To find a scan based on scan parameters in the bluesky-cmds:
+    To find a scan from scan parameters in the bluesky-cmds:
     >>> search_wt5_by_attr(os.environ["WT5_DATA_DIR"], name="primary", shape=[136,101], )
     """
     return filter_wt5s(glob_wt5s(directory, recursive), **kwargs)

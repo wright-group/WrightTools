@@ -3,78 +3,41 @@
 # --- import --------------------------------------------------------------------------------------
 
 
-import os
-import glob
+import pathlib
 
 
 # --- define --------------------------------------------------------------------------------------
 
 
-__all__ = ["get_path_matching", "glob_handler"]
+__all__ = ["get_path_matching"]
 
 
 # --- functions -----------------------------------------------------------------------------------
 
 
-def get_path_matching(name):
-    """Get path matching a name.
+def get_path_matching(name:str) -> pathlib.Path:
+    """
+    Non-recursive search for path to the folder "name".
+    Searches the user directory, then looks up the cwd for a parent folder that matches.
 
     Parameters
     ----------
     name : string
-        Name to search for.
+        name of directory to search for.
 
     Returns
     -------
-    string
-        Full filepath.
+    pathlib.Path
+        Full filepath to directory name.
+
     """
     # first try looking in the user folder
-    p = os.path.join(os.path.expanduser("~"), name)
+    p = pathlib.Path.home() / name
     # then try expanding upwards from cwd
-    if not os.path.isdir(p):
+    if not p.is_dir():
         p = None
-        drive, folders = os.path.splitdrive(os.getcwd())
-        folders = folders.split(os.sep)
-        folders.insert(0, os.sep)
+        drive, *folders = pathlib.Path.cwd().parts
         if name in folders:
-            p = os.path.join(drive, *folders[: folders.index(name) + 1])
+            p = pathlib.Path(drive).joinpath(*folders[:folders.index(name)+1])
     # TODO: something more robust to catch the rest of the cases?
     return p
-
-
-def glob_handler(extension, folder=None, identifier=None):
-    """Return a list of all files matching specified inputs.
-
-    Parameters
-    ----------
-    extension : string
-        File extension.
-    folder : string (optional)
-        Folder to search within. Default is None (current working
-        directory).
-    identifier : string
-        Unique identifier. Default is None.
-
-    Returns
-    -------
-    list of strings
-        Full path of matching files.
-    """
-    filepaths = []
-    if folder:
-        # comment out [ and ]...
-        folder = folder.replace("[", "?")
-        folder = folder.replace("]", "*")
-        folder = folder.replace("?", "[[]")
-        folder = folder.replace("*", "[]]")
-        glob_str = os.path.join(folder, "*" + extension)
-    else:
-        glob_str = "*" + extension + "*"
-    for filepath in glob.glob(glob_str):
-        if identifier:
-            if identifier in filepath:
-                filepaths.append(filepath)
-        else:
-            filepaths.append(filepath)
-    return filepaths
