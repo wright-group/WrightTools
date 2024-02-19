@@ -70,7 +70,6 @@ setup(
     keywords="spectroscopy science multidimensional visualization",
     entry_points={
         "console_scripts": [
-            "wt-tree=WrightTools.cli._tree:cli",
             "wt5=WrightTools.cli._wt5:cli",
             "wt-convert=WrightTools.cli._units:cli",
         ]

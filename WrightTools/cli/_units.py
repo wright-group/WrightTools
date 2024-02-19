@@ -2,14 +2,16 @@
 
 
 import click
-import WrightTools as wt
+from WrightTools import __version__ as __wt_version__
+from WrightTools.units import is_valid_conversion, get_valid_conversions, convert
+from WrightTools.exceptions import UnitsError
 
 
 # --- define --------------------------------------------------------------------------------------
 
 
-@click.command()
-@click.version_option(wt.__version__)
+@click.command(name="convert", help="convert numbers to different units.")
+@click.version_option(__wt_version__, package_name="WrightTools")
 @click.argument("number", type=float, nargs=1)
 @click.argument("unit", nargs=1)
 @click.argument("destination_unit", default=None, nargs=-1)
@@ -33,14 +35,14 @@ def cli(number, unit, destination_unit=None):
 
     if len(destination_unit):  # units provided
         destination_unit = destination_unit[0]
-        if not wt.units.is_valid_conversion(unit, destination_unit):
-            raise wt.exceptions.UnitsError(wt.units.get_valid_conversions(unit), destination_unit)
-        new = wt.units.convert(number, unit, destination_unit)
+        if not is_valid_conversion(unit, destination_unit):
+            raise UnitsError(get_valid_conversions(unit), destination_unit)
+        new = convert(number, unit, destination_unit)
         print(f"{number} {unit} = {fmt(new)} {destination_unit}")
     else:
-        valid_units = wt.units.get_valid_conversions(unit)
+        valid_units = get_valid_conversions(unit)
         for d_unit in valid_units:
-            new = wt.units.convert(number, unit, d_unit)
+            new = convert(number, unit, d_unit)
             print(f"{fmt(new)} {d_unit}")
 
 
