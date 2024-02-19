@@ -1,15 +1,15 @@
 import pathlib
-import os
-from typing import Union
+from os import PathLike
+from typing import Union, List, Iterator
 from ..data import Data
 from ..collection import Collection
 from .._open import open
 
 
-__all__ = ["describe_wt5", "glob_wt5s"]
+__all__ = ["describe_wt5", "filter_wt5s", "glob_wt5s", "search_for_attrs",]
 
 
-def describe_wt5(path: Union[str, os.PathLike]) -> dict:
+def describe_wt5(path: Union[str, PathLike]) -> dict:
     """report useful general information about a wt5 file"""
     wt5 = open(path)
     desc = dict()
@@ -31,7 +31,58 @@ def describe_wt5(path: Union[str, os.PathLike]) -> dict:
     return desc
 
 
-def glob_wt5s(directory: Union[str, os.PathLike], recursive=True):
-    """find all wt5 files in a directory"""
+def glob_wt5s(directory: Union[str, PathLike], recursive=True) -> Iterator:
+    """glob all wt5 files in a directory"""
     pattern = "**/*.wt5" if recursive else f"*.wt5"
     return pathlib.Path(directory).glob(pattern)
+
+
+def search_for_attrs(
+        directory: Union[str, PathLike],
+        recursive=True,
+        **kwargs
+    ) -> List[pathlib.Path]:
+    """
+    Find wt5 file(s) by matching data attrs items.  
+
+    Parameters
+    ----------
+    directory : path-like
+        directory to search
+    recursive : boolean (default True)
+        whether or not recursively search the directory
+
+    kwargs
+    ------
+    key value pairs to filter the attrs with
+
+    Returns
+    -------
+    paths : list
+        list of pathlib.Path objects that match
+    
+    Example
+    -------
+    To find a scan based on scan parameters in the bluesky-cmds:
+    >>> search_wt5_by_attr(os.environ["WT5_DATA_DIR"], name="primary", shape=[136,101], )
+    """
+    return filter_wt5s(glob_wt5s(directory, recursive), **kwargs)
+
+
+def filter_wt5s(
+        paths:List[Union[str, PathLike]],
+        **kwargs
+    ) -> List[Union[str, PathLike]]:
+    """fillter wt5s by attrs
+    """
+    return [p for p in filter(_gen_filter_by_attrs(**kwargs), paths)]
+
+
+def _gen_filter_by_attrs(**kwargs):
+    def fil(x):
+        attrs = open(x).attrs
+        if all([key in attrs for key in kwargs.keys()]):
+            return all([attrs[key] == kwargs[key] for key in kwargs])
+        else:
+            return False
+    return fil
