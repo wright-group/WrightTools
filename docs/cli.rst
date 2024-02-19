@@ -43,7 +43,7 @@ Use `wt5 glob` to quickly probe a folder for wt5s contained inside
     Specify an index to load that entry. Use `t` to rerender table. Use no argument to exit.
     "
 
-Use `wt5 load` to quickly open an interactive python console with your wt5 data pre-loaded. 
+Use `wt5 load` to quickly open an interactive python console with your wt5 data pre-loaded.
 
 Use `wt5 tree` to see a quick tree structure of a wt5 file.
 

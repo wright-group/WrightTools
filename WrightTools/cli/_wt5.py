@@ -31,7 +31,6 @@ def tree(path, internal_path, depth=9, verbose=False):
         obj.print_tree(verbose=verbose, depth=depth)
 
 
-
 @cli.command(name="load", help="Open a python cli with the object pre-loaded.")
 @click.argument("path")
 def load(path):
