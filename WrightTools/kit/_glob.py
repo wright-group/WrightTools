@@ -98,16 +98,16 @@ def search_for_attrs(
 
 
 def filter_wt5s(paths: List[Union[str, PathLike]], **kwargs) -> List[Union[str, PathLike]]:
-    """fillter wt5s by attrs"""
+    """fillter a list of wt5 paths by attrs"""
     return [p for p in filter(_gen_filter_by_attrs(**kwargs), paths)]
 
 
 def _gen_filter_by_attrs(**kwargs):
-    def fil(x):
+    def filter(x):
         attrs = open(x).attrs
         if all([key in attrs for key in kwargs.keys()]):
             return all([attrs[key] == kwargs[key] for key in kwargs])
         else:
             return False
 
-    return fil
+    return filter
