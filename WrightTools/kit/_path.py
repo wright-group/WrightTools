@@ -15,7 +15,7 @@ __all__ = ["get_path_matching"]
 # --- functions -----------------------------------------------------------------------------------
 
 
-def get_path_matching(name:str) -> pathlib.Path:
+def get_path_matching(name: str) -> pathlib.Path:
     """
     Non-recursive search for path to the folder "name".
     Searches the user directory, then looks up the cwd for a parent folder that matches.
@@ -38,6 +38,6 @@ def get_path_matching(name:str) -> pathlib.Path:
         p = None
         drive, *folders = pathlib.Path.cwd().parts
         if name in folders:
-            p = pathlib.Path(drive).joinpath(*folders[:folders.index(name)+1])
+            p = pathlib.Path(drive).joinpath(*folders[: folders.index(name) + 1])
     # TODO: something more robust to catch the rest of the cases?
     return p

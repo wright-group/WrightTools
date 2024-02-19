@@ -31,6 +31,5 @@ def tree(path, internal_path, depth=9, verbose=False):
         obj.print_tree(verbose=verbose, depth=depth)
 
 
-
 if __name__ == "__main__":
     cli()

@@ -6,7 +6,13 @@ from ..collection import Collection
 from .._open import open
 
 
-__all__ = ["describe_wt5", "filter_wt5s", "glob_handler", "glob_wt5s", "search_for_attrs",]
+__all__ = [
+    "describe_wt5",
+    "filter_wt5s",
+    "glob_handler",
+    "glob_wt5s",
+    "search_for_attrs",
+]
 
 
 def describe_wt5(path: Union[str, PathLike]) -> dict:
@@ -62,12 +68,10 @@ def glob_handler(extension, folder=None, identifier=None, recursive=True) -> Lis
 
 
 def search_for_attrs(
-        directory: Union[str, PathLike],
-        recursive=True,
-        **kwargs
-    ) -> List[pathlib.Path]:
+    directory: Union[str, PathLike], recursive=True, **kwargs
+) -> List[pathlib.Path]:
     """
-    Find wt5 file(s) by matching data attrs items.  
+    Find wt5 file(s) by matching data attrs items.
 
     Parameters
     ----------
@@ -84,7 +88,7 @@ def search_for_attrs(
     -------
     paths : list
         list of pathlib.Path objects that match
-    
+
     Example
     -------
     To find a scan from scan parameters in the bluesky-cmds:
@@ -93,12 +97,8 @@ def search_for_attrs(
     return filter_wt5s(glob_wt5s(directory, recursive), **kwargs)
 
 
-def filter_wt5s(
-        paths:List[Union[str, PathLike]],
-        **kwargs
-    ) -> List[Union[str, PathLike]]:
-    """fillter wt5s by attrs
-    """
+def filter_wt5s(paths: List[Union[str, PathLike]], **kwargs) -> List[Union[str, PathLike]]:
+    """fillter wt5s by attrs"""
     return [p for p in filter(_gen_filter_by_attrs(**kwargs), paths)]
 
 
@@ -109,4 +109,5 @@ def _gen_filter_by_attrs(**kwargs):
             return all([attrs[key] == kwargs[key] for key in kwargs])
         else:
             return False
+
     return fil
