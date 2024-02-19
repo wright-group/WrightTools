@@ -56,7 +56,7 @@ def scan(directory=None, no_recursion=False):
             desc = wt.kit.describe_wt5(path)
             desc["filesize"] = f"{os.path.getsize(path) / 1e6:.1f}"
             path = path.relative_to(directory)
-            print(path.parent)
+            paths.append(path)
             desc["path"] = (
                 f"[link={path.parent}]{path.parent}[/link]" + r"\\"
                 if str(path.parent) != "."
@@ -97,6 +97,7 @@ def scan(directory=None, no_recursion=False):
         except ValueError:
             break
         if valid:
+            print("interacting...")
             _interact(shell, str(paths[int(msg)]))
             continue
 
