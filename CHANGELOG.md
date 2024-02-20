@@ -5,6 +5,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Added
+- `wt5` entry point: methods `load`, `explore`, `glob`, `tree`
+- `wt-convert` entry point: convert a number to different units
+- new glob utilities in `kit`
+
+### Changed
+- `wt-tree` entry point removed.  Use `wt5 tree` instead.
+
 ## [3.5.1]
 
 ### Added
