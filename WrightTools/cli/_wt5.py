@@ -40,7 +40,17 @@ def load(path):
     _interact(shell, path)
 
 
-@cli.command(name="glob", help="Scan a directory and survey the wt5 objects found.")
+@cli.command(name="glob", help="Find paths to all wt5 files within a directory.")
+@click.option(
+    "--directory", "-d", default=None, help="Directory to scan.  Defaults to current directory."
+)
+@click.option("--no-recursion", is_flag=True, help="Turns recursive scan off.")
+def glob(directory=None, no_recursion=False):
+    for path in wt.kit.glob_wt5s(directory, not no_recursion):
+        print(str(path))
+
+
+@cli.command(name="explore", help="Scan a directory and survey the wt5 objects found.")
 @click.option(
     "--directory", "-d", default=None, help="Directory to scan.  Defaults to current directory."
 )

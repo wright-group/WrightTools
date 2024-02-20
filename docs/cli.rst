@@ -5,13 +5,13 @@ Command Line Interface (CLI)
 
 Most of the CLI interface is new as of v3.5.2 and under active depelopment.
 The commands here may change.
-Currently, there are two supported CLI calls to use:  `wt-units`, and `wt5`.
+Currently, there are two supported CLI calls to use:  `wt-convert`, and `wt5`.
 For usage hints, use the `--help` argument.
 
-wt-units
+wt-convert
 ----------
 
-Use wt-units to explore the WrightTools units system and the conversions of units.
+Use `wt-convert`` to explore the WrightTools units system and the conversions of units.
 
 .. code-block:: shell
     > wt-units 1330 nm wn
@@ -28,10 +28,17 @@ wt5
 The wt5 command is meant to provide easy access to wt5 files and some basic wt5 properties.
 
 Use `wt5 glob` to quickly probe a folder for wt5s contained inside
-
 .. code-block:: shell
 
     > wt5 glob -d path/to/datasets
+    tests\dataset\max_cached.wt5
+    WrightTools\datasets\wt5\v1.0.0\perovskite_TA.wt5  
+    WrightTools\datasets\wt5\v1.0.1\MoS2_TrEE_movie.wt5
+
+Use `wt5 explore` to see details of wt5s within a folder, as the option of quick load a wt5.
+.. code-block:: shell
+
+    > wt5 explore -d path/to/data/folders
     "
     ┏━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━┓
     ┃   ┃ path                                                ┃ size (MB) ┃ created             ┃ name          ┃ shape        ┃ axes                  ┃ variables ┃ channels ┃
@@ -44,6 +51,14 @@ Use `wt5 glob` to quickly probe a folder for wt5s contained inside
     "
 
 Use `wt5 load` to quickly open an interactive python console with your wt5 data pre-loaded.
+.. code-block:: shell
+    > wt5 load path\to\data_file.wt5
+    --- INTERACTING --- (to continue, call exit() or quit())
+    >>> import WrightTools as wt
+    >>> import matplotlib.pyplot as plt
+    >>> d = wt.open(r'path/to/data_file.wt5')
+    >>> 
+
 
 Use `wt5 tree` to see a quick tree structure of a wt5 file.
 
