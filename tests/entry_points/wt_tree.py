@@ -11,7 +11,7 @@ def test_no_change():
     before = hashlib.sha1()
     with open("test_no_change.wt5", "rb") as f:
         before.update(f.read())
-    subprocess.call(["wt-tree", "test_no_change.wt5"])
+    subprocess.call(["wt5", "tree", "test_no_change.wt5"])
     after = hashlib.sha1()
     with open("test_no_change.wt5", "rb") as f:
         after.update(f.read())
