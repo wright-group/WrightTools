@@ -11,7 +11,7 @@ from WrightTools.exceptions import UnitsError
 
 
 @click.command(name="convert", help="convert numbers to different units.")
-@click.version_option(__wt_version__, package_name="WrightTools")
+@click.version_option(__wt_version__, prog_name="WrightTools")
 @click.argument("number", type=float, nargs=1)
 @click.argument("unit", nargs=1)
 @click.argument("destination_unit", default=None, nargs=-1)
