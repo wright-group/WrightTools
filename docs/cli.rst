@@ -32,7 +32,7 @@ Use `wt5 glob` to quickly probe a folder for wt5s contained inside
 
     > wt5 glob -d path/to/datasets
     tests\dataset\max_cached.wt5
-    WrightTools\datasets\wt5\v1.0.0\perovskite_TA.wt5  
+    WrightTools\datasets\wt5\v1.0.0\perovskite_TA.wt5
     WrightTools\datasets\wt5\v1.0.1\MoS2_TrEE_movie.wt5
 
 Use `wt5 explore` to see details of wt5s within a folder, as the option of quick load a wt5.
@@ -57,7 +57,7 @@ Use `wt5 load` to quickly open an interactive python console with your wt5 data 
     >>> import WrightTools as wt
     >>> import matplotlib.pyplot as plt
     >>> d = wt.open(r'path/to/data_file.wt5')
-    >>> 
+    >>>
 
 
 Use `wt5 tree` to see a quick tree structure of a wt5 file.

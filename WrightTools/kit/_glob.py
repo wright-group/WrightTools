@@ -37,7 +37,7 @@ def describe_wt5(path: Union[str, PathLike]) -> dict:
     return desc
 
 
-def glob_wt5s(directory: Union[str, PathLike, None]=None, recursive=True) -> Iterator:
+def glob_wt5s(directory: Union[str, PathLike, None] = None, recursive=True) -> Iterator:
     """glob all wt5 files in a directory"""
     if directory is None:
         directory = pathlib.Path.cwd()
@@ -68,11 +68,13 @@ def glob_handler(extension, directory=None, identifier=None, recursive=True) -> 
     if directory is None:
         directory = pathlib.Path.cwd()
     pattern = f"**/*.{extension}" if recursive else f"*.{extension}"
-    return [x for x in filter(lambda x: identifier in str(x), pathlib.Path(directory).glob(pattern))]
+    return [
+        x for x in filter(lambda x: identifier in str(x), pathlib.Path(directory).glob(pattern))
+    ]
 
 
 def search_for_attrs(
-    directory: Union[str, PathLike, None]=None, recursive=True, **kwargs
+    directory: Union[str, PathLike, None] = None, recursive=True, **kwargs
 ) -> List[pathlib.Path]:
     """
     Find wt5 file(s) by matching data attrs items.
