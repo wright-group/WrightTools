@@ -37,20 +37,22 @@ def describe_wt5(path: Union[str, PathLike]) -> dict:
     return desc
 
 
-def glob_wt5s(directory: Union[str, PathLike], recursive=True) -> Iterator:
+def glob_wt5s(directory: Union[str, PathLike, None]=None, recursive=True) -> Iterator:
     """glob all wt5 files in a directory"""
+    if directory is None:
+        directory = pathlib.Path.cwd()
     pattern = "**/*.wt5" if recursive else f"*.wt5"
     return pathlib.Path(directory).glob(pattern)
 
 
-def glob_handler(extension, folder=None, identifier=None, recursive=True) -> List[pathlib.Path]:
+def glob_handler(extension, directory=None, identifier=None, recursive=True) -> List[pathlib.Path]:
     """Return a list of all files matching specified inputs.
 
     Parameters
     ----------
     extension : string
         File extension.
-    folder : string (optional)
+    directory : string (optional)
         Folder to search within. Default is None (current working
         directory).
     identifier : string
@@ -63,12 +65,14 @@ def glob_handler(extension, folder=None, identifier=None, recursive=True) -> Lis
     list of pathlib.Path objects
         path objects for matching files.
     """
+    if directory is None:
+        directory = pathlib.Path.cwd()
     pattern = f"**/*.{extension}" if recursive else f"*.{extension}"
-    return [x for x in filter(lambda x: identifier in str(x), pathlib.Path(folder).glob(pattern))]
+    return [x for x in filter(lambda x: identifier in str(x), pathlib.Path(directory).glob(pattern))]
 
 
 def search_for_attrs(
-    directory: Union[str, PathLike], recursive=True, **kwargs
+    directory: Union[str, PathLike, None]=None, recursive=True, **kwargs
 ) -> List[pathlib.Path]:
     """
     Find wt5 file(s) by matching data attrs items.
@@ -76,7 +80,7 @@ def search_for_attrs(
     Parameters
     ----------
     directory : path-like
-        directory to search
+        directory to search.  Defaults to cwd.
     recursive : boolean (default True)
         whether or not recursively search the directory
 
