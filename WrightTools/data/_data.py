@@ -272,30 +272,30 @@ class Data(Group):
 
         if verbose:
             # axes
-            print(prefix + "├── axes")
+            print(prefix + f"├── axes ({len(self.axes)})")
             print_leaves(prefix, self.axes)
             # constants
-            print(prefix + "├── constants")
+            print(prefix + f"├── constants ({len(self.constants)})")
             print_leaves(prefix, self.constants)
             # variables
-            print(prefix + "├── variables")
+            print(prefix + f"├── variables ({len(self.variables)})")
             print_leaves(prefix, self.variables)
             # channels
-            print(prefix + "└── channels")
+            print(prefix + f"└── channels ({len(self.channels)})")
             print_leaves(prefix, self.channels, vline=False)
         else:
             # axes
-            s = "axes: "
+            s = f"axes ({len(self.axes)}): "
             s += ", ".join(["{0} ({1})".format(a.expression, a.units) for a in self.axes])
             print(prefix + "├── " + s)
             # constants
-            s = "constants: "
+            s = f"constants ({len(self.constants)}): "
             s += ", ".join(
                 ["{0} ({1} {2})".format(a.expression, a.value, a.units) for a in self.constants]
             )
             print(prefix + "├── " + s)
             # channels
-            s = "channels: "
+            s = f"channels ({len(self.channels)}): "
             s += ", ".join(self.channel_names)
             print(prefix + "└── " + s)
 
@@ -1506,7 +1506,7 @@ class Data(Group):
 
     def print_tree(self, *, verbose=True):
         """Print a ascii-formatted tree representation of the data contents."""
-        print("{0} ({1})".format(self.natural_name, self.filepath))
+        print("{0} ({1}) {2}".format(self.natural_name, self.filepath, self.shape))
         self._print_branch("", depth=0, verbose=verbose)
 
     def prune(self, keep_channels=True, *, verbose=True):

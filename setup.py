@@ -44,7 +44,9 @@ setup(
         "pint",
         "python-dateutil",
         "scipy",
+        "click",
         "tidy_headers>=1.0.0",
+        "rich",
     ],
     extras_require={
         "docs": docs_require,
@@ -66,7 +68,12 @@ setup(
     license="MIT",
     url="http://wright.tools",
     keywords="spectroscopy science multidimensional visualization",
-    entry_points={"console_scripts": ["wt-tree=WrightTools.__main__:wt_tree"]},
+    entry_points={
+        "console_scripts": [
+            "wt5=WrightTools.cli._wt5:cli",
+            "wt-convert=WrightTools.cli._units:cli",
+        ]
+    },
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Science/Research",
