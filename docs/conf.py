@@ -30,7 +30,7 @@ import pathlib
 
 here = pathlib.Path(__file__).resolve().parent
 
-with open(os.path.join(os.path.dirname(here), "WrightTools", "VERSION")) as version_file:
+with open(here.parent / "WrightTools" / "VERSION") as version_file:
     version = version_file.read().strip()
 
 
@@ -244,7 +244,7 @@ sphinx_gallery_conf = {
     "examples_dirs": here.parent / "examples",
     "filename_pattern": "/*.py",
     "gallery_dirs": "auto_examples",
-    # "download_section_examples": False,
+    "download_section_examples": False,
     "backreferences_dir": os.path.join("gen_modules", "backreferences"),
     "reset_modules": ["matplotlib", reset_wt],
 }
