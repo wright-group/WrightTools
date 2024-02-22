@@ -244,7 +244,6 @@ sphinx_gallery_conf = {
     "examples_dirs": here.parent / "examples",
     "filename_pattern": "/*.py",
     "gallery_dirs": "auto_examples",
-    "download_section_examples": False,
     "backreferences_dir": os.path.join("gen_modules", "backreferences"),
     "reset_modules": ["matplotlib", reset_wt],
 }
