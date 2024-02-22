@@ -27,7 +27,8 @@ wt5
 
 The wt5 command is meant to provide easy access to wt5 files and some basic wt5 properties.
 
-Use ``wt5 glob`` to quickly probe a folder for wt5s contained inside
+Use ``wt5 glob`` to quickly probe a folder for wt5s contained inside.
+
 .. code-block:: shell
 
     > wt5 glob -d path/to/datasets
@@ -36,6 +37,7 @@ Use ``wt5 glob`` to quickly probe a folder for wt5s contained inside
     WrightTools\datasets\wt5\v1.0.1\MoS2_TrEE_movie.wt5
 
 Use ``wt5 explore`` to see details of wt5s within a folder, as the option of quick load a wt5.
+
 .. code-block:: shell
 
     > wt5 explore -d path/to/data/folders
@@ -49,6 +51,7 @@ Use ``wt5 explore`` to see details of wt5s within a folder, as the option of qui
     Specify an index to load that entry. Use `t` to rerender table. Use no argument to exit.
 
 Use ``wt5 load`` to quickly open an interactive python console with your wt5 data pre-loaded.
+
 .. code-block:: shell
 
     > wt5 load path\to\data_file.wt5
