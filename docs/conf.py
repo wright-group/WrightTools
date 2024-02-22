@@ -20,16 +20,18 @@
 import glob
 import os
 import sys
-import sphinx_gallery
+
+# import sphinx_gallery
 import math
+import pathlib
 
 
 # --- define -------------------------------------------------------------------------------------
 
 
-here = os.path.abspath(os.path.dirname(__file__))
+here = pathlib.Path(__file__).resolve().parent
 
-with open(os.path.join(os.path.dirname(here), "WrightTools", "VERSION")) as version_file:
+with open(here.parent / "WrightTools" / "VERSION") as version_file:
     version = version_file.read().strip()
 
 
@@ -38,7 +40,7 @@ with open(os.path.join(os.path.dirname(here), "WrightTools", "VERSION")) as vers
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 
 sys.path.insert(0, os.path.abspath("."))
-sys.path.insert(0, os.path.abspath("../WrightTools"))
+sys.path.insert(0, here.parent / "WrightTools")
 
 
 # --- general configuration ----------------------------------------------------------------------
@@ -240,10 +242,9 @@ def reset_wt(gallery_conf, fname):
 
 
 sphinx_gallery_conf = {
-    "examples_dirs": "../examples",
+    "examples_dirs": here.parent / "examples",
     "filename_pattern": "/*.py",
     "gallery_dirs": "auto_examples",
-    "download_section_examples": False,
     "backreferences_dir": os.path.join("gen_modules", "backreferences"),
     "reset_modules": ["matplotlib", reset_wt],
 }

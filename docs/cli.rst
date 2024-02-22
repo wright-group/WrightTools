@@ -27,7 +27,8 @@ wt5
 
 The wt5 command is meant to provide easy access to wt5 files and some basic wt5 properties.
 
-Use ``wt5 glob`` to quickly probe a folder for wt5s contained inside
+Use ``wt5 glob`` to quickly probe a folder for wt5s contained inside.
+
 .. code-block:: shell
 
     > wt5 glob -d path/to/datasets
@@ -36,10 +37,10 @@ Use ``wt5 glob`` to quickly probe a folder for wt5s contained inside
     WrightTools\datasets\wt5\v1.0.1\MoS2_TrEE_movie.wt5
 
 Use ``wt5 explore`` to see details of wt5s within a folder, as the option of quick load a wt5.
+
 .. code-block:: shell
 
     > wt5 explore -d path/to/data/folders
-    "
     ┏━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━┓
     ┃   ┃ path                                                ┃ size (MB) ┃ created             ┃ name          ┃ shape        ┃ axes                  ┃ variables ┃ channels ┃
     ┡━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━┩
@@ -48,10 +49,11 @@ Use ``wt5 explore`` to see details of wt5s within a folder, as the option of qui
     │ 2 │ WrightTools\datasets\wt5\v1.0.1\MoS2_TrEE_movie.wt5 │    2.3    │ 2018-06-11 16:41:47 │ _001_dat      │ (41, 41, 23) │ ('w2', 'w1=wm', 'd2') │ 7         │ 6        │
     └───┴─────────────────────────────────────────────────────┴───────────┴─────────────────────┴───────────────┴──────────────┴───────────────────────┴───────────┴──────────┘
     Specify an index to load that entry. Use `t` to rerender table. Use no argument to exit.
-    "
 
 Use ``wt5 load`` to quickly open an interactive python console with your wt5 data pre-loaded.
+
 .. code-block:: shell
+
     > wt5 load path\to\data_file.wt5
     --- INTERACTING --- (to continue, call exit() or quit())
     >>> import WrightTools as wt
@@ -63,11 +65,10 @@ Use ``wt5 load`` to quickly open an interactive python console with your wt5 dat
 Use ``wt5 tree`` to see a quick tree structure of a wt5 file.
 
 .. code-block:: shell
+
     > wt5 tree path\to\data
-    "
     / (...\felu75fe.wt5) (25, 256)
     ├── axes (2): w2 (wn), w2-wa (wn)
     ├── constants (0):
     └── channels (1): array_signal
-    "
 
