@@ -347,7 +347,8 @@ class Group(h5py.Group, metaclass=MetaClass):
             new.attrs.update(self.attrs)
             # children
             for k, v in self.items():
-                super().copy(v, new, name=v.natural_name)
+                name = v.natural_name if hasattr(v, "natural_name") else None
+                super().copy(v, new, name=name)
             new.flush()
             # Converts to appropriate Data/Collection object
             new = new["/"]
