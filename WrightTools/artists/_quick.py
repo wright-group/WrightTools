@@ -65,14 +65,11 @@ def quick1D(
     list of strings
         List of saved image files (if any).
     """
-    # channel index
     channel_index = wt_kit.get_index(data.channel_names, channel)
-    shape = data.channels[channel_index].shape
-    collapse = [i for i in range(len(shape)) if shape[i] == 1]
-    at = at.copy()
-    at.update({c: 0 for c in collapse})
+    # remove dimensions that do not involve the channel
+    index = [0 if size==1 else slice(None, None) for size in data.channels[channel_index].shape]
     # prepare data
-    with closing(data.chop(axis, at=at, verbose=False)) as chopped:
+    with closing(data[*index].chop(axis, at=at, verbose=False)) as chopped:
         # prepare figure
         fig = None
         if len(chopped) > 10:
