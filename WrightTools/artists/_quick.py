@@ -220,11 +220,10 @@ def quick2D(
     # channel index
     channel_index = wt_kit.get_index(data.channel_names, channel)
     shape = data.channels[channel_index].shape
-    collapse = [i for i in range(len(shape)) if shape[i] == 1]
-    at = at.copy()
-    at.update({c: 0 for c in collapse})
     # prepare data
-    with closing(data.chop(xaxis, yaxis, at=at, verbose=False)) as chopped:
+    index = [0 if size==1 else slice(None, None) for size in data.channels[channel_index].shape]
+    # prepare data
+    with closing(data[*index].chop(xaxis, yaxis, at=at, verbose=False)) as chopped:
         # colormap
         # get colormap
         if cmap is None:
