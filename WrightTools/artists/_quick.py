@@ -35,7 +35,7 @@ def quick1D(
     autosave=False,
     save_directory=None,
     fname=None,
-    verbose=True
+    verbose=True,
 ):
     """Quickly plot 1D slice(s) of data.
 
@@ -66,37 +66,8 @@ def quick1D(
     list of strings
         List of saved image files (if any).
     """
-    # channel index
     channel_index = wt_kit.get_index(data.channel_names, channel)
     shape = data.channels[channel_index].shape
-<<<<<<< Updated upstream
-    collapse = [i for i in range(len(shape)) if shape[i] == 1]
-    at = at.copy()
-    at.update({c: 0 for c in collapse})
-    # prepare data
-    with closing(data.chop(axis, at=at, verbose=False)) as chopped:
-        # prepare figure
-        fig = None
-        if len(chopped) > 10:
-            if not autosave:
-                print("more than 10 images will be generated: forcing autosave")
-                autosave = True
-        # prepare output folders
-        if autosave:
-            if save_directory:
-                pass
-            else:
-                if len(chopped) == 1:
-                    save_directory = os.getcwd()
-                    if fname:
-                        pass
-                    else:
-                        fname = data.natural_name
-                else:
-                    folder_name = "quick1D " + wt_kit.TimeStamp().path
-                    os.mkdir(folder_name)
-                    save_directory = folder_name
-=======
     # remove dimensions that do not involve the channel
     channel_slice = [0 if size == 1 else slice(None) for size in shape]
     sliced_constants = [
@@ -104,7 +75,6 @@ def quick1D(
     ]
     # prepare data
     with closing(data._from_slice(channel_slice).chop(axis, at=at, verbose=False)) as chopped:
->>>>>>> Stashed changes
         # determine ymin and ymax for global axis scale
         data_channel = data.channels[channel_index]
         ymin, ymax = data_channel.min(), data_channel.max()
@@ -143,18 +113,19 @@ def quick1D(
             plt.xticks(rotation=45)
             plt.axvline(0, lw=2, c="k")
             plt.xlim(xi.min(), xi.max())
-            # add constants to title
+            # constants: variable marker lines, title
             ls = []
             for constant in d.constants:
+                if constant.expression in sliced_constants:
+                    # ignore these constants; no relation to the data
+                    continue
                 ls.append(constant.label)
-            title = ", ".join(ls)
-            _title(fig, data.natural_name, subtitle=title)
-            # variable marker lines
-            for constant in d.constants:
                 if constant.units is not None:
                     if axis.units_kind == constant.units_kind:
                         constant.convert(axis.units)
                         plt.axvline(constant.value, color="k", linewidth=4, alpha=0.25)
+            title = ", ".join(ls)
+            _title(fig, data.natural_name, subtitle=title)
             # save --------------------------------------------------------------------------------
             if autosave:
                 savefig(filepath, fig=fig, facecolor="white")
@@ -181,7 +152,7 @@ def quick2D(
     autosave=False,
     save_directory=None,
     fname=None,
-    verbose=True
+    verbose=True,
 ):
     """Quickly plot 2D slice(s) of data.
 
@@ -229,42 +200,6 @@ def quick2D(
     # channel index
     channel_index = wt_kit.get_index(data.channel_names, channel)
     shape = data.channels[channel_index].shape
-<<<<<<< Updated upstream
-    collapse = [i for i in range(len(shape)) if shape[i] == 1]
-    at = at.copy()
-    at.update({c: 0 for c in collapse})
-    # prepare data
-    with closing(data.chop(xaxis, yaxis, at=at, verbose=False)) as chopped:
-        # colormap
-        # get colormap
-        if cmap is None:
-            if data.channels[channel_index].signed:
-                cmap = "signed"
-            else:
-                cmap = "default"
-            cmap = colormaps[cmap]
-            cmap.set_bad([0.75] * 3, 1.0)
-            cmap.set_under([0.75] * 3, 1.0)
-        # fname
-        if fname is None:
-            fname = data.natural_name
-        # autosave
-        if len(chopped) > 10:
-            if not autosave:
-                print("more than 10 images will be generated: forcing autosave")
-                autosave = True
-        # output folder
-        if autosave:
-            if save_directory:
-                pass
-            else:
-                if len(chopped) == 1:
-                    save_directory = os.getcwd()
-                else:
-                    folder_name = "quick2D " + wt_kit.TimeStamp().path
-                    os.mkdir(folder_name)
-                    save_directory = folder_name
-=======
     # remove axes that are independent of channel
     channel_slice = [0 if size == 1 else slice(None) for size in shape]
     sliced_constants = [
@@ -273,7 +208,6 @@ def quick2D(
     with closing(
         data._from_slice(channel_slice).chop(xaxis, yaxis, at=at, verbose=False)
     ) as chopped:
->>>>>>> Stashed changes
         # loop through image generation
         out = []
         for filepath, d in _zip_names(save_directory, fname, autosave, chopped, "quick2D", data.natural_name):
@@ -361,14 +295,13 @@ def quick2D(
             # add zero lines
             plt.axvline(0, lw=2, c="k")
             plt.axhline(0, lw=2, c="k")
-            # add constants to title
+            # constants: variable marker lines, title
             ls = []
             for constant in d.constants:
+                if constant.expression in sliced_constants:
+                    # ignore these constants; no relation to the data
+                    continue
                 ls.append(constant.label)
-            title = ", ".join(ls)
-            _title(fig, data.natural_name, subtitle=title)
-            # variable marker lines
-            for constant in d.constants:
                 if constant.units is not None:
                     # x axis
                     if xaxis.units_kind == constant.units_kind:
@@ -378,6 +311,8 @@ def quick2D(
                     if yaxis.units_kind == constant.units_kind:
                         constant.convert(yaxis.units)
                         plt.axhline(constant.value, color="k", linewidth=4, alpha=0.25)
+            title = ", ".join(ls)
+            _title(fig, data.natural_name, subtitle=title)
             # colorbar
             cax = plt.subplot(gs[1])
             cbar_ticks = np.linspace(levels.min(), levels.max(), 11)
@@ -391,6 +326,31 @@ def quick2D(
                     print("image saved at", str(filepath))
                 out.append(str(filepath))
     return out
+
+
+
+class QuickPlotter:
+
+    def __init__(self, autosave, save_directory, data):
+            self.data = data
+            self.autosave = autosave
+            self.save_directory = save_directory
+
+            if isinstance(save_directory, str):
+                save_directory = pathlib.Path(save_directory)
+            elif save_directory is None:
+                save_directory = pathlib.Path.cwd()
+
+    def __iter__(self):
+
+        if len(self.chopped) > 10:
+            print("more than 10 images will be generated: forcing autosave")
+            self.autosave = True
+        return self
+    
+    def __next__(self):
+        # work through the plots
+        ...
 
 
 def _zip_names(save_directory, fname, autosave, chopped, artist, fallback_name):
