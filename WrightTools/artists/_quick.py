@@ -231,7 +231,9 @@ def quick2D(
     sliced_constants = [
         data.axis_expressions[i] for i in range(len(shape)) if not channel_slice[i]
     ]
-    with closing(data._from_slice(channel_slice).chop(xaxis, yaxis, at=at, verbose=False)) as chopped:
+    with closing(
+        data._from_slice(channel_slice).chop(xaxis, yaxis, at=at, verbose=False)
+    ) as chopped:
         # fname
         if fname is None:
             fname = data.natural_name
