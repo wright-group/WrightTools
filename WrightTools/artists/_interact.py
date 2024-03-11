@@ -217,7 +217,9 @@ def interact2D(
     if nsliders < 0:
         raise DimensionalityError(">= 2", data.ndim)
     # TODO: implement aspect; doesn't work currently because of our incorporation of colorbar
-    fig, gs = create_figure(width="single", margin=[0.2, 1, 0.2, 1], nrows=7 + nsliders, cols=[1, 1, 1, 1, 1, "cbar"])
+    fig, gs = create_figure(
+        width="single", margin=[0.2, 1, 0.2, 1], nrows=7 + nsliders, cols=[1, 1, 1, 1, 1, "cbar"]
+    )
     plt.get_current_fig_manager().set_window_title(f"interact2D: {data.natural_name}")
     # create axes
     ax0 = plt.subplot(gs[1:6, 0:5])
