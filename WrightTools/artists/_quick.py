@@ -73,92 +73,91 @@ def quick1D(
         data.axis_expressions[i] for i in range(len(shape)) if not channel_slice[i]
     ]
     # prepare data
-    with closing(data[*channel_slice]) as sliced:
-        with closing(sliced.chop(axis, at=at, verbose=False)) as chopped:
-            # prepare figure
-            fig = None
-            if len(chopped) > 10:
-                if not autosave:
-                    print("more than 10 images will be generated: forcing autosave")
-                    autosave = True
-            # prepare output folders
-            if autosave:
-                if save_directory:
-                    pass
-                else:
-                    if len(chopped) == 1:
-                        save_directory = os.getcwd()
-                        if fname:
-                            pass
-                        else:
-                            fname = data.natural_name
-                    else:
-                        folder_name = "quick1D " + wt_kit.TimeStamp().path
-                        os.mkdir(folder_name)
-                        save_directory = folder_name
-            # determine ymin and ymax for global axis scale
-            data_channel = data.channels[channel_index]
-            ymin, ymax = data_channel.min(), data_channel.max()
-            dynamic_range = ymax - ymin
-            ymin -= dynamic_range * 0.05
-            ymax += dynamic_range * 0.05
-            if np.sign(ymin) != np.sign(data_channel.min()):
-                ymin = 0
-            if np.sign(ymax) != np.sign(data_channel.max()):
-                ymax = 0
-            # chew through image generation
-            out = []
-            for i, d in enumerate(chopped.values()):
-                # unpack data -------------------------------------------------------------------------
-                axis = d.axes[0]
-                xi = axis.full
-                channel = d.channels[channel_index]
-                zi = channel[:]
-                # create figure ------------------------------------------------------------------------
-                aspects = [[[0, 0], 0.5]]
-                fig, gs = create_figure(width="single", nrows=1, cols=[1], aspects=aspects)
-                ax = plt.subplot(gs[0, 0])
-                # plot --------------------------------------------------------------------------------
-                plt.plot(xi, zi, lw=2)
-                plt.scatter(xi, zi, color="grey", alpha=0.5, edgecolor="none")
-                # decoration --------------------------------------------------------------------------
-                plt.grid()
-                # limits
-                if local:
-                    pass
-                else:
-                    plt.ylim(ymin, ymax)
-                # label axes
-                ax.set_xlabel(axis.label, fontsize=18)
-                ax.set_ylabel(channel.natural_name, fontsize=18)
-                plt.xticks(rotation=45)
-                plt.axvline(0, lw=2, c="k")
-                plt.xlim(xi.min(), xi.max())
-                # constants: variable marker lines, title
-                ls = []
-                for constant in d.constants:
-                    if constant.expression in sliced_constants:
-                        # ignore these constants; no relation to the data
-                        continue
-                    ls.append(constant.label)
-                    if constant.units is not None:
-                        if axis.units_kind == constant.units_kind:
-                            constant.convert(axis.units)
-                            plt.axvline(constant.value, color="k", linewidth=4, alpha=0.25)
-                title = ", ".join(ls)
-                _title(fig, data.natural_name, subtitle=title)
-                # save --------------------------------------------------------------------------------
-                if autosave:
+    with closing(data._from_slice(channel_slice).chop(axis, at=at, verbose=False)) as chopped:
+        # prepare figure
+        fig = None
+        if len(chopped) > 10:
+            if not autosave:
+                print("more than 10 images will be generated: forcing autosave")
+                autosave = True
+        # prepare output folders
+        if autosave:
+            if save_directory:
+                pass
+            else:
+                if len(chopped) == 1:
+                    save_directory = os.getcwd()
                     if fname:
-                        file_name = fname + " " + str(i).zfill(3)
+                        pass
                     else:
-                        file_name = str(i).zfill(3)
-                    fpath = os.path.join(save_directory, file_name + ".png")
-                    savefig(fpath, fig=fig, facecolor="white")
-                    plt.close()
-                    if verbose:
-                        print("image saved at", fpath)
-                    out.append(fpath)
+                        fname = data.natural_name
+                else:
+                    folder_name = "quick1D " + wt_kit.TimeStamp().path
+                    os.mkdir(folder_name)
+                    save_directory = folder_name
+        # determine ymin and ymax for global axis scale
+        data_channel = data.channels[channel_index]
+        ymin, ymax = data_channel.min(), data_channel.max()
+        dynamic_range = ymax - ymin
+        ymin -= dynamic_range * 0.05
+        ymax += dynamic_range * 0.05
+        if np.sign(ymin) != np.sign(data_channel.min()):
+            ymin = 0
+        if np.sign(ymax) != np.sign(data_channel.max()):
+            ymax = 0
+        # chew through image generation
+        out = []
+        for i, d in enumerate(chopped.values()):
+            # unpack data -------------------------------------------------------------------------
+            axis = d.axes[0]
+            xi = axis.full
+            channel = d.channels[channel_index]
+            zi = channel[:]
+            # create figure ------------------------------------------------------------------------
+            aspects = [[[0, 0], 0.5]]
+            fig, gs = create_figure(width="single", nrows=1, cols=[1], aspects=aspects)
+            ax = plt.subplot(gs[0, 0])
+            # plot --------------------------------------------------------------------------------
+            plt.plot(xi, zi, lw=2)
+            plt.scatter(xi, zi, color="grey", alpha=0.5, edgecolor="none")
+            # decoration --------------------------------------------------------------------------
+            plt.grid()
+            # limits
+            if local:
+                pass
+            else:
+                plt.ylim(ymin, ymax)
+            # label axes
+            ax.set_xlabel(axis.label, fontsize=18)
+            ax.set_ylabel(channel.natural_name, fontsize=18)
+            plt.xticks(rotation=45)
+            plt.axvline(0, lw=2, c="k")
+            plt.xlim(xi.min(), xi.max())
+            # constants: variable marker lines, title
+            ls = []
+            for constant in d.constants:
+                if constant.expression in sliced_constants:
+                    # ignore these constants; no relation to the data
+                    continue
+                ls.append(constant.label)
+                if constant.units is not None:
+                    if axis.units_kind == constant.units_kind:
+                        constant.convert(axis.units)
+                        plt.axvline(constant.value, color="k", linewidth=4, alpha=0.25)
+            title = ", ".join(ls)
+            _title(fig, data.natural_name, subtitle=title)
+            # save --------------------------------------------------------------------------------
+            if autosave:
+                if fname:
+                    file_name = fname + " " + str(i).zfill(3)
+                else:
+                    file_name = str(i).zfill(3)
+                fpath = os.path.join(save_directory, file_name + ".png")
+                savefig(fpath, fig=fig, facecolor="white")
+                plt.close()
+                if verbose:
+                    print("image saved at", fpath)
+                out.append(fpath)
     return out
 
 
