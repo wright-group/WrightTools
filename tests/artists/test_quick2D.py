@@ -39,10 +39,26 @@ def test_4D():
     wt.artists.quick2D(data, xaxis=0, yaxis=1)
 
 
+def test_moment_channel():
+    w1 = np.linspace(-2, 2, 51)
+    w2 = np.linspace(-1, 1, 11)
+    w3 = np.linspace(1, 3, 5)
+    signal = np.cos(w1[:, None, None] + w2[None, :, None] + w3[None, None, :])
+    data = wt.data.Data(name="data")
+    data.create_channel("signal", values=signal, signed=True)
+    data.create_variable("w1", values=w1[:, None, None], units="wn", label="1")
+    data.create_variable("w2", values=w2[None, :, None], units="wn", label="2")
+    data.create_variable("w3", values=w3[None, None, :], units="wn", label="3")
+    data.transform("w1", "w2", "w3")
+    data.moment(2, 0, 0)
+    wt.artists.quick2D(data, channel=-1)
+
+
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
 
     plt.close("all")
     test_perovskite()
     test_4D()
+    test_moment_channel()
     plt.show()
