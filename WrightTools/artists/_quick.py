@@ -74,7 +74,7 @@ def quick1D(
         data.axis_expressions[i] for i in range(len(shape)) if not channel_slice[i]
     ]
     # prepare data
-    with closing(data[*index].chop(axis, at=at, verbose=False)) as chopped:
+    with closing(data[*channel_slice].chop(axis, at=at, verbose=False)) as chopped:
         # prepare figure
         fig = None
         if len(chopped) > 10:
