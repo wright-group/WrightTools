@@ -54,7 +54,7 @@ setup(
             "black",
             "pre-commit",
             "pydocstyle",
-            "pytest=8.0.0",
+            "pytest==8.0.0",
             "pytest-cov",
             "databroker>=1.2",
             "msgpack",
