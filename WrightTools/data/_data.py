@@ -538,7 +538,7 @@ class Data(Group):
             print("chopped data into %d piece(s)" % len(out), "in", out[0].axis_expressions)
         return out
 
-    def __getitem__(self, key) -> "Data":
+    def __getitem__(self, key) -> Data:
         """
         data[5, :3]; return new data object with those array slices
         """
