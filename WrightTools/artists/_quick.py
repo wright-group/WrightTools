@@ -4,6 +4,7 @@
 
 
 from contextlib import closing
+import pathlib
 import os
 
 import numpy as np
@@ -68,6 +69,7 @@ def quick1D(
     # channel index
     channel_index = wt_kit.get_index(data.channel_names, channel)
     shape = data.channels[channel_index].shape
+<<<<<<< Updated upstream
     collapse = [i for i in range(len(shape)) if shape[i] == 1]
     at = at.copy()
     at.update({c: 0 for c in collapse})
@@ -94,6 +96,15 @@ def quick1D(
                     folder_name = "quick1D " + wt_kit.TimeStamp().path
                     os.mkdir(folder_name)
                     save_directory = folder_name
+=======
+    # remove dimensions that do not involve the channel
+    channel_slice = [0 if size == 1 else slice(None) for size in shape]
+    sliced_constants = [
+        data.axis_expressions[i] for i in range(len(shape)) if not channel_slice[i]
+    ]
+    # prepare data
+    with closing(data._from_slice(channel_slice).chop(axis, at=at, verbose=False)) as chopped:
+>>>>>>> Stashed changes
         # determine ymin and ymax for global axis scale
         data_channel = data.channels[channel_index]
         ymin, ymax = data_channel.min(), data_channel.max()
@@ -106,7 +117,7 @@ def quick1D(
             ymax = 0
         # chew through image generation
         out = []
-        for i, d in enumerate(chopped.values()):
+        for filepath, d in _zip_names(save_directory, fname, autosave, chopped, "quick1D", data.natural_name):
             # unpack data -------------------------------------------------------------------------
             axis = d.axes[0]
             xi = axis.full
@@ -146,16 +157,11 @@ def quick1D(
                         plt.axvline(constant.value, color="k", linewidth=4, alpha=0.25)
             # save --------------------------------------------------------------------------------
             if autosave:
-                if fname:
-                    file_name = fname + " " + str(i).zfill(3)
-                else:
-                    file_name = str(i).zfill(3)
-                fpath = os.path.join(save_directory, file_name + ".png")
-                savefig(fpath, fig=fig, facecolor="white")
+                savefig(filepath, fig=fig, facecolor="white")
                 plt.close()
                 if verbose:
-                    print("image saved at", fpath)
-                out.append(fpath)
+                    print("image saved at", filepath)
+                out.append(filepath)
     return out
 
 
@@ -223,6 +229,7 @@ def quick2D(
     # channel index
     channel_index = wt_kit.get_index(data.channel_names, channel)
     shape = data.channels[channel_index].shape
+<<<<<<< Updated upstream
     collapse = [i for i in range(len(shape)) if shape[i] == 1]
     at = at.copy()
     at.update({c: 0 for c in collapse})
@@ -257,9 +264,19 @@ def quick2D(
                     folder_name = "quick2D " + wt_kit.TimeStamp().path
                     os.mkdir(folder_name)
                     save_directory = folder_name
+=======
+    # remove axes that are independent of channel
+    channel_slice = [0 if size == 1 else slice(None) for size in shape]
+    sliced_constants = [
+        data.axis_expressions[i] for i in range(len(shape)) if not channel_slice[i]
+    ]
+    with closing(
+        data._from_slice(channel_slice).chop(xaxis, yaxis, at=at, verbose=False)
+    ) as chopped:
+>>>>>>> Stashed changes
         # loop through image generation
         out = []
-        for i, d in enumerate(chopped.values()):
+        for filepath, d in _zip_names(save_directory, fname, autosave, chopped, "quick2D", data.natural_name):
             # unpack data -------------------------------------------------------------------------
             xaxis = d.axes[0]
             xlim = xaxis.min(), xaxis.max()
@@ -368,14 +385,28 @@ def quick2D(
             plt.sca(ax)
             # save figure -------------------------------------------------------------------------
             if autosave:
-                if fname:
-                    file_name = fname + " " + str(i).zfill(3)
-                else:
-                    file_name = str(i).zfill(3)
-                fpath = os.path.join(save_directory, file_name + ".png")
-                savefig(fpath, fig=fig, facecolor="white")
+                savefig(filepath, fig=fig, facecolor="white")
                 plt.close()
                 if verbose:
-                    print("image saved at", fpath)
-                out.append(fpath)
+                    print("image saved at", str(filepath))
+                out.append(str(filepath))
     return out
+
+
+def _zip_names(save_directory, fname, autosave, chopped, artist, fallback_name):
+    """the big ugly logic block to determine the autosave filepaths"""
+    if isinstance(save_directory, str):
+        save_directory = pathlib.Path(save_directory)
+    elif save_directory is None:
+        save_directory = pathlib.Path.cwd()
+    if len(chopped) > 10 and not autosave:
+        print("more than 10 images will be generated: forcing autosave")
+        autosave = True
+    # create a folder if multiple images
+    if autosave and len(chopped) > 1:
+        save_directory = save_directory / f"{artist} {wt_kit.TimeStamp().path}"
+    # if a single image, ensure a reasonably specific name
+    elif len(chopped) == 1 and fname is None:
+        fname = fallback_name
+    for i, chop in enumerate(chopped.values()):
+        yield save_directory / "{0} {1}.png".format(fname, str(i).zfill(3)).strip(), chop
