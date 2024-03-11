@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Fixed
+- fixed Quick2D/Quick1D issues where collapsing unused dims did not work
+
 ## [3.5.2]
 
 ### Added
