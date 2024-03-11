@@ -66,9 +66,8 @@ def quick1D(
         List of saved image files (if any).
     """
     channel_index = wt_kit.get_index(data.channel_names, channel)
+    shape = data.channels[channel_index].shape
     # remove dimensions that do not involve the channel
-    index = [0 if size == 1 else slice(None, None) for size in data.channels[channel_index].shape]
-    # remove axes that are independent of channel
     channel_slice = [0 if size == 1 else slice(None, None) for size in shape]
     sliced_constants = [
         data.axis_expressions[i] for i in range(len(shape)) if not channel_slice[i]
