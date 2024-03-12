@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Added
+- `Data.ichop`, an interation-based version of `Data.chop`
+
 ## [3.5.2]
 
 ### Added
