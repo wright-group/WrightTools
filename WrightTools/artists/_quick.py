@@ -87,7 +87,9 @@ def quick1D(
             ymax = 0
         # chew through image generation
         out = []
-        for filepath, d in _zip_names(save_directory, fname, autosave, chopped, "quick1D", data.natural_name):
+        for filepath, d in _zip_names(
+            save_directory, fname, autosave, chopped, "quick1D", data.natural_name
+        ):
             # unpack data -------------------------------------------------------------------------
             axis = d.axes[0]
             xi = axis.full
@@ -210,7 +212,9 @@ def quick2D(
     ) as chopped:
         # loop through image generation
         out = []
-        for filepath, d in _zip_names(save_directory, fname, autosave, chopped, "quick2D", data.natural_name):
+        for filepath, d in _zip_names(
+            save_directory, fname, autosave, chopped, "quick2D", data.natural_name
+        ):
             # unpack data -------------------------------------------------------------------------
             xaxis = d.axes[0]
             xlim = xaxis.min(), xaxis.max()
@@ -328,18 +332,17 @@ def quick2D(
     return out
 
 
-
 class QuickPlotter:
 
     def __init__(self, autosave, save_directory, data):
-            self.data = data
-            self.autosave = autosave
-            self.save_directory = save_directory
+        self.data = data
+        self.autosave = autosave
+        self.save_directory = save_directory
 
-            if isinstance(save_directory, str):
-                save_directory = pathlib.Path(save_directory)
-            elif save_directory is None:
-                save_directory = pathlib.Path.cwd()
+        if isinstance(save_directory, str):
+            save_directory = pathlib.Path(save_directory)
+        elif save_directory is None:
+            save_directory = pathlib.Path.cwd()
 
     def __iter__(self):
 
@@ -347,7 +350,7 @@ class QuickPlotter:
             print("more than 10 images will be generated: forcing autosave")
             self.autosave = True
         return self
-    
+
     def __next__(self):
         # work through the plots
         ...

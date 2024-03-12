@@ -465,7 +465,9 @@ class Data(Group):
         for chop in data.ichop("w1", "w2"):
             ...
         """
-        removed_shape, at_axes, at_idx, transform_expression = self._chop_prep(*args, at=None, verbose=True)
+        removed_shape, at_axes, at_idx, transform_expression = self._chop_prep(
+            *args, at=None, verbose=True
+        )
 
         i_digits = int(np.log10(np.prod(removed_shape))) + 1
         # iterate
@@ -520,7 +522,6 @@ class Data(Group):
 
         return removed_shape, at_axes, at_idx, transform_expression
 
-
     def chop(self, *args, at=None, parent=None, verbose=True) -> wt_collection.Collection:
         """Divide the dataset into its lower-dimensionality components.
 
@@ -573,7 +574,9 @@ class Data(Group):
         split
             Split the dataset while maintaining its dimensionality.
         """
-        removed_shape, at_axes, at_idx, transform_expression = self._chop_prep(*args, at=None, verbose=True)
+        removed_shape, at_axes, at_idx, transform_expression = self._chop_prep(
+            *args, at=None, verbose=True
+        )
 
         # get output collection
         out = wt_collection.Collection(name="chop", parent=parent)
