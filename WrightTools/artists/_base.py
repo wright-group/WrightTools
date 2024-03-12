@@ -746,4 +746,3 @@ def _parse_cmap(data=None, channel_index=None, **kwargs):
             return kwargs
         kwargs["cmap"] = colormaps["default"]
     return kwargs
-

@@ -255,11 +255,9 @@ def quick2D(
             # colors ------------------------------------------------------------------------------
             levels = determine_levels(channel, data.channels[channel_index], dynamic_range, local)
             if pixelated:
-                ax.pcolor(
-                    d, channel=channel_index, vmin=levels.min(), vmax=levels.max(), **kwargs
-                )
+                ax.pcolor(d, channel=channel_index, vmin=levels.min(), vmax=levels.max(), **kwargs)
             else:
-                ax.contourf(d, channel=channel_index, levels=levels **kwargs)
+                ax.contourf(d, channel=channel_index, levels=levels**kwargs)
             # contour lines -----------------------------------------------------------------------
             if contours:
                 contour_levels = determine_contour_levels(
@@ -280,8 +278,8 @@ def quick2D(
             plt.axhline(0, lw=2, c="k")
             # constants: variable marker lines, title
             ls = []
-            relevant_constants = [c for c in d.constants \
-                if (c.expression not in sliced_constants) and constant.units
+            relevant_constants = [
+                c for c in d.constants if (c.expression not in sliced_constants) and constant.units
             ]
             for constant in relevant_constants:
                 ls.append(constant.label)
