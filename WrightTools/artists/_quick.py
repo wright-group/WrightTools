@@ -13,6 +13,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from ._helpers import _title, create_figure, plot_colorbar, savefig
+from ._base import _parse_cmap
 from ._colors import colormaps
 from .. import kit as wt_kit
 
@@ -209,6 +210,7 @@ def quick2D(
     sliced_constants = [
         data.axis_expressions[i] for i in range(len(shape)) if not channel_slice[i]
     ]
+    # determine saving, prepare for saving
     removed_shape = data._chop_prep(xaxis, yaxis, at=at)[0]
     len_chopped = reduce(int.__mul__, removed_shape) // reduce(int.__mul__, shape)
     if len_chopped > 10 and not autosave:
@@ -219,6 +221,10 @@ def quick2D(
             save_directory, fname if fname else data.natural_name, len_chopped, "quick2D"
         )
         pathlib.Path.mkdir(save_directory)
+
+    kwargs = {}
+    if cmap:
+        kwargs["cmap"] = cmap
 
     with closing(data._from_slice(channel_slice)) as sliced:
         out = []
@@ -245,15 +251,15 @@ def quick2D(
                 width="single", nrows=1, cols=[1, "cbar"], aspects=[[[0, 0], aspect]]
             )
             ax = plt.subplot(gs[0])
-            ax.patch.set_facecolor("w")
+            # ax.patch.set_facecolor("w")
             # colors ------------------------------------------------------------------------------
             levels = determine_levels(channel, data.channels[channel_index], dynamic_range, local)
             if pixelated:
                 ax.pcolor(
-                    d, channel=channel_index, cmap=cmap, vmin=levels.min(), vmax=levels.max()
+                    d, channel=channel_index, vmin=levels.min(), vmax=levels.max(), **kwargs
                 )
             else:
-                ax.contourf(d, channel=channel_index, cmap=cmap, levels=levels)
+                ax.contourf(d, channel=channel_index, levels=levels **kwargs)
             # contour lines -----------------------------------------------------------------------
             if contours:
                 contour_levels = determine_contour_levels(
@@ -292,7 +298,7 @@ def quick2D(
             # colorbar
             cax = plt.subplot(gs[1])
             cbar_ticks = np.linspace(levels.min(), levels.max(), 11)
-            plot_colorbar(cax=cax, ticks=cbar_ticks, label=channel.natural_name, cmap=cmap)
+            plot_colorbar(cax=cax, ticks=cbar_ticks, label=channel.natural_name, **kwargs)
             plt.sca(ax)
             # save figure -------------------------------------------------------------------------
             if autosave:
