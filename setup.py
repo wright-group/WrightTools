@@ -13,7 +13,7 @@ def read(fname):
 
 
 extra_files = {
-    "WrightTools": [
+    "WrightTools": [ 
         "datasets",
         "datasets/*",
         "datasets/*/*",
