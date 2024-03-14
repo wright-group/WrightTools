@@ -433,7 +433,7 @@ class Data(Group):
         new.transform(*self.axis_expressions)
         return new
 
-    def ichop(self, *args, at=None, verbose=False) -> Generator:
+    def ichop(self, *args, at=None) -> Generator:
         """
         Similar to chop, but an iterable is produced insted of a collection.
         Useful for workflows where only one of the chopped children is needed at a time.
@@ -466,7 +466,7 @@ class Data(Group):
             ...
         """
         removed_shape, at_axes, at_idx, transform_expression = self._chop_prep(
-            *args, at=None, verbose=True
+            *args, at=at
         )
 
         i_digits = int(np.log10(np.prod(removed_shape))) + 1
@@ -480,7 +480,7 @@ class Data(Group):
                 a_slice.transform(*transform_expression)
                 yield a_slice
 
-    def _chop_prep(self, *args, at=None, verbose=True):
+    def _chop_prep(self, *args, at=None):
         """calculates important objects for performing chop"""
         # parse args
         args = list(args)
@@ -574,9 +574,7 @@ class Data(Group):
         split
             Split the dataset while maintaining its dimensionality.
         """
-        removed_shape, at_axes, at_idx, transform_expression = self._chop_prep(
-            *args, at=None, verbose=True
-        )
+        removed_shape, at_axes, at_idx, transform_expression = self._chop_prep(*args, at=at)
 
         # get output collection
         out = wt_collection.Collection(name="chop", parent=parent)
