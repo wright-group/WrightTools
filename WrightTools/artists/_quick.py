@@ -75,23 +75,32 @@ def quick1D(
     sliced_constants = [
         data.axis_expressions[i] for i in range(len(shape)) if not channel_slice[i]
     ]
+    removed_shape = data._chop_prep(axis, at=at)[0]
+
+    len_chopped = reduce(int.__mul__, removed_shape) // reduce(int.__mul__, shape)
+    if len_chopped > 10 and not autosave:
+        print("expecting {len_chopped} figures.  Forcing autosave.")
+        autosave = True
+    if autosave:
+        save_directory, filepath_seed = _filepath_seed(
+            save_directory, fname if fname else data.natural_name, len_chopped, "quick2D"
+        )
+        pathlib.Path.mkdir(save_directory)
     # prepare data
-    with closing(data._from_slice(channel_slice).chop(axis, at=at, verbose=False)) as chopped:
-        # determine ymin and ymax for global axis scale
-        data_channel = data.channels[channel_index]
-        ymin, ymax = data_channel.min(), data_channel.max()
-        dynamic_range = ymax - ymin
-        ymin -= dynamic_range * 0.05
-        ymax += dynamic_range * 0.05
-        if np.sign(ymin) != np.sign(data_channel.min()):
-            ymin = 0
-        if np.sign(ymax) != np.sign(data_channel.max()):
-            ymax = 0
-        # chew through image generation
+    with closing(data._from_slice(channel_slice)) as sliced:
         out = []
-        for filepath, d in _zip_names(
-            save_directory, fname, autosave, chopped, "quick1D", data.natural_name
-        ):
+        # chew through image generation
+        for i, d in enumerate(sliced.ichop(axis, at=at)):
+            # determine ymin and ymax for global axis scale
+            data_channel = data.channels[channel_index]
+            ymin, ymax = data_channel.min(), data_channel.max()
+            dynamic_range = ymax - ymin
+            ymin -= dynamic_range * 0.05
+            ymax += dynamic_range * 0.05
+            if np.sign(ymin) != np.sign(data_channel.min()):
+                ymin = 0
+            if np.sign(ymax) != np.sign(data_channel.max()):
+                ymax = 0
             # unpack data -------------------------------------------------------------------------
             axis = d.axes[0]
             xi = axis.full
@@ -132,11 +141,12 @@ def quick1D(
             _title(fig, data.natural_name, subtitle=title)
             # save --------------------------------------------------------------------------------
             if autosave:
+                filepath = filepath_seed.format(i)
                 savefig(filepath, fig=fig, facecolor="white")
                 plt.close()
                 if verbose:
-                    print("image saved at", filepath)
-                out.append(filepath)
+                    print("image saved at", str(filepath))
+                out.append(str(filepath))
     return out
 
 
