@@ -228,7 +228,7 @@ def quick2D(
 
     with closing(data._from_slice(channel_slice)) as sliced:
         out = []
-        for i, d in enumerate(sliced.ichop(xaxis, yaxis, at=at, verbose=False)):
+        for i, d in enumerate(sliced.ichop(xaxis, yaxis, at=at)):
             # unpack data -------------------------------------------------------------------------
             xaxis = d.axes[0]
             xlim = xaxis.min(), xaxis.max()
