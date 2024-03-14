@@ -465,9 +465,7 @@ class Data(Group):
         for chop in data.ichop("w1", "w2"):
             ...
         """
-        removed_shape, at_axes, at_idx, transform_expression = self._chop_prep(
-            *args, at=at
-        )
+        removed_shape, at_axes, at_idx, transform_expression = self._chop_prep(*args, at=at)
 
         i_digits = int(np.log10(np.prod(removed_shape))) + 1
         # iterate
