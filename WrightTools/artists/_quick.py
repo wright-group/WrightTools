@@ -128,11 +128,14 @@ def quick1D(
             plt.xlim(xi.min(), xi.max())
             # constants: variable marker lines, title
             ls = []
-            for constant in d.constants:
+            relevant_constants = [
+                c for c in d.constants if (c.expression not in sliced_constants) and c.units
+            ]
+            for constant in relevant_constants:
+                ls.append(constant.label)
                 if constant.expression in sliced_constants:
                     # ignore these constants; no relation to the data
                     continue
-                ls.append(constant.label)
                 if constant.units is not None:
                     if axis.units_kind == constant.units_kind:
                         constant.convert(axis.units)
@@ -289,7 +292,7 @@ def quick2D(
             # constants: variable marker lines, title
             ls = []
             relevant_constants = [
-                c for c in d.constants if (c.expression not in sliced_constants) and constant.units
+                c for c in d.constants if (c.expression not in sliced_constants) and c.units
             ]
             for constant in relevant_constants:
                 ls.append(constant.label)
