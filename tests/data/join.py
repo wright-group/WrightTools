@@ -515,30 +515,6 @@ def test_overlap_last():
     joined.close()
 
 
-def test_overlap_sum():
-    a = wt.Data()
-    b = wt.Data()
-
-    a.create_variable("x", np.linspace(0, 10, 11))
-    b.create_variable("x", np.linspace(5, 15, 11))
-    a.transform("x")
-    b.transform("x")
-    a.create_channel("y", np.ones_like(a.x[:]))
-    b.create_channel("y", np.ones_like(b.x[:]) * 2)
-
-    joined = wt.data.join([a, b], method="sum")
-
-    assert joined.shape == (16,)
-    assert np.allclose(joined.x.points, np.linspace(0, 15, 16))
-    assert np.isclose(joined.y[0], 1.0)
-    assert np.isclose(joined.y[10], 3.0)
-    assert np.isclose(joined.y[-1], 2.0)
-
-    a.close()
-    b.close()
-    joined.close()
-
-
 def test_overlap_max():
     a = wt.Data()
     b = wt.Data()

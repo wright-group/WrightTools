@@ -1,4 +1,5 @@
 """Artists."""
+
 # flake8: noqa
 
 

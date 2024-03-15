@@ -1,6 +1,5 @@
 """Central data class and associated."""
 
-
 # --- import --------------------------------------------------------------------------------------
 
 from __future__ import annotations
@@ -273,30 +272,30 @@ class Data(Group):
 
         if verbose:
             # axes
-            print(prefix + "├── axes")
+            print(prefix + f"├── axes ({len(self.axes)})")
             print_leaves(prefix, self.axes)
             # constants
-            print(prefix + "├── constants")
+            print(prefix + f"├── constants ({len(self.constants)})")
             print_leaves(prefix, self.constants)
             # variables
-            print(prefix + "├── variables")
+            print(prefix + f"├── variables ({len(self.variables)})")
             print_leaves(prefix, self.variables)
             # channels
-            print(prefix + "└── channels")
+            print(prefix + f"└── channels ({len(self.channels)})")
             print_leaves(prefix, self.channels, vline=False)
         else:
             # axes
-            s = "axes: "
+            s = f"axes ({len(self.axes)}): "
             s += ", ".join(["{0} ({1})".format(a.expression, a.units) for a in self.axes])
             print(prefix + "├── " + s)
             # constants
-            s = "constants: "
+            s = f"constants ({len(self.constants)}): "
             s += ", ".join(
                 ["{0} ({1} {2})".format(a.expression, a.value, a.units) for a in self.constants]
             )
             print(prefix + "├── " + s)
             # channels
-            s = "channels: "
+            s = f"channels ({len(self.channels)}): "
             s += ", ".join(self.channel_names)
             print(prefix + "└── " + s)
 
@@ -359,6 +358,78 @@ class Data(Group):
         """
         idx = self._at_to_slice(**at)
         return self._from_slice(idx, name=name, parent=parent)
+
+    def squeeze(self, name=None, parent=None):
+        """Reduce the data to the dimensionality of the (non-trivial) span of the axes.
+        i.e. if the joint shape of the axes has an array dimension with length 1, this
+        array dimension is squeezed.
+
+        channels and variables that span beyond the axes are removed.
+
+        Parameters
+        ----------
+        name : string (optional)
+            name of the new Data.
+        parent : WrightTools Collection instance (optional)
+            Collection to place the new "chop" collection within. Default is
+            None (new parent).
+
+        Returns
+        -------
+        out : wt.Data
+            new data object.  The new data object has dimensions of the
+            (non-trivial) span of the current axes
+
+        Examples
+        --------
+        >>> ...
+
+        See also
+        --------
+        Data.chop: Divide the dataset into its lower-dimensionality components.
+        ...
+        """
+        new = Data(name=name, parent=parent)
+
+        attrs = {
+            k: v
+            for k, v in self.attrs.items()
+            if k
+            not in [
+                "axes",
+                "channel_names",
+                "constants",
+                "name",
+                "source",
+                "item_names",
+                "variable_names",
+            ]
+        }
+        new.attrs.update(attrs)
+
+        joint_shape = wt_kit.joint_shape(*[ai[:] for ai in self.axes])
+        cull_dims = [j == 1 for j in joint_shape]
+        sl = [0 if cull else slice(None) for cull in cull_dims]
+        matches_broadcast_axes = lambda a: all(
+            [a.shape[i] == 1 for i in range(self.ndim) if cull_dims[i]]
+        )
+
+        for v in filter(matches_broadcast_axes, self.variables):
+            kwargs = v._to_dict()
+            kwargs["values"] = v[sl]
+            new.create_variable(**kwargs)
+
+        for c in filter(matches_broadcast_axes, self.channels):
+            kwargs = c._to_dict()
+            kwargs["values"] = c[sl]
+            new.create_channel(**kwargs)
+
+        # inherit constants
+        for c in self.constants:
+            new.create_constant(c.expression)
+
+        new.transform(*self.axis_expressions)
+        return new
 
     def chop(self, *args, at=None, parent=None, verbose=True) -> wt_collection.Collection:
         """Divide the dataset into its lower-dimensionality components.
@@ -509,21 +580,12 @@ class Data(Group):
             out = parent.create_data(name=name)
 
         for v in self.variables:
-            kwargs = {}
-            kwargs["name"] = v.natural_name
+            kwargs = v._to_dict()
             kwargs["values"] = v[idx]
-            kwargs["units"] = v.units
-            kwargs["label"] = v.label
-            kwargs.update(v.attrs)
             out.create_variable(**kwargs)
         for c in self.channels:
-            kwargs = {}
-            kwargs["name"] = c.natural_name
+            kwargs = c._to_dict()
             kwargs["values"] = c[idx]
-            kwargs["units"] = c.units
-            kwargs["label"] = c.label
-            kwargs["signed"] = c.signed
-            kwargs.update(c.attrs)
             out.create_channel(**kwargs)
 
         new_axes = [a.expression for a in self.axes if a[idx].size > 1]
@@ -1448,7 +1510,7 @@ class Data(Group):
 
     def print_tree(self, *, verbose=True):
         """Print a ascii-formatted tree representation of the data contents."""
-        print("{0} ({1})".format(self.natural_name, self.filepath))
+        print("{0} ({1}) {2}".format(self.natural_name, self.filepath, self.shape))
         self._print_branch("", depth=0, verbose=verbose)
 
     def prune(self, keep_channels=True, *, verbose=True):
