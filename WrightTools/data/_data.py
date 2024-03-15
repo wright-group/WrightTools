@@ -1265,11 +1265,11 @@ class Data(Group):
     ) -> "Data":
         """
         Map points of an axis to new points using linear interpolation.
-        
+
         Out-of-bounds points are written nan.
 
-        Non-mapped variables are kept in the data object only if they are 
-        orthogonal to the mapped variable (see `kit.orthogonal`).  
+        Non-mapped variables are kept in the data object only if they are
+        orthogonal to the mapped variable (see `kit.orthogonal`).
 
         Parameters
         ----------
