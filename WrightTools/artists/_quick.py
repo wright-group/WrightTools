@@ -75,16 +75,18 @@ def quick1D(
 
     len_chopped = reduce(int.__mul__, removed_shape) // reduce(int.__mul__, shape)
     if len_chopped > 10 and not autosave:
-        print("expecting {len_chopped} figures.  Forcing autosave.")
+        print(f"expecting {len_chopped} figures.  Forcing autosave.")
         autosave = True
     if autosave:
         save_directory, filepath_seed = _filepath_seed(
-            save_directory, fname if fname else data.natural_name, len_chopped, "quick2D"
+            save_directory, fname if fname else data.natural_name, len_chopped, "quick1D"
         )
         pathlib.Path.mkdir(save_directory)
     # prepare data
     with closing(data._from_slice(channel_slice)) as sliced:
         out = []
+        for constant in sliced_constants:
+            sliced.remove_constant(constant)
         # chew through image generation
         for i, d in enumerate(sliced.ichop(axis, at=at)):
             # determine ymin and ymax for global axis scale
@@ -124,20 +126,12 @@ def quick1D(
             plt.xlim(xi.min(), xi.max())
             # constants: variable marker lines, title
             ls = []
-            relevant_constants = [
-                c for c in d.constants if (c.expression not in sliced_constants) and c.units
-            ]
-            for constant in relevant_constants:
+            for constant in d.constants:
                 ls.append(constant.label)
-                if constant.expression in sliced_constants:
-                    # ignore these constants; no relation to the data
-                    continue
-                if constant.units is not None:
-                    if axis.units_kind == constant.units_kind:
-                        constant.convert(axis.units)
-                        plt.axvline(constant.value, color="k", linewidth=4, alpha=0.25)
-            title = ", ".join(ls)
-            _title(fig, data.natural_name, subtitle=title)
+                if constant.units and (axis.units_kind == constant.units_kind):
+                    constant.convert(axis.units)
+                    plt.axvline(constant.value, color="k", linewidth=4, alpha=0.25)
+            _title(fig, data.natural_name, subtitle=", ".join(ls))
             # save --------------------------------------------------------------------------------
             if autosave:
                 filepath = filepath_seed.format(i)
@@ -223,7 +217,7 @@ def quick2D(
     removed_shape = data._chop_prep(xaxis, yaxis, at=at)[0]
     len_chopped = reduce(int.__mul__, removed_shape) // reduce(int.__mul__, shape)
     if len_chopped > 10 and not autosave:
-        print("expecting {len_chopped} figures.  Forcing autosave.")
+        print(f"expecting {len_chopped} figures.  Forcing autosave.")
         autosave = True
     if autosave:
         save_directory, filepath_seed = _filepath_seed(
@@ -237,6 +231,8 @@ def quick2D(
 
     with closing(data._from_slice(channel_slice)) as sliced:
         out = []
+        for constant in sliced_constants:
+            sliced.remove_constant(constant)
         for i, d in enumerate(sliced.ichop(xaxis, yaxis, at=at)):
             # unpack data -------------------------------------------------------------------------
             xaxis = d.axes[0]
@@ -287,21 +283,18 @@ def quick2D(
             plt.axhline(0, lw=2, c="k")
             # constants: variable marker lines, title
             ls = []
-            relevant_constants = [
-                c for c in d.constants if (c.expression not in sliced_constants) and c.units
-            ]
-            for constant in relevant_constants:
+            for constant in d.constants:
                 ls.append(constant.label)
-                # x axis
-                if xaxis.units_kind == constant.units_kind:
-                    constant.convert(xaxis.units)
-                    plt.axvline(constant.value, color="k", linewidth=4, alpha=0.25)
-                # y axis
-                if yaxis.units_kind == constant.units_kind:
-                    constant.convert(yaxis.units)
-                    plt.axhline(constant.value, color="k", linewidth=4, alpha=0.25)
-            title = ", ".join(ls)
-            _title(fig, data.natural_name, subtitle=title)
+                if constant.units:
+                    # x axis
+                    if xaxis.units_kind == constant.units_kind:
+                        constant.convert(xaxis.units)
+                        plt.axvline(constant.value, color="k", linewidth=4, alpha=0.25)
+                    # y axis
+                    if yaxis.units_kind == constant.units_kind:
+                        constant.convert(yaxis.units)
+                        plt.axhline(constant.value, color="k", linewidth=4, alpha=0.25)
+            _title(fig, data.natural_name, subtitle=", ".join(ls))
             # colorbar
             cax = plt.subplot(gs[1])
             cbar_ticks = np.linspace(levels.min(), levels.max(), 11)
