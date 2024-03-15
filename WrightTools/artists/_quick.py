@@ -147,7 +147,9 @@ class QuicknD:
         # colorbar
         cax = plt.subplot(gs[1])
         cbar_ticks = np.linspace(levels.min(), levels.max(), 11)
-        plot_colorbar(cax=cax, cmap=img.get_cmap(), ticks=cbar_ticks, label=channel.natural_name, **kwargs)
+        plot_colorbar(
+            cax=cax, cmap=img.get_cmap(), ticks=cbar_ticks, label=channel.natural_name, **kwargs
+        )
         plt.sca(ax)
         return fig
 
