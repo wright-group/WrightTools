@@ -12,8 +12,6 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as mplcolors
 import matplotlib.gridspec as grd
 
-from ._turbo import turbo
-
 
 # --- define -------------------------------------------------------------------------------------
 
