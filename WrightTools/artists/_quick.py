@@ -26,6 +26,7 @@ __all__ = ["quick1D", "quick2D", "QuicknD"]
 
 class QuicknD:
     """class for keeping track of plotting through the chopped data"""
+
     def __init__(self, data, *axes, **kwargs):
         self.data = data
         self.axes = axes
@@ -40,7 +41,7 @@ class QuicknD:
         self.dynamic_range = kwargs.get("dynamic_range", False)
         self.local = kwargs.get("local", False)
         self.pixelated = kwargs.get("pixelated", True)
-        
+
         self.channel_index = wt_kit.get_index(data.channel_names, kwargs.get("channel", 0))
         shape = data.channels[self.channel_index].shape
         # remove dimensions that do not involve the channel
@@ -57,9 +58,9 @@ class QuicknD:
         if self.autosave:
             self.save_directory, self.filepath_seed = _filepath_seed(
                 kwargs.get("save_directory", pathlib.Path.cwd()),
-                kwargs.get("fname", data.natural_name), 
-                len_chopped, 
-                f"quick{self.nD}D"
+                kwargs.get("fname", data.natural_name),
+                len_chopped,
+                f"quick{self.nD}D",
             )
             pathlib.Path.mkdir(self.save_directory)
 
@@ -83,7 +84,7 @@ class QuicknD:
                 else:
                     out.append(fig)
 
-    # plot functions can be overloaded to make for custom 
+    # plot functions can be overloaded to make for custom
     def plot2D(self, d):
         kwargs = {}
         if self.cmap is not None:
@@ -112,9 +113,13 @@ class QuicknD:
         ax = plt.subplot(gs[0])
         ax.patch.set_facecolor("w")
         # colors ------------------------------------------------------------------------------
-        levels = determine_levels(channel, self.data.channels[self.channel_index], self.dynamic_range, self.local)
+        levels = determine_levels(
+            channel, self.data.channels[self.channel_index], self.dynamic_range, self.local
+        )
         if self.pixelated:
-            ax.pcolor(d, channel=self.channel_index, vmin=levels.min(), vmax=levels.max(), **kwargs)
+            ax.pcolor(
+                d, channel=self.channel_index, vmin=levels.min(), vmax=levels.max(), **kwargs
+            )
         else:
             ax.contourf(d, channel=self.channel_index, levels=levels**kwargs)
         # contour lines -----------------------------------------------------------------------
