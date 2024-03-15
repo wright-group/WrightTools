@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## Changed
+- artists now gets turbo colormap straight from matplotlib
+
 ## [3.5.2]
 
 ### Added
