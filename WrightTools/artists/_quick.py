@@ -3,12 +3,13 @@
 # --- import --------------------------------------------------------------------------------------
 
 
-import pathlib
-import numpy as np
-import matplotlib.pyplot as plt
-
 from contextlib import closing
 from functools import reduce
+import pathlib
+
+import numpy as np
+
+import matplotlib.pyplot as plt
 
 from ._helpers import _title, create_figure, plot_colorbar, savefig
 from .. import kit as wt_kit
@@ -17,10 +18,186 @@ from .. import kit as wt_kit
 # --- define --------------------------------------------------------------------------------------
 
 
-__all__ = ["quick1D", "quick2D"]
+__all__ = ["quick1D", "quick2D", "QuicknD"]
 
 
 # --- general purpose plotting functions ----------------------------------------------------------
+
+
+class QuicknD:
+    """class for keeping track of plotting through the chopped data"""
+    def __init__(self, data, *axes, **kwargs):
+        self.data = data
+        self.axes = axes
+        self.at = kwargs.get("at", {})
+        self.nD = len(axes)
+
+        # TODO: overload plot method and use these attrs elsewhere
+        self.cmap = kwargs.get("cmap", None)
+        self.contours = kwargs.get("contours", 0)
+        self.contours_local = kwargs.get("contours_local", False)
+        self.autosave = kwargs.get("autosave", False)
+        self.dynamic_range = kwargs.get("dynamic_range", False)
+        self.local = kwargs.get("local", False)
+        self.pixelated = kwargs.get("pixelated", True)
+        
+        self.channel_index = wt_kit.get_index(data.channel_names, kwargs.get("channel", 0))
+        shape = data.channels[self.channel_index].shape
+        # remove dimensions that do not involve the channel
+        self.channel_slice = [0 if size == 1 else slice(None) for size in shape]
+        self.sliced_constants = [
+            data.axis_expressions[i] for i in range(len(shape)) if not self.channel_slice[i]
+        ]
+        removed_shape = data._chop_prep(*self.axes, at=self.at)[0]
+
+        len_chopped = reduce(int.__mul__, removed_shape) // reduce(int.__mul__, shape)
+        if len_chopped > 10 and not self.autosave:
+            print(f"expecting {len_chopped} figures.  Forcing autosave.")
+            self.autosave = True
+        if self.autosave:
+            self.save_directory, self.filepath_seed = _filepath_seed(
+                kwargs.get("save_directory", pathlib.Path.cwd()),
+                kwargs.get("fname", data.natural_name), 
+                len_chopped, 
+                f"quick{self.nD}D"
+            )
+            pathlib.Path.mkdir(self.save_directory)
+
+    def __call__(self, verbose=False) -> list:
+        if self.nD == 1:
+            plot = self.plot1D
+        elif self.nD == 2:
+            plot = self.plot2D
+        out = list()
+        with closing(self.data._from_slice(self.channel_slice)) as sliced:
+            for constant in self.sliced_constants:
+                sliced.remove_constant(constant)
+            for i, fig in enumerate(map(plot, sliced.ichop(*self.axes, at=self.at))):
+                if self.autosave:
+                    filepath = self.filepath_seed.format(i)
+                    savefig(filepath, fig=fig, facecolor="white")
+                    plt.close(fig)
+                    if verbose:
+                        print("image saved at", str(filepath))
+                    out.append(str(filepath))
+                else:
+                    out.append(fig)
+
+    # plot functions can be overloaded to make for custom 
+    def plot2D(self, d):
+        kwargs = {}
+        if self.cmap is not None:
+            kwargs["cmap"] = self.cmap
+        # unpack data -------------------------------------------------------------------------
+        xaxis = d.axes[0]
+        xlim = xaxis.min(), xaxis.max()
+        yaxis = d.axes[1]
+        ylim = yaxis.min(), yaxis.max()
+        channel = d.channels[self.channel_index]
+        zi = channel[:]
+        zi = np.ma.masked_invalid(zi)
+        # create figure -----------------------------------------------------------------------
+        if xaxis.units == yaxis.units:
+            xr = xlim[1] - xlim[0]
+            yr = ylim[1] - ylim[0]
+            aspect = np.abs(yr / xr)
+            if 3 < aspect or aspect < 1 / 3.0:
+                # TODO: raise warning here
+                aspect = np.clip(aspect, 1 / 3.0, 3.0)
+        else:
+            aspect = 1
+        fig, gs = create_figure(
+            width="single", nrows=1, cols=[1, "cbar"], aspects=[[[0, 0], aspect]]
+        )
+        ax = plt.subplot(gs[0])
+        ax.patch.set_facecolor("w")
+        # colors ------------------------------------------------------------------------------
+        levels = determine_levels(channel, self.data.channels[self.channel_index], self.dynamic_range, self.local)
+        if self.pixelated:
+            ax.pcolor(d, channel=self.channel_index, vmin=levels.min(), vmax=levels.max(), **kwargs)
+        else:
+            ax.contourf(d, channel=self.channel_index, levels=levels**kwargs)
+        # contour lines -----------------------------------------------------------------------
+        if self.contours:
+            contour_levels = determine_contour_levels(
+                channel, self.data.channels[self.channel_index], self.contours_local
+            )
+            ax.contour(d, channel=self.channel_index, levels=contour_levels)
+        # decoration --------------------------------------------------------------------------
+        plt.xticks(rotation=45, fontsize=14)
+        plt.yticks(fontsize=14)
+        ax.set_xlabel(xaxis.label, fontsize=18)
+        ax.set_ylabel(yaxis.label, fontsize=18)
+        ax.grid()
+        # lims
+        ax.set_xlim(xlim)
+        ax.set_ylim(ylim)
+        # add zero lines
+        plt.axvline(0, lw=2, c="k")
+        plt.axhline(0, lw=2, c="k")
+        # constants: variable marker lines, title
+        subtitle = self.annotate_constants(d.constants)
+        _title(fig, self.data.natural_name, subtitle=subtitle)
+        # colorbar
+        cax = plt.subplot(gs[1])
+        cbar_ticks = np.linspace(levels.min(), levels.max(), 11)
+        plot_colorbar(cax=cax, ticks=cbar_ticks, label=channel.natural_name, **kwargs)
+        plt.sca(ax)
+        return fig
+
+    def plot1D(self, d):
+        # determine ymin and ymax for global axis scale
+        data_channel = self.data.channels[self.channel_index]
+        ymin, ymax = data_channel.min(), data_channel.max()
+        dynamic_range = ymax - ymin
+        ymin -= dynamic_range * 0.05
+        ymax += dynamic_range * 0.05
+        if np.sign(ymin) != np.sign(data_channel.min()):
+            ymin = 0
+        if np.sign(ymax) != np.sign(data_channel.max()):
+            ymax = 0
+        # unpack data -------------------------------------------------------------------------
+        axis = d.axes[0]
+        xi = axis.full
+        channel = d.channels[self.channel_index]
+        zi = channel[:]
+        # create figure ------------------------------------------------------------------------
+        aspects = [[[0, 0], 0.5]]
+        fig, gs = create_figure(width="single", nrows=1, cols=[1], aspects=aspects)
+        ax = plt.subplot(gs[0, 0])
+        # plot --------------------------------------------------------------------------------
+        plt.plot(xi, zi, lw=2)
+        plt.scatter(xi, zi, color="grey", alpha=0.5, edgecolor="none")
+        # decoration --------------------------------------------------------------------------
+        # limits
+        if not self.local:
+            plt.ylim(ymin, ymax)
+        # label axes
+        ax.set_xlabel(axis.label, fontsize=18)
+        ax.set_ylabel(channel.natural_name, fontsize=18)
+        plt.grid()
+        plt.xticks(rotation=45)
+        plt.axvline(0, lw=2, c="k")
+        plt.xlim(xi.min(), xi.max())
+        # constants: variable marker lines, title
+        subtitle = self.annotate_constants(d)
+        _title(fig, self.data.natural_name, subtitle=subtitle)
+        return fig
+
+    def annotate_constants(self, constants):
+        ls = []
+        for c in constants:
+            if c.units:
+                ls.append(c.label)
+                # x axis
+                if self.axes[0].units_kind == c.units_kind:
+                    c.convert(self.axes[0].units)
+                    plt.axvline(c.value, color="k", linewidth=4, alpha=0.25)
+                # y axis
+                if self.nD == 2 and (self.axes[1].units_kind == c.units_kind):
+                    c.convert(self.axes[1].units)
+                    plt.axhline(c.value, color="k", linewidth=4, alpha=0.25)
+        return ", ".join(ls)
 
 
 def quick1D(
@@ -61,86 +238,20 @@ def quick1D(
 
     Returns
     -------
-    list of strings
-        List of saved image files (if any).
+    list
+        if autosave, a list of saved image files (if any).
+        if not, a list of Figures
     """
-    channel_index = wt_kit.get_index(data.channel_names, channel)
-    shape = data.channels[channel_index].shape
-    # remove dimensions that do not involve the channel
-    channel_slice = [0 if size == 1 else slice(None) for size in shape]
-    sliced_constants = [
-        data.axis_expressions[i] for i in range(len(shape)) if not channel_slice[i]
-    ]
-    removed_shape = data._chop_prep(axis, at=at)[0]
-
-    len_chopped = reduce(int.__mul__, removed_shape) // reduce(int.__mul__, shape)
-    if len_chopped > 10 and not autosave:
-        print(f"expecting {len_chopped} figures.  Forcing autosave.")
-        autosave = True
-    if autosave:
-        save_directory, filepath_seed = _filepath_seed(
-            save_directory, fname if fname else data.natural_name, len_chopped, "quick1D"
-        )
-        pathlib.Path.mkdir(save_directory)
-    # prepare data
-    with closing(data._from_slice(channel_slice)) as sliced:
-        out = []
-        for constant in sliced_constants:
-            sliced.remove_constant(constant)
-        # chew through image generation
-        for i, d in enumerate(sliced.ichop(axis, at=at)):
-            # determine ymin and ymax for global axis scale
-            data_channel = data.channels[channel_index]
-            ymin, ymax = data_channel.min(), data_channel.max()
-            dynamic_range = ymax - ymin
-            ymin -= dynamic_range * 0.05
-            ymax += dynamic_range * 0.05
-            if np.sign(ymin) != np.sign(data_channel.min()):
-                ymin = 0
-            if np.sign(ymax) != np.sign(data_channel.max()):
-                ymax = 0
-            # unpack data -------------------------------------------------------------------------
-            axis = d.axes[0]
-            xi = axis.full
-            channel = d.channels[channel_index]
-            zi = channel[:]
-            # create figure ------------------------------------------------------------------------
-            aspects = [[[0, 0], 0.5]]
-            fig, gs = create_figure(width="single", nrows=1, cols=[1], aspects=aspects)
-            ax = plt.subplot(gs[0, 0])
-            # plot --------------------------------------------------------------------------------
-            plt.plot(xi, zi, lw=2)
-            plt.scatter(xi, zi, color="grey", alpha=0.5, edgecolor="none")
-            # decoration --------------------------------------------------------------------------
-            plt.grid()
-            # limits
-            if local:
-                pass
-            else:
-                plt.ylim(ymin, ymax)
-            # label axes
-            ax.set_xlabel(axis.label, fontsize=18)
-            ax.set_ylabel(channel.natural_name, fontsize=18)
-            plt.xticks(rotation=45)
-            plt.axvline(0, lw=2, c="k")
-            plt.xlim(xi.min(), xi.max())
-            # constants: variable marker lines, title
-            ls = []
-            for constant in d.constants:
-                ls.append(constant.label)
-                if constant.units and (axis.units_kind == constant.units_kind):
-                    constant.convert(axis.units)
-                    plt.axvline(constant.value, color="k", linewidth=4, alpha=0.25)
-            _title(fig, data.natural_name, subtitle=", ".join(ls))
-            # save --------------------------------------------------------------------------------
-            if autosave:
-                filepath = filepath_seed.format(i)
-                savefig(filepath, fig=fig, facecolor="white")
-                plt.close()
-                if verbose:
-                    print("image saved at", str(filepath))
-                out.append(str(filepath))
-    return out
+    return QuicknD(
+        data,
+        axis,
+        at=at,
+        channel=channel,
+        local=local,
+        autosave=autosave,
+        save_directory=save_directory,
+        fname=fname,
+    )(verbose)
 
 
 def quick2D(
@@ -202,115 +313,26 @@ def quick2D(
 
     Returns
     -------
-    list of strings
-        List of saved image files (if any).
+    list
+        if autosave, a list of saved image files (if any).
+        if not, a list of Figures
     """
-    # channel index
-    channel_index = wt_kit.get_index(data.channel_names, channel)
-    shape = data.channels[channel_index].shape
-    # remove axes that are independent of channel
-    channel_slice = [0 if size == 1 else slice(None) for size in shape]
-    sliced_constants = [
-        data.axis_expressions[i] for i in range(len(shape)) if not channel_slice[i]
-    ]
-    # determine saving, prepare for saving
-    removed_shape = data._chop_prep(xaxis, yaxis, at=at)[0]
-    len_chopped = reduce(int.__mul__, removed_shape) // reduce(int.__mul__, shape)
-    if len_chopped > 10 and not autosave:
-        print(f"expecting {len_chopped} figures.  Forcing autosave.")
-        autosave = True
-    if autosave:
-        save_directory, filepath_seed = _filepath_seed(
-            save_directory, fname if fname else data.natural_name, len_chopped, "quick2D"
-        )
-        pathlib.Path.mkdir(save_directory)
-
-    kwargs = {}
-    if cmap:
-        kwargs["cmap"] = cmap
-
-    with closing(data._from_slice(channel_slice)) as sliced:
-        out = []
-        for constant in sliced_constants:
-            sliced.remove_constant(constant)
-        for i, d in enumerate(sliced.ichop(xaxis, yaxis, at=at)):
-            # unpack data -------------------------------------------------------------------------
-            xaxis = d.axes[0]
-            xlim = xaxis.min(), xaxis.max()
-            yaxis = d.axes[1]
-            ylim = yaxis.min(), yaxis.max()
-            channel = d.channels[channel_index]
-            zi = channel[:]
-            zi = np.ma.masked_invalid(zi)
-            # create figure -----------------------------------------------------------------------
-            if xaxis.units == yaxis.units:
-                xr = xlim[1] - xlim[0]
-                yr = ylim[1] - ylim[0]
-                aspect = np.abs(yr / xr)
-                if 3 < aspect or aspect < 1 / 3.0:
-                    # TODO: raise warning here
-                    aspect = np.clip(aspect, 1 / 3.0, 3.0)
-            else:
-                aspect = 1
-            fig, gs = create_figure(
-                width="single", nrows=1, cols=[1, "cbar"], aspects=[[[0, 0], aspect]]
-            )
-            ax = plt.subplot(gs[0])
-            # ax.patch.set_facecolor("w")
-            # colors ------------------------------------------------------------------------------
-            levels = determine_levels(channel, data.channels[channel_index], dynamic_range, local)
-            if pixelated:
-                ax.pcolor(d, channel=channel_index, vmin=levels.min(), vmax=levels.max(), **kwargs)
-            else:
-                ax.contourf(d, channel=channel_index, levels=levels, **kwargs)
-            # contour lines -----------------------------------------------------------------------
-            if contours:
-                contour_levels = determine_contour_levels(
-                    channel, data.channels[channel_index], contours_local
-                )
-                ax.contour(d, channel=channel_index, levels=contour_levels)
-            # decoration --------------------------------------------------------------------------
-            plt.xticks(rotation=45, fontsize=14)
-            plt.yticks(fontsize=14)
-            ax.set_xlabel(xaxis.label, fontsize=18)
-            ax.set_ylabel(yaxis.label, fontsize=18)
-            ax.grid()
-            # lims
-            ax.set_xlim(xlim)
-            ax.set_ylim(ylim)
-            # add zero lines
-            plt.axvline(0, lw=2, c="k")
-            plt.axhline(0, lw=2, c="k")
-            # constants: variable marker lines, title
-            ls = []
-            for constant in d.constants:
-                ls.append(constant.label)
-                if constant.units:
-                    # x axis
-                    if xaxis.units_kind == constant.units_kind:
-                        constant.convert(xaxis.units)
-                        plt.axvline(constant.value, color="k", linewidth=4, alpha=0.25)
-                    # y axis
-                    if yaxis.units_kind == constant.units_kind:
-                        constant.convert(yaxis.units)
-                        plt.axhline(constant.value, color="k", linewidth=4, alpha=0.25)
-            _title(fig, data.natural_name, subtitle=", ".join(ls))
-            # colorbar
-            cax = plt.subplot(gs[1])
-            cbar_ticks = np.linspace(levels.min(), levels.max(), 11)
-            plot_colorbar(cax=cax, ticks=cbar_ticks, label=channel.natural_name, **kwargs)
-            plt.sca(ax)
-            # save figure -------------------------------------------------------------------------
-            if autosave:
-                filepath = filepath_seed.format(i)
-                savefig(filepath, fig=fig, facecolor="white")
-                plt.close()
-                if verbose:
-                    print("image saved at", str(filepath))
-                out.append(str(filepath))
-            # else:
-            #     out.append(fig)
-    return out
+    return QuicknD(
+        data,
+        xaxis,
+        yaxis,
+        at=at,
+        channel=channel,
+        cmap=cmap,
+        contours=contours,
+        pixelated=pixelated,
+        dynamic_range=dynamic_range,
+        local=local,
+        contours_local=contours_local,
+        autosave=autosave,
+        save_directory=save_directory,
+        fname=fname,
+    )(verbose)
 
 
 def determine_levels(local_channel, global_channel, dynamic_range, local):
