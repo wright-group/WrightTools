@@ -3,18 +3,14 @@
 # --- import --------------------------------------------------------------------------------------
 
 
-from contextlib import closing
-from functools import reduce
 import pathlib
-import os
-
 import numpy as np
-
 import matplotlib.pyplot as plt
 
+from contextlib import closing
+from functools import reduce
+
 from ._helpers import _title, create_figure, plot_colorbar, savefig
-from ._base import _parse_cmap
-from ._colors import colormaps
 from .. import kit as wt_kit
 
 
@@ -270,7 +266,7 @@ def quick2D(
             if pixelated:
                 ax.pcolor(d, channel=channel_index, vmin=levels.min(), vmax=levels.max(), **kwargs)
             else:
-                ax.contourf(d, channel=channel_index, levels=levels**kwargs)
+                ax.contourf(d, channel=channel_index, levels=levels, **kwargs)
             # contour lines -----------------------------------------------------------------------
             if contours:
                 contour_levels = determine_contour_levels(
