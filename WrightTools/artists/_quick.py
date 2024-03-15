@@ -12,6 +12,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from ._helpers import _title, create_figure, plot_colorbar, savefig
+from ._base import _parse_cmap
 from .. import kit as wt_kit
 
 
@@ -117,11 +118,11 @@ class QuicknD:
             channel, self.data.channels[self.channel_index], self.dynamic_range, self.local
         )
         if self.pixelated:
-            ax.pcolor(
+            img = ax.pcolor(
                 d, channel=self.channel_index, vmin=levels.min(), vmax=levels.max(), **kwargs
             )
         else:
-            ax.contourf(d, channel=self.channel_index, levels=levels**kwargs)
+            img = ax.contourf(d, channel=self.channel_index, levels=levels, **kwargs)
         # contour lines -----------------------------------------------------------------------
         if self.contours:
             contour_levels = determine_contour_levels(
@@ -141,12 +142,12 @@ class QuicknD:
         plt.axvline(0, lw=2, c="k")
         plt.axhline(0, lw=2, c="k")
         # constants: variable marker lines, title
-        subtitle = self.annotate_constants(d.constants)
+        subtitle = self.annotate_constants(d)
         _title(fig, self.data.natural_name, subtitle=subtitle)
         # colorbar
         cax = plt.subplot(gs[1])
         cbar_ticks = np.linspace(levels.min(), levels.max(), 11)
-        plot_colorbar(cax=cax, ticks=cbar_ticks, label=channel.natural_name, **kwargs)
+        plot_colorbar(cax=cax, cmap=img.get_cmap(), ticks=cbar_ticks, label=channel.natural_name, **kwargs)
         plt.sca(ax)
         return fig
 
@@ -189,18 +190,18 @@ class QuicknD:
         _title(fig, self.data.natural_name, subtitle=subtitle)
         return fig
 
-    def annotate_constants(self, constants):
+    def annotate_constants(self, d):
         ls = []
-        for c in constants:
+        for c in d.constants:
             if c.units:
                 ls.append(c.label)
                 # x axis
-                if self.axes[0].units_kind == c.units_kind:
-                    c.convert(self.axes[0].units)
+                if d.axes[0].units_kind == c.units_kind:
+                    c.convert(d.axes[0].units)
                     plt.axvline(c.value, color="k", linewidth=4, alpha=0.25)
                 # y axis
-                if self.nD == 2 and (self.axes[1].units_kind == c.units_kind):
-                    c.convert(self.axes[1].units)
+                if self.nD == 2 and (d.axes[1].units_kind == c.units_kind):
+                    c.convert(d.axes[1].units)
                     plt.axhline(c.value, color="k", linewidth=4, alpha=0.25)
         return ", ".join(ls)
 
