@@ -34,7 +34,7 @@ __all__ = ["quick1D", "quick2D", "QuicknD"]
 # --- general purpose plotting functions ----------------------------------------------------------
 
 
-class QuicknD:
+class ChopHandler:
     """class for keeping track of plotting through the chopped data"""
 
     def __init__(self, data, *axes, **kwargs):
@@ -61,10 +61,9 @@ class QuicknD:
             data.axis_expressions[i] for i in range(len(shape)) if not self.channel_slice[i]
         ]
         removed_shape = data._chop_prep(*self.axes, at=self.at)[0]
-
         len_chopped = reduce(int.__mul__, removed_shape) // reduce(int.__mul__, shape)
         if len_chopped > 10 and not self.autosave:
-            print(f"expecting {len_chopped} figures.  Forcing autosave.")
+            print(f"expecting {len_chopped} figures. Forcing autosave.")
             self.autosave = True
         if self.autosave:
             self.save_directory, self.filepath_seed = _filepath_seed(
@@ -87,8 +86,7 @@ class QuicknD:
             for i, fig in enumerate(map(plot, sliced.ichop(*self.axes, at=self.at))):
                 if self.autosave:
                     filepath = self.filepath_seed.format(i)
-                    savefig(filepath, fig=fig, facecolor="white")
-                    plt.close(fig)
+                    savefig(filepath, fig=fig, facecolor="white", close=True)
                     if verbose:
                         print("image saved at", str(filepath))
                     out.append(str(filepath))
@@ -110,9 +108,7 @@ class QuicknD:
             xr = xaxis.max() - xaxis.min()
             yr = yaxis.max() - yaxis.min()
             aspect = np.abs(yr / xr)
-            if 3 < aspect or aspect < 1 / 3.0:
-                # TODO: raise warning here
-                aspect = np.clip(aspect, 1 / 3.0, 3.0)
+            aspect = np.clip(aspect, 1 / 3.0, 3.0)
         else:
             aspect = 1
         fig, gs = create_figure(
@@ -124,7 +120,7 @@ class QuicknD:
         norm = norm_from_channel(channel if self.local else self.data.channels[self.channel_index])
         norm_ticks = ticks_from_norm(norm)
         if self.pixelated:
-            img = ax.pcolor(
+            img = ax.pcolormesh(
                 d, channel=self.channel_index, norm=norm, **kwargs
             )
         else:
@@ -137,9 +133,7 @@ class QuicknD:
             ax.contour(d, channel=self.channel_index, levels=contour_levels)
         # decoration --------------------------------------------------------------------------
         self.decorate(ax, *d.axes)
-        # constants: variable marker lines, title
-        subtitle = self.annotate_constants(d)
-        _title(fig, self.data.natural_name, subtitle=subtitle)
+        _title(fig, self.data.natural_name, subtitle=self.annotate_constants(d))
         # colorbar
         cax = plt.subplot(gs[1])
         plot_colorbar(
@@ -149,7 +143,6 @@ class QuicknD:
         return fig
 
     def plot1D(self, d):
-        # determine ymin and ymax for global axis scale
         # unpack data -------------------------------------------------------------------------
         axis = d.axes[0]
         channel = d.channels[self.channel_index]
@@ -163,8 +156,7 @@ class QuicknD:
         # decoration --------------------------------------------------------------------------
         self.decorate(ax, *d.axes)
         # constants: variable marker lines, title
-        subtitle = self.annotate_constants(d)
-        _title(fig, self.data.natural_name, subtitle=subtitle)
+        _title(fig, self.data.natural_name, subtitle=self.annotate_constants(d))
         return fig
 
     def annotate_constants(self, d):
@@ -182,50 +174,34 @@ class QuicknD:
                     plt.axhline(c.value, color="k", linewidth=4, alpha=0.25)
         return ", ".join(ls)
 
+    @property
     def global_limits(self):
-        if self._global_limits is not None:
-            return self._global_limits
-        if self.nD == 1:
+        """only used for 1D formatting"""
+        if self._global_limits is None and self.nD == 1:
             data_channel = self.data.channels[self.channel_index]
-            ymin, ymax = data_channel.min(), data_channel.max()
-            dynamic_range = ymax - ymin
-            ymin -= dynamic_range * 0.05
-            ymax += dynamic_range * 0.05
-            if np.sign(ymin) != np.sign(data_channel.min()):
-                ymin = 0
-            if np.sign(ymax) != np.sign(data_channel.max()):
-                ymax = 0
-            limits = [ymin, ymax]
-        elif self.nD == 2:
-            channel = self.data.channels[self.channel_index]
-            if self.data.signed:
-                if self.dynamic_range:
-                    limit = min(
-                        abs(channel.null - channel.min()),
-                        abs(channel.null - channel.max())
-                    )
-                else:
-                    limit = channel.mag()
-                limits = [-limit + channel.null, limit + channel.null]
-            else:
-                if channel.max() < channel.null:
-                    limits = [channel.min(), channel.null]
-                else:
-                    limits = [channel.null, channel.max()]
-        return limits
+            cmin, cmax = data_channel.min(), data_channel.max()
+            buffer = (cmax - cmin) * 0.05
+            limits = [cmin - buffer, cmax + buffer]
+            if np.sign(limits[0]) != np.sign(cmin):
+                limits[0] = 0
+            if np.sign(limits[1]) != np.sign(cmax):
+                limits[1] = 0
+            self._global_limits = limits
+        return self._global_limits
 
     def decorate(self, ax, *axes):
         plt.xticks(rotation=45, fontsize=14)
         plt.yticks(fontsize=14)
         ax.axvline(0, lw=2, c="k")
-        ax.axhline(0, lw=2, c="k")
         ax.set_xlim(axes[0].min(), axes[0].max())
         ax.grid()
         if self.nD == 1:
+            ax.axhline(self.data.channels[self.channel_index].null, lw=2, c="k")
             set_ax_labels(ax, xlabel=axes[0].label, ylabel=self.data.natural_name)
             if not self.local:
-                ax.set_ylim(*self.global_limits())
+                ax.set_ylim(*self.global_limits)
         elif self.nD == 2:
+            ax.axhline(0, lw=2, c="k")
             set_ax_labels(ax, xlabel=axes[0].label, ylabel=axes[1].label)
             ax.set_ylim(axes[1].min(), axes[1].max())
 
@@ -272,7 +248,7 @@ def quick1D(
         if autosave, a list of saved image files (if any).
         if not, a list of Figures
     """
-    return QuicknD(
+    return ChopHandler(
         data,
         axis,
         at=at,
@@ -347,7 +323,7 @@ def quick2D(
         if autosave, a list of saved image files (if any).
         if not, a list of Figures
     """
-    return QuicknD(
+    return ChopHandler(
         data,
         xaxis,
         yaxis,
@@ -365,48 +341,20 @@ def quick2D(
     )(verbose)
 
 
-# TODO: norm_from_channel
-
-def limits_from_channel(channel):
-    """
-    arguments
-    ---------
-    channel: WrightTools.Channel
-        channel from which to calculate limits
-    respect_null: bool (Optional)
-        When true and not signed, limits will clip data that is invalid (i.e. below null)
-    dynamic_range: bool (Optional)
-    """
-    # TODO: add dynamic range
-    if channel.signed:
-        limit = channel.mag()
-        limits = [-limit + channel.null, limit + channel.null]
-    else:
-        limit = channel.max()
-    return limits
-
-
 def determine_contour_levels(local_channel, global_channel, contours, local):
     # force top and bottom contour to be data range then clip them out
+    null = local_channel.null
     if local_channel.signed:
-        if local:
-            limit = local_channel.mag()
-        else:
-            limit = global_channel.mag()
-        levels = np.linspace(
-            -limit + local_channel.null, limit + local_channel.null, contours + 2
-        )[1:-1]
+        limit = local_channel.mag() if local else global_channel.mag()
+        levels = np.linspace(-limit + null, limit + null, contours + 2)[1:-1]
     else:
-        if local:
-            limit = local_channel.max()
-        else:
-            limit = global_channel.max()
-        levels = np.linspace(local_channel.null, limit, contours + 2)[1:-1]
+        limit = local_channel.max() if local else global_channel.max()
+        levels = np.linspace(null, limit, contours + 2)[1:-1]
     return levels
 
 
 def _filepath_seed(save_directory, fname, nchops, artist):
-    """the big ugly logic block to determine the autosave filepaths"""
+    """determine the autosave filepaths"""
     if isinstance(save_directory, str):
         save_directory = pathlib.Path(save_directory)
     elif save_directory is None:
