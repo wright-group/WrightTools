@@ -28,7 +28,7 @@ from .. import kit as wt_kit
 # --- define --------------------------------------------------------------------------------------
 
 
-__all__ = ["quick1D", "quick2D", "QuicknD"]
+__all__ = ["quick1D", "quick2D", "ChopHandler"]
 
 
 # --- general purpose plotting functions ----------------------------------------------------------
