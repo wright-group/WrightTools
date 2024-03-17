@@ -46,7 +46,7 @@ __all__ = [
     "set_fig_labels",
     "subplots_adjust",
     "stitch_to_animation",
-    "ticks_from_norm"
+    "ticks_from_norm",
 ]
 
 
@@ -1153,4 +1153,3 @@ def ticks_from_norm(norm, n=11) -> np.array:
         temp[-1] = norm.vmax
         return np.array(temp)
     return np.linspace(vmin, vmax, n)
-

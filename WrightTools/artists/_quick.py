@@ -18,7 +18,7 @@ from ._helpers import (
     savefig,
     set_ax_labels,
     norm_from_channel,
-    ticks_from_norm
+    ticks_from_norm,
 )
 from ._base import _parse_cmap
 from ._interact import Norm
@@ -120,9 +120,7 @@ class ChopHandler:
         norm = norm_from_channel(channel if self.local else self.data.channels[self.channel_index])
         norm_ticks = ticks_from_norm(norm)
         if self.pixelated:
-            img = ax.pcolormesh(
-                d, channel=self.channel_index, norm=norm, **kwargs
-            )
+            img = ax.pcolormesh(d, channel=self.channel_index, norm=norm, **kwargs)
         else:
             img = ax.contourf(d, channel=self.channel_index, norm=norm, **kwargs)
         # contour lines -----------------------------------------------------------------------
