@@ -11,8 +11,17 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 
-from ._helpers import _title, create_figure, plot_colorbar, savefig
+from ._helpers import (
+    _title,
+    create_figure,
+    plot_colorbar,
+    savefig,
+    set_ax_labels,
+    norm_from_channel,
+    ticks_from_norm
+)
 from ._base import _parse_cmap
+from ._interact import Norm
 from .. import kit as wt_kit
 
 
@@ -44,6 +53,7 @@ class QuicknD:
         self.pixelated = kwargs.get("pixelated", True)
 
         self.channel_index = wt_kit.get_index(data.channel_names, kwargs.get("channel", 0))
+        self._global_limits = None
         shape = data.channels[self.channel_index].shape
         # remove dimensions that do not involve the channel
         self.channel_slice = [0 if size == 1 else slice(None) for size in shape]
@@ -84,6 +94,7 @@ class QuicknD:
                     out.append(str(filepath))
                 else:
                     out.append(fig)
+        return out
 
     # plot functions can be overloaded to make for custom
     def plot2D(self, d):
@@ -92,16 +103,12 @@ class QuicknD:
             kwargs["cmap"] = self.cmap
         # unpack data -------------------------------------------------------------------------
         xaxis = d.axes[0]
-        xlim = xaxis.min(), xaxis.max()
         yaxis = d.axes[1]
-        ylim = yaxis.min(), yaxis.max()
         channel = d.channels[self.channel_index]
-        zi = channel[:]
-        zi = np.ma.masked_invalid(zi)
         # create figure -----------------------------------------------------------------------
         if xaxis.units == yaxis.units:
-            xr = xlim[1] - xlim[0]
-            yr = ylim[1] - ylim[0]
+            xr = xaxis.max() - xaxis.min()
+            yr = yaxis.max() - yaxis.min()
             aspect = np.abs(yr / xr)
             if 3 < aspect or aspect < 1 / 3.0:
                 # TODO: raise warning here
@@ -114,15 +121,14 @@ class QuicknD:
         ax = plt.subplot(gs[0])
         ax.patch.set_facecolor("w")
         # colors ------------------------------------------------------------------------------
-        levels = determine_levels(
-            channel, self.data.channels[self.channel_index], self.dynamic_range, self.local
-        )
+        norm = norm_from_channel(channel if self.local else self.data.channels[self.channel_index])
+        norm_ticks = ticks_from_norm(norm)
         if self.pixelated:
             img = ax.pcolor(
-                d, channel=self.channel_index, vmin=levels.min(), vmax=levels.max(), **kwargs
+                d, channel=self.channel_index, norm=norm, **kwargs
             )
         else:
-            img = ax.contourf(d, channel=self.channel_index, levels=levels, **kwargs)
+            img = ax.contourf(d, channel=self.channel_index, norm=norm, **kwargs)
         # contour lines -----------------------------------------------------------------------
         if self.contours:
             contour_levels = determine_contour_levels(
@@ -130,63 +136,32 @@ class QuicknD:
             )
             ax.contour(d, channel=self.channel_index, levels=contour_levels)
         # decoration --------------------------------------------------------------------------
-        plt.xticks(rotation=45, fontsize=14)
-        plt.yticks(fontsize=14)
-        ax.set_xlabel(xaxis.label, fontsize=18)
-        ax.set_ylabel(yaxis.label, fontsize=18)
-        ax.grid()
-        # lims
-        ax.set_xlim(xlim)
-        ax.set_ylim(ylim)
-        # add zero lines
-        plt.axvline(0, lw=2, c="k")
-        plt.axhline(0, lw=2, c="k")
+        self.decorate(ax, *d.axes)
         # constants: variable marker lines, title
         subtitle = self.annotate_constants(d)
         _title(fig, self.data.natural_name, subtitle=subtitle)
         # colorbar
         cax = plt.subplot(gs[1])
-        cbar_ticks = np.linspace(levels.min(), levels.max(), 11)
         plot_colorbar(
-            cax=cax, cmap=img.get_cmap(), ticks=cbar_ticks, label=channel.natural_name, **kwargs
+            cax=cax, cmap=img.get_cmap(), ticks=norm_ticks, label=channel.natural_name, **kwargs
         )
         plt.sca(ax)
         return fig
 
     def plot1D(self, d):
         # determine ymin and ymax for global axis scale
-        data_channel = self.data.channels[self.channel_index]
-        ymin, ymax = data_channel.min(), data_channel.max()
-        dynamic_range = ymax - ymin
-        ymin -= dynamic_range * 0.05
-        ymax += dynamic_range * 0.05
-        if np.sign(ymin) != np.sign(data_channel.min()):
-            ymin = 0
-        if np.sign(ymax) != np.sign(data_channel.max()):
-            ymax = 0
         # unpack data -------------------------------------------------------------------------
         axis = d.axes[0]
-        xi = axis.full
         channel = d.channels[self.channel_index]
-        zi = channel[:]
         # create figure ------------------------------------------------------------------------
         aspects = [[[0, 0], 0.5]]
         fig, gs = create_figure(width="single", nrows=1, cols=[1], aspects=aspects)
         ax = plt.subplot(gs[0, 0])
         # plot --------------------------------------------------------------------------------
-        plt.plot(xi, zi, lw=2)
-        plt.scatter(xi, zi, color="grey", alpha=0.5, edgecolor="none")
+        ax.plot(axis.full, channel[:], lw=2)
+        ax.scatter(axis.full, channel[:], color="grey", alpha=0.5, edgecolor="none")
         # decoration --------------------------------------------------------------------------
-        # limits
-        if not self.local:
-            plt.ylim(ymin, ymax)
-        # label axes
-        ax.set_xlabel(axis.label, fontsize=18)
-        ax.set_ylabel(channel.natural_name, fontsize=18)
-        plt.grid()
-        plt.xticks(rotation=45)
-        plt.axvline(0, lw=2, c="k")
-        plt.xlim(xi.min(), xi.max())
+        self.decorate(ax, *d.axes)
         # constants: variable marker lines, title
         subtitle = self.annotate_constants(d)
         _title(fig, self.data.natural_name, subtitle=subtitle)
@@ -206,6 +181,53 @@ class QuicknD:
                     c.convert(d.axes[1].units)
                     plt.axhline(c.value, color="k", linewidth=4, alpha=0.25)
         return ", ".join(ls)
+
+    def global_limits(self):
+        if self._global_limits is not None:
+            return self._global_limits
+        if self.nD == 1:
+            data_channel = self.data.channels[self.channel_index]
+            ymin, ymax = data_channel.min(), data_channel.max()
+            dynamic_range = ymax - ymin
+            ymin -= dynamic_range * 0.05
+            ymax += dynamic_range * 0.05
+            if np.sign(ymin) != np.sign(data_channel.min()):
+                ymin = 0
+            if np.sign(ymax) != np.sign(data_channel.max()):
+                ymax = 0
+            limits = [ymin, ymax]
+        elif self.nD == 2:
+            channel = self.data.channels[self.channel_index]
+            if self.data.signed:
+                if self.dynamic_range:
+                    limit = min(
+                        abs(channel.null - channel.min()),
+                        abs(channel.null - channel.max())
+                    )
+                else:
+                    limit = channel.mag()
+                limits = [-limit + channel.null, limit + channel.null]
+            else:
+                if channel.max() < channel.null:
+                    limits = [channel.min(), channel.null]
+                else:
+                    limits = [channel.null, channel.max()]
+        return limits
+
+    def decorate(self, ax, *axes):
+        plt.xticks(rotation=45, fontsize=14)
+        plt.yticks(fontsize=14)
+        ax.axvline(0, lw=2, c="k")
+        ax.axhline(0, lw=2, c="k")
+        ax.set_xlim(axes[0].min(), axes[0].max())
+        ax.grid()
+        if self.nD == 1:
+            set_ax_labels(ax, xlabel=axes[0].label, ylabel=self.data.natural_name)
+            if not self.local:
+                ax.set_ylim(*self.global_limits())
+        elif self.nD == 2:
+            set_ax_labels(ax, xlabel=axes[0].label, ylabel=axes[1].label)
+            ax.set_ylim(axes[1].min(), axes[1].max())
 
 
 def quick1D(
@@ -343,28 +365,25 @@ def quick2D(
     )(verbose)
 
 
-def determine_levels(local_channel, global_channel, dynamic_range, local):
-    if local_channel.signed:
-        if local:
-            limit = local_channel.mag()
-        else:
-            if dynamic_range:
-                limit = min(
-                    abs(global_channel.null - global_channel.min()),
-                    abs(global_channel.null - global_channel.max()),
-                )
-            else:
-                limit = global_channel.mag()
-        levels = np.linspace(-limit + local_channel.null, limit + local_channel.null, 200)
+# TODO: norm_from_channel
+
+def limits_from_channel(channel):
+    """
+    arguments
+    ---------
+    channel: WrightTools.Channel
+        channel from which to calculate limits
+    respect_null: bool (Optional)
+        When true and not signed, limits will clip data that is invalid (i.e. below null)
+    dynamic_range: bool (Optional)
+    """
+    # TODO: add dynamic range
+    if channel.signed:
+        limit = channel.mag()
+        limits = [-limit + channel.null, limit + channel.null]
     else:
-        if local:
-            levels = np.linspace(local_channel.null, local_channel.max(), 200)
-        else:
-            if global_channel.max() < global_channel.null:
-                levels = np.linspace(global_channel.min(), global_channel.null, 200)
-            else:
-                levels = np.linspace(global_channel.null, global_channel.max(), 200)
-    return levels
+        limit = channel.max()
+    return limits
 
 
 def determine_contour_levels(local_channel, global_channel, contours, local):
