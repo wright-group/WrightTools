@@ -162,6 +162,7 @@ def quick1D(
         if autosave, a list of saved image files (if any).
         if not, a list of Figures
     """
+
     class Quick1D(ChopHandler):
         def plot(self, d):
             # unpack data -------------------------------------------------------------------------
@@ -308,7 +309,7 @@ def quick2D(
             # colors ------------------------------------------------------------------------------
             norm = norm_from_channel(
                 channel if local else self.data.channels[self.channel_index],
-                dynamic_range=dynamic_range
+                dynamic_range=dynamic_range,
             )
             norm_ticks = ticks_from_norm(norm)
             if pixelated:
