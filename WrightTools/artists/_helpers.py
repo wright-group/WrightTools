@@ -1123,7 +1123,6 @@ def stitch_to_animation(paths, outpath=None, *, duration=0.5, palettesize=256, v
 
 
 def norm_from_channel(channel, dynamic_range=False):
-    # TODO: incorporate dynamic_range
     if channel.signed:
         if dynamic_range:
             norm = TwoSlopeNorm(vcenter=channel.null, vmin=channel.min(), vmax=channel.max())
