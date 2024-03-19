@@ -46,7 +46,6 @@ class ChopHandler:
         self.autosave = kwargs.get("autosave", False)
 
         self.channel_index = wt_kit.get_index(data.channel_names, kwargs.get("channel", 0))
-        self._global_limits = None
         shape = data.channels[self.channel_index].shape
         # remove dimensions that do not involve the channel
         self.channel_slice = [0 if size == 1 else slice(None) for size in shape]
@@ -71,7 +70,7 @@ class ChopHandler:
         out = list()
         with closing(self.data._from_slice(self.channel_slice)) as sliced:
             for constant in self.sliced_constants:
-                sliced.remove_constant(constant)
+                sliced.remove_constant(constant, verbose=False)
             for i, fig in enumerate(map(self.plot, sliced.ichop(*self.axes, at=self.at))):
                 if self.autosave:
                     filepath = self.filepath_seed.format(i)
@@ -110,7 +109,7 @@ class ChopHandler:
         plt.yticks(fontsize=14)
         ax.axvline(0, lw=2, c="k")
         ax.set_xlim(axes[0].min(), axes[0].max())
-        ax.grid()
+        ax.grid(ls="--", color="grey", lw=0.5)
         if self.nD == 1:
             ax.axhline(self.data.channels[self.channel_index].null, lw=2, c="k")
             set_ax_labels(ax, xlabel=axes[0].label, ylabel=self.data.natural_name)
@@ -164,6 +163,10 @@ def quick1D(
     """
 
     class Quick1D(ChopHandler):
+        def __init__(self, *args, **kwargs):
+            self._global_limits = None
+            super().__init__(*args, **kwargs)
+
         def plot(self, d):
             # unpack data -------------------------------------------------------------------------
             axis = d.axes[0]
