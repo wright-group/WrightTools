@@ -7,6 +7,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ### Fixed
 - fixed Quick2D/Quick1D issues where collapsing unused dims did not work
+- wt5 explore : fixed bug where data will not load interactively if directory is not cwd
+- constants in chopped data will inherit the units of the original data
+
+## Changed
+- artists now gets turbo colormap straight from matplotlib
 
 ## [3.5.2]
 

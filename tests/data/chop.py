@@ -111,8 +111,10 @@ def test_3D_to_2D_units():
         assert d.w2.size == 11
         assert d.axis_expressions == ("wm", "w2")
         assert d.units == ("eV", "eV")
-    data.close()
+        w1 = d.constants[d.constant_names.index("w1")]
+        assert w1.units == "eV"
     chop.close()
+    data.close()
 
 
 def test_parent():
