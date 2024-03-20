@@ -596,6 +596,11 @@ class Data(Group):
 
         for const in list(self.constant_expressions) + constants:
             out.create_constant(const, verbose=False)
+            if const in self.constant_expressions:
+                dest_units = self.constants[self.constant_expressions.index(const)].units
+            else:
+                dest_units = self.axes[self.axis_expressions.index(const)].units
+            out.constants[out.constant_expressions.index(const)].convert(dest_units)
         for j, units in enumerate(new_axis_units):
             out.axes[j].convert(units)
 

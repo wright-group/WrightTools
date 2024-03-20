@@ -7,6 +7,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## Changed
 - artists now gets turbo colormap straight from matplotlib
+=======
+### Fixed
+- constants in chopped data will inherit the units of the original data
 
 ## [3.5.2]
 
