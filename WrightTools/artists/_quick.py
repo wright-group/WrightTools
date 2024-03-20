@@ -8,7 +8,6 @@ from functools import reduce
 import pathlib
 
 import numpy as np
-
 import matplotlib.pyplot as plt
 
 from ._helpers import (
@@ -20,8 +19,6 @@ from ._helpers import (
     norm_from_channel,
     ticks_from_norm,
 )
-from ._base import _parse_cmap
-from ._interact import Norm
 from .. import kit as wt_kit
 
 
