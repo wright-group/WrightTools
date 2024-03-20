@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Fixed
+- wt5 explore : fixed but where data will not load interactively if directory is not cwd
+
 ## [3.5.2]
 
 ### Added
