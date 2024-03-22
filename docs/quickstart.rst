@@ -360,7 +360,7 @@ To choose a specific time point, you can of course just make the chopping more s
    data = wt.open(p)
    data.transform('w1=wm', 'w2-wm', 'd2')
    data.convert('eV')
-   data1 = data.chop('w2', at={'w1=wm':[1.5, 'eV'], 'd2':[0, 'fs']})[0]
+   data1 = data.chop('w2-wm', at={'w1=wm':[1.5, 'eV'], 'd2':[0, 'fs']})[0]
    wt.artists.quick1D(data1)
    plt.show()
 
