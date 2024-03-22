@@ -8,6 +8,7 @@ Example of custom figure layout, beautification, and saving.
 """
 
 import matplotlib.pyplot as plt
+from matplotlib.colors import Normalize
 
 import numpy as np
 
@@ -23,6 +24,7 @@ data.convert("eV", convert_variables=True, verbose=False)
 data.smooth([2, 2, 2])
 data.ai0.symmetric_root(2)
 data.ai0.normalize()
+norm = Normalize(vmin=0, vmax=1)
 data.ai0.clip(min=0, replace="value")
 # chop out data of interest
 d2_vals = [-50, -500]
@@ -48,7 +50,7 @@ fig, gs = wt.artists.create_figure(
 indxs = [(row, col) for row in range(1, 3) for col in range(2)]
 for indx, wigner, color in zip(indxs, wigners, wigner_colors):
     ax = plt.subplot(gs[indx])
-    ax.pcolor(wigner, vmin=0, vmax=1)  # global colormpa
+    art = ax.pcolormesh(wigner, norm=norm)  # global colormpa
     ax.contour(wigner)  # local contours
     ax.grid()
     wt.artists.set_ax_spines(ax=ax, c=color)
@@ -73,7 +75,7 @@ for indx, color, traces in zip(indxs, trace_colors, tracess):
 # plot colormap
 cax = plt.subplot(gs[1:3, -1])
 ticks = np.linspace(data.ai0.min(), data.ai0.max(), 11)
-wt.artists.plot_colorbar(cax=cax, label="amplitude", cmap="default", ticks=ticks)
+fig.colorbar(art, cax=cax, label="amplitude", cmap="default", ticks=ticks)
 # set axis labels
 wt.artists.set_fig_labels(xlabel=data.w1__e__wm.label, ylabel=data.d2.label, col=slice(0, 1))
 # ylabel of zeroth row

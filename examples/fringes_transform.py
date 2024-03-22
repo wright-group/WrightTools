@@ -30,11 +30,11 @@ ax.set_title("as taken", fontsize=20)
 ax = plt.subplot(gs[0, 1])
 data.transform("wm", "w1")
 data.convert("wn")
-ax.pcolor(data)
+art = ax.pcolor(data)
 wt.artists.set_ax_labels(xlabel=data.wm.label, yticks=False)
 ax.grid()
 ax.set_title("transformed", fontsize=20)
 
 # colorbar
 cax = plt.subplot(gs[0, -1])
-wt.artists.plot_colorbar(cax, label="amplitude")
+fig.colorbar(art, cax, label="amplitude")

@@ -657,6 +657,10 @@ def plot_colorbar(
     matplotlib.colorbar.ColorbarBase object
         The created colorbar.
     """
+    warnings.warn(
+        "`plot_colorbar` is planned for deprecation. "
+        +"Use `matplotlib.pyplot.colorbar` instead.",
+        wt_exceptions.VisibleDeprecationWarning)
     # parse cax
     if cax is None:
         cax = plt.gca()

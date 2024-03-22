@@ -15,6 +15,7 @@ import WrightTools as wt
 from WrightTools import datasets
 
 cmap = wt.artists.colormaps["default"]
+norm = matplotlib.colors.Normalize(vmin=0, vmax=1)
 
 fig, gs = wt.artists.create_figure(width="double", nrows=2, cols=[1, 1, 1, 1, "cbar"])
 
@@ -39,11 +40,11 @@ def decorate(ax):
 
 # pcolor
 ax = plt.subplot(gs[0, 0])
-ax.pcolor(data, cmap=cmap)
+ax.pcolor(data, cmap=cmap, norm=norm)
 ax.set_title("pcolor", fontsize=20)
 decorate(ax)
 ax = plt.subplot(gs[1, 0])
-ax.pcolor(data, cmap=cmap, edgecolors="k")
+art = ax.pcolor(data, cmap=cmap, edgecolors="k", norm=norm)
 dot_pixel_centers(ax, data.d1.points, data.d2.points)
 decorate(ax)
 
@@ -54,11 +55,11 @@ zi = data.channels[0][:].T
 ax = plt.subplot(gs[0, 1])
 points = [xi, yi]
 x, y = tuple(np.meshgrid(*points, indexing="ij"))
-ax.tripcolor(x.flatten(), y.flatten(), zi.T.flatten(), cmap=cmap, vmin=0, vmax=1)
+ax.tripcolor(x.flatten(), y.flatten(), zi.T.flatten(), cmap=cmap, norm=norm)
 decorate(ax)
 ax.set_title("tripcolor", fontsize=20)
 ax = plt.subplot(gs[1, 1])
-ax.tripcolor(x.flatten(), y.flatten(), zi.T.flatten(), edgecolor="k", cmap=cmap, vmin=0, vmax=1)
+ax.tripcolor(x.flatten(), y.flatten(), zi.T.flatten(), edgecolor="k", cmap=cmap, norm=norm)
 decorate(ax)
 dot_pixel_centers(ax, xi, yi)
 
@@ -76,11 +77,11 @@ def plot_delaunay_edges(ax, xi, yi, zi):
 
 # contourf
 ax = plt.subplot(gs[0, 2])
-ax.contourf(data, vmin=-1e-3)
+ax.contourf(data, norm=norm, levels=265)
 decorate(ax)
 ax.set_title("contourf", fontsize=20)
 ax = plt.subplot(gs[1, 2])
-ax.contourf(data, vmin=-1e-3)
+ax.contourf(data, norm=norm, levels=256)
 plot_delaunay_edges(ax, xi, yi, zi)
 dot_pixel_centers(ax, xi, yi)
 decorate(ax)
@@ -102,4 +103,4 @@ wt.artists.set_fig_labels(xlabel=data.d1.label, ylabel=data.d2.label, xticks=tic
 
 # colorbar
 cax = plt.subplot(gs[:, -1])
-wt.artists.plot_colorbar(cax=cax, label="amplitude")
+fig.colorbar(art, cax=cax, label="amplitude")

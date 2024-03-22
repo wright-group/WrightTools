@@ -277,7 +277,6 @@ In addition, ``WrightTools`` defines some small helper functions for common task
 
   - Pairs well with :attr:`WrightTools.data.Constant.label`
 
-- :meth:`~WrightTools.artists.plot_colorbar` Add a colorbar in a single function call
 - :meth:`~WrightTools.artists.set_fig_labels` Label axes in a whole row/column of a figure
 
   - Allows the use of slice objects to limit range affected
@@ -311,7 +310,7 @@ In addition, ``WrightTools`` defines some small helper functions for common task
    # plot colormap
    cax = plt.subplot(gs[1:3, -1])
    ticks = np.linspace(data.ai0.min(), data.ai0.max(), 11)
-   wt.artists.plot_colorbar(cax=cax, label="amplitude", cmap="default", ticks=ticks)
+   plt.colorbar(cax=cax, label="amplitude", cmap="default", ticks=ticks)
    # set axis labels
    wt.artists.set_fig_labels(xlabel=data.w1__e__wm.label, ylabel=data.d2.label, col=slice(0, 1))
 
