@@ -19,6 +19,7 @@ def set_lim(ax):
     ax.set_xlim(-175, 175)
     ax.set_ylim(-175, 175)
 
+
 norm = Normalize(vmin=0, vmax=1, clip=True)
 
 # traditional delay space
