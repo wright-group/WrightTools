@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## Changed
 - artists now gets turbo colormap straight from matplotlib
+- deprecating  `artists.plot_colorbar`: instead use matplotlib's `colorbar` implementations directly
 
 ## [3.5.2]
 
