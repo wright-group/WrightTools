@@ -14,6 +14,7 @@ wt-convert
 Use ``wt-convert`` to explore the WrightTools units system and the conversions of units.
 
 .. code-block:: shell
+
     > wt-units 1330 nm wn
     7692.3 wn
     0.95372 eV
