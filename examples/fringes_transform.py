@@ -11,30 +11,30 @@ import matplotlib.pyplot as plt
 import WrightTools as wt
 from WrightTools import datasets
 
-p = datasets.PyCMDS.w2_w1_000
-data = wt.data.from_PyCMDS(p)
+# p = datasets.PyCMDS.w2_w1_000
+# data = wt.data.from_PyCMDS(p)
 
-data.signal_mean.symmetric_root(2)  # to amplitude level
-data.convert("wn")
+# data.signal_mean.symmetric_root(2)  # to amplitude level
+# data.convert("wn")
 
 fig, gs = wt.artists.create_figure(width="double", cols=[1, 1, "cbar"])
 
 # as taken
 ax = plt.subplot(gs[0, 0])
-ax.pcolor(data)
-wt.artists.set_ax_labels(xlabel=data.w2.label, ylabel=data.w1.label)
+# ax.pcolor(data)
+# wt.artists.set_ax_labels(xlabel=data.w2.label, ylabel=data.w1.label)
 ax.grid()
 ax.set_title("as taken", fontsize=20)
 
 # transformed
 ax = plt.subplot(gs[0, 1])
-data.transform("wm", "w1")
-data.convert("wn")
-art = ax.pcolor(data)
-wt.artists.set_ax_labels(xlabel=data.wm.label, yticks=False)
+# data.transform("wm", "w1")
+# data.convert("wn")
+# art = ax.pcolor(data)
+# wt.artists.set_ax_labels(xlabel=data.wm.label, yticks=False)
 ax.grid()
 ax.set_title("transformed", fontsize=20)
 
 # colorbar
 cax = plt.subplot(gs[0, -1])
-fig.colorbar(art, cax, label="amplitude")
+# fig.colorbar(art, cax, label="amplitude")

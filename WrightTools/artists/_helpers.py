@@ -1052,8 +1052,11 @@ def set_fig_labels(
 
 
 def subplots_adjust(fig=None, inches=1):
-    """Enforce margins for generated figure, starting at subplots.
-    .. note::
+    """
+    Enforce margins for generated figure, starting at subplots.
+
+    Note
+    ----
         You probably should be using wt.artists.create_figure instead.
 
     Parameters

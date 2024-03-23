@@ -26,7 +26,8 @@ __all__ = ["join"]
 def join(
     datas, *, atol=None, rtol=None, name="join", parent=None, method="first", verbose=True
 ) -> Data:
-    """Join a list of data objects into one data object.
+    """
+    Join a list of data objects into one data object.
     The underlying dataset arrays are merged.
 
     Joined datas must have the same axes and axes order.
