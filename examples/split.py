@@ -24,7 +24,8 @@ from WrightTools import datasets
 # c = d.split("strange", [0.2, 0.4])
 
 # Plot the splits in columns
-fig, gs = wt.artists.create_figure(nrows=len(c), cols=[1, 1, 1])
+fig, gs = wt.artists.create_figure(nrows=1, cols=[1, 1, 1])
+# fig, gs = wt.artists.create_figure(nrows=len(c), cols=[1, 1, 1])
 # for j, (col, title) in enumerate(zip([a, b, c], ["Simple", "Medium", "Advanced"])):
 #     for i, da in enumerate(col.values()):
 #         ax = plt.subplot(gs[i, j])
