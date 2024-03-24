@@ -12,6 +12,8 @@ import WrightTools as wt
 from WrightTools import datasets
 
 p = datasets.PyCMDS.w2_w1_000
+
+# p = datasets.here / "PyCMDS" / "w2 w1 000.data"
 data = wt.data.from_PyCMDS(p)
 
 data.signal_mean.symmetric_root(2)  # to amplitude level
