@@ -11,14 +11,9 @@ import matplotlib.pyplot as plt
 import WrightTools as wt
 from WrightTools import datasets
 
-try:
-    p = datasets.PyCMDS.w2_w1_000
-except AttributeError as e:
-    e.add_note(f"valid attrs are {datasets.PyCMDS.__dict__.items()}")
-    e.add_note(f"KENT has other attrs: {datasets.KENT.__dict__.items()}")
-    raise
+p = datasets.PyCMDS.w2_w1_000
 
-p = datasets.here / "PyCMDS" / "w2 w1 000.data"
+# p = datasets.here / "PyCMDS" / "w2 w1 000.data"
 data = wt.data.from_PyCMDS(p)
 
 data.signal_mean.symmetric_root(2)  # to amplitude level
