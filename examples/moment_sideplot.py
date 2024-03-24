@@ -22,6 +22,7 @@ d = wt.Data(name="test")
 d.create_variable("d1", values=d1, units="ps", label="1")
 d.create_variable("d2", values=d2, units="ps", label="2")
 d.create_channel("z", values=arr)
+d.z.normalize()
 d.transform("d1", "d2")
 
 # calculate moments
@@ -38,7 +39,7 @@ ax = plt.subplot(gs[0])
 axcorrx = ax.add_sideplot(along="x", pad=0.1, ymin=-0.1, ymax=1.1)
 axcorry = ax.add_sideplot(along="y", pad=0.1, ymin=-0.1, ymax=1.1)
 # plot data
-ax.pcolor(d, autolabel="both")
+art = ax.pcolor(d, autolabel="both")
 # plot integral moments in sideplot
 axcorrx.plot(d, channel="z_d2_moment_0", color="k", linewidth=3)
 # this sideplot is uncouth.
@@ -55,4 +56,4 @@ for ax_ in [ax, axcorrx, axcorry]:
     ax_.grid()
 # plot colorbar
 cax = plt.subplot(gs[-1])
-wt.artists.plot_colorbar(cax=cax, label="amplitude")
+fig.colorbar(art, cax=cax, label="amplitude")

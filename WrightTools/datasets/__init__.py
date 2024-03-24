@@ -103,9 +103,12 @@ __all__ = [
     "COLORS",
     "JASCO",
     "KENT",
+    "LabRAM",
     "ocean_optics",
     "PyCMDS",
+    "Shimadzu",
     "Solis",
+    "spcm",
     "Tensor27",
     "wt5",
 ]

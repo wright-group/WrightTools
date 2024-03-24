@@ -22,7 +22,7 @@ data.ai0.symmetric_root(2)
 ax = plt.subplot(gs[0, 0])
 chop = data.chop("w1=wm", "d2", at={"w2": [1.7, "eV"]})[0]
 chop.ai0.null = chop.ai0.min()  # only for example
-ax.pcolor(chop)
+art = ax.pcolor(chop)
 ax.contour(chop)
 
 # leveled
@@ -38,5 +38,5 @@ wt.artists.set_fig_labels(xlabel=data.w1__e__wm.label, ylabel=data.d2.label)
 
 # colorbar
 cax = plt.subplot(gs[0, -1])
-wt.artists.plot_colorbar(cax=cax, label="amplitude")
+fig.colorbar(art, cax=cax, label="amplitude")
 wt.artists.set_ax_labels(cax, yticks=False)
