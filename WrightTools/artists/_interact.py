@@ -207,7 +207,7 @@ def interact2D(
     Returns
     -------
     out : types.SimpleNamespace
-        container for important interactive elements of the plot.  
+        container for important interactive elements of the plot.
 
         Properties
         ----------
@@ -587,6 +587,6 @@ def interact2D(
         sliders=sliders,
         crosshairs=[crosshair_hline, crosshair_vline],
         radio=radio,
-        colorbar=colorbar
+        colorbar=colorbar,
     )
     return out
