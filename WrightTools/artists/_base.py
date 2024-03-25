@@ -1,6 +1,5 @@
 """Base tools for visualizing data."""
 
-
 # --- import --------------------------------------------------------------------------------------
 
 
@@ -8,6 +7,7 @@ import numpy as np
 
 import matplotlib
 from matplotlib.projections import register_projection
+from matplotlib.colors import Normalize
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
@@ -129,7 +129,7 @@ class Axes(matplotlib.axes.Axes):
                     raise wt_exceptions.ValueError("Cannot squeeze axis to fit channel")
             zi = data.channels[channel_index].points
             if not zi.ndim == 2:
-                raise wt_exceptions.DimensionalityError(ndim, data.ndim)
+                raise wt_exceptions.DimensionalityError(2, zi.ndim)
             squeeze = tuple([0 if i else slice(None) for i in squeeze])
             if plot_type == "imshow":
                 if "aspect" not in kwargs.keys():
@@ -463,6 +463,100 @@ class Axes(matplotlib.axes.Axes):
             super().invert_yaxis()
         return out
 
+    def scatter(self, *args, **kwargs):
+        """Scatter plot a channel against two _variables_.
+        Scatter point color reflects channel values.
+        Data need not be structured.
+        If data object is not provided, scatter reverts to the `matplotlib parent method <https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.scatter.html>`_.
+
+        args
+        ---------
+        data : 2D WrightTools.data.Data object
+            Data to plot.
+
+        kwargs
+        ----------
+        x : int or string (optional)
+            axis name or index for x (abscissa) axis.  Default is 0.
+            If x does not match an axis, searches variable names for match.
+        y : int or string (optional)
+            axis name or index for y (ordinate) axis.  Default is 1.
+            If y does not match an axis, searches variable names for match.
+        channel : int or string (optional)
+            Channel index or name. Default is 0.
+        autolabel : {'none', 'both', 'x', 'y'}  (optional)
+            Parameterize application of labels directly from data object. Default is none.
+        xlabel : string (optional)
+            xlabel. Default is None.
+        ylabel : string (optional)
+            ylabel. Default is None.
+        **kwargs
+            matplotlib.axes.Axes.scatter__ optional keyword arguments.
+
+            __ https://matplotlib.org/api/_as_gen/matplotlib.pyplot.scatter.html
+
+        Returns
+        -------
+        matplotlib.collections.PathCollection
+        """
+        args = list(args)
+        if isinstance(args[0], Data):
+            data = args.pop(0)
+
+            coords = []
+            for axis in [kwargs.pop("x", 0), kwargs.pop("y", 1)]:
+                try:  # check axes
+                    axis = wt_kit.get_index(data.axis_names, axis)
+                    axis = data.axes[axis][:]
+                except (ValueError, IndexError):  # check vars
+                    axis = wt_kit.get_index(data.variable_names, axis)
+                    axis = data.variables[axis][:]
+                # broadcast up to channel shape
+                coords.append(axis)
+
+            if "c" in kwargs.keys():
+                raise KeyError(
+                    "'c' kwarg not allowed when data object provided. \
+                    Use `cmap` instead to control colors."
+                )
+
+            channel = kwargs.pop("channel", 0)
+            channel_index = wt_kit.get_index(data.channel_names, channel)
+
+            limits = {}
+            limits = self._parse_limits(data=data, channel_index=channel_index, **limits)
+            norm = Normalize(**limits)
+
+            cmap = self._parse_cmap(data, channel_index=channel_index, **kwargs)["cmap"]
+
+            z = data.channels[channel_index][:]
+
+            # fill x, y, z to joint shape
+            shape = wt_kit.joint_shape(z, *coords)
+
+            def full(arr, shape):
+                for i in range(arr.ndim):
+                    if arr.shape[i] == 1:
+                        arr = np.repeat(arr, shape[i], axis=i)
+                return arr
+
+            args = [full(ax, shape).flatten() for ax in coords] + args
+
+            z = full(z, shape).flatten()
+            z = norm(z)
+            z = cmap(z)
+            kwargs["c"] = z
+
+            self._apply_labels(
+                autolabel=kwargs.pop("autolabel", False),
+                xlabel=kwargs.pop("xlabel", None),
+                ylabel=kwargs.pop("ylabel", None),
+                data=data,
+                channel_index=channel_index,
+            )
+
+        return super().scatter(*args, **kwargs)
+
     def pcolormesh(self, *args, **kwargs):
         """Create a pseudocolor plot of a 2-D array.
 
@@ -551,7 +645,7 @@ class Axes(matplotlib.axes.Axes):
             zi = data.channels[channel_index].points
             xi = xa[squeeze]
             if not zi.ndim == 1:
-                raise wt_exceptions.DimensionalityError(1, data.ndim)
+                raise wt_exceptions.DimensionalityError(1, zi.ndim)
             args = [xi, zi] + args
         else:
             data = None

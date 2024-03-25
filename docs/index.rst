@@ -55,6 +55,7 @@ Contents
    datasets
    contributing
    wt5
+   cli
    api/modules
    auto_examples/index
    citation

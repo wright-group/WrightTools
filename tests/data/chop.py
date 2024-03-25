@@ -111,8 +111,10 @@ def test_3D_to_2D_units():
         assert d.w2.size == 11
         assert d.axis_expressions == ("wm", "w2")
         assert d.units == ("eV", "eV")
-    data.close()
+        w1 = d.constants[d.constant_names.index("w1")]
+        assert w1.units == "eV"
     chop.close()
+    data.close()
 
 
 def test_parent():
@@ -121,6 +123,23 @@ def test_parent():
     parent = wt.Collection()
     chop = data.chop("wm", "w2", parent=parent)
     assert chop.parent is parent
+
+
+def test_axes_order():
+    x = np.arange(6)
+    y = x[::2].copy()
+    z = x[::3].copy()
+    chan = np.arange(x.size * y.size * z.size).reshape(x.size, y.size, z.size).astype("float")
+    data = wt.data.Data(name="data")
+    data.create_channel("chan", values=chan, signed=False)
+    data.create_variable("x", values=x[:, None, None], units="wn")
+    data.create_variable("y", values=y[None, :, None], units="wn")
+    data.create_variable("z", values=z[None, None, :], units="wn")
+
+    data.transform("y", "x", "z")
+
+    d = data.chop("z", "x", at={"y": (2, "wn")})[0]
+    assert d.axis_names == ("z", "x")
 
 
 def test_transformed():
@@ -169,11 +188,32 @@ def test_rmd_axis_full_shape():
     assert c[0].shape == (6, 3)
 
 
+def test_non_spanning_axes():
+    """axes do not span shape of data"""
+
+    x = np.arange(6)
+
+    d = wt.Data(name="test")
+    d.create_variable("x", values=x[:, None, None])
+    d.create_variable("y", values=x[None, ::2, None])
+    d.create_variable("z", values=x[None, None, ::3])
+    d.transform("x", "y")
+
+    c = d.chop(1)
+    assert c[0].axis_names == ("y",)
+    assert c[0].shape == d.shape[1:]
+
+    d.close()
+    c.close()
+
+
 # --- run -----------------------------------------------------------------------------------------
 
 
 if __name__ == "__main__":
     test_transformed()
+    test_axes_order()
+    test_non_spanning_axes()
     test_2D_to_1D()
     test_3D_to_1D()
     test_3D_to_1D_at()

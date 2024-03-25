@@ -1,6 +1,5 @@
 """Test in place power."""
 
-
 # --- import --------------------------------------------------------------------------------------
 
 
@@ -21,7 +20,7 @@ def test_d1_d2():
     value = random.randint(0, 5)
     original_max = data.ai0.max()
     data.ai0 **= value
-    assert data.ai0.max() == original_max**value
+    assert np.isclose(data.ai0.max(), original_max**value)
     data.close()
 
 
@@ -41,7 +40,7 @@ def test_w1():
     value = random.randint(0, 5)
     original_max = data.signal.max()
     data.signal **= value
-    assert data.signal.max() == original_max**value
+    assert np.isclose(data.signal.max(), original_max**value)
     data.close()
 
 
@@ -61,7 +60,7 @@ def test_w1_wa():
     value = random.randint(0, 5)
     original_max = data.array_signal.max()
     data.array_signal **= value
-    assert data.array_signal.max() == original_max**value
+    assert np.isclose(data.array_signal.max(), original_max**value)
     data.close()
 
 

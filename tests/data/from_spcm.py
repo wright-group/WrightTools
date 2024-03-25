@@ -1,6 +1,5 @@
 """Test from_spcm."""
 
-
 # --- import --------------------------------------------------------------------------------------
 
 
@@ -23,8 +22,6 @@ def test_test_data_full_metadata():
     p = datasets.spcm.test_data_full_metadata
     data = wt.data.from_spcm(p)
     assert data.size == data.attrs["SP_ADC_RE"]
-    if __name__ == "__main__":
-        return data
     data.close()
 
 
@@ -33,4 +30,4 @@ def test_test_data_full_metadata():
 
 if __name__ == "__main__":
     test_test_data()
-    data = test_test_data_full_metadata()
+    test_test_data_full_metadata()

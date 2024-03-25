@@ -1,8 +1,8 @@
 """Central data class and associated."""
 
-
 # --- import --------------------------------------------------------------------------------------
 
+from __future__ import annotations
 
 import collections
 import operator
@@ -10,6 +10,7 @@ import functools
 import warnings
 
 import numpy as np
+import sys
 
 import h5py
 
@@ -21,7 +22,7 @@ from .. import collection as wt_collection
 from .. import exceptions as wt_exceptions
 from .. import kit as wt_kit
 from .. import units as wt_units
-from ._axis import Axis, identifier_to_operator
+from ._axis import Axis, identifier_to_operator, operator_to_identifier
 from ._channel import Channel
 from ._constant import Constant
 from ._variable import Variable
@@ -84,6 +85,16 @@ class Data(Group):
         return "<WrightTools.Data '{0}' {1} at {2}>".format(
             self.natural_name, str(self.axis_names), "::".join([self.filepath, self.name])
         )
+
+    def __dir__(self) -> list:
+        default = object.__dir__(self)
+        axes = [ax.natural_name for ax in self.axes]
+        return default + axes + self._ipython_key_completions_()
+
+    def _ipython_key_completions_(self) -> list:
+        channels = [ch.natural_name for ch in self.channels]
+        variables = [v.natural_name for v in self.variables]
+        return channels + variables
 
     @property
     def axes(self) -> tuple:
@@ -177,7 +188,7 @@ class Data(Group):
         if "source" not in self.attrs.keys():
             self.attrs["source"] = "None"
         value = self.attrs["source"]
-        return value if not value == "None" else None
+        return value if isinstance(value, str) and not value == "None" else None
 
     @property
     def units(self) -> tuple:
@@ -261,30 +272,30 @@ class Data(Group):
 
         if verbose:
             # axes
-            print(prefix + "├── axes")
+            print(prefix + f"├── axes ({len(self.axes)})")
             print_leaves(prefix, self.axes)
             # constants
-            print(prefix + "├── constants")
+            print(prefix + f"├── constants ({len(self.constants)})")
             print_leaves(prefix, self.constants)
             # variables
-            print(prefix + "├── variables")
+            print(prefix + f"├── variables ({len(self.variables)})")
             print_leaves(prefix, self.variables)
             # channels
-            print(prefix + "└── channels")
+            print(prefix + f"└── channels ({len(self.channels)})")
             print_leaves(prefix, self.channels, vline=False)
         else:
             # axes
-            s = "axes: "
+            s = f"axes ({len(self.axes)}): "
             s += ", ".join(["{0} ({1})".format(a.expression, a.units) for a in self.axes])
             print(prefix + "├── " + s)
             # constants
-            s = "constants: "
+            s = f"constants ({len(self.constants)}): "
             s += ", ".join(
                 ["{0} ({1} {2})".format(a.expression, a.value, a.units) for a in self.constants]
             )
             print(prefix + "├── " + s)
             # channels
-            s = "channels: "
+            s = f"channels ({len(self.channels)}): "
             s += ", ".join(self.channel_names)
             print(prefix + "└── " + s)
 
@@ -302,6 +313,123 @@ class Data(Group):
         new = list(self.channel_names)
         new.insert(0, new.pop(channel_index))
         self.channel_names = new
+
+    def at(self, parent=None, name=None, **at) -> Data:
+        """Return data of a subset of the data at specified axis position(s).
+
+        kwargs
+        ------
+        parent : WrightTools.Collection (optional)
+            parent of new object. Default is no parent.
+        name : string (optional)
+            if specified, name of new data object.
+        **at :
+        keys are axis identifiers (Axis.natural_name), values lists of format
+            [position, unit] if no coordinates are specified, returns a copy of
+            the array. _specified axes must be one-dimensional in the array_
+
+        Returns
+        -------
+        out : wt.Data
+            Data that retains the dimension of unspecified axes.
+
+        Example
+        -------
+        ```
+        >>> from WrightTools import datasets
+        >>> data = wt.open(datasets.wt5.v1p0p1_MoS2_TrEE_movie)  # axes w2, w1=wm, d2
+        >>> probed_at_resonance = data.at(w1__e__wm=[690, "nm"])
+        >>> zero_delay_data = data.at(d2=[0, "fs"])
+        ```
+
+        Notes
+        -----
+        * _most attrs are not retained in the new data object_.
+        * some axis expressions use forbidden dictkey characters (e.g. "=").
+            For these case, you must use the string substitution
+            (e.g "=" -> "__e__"). Use `Data.axis_names` or `Axis.natural_name`
+            to check the identifier form of the expression. Also consider using
+            kit.string2identifier to filter.
+
+        See Also
+        --------
+        Data.chop : also reduces dimensionality, but returns a collection of one or more
+            data objects. Kept axes can be sliced into a collection
+        """
+        idx = self._at_to_slice(**at)
+        return self._from_slice(idx, name=name, parent=parent)
+
+    def squeeze(self, name=None, parent=None):
+        """Reduce the data to the dimensionality of the (non-trivial) span of the axes.
+        i.e. if the joint shape of the axes has an array dimension with length 1, this
+        array dimension is squeezed.
+
+        channels and variables that span beyond the axes are removed.
+
+        Parameters
+        ----------
+        name : string (optional)
+            name of the new Data.
+        parent : WrightTools Collection instance (optional)
+            Collection to place the new "chop" collection within. Default is
+            None (new parent).
+
+        Returns
+        -------
+        out : wt.Data
+            new data object.  The new data object has dimensions of the
+            (non-trivial) span of the current axes
+
+        Examples
+        --------
+        >>> ...
+
+        See also
+        --------
+        Data.chop: Divide the dataset into its lower-dimensionality components.
+        ...
+        """
+        new = Data(name=name, parent=parent)
+
+        attrs = {
+            k: v
+            for k, v in self.attrs.items()
+            if k
+            not in [
+                "axes",
+                "channel_names",
+                "constants",
+                "name",
+                "source",
+                "item_names",
+                "variable_names",
+            ]
+        }
+        new.attrs.update(attrs)
+
+        joint_shape = wt_kit.joint_shape(*[ai[:] for ai in self.axes])
+        cull_dims = [j == 1 for j in joint_shape]
+        sl = [0 if cull else slice(None) for cull in cull_dims]
+        matches_broadcast_axes = lambda a: all(
+            [a.shape[i] == 1 for i in range(self.ndim) if cull_dims[i]]
+        )
+
+        for v in filter(matches_broadcast_axes, self.variables):
+            kwargs = v._to_dict()
+            kwargs["values"] = v[sl]
+            new.create_variable(**kwargs)
+
+        for c in filter(matches_broadcast_axes, self.channels):
+            kwargs = c._to_dict()
+            kwargs["values"] = c[sl]
+            new.create_channel(**kwargs)
+
+        # inherit constants
+        for c in self.constants:
+            new.create_constant(c.expression)
+
+        new.transform(*self.axis_expressions)
+        return new
 
     def chop(self, *args, at=None, parent=None, verbose=True) -> wt_collection.Collection:
         """Divide the dataset into its lower-dimensionality components.
@@ -355,100 +483,127 @@ class Data(Group):
         split
             Split the dataset while maintaining its dimensionality.
         """
-        from ._axis import operators, operator_to_identifier
-
         # parse args
         args = list(args)
         for i, arg in enumerate(args):
             if isinstance(arg, int):
                 args[i] = self._axes[arg].natural_name
             elif isinstance(arg, str):
-                # same normalization that occurs in the natural_name @property
                 arg = arg.strip()
-                for op in operators:
-                    arg = arg.replace(op, operator_to_identifier[op])
-                args[i] = wt_kit.string2identifier(arg)
+                args[i] = wt_kit.string2identifier(arg, replace=operator_to_identifier)
 
-        # normalize the at keys to the natural name
+        transform_expression = [self._axes[self.axis_names.index(a)].expression for a in args]
+
         if at is None:
             at = {}
-        for k in [ak for ak in at.keys() if type(ak) == str]:
-            for op in operators:
-                if op in k:
-                    nk = k.replace(op, operator_to_identifier[op])
-                    at[nk] = at[k]
-                    at.pop(k)
-                    k = nk
+        # normalize the at keys to the natural name
+        for k in list(at.keys()):
+            k = k.strip()
+            nk = wt_kit.string2identifier(k, replace=operator_to_identifier)
+            if nk != k:
+                at[nk] = at[k]
+                at.pop(k)
 
-        # get output collection
-        out = wt_collection.Collection(name="chop", parent=parent)
-        # get output shape
-        kept = args + [ak for ak in at.keys() if type(ak) == str]
+        # distinguish looping and non-looping indices
+        at_idx = self._at_to_slice(**at)
+        at_axes = at_idx != slice(None)
+
+        kept = args + [ak for ak in at.keys()]
         kept_axes = [self._axes[self.axis_names.index(a)] for a in kept]
+
         removed_axes = [a for a in self._axes if a not in kept_axes]
         removed_shape = wt_kit.joint_shape(*removed_axes)
         if removed_shape == ():
             removed_shape = (1,) * self.ndim
         removed_shape = list(removed_shape)
-        for i in at.keys():
-            if type(i) == int:
-                removed_shape[i] = 1
         for ax in kept_axes:
             if ax.shape.count(1) == ax.ndim - 1:
                 removed_shape[ax.shape.index(ax.size)] = 1
         removed_shape = tuple(removed_shape)
+
+        # get output collection
+        out = wt_collection.Collection(name="chop", parent=parent)
+        i_digits = int(np.log10(np.prod(removed_shape))) + 1
         # iterate
-        i = 0
-        for idx in np.ndindex(removed_shape):
+        for i, idx in enumerate(np.ndindex(removed_shape)):
+            name = f"chop{i:0>{i_digits}}"
             idx = np.array(idx, dtype=object)
             idx[np.array(removed_shape) == 1] = slice(None)
-            for axis, point in at.items():
-                if type(axis) == int:
-                    idx[axis] = point
-                    continue
-                point, units = point
-                destination_units = self._axes[self.axis_names.index(axis)].units
-                point = wt_units.converter(point, units, destination_units)
-                axis_index = self.axis_names.index(axis)
-                axis = self._axes[axis_index]
-                idx_index = np.array(axis.shape) > 1
-                if np.sum(idx_index) > 1:
-                    raise wt_exceptions.MultidimensionalAxisError("chop", axis.natural_name)
-                idx_index = list(idx_index).index(True)
-                idx[idx_index] = np.argmin(np.abs(axis[tuple(idx)] - point))
-            data = out.create_data(name="chop%03i" % i)
-            for v in self.variables:
-                kwargs = {}
-                kwargs["name"] = v.natural_name
-                kwargs["values"] = v[idx]
-                kwargs["units"] = v.units
-                kwargs["label"] = v.label
-                kwargs.update(v.attrs)
-                data.create_variable(**kwargs)
-            for c in self.channels:
-                kwargs = {}
-                kwargs["name"] = c.natural_name
-                kwargs["values"] = c[idx]
-                kwargs["units"] = c.units
-                kwargs["label"] = c.label
-                kwargs["signed"] = c.signed
-                kwargs.update(c.attrs)
-                data.create_channel(**kwargs)
-            new_axes = [a.expression for a in kept_axes if a.expression not in at.keys()]
-            new_axis_units = [a.units for a in kept_axes if a.expression not in at.keys()]
-            data.transform(*new_axes)
-            for const in self.constant_expressions:
-                data.create_constant(const, verbose=False)
-            for ax in self.axis_expressions:
-                if ax not in new_axes:
-                    data.create_constant(ax, verbose=False)
-            for j, units in enumerate(new_axis_units):
-                data.axes[j].convert(units)
-            i += 1
+            idx[at_axes] = at_idx[at_axes]
+            self._from_slice(idx, name=name, parent=out)
+            out[name].transform(*transform_expression)
         out.flush()
         # return
         if verbose:
-            print("chopped data into %d piece(s)" % len(out), "in", new_axes)
+            print("chopped data into %d piece(s)" % len(out), "in", out[0].axis_expressions)
+        return out
+
+    def __getitem__(self, key) -> Data:
+        """
+        data[5, :3]; return new data object with those array slices
+        """
+        if type(key) in [int, slice]:
+            return self._from_slice(key)
+        elif (type(key) == tuple) and np.all([type(ki) in [int, slice] for ki in key]):
+            return self._from_slice(key)
+        else:
+            return super().__getitem__(key)
+
+    def _at_to_slice(self, **at) -> np.array:
+        """create array slice using at"""
+        for k in at.keys():
+            if k not in self.axis_names:
+                raise ValueError(f"Axis identifier {k} not in Axes: {self.axis_names}")
+        idx = np.array([slice(None)] * len(self.shape))
+        for axis, point in at.items():
+            point, units = point
+            destination_units = self._axes[self.axis_names.index(axis)].units
+            point = wt_units.converter(point, units, destination_units)
+            axis_index = self.axis_names.index(axis)
+            axis = self._axes[axis_index]
+            idx_index = np.array(axis.shape) > 1
+            if np.sum(idx_index) > 1:
+                # we don't know how to handle a position within multiple array
+                #   dimensions
+                raise wt_exceptions.MultidimensionalAxisError(
+                    "Data._at_to_slice", axis.natural_name
+                )
+            idx_index = list(idx_index).index(True)
+            idx[idx_index] = np.argmin(np.abs(axis[tuple(idx)] - point))
+        return idx
+
+    def _from_slice(self, idx, name=None, parent=None) -> Data:
+        """create self from an array slice of the parent self"""
+        if parent is None:
+            out = Data(name=name)
+        else:
+            out = parent.create_data(name=name)
+
+        for v in self.variables:
+            kwargs = v._to_dict()
+            kwargs["values"] = v[idx]
+            out.create_variable(**kwargs)
+        for c in self.channels:
+            kwargs = c._to_dict()
+            kwargs["values"] = c[idx]
+            out.create_channel(**kwargs)
+
+        new_axes = [a.expression for a in self.axes if a[idx].size > 1]
+        out.transform(*new_axes)
+
+        constants = [a for a in self.axis_expressions if a not in new_axes]
+        new_axis_units = [a.units for a in self.axes if a.expression in out.axis_expressions]
+
+        for const in list(self.constant_expressions) + constants:
+            out.create_constant(const, verbose=False)
+            if const in self.constant_expressions:
+                dest_units = self.constants[self.constant_expressions.index(const)].units
+            else:
+                dest_units = self.axes[self.axis_expressions.index(const)].units
+            out.constants[out.constant_expressions.index(const)].convert(dest_units)
+        for j, units in enumerate(new_axis_units):
+            out.axes[j].convert(units)
+
         return out
 
     def gradient(self, axis, *, channel=0):
@@ -861,8 +1016,12 @@ class Data(Group):
                 require_kwargs["dtype"] = np.dtype(np.float64)
             else:
                 require_kwargs["dtype"] = dtype
-            if require_kwargs["dtype"].kind in "fcmM":
+            if require_kwargs["dtype"].kind == "f":
                 require_kwargs["fillvalue"] = np.nan
+            elif require_kwargs["dtype"].kind == "M":
+                require_kwargs["fillvalue"] = np.datetime64("NaT")
+            elif require_kwargs["dtype"].kind == "c":
+                require_kwargs["fillvalue"] = complex(np.nan, np.nan)
             else:
                 require_kwargs["fillvalue"] = 0
         else:
@@ -871,6 +1030,12 @@ class Data(Group):
             require_kwargs["dtype"] = values.dtype
         if np.prod(require_kwargs["shape"]) == 1:
             require_kwargs["chunks"] = None
+        if "compression" in kwargs:
+            require_kwargs["compression"] = kwargs["compression"]
+        if "compression_opts" in kwargs:
+            require_kwargs["compression_opts"] = kwargs["compression_opts"]
+        if "shuffle" in kwargs:
+            require_kwargs["shuffle"] = kwargs["shuffle"]
         # create dataset
         dataset_id = self.require_dataset(name=name, **require_kwargs).id
         channel = Channel(self, dataset_id, units=units, **kwargs)
@@ -917,17 +1082,30 @@ class Data(Group):
                 shape = self.shape
             if dtype is None:
                 dtype = np.dtype(np.float64)
-            if dtype.kind in "fcmM":
+            if dtype.kind in "f":
                 fillvalue = np.nan
+            elif dtype.kind in "M":
+                fillvalue = np.datetime64("NaT")
+            elif dtype.kind in "c":
+                fillvalue = complex(np.nan, np.nan)
             else:
                 fillvalue = 0
         else:
             shape = values.shape
             dtype = values.dtype
             fillvalue = None
+        require_kwargs = {"chunks": True}
+        if "compression" in kwargs:
+            require_kwargs["compression"] = kwargs["compression"]
+        if "compression_opts" in kwargs:
+            require_kwargs["compression_opts"] = kwargs["compression_opts"]
+        if "shuffle" in kwargs:
+            require_kwargs["shuffle"] = kwargs["shuffle"]
+        if np.prod(shape) == 1:
+            require_kwargs["chunks"] = None
         # create dataset
         id = self.require_dataset(
-            name=name, data=values, shape=shape, dtype=dtype, fillvalue=fillvalue
+            name=name, data=values, shape=shape, dtype=dtype, fillvalue=fillvalue, **require_kwargs
         ).id
         variable = Variable(self, id, units=units, **kwargs)
         # finish
@@ -1090,9 +1268,13 @@ class Data(Group):
     def map_variable(
         self, variable, points, input_units="same", *, name=None, parent=None, verbose=True
     ) -> "Data":
-        """Map points of an axis to new points using linear interpolation.
+        """
+        Map points of an axis to new points using linear interpolation.
 
         Out-of-bounds points are written nan.
+
+        Non-mapped variables are kept in the data object only if they are
+        orthogonal to the mapped variable (see `kit.orthogonal`).
 
         Parameters
         ----------
@@ -1104,7 +1286,7 @@ class Data(Group):
             between.
         input_units : str (optional)
             The units of the new points. Default is same, which assumes
-            the new points have the same units as the axis.
+            the new points have the same units as the variable.
         name : string (optional)
             The name of the new data object. If None, generated from
             natural_name. Default is None.
@@ -1333,7 +1515,7 @@ class Data(Group):
 
     def print_tree(self, *, verbose=True):
         """Print a ascii-formatted tree representation of the data contents."""
-        print("{0} ({1})".format(self.natural_name, self.filepath))
+        print("{0} ({1}) {2}".format(self.natural_name, self.filepath, self.shape))
         self._print_branch("", depth=0, verbose=verbose)
 
     def prune(self, keep_channels=True, *, verbose=True):
@@ -1716,7 +1898,7 @@ class Data(Group):
                 out_arr = np.full(omask.shape, np.nan)
                 imask = wt_kit.enforce_mask_shape(imask, var.shape)
                 out_arr[omask] = var[:][imask]
-                out[i].create_variable(values=out_arr, **var.attrs)
+                out[i].create_variable(values=out_arr, **var.attrs, dtype=var.dtype)
 
         for ch in self.channels:
             for i, (imask, omask, cut) in enumerate(zip(masks, omasks, cuts)):
@@ -1725,10 +1907,10 @@ class Data(Group):
                     continue
                 omask = wt_kit.enforce_mask_shape(omask, ch.shape)
                 omask.shape = tuple([s for s, c in zip(omask.shape, cut) if not c])
-                out_arr = np.full(omask.shape, np.nan)
+                out_arr = np.full(omask.shape, np.nan, dtype=ch.dtype)
                 imask = wt_kit.enforce_mask_shape(imask, ch.shape)
                 out_arr[omask] = ch[:][imask]
-                out[i].create_channel(values=out_arr, **ch.attrs)
+                out[i].create_channel(values=out_arr, **ch.attrs, dtype=ch.dtype)
 
         if verbose:
             for d in out.values():
@@ -1817,6 +1999,94 @@ class Data(Group):
             print("Look she turned me into a newt")
         elif verbose and newt and not nownewt:
             print("I got better")
+
+    def translate_to_txt(
+        self, filepath, delimiter="\t", channels=None, variables=None, fmt=".5g", verbose=True
+    ):
+        """
+        Write a serialized, readable list of the channels and variables to
+        file. Each line (row) denotes a seperate data point. Each column
+        represents a unique variable or channel. Axes are neglected.
+
+        Parameters
+        ----------
+
+        filepath: path-like
+            path to output file.
+        delimiter: str
+            separation character.  Defaults to "\t"
+        channels: list[str] (optional)
+            List of channel names to include. Default is all channels.
+        variables: list[str] (optional)
+            List of variable names to include. Default is all variables.
+        fmt: [python format spec](https://docs.python.org/3/library/string.html#formatspec)
+            format specifier for variables and channels
+
+        Returns
+        -------
+
+        None
+
+        Notes
+        -----
+
+        * This is a lossy write procedure; some properties, such as axes, are
+        not recorded.
+        * The shape structure of the data is recorded as a series of indices
+        (`{a_i}`) comprising the first few columns. A vertical line separates
+        these indexes from variables and channels
+        * wt5, the native file format for Data objects, is a specific variant
+        of the HDF5 file format. HDF5 has well-developed tools for working with
+        generic datasets.  See
+        https://portal.hdfgroup.org/display/knowledge/How+to+convert+an+HDF4+or+HDF5+file+to+ASCII+%28text%29+or+Excel
+        for more information.
+        """
+        # attrs
+        import tidy_headers
+
+        tidy_headers.write(filepath, {k: v for k, v in self.attrs.items()})
+
+        columns = [f"a_{i}" for i in range(self.ndim)]
+        columns.append("|")
+        is_broadcast = []
+
+        variables = list(self.variable_names) if variables is None else variables
+        for var in variables:
+            columns.append(f"{var} ({self[var].units})")
+            is_broadcast.append([i == 1 for i in self[var].shape])
+
+        channels = list(self.channel_names) if channels is None else channels
+        for ch in channels:
+            columns.append(f"{ch} ({self[ch].units})")
+            is_broadcast.append([i == 1 for i in self[ch].shape])
+
+        with open(filepath, "a") as f:
+            f.write(delimiter.join(columns) + "\n")
+            chunk = ""
+            for i, ndi in enumerate(np.ndindex(self.shape)):
+                line = [str(i) for i in ndi]
+                line += ["|"]
+                for j, name in enumerate(variables + channels):
+                    arr = self[name]
+                    # broadcast reduced dimensions arrays to full
+                    idxs = tuple(xi * (not yi) for xi, yi in zip(ndi, is_broadcast[j]))
+                    line.append(f"{arr[idxs]:{fmt}}")
+                if verbose and ((i == 0) or (not (i % 10))):
+                    frac = round(i / self.size, 3)
+                    sys.stdout.write(
+                        f"[{'=' * int(frac * 60): <60}] {frac * 100:0.1f}% ...to_txt\r"
+                    )
+                    sys.stdout.flush()
+                chunk += delimiter.join(line) + "\n"
+                if (i % 100) == 99:  # write to disk periodically
+                    f.write(chunk)
+                    chunk = ""
+            if chunk:
+                f.write(chunk)
+
+        if verbose:
+            sys.stdout.write(f"[{'=' * 60}] {100:0.1f}% ...done! \r")
+            sys.stdout.flush()
 
     def set_constants(self, *constants, verbose=True):
         """Set the constants associated with the data.
@@ -1919,7 +2189,7 @@ class Data(Group):
         See `scipy ndimage`__ for more info.
 
         __ http://docs.scipy.org/doc/scipy/reference/
-                    generated/scipy.ndimage.interpolation.zoom.html
+                    generated/scipy.ndimage.zoom.html
 
         Parameters
         ----------
@@ -1935,10 +2205,10 @@ class Data(Group):
 
         # axes
         for axis in self._axes:
-            axis[:] = scipy.ndimage.interpolation.zoom(axis[:], factor, order=order)
+            axis[:] = scipy.ndimage.zoom(axis[:], factor, order=order)
         # channels
         for channel in self.channels:
-            channel[:] = scipy.ndimage.interpolation.zoom(channel[:], factor, order=order)
+            channel[:] = scipy.ndimage.zoom(channel[:], factor, order=order)
         # return
         if verbose:
             print("data zoomed to new shape:", self.shape)

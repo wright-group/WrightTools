@@ -1,6 +1,5 @@
 """Axis class and associated."""
 
-
 # --- import --------------------------------------------------------------------------------------
 
 
@@ -45,12 +44,12 @@ class Axis(object):
         parent : WrightTools.Data
             Parent data object.
         expression : string
-            Axis expression.
+            Axis expression. Space characters are ignored.
         units : string (optional)
             Axis units. Default is None.
         """
         self.parent = parent
-        self.expression = expression
+        self.expression = expression.replace(" ", "")  # ignore spaces
         if units is None:
             self.units = self.variables[0].units
         else:
@@ -112,9 +111,7 @@ class Axis(object):
     def natural_name(self) -> str:
         """Valid python identifier representation of the expession."""
         name = self.expression.strip()
-        for op in operators:
-            name = name.replace(op, operator_to_identifier[op])
-        return wt_kit.string2identifier(name)
+        return wt_kit.string2identifier(name, replace=operator_to_identifier)
 
     @property
     def ndim(self) -> int:

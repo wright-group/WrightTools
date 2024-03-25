@@ -1,12 +1,13 @@
 """Array interaction tools."""
 
-
 # --- import --------------------------------------------------------------------------------------
 
 
 import numpy as np
 
 from .. import exceptions as wt_exceptions
+
+from typing import Tuple
 
 
 # --- define --------------------------------------------------------------------------------------
@@ -26,6 +27,7 @@ __all__ = [
     "valid_index",
     "mask_reduce",
     "enforce_mask_shape",
+    "guess_signed",
 ]
 
 
@@ -120,35 +122,40 @@ def diff(xi, yi, order=1) -> np.ndarray:
     return yi
 
 
-def fft(xi, yi, axis=0) -> tuple:
-    """Take the 1D FFT of an N-dimensional array and return "sensible" properly shifted arrays.
+def fft(xi, yi, axis=0) -> Tuple[np.ndarray, np.ndarray]:
+    """Compute a discrete Fourier Transform along one axis of an N-dimensional
+    array and also compute the 1D frequency coordinates of the transform. The
+    Fourier coefficients and frequency coordinates are ordered so that the
+    coordinates are monotonic (i.e. uses `numpy.fft.fftshift`).
 
     Parameters
     ----------
-    xi : numpy.ndarray
-        1D array over which the points to be FFT'ed are defined
-    yi : numpy.ndarray
-        ND array with values to FFT
+    ti : 1D numpy.ndarray
+        Independent variable specifying data coordinates. Must be monotonic,
+        linearly spaced data. `ti.size` must be equal to `yi.shape[axis]`
+    yi : n-dimensional numpy.ndarray
+        Dependent variable. ND array with values to FFT.
     axis : int
         axis of yi to perform FFT over
 
     Returns
     -------
     xi : 1D numpy.ndarray
-        1D array. Conjugate to input xi. Example: if input xi is in the time
-        domain, output xi is in frequency domain.
-    yi : ND numpy.ndarray
-        FFT. Has the same shape as the input array (yi).
+        1D array. Conjugate coordinates to input xi. Example: if input `xi`
+        is time coordinates, output `xi` is (cyclic) frequency coordinates.
+    yi : complex numpy.ndarray
+        Transformed data. Has the same shape as the input array (yi).
     """
     # xi must be 1D
     if xi.ndim != 1:
         raise wt_exceptions.DimensionalityError(1, xi.ndim)
     # xi must be evenly spaced
     spacing = np.diff(xi)
-    if not np.allclose(spacing, spacing.mean()):
+    spacing_mean = spacing.mean()
+    if not np.allclose(spacing, spacing_mean):
         raise RuntimeError("WrightTools.kit.fft: argument xi must be evenly spaced")
     # fft
-    yi = np.fft.fft(yi, axis=axis)
+    yi = np.fft.fft(yi, axis=axis) * spacing_mean
     d = (xi.max() - xi.min()) / (xi.size - 1)
     xi = np.fft.fftfreq(xi.size, d=d)
     # shift
@@ -195,7 +202,7 @@ def orthogonal(*args) -> bool:
         if hasattr(arg, "shape"):
             args[i] = arg.shape
     for s in zip(*args):
-        if np.product(s) != max(s):
+        if np.prod(s) != max(s):
             return False
     return True
 
@@ -237,7 +244,15 @@ def share_nans(*arrs) -> tuple:
     list
         List of nD arrays in same order as given, with nan indicies syncronized.
     """
-    nans = np.zeros(joint_shape(*arrs))
+    kinds = {arr.dtype.kind for arr in arrs}
+    if "c" in kinds:
+        dtype = complex
+    elif "f" in kinds:
+        dtype = float
+    else:
+        dtype = arrs[0].dtype
+
+    nans = np.zeros(joint_shape(*arrs), dtype=dtype)
     for arr in arrs:
         nans *= arr
     return tuple([a + nans for a in arrs])
@@ -418,3 +433,38 @@ def enforce_mask_shape(mask, shape):
     """
     red = tuple([i for i in range(len(shape)) if shape[i] == 1])
     return mask.max(axis=red, keepdims=True)
+
+
+def guess_signed(chan, tol=1e-1):
+    """guess whether or not a channel is signed by examining min and max values.
+
+    Parameters
+    -------------
+    chan : array-like
+        Input channel or array
+    tol : float (optional)
+        Tolerance value used to judge signed. `tol` should be much less than 1. To prefer signed guesses, use negative tolerance values.
+
+    Returns
+    -------
+    guess : bool
+        True if the data seems signed and False otherwise.
+    """
+
+    maxc = chan.max()
+    minc = chan.min()
+    from ..data import Channel
+
+    if isinstance(chan, Channel):
+        null = chan.null
+    else:
+        null = 0
+
+    # avoid zero division for comparison
+    bottom = np.abs(maxc - null) + np.abs(minc - null)
+    if not bottom:  # (maxc-null)=-(minc-null)
+        return True
+
+    comparison = np.abs(maxc + minc - 2 * null) / bottom
+    # should be < 1 if signed
+    return comparison < 1 - tol

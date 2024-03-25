@@ -4,6 +4,7 @@ Split
 
 Some examples of how splitting works.
 """
+
 from matplotlib import pyplot as plt
 import WrightTools as wt
 from WrightTools import datasets

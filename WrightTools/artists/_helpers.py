@@ -1,6 +1,5 @@
 """Functions to help with plotting."""
 
-
 # --- import --------------------------------------------------------------------------------------
 
 
@@ -15,7 +14,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patheffects as PathEffects
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-import imageio
+import imageio.v3 as iio
 import warnings
 
 from .. import exceptions as wt_exceptions
@@ -355,7 +354,7 @@ def create_figure(
         return (total / (n + mpl * (n - 1))) * mpl
 
     # calculate column widths, width_ratio
-    subplot_ratios = np.array([i for i in cols if not i == "cbar"], dtype=np.float)
+    subplot_ratios = np.array([i for i in cols if not i == "cbar"], dtype=np.float64)
     subplot_ratios /= sum(subplot_ratios)
     subplot_widths = total_subplot_width * subplot_ratios
     width_ratios = []
@@ -1082,14 +1081,14 @@ def subplots_adjust(fig=None, inches=1):
         fig.subplots_adjust(top=top, right=right, bottom=bottom, left=left)
 
 
-def stitch_to_animation(images, outpath=None, *, duration=0.5, palettesize=256, verbose=True):
+def stitch_to_animation(paths, outpath=None, *, duration=0.5, palettesize=256, verbose=True):
     """Stitch a series of images into an animation.
 
     Currently supports animated gifs, other formats coming as needed.
 
     Parameters
     ----------
-    images : list of strings
+    paths : list of strings
         Filepaths to the images to stitch together, in order of apperence.
     outpath : string (optional)
         Path of output, including extension. If None, bases output path on path
@@ -1098,22 +1097,21 @@ def stitch_to_animation(images, outpath=None, *, duration=0.5, palettesize=256, 
         Duration of (each) frame in seconds. Default is 0.5.
     palettesize : int (optional)
         The number of colors in the resulting animation. Input is rounded to
-        the nearest power of 2. Default is 1024.
+        the nearest power of 2. Default is 256.
     verbose : bool (optional)
         Toggle talkback. Default is True.
     """
     # parse filename
     if outpath is None:
-        outpath = os.path.splitext(images[0])[0] + ".gif"
+        outpath = os.path.splitext(paths[0])[0] + ".gif"
     # write
     t = wt_kit.Timer(verbose=False)
-    with t, imageio.get_writer(
-        outpath, mode="I", duration=duration, palettesize=palettesize
-    ) as writer:
-        for p in images:
-            image = imageio.imread(p)
-            writer.append_data(image)
-    # finish
+    with t, iio.imopen(outpath, "w") as gif:
+        for p in paths:
+            frame = iio.imread(p)
+            gif.write(
+                frame, plugin="pillow", duration=duration * 1e3, loop=0, palettesize=palettesize
+            )
     if verbose:
         interval = np.round(t.interval, 2)
         print("gif generated in {0} seconds - saved at {1}".format(interval, outpath))

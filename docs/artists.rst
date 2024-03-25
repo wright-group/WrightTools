@@ -238,20 +238,29 @@ Plot
 ^^^^
 
 Once you have axes with the :meth:`~matplotlib.pyplot.subplot` call, it can be used as you are used to using :class:`matplotlib.axes.Axes` objects (though some defaults, such as colormap, differ from bare matplotlib).
-However, you can also pass :class:`WrightTools.data.Data` objects in directly (and there are some kwargs available when you do).
+For certain plot methods, you can also pass :class:`WrightTools.data.Data` objects in directly (and there are some extra kwargs available when you do).
 These :class:`WrightTools.artists.Axes` will extract out the proper arrays and plot the data.
 
 .. code-block:: python
 
    for indx, wigner, color in zip(indxs, wigners, wigner_colors):
        ax = plt.subplot(gs[indx])
-       ax.pcolor(wigner, vmin=0, vmax=1)  # global colormpa
+       ax.pcolor(wigner, vmin=0, vmax=1)  # global colormap
        ax.contour(wigner)  # local contours
    ...
    for indx, color, traces in zip(indxs, trace_colors, tracess):
        ax = plt.subplot(gs[indx])
        for trace, w_color in zip(traces, wigner_colors):
            ax.plot(trace, color=w_color, linewidth=1.5)
+
+Currently supported plot methods are:
+- :meth:`~WrightTools.artists.Axes.contour`
+- :meth:`~WrightTools.artists.Axes.contourf`
+- :meth:`~WrightTools.artists.Axes.imshow`
+- :meth:`~WrightTools.artists.Axes.pcolor`
+- :meth:`~WrightTools.artists.Axes.pcolormesh`
+- :meth:`~WrightTools.artists.Axes.plot`
+- :meth:`~WrightTools.artists.Axes.scatter`
 
 Beautify
 ^^^^^^^^

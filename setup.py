@@ -34,17 +34,19 @@ setup(
     name="WrightTools",
     packages=find_packages(exclude=("tests", "tests.*")),
     package_data=extra_files,
-    python_requires=">=3.6",
+    python_requires=">=3.7",
     install_requires=[
         "h5py",
-        "imageio",
-        "matplotlib>=3.3.0",
+        "imageio>=2.28.0",
+        "matplotlib>=3.4.0",
         "numexpr",
         "numpy>=1.15.0",
         "pint",
         "python-dateutil",
         "scipy",
+        "click",
         "tidy_headers>=1.0.0",
+        "rich",
     ],
     extras_require={
         "docs": docs_require,
@@ -66,7 +68,12 @@ setup(
     license="MIT",
     url="http://wright.tools",
     keywords="spectroscopy science multidimensional visualization",
-    entry_points={"console_scripts": ["wt-tree=WrightTools.__main__:wt_tree"]},
+    entry_points={
+        "console_scripts": [
+            "wt5=WrightTools.cli._wt5:cli",
+            "wt-convert=WrightTools.cli._units:cli",
+        ]
+    },
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Science/Research",
@@ -74,8 +81,10 @@ setup(
         "Framework :: Matplotlib",
         "Natural Language :: English",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
         "Topic :: Scientific/Engineering",
     ],
 )

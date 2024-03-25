@@ -76,23 +76,22 @@ def test_4D():
 
     data = wt.data.Data(name="data")
     data.create_channel("signal", values=signal, signed=True)
-    data.create_variable("w1", values=w1[:, None, None, None], units="wn")
-    data.create_variable("w2", values=w2[None, :, None, None], units="wn")
-    data.create_variable("w3", values=w3[None, None, :, None], units="wn")
-    data.create_variable("d1", values=tau[None, None, None, :], units="ps")
+    data.create_variable("w_1", values=w1[:, None, None, None], units="wn")
+    data.create_variable("w_2", values=w2[None, :, None, None], units="wn")
+    data.create_variable("w_3", values=w3[None, None, :, None], units="wn")
+    data.create_variable("d_1", values=tau[None, None, None, :], units="ps")
 
-    data.transform("w1", "w2", "w3", "d1")
-    return wt.artists.interact2D(data, xaxis=0, yaxis=1, local=True)
+    data.transform("w_1", "w_2", "w_3", "d_1")
+    return wt.artists.interact2D(data, xaxis=0, yaxis=1, local=True, use_imshow=True)
 
 
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
 
     plt.close("all")
-    # store to variable to prevent garbage collection
-    t0 = test_perovskite()
-    t1 = test_MoS2()
-    t2 = test_asymmetric()
-    t3 = test_skewed()
-    t4 = test_4D()
+    out1 = test_perovskite()
+    out2 = test_MoS2()
+    out3 = test_asymmetric()
+    out4 = test_skewed()
+    out5 = test_4D()
     plt.show()

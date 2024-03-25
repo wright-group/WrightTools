@@ -82,8 +82,21 @@ Of course, if you find yourself processing a lot of data from a particular file 
 Having trouble connecting the WrightTools `Data` structure to bare `numpy` arrays?
 We have a notebook that takes a look at how many common `numpy.ndarray` operations--
 slicing, element-wise math, broadcasting, etc.--have analogues within the WrightTools data structure:
+
 .. image:: https://mybinder.org/badge_logo.svg
  :target: https://mybinder.org/v2/gh/wright-group/WrightTools/master?filepath=examples%2Fwt%20for%20np%20users.ipynb
+
+Creating Compressed Datasets
+````````````````````````````
+
+WrightTools can transparently read and create compressed datasets by passing arguments to :meth:`~WrightTools.data.Data.create_variable` or :meth:`~WrightTools.data.Data.create_channel`.
+These arguments are the same as are passed to `h5py's create_dataset method <https://docs.h5py.org/en/stable/high/dataset.html#filter-pipeline>`_.
+
+.. code-block:: python
+
+   data = wt.Data(name='example')
+   data.create_variable(name='w1', units='wn', shape=(1024, 1024), compression="gzip")
+   data.create_channel(name='signal', shape=(1024, 1024), compression="gzip", compression_opts=9)
 
 Structure & Attributes
 ----------------------
@@ -145,6 +158,7 @@ Axis
 The :class:`WrightTools.data.Axis` class defines the coordinates of a data object.
 Each ``Axis`` contains an ``expression``, which dictates its relationship with one or more variables.
 Given 5 variables with names [``'w1'``, ``'w2'``, ``'wm'``, ``'d1'``, ``'d2'``] , example valid expressions include ``'w1'``, ``'w1=wm'``, ``'w1+w2'``, ``'2*w1'``, ``'d1-d2'``, and ``'wm-w1+w2'``.
+WrightTools ignores the space character in expressions, so ``'w1 = w2'`` will be interpreted as ``'w1=w2'``.
 Axes behave like arrays: you can slice into them, view their shape, get a min and max etc.
 But actually axes do not contain any new array information: they simply refer to the Variable arrays.
 Axes have the following key attributes:

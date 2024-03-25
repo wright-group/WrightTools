@@ -17,8 +17,9 @@ __all__ = ["interact2D"]
 
 
 class Focus:
-    def __init__(self, axes, linewidth=2):
+    def __init__(self, axes, sliders, linewidth=2):
         self.axes = axes
+        self.sliders = sliders
         self.linewidth = linewidth
         ax = axes[0]
         for side in ["top", "bottom", "left", "right"]:
@@ -36,6 +37,11 @@ class Focus:
         if self.focus_axis == ax or ax not in self.axes:
             return
         else:  # set new focus
+            if self.focus_axis.get_gid() in self.sliders.keys():
+                self.sliders[self.focus_axis.get_gid()].track.set_facecolor("lightgrey")
+            if ax.get_gid() in self.sliders.keys():
+                self.sliders[ax.get_gid()].track.set_facecolor("darkgrey")
+
             for spine in ["top", "bottom", "left", "right"]:
                 self.focus_axis.spines[spine].set_linewidth(1)
                 ax.spines[spine].set_linewidth(self.linewidth)
@@ -48,6 +54,20 @@ def _at_dict(data, sliders, xaxis, yaxis):
         for a in data.axes
         if a not in [xaxis, yaxis]
     }
+
+
+def create_local_global_radio(ax, local):
+    if mpl.__version_info__ >= (3, 7):
+        radio = RadioButtons(ax, (" global", " local"), radio_props={"s": 100})
+    else:
+        radio = RadioButtons(ax, (" global", " local"))
+        for circle in radio.circles:
+            circle.set_radius(0.14)
+    if local:
+        radio.set_active(1)
+    else:
+        radio.set_active(0)
+    return radio
 
 
 def get_axes(data, axes):
@@ -75,31 +95,56 @@ def get_channel(data, channel):
     return channel
 
 
-def get_colormap(channel):
-    if channel.signed:
-        cmap = "signed"
-    else:
-        cmap = "default"
+def get_colormap(signed):
+    cmap = "signed" if signed else "default"
     cmap = colormaps[cmap]
     cmap.set_bad([0.75] * 3, 1.0)
     cmap.set_under([0.75] * 3, 1.0)
     return cmap
 
 
-def get_clim(channel, current_state):
-    if current_state.local:
-        arr = current_state.dat[channel.natural_name][:]
-        if channel.signed:
-            mag = np.nanmax(np.abs(arr))
-            clim = [-mag, mag]
+class Norm:
+    def __init__(self, channel, current_state):
+        self.current_state = current_state
+        self.signed = channel.signed
+        self.update(channel)
+
+    def __call__(self, data):
+        out = self.norm(data)
+        return out
+
+    def update(self, channel):
+        if self.signed:
+            if not self.current_state.local:
+                norm = mpl.colors.CenteredNorm(vcenter=channel.null, halfrange=channel.mag())
+            else:
+                norm = mpl.colors.CenteredNorm(vcenter=channel.null)
+                norm.autoscale_None(
+                    np.ma.masked_invalid(self.current_state.dat[channel.natural_name][:])
+                )
+            if norm.halfrange == 0:
+                norm.halfrange = 1
         else:
-            clim = [0, np.nanmax(arr)]
-    else:
-        if channel.signed:
-            clim = [-channel.mag(), channel.mag()]
-        else:
-            clim = [0, channel.max()]
-    return clim
+            if not self.current_state.local:
+                norm = mpl.colors.Normalize(vmin=channel.null, vmax=np.nanmax(channel[:]))
+            else:
+                norm = mpl.colors.Normalize(vmin=channel.null)
+                norm.autoscale_None(
+                    np.ma.masked_invalid(self.current_state.dat[channel.natural_name][:])
+                )
+            if norm.vmax == norm.vmin:
+                norm.vmax += 1
+        self.norm = norm
+
+    @property
+    def ticks(self) -> np.array:
+        if type(self.norm) == mpl.colors.CenteredNorm:
+            vmin = self.norm.vcenter - self.norm.halfrange
+            vmax = self.norm.vcenter + self.norm.halfrange
+        else:  # mpl.colors.Normalize
+            vmin = self.norm.vmin
+            vmax = self.norm.vmax
+        return np.linspace(vmin, vmax, 11)
 
 
 def gen_ticklabels(points, signed=None):
@@ -122,18 +167,15 @@ def gen_ticklabels(points, signed=None):
     return ticklabels
 
 
-def norm(arr, signed, ignore_zero=True):
-    if signed:
-        norm = np.nanmax(np.abs(arr))
-    else:
-        norm = np.nanmax(arr)
-    if norm != 0 and ignore_zero:
-        arr /= norm
-    return arr
-
-
 def interact2D(
-    data: wt_data.Data, xaxis=0, yaxis=1, channel=0, local=False, use_imshow=False, verbose=True
+    data: wt_data.Data,
+    xaxis=0,
+    yaxis=1,
+    channel=0,
+    cmap=None,
+    local=False,
+    use_imshow=False,
+    verbose=True,
 ):
     """Interactive 2D plot of the dataset.
     Side plots show x and y projections of the slice (shaded gray).
@@ -151,10 +193,12 @@ def interact2D(
         Expression or index of y axis. Default is 1.
     channel : string, integer, or data.Channel object (optional)
         Name or index of channel to plot. Default is 0.
+    cmap : string or cm object (optional)
+        Name of colormap, or explicit colormap object.  Defaults to channel default.
     local : boolean (optional)
         Toggle plotting locally. Default is False.
     use_imshow : boolean (optional)
-        If true, matplotlib imshow is used to render the 2D slice.
+        If True, matplotlib imshow is used to render the 2D slice.
         Can give better performance, but is only accurate for
         uniform grids.  Default is False.
     verbose : boolean (optional)
@@ -189,10 +233,10 @@ def interact2D(
     # avoid changing passed data object
     data = data.copy()
     # unpack
-    data.prune(keep_channels=channel)
     channel = get_channel(data, channel)
     xaxis, yaxis = get_axes(data, [xaxis, yaxis])
-    cmap = get_colormap(channel)
+    data.prune(keep_channels=channel.natural_name, verbose=False)
+    cmap = cmap if cmap is not None else get_colormap(channel.signed)
     current_state = SimpleNamespace()
     # create figure
     nsliders = data.ndim - 2
@@ -200,6 +244,7 @@ def interact2D(
         raise DimensionalityError(">= 2", data.ndim)
     # TODO: implement aspect; doesn't work currently because of our incorporation of colorbar
     fig, gs = create_figure(width="single", nrows=7 + nsliders, cols=[1, 1, 1, 1, 1, "cbar"])
+    plt.get_current_fig_manager().set_window_title(f"interact2D: {data.natural_name}")
     # create axes
     ax0 = plt.subplot(gs[1:6, 0:5])
     ax0.patch.set_facecolor("w")
@@ -232,59 +277,55 @@ def interact2D(
     ydir = 1 if yaxis.points.flatten()[-1] - yaxis.points.flatten()[0] > 0 else -1
     current_state.bin_vs_x = True
     current_state.bin_vs_y = True
+
     # create buttons
     current_state.local = local
-    radio = RadioButtons(ax_local, (" global", " local"))
-    if local:
-        radio.set_active(1)
-    else:
-        radio.set_active(0)
-    for circle in radio.circles:
-        circle.set_radius(0.14)
+    radio = create_local_global_radio(ax_local, local)
+
     # create sliders
     sliders = {}
-    for axis in data.axes:
-        if axis not in [xaxis, yaxis]:
-            if axis.size > np.prod(axis.shape):
-                raise NotImplementedError("Cannot use multivariable axis as a slider")
-            slider_axes = plt.subplot(gs[~len(sliders), :]).axes
-            slider = Slider(slider_axes, axis.label, 0, axis.points.size - 1, valinit=0, valstep=1)
-            sliders[axis.natural_name] = slider
-            slider.ax.vlines(
-                range(axis.points.size - 1),
-                *slider.ax.get_ylim(),
-                colors="k",
-                linestyle=":",
-                alpha=0.5
-            )
-            slider.valtext.set_text(gen_ticklabels(axis.points)[0])
-    current_state.focus = Focus([ax0] + [slider.ax for slider in sliders.values()])
+    for axis in filter(lambda a: a not in [xaxis, yaxis], data.axes):
+        if axis.size > np.prod(axis.shape):
+            raise NotImplementedError("Cannot use multivariable axis as a slider")
+        slider_axes = plt.subplot(gs[~len(sliders), :]).axes
+        slider = Slider(
+            slider_axes,
+            axis.label,
+            0,
+            axis.points.size - 1,
+            valinit=0,
+            valstep=1,
+            track_color="lightgrey",
+        )
+        sliders[axis.natural_name] = slider
+        slider_axes.set_gid(axis.natural_name)
+        slider.ax.vlines(
+            range(axis.points.size - 1),
+            *slider.ax.get_ylim(),
+            colors="k",
+            linestyle=":",
+            alpha=0.5,
+        )
+        slider.valtext.set_text(gen_ticklabels(axis.points)[0])
+    current_state.focus = Focus([ax0] + [slider.ax for slider in sliders.values()], sliders)
     # initial xyz start are from zero indices of additional axes
-    current_state.dat = data.chop(
-        xaxis.natural_name,
-        yaxis.natural_name,
-        at=_at_dict(data, sliders, xaxis, yaxis),
-        verbose=False,
-    )[0]
-    clim = get_clim(channel, current_state)
-    ticklabels = gen_ticklabels(np.linspace(*clim, 11), channel.signed)
-    if clim[0] == clim[1]:
-        clim = [-1 if channel.signed else 0, 1]
+    current_state.dat = data.at(**_at_dict(data, sliders, xaxis, yaxis))
+    current_state.dat.transform(xaxis.expression, yaxis.expression)
+    current_state.norm = Norm(channel, current_state)
 
     gen_mesh = ax0.pcolormesh if not use_imshow else ax0.imshow
     obj2D = gen_mesh(
         current_state.dat,
         cmap=cmap,
-        vmin=clim[0],
-        vmax=clim[1],
+        norm=current_state.norm.norm,
         ylabel=yaxis.label,
         xlabel=xaxis.label,
     )
-    ax0.grid(b=True)
+    ax0.grid(True)
     # colorbar
-    colorbar = plot_colorbar(
-        cax, cmap=cmap, label=channel.natural_name, ticks=np.linspace(clim[0], clim[1], 11)
-    )
+    ticks = current_state.norm.ticks
+    ticklabels = gen_ticklabels(ticks, channel.signed)
+    colorbar = plot_colorbar(cax, cmap=cmap, label=channel.natural_name, ticks=ticks)
     colorbar.set_ticklabels(ticklabels)
     fig.canvas.draw_idle()
 
@@ -306,16 +347,19 @@ def interact2D(
             )
             > 1
         ).index(True)
+
+        norm = current_state.norm
+
         if channel.signed:
             temp_arr = np.ma.masked_array(arr, np.isnan(arr), copy=True)
             temp_arr[temp_arr < 0] = 0
-            x_proj_pos = np.nanmean(temp_arr, axis=yind)
-            y_proj_pos = np.nanmean(temp_arr, axis=xind)
+            x_proj_pos = np.nanmax(temp_arr, axis=yind)
+            y_proj_pos = np.nanmax(temp_arr, axis=xind)
 
             temp_arr = np.ma.masked_array(arr, np.isnan(arr), copy=True)
             temp_arr[temp_arr > 0] = 0
-            x_proj_neg = np.nanmean(temp_arr, axis=yind)
-            y_proj_neg = np.nanmean(temp_arr, axis=xind)
+            x_proj_neg = np.nanmin(temp_arr, axis=yind)
+            y_proj_neg = np.nanmin(temp_arr, axis=xind)
 
             x_proj = np.nanmean(arr, axis=yind)
             y_proj = np.nanmean(arr, axis=xind)
@@ -323,46 +367,37 @@ def interact2D(
             alpha = 0.4
             blue = "#517799"  # start with #87C7FF and change saturation
             red = "#994C4C"  # start with #FF7F7F and change saturation
+
             if current_state.bin_vs_x:
-                x_proj_norm = max(np.nanmax(x_proj_pos), np.nanmax(-x_proj_neg))
-                if x_proj_norm != 0:
-                    x_proj_pos /= x_proj_norm
-                    x_proj_neg /= x_proj_norm
-                    x_proj /= x_proj_norm
                 try:
-                    sp_x.fill_between(xaxis.points, x_proj_pos, 0, color=red, alpha=alpha)
-                    sp_x.fill_between(xaxis.points, 0, x_proj_neg, color=blue, alpha=alpha)
-                    sp_x.fill_between(xaxis.points, x_proj, 0, color="k", alpha=0.3)
+                    sp_x.fill_between(xaxis.points, norm(x_proj_pos), 0.5, color=red, alpha=alpha)
+                    sp_x.fill_between(xaxis.points, 0.5, norm(x_proj_neg), color=blue, alpha=alpha)
+                    sp_x.fill_between(xaxis.points, norm(x_proj), 0.5, color="k", alpha=0.3)
                 except ValueError:  # Input passed into argument is not 1-dimensional
                     current_state.bin_vs_x = False
                     sp_x.set_visible(False)
             if current_state.bin_vs_y:
-                y_proj_norm = max(np.nanmax(y_proj_pos), np.nanmax(-y_proj_neg))
-                if y_proj_norm != 0:
-                    y_proj_pos /= y_proj_norm
-                    y_proj_neg /= y_proj_norm
-                    y_proj /= y_proj_norm
                 try:
-                    sp_y.fill_betweenx(yaxis.points, y_proj_pos, 0, color=red, alpha=alpha)
-                    sp_y.fill_betweenx(yaxis.points, 0, y_proj_neg, color=blue, alpha=alpha)
-                    sp_y.fill_betweenx(yaxis.points, y_proj, 0, color="k", alpha=0.3)
+                    sp_y.fill_betweenx(yaxis.points, norm(y_proj_pos), 0.5, color=red, alpha=alpha)
+                    sp_y.fill_betweenx(
+                        yaxis.points, 0.5, norm(y_proj_neg), color=blue, alpha=alpha
+                    )
+                    sp_y.fill_betweenx(yaxis.points, norm(y_proj), 0.5, color="k", alpha=0.3)
                 except ValueError:
                     current_state.bin_vs_y = False
                     sp_y.set_visible(False)
         else:
             if current_state.bin_vs_x:
-                x_proj = np.nanmean(arr, axis=yind)
-                x_proj = norm(x_proj, channel.signed)
+                x_proj = np.nanmax(arr, axis=yind)
                 try:
-                    sp_x.fill_between(xaxis.points, x_proj, 0, color="k", alpha=0.3)
+                    sp_x.fill_between(xaxis.points, norm(x_proj), 0, color="k", alpha=0.3)
                 except ValueError:
                     current_state.bin_vs_x = False
                     sp_x.set_visible(False)
             if current_state.bin_vs_y:
-                y_proj = np.nanmean(arr, axis=xind)
-                y_proj = norm(y_proj, channel.signed)
+                y_proj = np.nanmax(arr, axis=xind)
                 try:
-                    sp_y.fill_betweenx(yaxis.points, y_proj, 0, color="k", alpha=0.3)
+                    sp_y.fill_betweenx(yaxis.points, norm(y_proj), 0, color="k", alpha=0.3)
                 except ValueError:
                     current_state.bin_vs_y = False
                     sp_y.set_visible(False)
@@ -372,9 +407,8 @@ def interact2D(
     ax0.set_xlim(xaxis.points.min(), xaxis.points.max())
     ax0.set_ylim(yaxis.points.min(), yaxis.points.max())
 
-    if channel.signed:
-        sp_x.set_ylim(-1.1, 1.1)
-        sp_y.set_xlim(-1.1, 1.1)
+    sp_x.set_ylim(0, 1)
+    sp_y.set_xlim(0, 1)
 
     def update_sideplot_slices():
         # TODO:  if bins is only available along one axis, slicing should be valid along the other
@@ -392,17 +426,17 @@ def interact2D(
 
         at_dict = _at_dict(data, sliders, xaxis, yaxis)
         at_dict[xaxis.natural_name] = (x0, xaxis.units)
-        side_plot_data = data.chop(yaxis.natural_name, at=at_dict, verbose=False)
-        side_plot = side_plot_data[0][channel.natural_name].points
-        side_plot = norm(side_plot, channel.signed)
+        side_plot_data = data.at(**at_dict)
+        side_plot = side_plot_data[channel.natural_name].points
+        side_plot = current_state.norm(side_plot)
         line_sp_y.set_data(side_plot, yaxis.points)
         side_plot_data.close()
 
         at_dict = _at_dict(data, sliders, xaxis, yaxis)
         at_dict[yaxis.natural_name] = (y0, yaxis.units)
-        side_plot_data = data.chop(xaxis.natural_name, at=at_dict, verbose=False)
-        side_plot = side_plot_data[0][channel.natural_name].points
-        side_plot = norm(side_plot, channel.signed)
+        side_plot_data = data.at(**at_dict)
+        side_plot = side_plot_data[channel.natural_name].points
+        side_plot = current_state.norm(side_plot)
         line_sp_x.set_data(xaxis.points, side_plot)
         side_plot_data.close()
 
@@ -410,12 +444,13 @@ def interact2D(
         if verbose:
             print("normalization:", index)
         current_state.local = radio.value_selected[1:] == "local"
-        clim = get_clim(channel, current_state)
-        ticklabels = gen_ticklabels(np.linspace(*clim, 11), channel.signed)
+        current_state.norm.update(channel)
+        obj2D.set_norm(current_state.norm.norm)
+        ticklabels = gen_ticklabels(current_state.norm.ticks, channel.signed)
         colorbar.set_ticklabels(ticklabels)
-        if clim[0] == clim[1]:
-            clim = [-1 if channel.signed else 0, 1]
-        obj2D.set_clim(*clim)
+
+        update_sideplots(sp_x, sp_y, line_sp_x, line_sp_y)
+
         fig.canvas.draw_idle()
 
     def update_slider(info, use_imshow=use_imshow):
@@ -436,28 +471,34 @@ def interact2D(
             )
         if use_imshow:
             transpose = _order_for_imshow(
-                current_state[xaxis.natural_name][:],
-                current_state[yaxis.natural_name][:],
+                current_state.dat[xaxis.natural_name][:],
+                current_state.dat[yaxis.natural_name][:],
             )
             obj2D.set_data(current_state.dat[channel.natural_name][:].transpose(transpose))
         else:
             obj2D.set_array(current_state.dat[channel.natural_name][:].ravel())
-        clim = get_clim(channel, current_state)
-        ticklabels = gen_ticklabels(np.linspace(*clim, 11), channel.signed)
-        if clim[0] == clim[1]:
-            clim = [-1 if channel.signed else 0, 1]
-        obj2D.set_clim(*clim)
+        current_state.norm.update(channel)
+        obj2D.set_norm(current_state.norm.norm)
+
+        ticks = current_state.norm.ticks
+        ticklabels = gen_ticklabels(ticks, channel.signed)
         colorbar.set_ticklabels(ticklabels)
-        sp_x.collections.clear()
-        sp_y.collections.clear()
+
+        update_sideplots(sp_x, sp_y, line_sp_x, line_sp_y)
+        fig.canvas.draw_idle()
+
+    def update_sideplots(sp_x, sp_y, line_sp_x, line_sp_y):
+        [item.remove() for item in sp_x.collections]
+        [item.remove() for item in sp_y.collections]
+        if len(sp_x.collections) > 0:  # mpl < 3.7
+            sp_x.collections.clear()
+            sp_y.collections.clear()
+
         draw_sideplot_projections()
         if line_sp_x.get_visible() and line_sp_y.get_visible():
             update_sideplot_slices()
-        fig.canvas.draw_idle()
 
     def update_crosshairs(xarg, yarg, hide=False):
-        # if x0 is None or y0 is None:
-        #    raise TypeError((x0, y0))
         # find closest x and y pts in dataset
         current_state.xarg = xarg
         current_state.yarg = yarg

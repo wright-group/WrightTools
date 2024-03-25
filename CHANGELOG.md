@@ -5,15 +5,94 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Fixed
+- wt5 explore : fixed bug where data will not load interactively if directory is not cwd
+- constants in chopped data will inherit the units of the original data
+
+## Changed
+- artists now gets turbo colormap straight from matplotlib
+
+## [3.5.2]
+
 ### Added
-- Invalid `unit` conversions now throw a `pint` error.
+- `wt5` entry point: methods `load`, `explore`, `glob`, `tree`
+- `wt-convert` entry point: convert a number to different units
+- new glob utilities in `kit`
+
+### Changed
+- `wt-tree` entry point removed.  Use `wt5 tree` instead.
+
+## [3.5.1]
+
+### Added
+- `kit.guess_signed` for empirically guessing channel sign (useful for automated workflows)
+- `Data.squeeze`: squeezing the data object to the shape of the axes.
 
 ### Fixed
+- `interact2D`: fixed bug where use_imshow broke the sliders
+- `artists.stitch_to_animation`: use imageio v3 api and declare pillow plugin
+- `data.join` ensures valid `method` is selected
+
+### Changed
+- `data.join` no longer supports `sum` method
+
+## [3.5.0]
+
+### Fixed
+- numpy deprecated the `np.float` alias, so use `np.float64` to be more precise
+- artists support matplotlib >= 3.7
+- `interact2D`: fixed bug where sliders did not change appearance on focus
+- `interact2D`: fixed buggy side plots windowing
+
+### Changed
+- `Data.join` now has MultidimensionalAxisError exception message
+- `Axis`: space character ("\s") in expressions are culled.
+- fixed `interact2D` bug: channel/axes can now be specified with non-zero index arguments
+- `interact2D`: side plots project the extremes along each axis, rather than the average.
+
+### Added
+- `interact2D` has informative figure window names
+- `Data.translate_to_txt`: serialize channels and variables and write as a text file.
+- Python supported versions:  add 3.10, 3.11, and drop 3.7
+
+## [3.4.6]
+
+### Fixed
+- `Data.chop` : fixed bug where chop did not succeed if axes did not span data ndim
+
+## [3.4.5]
+
+### Added
+- new `Data.at` method: syntactic sugar for chop with "at" argument.
+- `Data.__getitem__` supports array slicing
+- `artists.interact2D` supports `cmap` kwarg.
+- iPython integration: autocomplete includes axis, variable, and channel names
+- `artists.quick2D`:  supports `cmap` kwarg.
+- Allow `create_variable` and `create_channel` to create compressed datasets
+
+### Changed
+- `Data.chop` refactored to make steps modular
+- `artists.interact2D` uses matplotlib norm objects to control colormap scaling
+
+### Fixed
+- `kit.fft`: fixed bug where Fourier coefficients were off by a scalar factor.
+- ensure `artists.quickND` plotters always close chopped data files
+
+## [3.4.4]
+
+### Added
+- `artists.Axes.scatter`: plot one variable against another, with scatter point color determined by a channel.
+- Invalid `unit` conversions now throw a `pint` error.
+- `data.from_LabRAM`: import Horiba LabRAM txt files
+
+### Fixed
+- docs: from method JASCO example updated
 - `data.from_Solis`: import works without metadata
 - `unit` conversions of `None` to `None` no longer throws a warning.
 - better error messages for some functions
 - remove unused imports
 - remove unused variables
+- complex array support for data object operations
 
 ## [3.4.3]
 
@@ -305,7 +384,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ### Added
 - initial release
 
-[Unreleased]: https://github.com/wright-group/WrightTools/-/compare/3.4.3...master
+[Unreleased]: https://github.com/wright-group/WrightTools/-/compare/3.5.2...master
+[3.5.2]: https://github.com/wright-group/WrightTools/compare/3.5.1...3.5.2
+[3.5.1]: https://github.com/wright-group/WrightTools/compare/3.5.0...3.5.1
+[3.5.0]: https://github.com/wright-group/WrightTools/compare/3.4.6...3.5.0
+[3.4.6]: https://github.com/wright-group/WrightTools/compare/3.4.5...3.4.6
+[3.4.5]: https://github.com/wright-group/WrightTools/compare/3.4.4...3.4.5
+[3.4.4]: https://github.com/wright-group/WrightTools/compare/3.4.3...3.4.4
 [3.4.3]: https://github.com/wright-group/WrightTools/compare/3.4.2...3.4.3
 [3.4.2]: https://github.com/wright-group/WrightTools/compare/3.4.1...3.4.2
 [3.4.1]: https://github.com/wright-group/WrightTools/compare/3.4.0...3.4.1

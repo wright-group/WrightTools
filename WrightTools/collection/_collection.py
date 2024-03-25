@@ -1,6 +1,5 @@
 """Collection."""
 
-
 # --- import --------------------------------------------------------------------------------------
 
 
@@ -44,6 +43,13 @@ class Collection(Group):
         return "<WrightTools.Collection '{0}' {1} at {2}>".format(
             self.natural_name, self.item_names, "::".join([self.filepath, self.name])
         )
+
+    def __dir__(self) -> list:
+        default = object.__dir__(self)
+        return default + list(self._ipython_key_completions_())
+
+    def _ipython_key_completions_(self) -> list:
+        return list(self.item_names)
 
     def __getitem__(self, key):
         if isinstance(key, int):

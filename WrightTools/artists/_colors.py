@@ -1,6 +1,5 @@
 """Colormaps."""
 
-
 # --- import --------------------------------------------------------------------------------------
 
 import copy
@@ -12,8 +11,6 @@ import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.colors as mplcolors
 import matplotlib.gridspec as grd
-
-from ._turbo import turbo
 
 
 # --- define -------------------------------------------------------------------------------------
@@ -246,7 +243,8 @@ def grayify_cmap(cmap):
 
     __ https://jakevdp.github.io/blog/2014/10/16/how-bad-is-your-colormap/
     """
-    cmap = plt.cm.get_cmap(cmap)
+    if not isinstance(cmap, matplotlib.colors.Colormap):
+        cmap = matplotlib.colormaps[cmap]
     colors = cmap(np.arange(cmap.N))
     # convert RGBA to perceived greyscale luminance
     # cf. http://alienryderflex.com/hsp.html
@@ -438,7 +436,6 @@ colormaps["signed_old"] = mplcolors.LinearSegmentedColormap.from_list("signed", 
 colormaps["skyebar1"] = mplcolors.LinearSegmentedColormap.from_list("skyebar", skyebar)
 colormaps["skyebar2"] = mplcolors.LinearSegmentedColormap.from_list("skyebar dark", skyebar_d)
 colormaps["skyebar3"] = mplcolors.LinearSegmentedColormap.from_list("skyebar inverted", skyebar_i)
-colormaps["turbo"] = turbo
 colormaps["wright"] = mplcolors.LinearSegmentedColormap.from_list("wright", wright)
 
 

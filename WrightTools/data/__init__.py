@@ -1,4 +1,5 @@
 """Data class and associated."""
+
 # flake8: noqa
 
 
@@ -14,6 +15,7 @@ from ._colors import *
 from ._data import *
 from ._databroker import *
 from ._jasco import *
+from ._labram import *
 from ._kent import *
 from ._aramis import *
 from ._ocean_optics import *
@@ -36,6 +38,7 @@ __all__ = [
     "from_databroker",
     "from_JASCO",
     "from_KENT",
+    "from_LabRAM",
     "from_Aramis",
     "from_ocean_optics",
     "from_PyCMDS",
