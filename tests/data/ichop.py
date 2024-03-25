@@ -100,9 +100,8 @@ def test_filtering():
     mean = data.channels[0][:].mean()
     is_interesting = lambda d: d.channels[0][:].mean() > mean
     interesting = {
-        f"{i}": d for i, d in enumerate(
-            filter(is_interesting, data.ichop("w1", "w2", autoclose=False))
-        )
+        f"{i}": d
+        for i, d in enumerate(filter(is_interesting, data.ichop("w1", "w2", autoclose=False)))
     }
     assert len(interesting) == 19
 
@@ -110,7 +109,7 @@ def test_filtering():
 def test_collection_like():
     p = datasets.PyCMDS.w2_w1_000
     data = wt.data.from_PyCMDS(p)
-    collection = {f"chop{i:0>3}":d for i, d in enumerate(data.ichop("w2", autoclose=False))}
+    collection = {f"chop{i:0>3}": d for i, d in enumerate(data.ichop("w2", autoclose=False))}
     assert len(collection) == data.w1.size
     collection["chop002"].__repr__()
     wt.close()
