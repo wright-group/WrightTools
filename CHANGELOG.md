@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## Changed
 - artists now gets turbo colormap straight from matplotlib
+- artists.interact2D now returns a `types.SimpleNamespace` object (rather than a tuple)
 
 ## [3.5.2]
 

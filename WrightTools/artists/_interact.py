@@ -225,9 +225,8 @@ def interact2D(
     Usage
     -----
     When calling, always store the returned arguments to a variable:
-    ```
-    out = WrightTools.artists.interact2D(...)
-    ```
+    >>> out = WrightTools.artists.interact2D(...)
+    
     This prevents interactive buttons from turning off due to python's garbage collection.
     """
     # avoid changing passed data object
