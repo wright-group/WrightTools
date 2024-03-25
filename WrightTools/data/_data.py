@@ -451,7 +451,7 @@ class Data(Group):
             the closest valid position is used.
         autoclose : bool (optional)
             If True, ichop will close each datafile after each iteration.
-            Set to False when you wish to store spawned Datas beyond each iteration. 
+            Set to False when you wish to store spawned Datas beyond each iteration.
             Also consider using chop instead.
 
         Returns
@@ -476,7 +476,7 @@ class Data(Group):
         See Also
         --------
         * Data.at
-            make a lower-dimension dataset at specific coordinates 
+            make a lower-dimension dataset at specific coordinates
         * Data.chop
             Divide the dataset into a collection of lower-dimensionality components.
         """
