@@ -162,7 +162,16 @@ def test_centers_tolerance():
 
 
 def test_remote():
-    data = wt.data.from_PyCMDS("https://osf.io/rdn7v/download")
+    i = 0
+    while True:
+        # sometimes doesn't work, so try a few times
+        try:
+            data = wt.data.from_PyCMDS("https://osf.io/rdn7v/download")
+            break
+        except FileNotFoundError as e:
+            if i == 5:
+                raise e
+            i += 1
     assert data.shape == (21, 81)
     assert data.axis_expressions == ("wm", "w2=w1")
     data.close()
