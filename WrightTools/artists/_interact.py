@@ -203,6 +203,31 @@ def interact2D(
         uniform grids.  Default is False.
     verbose : boolean (optional)
         Toggle talkback. Default is True.
+
+    Returns
+    -------
+    out : types.SimpleNamespace
+        container for important interactive elements of the plot.
+
+        Properties
+        ----------
+        image : 2D artist object
+            The artist of the 2D plot.  Type is either matplotlib.collections.QuadMesh (use_imshow=False) or matplotlib.image.AxesImage (use_imshow=True)
+        sliders : dict (key[name] = value[matplotlib.Widgets.Slider])
+            The sliders.
+        crosshairs: list of horizontal and vertical crosshair
+            crosshairs are lists of matplotlib.lines.Line2D
+        radio : matplotlib.Widgets.RadioButtons
+            radio button for local/global normalization
+        colorbar : matplotlib.colorbar.ColorbarBase
+            The 2D colorbar object
+
+    Usage
+    -----
+    When calling, always store the returned arguments to a variable:
+    >>> out = WrightTools.artists.interact2D(...)
+
+    This prevents interactive buttons from turning off due to python's garbage collection.
     """
     # avoid changing passed data object
     data = data.copy()
@@ -558,4 +583,11 @@ def interact2D(
     for slider in sliders.values():
         slider.on_changed(update_slider)
 
-    return obj2D, sliders, crosshair_hline, crosshair_vline, radio, colorbar
+    out = SimpleNamespace(
+        image=obj2D,
+        sliders=sliders,
+        crosshairs=[crosshair_hline, crosshair_vline],
+        radio=radio,
+        colorbar=colorbar,
+    )
+    return out
