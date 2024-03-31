@@ -5,10 +5,13 @@ to communicate your data!
 
 import WrightTools as wt
 from WrightTools import datasets
+
 import matplotlib.colors as mpl_colors
 import matplotlib.pyplot as plt
-import numpy as np
 from matplotlib import colormaps as colormaps
+
+import numpy as np
+import pathlib
 
 
 # --- colormaps -----------------------------------------------------------------------------------
@@ -26,7 +29,8 @@ signed_cmap = ["twilight_shifted", "RdBu", "coolwarm", "seismic"][1]
 
 
 # --- data ----------------------------------------------------------------------------------------
-signed = wt.open(datasets.wt5.v1p0p0_perovskite_TA).at(d2=[-15, "fs"]).split("w1", [1.6])[1]
+p = pathlib.Path(datasets.__file__).parent / "wt5" / "v1.0.0" / "perovskite_TA.wt5"
+signed = wt.open(p).at(d2=[-15, "fs"]).split("w1", [1.6])[1]
 signed.bring_to_front("signal_diff")
 
 unsigned = wt.data.from_PyCMDS(r"https://osf.io/75vny/download")
