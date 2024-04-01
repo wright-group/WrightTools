@@ -24,7 +24,6 @@ import sys
 # import sphinx_gallery
 import math
 import pathlib
-import importlib
 
 
 # --- define -------------------------------------------------------------------------------------

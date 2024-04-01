@@ -7,7 +7,6 @@ import WrightTools as wt
 from WrightTools import datasets
 
 import matplotlib.colors as mpl_colors
-import matplotlib.pyplot as plt
 from matplotlib import colormaps as colormaps
 
 import numpy as np
@@ -55,7 +54,7 @@ ax00.set_title("unsigned data")
 # --- --- sqrt ------------------------------------------------------------------------------------
 ax10 = fig.add_subplot(gs[1, 0], label="10 - unsigned sqrt")
 wt.artists.corner_text("sqrt", **label_kwargs)
-norm = mpl_colors.PowerNorm(gamma=0.5, vmin=0)
+# norm = mpl_colors.PowerNorm(gamma=0.5, vmin=0)
 """
 NOTE: a bug with PowerNorm makes the colorbar extend arrow incorrect color
 as recently as mpl 3.8.3.
@@ -67,7 +66,7 @@ _forward = lambda x: np.sign(x) * np.sqrt(np.abs(x))
 _inverse = lambda x: np.sign(x) * x**2
 norm = mpl_colors.FuncNorm((_forward, _inverse), vmin=0, clip=False)
 art = ax10.pcolormesh(unsigned, norm=norm, cmap=unsigned_cmap, autolabel="y")
-cb = fig.colorbar(art, ax=ax10, extend="min")
+fig.colorbar(art, ax=ax10, extend="min")
 
 # --- --- log10 -----------------------------------------------------------------------------------
 ax20 = fig.add_subplot(gs[2, 0], label="20 - unsigned log")
