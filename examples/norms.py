@@ -22,7 +22,7 @@ unsigned_cmap = [
     colormaps["viridis_r"],
 ][0]
 unsigned_cmap.set_under([0.9, 0.9, 0.9, 1])
-
+print("changing the script")
 cyclic_cmap = "twilight"
 
 signed_cmap = ["twilight_shifted", "RdBu", "coolwarm", "seismic"][1]
