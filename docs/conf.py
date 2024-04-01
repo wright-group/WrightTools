@@ -24,6 +24,7 @@ import sys
 # import sphinx_gallery
 import math
 import pathlib
+import importlib
 
 
 # --- define -------------------------------------------------------------------------------------
@@ -236,9 +237,10 @@ def reset_wt(gallery_conf, fname):
     # This is an awful hack because python does not allow unloading modules
     # This is, however, the same thing upstream sphinx-gallery does for
     # seaborn, so it's not _so_ bad I guess.  2019-04-07 KFS
-    for module in list(sys.modules.keys()):
-        if module.startswith("WrightTools.datasets"):
-            del sys.modules[module]
+    from WrightTools import datasets
+    datasets_module = sys.modules.get("WrightTools.datasets")
+    if datasets_module is not None:
+        datasets._populate_containers()
 
 
 sphinx_gallery_conf = {
@@ -247,7 +249,7 @@ sphinx_gallery_conf = {
     "gallery_dirs": "auto_examples",
     "backreferences_dir": os.path.join("gen_modules", "backreferences"),
     "reset_modules": ["matplotlib", reset_wt],
-    "reset_module_order": "both",
+    "reset_module_order": "before",
 }
 
 

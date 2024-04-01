@@ -29,7 +29,8 @@ signed_cmap = ["twilight_shifted", "RdBu", "coolwarm", "seismic"][1]
 
 
 # --- data ----------------------------------------------------------------------------------------
-p = pathlib.Path(datasets.__file__).parent / "wt5" / "v1.0.0" / "perovskite_TA.wt5"
+# p = pathlib.Path(datasets.__file__).parent / "wt5" / "v1.0.0" / "perovskite_TA.wt5"
+p = datasets.wt5.v1p0p0_perovskite_TA
 signed = wt.open(p).at(d2=[-15, "fs"]).split("w1", [1.6])[1]
 signed.bring_to_front("signal_diff")
 

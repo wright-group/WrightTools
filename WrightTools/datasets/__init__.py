@@ -47,52 +47,57 @@ class DatasetContainer(object):
         setattr(self, n, ps)
 
 
+BrunoldrRaman = DatasetContainer()
+Cary = DatasetContainer()
+COLORS = DatasetContainer()
+JASCO = DatasetContainer()
+KENT = DatasetContainer()
+LabRAM = DatasetContainer()
+ocean_optics = DatasetContainer()
+PyCMDS = DatasetContainer()
+Shimadzu = DatasetContainer()
+Solis = DatasetContainer()
+spcm = DatasetContainer()
+Tensor27 = DatasetContainer()
+wt5 = DatasetContainer()
+
+
 # --- fill ----------------------------------------------------------------------------------------
 
 
-BrunoldrRaman = DatasetContainer()
-BrunoldrRaman._from_files(here / "BrunoldrRaman")
+def _populate_containers():
+    BrunoldrRaman._from_files(here / "BrunoldrRaman")
 
-Cary = DatasetContainer()
-Cary._from_files("Cary")
+    Cary._from_files("Cary")
 
-COLORS = DatasetContainer()
-COLORS._from_files(here / "COLORS" / "v0.2", prefix="v0p2_")
-COLORS._from_files(here / "COLORS" / "v2.2", prefix="v2p2_")
+    COLORS._from_files(here / "COLORS" / "v0.2", prefix="v0p2_")
+    COLORS._from_files(here / "COLORS" / "v2.2", prefix="v2p2_")
 
-JASCO = DatasetContainer()
-JASCO._from_files("JASCO")
+    JASCO._from_files("JASCO")
 
-KENT = DatasetContainer()
-KENT._from_directory(here / "KENT" / "LDS821 TRSF")
-KENT._from_directory(here / "KENT" / "LDS821 DOVE")
-KENT._from_directory(here / "KENT" / "PbSe 2D delay B")
+    KENT._from_directory(here / "KENT" / "LDS821 TRSF")
+    KENT._from_directory(here / "KENT" / "LDS821 DOVE")
+    KENT._from_directory(here / "KENT" / "PbSe 2D delay B")
 
-LabRAM = DatasetContainer()
-LabRAM._from_files(here / "LabRAM")
+    LabRAM._from_files(here / "LabRAM")
 
-ocean_optics = DatasetContainer()
-ocean_optics._from_files("ocean_optics")
+    ocean_optics._from_files("ocean_optics")
 
-PyCMDS = DatasetContainer()
-PyCMDS._from_files("PyCMDS")
+    PyCMDS._from_files("PyCMDS")
 
-Shimadzu = DatasetContainer()
-Shimadzu._from_files("Shimadzu")
+    Shimadzu._from_files("Shimadzu")
 
-Solis = DatasetContainer()
-Solis._from_files("Solis")
+    Solis._from_files("Solis")
 
-spcm = DatasetContainer()
-spcm._from_files("spcm")
+    spcm._from_files("spcm")
 
-Tensor27 = DatasetContainer()
-Tensor27._from_files("Tensor27")
+    Tensor27._from_files("Tensor27")
 
-wt5 = DatasetContainer()
-wt5._from_files(here / "wt5" / "v1.0.0", prefix="v1p0p0_")
-wt5._from_files(here / "wt5" / "v1.0.1", prefix="v1p0p1_")
+    wt5._from_files(here / "wt5" / "v1.0.0", prefix="v1p0p0_")
+    wt5._from_files(here / "wt5" / "v1.0.1", prefix="v1p0p1_")
 
+
+_populate_containers()
 
 # --- pretty namespace ----------------------------------------------------------------------------
 
