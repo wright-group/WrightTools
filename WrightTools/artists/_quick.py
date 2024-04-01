@@ -34,7 +34,7 @@ def quick1D(
     autosave=False,
     save_directory=None,
     fname=None,
-    verbose=True
+    verbose=True,
 ):
     """Quickly plot 1D slice(s) of data.
 
@@ -65,14 +65,15 @@ def quick1D(
     list of strings
         List of saved image files (if any).
     """
-    # channel index
     channel_index = wt_kit.get_index(data.channel_names, channel)
     shape = data.channels[channel_index].shape
-    collapse = [i for i in range(len(shape)) if shape[i] == 1]
-    at = at.copy()
-    at.update({c: 0 for c in collapse})
+    # remove dimensions that do not involve the channel
+    channel_slice = [0 if size == 1 else slice(None, None) for size in shape]
+    sliced_constants = [
+        data.axis_expressions[i] for i in range(len(shape)) if not channel_slice[i]
+    ]
     # prepare data
-    with closing(data.chop(axis, at=at, verbose=False)) as chopped:
+    with closing(data._from_slice(channel_slice).chop(axis, at=at, verbose=False)) as chopped:
         # prepare figure
         fig = None
         if len(chopped) > 10:
@@ -132,18 +133,19 @@ def quick1D(
             plt.xticks(rotation=45)
             plt.axvline(0, lw=2, c="k")
             plt.xlim(xi.min(), xi.max())
-            # add constants to title
+            # constants: variable marker lines, title
             ls = []
             for constant in d.constants:
+                if constant.expression in sliced_constants:
+                    # ignore these constants; no relation to the data
+                    continue
                 ls.append(constant.label)
-            title = ", ".join(ls)
-            _title(fig, data.natural_name, subtitle=title)
-            # variable marker lines
-            for constant in d.constants:
                 if constant.units is not None:
                     if axis.units_kind == constant.units_kind:
                         constant.convert(axis.units)
                         plt.axvline(constant.value, color="k", linewidth=4, alpha=0.25)
+            title = ", ".join(ls)
+            _title(fig, data.natural_name, subtitle=title)
             # save --------------------------------------------------------------------------------
             if autosave:
                 if fname:
@@ -175,7 +177,7 @@ def quick2D(
     autosave=False,
     save_directory=None,
     fname=None,
-    verbose=True
+    verbose=True,
 ):
     """Quickly plot 2D slice(s) of data.
 
@@ -223,21 +225,14 @@ def quick2D(
     # channel index
     channel_index = wt_kit.get_index(data.channel_names, channel)
     shape = data.channels[channel_index].shape
-    collapse = [i for i in range(len(shape)) if shape[i] == 1]
-    at = at.copy()
-    at.update({c: 0 for c in collapse})
-    # prepare data
-    with closing(data.chop(xaxis, yaxis, at=at, verbose=False)) as chopped:
-        # colormap
-        # get colormap
-        if cmap is None:
-            if data.channels[channel_index].signed:
-                cmap = "signed"
-            else:
-                cmap = "default"
-            cmap = colormaps[cmap]
-            cmap.set_bad([0.75] * 3, 1.0)
-            cmap.set_under([0.75] * 3, 1.0)
+    # remove axes that are independent of channel
+    channel_slice = [0 if size == 1 else slice(None, None) for size in shape]
+    sliced_constants = [
+        data.axis_expressions[i] for i in range(len(shape)) if not channel_slice[i]
+    ]
+    with closing(
+        data._from_slice(channel_slice).chop(xaxis, yaxis, at=at, verbose=False)
+    ) as chopped:
         # fname
         if fname is None:
             fname = data.natural_name
@@ -344,14 +339,13 @@ def quick2D(
             # add zero lines
             plt.axvline(0, lw=2, c="k")
             plt.axhline(0, lw=2, c="k")
-            # add constants to title
+            # constants: variable marker lines, title
             ls = []
             for constant in d.constants:
+                if constant.expression in sliced_constants:
+                    # ignore these constants; no relation to the data
+                    continue
                 ls.append(constant.label)
-            title = ", ".join(ls)
-            _title(fig, data.natural_name, subtitle=title)
-            # variable marker lines
-            for constant in d.constants:
                 if constant.units is not None:
                     # x axis
                     if xaxis.units_kind == constant.units_kind:
@@ -361,6 +355,8 @@ def quick2D(
                     if yaxis.units_kind == constant.units_kind:
                         constant.convert(yaxis.units)
                         plt.axhline(constant.value, color="k", linewidth=4, alpha=0.25)
+            title = ", ".join(ls)
+            _title(fig, data.natural_name, subtitle=title)
             # colorbar
             cax = plt.subplot(gs[1])
             cbar_ticks = np.linspace(levels.min(), levels.max(), 11)
