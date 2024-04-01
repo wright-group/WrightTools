@@ -127,6 +127,9 @@ def quick1D(
             # constants: variable marker lines, title
             ls = []
             for constant in d.constants:
+                if constant.expression in sliced_constants:
+                    # ignore these constants; no relation to the data
+                    continue
                 ls.append(constant.label)
                 if constant.units and (axis.units_kind == constant.units_kind):
                     constant.convert(axis.units)
@@ -284,6 +287,9 @@ def quick2D(
             # constants: variable marker lines, title
             ls = []
             for constant in d.constants:
+                if constant.expression in sliced_constants:
+                    # ignore these constants; no relation to the data
+                    continue
                 ls.append(constant.label)
                 if constant.units:
                     # x axis
