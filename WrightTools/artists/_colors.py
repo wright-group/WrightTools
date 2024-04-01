@@ -12,8 +12,6 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as mplcolors
 import matplotlib.gridspec as grd
 
-from ._turbo import turbo
-
 
 # --- define -------------------------------------------------------------------------------------
 
@@ -438,7 +436,6 @@ colormaps["signed_old"] = mplcolors.LinearSegmentedColormap.from_list("signed", 
 colormaps["skyebar1"] = mplcolors.LinearSegmentedColormap.from_list("skyebar", skyebar)
 colormaps["skyebar2"] = mplcolors.LinearSegmentedColormap.from_list("skyebar dark", skyebar_d)
 colormaps["skyebar3"] = mplcolors.LinearSegmentedColormap.from_list("skyebar inverted", skyebar_i)
-colormaps["turbo"] = turbo
 colormaps["wright"] = mplcolors.LinearSegmentedColormap.from_list("wright", wright)
 
 

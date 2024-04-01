@@ -125,7 +125,7 @@ def scan(directory=None, no_recursion=False):
             break
         if valid:
             print("interacting...")
-            _interact(shell, str(paths[int(msg)]))
+            _interact(shell, str(directory / paths[int(msg)]))
             continue
 
 

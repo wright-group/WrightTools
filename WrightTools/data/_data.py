@@ -433,7 +433,7 @@ class Data(Group):
         new.transform(*self.axis_expressions)
         return new
 
-    def ichop(self, *args, at=None) -> Generator:
+    def ichop(self, *args, at=None, autoclose=True) -> Generator:
         """
         Similar to chop, but an iterable is produced insted of a collection.
         Useful for workflows where only one of the chopped children is needed at a time.
@@ -449,11 +449,10 @@ class Data(Group):
             Choice of position along an axis. Keys are axis names, values are lists
             ``[position, input units]``. If exact position does not exist,
             the closest valid position is used.
-        parent : WrightTools Collection instance (optional)
-            Collection to place the new "chop" collection within. Default is
-            None (new parent).
-        verbose : bool (optional)
-            Toggle talkback. Default is True.
+        autoclose : bool (optional)
+            If True, ichop will close each datafile after each iteration.
+            Set to False when you wish to store spawned Datas beyond each iteration.
+            Also consider using chop instead.
 
         Returns
         -------
@@ -462,8 +461,24 @@ class Data(Group):
 
         Examples
         --------
-        for chop in data.ichop("w1", "w2"):
+        loop through the select chop elements:
+        ```
+        is_interesting = lambda d: d.signal[:].mean() > 0.5
+        for data in filter(is_interesting, data.ichop("w1", "w2")):
             ...
+        ```
+
+        make a dictionary similar to a `chop` collection:
+        ```
+        chop = {f"chop{i:0>3}":d for i, d in enumerate(data.ichop(..., autoclose=False))}
+        ```
+
+        See Also
+        --------
+        * Data.at
+            make a lower-dimension dataset at specific coordinates
+        * Data.chop
+            Divide the dataset into a collection of lower-dimensionality components.
         """
         removed_shape, at_axes, at_idx, transform_expression = self._chop_prep(*args, at=at)
 
@@ -474,7 +489,12 @@ class Data(Group):
             idx = np.array(idx, dtype=object)
             idx[np.array(removed_shape) == 1] = slice(None)
             idx[at_axes] = at_idx[at_axes]
-            with closing(self._from_slice(idx, name=name)) as a_slice:
+            if autoclose:
+                with closing(self._from_slice(idx, name=name)) as a_slice:
+                    a_slice.transform(*transform_expression)
+                    yield a_slice
+            else:
+                a_slice = self._from_slice(idx, name=name)
                 a_slice.transform(*transform_expression)
                 yield a_slice
 
@@ -571,6 +591,10 @@ class Data(Group):
             Collapse the dataset along one axis.
         split
             Split the dataset while maintaining its dimensionality.
+        ichop
+            iterator version of chop
+        at
+            select a specific smaller dimension of data at specific coordinates
         """
         removed_shape, at_axes, at_idx, transform_expression = self._chop_prep(*args, at=at)
 
@@ -1321,9 +1345,13 @@ class Data(Group):
     def map_variable(
         self, variable, points, input_units="same", *, name=None, parent=None, verbose=True
     ) -> "Data":
-        """Map points of an axis to new points using linear interpolation.
+        """
+        Map points of an axis to new points using linear interpolation.
 
         Out-of-bounds points are written nan.
+
+        Non-mapped variables are kept in the data object only if they are
+        orthogonal to the mapped variable (see `kit.orthogonal`).
 
         Parameters
         ----------
