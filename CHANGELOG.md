@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ## [Unreleased]
 
 ### Added
-- `Data.ichop`, an interation-based version of `Data.chop`
+- `Data.ichop`, an iteration-based version of `Data.chop`
 
 ### Fixed
 - fixed Quick2D/Quick1D issues where collapsing unused dims did not work
