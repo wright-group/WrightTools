@@ -3,6 +3,7 @@
 # --- import --------------------------------------------------------------------------------------
 
 from __future__ import annotations
+from contextlib import closing
 
 import collections
 import operator
@@ -16,6 +17,7 @@ import h5py
 
 import scipy
 from scipy.interpolate import griddata, interp1d
+from typing import Generator
 
 from .._group import Group
 from .. import collection as wt_collection
@@ -431,6 +433,113 @@ class Data(Group):
         new.transform(*self.axis_expressions)
         return new
 
+    def ichop(self, *args, at=None, autoclose=True) -> Generator:
+        """
+        Similar to chop, but an iterable is produced insted of a collection.
+        Useful for workflows where only one of the chopped children is needed at a time.
+        As there is no collection, you can not assign the chopped elements to a parent.
+
+        Parameters
+        ----------
+        axis : str or int (args)
+            Axes of the returned data objects. Strings refer to the names of
+            axes in this object, integers refer to their index. Provide multiple
+            axes to return multidimensional data objects.
+        at : dict (optional)
+            Choice of position along an axis. Keys are axis names, values are lists
+            ``[position, input units]``. If exact position does not exist,
+            the closest valid position is used.
+        autoclose : bool (optional)
+            If True, ichop will close each datafile after each iteration.
+            Set to False when you wish to store spawned Datas beyond each iteration.
+            Also consider using chop instead.
+
+        Returns
+        -------
+        Generator
+            Generator spawning chopped elements for each `__next__` call
+
+        Examples
+        --------
+        loop through the select chop elements:
+        ```
+        is_interesting = lambda d: d.signal[:].mean() > 0.5
+        for data in filter(is_interesting, data.ichop("w1", "w2")):
+            ...
+        ```
+
+        make a dictionary similar to a `chop` collection:
+        ```
+        chop = {f"chop{i:0>3}":d for i, d in enumerate(data.ichop(..., autoclose=False))}
+        ```
+
+        See Also
+        --------
+        * Data.at
+            make a lower-dimension dataset at specific coordinates
+        * Data.chop
+            Divide the dataset into a collection of lower-dimensionality components.
+        """
+        removed_shape, at_axes, at_idx, transform_expression = self._chop_prep(*args, at=at)
+
+        i_digits = int(np.log10(np.prod(removed_shape))) + 1
+        # iterate
+        for i, idx in enumerate(np.ndindex(removed_shape)):
+            name = f"chop{i:0>{i_digits}}"
+            idx = np.array(idx, dtype=object)
+            idx[np.array(removed_shape) == 1] = slice(None)
+            idx[at_axes] = at_idx[at_axes]
+            if autoclose:
+                with closing(self._from_slice(idx, name=name)) as a_slice:
+                    a_slice.transform(*transform_expression)
+                    yield a_slice
+            else:
+                a_slice = self._from_slice(idx, name=name)
+                a_slice.transform(*transform_expression)
+                yield a_slice
+
+    def _chop_prep(self, *args, at=None):
+        """calculates important objects for performing chop"""
+        # parse args
+        args = list(args)
+        for i, arg in enumerate(args):
+            if isinstance(arg, int):
+                args[i] = self._axes[arg].natural_name
+            elif isinstance(arg, str):
+                arg = arg.strip()
+                args[i] = wt_kit.string2identifier(arg, replace=operator_to_identifier)
+
+        transform_expression = [self._axes[self.axis_names.index(a)].expression for a in args]
+
+        if at is None:
+            at = {}
+        # normalize the at keys to the natural name
+        for k in list(at.keys()):
+            k = k.strip()
+            nk = wt_kit.string2identifier(k, replace=operator_to_identifier)
+            if nk != k:
+                at[nk] = at[k]
+                at.pop(k)
+
+        # distinguish looping and non-looping indices
+        at_idx = self._at_to_slice(**at)
+        at_axes = at_idx != slice(None)
+
+        kept = args + [ak for ak in at.keys()]
+        kept_axes = [self._axes[self.axis_names.index(a)] for a in kept]
+
+        removed_axes = [a for a in self._axes if a not in kept_axes]
+        removed_shape = wt_kit.joint_shape(*removed_axes)
+        if removed_shape == ():
+            removed_shape = (1,) * self.ndim
+        removed_shape = list(removed_shape)
+        for ax in kept_axes:
+            if ax.shape.count(1) == ax.ndim - 1:
+                removed_shape[ax.shape.index(ax.size)] = 1
+        removed_shape = tuple(removed_shape)
+
+        return removed_shape, at_axes, at_idx, transform_expression
+
     def chop(self, *args, at=None, parent=None, verbose=True) -> wt_collection.Collection:
         """Divide the dataset into its lower-dimensionality components.
 
@@ -482,44 +591,12 @@ class Data(Group):
             Collapse the dataset along one axis.
         split
             Split the dataset while maintaining its dimensionality.
+        ichop
+            iterator version of chop
+        at
+            select a specific smaller dimension of data at specific coordinates
         """
-        # parse args
-        args = list(args)
-        for i, arg in enumerate(args):
-            if isinstance(arg, int):
-                args[i] = self._axes[arg].natural_name
-            elif isinstance(arg, str):
-                arg = arg.strip()
-                args[i] = wt_kit.string2identifier(arg, replace=operator_to_identifier)
-
-        transform_expression = [self._axes[self.axis_names.index(a)].expression for a in args]
-
-        if at is None:
-            at = {}
-        # normalize the at keys to the natural name
-        for k in list(at.keys()):
-            k = k.strip()
-            nk = wt_kit.string2identifier(k, replace=operator_to_identifier)
-            if nk != k:
-                at[nk] = at[k]
-                at.pop(k)
-
-        # distinguish looping and non-looping indices
-        at_idx = self._at_to_slice(**at)
-        at_axes = at_idx != slice(None)
-
-        kept = args + [ak for ak in at.keys()]
-        kept_axes = [self._axes[self.axis_names.index(a)] for a in kept]
-
-        removed_axes = [a for a in self._axes if a not in kept_axes]
-        removed_shape = wt_kit.joint_shape(*removed_axes)
-        if removed_shape == ():
-            removed_shape = (1,) * self.ndim
-        removed_shape = list(removed_shape)
-        for ax in kept_axes:
-            if ax.shape.count(1) == ax.ndim - 1:
-                removed_shape[ax.shape.index(ax.size)] = 1
-        removed_shape = tuple(removed_shape)
+        removed_shape, at_axes, at_idx, transform_expression = self._chop_prep(*args, at=at)
 
         # get output collection
         out = wt_collection.Collection(name="chop", parent=parent)

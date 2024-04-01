@@ -34,17 +34,6 @@ class Axes(matplotlib.axes.Axes):
     transposed = False
     is_sideplot = False
 
-    def _parse_cmap(self, data=None, channel_index=None, **kwargs):
-        if "cmap" in kwargs.keys():
-            if isinstance(kwargs["cmap"], str):
-                kwargs["cmap"] = colormaps[kwargs["cmap"]]
-        elif data:
-            if data.channels[channel_index].signed:
-                kwargs["cmap"] = colormaps["signed"]
-                return kwargs
-            kwargs["cmap"] = colormaps["default"]
-        return kwargs
-
     def _apply_labels(
         self, autolabel="none", xlabel=None, ylabel=None, data=None, channel_index=0
     ):
@@ -180,7 +169,7 @@ class Axes(matplotlib.axes.Axes):
                 if "alpha" not in kwargs.keys():
                     kwargs["alpha"] = 0.5
             if plot_type in ["pcolor", "pcolormesh", "contourf", "imshow"]:
-                kwargs = self._parse_cmap(data=data, channel_index=channel_index, **kwargs)
+                kwargs = _parse_cmap(data=data, channel_index=channel_index, **kwargs)
         else:
             if plot_type == "imshow":
                 kwargs = self._parse_limits(zi=args[0], **kwargs)
@@ -192,7 +181,7 @@ class Axes(matplotlib.axes.Axes):
                 if "levels" not in kwargs.keys():
                     kwargs["levels"] = np.linspace(kwargs["vmin"], kwargs["vmax"], 256)
             if plot_type in ["pcolor", "pcolormesh", "contourf", "imshow"]:
-                kwargs = self._parse_cmap(**kwargs)
+                kwargs = _parse_cmap(**kwargs)
         # labels
         self._apply_labels(
             autolabel=kwargs.pop("autolabel", False),
@@ -527,7 +516,7 @@ class Axes(matplotlib.axes.Axes):
             limits = self._parse_limits(data=data, channel_index=channel_index, **limits)
             norm = Normalize(**limits)
 
-            cmap = self._parse_cmap(data, channel_index=channel_index, **kwargs)["cmap"]
+            cmap = _parse_cmap(data, channel_index=channel_index, **kwargs)["cmap"]
 
             z = data.channels[channel_index][:]
 
@@ -745,3 +734,15 @@ def _order_for_imshow(xi, yi):
             raise TypeError(f"x and y must be orthogonal; shapes are: {xi.shape}, {yi.shape}")
     else:
         raise TypeError(f"Axes are not 1D: {xi.shape}, {yi.shape}")
+
+
+def _parse_cmap(data=None, channel_index=None, **kwargs):
+    if "cmap" in kwargs.keys():
+        if isinstance(kwargs["cmap"], str):
+            kwargs["cmap"] = colormaps[kwargs["cmap"]]
+    elif data:
+        if data.channels[channel_index].signed:
+            kwargs["cmap"] = colormaps["signed"]
+            return kwargs
+        kwargs["cmap"] = colormaps["default"]
+    return kwargs
