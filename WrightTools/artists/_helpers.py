@@ -53,9 +53,7 @@ __all__ = [
 # --- functions -----------------------------------------------------------------------------------
 
 
-def axis_label_from_data(
-    data, ax=None, cax=None, which="both", channel_index=0
-):
+def axis_label_from_data(data, ax=None, cax=None, which="both", channel_index=0):
     """Apply x and/or y labels to axes.
 
     Parameters
