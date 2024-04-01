@@ -4,6 +4,7 @@
 
 
 import pathlib
+from types import SimpleNamespace
 
 from .. import kit as wt_kit
 
@@ -17,8 +18,27 @@ here = pathlib.Path(__file__).parent.resolve()
 # --- container class -----------------------------------------------------------------------------
 
 
-class DatasetContainer(object):
-    def _from_files(self, dirname, prefix=""):
+BrunoldrRaman = SimpleNamespace()
+Cary = SimpleNamespace()
+COLORS = SimpleNamespace()
+JASCO = SimpleNamespace()
+KENT = SimpleNamespace()
+LabRAM = SimpleNamespace()
+ocean_optics = SimpleNamespace()
+PyCMDS = SimpleNamespace()
+Shimadzu = SimpleNamespace()
+Solis = SimpleNamespace()
+spcm = SimpleNamespace()
+Tensor27 = SimpleNamespace()
+wt5 = SimpleNamespace()
+
+
+# --- fill ----------------------------------------------------------------------------------------
+
+
+def _populate_containers():
+
+    def _from_files(obj, dirname, prefix=""):
         """Add datasets from files in a directory.
 
         Parameters
@@ -30,9 +50,9 @@ class DatasetContainer(object):
         """
         for p in (here / dirname).iterdir():
             n = prefix + wt_kit.string2identifier(p.name.split(".")[0])
-            setattr(self, n, p)
+            setattr(obj, n, p)
 
-    def _from_directory(self, dirname, prefix=""):
+    def _from_directory(obj, dirname, prefix=""):
         """Add dataset from files in a directory.
 
         Parameters
@@ -44,57 +64,38 @@ class DatasetContainer(object):
         """
         ps = list((here / dirname).iterdir())
         n = prefix + wt_kit.string2identifier(dirname.name)
-        setattr(self, n, ps)
+        setattr(obj, n, ps)
 
 
-BrunoldrRaman = DatasetContainer()
-Cary = DatasetContainer()
-COLORS = DatasetContainer()
-JASCO = DatasetContainer()
-KENT = DatasetContainer()
-LabRAM = DatasetContainer()
-ocean_optics = DatasetContainer()
-PyCMDS = DatasetContainer()
-Shimadzu = DatasetContainer()
-Solis = DatasetContainer()
-spcm = DatasetContainer()
-Tensor27 = DatasetContainer()
-wt5 = DatasetContainer()
+    _from_files(BrunoldrRaman, here / "BrunoldrRaman")
 
+    _from_files(Cary, "Cary")
 
-# --- fill ----------------------------------------------------------------------------------------
+    _from_files(COLORS, here / "COLORS" / "v0.2", prefix="v0p2_")
+    _from_files(COLORS, here / "COLORS" / "v2.2", prefix="v2p2_")
 
+    _from_files(JASCO, "JASCO")
 
-def _populate_containers():
-    BrunoldrRaman._from_files(here / "BrunoldrRaman")
+    _from_directory(KENT, here / "KENT" / "LDS821 TRSF")
+    _from_directory(KENT, here / "KENT" / "LDS821 DOVE")
+    _from_directory(KENT, here / "KENT" / "PbSe 2D delay B")
 
-    Cary._from_files("Cary")
+    _from_files(LabRAM, here / "LabRAM")
 
-    COLORS._from_files(here / "COLORS" / "v0.2", prefix="v0p2_")
-    COLORS._from_files(here / "COLORS" / "v2.2", prefix="v2p2_")
+    _from_files(ocean_optics, "ocean_optics")
 
-    JASCO._from_files("JASCO")
+    _from_files(PyCMDS, "PyCMDS")
 
-    KENT._from_directory(here / "KENT" / "LDS821 TRSF")
-    KENT._from_directory(here / "KENT" / "LDS821 DOVE")
-    KENT._from_directory(here / "KENT" / "PbSe 2D delay B")
+    _from_files(Shimadzu, "Shimadzu")
 
-    LabRAM._from_files(here / "LabRAM")
+    _from_files(Solis, "Solis")
 
-    ocean_optics._from_files("ocean_optics")
+    _from_files(spcm, "spcm")
 
-    PyCMDS._from_files("PyCMDS")
+    _from_files(Tensor27, "Tensor27")
 
-    Shimadzu._from_files("Shimadzu")
-
-    Solis._from_files("Solis")
-
-    spcm._from_files("spcm")
-
-    Tensor27._from_files("Tensor27")
-
-    wt5._from_files(here / "wt5" / "v1.0.0", prefix="v1p0p0_")
-    wt5._from_files(here / "wt5" / "v1.0.1", prefix="v1p0p1_")
+    _from_files(wt5, here / "wt5" / "v1.0.0", prefix="v1p0p0_")
+    _from_files(wt5, here / "wt5" / "v1.0.1", prefix="v1p0p1_")
 
 
 _populate_containers()

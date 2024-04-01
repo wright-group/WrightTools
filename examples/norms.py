@@ -139,5 +139,3 @@ for ax in fig.axes:
         ax.set_xlim(unsigned.w2.min(), unsigned.w2.max())
     else:
         ax.set_xlim(signed.w1.min(), signed.w1.max())
-
-plt.show()
