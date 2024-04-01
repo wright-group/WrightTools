@@ -66,7 +66,6 @@ def _populate_containers():
         n = prefix + wt_kit.string2identifier(dirname.name)
         setattr(obj, n, ps)
 
-
     _from_files(BrunoldrRaman, here / "BrunoldrRaman")
 
     _from_files(Cary, "Cary")

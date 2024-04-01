@@ -238,6 +238,7 @@ def reset_wt(gallery_conf, fname):
     # This is, however, the same thing upstream sphinx-gallery does for
     # seaborn, so it's not _so_ bad I guess.  2019-04-07 KFS
     from WrightTools import datasets
+
     datasets_module = sys.modules.get("WrightTools.datasets")
     if datasets_module is not None:
         datasets._populate_containers()
