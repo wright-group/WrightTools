@@ -109,10 +109,8 @@ class ChopHandler:
         ax.grid(ls="--", color="grey", lw=0.5)
         if self.nD == 1:
             ax.axhline(self.data.channels[self.channel_index].null, lw=2, c="k")
-            set_ax_labels(ax, xlabel=axes[0].label, ylabel=self.data.natural_name)
         elif self.nD == 2:
             ax.axhline(0, lw=2, c="k")
-            set_ax_labels(ax, xlabel=axes[0].label, ylabel=axes[1].label)
             ax.set_ylim(axes[1].min(), axes[1].max())
 
 
@@ -173,7 +171,7 @@ def quick1D(
             fig, gs = create_figure(width="single", nrows=1, cols=[1], aspects=aspects)
             ax = plt.subplot(gs[0, 0])
             # plot --------------------------------------------------------------------------------
-            ax.plot(axis.full, channel[:], lw=2)
+            ax.plot(d, channel=self.channel_index, lw=2, autolabel=True)
             ax.scatter(axis.full, channel[:], color="grey", alpha=0.5, edgecolor="none")
             # decoration --------------------------------------------------------------------------
             if not local:
@@ -284,7 +282,7 @@ def quick2D(
         return levels
 
     class Quick2D(ChopHandler):
-        kwargs = {}
+        kwargs = {"autolabel": "both"}
         if cmap is not None:
             kwargs["cmap"] = cmap
 
