@@ -15,7 +15,6 @@ from ._helpers import (
     create_figure,
     plot_colorbar,
     savefig,
-    set_ax_labels,
     norm_from_channel,
     ticks_from_norm,
 )
