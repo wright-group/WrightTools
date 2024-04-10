@@ -14,6 +14,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 - constants in chopped data will inherit the units of the original data
 
 ## Changed
+- refactor of artists.quick1D and artists.quick2D
+- new artist function: `norm_from_channel`
+- new artist function: `ticks_from_norm`
 - artists now gets turbo colormap straight from matplotlib
 - artists.interact2D now returns a `types.SimpleNamespace` object (rather than a tuple)
 
