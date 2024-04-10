@@ -7,6 +7,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ### Added
 - `Data.ichop`, an iteration-based version of `Data.chop`
+- new artist helper function: `norm_from_channel`
+- new artist helper function: `ticks_from_norm`
+- new artist iterator `ChopHandler`
 
 ### Fixed
 - fixed Quick2D/Quick1D issues where collapsing unused dims did not work
@@ -15,8 +18,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## Changed
 - refactor of artists.quick1D and artists.quick2D
-- new artist function: `norm_from_channel`
-- new artist function: `ticks_from_norm`
 - artists now gets turbo colormap straight from matplotlib
 - artists.interact2D now returns a `types.SimpleNamespace` object (rather than a tuple)
 
