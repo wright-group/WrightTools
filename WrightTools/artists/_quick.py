@@ -60,16 +60,17 @@ class ChopHandler:
                 len_chopped,
                 f"quick{self.nD}D",
             )
-            pathlib.Path.mkdir(self.save_directory)
 
     def __call__(self, verbose=False) -> list:
         out = list()
+        if self.autosave:
+            self.save_directory.mkdir(exist_ok=True)
         with closing(self.data._from_slice(self.channel_slice)) as sliced:
             for constant in self.sliced_constants:
                 sliced.remove_constant(constant, verbose=False)
             for i, fig in enumerate(map(self.plot, sliced.ichop(*self.axes, at=self.at))):
                 if self.autosave:
-                    filepath = self.filepath_seed.format(i)
+                    filepath = self.save_directory / self.filepath_seed.format(i)
                     savefig(filepath, fig=fig, facecolor="white", close=True)
                     if verbose:
                         print("image saved at", str(filepath))
@@ -182,7 +183,7 @@ def quick1D(
 
         @property
         def global_limits(self):
-            if self._global_limits is None and self.nD == 1:
+            if self._global_limits is None:
                 data_channel = self.data.channels[self.channel_index]
                 cmin, cmax = data_channel.min(), data_channel.max()
                 buffer = (cmax - cmin) * 0.05
@@ -342,7 +343,7 @@ def quick2D(
     )(verbose)
 
 
-def _filepath_seed(save_directory, fname, nchops, artist):
+def _filepath_seed(save_directory, fname, nchops, artist) -> tuple[pathlib.Path, str]:
     """determine the autosave filepaths"""
     if isinstance(save_directory, str):
         save_directory = pathlib.Path(save_directory)
@@ -351,5 +352,4 @@ def _filepath_seed(save_directory, fname, nchops, artist):
     # create a folder if multiple images
     if nchops > 1:
         save_directory = save_directory / f"{artist} {wt_kit.TimeStamp().path}"
-        pathlib.Path.mkdir(save_directory)
-    return save_directory, fname + " {0:0>3}.png"
+    return save_directory, ("" if fname is None else fname) + " {0:0>3}.png"
