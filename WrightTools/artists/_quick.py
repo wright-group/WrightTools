@@ -5,6 +5,7 @@
 
 from contextlib import closing
 from functools import reduce
+from typing import Tuple
 import pathlib
 
 import numpy as np
@@ -343,7 +344,7 @@ def quick2D(
     )(verbose)
 
 
-def _filepath_seed(save_directory, fname, nchops, artist) -> tuple[pathlib.Path, str]:
+def _filepath_seed(save_directory, fname, nchops, artist) -> Tuple[pathlib.Path, str]:
     """determine the autosave filepaths"""
     if isinstance(save_directory, str):
         save_directory = pathlib.Path(save_directory)
