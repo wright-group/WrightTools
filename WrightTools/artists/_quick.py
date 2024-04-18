@@ -165,6 +165,7 @@ def _quick1D(
     `quick1D` worker; factored out for testing purposes
     returns Quick1D handler object
     """
+
     class Quick1D(ChopHandler):
         def __init__(self, *args, **kwargs):
             self._global_limits = None
