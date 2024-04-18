@@ -5,7 +5,7 @@
 
 from contextlib import closing
 from functools import reduce
-from typing import Tuple
+from typing import Tuple, List
 import pathlib
 
 import numpy as np
@@ -62,7 +62,7 @@ class ChopHandler:
                 f"quick{self.nD}D",
             )
 
-    def __call__(self, verbose=False) -> list:
+    def __call__(self, verbose=False) -> List[str | plt.Figure]:
         out = list()
         if self.autosave:
             self.save_directory.mkdir(exist_ok=True)
@@ -115,18 +115,7 @@ class ChopHandler:
             ax.set_ylim(axes[1].min(), axes[1].max())
 
 
-def quick1D(
-    data,
-    axis=0,
-    at={},
-    channel=0,
-    *,
-    local=False,
-    autosave=False,
-    save_directory=None,
-    fname=None,
-    verbose=True,
-):
+def quick1D(data, **kwargs):
     """Quickly plot 1D slice(s) of data.
 
     Parameters
@@ -157,7 +146,25 @@ def quick1D(
         if autosave, a list of saved image files (if any).
         if not, a list of Figures
     """
+    handler = _quick1D(data, **kwargs)
+    return handler(kwargs.get("verbose", True))
 
+
+def _quick1D(
+    data,
+    axis=0,
+    at={},
+    channel=0,
+    *,
+    local=False,
+    autosave=False,
+    save_directory=None,
+    fname=None,
+):
+    """
+    `quick1D` worker; factored out for testing purposes
+    returns Quick1D handler object
+    """
     class Quick1D(ChopHandler):
         def __init__(self, *args, **kwargs):
             self._global_limits = None
@@ -204,27 +211,10 @@ def quick1D(
         autosave=autosave,
         save_directory=save_directory,
         fname=fname,
-    )(verbose)
+    )
 
 
-def quick2D(
-    data,
-    xaxis=0,
-    yaxis=1,
-    at={},
-    channel=0,
-    *,
-    cmap=None,
-    contours=0,
-    pixelated=True,
-    dynamic_range=False,
-    local=False,
-    contours_local=True,
-    autosave=False,
-    save_directory=None,
-    fname=None,
-    verbose=True,
-):
+def quick2D(data, **kwargs):
     """Quickly plot 2D slice(s) of data.
 
     Parameters
@@ -270,6 +260,27 @@ def quick2D(
         if autosave, a list of saved image files (if any).
         if not, a list of Figures
     """
+    handler = _quick2D(data, **kwargs)
+    return handler(kwargs.get("verbose", True))
+
+
+def _quick2D(
+    data,
+    xaxis=0,
+    yaxis=1,
+    at={},
+    channel=0,
+    *,
+    cmap=None,
+    contours=0,
+    pixelated=True,
+    dynamic_range=False,
+    local=False,
+    contours_local=True,
+    autosave=False,
+    save_directory=None,
+    fname=None,
+):
 
     def determine_contour_levels(local_channel, global_channel, contours, local):
         # force top and bottom contour to be data range then clip them out
@@ -341,7 +352,7 @@ def quick2D(
         autosave=autosave,
         save_directory=save_directory,
         fname=fname,
-    )(verbose)
+    )
 
 
 def _filepath_seed(save_directory, fname, nchops, artist) -> Tuple[pathlib.Path, str]:
