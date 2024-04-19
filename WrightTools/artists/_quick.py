@@ -5,7 +5,7 @@
 
 from contextlib import closing
 from functools import reduce
-from typing import Tuple, List
+from typing import Tuple, List, Union
 import pathlib
 
 import numpy as np
@@ -70,7 +70,7 @@ class ChopHandler:
                 f"quick{self.nD}D",
             )
 
-    def __call__(self, verbose=False) -> List[str | plt.Figure]:
+    def __call__(self, verbose=False) -> List[Union[str, plt.Figure]]:
         out = list()
         if self.autosave:
             self.save_directory.mkdir(exist_ok=True)

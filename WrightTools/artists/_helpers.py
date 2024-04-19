@@ -78,7 +78,7 @@ def axis_label_from_data(data, ax=None, cax=None, which="both", channel_index=0)
         elif data.ndim == 2:
             ylabel = data.axes[1].label
         else:
-            raise wt_exceptions.DimensionalityError("<3", data.ndim)
+            raise wt_exceptions.DimensionalityError("<=3", data.ndim)
         ax.set_ylabel(ylabel)
 
 
