@@ -162,8 +162,9 @@ def quick1D(data, *args, **kwargs):
         if autosave, a list of saved image files (if any).
         if not, a list of Figures
     """
+    verbose = kwargs.pop("verbose", True)
     handler = _quick1D(data, *args, **kwargs)
-    return handler(kwargs.get("verbose", True))
+    return handler(verbose)
 
 
 def _quick1D(
@@ -278,8 +279,9 @@ def quick2D(data, *args, **kwargs):
         if autosave, a list of saved image files (if any).
         if not, a list of Figures
     """
+    verbose = kwargs.pop("verbose", True)
     handler = _quick2D(data, *args, **kwargs)
-    return handler(kwargs.get("verbose", True))
+    return handler(verbose)
 
 
 def _quick2D(
