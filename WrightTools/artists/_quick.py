@@ -129,7 +129,7 @@ class ChopHandler:
             ax.set_ylim(axes[1].min(), axes[1].max())
 
 
-def quick1D(data, **kwargs):
+def quick1D(data, *args, **kwargs):
     """Quickly plot 1D slice(s) of data.
 
     Parameters
@@ -162,7 +162,7 @@ def quick1D(data, **kwargs):
         if autosave, a list of saved image files (if any).
         if not, a list of Figures
     """
-    handler = _quick1D(data, **kwargs)
+    handler = _quick1D(data, *args, **kwargs)
     return handler(kwargs.get("verbose", True))
 
 
@@ -231,7 +231,7 @@ def _quick1D(
     )
 
 
-def quick2D(data, **kwargs):
+def quick2D(data, *args, **kwargs):
     """Quickly plot 2D slice(s) of data.
 
     Parameters
@@ -278,7 +278,7 @@ def quick2D(data, **kwargs):
         if autosave, a list of saved image files (if any).
         if not, a list of Figures
     """
-    handler = _quick2D(data, **kwargs)
+    handler = _quick2D(data, *args, **kwargs)
     return handler(kwargs.get("verbose", True))
 
 
