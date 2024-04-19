@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## Changed
 - refactor of artists.quick1D and artists.quick2D
+- quick2D and quick1D will not force `autosave=True` if the number of figures is large.  Instead, interactive plotting will be truncated if the number of figures is large.
 - artists now gets turbo colormap straight from matplotlib
 - artists.interact2D now returns a `types.SimpleNamespace` object (rather than a tuple)
 

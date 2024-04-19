@@ -33,6 +33,7 @@ __all__ = ["quick1D", "quick2D", "ChopHandler"]
 
 class ChopHandler:
     """class for keeping track of plotting through the chopped data"""
+    max_figures = 10  # value determines when interactive plotting is truncated
 
     def __init__(self, data, *axes, **kwargs):
         self.data = data
@@ -44,21 +45,25 @@ class ChopHandler:
 
         self.channel_index = wt_kit.get_index(data.channel_names, kwargs.get("channel", 0))
         shape = data.channels[self.channel_index].shape
-        # remove dimensions that do not involve the channel
+        # identify dimensions that do not involve the channel
         self.channel_slice = [0 if size == 1 else slice(None) for size in shape]
         self.sliced_constants = [
             data.axis_expressions[i] for i in range(len(shape)) if not self.channel_slice[i]
         ]
+        # pre-calculate the number of plots to decide whether to make a folder
+        uninvolved_shape = (size if self.channel_slice[i]==0 else 1 for i, size in enumerate(shape))
         removed_shape = data._chop_prep(*self.axes, at=self.at)[0]
-        len_chopped = reduce(int.__mul__, removed_shape) // reduce(int.__mul__, shape)
-        if len_chopped > 10 and not self.autosave:
-            print(f"expecting {len_chopped} figures. Forcing autosave.")
-            self.autosave = True
+        self.nfigs = reduce(int.__mul__, removed_shape) // reduce(int.__mul__, uninvolved_shape)
+        if self.nfigs > 10 and not self.autosave:
+            print(
+                f"number of expected figures ({self.nfigs}) is greater than the limit" \
+                + f"({self.max_figures}).  Only the first {self.max_figures} figures will be processed."
+            )
         if self.autosave:
             self.save_directory, self.filepath_seed = _filepath_seed(
                 kwargs.get("save_directory", pathlib.Path.cwd()),
                 kwargs.get("fname", data.natural_name),
-                len_chopped,
+                self.nfigs,
                 f"quick{self.nD}D",
             )
 
@@ -76,6 +81,10 @@ class ChopHandler:
                     if verbose:
                         print("image saved at", str(filepath))
                     out.append(str(filepath))
+                elif i == self.max_figures:
+                    print("The maximum allowed number of figures" \
+                          + f"({self.max_figures}) is plotted. Stopping...")
+                    break
                 else:
                     out.append(fig)
         return out
@@ -132,7 +141,9 @@ def quick1D(data, **kwargs):
     local : boolean (optional)
         Toggle plotting locally. Default is False.
     autosave : boolean (optional)
-         Toggle autosave. Default is False.
+        Toggle saving plots (True) as files or diplaying interactive (False). 
+        Default is False. When autosave is False, the number of plots is truncated by 
+        `ChopHandler.max_figures`.
     save_directory : string (optional)
          Location to save image(s). Default is None (auto-generated).
     fname : string (optional)
@@ -246,8 +257,9 @@ def quick2D(data, **kwargs):
     contours_local : boolean (optional)
         Toggle plotting black contour lines locally. Default is True.
     autosave : boolean (optional)
-        Toggle autosave. Default is False when the number of plots is 10 or less.
-        When the number of plots is greater than 10, saving is forced.
+        Toggle saving plots (True) as files or diplaying interactive (False). 
+        Default is False. When autosave is False, the number of plots is truncated by 
+        `ChopHandler.max_figures`.
     save_directory : string (optional)
          Location to save image(s). Default is None (auto-generated).
     fname : string (optional)
@@ -365,4 +377,4 @@ def _filepath_seed(save_directory, fname, nchops, artist) -> Tuple[pathlib.Path,
     # create a folder if multiple images
     if nchops > 1:
         save_directory = save_directory / f"{artist} {wt_kit.TimeStamp().path}"
-    return save_directory, ("" if fname is None else fname) + " {0:0>3}.png"
+    return save_directory, ("" if fname is None else fname + " ") + "{0:0>3}.png"
