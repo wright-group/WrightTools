@@ -33,6 +33,7 @@ __all__ = ["quick1D", "quick2D", "ChopHandler"]
 
 class ChopHandler:
     """class for keeping track of plotting through the chopped data"""
+
     max_figures = 10  # value determines when interactive plotting is truncated
 
     def __init__(self, data, *axes, **kwargs):
@@ -51,12 +52,14 @@ class ChopHandler:
             data.axis_expressions[i] for i in range(len(shape)) if not self.channel_slice[i]
         ]
         # pre-calculate the number of plots to decide whether to make a folder
-        uninvolved_shape = (size if self.channel_slice[i]==0 else 1 for i, size in enumerate(shape))
+        uninvolved_shape = (
+            size if self.channel_slice[i] == 0 else 1 for i, size in enumerate(shape)
+        )
         removed_shape = data._chop_prep(*self.axes, at=self.at)[0]
         self.nfigs = reduce(int.__mul__, removed_shape) // reduce(int.__mul__, uninvolved_shape)
         if self.nfigs > 10 and not self.autosave:
             print(
-                f"number of expected figures ({self.nfigs}) is greater than the limit" \
+                f"number of expected figures ({self.nfigs}) is greater than the limit"
                 + f"({self.max_figures}).  Only the first {self.max_figures} figures will be processed."
             )
         if self.autosave:
@@ -82,8 +85,10 @@ class ChopHandler:
                         print("image saved at", str(filepath))
                     out.append(str(filepath))
                 elif i == self.max_figures:
-                    print("The maximum allowed number of figures" \
-                          + f"({self.max_figures}) is plotted. Stopping...")
+                    print(
+                        "The maximum allowed number of figures"
+                        + f"({self.max_figures}) is plotted. Stopping..."
+                    )
                     break
                 else:
                     out.append(fig)
@@ -141,8 +146,8 @@ def quick1D(data, **kwargs):
     local : boolean (optional)
         Toggle plotting locally. Default is False.
     autosave : boolean (optional)
-        Toggle saving plots (True) as files or diplaying interactive (False). 
-        Default is False. When autosave is False, the number of plots is truncated by 
+        Toggle saving plots (True) as files or diplaying interactive (False).
+        Default is False. When autosave is False, the number of plots is truncated by
         `ChopHandler.max_figures`.
     save_directory : string (optional)
          Location to save image(s). Default is None (auto-generated).
@@ -257,8 +262,8 @@ def quick2D(data, **kwargs):
     contours_local : boolean (optional)
         Toggle plotting black contour lines locally. Default is True.
     autosave : boolean (optional)
-        Toggle saving plots (True) as files or diplaying interactive (False). 
-        Default is False. When autosave is False, the number of plots is truncated by 
+        Toggle saving plots (True) as files or diplaying interactive (False).
+        Default is False. When autosave is False, the number of plots is truncated by
         `ChopHandler.max_figures`.
     save_directory : string (optional)
          Location to save image(s). Default is None (auto-generated).
