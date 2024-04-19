@@ -53,35 +53,6 @@ __all__ = [
 # --- functions -----------------------------------------------------------------------------------
 
 
-def axis_label_from_data(data, ax=None, cax=None, which="both", channel_index=0):
-    """Apply x and/or y labels to axes.
-
-    Parameters
-    ----------
-    data : WrightTools.Data
-        data from which to extract the label(s)
-    ax : Axis object (optional)
-        Default is current axis
-    autolabel : {'none', 'both', 'x', 'y'} (optional)
-        Label(s) to apply from data. Default is none.
-    channel_index : integer (optional)
-        Channel index. Default is 0.  Only important for 2D data
-    """
-    if ax is None:
-        ax = plt.gca()
-    if which in ["both", "x"]:
-        xlabel = data.axes[0].label
-        ax.set_xlabel(xlabel)
-    if which in ["both", "y"]:
-        if data.ndim == 1:
-            ylabel = data.channels[channel_index].label
-        elif data.ndim == 2:
-            ylabel = data.axes[1].label
-        else:
-            raise wt_exceptions.DimensionalityError("<=3", data.ndim)
-        ax.set_ylabel(ylabel)
-
-
 def _title(fig, title, subtitle="", *, margin=1, fontsize=20, subfontsize=18):
     """Add a title to a figure.
 
