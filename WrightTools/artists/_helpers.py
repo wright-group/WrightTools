@@ -1159,4 +1159,6 @@ def ticks_from_norm(norm, n=11) -> np.array:
         temp[0] = norm.vmin
         temp[-1] = norm.vmax
         return np.array(temp)
+    else:
+        raise TypeError(f"ticks for norm of type {type(norm)} is not supported at this time")
     return np.linspace(vmin, vmax, n)

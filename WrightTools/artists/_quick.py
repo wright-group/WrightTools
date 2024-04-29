@@ -5,6 +5,7 @@
 
 from contextlib import closing
 from functools import reduce
+from typing import Tuple, List, Union
 import pathlib
 
 import numpy as np
@@ -15,7 +16,6 @@ from ._helpers import (
     create_figure,
     plot_colorbar,
     savefig,
-    set_ax_labels,
     norm_from_channel,
     ticks_from_norm,
 )
@@ -34,6 +34,8 @@ __all__ = ["quick1D", "quick2D", "ChopHandler"]
 class ChopHandler:
     """class for keeping track of plotting through the chopped data"""
 
+    max_figures = 10  # value determines when interactive plotting is truncated
+
     def __init__(self, data, *axes, **kwargs):
         self.data = data
         self.axes = axes
@@ -44,37 +46,50 @@ class ChopHandler:
 
         self.channel_index = wt_kit.get_index(data.channel_names, kwargs.get("channel", 0))
         shape = data.channels[self.channel_index].shape
-        # remove dimensions that do not involve the channel
+        # identify dimensions that do not involve the channel
         self.channel_slice = [0 if size == 1 else slice(None) for size in shape]
         self.sliced_constants = [
             data.axis_expressions[i] for i in range(len(shape)) if not self.channel_slice[i]
         ]
+        # pre-calculate the number of plots to decide whether to make a folder
+        uninvolved_shape = (
+            size if self.channel_slice[i] == 0 else 1 for i, size in enumerate(shape)
+        )
         removed_shape = data._chop_prep(*self.axes, at=self.at)[0]
-        len_chopped = reduce(int.__mul__, removed_shape) // reduce(int.__mul__, shape)
-        if len_chopped > 10 and not self.autosave:
-            print(f"expecting {len_chopped} figures. Forcing autosave.")
-            self.autosave = True
+        self.nfigs = reduce(int.__mul__, removed_shape) // reduce(int.__mul__, uninvolved_shape)
+        if self.nfigs > 10 and not self.autosave:
+            print(
+                f"number of expected figures ({self.nfigs}) is greater than the limit"
+                + f"({self.max_figures}).  Only the first {self.max_figures} figures will be processed."
+            )
         if self.autosave:
             self.save_directory, self.filepath_seed = _filepath_seed(
                 kwargs.get("save_directory", pathlib.Path.cwd()),
                 kwargs.get("fname", data.natural_name),
-                len_chopped,
+                self.nfigs,
                 f"quick{self.nD}D",
             )
-            pathlib.Path.mkdir(self.save_directory)
 
-    def __call__(self, verbose=False) -> list:
+    def __call__(self, verbose=False) -> List[Union[str, plt.Figure]]:
         out = list()
+        if self.autosave:
+            self.save_directory.mkdir(exist_ok=True)
         with closing(self.data._from_slice(self.channel_slice)) as sliced:
             for constant in self.sliced_constants:
                 sliced.remove_constant(constant, verbose=False)
             for i, fig in enumerate(map(self.plot, sliced.ichop(*self.axes, at=self.at))):
                 if self.autosave:
-                    filepath = self.filepath_seed.format(i)
+                    filepath = self.save_directory / self.filepath_seed.format(i)
                     savefig(filepath, fig=fig, facecolor="white", close=True)
                     if verbose:
                         print("image saved at", str(filepath))
                     out.append(str(filepath))
+                elif i == self.max_figures:
+                    print(
+                        "The maximum allowed number of figures"
+                        + f"({self.max_figures}) is plotted. Stopping..."
+                    )
+                    break
                 else:
                     out.append(fig)
         return out
@@ -109,25 +124,12 @@ class ChopHandler:
         ax.grid(ls="--", color="grey", lw=0.5)
         if self.nD == 1:
             ax.axhline(self.data.channels[self.channel_index].null, lw=2, c="k")
-            set_ax_labels(ax, xlabel=axes[0].label, ylabel=self.data.natural_name)
         elif self.nD == 2:
             ax.axhline(0, lw=2, c="k")
-            set_ax_labels(ax, xlabel=axes[0].label, ylabel=axes[1].label)
             ax.set_ylim(axes[1].min(), axes[1].max())
 
 
-def quick1D(
-    data,
-    axis=0,
-    at={},
-    channel=0,
-    *,
-    local=False,
-    autosave=False,
-    save_directory=None,
-    fname=None,
-    verbose=True,
-):
+def quick1D(data, *args, **kwargs):
     """Quickly plot 1D slice(s) of data.
 
     Parameters
@@ -144,7 +146,9 @@ def quick1D(
     local : boolean (optional)
         Toggle plotting locally. Default is False.
     autosave : boolean (optional)
-         Toggle autosave. Default is False.
+        Toggle saving plots (True) as files or diplaying interactive (False).
+        Default is False. When autosave is False, the number of plots is truncated by
+        `ChopHandler.max_figures`.
     save_directory : string (optional)
          Location to save image(s). Default is None (auto-generated).
     fname : string (optional)
@@ -157,6 +161,26 @@ def quick1D(
     list
         if autosave, a list of saved image files (if any).
         if not, a list of Figures
+    """
+    verbose = kwargs.pop("verbose", True)
+    handler = _quick1D(data, *args, **kwargs)
+    return handler(verbose)
+
+
+def _quick1D(
+    data,
+    axis=0,
+    at={},
+    channel=0,
+    *,
+    local=False,
+    autosave=False,
+    save_directory=None,
+    fname=None,
+):
+    """
+    `quick1D` worker; factored out for testing purposes
+    returns Quick1D handler object
     """
 
     class Quick1D(ChopHandler):
@@ -173,7 +197,7 @@ def quick1D(
             fig, gs = create_figure(width="single", nrows=1, cols=[1], aspects=aspects)
             ax = plt.subplot(gs[0, 0])
             # plot --------------------------------------------------------------------------------
-            ax.plot(axis.full, channel[:], lw=2)
+            ax.plot(d, channel=self.channel_index, lw=2, autolabel=True)
             ax.scatter(axis.full, channel[:], color="grey", alpha=0.5, edgecolor="none")
             # decoration --------------------------------------------------------------------------
             if not local:
@@ -185,7 +209,7 @@ def quick1D(
 
         @property
         def global_limits(self):
-            if self._global_limits is None and self.nD == 1:
+            if self._global_limits is None:
                 data_channel = self.data.channels[self.channel_index]
                 cmin, cmax = data_channel.min(), data_channel.max()
                 buffer = (cmax - cmin) * 0.05
@@ -205,27 +229,10 @@ def quick1D(
         autosave=autosave,
         save_directory=save_directory,
         fname=fname,
-    )(verbose)
+    )
 
 
-def quick2D(
-    data,
-    xaxis=0,
-    yaxis=1,
-    at={},
-    channel=0,
-    *,
-    cmap=None,
-    contours=0,
-    pixelated=True,
-    dynamic_range=False,
-    local=False,
-    contours_local=True,
-    autosave=False,
-    save_directory=None,
-    fname=None,
-    verbose=True,
-):
+def quick2D(data, *args, **kwargs):
     """Quickly plot 2D slice(s) of data.
 
     Parameters
@@ -256,8 +263,9 @@ def quick2D(
     contours_local : boolean (optional)
         Toggle plotting black contour lines locally. Default is True.
     autosave : boolean (optional)
-        Toggle autosave. Default is False when the number of plots is 10 or less.
-        When the number of plots is greater than 10, saving is forced.
+        Toggle saving plots (True) as files or diplaying interactive (False).
+        Default is False. When autosave is False, the number of plots is truncated by
+        `ChopHandler.max_figures`.
     save_directory : string (optional)
          Location to save image(s). Default is None (auto-generated).
     fname : string (optional)
@@ -271,6 +279,28 @@ def quick2D(
         if autosave, a list of saved image files (if any).
         if not, a list of Figures
     """
+    verbose = kwargs.pop("verbose", True)
+    handler = _quick2D(data, *args, **kwargs)
+    return handler(verbose)
+
+
+def _quick2D(
+    data,
+    xaxis=0,
+    yaxis=1,
+    at={},
+    channel=0,
+    *,
+    cmap=None,
+    contours=0,
+    pixelated=True,
+    dynamic_range=False,
+    local=False,
+    contours_local=True,
+    autosave=False,
+    save_directory=None,
+    fname=None,
+):
 
     def determine_contour_levels(local_channel, global_channel, contours, local):
         # force top and bottom contour to be data range then clip them out
@@ -284,7 +314,7 @@ def quick2D(
         return levels
 
     class Quick2D(ChopHandler):
-        kwargs = {}
+        kwargs = {"autolabel": "both"}
         if cmap is not None:
             kwargs["cmap"] = cmap
 
@@ -342,10 +372,10 @@ def quick2D(
         autosave=autosave,
         save_directory=save_directory,
         fname=fname,
-    )(verbose)
+    )
 
 
-def _filepath_seed(save_directory, fname, nchops, artist):
+def _filepath_seed(save_directory, fname, nchops, artist) -> Tuple[pathlib.Path, str]:
     """determine the autosave filepaths"""
     if isinstance(save_directory, str):
         save_directory = pathlib.Path(save_directory)
@@ -354,5 +384,4 @@ def _filepath_seed(save_directory, fname, nchops, artist):
     # create a folder if multiple images
     if nchops > 1:
         save_directory = save_directory / f"{artist} {wt_kit.TimeStamp().path}"
-        pathlib.Path.mkdir(save_directory)
-    return save_directory, fname + " {0:0>3}.png"
+    return save_directory, ("" if fname is None else fname + " ") + "{0:0>3}.png"

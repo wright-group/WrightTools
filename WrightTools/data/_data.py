@@ -511,8 +511,7 @@ class Data(Group):
 
         transform_expression = [self._axes[self.axis_names.index(a)].expression for a in args]
 
-        if at is None:
-            at = {}
+        at = {} if at is None else at.copy()
         # normalize the at keys to the natural name
         for k in list(at.keys()):
             k = k.strip()
