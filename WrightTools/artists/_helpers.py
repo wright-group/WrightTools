@@ -12,6 +12,8 @@ from scipy.interpolate import interp2d
 import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.patheffects as PathEffects
+
+from matplotlib.colors import Normalize, CenteredNorm, TwoSlopeNorm
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 import imageio.v3 as iio
@@ -33,6 +35,7 @@ __all__ = [
     "create_figure",
     "diagonal_line",
     "get_scaled_bounds",
+    "norm_from_channel",
     "pcolor_helper",
     "plot_colorbar",
     "plot_margins",
@@ -43,6 +46,7 @@ __all__ = [
     "set_fig_labels",
     "subplots_adjust",
     "stitch_to_animation",
+    "ticks_from_norm",
 ]
 
 
@@ -1116,3 +1120,37 @@ def stitch_to_animation(paths, outpath=None, *, duration=0.5, palettesize=256, v
         interval = np.round(t.interval, 2)
         print("gif generated in {0} seconds - saved at {1}".format(interval, outpath))
     return outpath
+
+
+def norm_from_channel(channel, dynamic_range=False):
+    if channel.signed:
+        if dynamic_range:
+            norm = TwoSlopeNorm(vcenter=channel.null, vmin=channel.min(), vmax=channel.max())
+        else:
+            norm = CenteredNorm(vcenter=channel.null, halfrange=channel.mag())
+            if norm.halfrange == 0:
+                norm.halfrange = 1
+    else:
+        norm = Normalize(vmin=channel.null, vmax=np.nanmax(channel[:]))
+        if norm.vmax == norm.vmin:
+            norm.vmax += 1
+    return norm
+
+
+def ticks_from_norm(norm, n=11) -> np.array:
+    if type(norm) == CenteredNorm:
+        vmin = norm.vcenter - norm.halfrange
+        vmax = norm.vcenter + norm.halfrange
+    elif type(norm) == Normalize:
+        vmin = norm.vmin
+        vmax = norm.vmax
+    elif type(norm) == TwoSlopeNorm:
+        mag = max(norm.vcenter - norm.vmin, norm.vmax - norm.vcenter)
+        in_range = lambda x: x >= norm.vmin and x <= norm.vmax
+        temp = [x for x in filter(in_range, np.linspace(-mag, mag, n))]
+        temp[0] = norm.vmin
+        temp[-1] = norm.vmax
+        return np.array(temp)
+    else:
+        raise TypeError(f"ticks for norm of type {type(norm)} is not supported at this time")
+    return np.linspace(vmin, vmax, n)
