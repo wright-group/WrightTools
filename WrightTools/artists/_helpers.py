@@ -30,18 +30,19 @@ from ._colors import colormaps
 
 __all__ = [
     "_title",
+    "axis_label_from_data",
     "add_sideplot",
     "corner_text",
     "create_figure",
     "diagonal_line",
     "get_scaled_bounds",
     "norm_from_channel",
-    "pcolor_helper",
-    "plot_colorbar",
+    "pcolor_helper",  # deprecation imminent
+    "plot_colorbar",  # to be deprecated (use mpl methods)
     "plot_margins",
-    "plot_gridlines",
+    "plot_gridlines",  # to be deprecated (use mpl methods, styles)
     "savefig",
-    "set_ax_labels",
+    "set_ax_labels",  # to be deprecated (use mpl methods, styles)
     "set_ax_spines",
     "set_fig_labels",
     "subplots_adjust",
@@ -51,6 +52,34 @@ __all__ = [
 
 
 # --- functions -----------------------------------------------------------------------------------
+
+
+def axis_label_from_data(data, ax=None, cax=None, which="both", channel_index=0):
+    """Apply x and/or y labels to axes.
+    Parameters
+    ----------
+    data : WrightTools.Data
+        data from which to extract the label(s)
+    ax : Axis object (optional)
+        Default is current axis
+    autolabel : {'none', 'both', 'x', 'y'} (optional)
+        Label(s) to apply from data. Default is none.
+    channel_index : integer (optional)
+        Channel index. Default is 0.  Only important for 2D data
+    """
+    if ax is None:
+        ax = plt.gca()
+    if which in ["both", "x"]:
+        xlabel = data.axes[0].label
+        ax.set_xlabel(xlabel)
+    if which in ["both", "y"]:
+        if data.ndim == 1:
+            ylabel = data.channels[channel_index].label
+        elif data.ndim == 2:
+            ylabel = data.axes[1].label
+        else:
+            raise wt_exceptions.DimensionalityError("<=3", data.ndim)
+        ax.set_ylabel(ylabel)
 
 
 def _title(fig, title, subtitle="", *, margin=1, fontsize=20, subfontsize=18):
@@ -812,6 +841,13 @@ def plot_gridlines(ax=None, c="grey", lw=1, diagonal=False, zorder=2, makegrid=T
     zorder : number (optional)
         zorder of plotted grid. Default is 2.
     """
+    warnings.warn(
+        "``plot_gridlines`` is deprecated and will be removed in a future version. "
+        + "Use matplotlib's ``grid`` methods instead",
+        wt_exceptions.VisibleDeprecationWarning,
+    )
+
+
     # get ax
     if ax is None:
         ax = plt.gca()
@@ -918,6 +954,11 @@ def set_ax_labels(ax=None, xlabel=None, ylabel=None, xticks=None, yticks=None, l
     --------
     set_fig_labels
     """
+    warnings.warn(
+        "``set_ax_labels`` is deprecated and will be removed in a future version. "
+        + "Use matplotlib's ``set_xlabel`` and ``set_ylabel`` methods instead",
+        wt_exceptions.VisibleDeprecationWarning,
+    )
     # get ax
     if ax is None:
         ax = plt.gca()
@@ -1029,14 +1070,8 @@ def set_fig_labels(
     for ax in fig.axes:
         if ax.is_sideplot:
             continue
-        try:
-            # [row|col]span were introduced in matplotlib 3.2
-            # this try/except can be removed when supprot for mpl < 3.2 is dropped
-            rowNum = ax.get_subplotspec().rowspan.start
-            colNum = ax.get_subplotspec().colspan.start
-        except AttributeError:
-            rowNum = ax.rowNum
-            colNum = ax.colNum
+        rowNum = ax.get_subplotspec().rowspan.start
+        colNum = ax.get_subplotspec().colspan.start
         if row_start <= rowNum <= row_stop and col_start <= colNum <= col_stop:
             if colNum == col_start:
                 set_ax_labels(ax=ax, ylabel=ylabel, yticks=yticks, label_fontsize=label_fontsize)
