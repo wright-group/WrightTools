@@ -847,7 +847,6 @@ def plot_gridlines(ax=None, c="grey", lw=1, diagonal=False, zorder=2, makegrid=T
         wt_exceptions.VisibleDeprecationWarning,
     )
 
-
     # get ax
     if ax is None:
         ax = plt.gca()
