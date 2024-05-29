@@ -3,7 +3,7 @@
 # --- import --------------------------------------------------------------------------------------
 
 
-import os
+import pathlib
 
 import numpy as np
 
@@ -917,7 +917,7 @@ def savefig(path, fig=None, close=True, **kwargs):
     if fig is None:
         fig = plt.gcf()
 
-    path = os.path.abspath(path)
+    path = pathlib.Path(path).resolve()
 
     kwargs["dpi"] = kwargs.get("dpi", 300)
     kwargs["transparent"] = kwargs.get("transparent", False)
@@ -1127,7 +1127,7 @@ def subplots_adjust(fig=None, inches=1):
         fig.subplots_adjust(top=top, right=right, bottom=bottom, left=left)
 
 
-def stitch_to_animation(paths, outpath=None, *, duration=0.5, verbose=True, use_iio=True, **kwargs):
+def stitch_to_animation(paths, outpath=None, *, duration=0.5, ignore_alpha=True, reduce=None, verbose=True, **kwargs):
     """Stitch a series of images into an animation.
 
     Currently supports animated gifs, other formats coming as needed.
@@ -1141,37 +1141,51 @@ def stitch_to_animation(paths, outpath=None, *, duration=0.5, verbose=True, use_
         of first path in `images`. Default is None.
     duration : number or list of numbers (optional)
         Duration of (each) frame in seconds. Default is 0.5.
-    palettesize : int (optional)
-        The number of colors in the resulting animation. Input is rounded to
-        the nearest power of 2. Default is 256.
+    ignore_transparency : bool (optional)
+        When True, transparency is excluded from the gif and color palette may be higher res. ignoring alpha takes longer and produces larger gifs
+    reduce : int (optional)
+        Reduces the resolution along both image dimensions by a factor of `reduce`.
     verbose : bool (optional)
         Toggle talkback. Default is True.
+
+    Returns:
+    --------
+    outpath : pathlib.Path
+        path to generated gif
     """
+    import contextlib
+    from PIL import Image
+
     # parse filename
     if outpath is None:
-        outpath = os.path.splitext(paths[0])[0] + ".gif"
+        outpath = pathlib.Path(paths[0]).with_suffix(".gif")
     # write
     t = wt_kit.Timer(verbose=False)
-    if use_iio:
-        with t, iio.imopen(outpath, "w") as gif:
-            for p in paths:
-                frame = iio.imread(p)
-                gif.write(
-                    frame, plugin="pillow", duration=duration * 1e3, loop=0, **kwargs
-                )
-    else:
-        import contextlib
-        from PIL import Image, GifImagePlugin
 
-        GifImagePlugin.LOADING_STRATEGY = GifImagePlugin.LoadingStrategy.RGB_AFTER_DIFFERENT_PALETTE_ONLY
+    def process_imgs(imgs):
+        count = 0
+        for img in imgs:
+            if verbose:
+                print(f"processing {count+1} / {len(paths)}...")
+            if ignore_alpha:
+                img = img.convert("RGB")
+            if reduce is not None:
+                img = img.reduce(reduce)
+            count += 1
+            yield img
 
-        with t, contextlib.ExitStack() as stack:
-            # avoid RGBA mode for a better palelle range
-            imgs = (stack.enter_context(Image.open(p).convert("RGB")) for p in paths)
-            img = next(imgs)
-            img.save(fp=outpath, format='GIF', append_images=imgs,
-                    save_all=True, duration=duration * 1e3, loop=0, **kwargs)
-            
+    with t, contextlib.ExitStack() as stack:
+        imgs = process_imgs(stack.enter_context(Image.open(p)) for p in paths)
+        img = next(imgs)
+        img.save(
+            fp=outpath,
+            format='GIF',
+            append_images=imgs,
+            save_all=True,
+            duration=duration * 1e3,
+            loop=0,
+            **kwargs
+        )
 
     if verbose:
         interval = np.round(t.interval, 2)
