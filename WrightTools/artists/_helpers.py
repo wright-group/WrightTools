@@ -1127,7 +1127,7 @@ def subplots_adjust(fig=None, inches=1):
         fig.subplots_adjust(top=top, right=right, bottom=bottom, left=left)
 
 
-def stitch_to_animation(paths, outpath=None, *, duration=0.5, palettesize=256, verbose=True):
+def stitch_to_animation(paths, outpath=None, *, duration=0.5, verbose=True, use_iio=True, **kwargs):
     """Stitch a series of images into an animation.
 
     Currently supports animated gifs, other formats coming as needed.
@@ -1152,12 +1152,27 @@ def stitch_to_animation(paths, outpath=None, *, duration=0.5, palettesize=256, v
         outpath = os.path.splitext(paths[0])[0] + ".gif"
     # write
     t = wt_kit.Timer(verbose=False)
-    with t, iio.imopen(outpath, "w") as gif:
-        for p in paths:
-            frame = iio.imread(p)
-            gif.write(
-                frame, plugin="pillow", duration=duration * 1e3, loop=0, palettesize=palettesize
-            )
+    if use_iio:
+        with t, iio.imopen(outpath, "w") as gif:
+            for p in paths:
+                frame = iio.imread(p)
+                gif.write(
+                    frame, plugin="pillow", duration=duration * 1e3, loop=0, **kwargs
+                )
+    else:
+        import contextlib
+        from PIL import Image, GifImagePlugin
+
+        GifImagePlugin.LOADING_STRATEGY = GifImagePlugin.LoadingStrategy.RGB_AFTER_DIFFERENT_PALETTE_ONLY
+
+        with t, contextlib.ExitStack() as stack:
+            # avoid RGBA mode for a better palelle range
+            imgs = (stack.enter_context(Image.open(p).convert("RGB")) for p in paths)
+            img = next(imgs)
+            img.save(fp=outpath, format='GIF', append_images=imgs,
+                    save_all=True, duration=duration * 1e3, loop=0, **kwargs)
+            
+
     if verbose:
         interval = np.round(t.interval, 2)
         print("gif generated in {0} seconds - saved at {1}".format(interval, outpath))
