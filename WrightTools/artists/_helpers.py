@@ -1127,7 +1127,9 @@ def subplots_adjust(fig=None, inches=1):
         fig.subplots_adjust(top=top, right=right, bottom=bottom, left=left)
 
 
-def stitch_to_animation(paths, outpath=None, *, duration=0.5, ignore_alpha=True, reduce=None, verbose=True, **kwargs):
+def stitch_to_animation(
+    paths, outpath=None, *, duration=0.5, ignore_alpha=True, reduce=None, verbose=True, **kwargs
+):
     """Stitch a series of images into an animation.
 
     Currently supports animated gifs, other formats coming as needed.
@@ -1179,12 +1181,12 @@ def stitch_to_animation(paths, outpath=None, *, duration=0.5, ignore_alpha=True,
         img = next(imgs)
         img.save(
             fp=outpath,
-            format='GIF',
+            format="GIF",
             append_images=imgs,
             save_all=True,
             duration=duration * 1e3,
             loop=0,
-            **kwargs
+            **kwargs,
         )
 
     if verbose:
