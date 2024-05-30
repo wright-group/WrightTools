@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 - new artist helper function: `norm_from_channel`
 - new artist helper function: `ticks_from_norm`
 - new artist iterator `ChopHandler`
+- `artists.stitch_to_animation`: new kwargs for more gif customization
 
 ### Fixed
 - fixed Quick2D/Quick1D issues where collapsing unused dims did not work
@@ -17,6 +18,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 - constants in chopped data will inherit the units of the original data
 
 ## Changed
+- use `pillow` directly and remove `ImageIO` dependency
 - refactor of artists.quick1D and artists.quick2D
 - quick2D and quick1D will not force `autosave=True` if the number of figures is large.  Instead, interactive plotting will be truncated if the number of figures is large.
 - artists now gets turbo colormap straight from matplotlib

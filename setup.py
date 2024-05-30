@@ -1,14 +1,14 @@
 #! /usr/bin/env python3
 
-import os
+import pathlib
 from setuptools import setup, find_packages
 
 
-here = os.path.abspath(os.path.dirname(__file__))
+here = pathlib.Path(__file__).resolve().parent
 
 
 def read(fname):
-    with open(os.path.join(here, fname)) as f:
+    with open(here / fname) as f:
         return f.read()
 
 
@@ -25,7 +25,7 @@ extra_files = {
     ]
 }
 
-with open(os.path.join(here, "WrightTools", "VERSION")) as version_file:
+with open(here / "WrightTools" / "VERSION") as version_file:
     version = version_file.read().strip()
 
 docs_require = ["sphinx", "sphinx-gallery==0.8.2", "sphinx-rtd-theme"]
@@ -37,7 +37,7 @@ setup(
     python_requires=">=3.7",
     install_requires=[
         "h5py",
-        "imageio>=2.28.0",
+        "pillow",
         "matplotlib>=3.4.0",
         "numexpr",
         "numpy>=1.15.0",
