@@ -15,6 +15,7 @@ import matplotlib.patheffects as PathEffects
 
 from matplotlib.colors import Normalize, CenteredNorm, TwoSlopeNorm
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+from typing import List
 
 import imageio.v3 as iio
 import warnings
@@ -1086,23 +1087,20 @@ def subplots_adjust(fig=None, inches=1):
 
 
 def stitch_to_animation(
-    paths, outpath=None, *, duration=0.5, ignore_alpha=True, reduce=None, verbose=True, **kwargs
+    paths, outpath=None, duration=0.5, ignore_alpha:bool=True, reduce:int=None, verbose=True, **kwargs
 ):
-    """Stitch a series of images into an animation.
-
-    Currently supports animated gifs, other formats coming as needed.
+    """Stitch a series of images into a gif.
 
     Parameters
     ----------
     paths : list of strings
-        Filepaths to the images to stitch together, in order of apperence.
+        Filepaths to the images to stitch together, in order of appearance.
     outpath : string (optional)
-        Path of output, including extension. If None, bases output path on path
-        of first path in `images`. Default is None.
+        Path of output, including extension. If None, bases output path on `paths[0]`. Default is None.
     duration : number or list of numbers (optional)
         Duration of (each) frame in seconds. Default is 0.5.
-    ignore_transparency : bool (optional)
-        When True, transparency is excluded from the gif and color palette may be higher res. ignoring alpha takes longer and produces larger gifs
+    ignore_alpha : bool (optional)
+        When True, transparency is excluded from the gif and color palette may be higher res.
     reduce : int (optional)
         Reduces the resolution along both image dimensions by a factor of `reduce`.
     verbose : bool (optional)
@@ -1110,7 +1108,7 @@ def stitch_to_animation(
 
     Returns:
     --------
-    outpath : pathlib.Path
+    outpath : path-like
         path to generated gif
     """
     import contextlib
@@ -1122,7 +1120,7 @@ def stitch_to_animation(
     # write
     t = wt_kit.Timer(verbose=False)
 
-    def process_imgs(imgs):
+    def process_imgs(imgs:List[Image.Image]):
         count = 0
         for img in imgs:
             if verbose:
