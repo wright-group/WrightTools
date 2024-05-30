@@ -1087,7 +1087,13 @@ def subplots_adjust(fig=None, inches=1):
 
 
 def stitch_to_animation(
-    paths, outpath=None, duration=0.5, ignore_alpha:bool=True, reduce:int=None, verbose=True, **kwargs
+    paths,
+    outpath=None,
+    duration=0.5,
+    ignore_alpha: bool = True,
+    reduce: int = None,
+    verbose=True,
+    **kwargs,
 ):
     """Stitch a series of images into a gif.
 
@@ -1120,7 +1126,7 @@ def stitch_to_animation(
     # write
     t = wt_kit.Timer(verbose=False)
 
-    def process_imgs(imgs:List[Image.Image]):
+    def process_imgs(imgs: List[Image.Image]):
         count = 0
         for img in imgs:
             if verbose:
