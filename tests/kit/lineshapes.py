@@ -6,6 +6,7 @@
 import numpy as np
 
 import WrightTools as wt
+
 # numpy 2.0 compatibility
 trapezoid = np.trapezoid if int(np.__version__.split(".")[0]) > 1 else np.trapz
 
