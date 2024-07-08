@@ -3,7 +3,7 @@
 # --- import --------------------------------------------------------------------------------------
 
 
-import os
+import pathlib
 
 import numpy as np
 
@@ -15,6 +15,7 @@ import matplotlib.patheffects as PathEffects
 
 from matplotlib.colors import Normalize, CenteredNorm, TwoSlopeNorm
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+from typing import List
 
 import imageio.v3 as iio
 import warnings
@@ -877,7 +878,7 @@ def savefig(path, fig=None, close=True, **kwargs):
     if fig is None:
         fig = plt.gcf()
 
-    path = os.path.abspath(path)
+    path = pathlib.Path(path).resolve()
 
     kwargs["dpi"] = kwargs.get("dpi", 300)
     kwargs["transparent"] = kwargs.get("transparent", False)
@@ -1085,37 +1086,71 @@ def subplots_adjust(fig=None, inches=1):
         fig.subplots_adjust(top=top, right=right, bottom=bottom, left=left)
 
 
-def stitch_to_animation(paths, outpath=None, *, duration=0.5, palettesize=256, verbose=True):
-    """Stitch a series of images into an animation.
-
-    Currently supports animated gifs, other formats coming as needed.
+def stitch_to_animation(
+    paths,
+    outpath=None,
+    duration=0.5,
+    ignore_alpha: bool = True,
+    reduce: int = None,
+    verbose=True,
+    **kwargs,
+):
+    """Stitch a series of images into a gif.
 
     Parameters
     ----------
     paths : list of strings
-        Filepaths to the images to stitch together, in order of apperence.
+        Filepaths to the images to stitch together, in order of appearance.
     outpath : string (optional)
-        Path of output, including extension. If None, bases output path on path
-        of first path in `images`. Default is None.
+        Path of output, including extension. If None, bases output path on `paths[0]`. Default is None.
     duration : number or list of numbers (optional)
         Duration of (each) frame in seconds. Default is 0.5.
-    palettesize : int (optional)
-        The number of colors in the resulting animation. Input is rounded to
-        the nearest power of 2. Default is 256.
+    ignore_alpha : bool (optional)
+        When True, transparency is excluded from the gif and color palette may be higher res.
+    reduce : int (optional)
+        Reduces the resolution along both image dimensions by a factor of `reduce`.
     verbose : bool (optional)
         Toggle talkback. Default is True.
+
+    Returns:
+    --------
+    outpath : path-like
+        path to generated gif
     """
+    import contextlib
+    from PIL import Image
+
     # parse filename
     if outpath is None:
-        outpath = os.path.splitext(paths[0])[0] + ".gif"
+        outpath = pathlib.Path(paths[0]).with_suffix(".gif")
     # write
     t = wt_kit.Timer(verbose=False)
-    with t, iio.imopen(outpath, "w") as gif:
-        for p in paths:
-            frame = iio.imread(p)
-            gif.write(
-                frame, plugin="pillow", duration=duration * 1e3, loop=0, palettesize=palettesize
-            )
+
+    def process_imgs(imgs: List[Image.Image]):
+        count = 0
+        for img in imgs:
+            if verbose:
+                print(f"processing {count+1} / {len(paths)}...")
+            if ignore_alpha:
+                img = img.convert("RGB")
+            if reduce is not None:
+                img = img.reduce(reduce)
+            count += 1
+            yield img
+
+    with t, contextlib.ExitStack() as stack:
+        imgs = process_imgs(stack.enter_context(Image.open(p)) for p in paths)
+        img = next(imgs)
+        img.save(
+            fp=outpath,
+            format="GIF",
+            append_images=imgs,
+            save_all=True,
+            duration=duration * 1e3,
+            loop=0,
+            **kwargs,
+        )
+
     if verbose:
         interval = np.round(t.interval, 2)
         print("gif generated in {0} seconds - saved at {1}".format(interval, outpath))
