@@ -10,6 +10,7 @@ import numpy as np
 
 from ._data import Data
 from .. import exceptions as wt_exceptions
+from numpy.lib.npyio import DataSource
 
 
 # --- define --------------------------------------------------------------------------------------
@@ -61,7 +62,7 @@ def from_ocean_optics(filepath, name=None, *, parent=None, verbose=True) -> Data
     # array
     skip_header = 14
     skip_footer = 1
-    ds = np.DataSource(None)
+    ds = DataSource(None)
     f = ds.open(filestr, "rt")
     arr = np.genfromtxt(f, skip_header=skip_header, skip_footer=skip_footer, delimiter="\t").T
     f.close()

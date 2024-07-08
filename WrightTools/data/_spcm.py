@@ -13,6 +13,7 @@ import numpy as np
 from ._data import Data
 from .. import exceptions as wt_exceptions
 from ..kit import _timestamp as timestamp
+from numpy.lib.npyio import DataSource
 
 
 # --- define --------------------------------------------------------------------------------------
@@ -65,7 +66,7 @@ def from_spcm(filepath, name=None, *, delimiter=",", parent=None, verbose=True) 
     # create headers dictionary
     headers = collections.OrderedDict()
     header_lines = 0
-    ds = np.DataSource(None)
+    ds = DataSource(None)
     f = ds.open(filestr, "rt")
     while True:
         line = f.readline().strip()

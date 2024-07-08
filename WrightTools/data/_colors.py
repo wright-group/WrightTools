@@ -13,6 +13,7 @@ from scipy.interpolate import griddata
 
 from ._data import Data
 from .. import kit as wt_kit
+from numpy.lib.npyio import DataSource
 
 
 # --- define --------------------------------------------------------------------------------------
@@ -66,7 +67,7 @@ def from_COLORS(
     else:
         filestrs = [os.fspath(filepaths)]
         filepaths = [pathlib.Path(filepaths)]
-    ds = np.DataSource(None)
+    ds = DataSource(None)
     # define format of dat file -------------------------------------------------------------------
     if cols:
         pass

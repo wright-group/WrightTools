@@ -15,6 +15,7 @@ import tidy_headers
 from ._data import Data
 from .. import kit as wt_kit
 from .. import units as wt_units
+from numpy.lib.npyio import DataSource
 
 
 # --- define --------------------------------------------------------------------------------------
@@ -51,7 +52,7 @@ def from_PyCMDS(filepath, name=None, parent=None, verbose=True, *, collapse=True
     filestr = os.fspath(filepath)
 
     # header
-    ds = np.DataSource(None)
+    ds = DataSource(None)
     file_ = ds.open(filestr, "rt")
     headers = tidy_headers.read(file_)
     file_.seek(0)
