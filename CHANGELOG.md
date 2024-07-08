@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## [3.5.3]
+
 ### Added
 - `Data.ichop`, an iteration-based version of `Data.chop`
 - new artist helper function: `norm_from_channel`
@@ -394,7 +396,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ### Added
 - initial release
 
-[Unreleased]: https://github.com/wright-group/WrightTools/-/compare/3.5.2...master
+[Unreleased]: https://github.com/wright-group/WrightTools/-/compare/3.5.3...master
+[3.5.3]: https://github.com/wright-group/WrightTools/compare/3.5.2...3.5.3
 [3.5.2]: https://github.com/wright-group/WrightTools/compare/3.5.1...3.5.2
 [3.5.1]: https://github.com/wright-group/WrightTools/compare/3.5.0...3.5.1
 [3.5.0]: https://github.com/wright-group/WrightTools/compare/3.4.6...3.5.0

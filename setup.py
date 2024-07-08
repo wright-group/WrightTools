@@ -40,7 +40,7 @@ setup(
         "imageio>=2.28.0",
         "matplotlib>=3.4.0",
         "numexpr",
-        "numpy>=1.15.0",
+        "numpy>=1.15.0,<2.0",
         "pint",
         "python-dateutil",
         "scipy",
