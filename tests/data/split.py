@@ -122,7 +122,7 @@ def test_split_parent():
     a = wt.data.from_PyCMDS(p)
     parent = wt.Collection()
     split = a.split(1, [1500], parent=parent)
-    assert "split" in parent
+    assert f"{a.natural_name}_split" in parent
     assert split.filepath == parent.filepath
     assert len(split) == 2
     a.close()
