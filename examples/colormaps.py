@@ -30,10 +30,10 @@ def fill_row(row, cmap):
     ax.pcolor(data, cmap=wt.artists.grayify_cmap(cmap))
     # color
     ax = plt.subplot(gs[row, 1])
-    ax.pcolor(data, cmap=cmap)
+    art = ax.pcolor(data, cmap=cmap)
     # cbar
     cax = plt.subplot(gs[row, 2])
-    wt.artists.plot_colorbar(cax=cax, label=cmap.name, cmap=cmap)
+    fig.colorbar(art, cax=cax, label=cmap.name)
     wt.artists.set_ax_labels(cax, yticks=False)
 
 
