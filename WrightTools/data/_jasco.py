@@ -10,6 +10,7 @@ import numpy as np
 
 from ._data import Data
 from .. import exceptions as wt_exceptions
+from numpy.lib.npyio import DataSource
 
 
 # --- define --------------------------------------------------------------------------------------
@@ -59,7 +60,7 @@ def from_JASCO(filepath, name=None, parent=None, verbose=True) -> Data:
     else:
         data = parent.create_data(**kwargs)
     # array
-    ds = np.DataSource(None)
+    ds = DataSource(None)
     f = ds.open(filestr, "rt")
     arr = np.genfromtxt(f, skip_header=18).T
     f.close()

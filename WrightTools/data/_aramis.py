@@ -12,6 +12,7 @@ import numpy as np
 
 from ._data import Data
 from .. import exceptions as wt_exceptions
+from numpy.lib.npyio import DataSource
 
 
 # --- define --------------------------------------------------------------------------------------
@@ -51,7 +52,7 @@ def from_Aramis(filepath, name=None, parent=None, verbose=True) -> Data:
 
     if not ".ngc" in filepath.suffixes:
         wt_exceptions.WrongFileTypeWarning.warn(filepath, ".ngc")
-    ds = np.DataSource(None)
+    ds = DataSource(None)
     f = ds.open(filestr, "rb")
     header = f.readline()
     if header != b"NGSNextGen\x01\x00\x00\x00\x01\x00\x00\x00\n":
