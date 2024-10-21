@@ -45,7 +45,7 @@ setup(
         "python-dateutil",
         "scipy",
         "click",
-        "tidy_headers>=1.0.0",
+        "tidy_headers>=1.0.4",
         "rich",
     ],
     extras_require={
