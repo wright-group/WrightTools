@@ -28,7 +28,7 @@ extra_files = {
 with open(os.path.join(here, "WrightTools", "VERSION")) as version_file:
     version = version_file.read().strip()
 
-docs_require = ["sphinx", "sphinx-gallery==0.8.2", "sphinx-rtd-theme"]
+docs_require = ["sphinx<8.0", "sphinx-gallery==0.8.2", "sphinx-rtd-theme"]
 
 setup(
     name="WrightTools",
