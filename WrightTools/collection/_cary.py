@@ -11,6 +11,7 @@ import numpy as np
 
 from .. import exceptions as wt_exceptions
 from ._collection import Collection
+from numpy.lib.npyio import DataSource
 
 
 # --- define --------------------------------------------------------------------------------------
@@ -64,7 +65,7 @@ def from_Cary(filepath, name=None, parent=None, verbose=True):
         name = "cary"
     # import array
     lines = []
-    ds = np.DataSource(None)
+    ds = DataSource(None)
     with ds.open(filestr, "rt", encoding="iso-8859-1") as f:
         header = f.readline()
         columns = f.readline()
