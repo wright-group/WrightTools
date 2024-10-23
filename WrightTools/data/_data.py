@@ -852,27 +852,28 @@ class Data(Group):
                 np.sum(np.diff(x, axis=axis_index), axis=axis_index, keepdims=True)
             )
 
+        trapezoid = np.trapezoid if (int(np.__version__.split(".")[0]) > 1) else np.trapz
         for moment in moments:
             about = 0
             norm = 1
             if moment > 0:
-                norm = np.trapz(y, x, axis=axis_index)
+                norm = trapezoid(y, x, axis=axis_index)
                 norm = np.array(norm)
                 norm.shape = new_shape
             if moment > 1:
-                about = np.trapz(x * y, x, axis=axis_index)
+                about = trapezoid(x * y, x, axis=axis_index)
                 about = np.array(about)
                 about.shape = new_shape
                 about /= norm
             if moment > 2:
-                sigma = np.trapz((x - about) ** 2 * y, x, axis=axis_index)
+                sigma = trapezoid((x - about) ** 2 * y, x, axis=axis_index)
                 sigma = np.array(sigma)
                 sigma.shape = new_shape
                 sigma /= norm
                 sigma **= 0.5
                 norm *= sigma**moment
 
-            values = np.trapz((x - about) ** moment * y, x, axis=axis_index)
+            values = trapezoid((x - about) ** moment * y, x, axis=axis_index)
             values = np.array(values)
             values.shape = new_shape
             values /= norm

@@ -11,6 +11,7 @@ import numpy as np
 from ._data import Data
 from .. import exceptions as wt_exceptions
 from ..kit import _timestamp as timestamp
+from numpy.lib.npyio import DataSource
 
 
 # --- define --------------------------------------------------------------------------------------
@@ -62,7 +63,7 @@ def from_LabRAM(filepath, name=None, parent=None, verbose=True) -> Data:
     else:
         data = parent.create_data(**kwargs)
 
-    ds = np.DataSource(None)
+    ds = DataSource(None)
     f = ds.open(filestr, "rt", encoding="ISO-8859-1")
 
     # header
