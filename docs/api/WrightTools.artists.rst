@@ -23,7 +23,6 @@ WrightTools\.artists module
    interact2D
    overline_colors
    pcolor_helper
-   plot_colorbar
    plot_colormap_components
    plot_gridlines
    plot_margins

@@ -9,7 +9,9 @@ from matplotlib import pyplot as plt
 import WrightTools as wt
 from WrightTools import datasets
 
-d = wt.data.from_PyCMDS(datasets.PyCMDS.w2_w1_000)
+
+p = datasets.PyCMDS.w2_w1_000
+d = wt.data.from_PyCMDS(p)
 
 d.convert("wn", convert_variables=True)
 
