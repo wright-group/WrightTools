@@ -8,8 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ## [3.5.4]
 
 ## Fixed
-- setup.py configured to allow numpy 2.0
-- contour/contourf overloads compatible with matplotlib 3.10
+- setup.py is now configured to allow numpy 2.x
+- contour/contourf artist overloads compatible with matplotlib 3.10
 
 ## changed
 - actively supporting python 3.11-3.13
