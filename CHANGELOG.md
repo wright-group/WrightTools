@@ -5,6 +5,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## [3.5.4]
+
+## Fixed
+- setup.py is now configured to allow numpy 2.x
+- contour/contourf artist overloads compatible with matplotlib 3.10
+
+## changed
+- actively supporting python 3.11-3.13
+
 ## [3.5.3]
 
 ### Added
@@ -397,7 +406,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ### Added
 - initial release
 
-[Unreleased]: https://github.com/wright-group/WrightTools/-/compare/3.5.3...master
+[Unreleased]: https://github.com/wright-group/WrightTools/-/compare/3.5.4...master
+[3.5.4]: https://github.com/wright-group/WrightTools/compare/3.5.3...3.5.4
 [3.5.3]: https://github.com/wright-group/WrightTools/compare/3.5.2...3.5.3
 [3.5.2]: https://github.com/wright-group/WrightTools/compare/3.5.1...3.5.2
 [3.5.1]: https://github.com/wright-group/WrightTools/compare/3.5.0...3.5.1

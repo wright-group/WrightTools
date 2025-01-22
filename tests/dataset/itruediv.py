@@ -17,7 +17,7 @@ from WrightTools import datasets
 def test_d1_d2():
     p = datasets.COLORS.v0p2_d1_d2_diagonal
     data = wt.data.from_COLORS(p)
-    value = random.randint(0, 1e5)
+    value = random.randint(0, 10**5)
     original_max = data.ai0.max()
     original_min = data.ai0.min()
     data.ai0 /= value
@@ -39,7 +39,7 @@ def test_d1_d2_array():
 def test_w1():
     p = datasets.PyCMDS.w1_000
     data = wt.data.from_PyCMDS(p)
-    value = random.randint(0, 1e5)
+    value = random.randint(0, 10**5)
     original_max = data.signal.max()
     original_min = data.signal.min()
     data.signal /= value
@@ -61,7 +61,7 @@ def test_w1_array():
 def test_w1_wa():
     p = datasets.PyCMDS.w1_wa_000
     data = wt.data.from_PyCMDS(p)
-    value = random.randint(0, 1e5)
+    value = random.randint(0, 10**5)
     original_max = data.array_signal.max()
     original_min = data.array_signal.min()
     data.array_signal /= value
