@@ -154,7 +154,7 @@ class Axes(matplotlib.axes.Axes):
                 data=data, channel_index=channel_index, dynamic_range=dynamic_range, **kwargs
             )
             if plot_type == "contourf":
-                if "levels" not in kwargs.keys():
+                if "levels" not in kwargs.keys() and "norm" not in kwargs.keys():
                     kwargs["levels"] = np.linspace(kwargs["vmin"], kwargs["vmax"], 256)
             elif plot_type == "contour":
                 if "levels" not in kwargs.keys():
