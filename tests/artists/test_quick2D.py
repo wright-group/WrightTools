@@ -44,6 +44,23 @@ def test_perovskite():
     handler(True)
 
 
+def test_contourf_option():
+    w1 = np.linspace(-2, 2, 51)
+    w2 = np.linspace(-1, 1, 11)
+    w3 = np.linspace(1, 3, 5)
+    signal = np.cos(w1[:, None, None] + w2[None, :, None] + w3[None, None, :])
+    data = wt.data.Data(name="data")
+    data.create_channel("signal", values=signal, signed=True)
+    data.create_variable("w1", values=w1[:, None, None], units="wn", label="1")
+    data.create_variable("w2", values=w2[None, :, None], units="wn", label="2")
+    data.create_variable("w3", values=w3[None, None, :], units="wn", label="3")
+    data.transform("w1", "w2", "w3")
+    data.moment(2, 0, 0)
+    # moments bug(?): moment is not signed, even though the data is
+    handler = wt.artists._quick._quick2D(data, channel=-1, pixelated=False)
+    handler(True)
+
+
 def test_4D():
     w1 = np.linspace(-3, 3, 3)
     w2 = np.linspace(-2, 2, 3)
@@ -62,7 +79,7 @@ def test_4D():
     data.create_variable("w3", values=w3[None, None, :, None], units="wn", label="3")
     data.create_variable("d1", values=tau[None, None, None, :], units="ps")
     data.transform("w1", "w2", "w3", "d1")
-    wt.artists.quick2D(data, xaxis=0, yaxis=1)
+    wt.artists.quick2D(data, xaxis=0, yaxis=1, contours=3)
 
 
 def test_remove_uninvolved_dimensions():
@@ -89,5 +106,6 @@ if __name__ == "__main__":
     test_save_arguments()
     test_perovskite()
     test_4D()
+    test_contourf_option()
     test_remove_uninvolved_dimensions()
     plt.show()
