@@ -6,7 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ## [Unreleased]
 
 ### Fixed
-- quick2D can now be called with contours
+- quick2D works with contours on
+- quick2D works with `pixelated=False` (i.e. contourf)
 
 ## [3.5.5]
 
