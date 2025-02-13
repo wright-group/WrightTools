@@ -62,7 +62,7 @@ def test_4D():
     data.create_variable("w3", values=w3[None, None, :, None], units="wn", label="3")
     data.create_variable("d1", values=tau[None, None, None, :], units="ps")
     data.transform("w1", "w2", "w3", "d1")
-    wt.artists.quick2D(data, xaxis=0, yaxis=1)
+    wt.artists.quick2D(data, xaxis=0, yaxis=1, contours=3)
 
 
 def test_remove_uninvolved_dimensions():

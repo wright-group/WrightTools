@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Fixed
+- quick2D can now be called with contours
+
 ## [3.5.5]
 
 ### Fixed
