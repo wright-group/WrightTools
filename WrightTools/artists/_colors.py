@@ -424,7 +424,7 @@ class cmapdict(dict):
 colormaps = cmapdict()
 
 colormaps["cubehelix"] = copy.copy(plt.get_cmap("cubehelix_r"))
-colormaps["default"] = cubehelix
+colormaps["default"] = cubehelix.resampled(2**12)
 colormaps["signed"] = copy.copy(plt.get_cmap("bwr"))
 colormaps["greenscale"] = mplcolors.LinearSegmentedColormap.from_list("greenscale", greenscale)
 colormaps["greyscale"] = mplcolors.LinearSegmentedColormap.from_list("greyscale", greyscale)

@@ -9,6 +9,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 - quick2D works with contours on
 - quick2D works with `pixelated=False` (i.e. contourf)
 
+### Changed
+- default colorbar is sampled at 4096 points (was 256)
+
 ## [3.5.5]
 
 ### Fixed
