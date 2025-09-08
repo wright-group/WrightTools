@@ -98,12 +98,12 @@ def get_index(lis, argument):
         return lis.index(argument)
 
 
-def from_list_of_objects(values:list, attrs:list, hint):
+def from_list_of_objects(values: list, attrs: list, hint):
     """
     convenience wrapper of `get_index`.
     Retrieve an object from a list of objects using either:
     * its index,
-    * matching to an attr, or 
+    * matching to an attr, or
     * passing the value itself
     the method normalizes a variety of input types to get the object itself.
 
@@ -119,7 +119,7 @@ def from_list_of_objects(values:list, attrs:list, hint):
     returns
     -------
     match: desired_type
-        the member of `values` that matches the given hint.  
+        the member of `values` that matches the given hint.
         Raises ValueError if a match is not found.
 
     see also
