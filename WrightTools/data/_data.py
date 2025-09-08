@@ -755,7 +755,6 @@ class Data(Group):
 
         Parameters
         ----------
-        data : wt.Data
         var : str, int, or WrightTools.data.Variable
         channel : str, int or WrightTools.data.Channel (default 0)
         new_channel : dict

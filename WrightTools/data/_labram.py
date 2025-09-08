@@ -46,7 +46,6 @@ def from_LabRAM(filepath, name=None, parent=None, verbose=True) -> Data:
         New data object(s).
     """
     # parse filepath
-    filestr = os.fspath(filepath)
     filepath = pathlib.Path(filepath)
 
     if not ".txt" in filepath.suffixes:
@@ -55,7 +54,7 @@ def from_LabRAM(filepath, name=None, parent=None, verbose=True) -> Data:
     if not name:
         name = filepath.name.split(".")[0]
 
-    kwargs = {"name": name, "kind": "Horiba", "source": filestr}
+    kwargs = {"name": name, "kind": "Horiba", "source": str(filepath)}
 
     # create data
     if parent is None:
@@ -64,7 +63,7 @@ def from_LabRAM(filepath, name=None, parent=None, verbose=True) -> Data:
         data = parent.create_data(**kwargs)
 
     ds = DataSource(None)
-    f = ds.open(filestr, "rt", encoding="ISO-8859-1")
+    f = ds.open(str(filepath), "rt", encoding="ISO-8859-1")
 
     # header
     header = {}
@@ -136,6 +135,7 @@ def from_LabRAM(filepath, name=None, parent=None, verbose=True) -> Data:
                 data.transform("wm", "x")
         elif extra_dims == 2:  # spectrum vs x vs y
             # fold to 3D
+            print(x)
             x = sorted(
                 set(arr[:, 0]), reverse=arr[0, 0] > arr[-1, 0]
             )  # 0th column is stepped always (?)
