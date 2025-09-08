@@ -764,7 +764,7 @@ class Data(Group):
             If not empty, a new channel will be created.
             Fields (e.g. name) can be supplied by supplying a dictionary (consult `Data.create_channel`).
 
-            
+
         Examples
         --------
         TODO
@@ -779,10 +779,7 @@ class Data(Group):
             )
         # nontrivial = tuple({i for i in range(self.ndim)} - trivial)
         trivial = tuple(trivial)
-        norm_vals = np.expand_dims(
-            channel[:].max(axis=trivial),
-            trivial
-        )
+        norm_vals = np.expand_dims(channel[:].max(axis=trivial), trivial)
         if new_channel:
             self.create_channel(
                 new_channel.pop("name", f"{channel.natural_name}_{variable.natural_name}_norm"),
