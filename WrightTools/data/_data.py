@@ -756,11 +756,18 @@ class Data(Group):
         Parameters
         ----------
         var : str, int, or WrightTools.data.Variable
+            variable to apply normalization at each unique point.
         channel : str, int or WrightTools.data.Channel (default 0)
+            channel to apply normalization.  Channel should have more non-trivial dimensions than variable
         new_channel : dict
             Default is empty, and channel is overwriten with norm values.
             If not empty, a new channel will be created.
             Fields (e.g. name) can be supplied by supplying a dictionary (consult `Data.create_channel`).
+
+            
+        Examples
+        --------
+        TODO
         """
         variable = self.get_var(var)
         channel = self.get_channel(channel)
@@ -770,9 +777,12 @@ class Data(Group):
                 f"Variable {variable.natural_name} and Channel {channel.natural_name} have the same shape {variable.shape}. "
                 + "Produces a ones array channel."
             )
-        nontrivial = tuple({i for i in range(self.ndim)} - trivial)
-
-        norm_vals = np.expand_dims(channel.max(axis=nontrivial), nontrivial)
+        # nontrivial = tuple({i for i in range(self.ndim)} - trivial)
+        trivial = tuple(trivial)
+        norm_vals = np.expand_dims(
+            channel[:].max(axis=trivial),
+            trivial
+        )
         if new_channel:
             self.create_channel(
                 new_channel.pop("name", f"{channel.natural_name}_{variable.natural_name}_norm"),
