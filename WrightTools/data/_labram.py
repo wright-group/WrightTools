@@ -134,7 +134,7 @@ def from_LabRAM(filepath, name=None, parent=None, verbose=True) -> Data:
                 data.transform("wm", "x")
         elif extra_dims == 2:  # spectrum vs x vs y
             # fold to 3D
-            print(arr[:,0])
+            print(arr[:, 0])
             x = sorted(
                 set(arr[:, 0]), reverse=arr[0, 0] > arr[-1, 0]
             )  # 0th column is stepped always (?)
