@@ -748,7 +748,10 @@ class Data(Group):
         return wt_kit.from_list_of_objects(self.axes, self.axis_expressions, hint)
 
     def norm_for_each(
-        self, var: str | Variable | int, channel: str | Channel | int = 0, new_channel: dict = {}
+        self,
+        var: str | Variable | int,
+        channel: str | Channel | int = 0,
+        new_channel: dict = {},
     ):
         """normalize the data for each var slice
         var array must at least one trivial dimension (or else norm will return an array of ones)
@@ -767,7 +770,12 @@ class Data(Group):
 
         Examples
         --------
-        TODO
+        import WrightTools.datasets as ds
+        import WrightTools as wt
+
+        d = wt.open(ds.wt5.v1p0p1_MoS2_TrEE_movie)
+        d.norm_for_each("d2", "ai0")  # equivalent to d.ai0[:] /= d.ai0[:].max(axis=(0,1))[None, None, :]
+
         """
         variable = self.get_var(var)
         channel = self.get_channel(channel)
@@ -779,15 +787,17 @@ class Data(Group):
             )
         # nontrivial = tuple({i for i in range(self.ndim)} - trivial)
         trivial = tuple(trivial)
-        norm_vals = np.expand_dims(channel[:].max(axis=trivial), trivial)
+        norm_vals = np.expand_dims(np.nanmax(channel[:], axis=trivial), trivial)
+        new = (channel[:] - channel.null) / (norm_vals - channel.null)
         if new_channel:
             self.create_channel(
                 new_channel.pop("name", f"{channel.natural_name}_{variable.natural_name}_norm"),
-                values=channel[:] / norm_vals,
+                values=new,
                 **new_channel,
             )
         else:
-            channel[:] /= norm_vals
+            channel[:] = new
+            channel.null = 0
         return
 
     def moment(self, axis, channel=0, moment=1, *, resultant=None):
