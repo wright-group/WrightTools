@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Added
+- new kit module `bluesky` for working with `bluesky-in-a-box` data / directories
+
 ### Fixed
 - quick2D works with contours on
 - quick2D works with `pixelated=False` (i.e. contourf)
