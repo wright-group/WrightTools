@@ -5,6 +5,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Added
+- `Data.norm_for_each`: easier norm-by-axis syntax
+- `kit.from_list_of_objects`: convenience method for grabbing an channel/variable/axis/etc. using multiple specifiers
+- `Data.get_var`: get variable object by index, name, or variable itself
+- `Data.get_axis`: get axis object by index, name, or variable itself
+- `Data.get_channel`: get channel object by index, name, or variable itself
+
+### Fixed
+- quick2D works with contours on
+- quick2D works with `pixelated=False` (i.e. contourf)
+- `data.from_LabRAM`:  small tweaks to deal with newly emerged test failure in python 3.11 tests
+
+### Changed
+- default colorbar is sampled at 4096 points (was 256)
+
 ## [3.5.5]
 
 ### Fixed
