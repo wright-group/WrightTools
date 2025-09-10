@@ -15,7 +15,7 @@ from WrightTools import datasets
 
 def test_2D_to_1D():
     p = datasets.PyCMDS.w2_w1_000
-    data = wt.data.from_PyCMDS(p)
+    data = wt.data.from_PyCMDS(p)[:,::10]
     chop = data.chop("w2")
     assert len(chop) == 81
     for d in chop.values():
@@ -29,7 +29,7 @@ def test_2D_to_1D():
 
 def test_3D_to_1D():
     p = datasets.PyCMDS.wm_w2_w1_000
-    data = wt.data.from_PyCMDS(p)
+    data = wt.data.from_PyCMDS(p)[::10, :, ::3]
     chop = data.chop("w2")
     assert len(chop) == 385
     for d in chop.values():

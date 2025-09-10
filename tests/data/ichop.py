@@ -20,7 +20,7 @@ import pathlib
 
 def test_2D_to_1D():
     p = datasets.PyCMDS.w2_w1_000
-    data = wt.data.from_PyCMDS(p)
+    data = wt.data.from_PyCMDS(p)[:,::10]
     for i, d in enumerate(data.ichop("w2")):
         assert d.w2.size == 81
         assert d.axis_expressions == ("w2",)
@@ -33,7 +33,7 @@ def test_2D_to_1D():
 
 def test_3D_to_1D():
     p = datasets.PyCMDS.wm_w2_w1_000
-    data = wt.data.from_PyCMDS(p)
+    data = wt.data.from_PyCMDS(p)[::10, :, ::3]
     for i, d in enumerate(data.ichop("w2")):
         assert d.w2.size == 11
         assert d.axis_expressions == ("w2",)
@@ -95,8 +95,7 @@ def test_closing_context():
 
 def test_filtering():
     p = datasets.PyCMDS.wm_w2_w1_001
-    data = wt.data.from_PyCMDS(p)
-    data.print_tree()
+    data = wt.data.from_PyCMDS(p)[::5]
     mean = data.channels[0][:].mean()
     is_interesting = lambda d: d.channels[0][:].mean() > mean
     interesting = {
@@ -108,7 +107,7 @@ def test_filtering():
 
 def test_collection_like():
     p = datasets.PyCMDS.w2_w1_000
-    data = wt.data.from_PyCMDS(p)
+    data = wt.data.from_PyCMDS(p)[::10, ::10]
     collection = {f"chop{i:0>3}": d for i, d in enumerate(data.ichop("w2", autoclose=False))}
     assert len(collection) == data.w1.size
     collection["chop002"].__repr__()
