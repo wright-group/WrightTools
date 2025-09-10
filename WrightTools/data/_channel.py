@@ -33,7 +33,7 @@ class Channel(Dataset):
         signed=None,
         label=None,
         label_seed=None,
-        **kwargs
+        **kwargs,
     ):
         """Construct a channel object.
 
