@@ -17,9 +17,9 @@ def test_2D_to_1D():
     p = datasets.PyCMDS.w2_w1_000
     data = wt.data.from_PyCMDS(p)[:, ::10]
     chop = data.chop("w2")
-    assert len(chop) == 81
+    assert len(chop) == data.w1.size
     for d in chop.values():
-        assert d.w2.size == 81
+        assert d.w2.size == data.w2.size
         assert d.axis_expressions == ("w2",)
         for k in data.variable_names:
             assert d[k].label == data[k].label
@@ -31,9 +31,9 @@ def test_3D_to_1D():
     p = datasets.PyCMDS.wm_w2_w1_000
     data = wt.data.from_PyCMDS(p)[::10, :, ::3]
     chop = data.chop("w2")
-    assert len(chop) == 385
+    assert len(chop) == data.wm.size * data.w1.size
     for d in chop.values():
-        assert d.w2.size == 11
+        assert d.w2.size == data.w2.size
         assert d.axis_expressions == ("w2",)
     data.close()
     chop.close()

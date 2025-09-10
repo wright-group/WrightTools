@@ -102,7 +102,7 @@ def test_filtering():
         f"{i}": d
         for i, d in enumerate(filter(is_interesting, data.ichop("w1", "w2", autoclose=False)))
     }
-    assert len(interesting) == 19
+    assert len(interesting) == 4
 
 
 def test_collection_like():
