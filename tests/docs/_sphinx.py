@@ -7,7 +7,7 @@ import os
 import shutil
 
 
-@pytest.mark.skipif(not sys.version.startswith("3.11"))
+@pytest.mark.skipif(sys.version_info > (3, 11), reason="Only building with python 3.11")
 def test_build_docs():
     docsdir = os.path.abspath(os.path.dirname(__file__)) + "/../../docs"
     exitCode = build.build_main([docsdir, docsdir + "/__testbuild"])
