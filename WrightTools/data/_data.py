@@ -791,7 +791,7 @@ class Data(Group):
         new = (channel[:] - channel.null) / (norm_vals - channel.null)
         if new_channel:
             if not isinstance(new_channel, dict):
-                new_channel={}
+                new_channel = {}
             self.create_channel(
                 new_channel.pop("name", f"{channel.natural_name}_{variable.natural_name}_norm"),
                 values=new,

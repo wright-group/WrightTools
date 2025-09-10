@@ -20,7 +20,7 @@ import pathlib
 
 def test_2D_to_1D():
     p = datasets.PyCMDS.w2_w1_000
-    data = wt.data.from_PyCMDS(p)[:,::10]
+    data = wt.data.from_PyCMDS(p)[:, ::10]
     for i, d in enumerate(data.ichop("w2")):
         assert d.w2.size == 81
         assert d.axis_expressions == ("w2",)
