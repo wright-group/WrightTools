@@ -29,8 +29,8 @@ __fseed__ = "{date} {time} {plan} {name} {uid}"
 class BlueskyFolder:
     """container class for Bluesky acquisitions"""
 
-    def __init__(self, folder_path: pathlib.Path):
-        self.path = folder_path
+    def __init__(self, folder_path):
+        self.path = pathlib.Path(folder_path)
         self.info = parse_folder_name(folder_path.name)
         if self.info is None:
             return
@@ -44,7 +44,10 @@ class BlueskyFolder:
         """open procedure based on plan"""
         if self._primary is None:
             # TODO: open procedure based on plan
-            self._primary = wt5_open(self.path / "primary.wt5")
+            if self.info.plan == "gridscan_wp":
+                self._primary = wt5_open(self.path / "primary.wt5")
+            else:
+                raise NotImplementedError(f"plan {self.info.plan}")
         return self._primary
 
     @property
