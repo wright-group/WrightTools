@@ -44,8 +44,10 @@ def test_w1_wa():
 
 
 def test_wigner():
-    p = datasets.COLORS.v2p2_WL_wigner
-    data = wt.data.from_COLORS(p)
+    data = wt.Data()
+    data.create_variable("wm", values=np.linspace(100,300)[:,None], units="nm")
+    data.create_variable("d1", values=np.linspace(-100,100)[None,:], units="fs")
+    data.transform("d1", "wm")
     data.convert("ns")
     assert data.d1.units == "ns"
     assert data["d1"].units == "fs"
