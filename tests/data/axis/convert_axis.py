@@ -50,24 +50,24 @@ def test_exception():
     data.close()
 
 
-def test_w1_wm():
-    p = datasets.wt5.v1p0p1_MoS2_TrEE_movie
-    data = wt.open(p).at(d2=[0, "fs"])
-    assert data.w2.units == "nm"
-    data.w2.convert("eV")
-    assert data.w2.units == "eV"
-    assert np.isclose(data.w2.max(), 2.120129779494837)
-    assert np.isclose(data.w2.min(), 1.6241930110774845)
-    assert data["w2"].units == "nm"
+def test_w1_wa():
+    p = datasets.PyCMDS.w1_wa_000
+    data = wt.data.from_PyCMDS(p)
+    assert data.wa.units == "wn"
+    data.wa.convert("eV")
+    assert data.wa.units == "eV"
+    assert np.isclose(data.wa.max(), 1.5800551001941774)
+    assert np.isclose(data.wa.min(), 0.6725528801867734)
+    assert data["wa"].units == "nm"
     data.close()
 
 
 def test_wigner():
-    p = datasets.wt5.v1p0p1_MoS2_TrEE_movie
-    data = wt.open(p).at(w2=[680, "nm"])
-    data.d2.convert("ns")
-    assert data.d2.units == "ns"
-    assert data["d2"].units == "fs"
+    p = datasets.COLORS.v2p2_WL_wigner
+    data = wt.data.from_COLORS(p)
+    data.d1.convert("ns")
+    assert data.d1.units == "ns"
+    assert data["d1"].units == "fs"
     data.close()
 
 
@@ -78,5 +78,5 @@ if __name__ == "__main__":
     test_convert_variables()
     test_units_preserved_on_copy()
     test_exception()
-    test_w1_wm()
+    test_w1_wa()
     test_wigner()
