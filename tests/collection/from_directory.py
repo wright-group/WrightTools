@@ -13,7 +13,6 @@ def test_from_directory():
         "Shimadzu": None,
     }
     p = datasets.PyCMDS.w1_000
-    print(p)
     col = wt.collection.from_directory(pathlib.Path(*p.parts[:-2]), from_dict)
     # Print the tree in case tests fail, also will catch errors in printing
     col.print_tree()
