@@ -68,4 +68,4 @@ wt5 = "WrightTools.cli._wt5:cli"
 wt-convert = "WrightTools.cli._units:cli"
 
 [tool.setuptools.dynamic]
-version = {attr = "WrightTools.__version__"}
+version = {file = "VERSION"}
