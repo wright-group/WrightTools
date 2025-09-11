@@ -36,8 +36,8 @@ def test_w1_wa():
 
 
 def test_wigner():
-    p = datasets.COLORS.v2p2_WL_wigner
-    data = wt.data.from_COLORS(p)
+    p = datasets.wt5.v1p0p1_MoS2_TrEE_movie
+    data = wt.open(p).at(w2=[680, "nm"])
     data["d1"].convert("ns")
     assert data["d1"].units == "ns"
     data.close()
