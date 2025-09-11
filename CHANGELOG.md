@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 - `data.from_LabRAM`:  small tweaks to deal with newly emerged test failure in python 3.11 tests
 
 ### Changed
+- various unit tests were altered to speed up CI
 - default colorbar is sampled at 4096 points (was 256)
 
 ## [3.5.5]
