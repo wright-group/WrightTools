@@ -9,6 +9,7 @@ import datetime
 import pathlib
 import logging
 from typing import NamedTuple
+from dataclasses import dataclass
 
 from .._open import open as wt5_open
 
@@ -20,7 +21,6 @@ __folder_parts__ = [
     r"(?P<name>[\s\w\d.-]*)",  # not great...
     r"(?P<uid>\w{8})",
 ]
-
 __folder_seed__ = " ".join(__folder_parts__)
 __datetime_seed__ = re.compile(" ".join(__folder_parts__[:3]))
 __fseed__ = "{date} {time} {plan} {name} {uid}"
@@ -106,7 +106,26 @@ class FolderInfo(NamedTuple):
 
 
 def match_identifier(dir: pathlib.Path, **bluesky_identifier) -> list[BlueskyFolder]:
-    """walk a directory to find datasets that meet the criteria"""
+    """
+    walk a directory to find datasets that meet the criteria
+    
+    Parameters
+    ----------
+
+    dir: path-like
+        the directory to iterate through
+    
+    kwargs
+    ------
+    
+    bluesky_identifiers
+        keys corresponding to FolderInfo properties (e.g. date, plan).
+
+    Returns
+    -------
+    matches: list of BlueskyFolder objects
+        BlueskyFolders corresponding to full matches with the bluesky_identifiers    
+    """
     for key in bluesky_identifier.keys():
         assert key in FolderInfo._fields
 
