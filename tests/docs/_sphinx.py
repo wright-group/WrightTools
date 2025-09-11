@@ -13,7 +13,7 @@ import shutil
 )
 def test_build_docs():
     docsdir = pathlib.Path(__file__).resolve().parent.parent.parent / "docs"
-    exitCode = build.build_main([docsdir, docsdir / "__testbuild"])
+    exitCode = build.build_main([str(docsdir), str(docsdir / "__testbuild")])
     # The following code works in sphinx >= 1.7.0
     # exitCode = sphinx.build([docsdir, docsdir + '/__testbuild'])
     assert exitCode == 0
