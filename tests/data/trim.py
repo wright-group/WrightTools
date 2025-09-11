@@ -42,7 +42,7 @@ def test_trim_2Dgauss():
     d.create_channel("healed_linear", d.damaged1[:])
     d.heal(channel="healed_linear", fill_value=0, method="linear")
     # check
-    np.testing.assert_allclose(d.original[:], d.original[:], rtol=1e-1, atol=1e-1)
+    np.testing.assert_allclose(arr, d.original[:], rtol=1e-1, atol=1e-1)
     np.testing.assert_allclose(d.original[:], d.healed_linear[:], rtol=1e-1, atol=1e-1)
     np.testing.assert_allclose(d.original[:], d.damaged2[:], rtol=1e-1, atol=9e-1)
     np.testing.assert_allclose(d.original[:], d.damaged3[:], rtol=1e-1, atol=5e-1)
