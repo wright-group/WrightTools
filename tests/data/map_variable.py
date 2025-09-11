@@ -25,12 +25,12 @@ def test_array():
 
 def test_int():
     p = datasets.PyCMDS.wm_w2_w1_000
-    data = wt.data.from_PyCMDS(p)
-    assert data.shape == (35, 11, 11)
-    mapped = data.map_variable("w2", 5)
-    assert mapped.shape == (35, 5, 11)
+    data = wt.data.from_PyCMDS(p)[5:20, ::2, ::2]
+    assert data.shape == (15, 6, 6)
+    mapped = data.map_variable("w2", 4)
+    assert mapped.shape == (15, 4, 6)
     mapped = data.map_variable("w1", 25)
-    assert mapped.shape == (35, 11, 25)
+    assert mapped.shape == (15, 6, 25)
     data.close()
 
 

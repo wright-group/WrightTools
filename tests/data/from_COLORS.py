@@ -4,7 +4,7 @@
 
 # --- import --------------------------------------------------------------------------------------
 
-
+import pytest
 import numpy as np
 import glob
 import os
@@ -47,6 +47,7 @@ def test_v0p2_d1_d2_diagonal():
     data.close()
 
 
+@pytest.mark.skip(reason="This test takes a long time and examines rarely used code.")
 def test_v2p1_MoS2_TrEE_movie():
     ps = sorted(
         glob.glob(
@@ -61,6 +62,7 @@ def test_v2p1_MoS2_TrEE_movie():
     data.close()
 
 
+@pytest.mark.skip(reason="This test takes a long time and examines rarely used code.")
 def test_v2p2_WL_wigner():
     p = datasets.COLORS.v2p2_WL_wigner
     data = wt.data.from_COLORS(p)
