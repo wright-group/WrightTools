@@ -18,7 +18,7 @@ def label_sectors(
     cs=None,
     c_zlevel=2,
     c_alpha=0.5,
-    fontsize=40
+    fontsize=40,
 ):
     """Label the six time-orderings in a three-pulse experiment.
 
