@@ -7,7 +7,10 @@ import pathlib
 import shutil
 
 
-@pytest.mark.skipif(sys.version_info[:2] != (3, 11) or sys.platform == "win32", reason="Only need to build with ubuntu, python 3.11")
+@pytest.mark.skipif(
+    sys.version_info[:2] != (3, 11) or sys.platform == "win32",
+    reason="Only need to build with ubuntu, python 3.11",
+)
 def test_build_docs():
     docsdir = pathlib.Path(__file__).resolve().parent.parent.parent / "docs"
     exitCode = build.build_main([docsdir, docsdir / "__testbuild"])
