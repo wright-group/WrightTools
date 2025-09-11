@@ -7,7 +7,6 @@ name = "WrightTools"
 authors =[{name="WrightTools Developers"}]
 description="Tools for loading, processing, and plotting multidimensional spectroscopy data."
 readme = "README.rst"
-license="MIT"
 requires-python = ">=3.7"
 dynamic = ["version"]
 dependencies = [
@@ -35,6 +34,8 @@ classifiers = [
     "Topic :: Scientific/Engineering",
 ]
 keywords = ["spectroscopy", "science", "multidimensional", "visualization"]
+license="MIT"
+license-files = ["LICEN[CS]E*"]
 
 [project.optional-dependencies]
 docs = [
@@ -65,3 +66,7 @@ Changelog = "https://github.com/wright-group/WrightTools/blob/master/CHANGELOG.m
 [project.scripts]
 wt5 = "WrightTools.cli._wt5:cli"
 wt-convert = "WrightTools.cli._units:cli"
+
+
+[tool.setuptools.dynamic]
+version = {attr = "WrightTools.__version__"}
