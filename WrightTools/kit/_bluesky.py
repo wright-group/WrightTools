@@ -9,7 +9,6 @@ import datetime
 import pathlib
 import logging
 from typing import NamedTuple
-from dataclasses import dataclass
 
 from .._open import open as wt5_open
 
