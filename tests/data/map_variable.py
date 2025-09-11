@@ -30,7 +30,7 @@ def test_int():
     mapped = data.map_variable("w2", 4)
     assert mapped.shape == (15, 4, 6)
     mapped = data.map_variable("w1", 25)
-    assert mapped.shape == (15, 6, 8)
+    assert mapped.shape == (15, 6, 25)
     data.close()
 
 
