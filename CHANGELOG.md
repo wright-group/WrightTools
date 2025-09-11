@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ### Changed
 - default colorbar is sampled at 4096 points (was 256)
+- packaging now done through pyproject.toml
 
 ## [3.5.5]
 
