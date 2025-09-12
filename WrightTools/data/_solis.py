@@ -25,12 +25,12 @@ __all__ = ["from_Solis"]
 # --- from function -------------------------------------------------------------------------------
 
 
-def from_Solis(filepath, name=None, parent=None, verbose=True) -> Data:
+def from_Solis(fpath, name=None, parent=None, verbose=True) -> Data:
     """Create a data object from Andor Solis software (ascii exports).
 
     Parameters
     ----------
-    filepath : path-like
+    fpath : path-like
         Path to file (should be .asc format).
         Can be either a local or remote file (http/ftp).
         Can be compressed with gz/bz2, decompression based on file name.
@@ -60,8 +60,7 @@ def from_Solis(filepath, name=None, parent=None, verbose=True) -> Data:
 
     """
     # parse filepath
-    filestr = os.fspath(filepath)
-    filepath = pathlib.Path(filepath)
+    filepath = pathlib.Path(fpath)
 
     if not ".asc" in filepath.suffixes:
         wt_exceptions.WrongFileTypeWarning.warn(filepath, ".asc")
@@ -70,7 +69,7 @@ def from_Solis(filepath, name=None, parent=None, verbose=True) -> Data:
         name = filepath.name.split(".")[0]
     # create data
     ds = DataSource(None)
-    f = ds.open(filestr, "rt")
+    f = ds.open(str(filepath), "rt")
     axis0 = []
     arr = []
     attrs = {}
@@ -127,7 +126,7 @@ def from_Solis(filepath, name=None, parent=None, verbose=True) -> Data:
             f"{filepath.name} has no 'Date and Time' field: using file modified time instead: {created}"
         )
 
-    kwargs = {"name": name, "kind": "Solis", "source": filestr, "created": created}
+    kwargs = {"name": name, "kind": "Solis", "source": str(filepath), "created": created}
     if parent is None:
         data = Data(**kwargs)
     else:
