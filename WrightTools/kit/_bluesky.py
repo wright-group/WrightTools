@@ -107,23 +107,23 @@ class FolderInfo(NamedTuple):
 def match_identifier(dir: pathlib.Path, **bluesky_identifier) -> list[BlueskyFolder]:
     """
     walk a directory to find datasets that meet the criteria
-    
+
     Parameters
     ----------
 
     dir: path-like
         the directory to iterate through
-    
+
     kwargs
     ------
-    
+
     bluesky_identifiers
         keys corresponding to FolderInfo properties (e.g. date, plan).
 
     Returns
     -------
     matches: list of BlueskyFolder objects
-        BlueskyFolders corresponding to full matches with the bluesky_identifiers    
+        BlueskyFolders corresponding to full matches with the bluesky_identifiers
     """
     for key in bluesky_identifier.keys():
         assert key in FolderInfo._fields
