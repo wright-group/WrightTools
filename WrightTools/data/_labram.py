@@ -45,15 +45,15 @@ def from_LabRAM(filepath, name=None, parent=None, verbose=True) -> Data:
         New data object(s).
     """
     # parse filepath
-    filepath = pathlib.Path(filepath)
+    _filepath = pathlib.Path(filepath)
 
-    if not ".txt" in filepath.suffixes:
-        wt_exceptions.WrongFileTypeWarning.warn(filepath, ".txt")
+    if not ".txt" in _filepath.suffixes:
+        wt_exceptions.WrongFileTypeWarning.warn(_filepath, ".txt")
     # parse name
     if not name:
-        name = filepath.name.split(".")[0]
+        name = _filepath.name.split(".")[0]
 
-    kwargs = {"name": name, "kind": "Horiba", "source": str(filepath)}
+    kwargs = {"name": name, "kind": "Horiba", "source": str(_filepath)}
 
     # create data
     if parent is None:
@@ -62,7 +62,7 @@ def from_LabRAM(filepath, name=None, parent=None, verbose=True) -> Data:
         data = parent.create_data(**kwargs)
 
     ds = DataSource(None)
-    f = ds.open(str(filepath), "rt", encoding="ISO-8859-1")
+    f = ds.open(str(_filepath), "rt", encoding="ISO-8859-1")
 
     # header
     header = {}
@@ -91,7 +91,7 @@ def from_LabRAM(filepath, name=None, parent=None, verbose=True) -> Data:
         acquisition_time = float(header["Acq. time (s)"]) * int(header["Accumulations"])
         channel_units = "cps"
     except KeyError:
-        warnings.warn(f"{filepath.name}: could not determine signal acquisition time.")
+        warnings.warn(f"{_filepath.name}: could not determine signal acquisition time.")
         acquisition_time = 1
         channel_units = None
 

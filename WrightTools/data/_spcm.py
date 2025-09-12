@@ -54,20 +54,19 @@ def from_spcm(filepath, name=None, *, delimiter=",", parent=None, verbose=True) 
     -------
     WrightTools.data.Data object
     """
-    filestr = os.fspath(filepath)
-    filepath = pathlib.Path(filepath)
+    _filepath = pathlib.Path(filepath)
 
     # check filepath
-    if not ".asc" in filepath.suffixes:
-        wt_exceptions.WrongFileTypeWarning.warn(filepath, ".asc")
+    if not ".asc" in _filepath.suffixes:
+        wt_exceptions.WrongFileTypeWarning.warn(_filepath, ".asc")
     # parse name
     if not name:
-        name = filepath.name.split(".")[0]
+        name = _filepath.name.split(".")[0]
     # create headers dictionary
     headers = collections.OrderedDict()
     header_lines = 0
     ds = DataSource(None)
-    f = ds.open(filestr, "rt")
+    f = ds.open(str(filepath), "rt")
     while True:
         line = f.readline().strip()
         header_lines += 1
@@ -119,7 +118,7 @@ def from_spcm(filepath, name=None, *, delimiter=",", parent=None, verbose=True) 
         headers["created"] = created
 
     # initialize data object
-    kwargs = {"name": name, "kind": "spcm", "source": filestr, **headers}
+    kwargs = {"name": name, "kind": "spcm", "source": str(_filepath), **headers}
     if parent:
         data = parent.create_data(**kwargs)
     else:
