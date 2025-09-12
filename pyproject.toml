@@ -66,3 +66,6 @@ Changelog = "https://github.com/wright-group/WrightTools/blob/master/CHANGELOG.m
 [project.scripts]
 wt5 = "WrightTools.cli._wt5:cli"
 wt-convert = "WrightTools.cli._units:cli"
+
+[tool.setuptools.dynamic]
+version = {file = "WrightTools/VERSION"}
