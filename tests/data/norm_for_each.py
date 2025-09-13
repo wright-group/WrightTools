@@ -12,7 +12,9 @@ def test_3D():
     data.norm_for_each("d2", 0, new_channel={"name": "ai0_d2_norm"})
     assert np.all(data.channels[-1][:].max(axis=(0, 1)) == 1)
 
-    data.norm_for_each("d1", 0, new_channel={"name": "ai0_d1_norm"})
+    data.norm_for_each("d1", 0, new_channel=True)
+
+    data.norm_for_each("d1", 0, new_channel={"name": "ai0_d1_norm1"})
     data.channels[0].normalize()
     assert np.all(np.isclose(data.ai0_d1_norm[:], data.channels[0][:]))
 

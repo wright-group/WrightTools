@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## [3.6.0]
+
 ### Added
 - `Data.norm_for_each`: easier norm-by-axis syntax
 - `kit.from_list_of_objects`: convenience method for grabbing an channel/variable/axis/etc. using multiple specifiers
@@ -428,7 +430,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ### Added
 - initial release
 
-[Unreleased]: https://github.com/wright-group/WrightTools/-/compare/3.5.5...master
+[Unreleased]: https://github.com/wright-group/WrightTools/-/compare/3.6.0...master
+[3.6.0]: https://github.com/wright-group/WrightTools/-/compare/3.5.5...3.6.0
 [3.5.5]: https://github.com/wright-group/WrightTools/compare/3.5.3...3.5.5
 [3.5.4]: https://github.com/wright-group/WrightTools/compare/3.5.3...3.5.4
 [3.5.3]: https://github.com/wright-group/WrightTools/compare/3.5.2...3.5.3
