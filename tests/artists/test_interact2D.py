@@ -1,6 +1,5 @@
 #! /usr/bin/env python3
 
-import pytest
 import numpy as np
 import WrightTools as wt
 from WrightTools import datasets
