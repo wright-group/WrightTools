@@ -8,6 +8,7 @@ from WrightTools import datasets
 
 def test_backend():
     import matplotlib
+
     assert matplotlib.get_backend() == "agg"
 
 
