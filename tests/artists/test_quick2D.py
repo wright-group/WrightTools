@@ -6,6 +6,11 @@ import WrightTools as wt
 from WrightTools import datasets
 
 
+def test_backend():
+    import matplotlib
+    assert matplotlib.get_backend() == "agg"
+
+
 def test_save_arguments():
     p = datasets.wt5.v1p0p0_perovskite_TA  # axes w1=wm, w2, d2
     # A race condition exists where multiple tests access the same file in short order
