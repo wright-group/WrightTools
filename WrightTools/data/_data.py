@@ -880,7 +880,7 @@ class Data(Group):
 
         warnings.warn("moment", category=wt_exceptions.EntireDatasetInMemoryWarning)
 
-        channel:Channel = self.get_channel(channel)
+        channel: Channel = self.get_channel(channel)
 
         if channel.shape[axis_index] == 1:
             raise wt_exceptions.ValueError(
