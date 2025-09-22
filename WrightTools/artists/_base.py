@@ -60,8 +60,8 @@ class Axes(matplotlib.axes.Axes):
             y label. Default is None.  if a string, autolabel is overwritten with ylabel
         data : WrightTools.data.Data object (optional)
             data to autolabel from. Default is None.
-        channel_index : integer (optional)
-            Channel index. Default is 0.
+        channel : WrightTools.data.Channel object (optional)
+            Channel index. Default is None.
         """
         # read from data
         if autolabel in ["xy", "both", "x"] and not xlabel:
@@ -514,17 +514,15 @@ class Axes(matplotlib.axes.Axes):
                     Use `cmap` instead to control colors."
                 )
 
-            channel_ = data.get_channel(kwargs.pop("channel", 0))
-            channel = kwargs.pop("channel", 0)
-            channel_index = wt_kit.get_index(data.channel_names, channel)
+            channel = data.get_channel(kwargs.pop("channel", 0))
 
             limits = {}
-            limits = self._parse_limits(data=data, channel=channel_, **limits)
+            limits = self._parse_limits(data=data, channel=channel, **limits)
             norm = Normalize(**limits)
 
-            cmap = _parse_cmap(data, signed=channel_.signed, **kwargs)["cmap"]
+            cmap = _parse_cmap(data, signed=channel.signed, **kwargs)["cmap"]
 
-            z = channel_[:]
+            z = channel[:]
 
             # fill x, y, z to joint shape
             shape = wt_kit.joint_shape(z, *coords)
@@ -547,7 +545,7 @@ class Axes(matplotlib.axes.Axes):
                 xlabel=kwargs.pop("xlabel", None),
                 ylabel=kwargs.pop("ylabel", None),
                 data=data,
-                channel=channel_,
+                channel=channel,
             )
 
         return super().scatter(*args, **kwargs)
@@ -629,29 +627,27 @@ class Axes(matplotlib.axes.Axes):
         # unpack data object, if given
         if isinstance(args[0], Data):
             data = args.pop(0)
-            channel = kwargs.pop("channel", 0)
-            channel_index = wt_kit.get_index(data.channel_names, channel)
-            squeeze = np.array(data.channels[channel_index].shape) == 1
+            channel = data.get_channel(kwargs.pop("channel", 0))
+            squeeze = np.array(channel.shape) == 1
             xa = data.axes[0]
             for sq, xs in zip(squeeze, xa.shape):
                 if sq and xs != 1:
                     raise wt_exceptions.ValueError("Cannot squeeze axis to fit channel")
             squeeze = tuple([0 if i else slice(None) for i in squeeze])
-            zi = data.channels[channel_index].points
+            zi = channel.points
             xi = xa[squeeze]
             if not zi.ndim == 1:
                 raise wt_exceptions.DimensionalityError(1, zi.ndim)
             args = [xi, zi] + args
         else:
-            data = None
-            channel_index = 0
+            data = channel = None
         # labels
         self._apply_labels(
             autolabel=kwargs.pop("autolabel", False),
             xlabel=kwargs.pop("xlabel", None),
             ylabel=kwargs.pop("ylabel", None),
             data=data,
-            channel=channel_,
+            channel=channel,
         )
         # call parent
         return super().plot(*args, **kwargs)

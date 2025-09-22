@@ -880,20 +880,18 @@ class Data(Group):
 
         warnings.warn("moment", category=wt_exceptions.EntireDatasetInMemoryWarning)
 
-        channel_index = wt_kit.get_index(self.channel_names, channel)
-        channel = self.channel_names[channel_index]
+        channel:Channel = self.get_channel(channel)
 
-        if self[channel].shape[axis_index] == 1:
+        if channel.shape[axis_index] == 1:
             raise wt_exceptions.ValueError(
                 "Channel '{}' has a single point along Axis '{}', cannot compute moment".format(
                     channel, axis
                 )
             )
 
-        new_shape = list(self[channel].shape)
+        new_shape = list(channel.shape)
         new_shape[axis_index] = 1
 
-        channel = self[channel]
         axis_inp = axis
         axis = self.axes[index]
         x = axis[:]
