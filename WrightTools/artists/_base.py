@@ -37,19 +37,19 @@ class Axes(matplotlib.axes.Axes):
 
     def _apply_labels(
         self,
-        autolabel:Literal["both", "x", "y"]=None,
-        xlabel:str=None,
-        ylabel:str=None,
-        data:Data=None,
-        channel:Channel=None
+        autolabel: Literal["both", "x", "y"] = None,
+        xlabel: str = None,
+        ylabel: str = None,
+        data: Data = None,
+        channel: Channel = None,
     ):
-        """Apply x and y labels to axes. 
-        Autolabels are ignored if xlabel or ylabel are provided. 
+        """Apply x and y labels to axes.
+        Autolabels are ignored if xlabel or ylabel are provided.
 
         NOTE: if autolabel is requested, data is required!
 
         NOTE: if autolabel is requested and data is 1D, channel is required!
-        
+
         Parameters
         ----------
         autolabel : {'both', 'x', 'y'} (optional)
@@ -59,7 +59,7 @@ class Axes(matplotlib.axes.Axes):
         ylabel : string (optional)
             y label. Default is None.  if a string, autolabel is overwritten with ylabel
         data : WrightTools.data.Data object (optional)
-            data to autolabel from. Default is None. 
+            data to autolabel from. Default is None.
         channel_index : integer (optional)
             Channel index. Default is 0.
         """
@@ -77,7 +77,9 @@ class Axes(matplotlib.axes.Axes):
         if ylabel:
             self.set_ylabel(ylabel)
 
-    def _parse_limits(self, zi=None, data:Data=None, channel:Channel=None, dynamic_range=False, **kwargs):
+    def _parse_limits(
+        self, zi=None, data: Data = None, channel: Channel = None, dynamic_range=False, **kwargs
+    ):
         if "norm" in kwargs:
             return kwargs
         if zi is not None:
@@ -115,7 +117,7 @@ class Axes(matplotlib.axes.Axes):
         dynamic_range = kwargs.pop("dynamic_range", False)
         if isinstance(args[0], Data):
             data = args.pop(0)
-            channel_:Channel = data.get_channel(kwargs.pop("channel", 0))
+            channel_: Channel = data.get_channel(kwargs.pop("channel", 0))
             squeeze = np.array(channel_.shape) == 1
             xa = data.axes[0]
             ya = data.axes[1]

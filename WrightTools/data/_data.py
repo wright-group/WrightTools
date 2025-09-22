@@ -1286,7 +1286,7 @@ class Data(Group):
             Coordinates in units for each axis.
         """
         # get channel
-        channel:Channel = self.get_channel(channel)
+        channel: Channel = self.get_channel(channel)
         # get indicies
         idx = channel.argmax()
         # finish
