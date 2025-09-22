@@ -727,7 +727,7 @@ class Data(Group):
             )
         rtype = np.result_type(channel.dtype, float)
         new = self.create_channel(
-            "{}_{}_gradient".format(channel, axis),
+            "{}_{}_gradient".format(channel.natural_name, axis),
             values=np.empty(channel.shape, dtype=rtype),
         )
 

@@ -159,7 +159,7 @@ class Axes(matplotlib.axes.Axes):
                 args = [xi, yi, zi] + args
             # limits
             kwargs = self._parse_limits(
-                data=data, channel_index=channel_, dynamic_range=dynamic_range, **kwargs
+                data=data, channel=channel_, dynamic_range=dynamic_range, **kwargs
             )
             if plot_type == "contourf":
                 if "levels" not in kwargs.keys() and "norm" not in kwargs.keys():
