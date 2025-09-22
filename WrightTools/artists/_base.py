@@ -10,10 +10,11 @@ from matplotlib.projections import register_projection
 from matplotlib.colors import Normalize
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+from typing import Literal
 
 from .. import exceptions as wt_exceptions
 from .. import kit as wt_kit
-from ..data import Data
+from ..data import Data, Channel
 from ._colors import colormaps
 
 
@@ -35,20 +36,30 @@ class Axes(matplotlib.axes.Axes):
     is_sideplot = False
 
     def _apply_labels(
-        self, autolabel="none", xlabel=None, ylabel=None, data=None, channel_index=0
+        self,
+        autolabel:Literal["both", "x", "y"]=None,
+        xlabel:str=None,
+        ylabel:str=None,
+        data:Data=None,
+        channel:Channel=None
     ):
-        """Apply x and y labels to axes.
+        """Apply x and y labels to axes. 
+        Autolabels are ignored if xlabel or ylabel are provided. 
 
+        NOTE: if autolabel is requested, data is required!
+
+        NOTE: if autolabel is requested and data is 1D, channel is required!
+        
         Parameters
         ----------
-        autolabel : {'none', 'both', 'x', 'y'} (optional)
-            Label(s) to apply from data. Default is none.
-        xlabel : string (optional)
-            x label. Default is None.
+        autolabel : {'both', 'x', 'y'} (optional)
+            Label(s) to apply from data. Default is no labels.
+        xlabel : string or bool (optional)
+            x label. Default is None. if a string, xlabel overrides autolabel
         ylabel : string (optional)
-            y label. Default is None.
+            y label. Default is None.  if a string, autolabel is overwritten with ylabel
         data : WrightTools.data.Data object (optional)
-            data to read labels from. Default is None.
+            data to autolabel from. Default is None. 
         channel_index : integer (optional)
             Channel index. Default is 0.
         """
@@ -57,20 +68,16 @@ class Axes(matplotlib.axes.Axes):
             xlabel = data.axes[0].label
         if autolabel in ["xy", "both", "y"] and not ylabel:
             if data.ndim == 1:
-                ylabel = data.channels[channel_index].label
+                ylabel = channel.label
             elif data.ndim == 2:
                 ylabel = data.axes[1].label
         # apply
         if xlabel:
-            if isinstance(xlabel, bool):
-                xlabel = data.axes[0].label
-            self.set_xlabel(xlabel, fontsize=18)
+            self.set_xlabel(xlabel)
         if ylabel:
-            if isinstance(ylabel, bool):
-                ylabel = data.axes[1].label
-            self.set_ylabel(ylabel, fontsize=18)
+            self.set_ylabel(ylabel)
 
-    def _parse_limits(self, zi=None, data=None, channel_index=None, dynamic_range=False, **kwargs):
+    def _parse_limits(self, zi=None, data:Data=None, channel:Channel=None, dynamic_range=False, **kwargs):
         if "norm" in kwargs:
             return kwargs
         if zi is not None:
@@ -82,17 +89,17 @@ class Axes(matplotlib.axes.Axes):
                 vmin = np.nanmin(zi)
                 vmax = np.nanmax(zi)
         elif data is not None:
-            signed = data.channels[channel_index].signed
-            null = data.channels[channel_index].null
+            signed = channel.signed
+            null = channel.null
             if signed and dynamic_range:
-                vmin = -data.channels[channel_index].minor_extent + null
-                vmax = +data.channels[channel_index].minor_extent + null
+                vmin = -channel.minor_extent + null
+                vmax = +channel.minor_extent + null
             elif signed and not dynamic_range:
-                vmin = -data.channels[channel_index].major_extent + null
-                vmax = +data.channels[channel_index].major_extent + null
+                vmin = -channel.major_extent + null
+                vmax = +channel.major_extent + null
             else:
                 vmin = null
-                vmax = data.channels[channel_index].max()
+                vmax = channel.max()
         # don't overwrite
         if "vmin" not in kwargs.keys():
             kwargs["vmin"] = vmin
@@ -108,15 +115,14 @@ class Axes(matplotlib.axes.Axes):
         dynamic_range = kwargs.pop("dynamic_range", False)
         if isinstance(args[0], Data):
             data = args.pop(0)
-            channel = kwargs.pop("channel", 0)
-            channel_index = wt_kit.get_index(data.channel_names, channel)
-            squeeze = np.array(data.channels[channel_index].shape) == 1
+            channel_:Channel = data.get_channel(kwargs.pop("channel", 0))
+            squeeze = np.array(channel_.shape) == 1
             xa = data.axes[0]
             ya = data.axes[1]
             for sq, xs, ys in zip(squeeze, xa.shape, ya.shape):
                 if sq and (xs != 1 or ys != 1):
                     raise wt_exceptions.ValueError("Cannot squeeze axis to fit channel")
-            zi = data.channels[channel_index].points
+            zi = channel_.points
             if not zi.ndim == 2:
                 raise wt_exceptions.DimensionalityError(2, zi.ndim)
             squeeze = tuple([0 if i else slice(None) for i in squeeze])
@@ -151,14 +157,14 @@ class Axes(matplotlib.axes.Axes):
                 args = [xi, yi, zi] + args
             # limits
             kwargs = self._parse_limits(
-                data=data, channel_index=channel_index, dynamic_range=dynamic_range, **kwargs
+                data=data, channel_index=channel_, dynamic_range=dynamic_range, **kwargs
             )
             if plot_type == "contourf":
                 if "levels" not in kwargs.keys() and "norm" not in kwargs.keys():
                     kwargs["levels"] = np.linspace(kwargs["vmin"], kwargs["vmax"], 256)
             elif plot_type == "contour":
                 if "levels" not in kwargs.keys():
-                    if data.channels[channel_index].signed:
+                    if channel_.signed:
                         n = 11
                     else:
                         n = 6
@@ -169,14 +175,13 @@ class Axes(matplotlib.axes.Axes):
                 if "alpha" not in kwargs.keys():
                     kwargs["alpha"] = 0.5
             if plot_type in ["pcolor", "pcolormesh", "contourf", "imshow"]:
-                kwargs = _parse_cmap(data=data, channel_index=channel_index, **kwargs)
+                kwargs = _parse_cmap(data=data, signed=channel_.signed, **kwargs)
         else:
             if plot_type == "imshow":
                 kwargs = self._parse_limits(zi=args[0], **kwargs)
             else:
                 kwargs = self._parse_limits(zi=args[2], **kwargs)
-            data = None
-            channel_index = 0
+            data = channel_ = None
             if plot_type == "contourf":
                 if "levels" not in kwargs.keys():
                     kwargs["levels"] = np.linspace(kwargs["vmin"], kwargs["vmax"], 256)
@@ -188,7 +193,7 @@ class Axes(matplotlib.axes.Axes):
             xlabel=kwargs.pop("xlabel", None),
             ylabel=kwargs.pop("ylabel", None),
             data=data,
-            channel_index=channel_index,
+            channel=channel_,
         )
 
         if plot_type != "contour":
@@ -507,16 +512,17 @@ class Axes(matplotlib.axes.Axes):
                     Use `cmap` instead to control colors."
                 )
 
+            channel_ = data.get_channel(kwargs.pop("channel", 0))
             channel = kwargs.pop("channel", 0)
             channel_index = wt_kit.get_index(data.channel_names, channel)
 
             limits = {}
-            limits = self._parse_limits(data=data, channel_index=channel_index, **limits)
+            limits = self._parse_limits(data=data, channel=channel_, **limits)
             norm = Normalize(**limits)
 
-            cmap = _parse_cmap(data, channel_index=channel_index, **kwargs)["cmap"]
+            cmap = _parse_cmap(data, signed=channel_.signed, **kwargs)["cmap"]
 
-            z = data.channels[channel_index][:]
+            z = channel_[:]
 
             # fill x, y, z to joint shape
             shape = wt_kit.joint_shape(z, *coords)
@@ -539,7 +545,7 @@ class Axes(matplotlib.axes.Axes):
                 xlabel=kwargs.pop("xlabel", None),
                 ylabel=kwargs.pop("ylabel", None),
                 data=data,
-                channel_index=channel_index,
+                channel=channel_,
             )
 
         return super().scatter(*args, **kwargs)
@@ -643,7 +649,7 @@ class Axes(matplotlib.axes.Axes):
             xlabel=kwargs.pop("xlabel", None),
             ylabel=kwargs.pop("ylabel", None),
             data=data,
-            channel_index=channel_index,
+            channel=channel_,
         )
         # call parent
         return super().plot(*args, **kwargs)
@@ -734,13 +740,10 @@ def _order_for_imshow(xi, yi):
         raise TypeError(f"Axes are not 1D: {xi.shape}, {yi.shape}")
 
 
-def _parse_cmap(data=None, channel_index=None, **kwargs):
+def _parse_cmap(data=None, signed=None, **kwargs):
     if "cmap" in kwargs.keys():
         if isinstance(kwargs["cmap"], str):
             kwargs["cmap"] = colormaps[kwargs["cmap"]]
     elif data:
-        if data.channels[channel_index].signed:
-            kwargs["cmap"] = colormaps["signed"]
-            return kwargs
-        kwargs["cmap"] = colormaps["default"]
+        kwargs["cmap"] = colormaps["signed"] if signed else colormaps["default"]
     return kwargs
