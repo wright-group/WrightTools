@@ -26,7 +26,6 @@ def test_two_norms():
     assert np.all(data.channels[0][:].max(axis=0) == 1)
 
 
-
 if __name__ == "__main__":
     test_3D()
     test_two_norms()
