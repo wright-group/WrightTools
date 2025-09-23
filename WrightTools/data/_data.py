@@ -796,7 +796,7 @@ class Data(Group):
             self.create_channel(
                 new_channel.pop(
                     "name",
-                    f"{channel.natural_name}_norm_{''.join([f'v{self.variable_names.index(v.natural_name)}' for v in variables])}"
+                    f"{channel.natural_name}_norm_{''.join([f'v{self.variable_names.index(v.natural_name)}' for v in variables])}",
                 ),
                 values=new,
                 **new_channel,
