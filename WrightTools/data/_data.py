@@ -767,14 +767,13 @@ class Data(Group):
             If not empty, a new channel will be created.
             Fields (e.g. name) can be supplied by supplying a dictionary (consult `Data.create_channel`).
 
-
         Examples
         --------
         import WrightTools.datasets as ds
         import WrightTools as wt
 
         d = wt.open(ds.wt5.v1p0p1_MoS2_TrEE_movie)
-        d.norm_for_each("d2", "ai0")  # equivalent to d.ai0[:] /= d.ai0[:].max(axis=(0,1))[None, None, :]
+        d.norm_for_each("d2", channel="ai0")  # equivalent to d.ai0[:] /= d.ai0[:].max(axis=(0,1))[None, None, :]
 
         """
         variables = [self.get_var(var) for var in vars]
@@ -783,7 +782,7 @@ class Data(Group):
         trivial = {i for i, si in enumerate(joint_shape) if si == 1}
         if not trivial:
             raise wt_exceptions.WrightToolsWarning(
-                f"joint variables {[var.natural_name for var in variables]} and Channel {channel.natural_name} have the same shape {channel.shape}. "
+                f"variable(s) {[var.natural_name for var in variables]} and Channel {channel.natural_name} have the same shape {channel.shape}. "
                 + "Produces a ones array channel."
             )
         # nontrivial = tuple({i for i in range(self.ndim)} - trivial)
@@ -796,7 +795,7 @@ class Data(Group):
             self.create_channel(
                 new_channel.pop(
                     "name",
-                    f"{channel.natural_name}_norm_{''.join([f'v{self.variable_names.index(v.natural_name)}' for v in variables])}",
+                    f"{channel.natural_name}_{''.join([f'v{self.variable_names.index(v.natural_name)}' for v in variables])}_norm",
                 ),
                 values=new,
                 **new_channel,
