@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## Changed
+- local version identifier uses only ASCII letters/numbers and periods (PEP 440)
+
 ## [3.6.0]
 
 ### Added
