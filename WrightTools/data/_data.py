@@ -2263,7 +2263,7 @@ class Data(Group):
         self.flush()
         self._on_constants_updated()
 
-    def create_constant(self, expression, *, verbose=True):
+    def create_constant(self, expression, verbose=True, **kwargs):
         """Append a constant to the stored list.
 
         Parameters
@@ -2272,6 +2272,8 @@ class Data(Group):
             Expression for the new constant.
         verbose : boolean (optional)
             Toggle talkback. Default is True
+        **kwargs
+            extra kwargs are passed to `Constant.__init__`
 
         See Also
         --------
@@ -2283,7 +2285,7 @@ class Data(Group):
         if expression in self.constant_expressions:
             wt_exceptions.ObjectExistsWarning.warn(expression)
             return self.constants[self.constant_expressions.index(expression)]
-        constant = Constant(self, expression)
+        constant = Constant(self, expression, **kwargs)
         if constant.units is None:
             constant.convert(constant.variables[0].units)
         self._constants.append(constant)

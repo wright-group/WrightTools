@@ -18,6 +18,13 @@ def test_set_remove():
     assert data.constant_names == ()
 
 
+def test_units():
+    """smokescreen to make sure units can be specified for constant creation"""
+    data = wt.Data()
+    data.create_variable("y", np.ones((3,)), units="ps")
+    data.create_constant("y", units="wn")
+
+
 def test_label():
     data = wt.Data()
     data.create_variable("x", np.linspace(0, 10))
