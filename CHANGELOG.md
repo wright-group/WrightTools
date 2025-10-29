@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## Changed
 - local version identifier uses only ASCII letters/numbers and periods (PEP 440)
+- actively supporting python 3.11-3.14
 
 ## [3.6.0]
 
