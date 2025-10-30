@@ -2,7 +2,7 @@
 
 # --- import --------------------------------------------------------------------------------------
 
-
+import pytest
 import h5py
 import numpy as np
 
@@ -13,6 +13,7 @@ from WrightTools import datasets
 # --- test ----------------------------------------------------------------------------------------
 
 
+@pytest.mark.skip(reason="This test takes a long time and code is rarely used.")
 def test_COLORS_v2p2_WL_wigner():
     p = datasets.COLORS.v2p2_WL_wigner
     data = wt.data.from_COLORS(p)

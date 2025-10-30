@@ -33,8 +33,8 @@ def test_LDS821_mag_0p5():
 
 
 def test_wigner():
-    p = datasets.COLORS.v2p2_WL_wigner
-    data = wt.data.from_COLORS(p)
+    p = datasets.wt5.v1p0p1_MoS2_TrEE_movie
+    data = wt.open(p).at(w2=[680, "nm"])
     data.ai0.normalize()
     assert np.isclose(data.ai0.null, 0.0)
     assert np.isclose(data.ai0.max(), 1.0)
@@ -42,8 +42,8 @@ def test_wigner():
 
 
 def test_negative_wigner():
-    p = datasets.COLORS.v2p2_WL_wigner
-    data = wt.data.from_COLORS(p)
+    p = datasets.wt5.v1p0p1_MoS2_TrEE_movie
+    data = wt.open(p).at(w2=[680, "nm"])
     data.ai0 *= -1
     data.ai0.signed = True
     data.ai0.normalize()
@@ -54,8 +54,8 @@ def test_negative_wigner():
 
 
 def test_negative_wigner_mag_1p1():
-    p = datasets.COLORS.v2p2_WL_wigner
-    data = wt.data.from_COLORS(p)
+    p = datasets.wt5.v1p0p1_MoS2_TrEE_movie
+    data = wt.open(p).at(w2=[680, "nm"])
     data.ai0 *= -1
     data.ai0.signed = True
     data.ai0.normalize(1.1)

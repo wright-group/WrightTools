@@ -1,7 +1,6 @@
 # --- import --------------------------------------------------------------------------------------
 
 
-import os
 import pathlib
 import warnings
 import time
@@ -11,6 +10,7 @@ import numpy as np
 from ._data import Data
 from .. import exceptions as wt_exceptions
 from ..kit import _timestamp as timestamp
+from numpy.lib.npyio import DataSource
 
 
 # --- define --------------------------------------------------------------------------------------
@@ -45,7 +45,6 @@ def from_LabRAM(filepath, name=None, parent=None, verbose=True) -> Data:
         New data object(s).
     """
     # parse filepath
-    filestr = os.fspath(filepath)
     filepath = pathlib.Path(filepath)
 
     if not ".txt" in filepath.suffixes:
@@ -54,7 +53,7 @@ def from_LabRAM(filepath, name=None, parent=None, verbose=True) -> Data:
     if not name:
         name = filepath.name.split(".")[0]
 
-    kwargs = {"name": name, "kind": "Horiba", "source": filestr}
+    kwargs = {"name": name, "kind": "Horiba", "source": str(filepath)}
 
     # create data
     if parent is None:
@@ -62,8 +61,8 @@ def from_LabRAM(filepath, name=None, parent=None, verbose=True) -> Data:
     else:
         data = parent.create_data(**kwargs)
 
-    ds = np.DataSource(None)
-    f = ds.open(filestr, "rt", encoding="ISO-8859-1")
+    ds = DataSource(None)
+    f = ds.open(str(filepath), "rt", encoding="ISO-8859-1")
 
     # header
     header = {}
@@ -109,7 +108,7 @@ def from_LabRAM(filepath, name=None, parent=None, verbose=True) -> Data:
     # dimensionality
     extra_dims = np.isnan(wm).sum()
 
-    if extra_dims == 0:  # single spectrum; we extracted wm wrong, so go back in file
+    if not extra_dims:  # single spectrum; we extracted wm wrong, so go back in file
         f.seek(0)
         wm, arr = np.genfromtxt(f, delimiter="\t", unpack=True)
         f.close()
@@ -120,13 +119,13 @@ def from_LabRAM(filepath, name=None, parent=None, verbose=True) -> Data:
         arr = np.genfromtxt(f, delimiter="\t")
         f.close()
         wm = wm[extra_dims:]
+        x = arr[:, 0]
 
         if extra_dims == 1:  # spectrum vs (x or survey)
             data.create_variable("wm", values=wm[:, None], units=spectral_units)
             data.create_channel(
                 "signal", values=arr[:, 1:].T / acquisition_time, units=channel_units
             )
-            x = arr[:, 0]
             if np.all(x == np.arange(x.size) + 1):  # survey
                 data.create_variable("index", values=x[None, :])
                 data.transform("wm", "index")
@@ -135,9 +134,7 @@ def from_LabRAM(filepath, name=None, parent=None, verbose=True) -> Data:
                 data.transform("wm", "x")
         elif extra_dims == 2:  # spectrum vs x vs y
             # fold to 3D
-            x = sorted(
-                set(arr[:, 0]), reverse=arr[0, 0] > arr[-1, 0]
-            )  # 0th column is stepped always (?)
+            x = sorted(set(x), reverse=bool(x[0] > x[-1]))  # 0th column is stepped always (?)
             x = np.array(list(x))
             x = x.reshape(1, -1, 1)
             y = arr[:, 1].reshape(1, x.size, -1)

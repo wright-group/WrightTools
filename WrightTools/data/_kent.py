@@ -14,6 +14,7 @@ from scipy.interpolate import griddata
 
 from ._data import Data
 from .. import kit as wt_kit
+from numpy.lib.npyio import DataSource
 
 
 # --- define --------------------------------------------------------------------------------------
@@ -86,7 +87,7 @@ def from_KENT(
     filestrs = [os.fspath(f) for f in filepaths]
     filepaths = [pathlib.Path(f) for f in filepaths]
     # import full array ---------------------------------------------------------------------------
-    ds = np.DataSource(None)
+    ds = DataSource(None)
     arr = []
     for f in filestrs:
         ff = ds.open(f, "rt")

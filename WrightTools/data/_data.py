@@ -738,6 +738,70 @@ class Data(Group):
         else:
             new[:] = np.gradient(channel[:], self[axis].points, axis=axis_index)
 
+    def get_var(self, hint: str | int | Variable) -> Variable:
+        return wt_kit.from_list_of_objects(self.variables, self.variable_names, hint)
+
+    def get_channel(self, hint: str | int | Channel) -> Channel:
+        return wt_kit.from_list_of_objects(self.channels, self.channel_names, hint)
+
+    def get_axis(self, hint: str | int | Axis) -> Axis:
+        return wt_kit.from_list_of_objects(self.axes, self.axis_expressions, hint)
+
+    def norm_for_each(
+        self,
+        var: str | Variable | int,
+        channel: str | Channel | int = 0,
+        new_channel: dict = {},
+    ):
+        """normalize the data for each var slice
+        var array must at least one trivial dimension (or else norm will return an array of ones)
+
+        Parameters
+        ----------
+        var : str, int, or WrightTools.data.Variable
+            variable to apply normalization at each unique point.
+        channel : str, int or WrightTools.data.Channel (default 0)
+            channel to apply normalization.  Channel should have more non-trivial dimensions than variable
+        new_channel : dict
+            Default is empty, and channel is overwriten with norm values.
+            If not empty, a new channel will be created.
+            Fields (e.g. name) can be supplied by supplying a dictionary (consult `Data.create_channel`).
+
+
+        Examples
+        --------
+        import WrightTools.datasets as ds
+        import WrightTools as wt
+
+        d = wt.open(ds.wt5.v1p0p1_MoS2_TrEE_movie)
+        d.norm_for_each("d2", "ai0")  # equivalent to d.ai0[:] /= d.ai0[:].max(axis=(0,1))[None, None, :]
+
+        """
+        variable = self.get_var(var)
+        channel = self.get_channel(channel)
+        trivial = {i for i, si in enumerate(variable.shape) if si == 1}
+        if not trivial:
+            raise wt_exceptions.WrightToolsWarning(
+                f"Variable {variable.natural_name} and Channel {channel.natural_name} have the same shape {variable.shape}. "
+                + "Produces a ones array channel."
+            )
+        # nontrivial = tuple({i for i in range(self.ndim)} - trivial)
+        trivial = tuple(trivial)
+        norm_vals = np.expand_dims(np.nanmax(channel[:], axis=trivial), trivial)
+        new = (channel[:] - channel.null) / (norm_vals - channel.null)
+        if new_channel:
+            if not isinstance(new_channel, dict):
+                new_channel = {}
+            self.create_channel(
+                new_channel.pop("name", f"{channel.natural_name}_{variable.natural_name}_norm"),
+                values=new,
+                **new_channel,
+            )
+        else:
+            channel[:] = new
+            channel.null = 0
+        return
+
     def moment(self, axis, channel=0, moment=1, *, resultant=None):
         """Take the nth moment the dataset along one axis, adding lower rank channels.
 
@@ -852,27 +916,28 @@ class Data(Group):
                 np.sum(np.diff(x, axis=axis_index), axis=axis_index, keepdims=True)
             )
 
+        trapezoid = np.trapezoid if (int(np.__version__.split(".")[0]) > 1) else np.trapz
         for moment in moments:
             about = 0
             norm = 1
             if moment > 0:
-                norm = np.trapz(y, x, axis=axis_index)
+                norm = trapezoid(y, x, axis=axis_index)
                 norm = np.array(norm)
                 norm.shape = new_shape
             if moment > 1:
-                about = np.trapz(x * y, x, axis=axis_index)
+                about = trapezoid(x * y, x, axis=axis_index)
                 about = np.array(about)
                 about.shape = new_shape
                 about /= norm
             if moment > 2:
-                sigma = np.trapz((x - about) ** 2 * y, x, axis=axis_index)
+                sigma = trapezoid((x - about) ** 2 * y, x, axis=axis_index)
                 sigma = np.array(sigma)
                 sigma.shape = new_shape
                 sigma /= norm
                 sigma **= 0.5
                 norm *= sigma**moment
 
-            values = np.trapz((x - about) ** moment * y, x, axis=axis_index)
+            values = trapezoid((x - about) ** moment * y, x, axis=axis_index)
             values = np.array(values)
             values.shape = new_shape
             values /= norm
@@ -2209,7 +2274,7 @@ class Data(Group):
         self.flush()
         self._on_constants_updated()
 
-    def create_constant(self, expression, *, verbose=True):
+    def create_constant(self, expression, verbose=True, **kwargs):
         """Append a constant to the stored list.
 
         Parameters
@@ -2218,6 +2283,8 @@ class Data(Group):
             Expression for the new constant.
         verbose : boolean (optional)
             Toggle talkback. Default is True
+        **kwargs
+            extra kwargs are passed to `Constant.__init__`
 
         See Also
         --------
@@ -2229,7 +2296,7 @@ class Data(Group):
         if expression in self.constant_expressions:
             wt_exceptions.ObjectExistsWarning.warn(expression)
             return self.constants[self.constant_expressions.index(expression)]
-        constant = Constant(self, expression)
+        constant = Constant(self, expression, **kwargs)
         if constant.units is None:
             constant.convert(constant.variables[0].units)
         self._constants.append(constant)

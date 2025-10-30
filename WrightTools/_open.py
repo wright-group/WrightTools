@@ -13,6 +13,7 @@ import numpy as np
 from . import collection as wt_collection
 from . import data as wt_data
 from . import _group as wt_group
+from numpy.lib.npyio import DataSource
 
 
 # --- define -------------------------------------------------------------------------------------
@@ -45,7 +46,7 @@ def open(filepath, edit_local=False):
         Root-level object in file.
     """
     filepath = os.fspath(filepath)
-    ds = np.DataSource(None)
+    ds = DataSource(None)
     if edit_local is False:
         tf = tempfile.mkstemp(prefix="", suffix=".wt5")
         with _open(tf[1], "w+b") as tff:

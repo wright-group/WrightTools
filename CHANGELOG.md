@@ -5,6 +5,43 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## Changed
+- local version identifier uses only ASCII letters/numbers and periods (PEP 440)
+- `Data.create_constant`: allow kwargs to be passed to the constant creation
+
+## [3.6.0]
+
+### Added
+- `Data.norm_for_each`: easier norm-by-axis syntax
+- `kit.from_list_of_objects`: convenience method for grabbing an channel/variable/axis/etc. using multiple specifiers
+- `Data.get_var`: get variable object by index, name, or variable itself
+- `Data.get_axis`: get axis object by index, name, or variable itself
+- `Data.get_channel`: get channel object by index, name, or variable itself
+
+### Fixed
+- quick2D works with contours on
+- quick2D works with `pixelated=False` (i.e. contourf)
+- `data.from_LabRAM`:  small tweaks to deal with newly emerged test failure in python 3.11 tests
+
+### Changed
+- various unit tests were altered to speed up CI
+- default colorbar is sampled at 4096 points (was 256)
+- packaging now done through pyproject.toml
+
+## [3.5.5]
+
+### Fixed
+- distribution information includes dependency setuptools (fixes conda feedstock)
+
+## [3.5.4]
+
+### Fixed
+- setup.py is now configured to allow numpy 2.x
+- contour/contourf artist overloads compatible with matplotlib 3.10
+
+### Changed
+- actively supporting python 3.11-3.13
+
 ## [3.5.3]
 
 ### Added
@@ -18,7 +55,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 - wt5 explore : fixed bug where data will not load interactively if directory is not cwd
 - constants in chopped data will inherit the units of the original data
 
-## Changed
+### Changed
+- numpy 2.0 compatible
 - refactor of artists.quick1D and artists.quick2D
 - quick2D and quick1D will not force `autosave=True` if the number of figures is large.  Instead, interactive plotting will be truncated if the number of figures is large.
 - artists now gets turbo colormap straight from matplotlib
@@ -396,7 +434,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ### Added
 - initial release
 
-[Unreleased]: https://github.com/wright-group/WrightTools/-/compare/3.5.3...master
+[Unreleased]: https://github.com/wright-group/WrightTools/-/compare/3.6.0...master
+[3.6.0]: https://github.com/wright-group/WrightTools/-/compare/3.5.5...3.6.0
+[3.5.5]: https://github.com/wright-group/WrightTools/compare/3.5.3...3.5.5
+[3.5.4]: https://github.com/wright-group/WrightTools/compare/3.5.3...3.5.4
 [3.5.3]: https://github.com/wright-group/WrightTools/compare/3.5.2...3.5.3
 [3.5.2]: https://github.com/wright-group/WrightTools/compare/3.5.1...3.5.2
 [3.5.1]: https://github.com/wright-group/WrightTools/compare/3.5.0...3.5.1
