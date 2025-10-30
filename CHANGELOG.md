@@ -5,8 +5,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
-## Changed
+## [3.6.1]
+
+### Changed
 - local version identifier uses only ASCII letters/numbers and periods (PEP 440)
+- actively supporting python 3.11-3.14
 - `Data.create_constant`: allow kwargs to be passed to the constant creation
 
 ## [3.6.0]
@@ -434,8 +437,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ### Added
 - initial release
 
-[Unreleased]: https://github.com/wright-group/WrightTools/-/compare/3.6.0...master
-[3.6.0]: https://github.com/wright-group/WrightTools/-/compare/3.5.5...3.6.0
+[Unreleased]: https://github.com/wright-group/WrightTools/-/compare/3.6.1...master
+[3.6.1]: https://github.com/wright-group/WrightTools/compare/3.6.0...3.6.1
+[3.6.0]: https://github.com/wright-group/WrightTools/compare/3.5.5...3.6.0
 [3.5.5]: https://github.com/wright-group/WrightTools/compare/3.5.3...3.5.5
 [3.5.4]: https://github.com/wright-group/WrightTools/compare/3.5.3...3.5.4
 [3.5.3]: https://github.com/wright-group/WrightTools/compare/3.5.2...3.5.3
