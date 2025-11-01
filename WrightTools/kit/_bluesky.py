@@ -1,5 +1,5 @@
 """
-Helpers specific to deal with data structures from Wright Group Bluesky deployment
+Helpers specific to deal with data structures from the Wright Group's Bluesky deployment
 https://github.com/wright-group/bluesky-in-a-box/
 """
 
@@ -22,19 +22,22 @@ __folder_parts__ = [
 ]
 __folder_seed__ = " ".join(__folder_parts__)
 __datetime_seed__ = re.compile(" ".join(__folder_parts__[:3]))
-__fseed__ = "{date} {time} {plan} {name} {uid}"
+__fmtseed__ = "{date} {time} {plan} {name} {uid}"
 
 
 class BlueskyFolder:
     """container class for Bluesky acquisitions"""
 
-    def __init__(self, folder_path):
+    def __init__(self, folder_path:str|pathlib.Path):
         self.path = pathlib.Path(folder_path)
+        # DDK: better to extract the information from the data inside, rather than relying on the name
+        # self.info = parse_folder_contents(folder_path.name)
         self.info = parse_folder_name(folder_path.name)
         if self.info is None:
             return
 
         self._primary = None
+        self._baseline = None
         self.logger = logging.getLogger(self.info.uid)
         self.logger.info(self.info)
 
@@ -51,14 +54,16 @@ class BlueskyFolder:
 
     @property
     def baseline(self):
-        raise NotImplementedError
+        if self._baseline is None:
+            self._baseline = wt5_open(self.path / "primary.wt5")
+        return self._baseline
 
     @property
-    def baseline_tree(self):
+    def baseline_tree(self) -> str:
         return (self.path / "baseline tree.txt").read_text()
 
     @property
-    def primary_tree(self):
+    def primary_tree(self) -> str:
         return (self.path / "primary tree.txt").read_text()
 
     @property
@@ -83,6 +88,7 @@ class BlueskyFolder:
 
 
 class FolderInfo(NamedTuple):
+    """Object representation of bluesky folder names"""
     date: datetime.date
     time: datetime.time
     plan: str
@@ -91,7 +97,7 @@ class FolderInfo(NamedTuple):
 
     @property
     def folder(self):
-        return __fseed__.format(
+        return __fmtseed__.format(
             date=self.date.strftime("%Y-%m-%d"),
             time=int(
                 datetime.timedelta(
@@ -106,7 +112,7 @@ class FolderInfo(NamedTuple):
 
 def match_identifier(dir: pathlib.Path, **bluesky_identifier) -> list[BlueskyFolder]:
     """
-    walk a directory to find datasets that meet the criteria
+    walk a directory to find bluesky folder names that match the specified identifiers
 
     Parameters
     ----------
@@ -143,8 +149,35 @@ def match_identifier(dir: pathlib.Path, **bluesky_identifier) -> list[BlueskyFol
     return keep
 
 
+def parse_folder_contents(folder: str) -> FolderInfo | None:
+    """
+    (Coming soon!)
+    Parse key identifiers from a bluesky folder based on the data inside.
+
+    See also
+    --------
+    parse_folder_name:
+        Use the folder name, rather than data inside the folder.
+    """
+    raise NotImplementedError
+
+
+
 def parse_folder_name(folder: str) -> FolderInfo | None:
-    # TODO: match procedure is leaky (mainly due to name and plan), could be cleaned up
+    """
+    Convert a bluesky-formatted folder name into a structured dictonary-like format.
+
+    Parameters
+    ----------
+    folder : string
+        the folder name
+
+    Returns
+    -------
+    FolderInfo | None
+        if the name is parsed, returns a FolderInfo object.
+        otherwise, returns None.
+    """
     if ((uid_match := re.fullmatch(r"(?P<uid>\w{8})", folder.split()[-1])) is not None) and (
         (datetime_match := __datetime_seed__.match(folder)) is not None
     ):
@@ -156,6 +189,7 @@ def parse_folder_name(folder: str) -> FolderInfo | None:
 
 
 def _to_object(mdict: dict) -> FolderInfo:
+    """convert re match dictionary into FolderInfo object"""
     date = datetime.date.fromisoformat(mdict.pop("date"))
     ts = int(mdict.pop("time"))  # total seconds since date start
     time = datetime.time(hour=ts // 3600, minute=(ts % 3600) // 60, second=ts % 60)
