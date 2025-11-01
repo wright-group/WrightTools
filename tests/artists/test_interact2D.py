@@ -1,6 +1,5 @@
 #! /usr/bin/env python3
 
-import pytest
 import numpy as np
 import WrightTools as wt
 from WrightTools import datasets
@@ -50,7 +49,6 @@ def test_skewed():
     return wt.artists.interact2D(data, xaxis=0, yaxis=1)
 
 
-@pytest.mark.xfail(reason="sometimes fails for artificial reasons")
 def test_4D():
     w1 = np.linspace(-5, 5, 31)
     w2 = w1[::2].copy()

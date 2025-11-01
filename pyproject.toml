@@ -31,6 +31,7 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Scientific/Engineering",
 ]
 keywords = ["spectroscopy", "science", "multidimensional", "visualization"]
@@ -66,3 +67,6 @@ Changelog = "https://github.com/wright-group/WrightTools/blob/master/CHANGELOG.m
 [project.scripts]
 wt5 = "WrightTools.cli._wt5:cli"
 wt-convert = "WrightTools.cli._units:cli"
+
+[tool.setuptools.dynamic]
+version = {file = "WrightTools/VERSION"}
