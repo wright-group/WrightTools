@@ -20,7 +20,7 @@ def test_3D():
     assert np.all(np.isclose(data.channels[-1][:], data.channels[0][:]))
 
 
-def test_two_norms():
+def test_two_vars():
     data = wt.open(datasets.wt5.v1p0p1_MoS2_TrEE_movie)
     data.norm_for_each("w1", "d2")
     assert np.all(data.channels[0][:].max(axis=0) == 1)
@@ -28,4 +28,4 @@ def test_two_norms():
 
 if __name__ == "__main__":
     test_3D()
-    test_two_norms()
+    test_two_vars()
