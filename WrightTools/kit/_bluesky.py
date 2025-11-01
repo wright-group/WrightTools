@@ -28,7 +28,7 @@ __fmtseed__ = "{date} {time} {plan} {name} {uid}"
 class BlueskyFolder:
     """container class for Bluesky acquisitions"""
 
-    def __init__(self, folder_path:str|pathlib.Path):
+    def __init__(self, folder_path: str | pathlib.Path):
         self.path = pathlib.Path(folder_path)
         # DDK: better to extract the information from the data inside, rather than relying on the name
         # self.info = parse_folder_contents(folder_path.name)
@@ -89,6 +89,7 @@ class BlueskyFolder:
 
 class FolderInfo(NamedTuple):
     """Object representation of bluesky folder names"""
+
     date: datetime.date
     time: datetime.time
     plan: str
@@ -160,7 +161,6 @@ def parse_folder_contents(folder: str) -> FolderInfo | None:
         Use the folder name, rather than data inside the folder.
     """
     raise NotImplementedError
-
 
 
 def parse_folder_name(folder: str) -> FolderInfo | None:
