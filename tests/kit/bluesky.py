@@ -18,5 +18,16 @@ def test_folderinfo():
     assert fi2.plan == "grid_scan_wp"
 
 
+def test_filter():
+    name1 = "2025-10-27 52433 count 2 beam PL spot2 post d7f183b5"
+    name2 = "2025-10-27 54622 grid_scan_wp spot 3 spectral 6a45457c"
+
+    gridscans = [x for x in wt.kit.bluesky.filter_bluesky([name1, name2], plan="grid_scan_wp")]
+    assert len(gridscans) == 1
+    assert str(gridscans[0]) == name2
+
+
 if __name__ == "__main__":
     test_folderinfo()
+    test_filter()
+
