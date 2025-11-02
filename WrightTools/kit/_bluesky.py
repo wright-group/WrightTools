@@ -1,5 +1,5 @@
 """
-Helpers specific to deal with data structures from the Wright Group's Bluesky deployment
+Helpers and containers for data structures in the Wright Group's Bluesky deployment
 https://github.com/wright-group/bluesky-in-a-box/
 """
 
@@ -8,7 +8,7 @@ import json
 import datetime
 import pathlib
 import logging
-from typing import NamedTuple
+from typing import NamedTuple, Generator, Iterable
 
 from .._open import open as wt5_open
 
@@ -111,9 +111,53 @@ class FolderInfo(NamedTuple):
         )
 
 
-def match_identifier(dir: pathlib.Path, **bluesky_identifier) -> list[BlueskyFolder]:
+def filter_bluesky(items:Iterable[pathlib.Path], **bluesky_identifiers) -> Generator[pathlib.Path, None, None]:
     """
-    walk a directory to find bluesky folder names that match the specified identifiers
+    Filter an iterator of folder names for bluesky folder pattern that match specified values.
+
+    Parameters
+    ----------
+
+    items: pathlikes
+        potential paths of bluesky folders
+        
+    kwargs
+    ------
+
+    bluesky_identifiers
+        keys corresponding to FolderInfo properties (e.g. date, plan).
+
+    Yields
+    -------
+
+    pathlib.Path: 
+        bluesky folders corresponding to full matches with the bluesky_identifiers
+
+    Examples
+    --------
+    ```
+    # match within a directory
+    spooky_folders = [
+        info for info in filter_bluesky(
+            data_folder.iterdir(), 
+            date="2025-10-31"
+        )
+    ]
+    ```
+    """
+    for key in bluesky_identifiers.keys():
+        assert key in FolderInfo._fields
+
+    for item in map(pathlib.Path, items):
+        if (info := parse_folder_name(item.name)) is not None:
+            idict = info._asdict()
+            if all(idict[k] == v for k,v in bluesky_identifiers.items()):
+                yield item
+
+
+def bluesky_paths(dir: pathlib.Path, **bluesky_identifiers) -> list[pathlib.Path]:
+    """
+    walk a directory to find bluesky folder names that match the specified identifiers.
 
     Parameters
     ----------
@@ -132,35 +176,11 @@ def match_identifier(dir: pathlib.Path, **bluesky_identifier) -> list[BlueskyFol
     matches: list of BlueskyFolder objects
         BlueskyFolders corresponding to full matches with the bluesky_identifiers
     """
-    for key in bluesky_identifier.keys():
-        assert key in FolderInfo._fields
 
-    keep = []
-
-    for info in map(
-        lambda item: parse_folder_name(item.name),
-        filter(
-            lambda item: item.is_dir() and re.fullmatch(__folder_seed__, item.name), dir.iterdir()
-        ),
-    ):
-        idict = info._asdict()
-        if all(idict[k] == bluesky_identifier[k] for k in bluesky_identifier.keys()):
-            keep.append(BlueskyFolder(dir / info.folder))
-
-    return keep
-
-
-def parse_folder_contents(folder: str) -> FolderInfo | None:
-    """
-    (Coming soon!)
-    Parse key identifiers from a bluesky folder based on the data inside.
-
-    See also
-    --------
-    parse_folder_name:
-        Use the folder name, rather than data inside the folder.
-    """
-    raise NotImplementedError
+    return sorted([
+        dir / info.folder
+        for info in filter_bluesky(dir.iterdir(), **bluesky_identifiers)
+    ])
 
 
 def parse_folder_name(folder: str) -> FolderInfo | None:
@@ -178,14 +198,14 @@ def parse_folder_name(folder: str) -> FolderInfo | None:
         if the name is parsed, returns a FolderInfo object.
         otherwise, returns None.
     """
+    out = None
     if ((uid_match := re.fullmatch(r"(?P<uid>\w{8})", folder.split()[-1])) is not None) and (
         (datetime_match := __datetime_seed__.match(folder)) is not None
     ):
         matchdict = uid_match.groupdict() | datetime_match.groupdict()
         matchdict["name"] = " ".join(folder.split()[3:-1])
-        return _to_object(matchdict)
-    else:
-        return None
+        out = _to_object(matchdict)
+    return out
 
 
 def _to_object(mdict: dict) -> FolderInfo:
