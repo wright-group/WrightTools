@@ -30,4 +30,3 @@ def test_filter():
 if __name__ == "__main__":
     test_folderinfo()
     test_filter()
-

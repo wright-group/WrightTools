@@ -119,7 +119,9 @@ class FolderInfo(NamedTuple):
         )
 
 
-def filter_bluesky(items:Iterable[pathlib.Path], **bluesky_identifiers) -> Generator[pathlib.Path, None, None]:
+def filter_bluesky(
+    items: Iterable[pathlib.Path], **bluesky_identifiers
+) -> Generator[pathlib.Path, None, None]:
     """
     Filter an iterator of folder names for bluesky folder pattern that match specified values.
 
@@ -128,7 +130,7 @@ def filter_bluesky(items:Iterable[pathlib.Path], **bluesky_identifiers) -> Gener
 
     items: pathlikes
         potential paths of bluesky folders
-        
+
     kwargs
     ------
 
@@ -138,7 +140,7 @@ def filter_bluesky(items:Iterable[pathlib.Path], **bluesky_identifiers) -> Gener
     Yields
     -------
 
-    pathlib.Path: 
+    pathlib.Path:
         bluesky folders corresponding to full matches with the bluesky_identifiers
 
     Examples
@@ -147,7 +149,7 @@ def filter_bluesky(items:Iterable[pathlib.Path], **bluesky_identifiers) -> Gener
     # match within a directory
     spooky_folders = [
         info for info in filter_bluesky(
-            data_folder.iterdir(), 
+            data_folder.iterdir(),
             date="2025-10-31"
         )
     ]
@@ -159,7 +161,7 @@ def filter_bluesky(items:Iterable[pathlib.Path], **bluesky_identifiers) -> Gener
     for item in map(pathlib.Path, items):
         if (info := parse_folder_name(item.name)) is not None:
             idict = info._asdict()
-            if all(idict[k] == v for k,v in bluesky_identifiers.items()):
+            if all(idict[k] == v for k, v in bluesky_identifiers.items()):
                 yield item
 
 
@@ -185,10 +187,9 @@ def bluesky_paths(dir: pathlib.Path, **bluesky_identifiers) -> list[pathlib.Path
         BlueskyFolders corresponding to full matches with the bluesky_identifiers
     """
 
-    return sorted([
-        dir / info.folder
-        for info in filter_bluesky(dir.iterdir(), **bluesky_identifiers)
-    ])
+    return sorted(
+        [dir / info.folder for info in filter_bluesky(dir.iterdir(), **bluesky_identifiers)]
+    )
 
 
 def parse_folder_name(folder: str) -> FolderInfo | None:
