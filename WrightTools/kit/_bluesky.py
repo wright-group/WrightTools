@@ -85,6 +85,14 @@ class BlueskyFolder:
     def baseline_descriptor(self) -> dict:
         path = self.path / "bluesky_docs" / "baseline descriptor.json"
         return json.load(path.open())
+def apply_points_axes(data):
+    """
+    Switch to reduced dimensional axes when available.
+    Useful for gridscan plans.
+    """
+    transform = [f"{n}_points" if f"{n}_points" in data.variable_names else n for n in data.axis_names]
+    data.transform(*transform)
+    return data
 
 
 class FolderInfo(NamedTuple):
