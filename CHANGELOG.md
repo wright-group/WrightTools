@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Fixed
+- fixed bug where numpy>2.4 broke `data.join`
+
 ## [3.6.1]
 
 ### Changed
