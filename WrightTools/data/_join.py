@@ -209,6 +209,10 @@ def join(
             vals[:] = 0
         # Use advanced indexing to populate vals, a temporary array with same shape as out
         valid_index = tuple(wt_kit.valid_index(new_idx, new.shape))
+        if all(
+            [isinstance(i, int) for i in valid_index]
+        ):  # patched: numpy now doesn't let you set element array of size 1
+            valid_index = [[i] for i in valid_index]
         vals[valid_index] = old[:].transpose(transpose)[slice_]
 
         # Overlap methods are accomplished by adding the existing array with the one added
