@@ -385,7 +385,7 @@ def valid_index(index, shape) -> tuple:
             if isinstance(i, slice):
                 out.append(slice(None))
             else:
-                out.append(0)
+                out.append([0])
         else:
             out.append(i)
     return tuple(out[::-1])
