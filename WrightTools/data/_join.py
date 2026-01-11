@@ -213,7 +213,9 @@ def join(
         try:
             vals[valid_index] = old[:].transpose(transpose)[slice_]
         except ValueError as e:
-            if all([isinstance(i, int) for i in valid_index]):  # temp patch: setting element to array of size 1 used to work
+            if all(
+                [isinstance(i, int) for i in valid_index]
+            ):  # temp patch: setting element to array of size 1 used to work
                 valid_index = [[i] for i in valid_index]
                 vals[valid_index] = old[:].transpose(transpose)[slice_]
 
