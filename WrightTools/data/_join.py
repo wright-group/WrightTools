@@ -209,7 +209,15 @@ def join(
             vals[:] = 0
         # Use advanced indexing to populate vals, a temporary array with same shape as out
         valid_index = tuple(wt_kit.valid_index(new_idx, new.shape))
-        vals[valid_index] = old[:].transpose(transpose)[slice_]
+        # temp patch--numpy now doesn't let you write array element with sequence of length 1
+        try:
+            vals[valid_index] = old[:].transpose(transpose)[slice_]
+        except ValueError as e:
+            if all(
+                [isinstance(i, int) for i in valid_index]
+            ):  # temp patch: setting element to array of size 1 used to work
+                valid_index = [[i] for i in valid_index]
+                vals[valid_index] = old[:].transpose(transpose)[slice_]
 
         # Overlap methods are accomplished by adding the existing array with the one added
         # for this particular data. Thus locations which should be set, but conflict by

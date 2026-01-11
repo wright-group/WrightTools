@@ -18,7 +18,7 @@ def test__1_5__7():
 def test__4_2_12__1_25_1():
     index = (4, 2, 12)
     shape = (1, 25, 1)
-    assert wt.kit.valid_index(index, shape) == ([0], 2, [0])
+    assert wt.kit.valid_index(index, shape) == (0, 2, 0)
 
 
 def test__s__23():

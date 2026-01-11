@@ -713,6 +713,7 @@ if __name__ == "__main__":
     test_1D_plus_2D_plus_3D()
     test_overlap_first()
     test_overlap_last()
+    test_overlap_sum()
     test_overlap_max()
     test_overlap_min()
     test_overlap_mean()
