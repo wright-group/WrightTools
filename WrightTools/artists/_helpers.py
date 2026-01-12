@@ -188,7 +188,7 @@ def corner_text(
     text : str
         The text to use.
     distance : number (optional)
-        Distance from the corner. Default is 0.05.
+        Distance from the corner. Default is 0.075.
     ax : axis (optional)
         The axis object to label. If None, uses current axis. Default is None.
     corner : {'UL', 'LL', 'UR', 'LR'} (optional)
