@@ -120,8 +120,7 @@ class Axis(object):
             assert self._ndim is not None
         except (AssertionError, AttributeError):
             self._ndim = self.variables[0].ndim
-        finally:
-            return self._ndim
+        return self._ndim
 
     @property
     def points(self) -> np.ndarray:
