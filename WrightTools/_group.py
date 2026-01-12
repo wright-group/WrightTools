@@ -268,8 +268,7 @@ class Group(h5py.Group, metaclass=MetaClass):
             if key.endswith("::"):
                 key += posixpath.sep
             self._parent = Group._instances[key]
-        finally:
-            return self._parent
+        return self._parent
 
     def close(self):
         """Close the file that contains the Group.
