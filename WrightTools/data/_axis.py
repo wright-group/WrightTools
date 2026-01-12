@@ -120,8 +120,7 @@ class Axis(object):
             assert self._ndim is not None
         except (AssertionError, AttributeError):
             self._ndim = self.variables[0].ndim
-        finally:
-            return self._ndim
+        return self._ndim
 
     @property
     def points(self) -> np.ndarray:
@@ -168,8 +167,7 @@ class Axis(object):
                 if key in self.parent.variable_names:
                     indices.append(self.parent.variable_names.index(key))
             self._variables = [self.parent.variables[i] for i in indices]
-        finally:
-            return self._variables
+        return self._variables
 
     @property
     def masked(self) -> np.ndarray:
