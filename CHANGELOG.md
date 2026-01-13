@@ -21,6 +21,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ## [3.6.0]
 
 ### Added
+- new kit module `bluesky` for working with `bluesky-in-a-box` data / directories
 - `Data.norm_for_each`: easier norm-by-axis syntax
 - `kit.from_list_of_objects`: convenience method for grabbing an channel/variable/axis/etc. using multiple specifiers
 - `Data.get_var`: get variable object by index, name, or variable itself
