@@ -166,8 +166,7 @@ class Data(Group):
                 self._ndim = 0
             else:
                 self._ndim = self.variables[0].ndim
-        finally:
-            return self._ndim
+        return self._ndim
 
     @property
     def shape(self) -> tuple:
@@ -176,8 +175,7 @@ class Data(Group):
             assert self._shape is not None
         except (AssertionError, AttributeError):
             self._shape = wt_kit.joint_shape(*self.variables)
-        finally:
-            return self._shape
+        return self._shape
 
     @property
     def size(self) -> int:
@@ -221,8 +219,7 @@ class Data(Group):
             assert self._variables is not None
         except (AssertionError, AttributeError):
             self._variables = [self[n] for n in self.variable_names]
-        finally:
-            return tuple(self._variables)
+        return tuple(self._variables)
 
     @property
     def _leaf(self):
