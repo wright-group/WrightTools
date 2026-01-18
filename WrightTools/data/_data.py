@@ -746,7 +746,7 @@ class Data(Group):
 
     def norm_for_each(
         self,
-        var: str | Variable | int,
+        *vars: str | Variable | int,
         channel: str | Channel | int = 0,
         new_channel: dict = {},
     ):
@@ -755,8 +755,8 @@ class Data(Group):
 
         Parameters
         ----------
-        var : str, int, or WrightTools.data.Variable
-            variable to apply normalization at each unique point.
+        *vars : str, int, or WrightTools.data.Variable
+            variable to apply normalization at each unique point. if many variables are given, normalization occurs across the joint pairs of values
         channel : str, int or WrightTools.data.Channel (default 0)
             channel to apply normalization.  Channel should have more non-trivial dimensions than variable
         new_channel : dict
@@ -764,22 +764,22 @@ class Data(Group):
             If not empty, a new channel will be created.
             Fields (e.g. name) can be supplied by supplying a dictionary (consult `Data.create_channel`).
 
-
         Examples
         --------
         import WrightTools.datasets as ds
         import WrightTools as wt
 
         d = wt.open(ds.wt5.v1p0p1_MoS2_TrEE_movie)
-        d.norm_for_each("d2", "ai0")  # equivalent to d.ai0[:] /= d.ai0[:].max(axis=(0,1))[None, None, :]
+        d.norm_for_each("d2", channel="ai0")  # equivalent to d.ai0[:] /= d.ai0[:].max(axis=(0,1))[None, None, :]
 
         """
-        variable = self.get_var(var)
+        variables = [self.get_var(var) for var in vars]
         channel = self.get_channel(channel)
-        trivial = {i for i, si in enumerate(variable.shape) if si == 1}
+        joint_shape = [max([v.shape[i] for v in variables]) for i in range(self.ndim)]
+        trivial = {i for i, si in enumerate(joint_shape) if si == 1}
         if not trivial:
             raise wt_exceptions.WrightToolsWarning(
-                f"Variable {variable.natural_name} and Channel {channel.natural_name} have the same shape {variable.shape}. "
+                f"variable(s) {[var.natural_name for var in variables]} and Channel {channel.natural_name} have the same shape {channel.shape}. "
                 + "Produces a ones array channel."
             )
         # nontrivial = tuple({i for i in range(self.ndim)} - trivial)
@@ -790,7 +790,10 @@ class Data(Group):
             if not isinstance(new_channel, dict):
                 new_channel = {}
             self.create_channel(
-                new_channel.pop("name", f"{channel.natural_name}_{variable.natural_name}_norm"),
+                new_channel.pop(
+                    "name",
+                    f"{channel.natural_name}_{''.join([f'v{self.variable_names.index(v.natural_name)}' for v in variables])}_norm",
+                ),
                 values=new,
                 **new_channel,
             )

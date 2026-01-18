@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Changed
+- `Data.norm_for_each`: allow for normlization for each combination of a set of variables
+
 ### Fixed
 - fixed bug where numpy>2.4 broke `data.join`
 
