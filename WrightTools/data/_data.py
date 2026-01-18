@@ -714,22 +714,20 @@ class Data(Group):
         else:
             raise wt_exceptions.TypeError("axis: expected {int, str}, got %s" % type(axis))
 
-        channel_index = wt_kit.get_index(self.channel_names, channel)
-        channel = self.channel_names[channel_index]
+        channel = self.get_channel(channel)
 
-        if self[channel].shape[axis_index] == 1:
+        if channel.shape[axis_index] == 1:
             raise wt_exceptions.ValueError(
                 "Channel '{}' has a single point along Axis '{}', cannot compute gradient".format(
                     channel, axis
                 )
             )
-        rtype = np.result_type(self[channel].dtype, float)
+        rtype = np.result_type(channel.dtype, float)
         new = self.create_channel(
-            "{}_{}_gradient".format(channel, axis),
-            values=np.empty(self[channel].shape, dtype=rtype),
+            "{}_{}_gradient".format(channel.natural_name, axis),
+            values=np.empty(channel.shape, dtype=rtype),
         )
 
-        channel = self[channel]
         if axis == axis_index:
             new[:] = np.gradient(channel[:], axis=axis_index)
         else:
@@ -879,20 +877,18 @@ class Data(Group):
 
         warnings.warn("moment", category=wt_exceptions.EntireDatasetInMemoryWarning)
 
-        channel_index = wt_kit.get_index(self.channel_names, channel)
-        channel = self.channel_names[channel_index]
+        channel: Channel = self.get_channel(channel)
 
-        if self[channel].shape[axis_index] == 1:
+        if channel.shape[axis_index] == 1:
             raise wt_exceptions.ValueError(
                 "Channel '{}' has a single point along Axis '{}', cannot compute moment".format(
                     channel, axis
                 )
             )
 
-        new_shape = list(self[channel].shape)
+        new_shape = list(channel.shape)
         new_shape[axis_index] = 1
 
-        channel = self[channel]
         axis_inp = axis
         axis = self.axes[index]
         x = axis[:]
@@ -1265,13 +1261,7 @@ class Data(Group):
             Coordinates in units for each axis.
         """
         # get channel
-        if isinstance(channel, int):
-            channel_index = channel
-        elif isinstance(channel, str):
-            channel_index = self.channel_names.index(channel)
-        else:
-            raise TypeError("channel: expected {int, str}, got %s" % type(channel))
-        channel = self.channels[channel_index]
+        channel = self.get_channel(channel)
         # get indicies
         idx = channel.argmin()
         # finish
@@ -1291,13 +1281,7 @@ class Data(Group):
             Coordinates in units for each axis.
         """
         # get channel
-        if isinstance(channel, int):
-            channel_index = channel
-        elif isinstance(channel, str):
-            channel_index = self.channel_names.index(channel)
-        else:
-            raise TypeError("channel: expected {int, str}, got %s" % type(channel))
-        channel = self.channels[channel_index]
+        channel: Channel = self.get_channel(channel)
         # get indicies
         idx = channel.argmax()
         # finish
@@ -1333,15 +1317,8 @@ class Data(Group):
         warnings.warn("heal", category=wt_exceptions.EntireDatasetInMemoryWarning)
         timer = wt_kit.Timer(verbose=False)
         with timer:
-            # channel
-            if isinstance(channel, int):
-                channel_index = channel
-            elif isinstance(channel, str):
-                channel_index = self.channel_names.index(channel)
-            else:
-                raise TypeError("channel: expected {int, str}, got %s" % type(channel))
-            channel = self.channels[channel_index]
-            values = self.channels[channel_index][:]
+            channel = self.get_channel(channel)
+            values = channel[:]
             points = [axis[:] for axis in self._axes]
             xi = tuple(np.meshgrid(*points, indexing="ij"))
             # 'undo' gridding
@@ -1355,7 +1332,7 @@ class Data(Group):
             tup = tuple([arr[i] for i in range(len(arr) - 1)])
             # grid data
             out = griddata(tup, arr[-1], xi, method=method, fill_value=fill_value)
-            self.channels[channel_index][:] = out
+            channel[:] = out
         # print
         if verbose:
             print(
@@ -1381,8 +1358,7 @@ class Data(Group):
             Toggle talkback. Default is True.
         """
         warnings.warn("level", category=wt_exceptions.EntireDatasetInMemoryWarning)
-        channel_index = wt_kit.get_index(self.channel_names, channel)
-        channel = self.channels[channel_index]
+        channel = self.get_channel(channel)
         # verify npts not zero
         npts = int(npts)
         if npts == 0:
@@ -1440,8 +1416,7 @@ class Data(Group):
             New data object.
         """
         # get variable index
-        variable_index = wt_kit.get_index(self.variable_names, variable)
-        variable = self.variables[variable_index]
+        variable = self.get_var(variable)
         # get points
         if isinstance(points, int):
             points = np.linspace(variable.min(), variable.max(), points)
