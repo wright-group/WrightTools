@@ -148,8 +148,7 @@ class Dataset(h5py.Dataset):
             assert self._natural_name is not None
         except (AssertionError, AttributeError):
             self._natural_name = self.attrs["name"]
-        finally:
-            return self._natural_name
+        return self._natural_name
 
     @natural_name.setter
     def natural_name(self, value):
