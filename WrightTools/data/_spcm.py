@@ -15,7 +15,6 @@ from .. import exceptions as wt_exceptions
 from ..kit import _timestamp as timestamp
 from numpy.lib.npyio import DataSource
 
-
 # --- define --------------------------------------------------------------------------------------
 
 

@@ -5,7 +5,6 @@ from ..data import Data
 from ..collection import Collection
 from .._open import open
 
-
 __all__ = [
     "describe_wt5",
     "filter_wt5s",

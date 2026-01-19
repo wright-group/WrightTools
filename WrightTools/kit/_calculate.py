@@ -7,7 +7,6 @@ import numpy as np
 
 from .. import units as wt_units
 
-
 # --- define -------------------------------------------------------------
 
 

@@ -9,7 +9,6 @@ from .. import data as wt_data
 from .. import exceptions as wt_exceptions
 from .._group import Group
 
-
 # --- define --------------------------------------------------------------------------------------
 
 
