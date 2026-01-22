@@ -17,7 +17,7 @@ __folder_parts__ = [
     r"(?P<date>\d\d\d\d-\d\d-\d\d)",
     r"(?P<time>" + r"\d{5}" + ")",
     r"(?P<plan>\w*)",
-    r"(?P<name>[\s\w\d.-]*)",  # not great...
+    r"(?P<name>[\s\w\d.-=+-]*)",  # not great...
     r"(?P<uid>\w{8})",
 ]
 __folder_seed__ = " ".join(__folder_parts__)
