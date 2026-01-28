@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ### Fixed
 - fixed bug where numpy>2.4 broke `data.join`
+- fixed bug which prevented channels from having units
 
 ### Changed
 - per [PEP 765](https://peps.python.org/pep-0765/), `return` is removed from `finally` blocks
