@@ -6,7 +6,6 @@ from WrightTools import __version__ as __wt_version__
 from WrightTools.units import is_valid_conversion, get_valid_conversions, convert
 from WrightTools.exceptions import UnitsError
 
-
 # --- define --------------------------------------------------------------------------------------
 
 

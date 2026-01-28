@@ -20,7 +20,6 @@ from . import kit as wt_kit
 from . import exceptions as wt_exceptions
 from . import __wt5_version__
 
-
 # --- define --------------------------------------------------------------------------------------
 
 

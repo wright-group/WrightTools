@@ -1,7 +1,6 @@
 #! /usr/bin/env python3
 """Test level."""
 
-
 # --- import --------------------------------------------------------------------------------------
 
 
@@ -9,7 +8,6 @@ import WrightTools as wt
 from WrightTools import datasets
 
 import numpy as np
-
 
 # --- test ----------------------------------------------------------------------------------------
 

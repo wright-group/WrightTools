@@ -13,7 +13,6 @@ from .. import exceptions as wt_exceptions
 from ._collection import Collection
 from numpy.lib.npyio import DataSource
 
-
 # --- define --------------------------------------------------------------------------------------
 
 

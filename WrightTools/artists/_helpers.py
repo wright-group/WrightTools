@@ -24,7 +24,6 @@ from .. import kit as wt_kit
 from ._base import Figure, GridSpec
 from ._colors import colormaps
 
-
 # --- define --------------------------------------------------------------------------------------
 
 
