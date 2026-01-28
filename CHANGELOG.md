@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## [3.6.2]
+
 ### Fixed
 - fixed bug where numpy>2.4 broke `data.join`
 - fixed bug which prevented channels from having units
@@ -444,7 +446,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ### Added
 - initial release
 
-[Unreleased]: https://github.com/wright-group/WrightTools/-/compare/3.6.1...master
+[Unreleased]: https://github.com/wright-group/WrightTools/-/compare/3.6.2...master
+[3.6.2]: https://github.com/wright-group/WrightTools/compare/3.6.1...3.6.2
 [3.6.1]: https://github.com/wright-group/WrightTools/compare/3.6.0...3.6.1
 [3.6.0]: https://github.com/wright-group/WrightTools/compare/3.5.5...3.6.0
 [3.5.5]: https://github.com/wright-group/WrightTools/compare/3.5.3...3.5.5
