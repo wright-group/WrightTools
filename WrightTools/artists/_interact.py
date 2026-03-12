@@ -21,11 +21,11 @@ __all__ = ["interact2D", "interact2D_fig"]
 
 @dataclass
 class interact2D_fig:
-    fig:plt.figure
-    image:Any
-    sliders:dict[str, Slider]
-    crosshairs:list
-    radio:RadioButtons
+    fig: plt.figure
+    image: Any
+    sliders: dict[str, Slider]
+    crosshairs: list
+    radio: RadioButtons
     cax: plt.axes
 
 
@@ -604,5 +604,3 @@ def interact2D(
         radio=radio,
         cax=cax,
     )
-
-

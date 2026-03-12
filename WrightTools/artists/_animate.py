@@ -1,4 +1,5 @@
 """library for making animations"""
+
 """TODO: push these functions into WrightTools"""
 
 import matplotlib.pyplot as plt
@@ -15,13 +16,14 @@ __all__ = ["animate2D", "animate_interact2D"]
 
 def animate2D(
     d,
-    cmap, norm,
+    cmap,
+    norm,
     snake=False,
     back_and_forth=False,
     **ani_kwargs,
 ):
     """
-    animate pcolormesh of a nd dataset (ndim >=2), 
+    animate pcolormesh of a nd dataset (ndim >=2),
     mesh plots last two axes of the dataset (use `Data.transform` if needed)
     uses first channel in dataset (use `bring_to_front` if needed)
 
@@ -37,7 +39,7 @@ def animate2D(
     # funcs for updating
     def title(ind):
         parts = [
-            f"{var.natural_name} = {var[:].squeeze()[ind]:.2f} {var.units}" 
+            f"{var.natural_name} = {var[:].squeeze()[ind]:.2f} {var.units}"
             for var in map(lambda a: a.variables[0], d.axes[:-2])
         ]
         return "\n".join(parts)
@@ -63,12 +65,7 @@ def animate2D(
     )
 
 
-def animate_interact2D(
-    interact2D:interact2D_fig,
-    snake=False, 
-    back_and_forth=False,
-    **kwargs
-):
+def animate_interact2D(interact2D: interact2D_fig, snake=False, back_and_forth=False, **kwargs):
     """
     Take an interact2D figure and create an animation by moving the sliders.
 
@@ -80,11 +77,10 @@ def animate_interact2D(
         for ind, slider in zip(frame, interact2D.sliders.values()):
             slider.set_val(ind)
 
-    frames = list(np.ndindex(tuple([s.valmax+1 for s in interact2D.sliders.values()])))
+    frames = list(np.ndindex(tuple([s.valmax + 1 for s in interact2D.sliders.values()])))
     print(f"beginning animation: {len(frames)} frames to write")
     return FuncAnimation(
         fig=interact2D.fig,
         func=update,
         frames=frames,
     )
-
