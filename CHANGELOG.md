@@ -5,6 +5,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Added
+- new artists submodule `animate` as a convenient wrapper for matplotlib's `FuncAnimate`
+
+### Changed
+- `interact2D`: replaced SimpleNamespace object with a dataclass for more explicit typing
+
 ## [3.6.2]
 
 ### Fixed

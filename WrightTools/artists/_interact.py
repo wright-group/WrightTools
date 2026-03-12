@@ -4,7 +4,10 @@ import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider, RadioButtons
+from typing import Any
 from types import SimpleNamespace
+
+from dataclasses import dataclass
 
 from ._helpers import create_figure, plot_colorbar, add_sideplot
 from ._base import _order_for_imshow
@@ -13,7 +16,17 @@ from ..exceptions import DimensionalityError
 from .. import kit as wt_kit
 from .. import data as wt_data
 
-__all__ = ["interact2D"]
+__all__ = ["interact2D", "interact2D_fig"]
+
+
+@dataclass
+class interact2D_fig:
+    fig:plt.figure
+    image:Any
+    sliders:dict[str, Slider]
+    crosshairs:list
+    radio:RadioButtons
+    cax: plt.axes
 
 
 class Focus:
@@ -206,7 +219,7 @@ def interact2D(
 
     Returns
     -------
-    out : types.SimpleNamespace
+    out : wt.artists.interact2D_fig
         container for important interactive elements of the plot.
 
         Properties
@@ -583,11 +596,13 @@ def interact2D(
     for slider in sliders.values():
         slider.on_changed(update_slider)
 
-    out = SimpleNamespace(
+    return interact2D_fig(
+        fig=fig,
         image=obj2D,
         sliders=sliders,
         crosshairs=[crosshair_hline, crosshair_vline],
         radio=radio,
-        colorbar=colorbar,
+        cax=cax,
     )
-    return out
+
+
