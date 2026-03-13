@@ -11,6 +11,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ### Changed
 - `interact2D`: replaced SimpleNamespace object with a dataclass for more explicit typing
 
+### Fixed
+- WrightTools works with new h5py 3.16
+
 ## [3.6.2]
 
 ### Fixed
