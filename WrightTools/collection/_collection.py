@@ -178,12 +178,3 @@ class Collection(Group):
             item = self[name]
             item.flush()
         self.file.flush()
-
-    def items(self):
-        for item_name in self:
-            yield item_name, self[item_name]
-
-    def values(self):
-        for item_name in self:
-            yield self[item_name]
-        # return super().values()
