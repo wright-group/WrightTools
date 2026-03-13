@@ -23,9 +23,8 @@ def animate2D(
     **ani_kwargs,
 ):
     """
-    animate pcolormesh of a nd dataset (ndim >=2),
+    animate pcolormesh of a nd dataset (ndim >=2)
     mesh plots last two axes of the dataset (use `Data.transform` if needed)
-    uses first channel in dataset (use `bring_to_front` if needed)
 
     Parameters
     ----------
@@ -60,8 +59,9 @@ def animate2D(
         f.write(ani.to_html5_video())
     ani.pause()  # if you use interactive viewer after, animation will loop unless you pause
     ```
-    For colorbar normalized at each frame, you can use functools.partial:
+    For colorbar normalized at each frame, you can use `functools.partial`:
     ```
+    from functools import partial
     norm = partial(CenteredNorm, vcenter=0)  # halfrange evaluated for each frame
     ```
 
