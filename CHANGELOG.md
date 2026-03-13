@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Fixed
+- WrightTools works with new h5py 3.16
+
 ## [3.6.2]
 
 ### Fixed
