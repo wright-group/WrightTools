@@ -411,7 +411,7 @@ class Group(h5py.Group, metaclass=MetaClass):
     def items(self):
         for k in self.keys():
             yield k, self[k]
-    
+
     def values(self):
         for k in self.keys():
             yield self[k]
