@@ -407,3 +407,11 @@ class Group(h5py.Group, metaclass=MetaClass):
         if verbose:
             print("file saved at", filepath)
         return str(filepath)
+
+    def items(self):
+        for k in self.keys():
+            yield k, self[k]
+    
+    def values(self):
+        for k in self.keys():
+            yield self[k]
