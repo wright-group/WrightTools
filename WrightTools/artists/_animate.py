@@ -1,6 +1,5 @@
 """helpers for making animations"""
 
-
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -8,7 +7,6 @@ from functools import partial
 from matplotlib.animation import FuncAnimation
 
 from ._interact import interact2D_fig
-
 
 __all__ = ["animate2D", "animate_interact2D"]
 
@@ -18,8 +16,8 @@ def animate2D(
     norm,
     channel=0,
     cmap=None,
-    snake:bool=False,
-    back_and_forth:bool=False,
+    snake: bool = False,
+    back_and_forth: bool = False,
     **ani_kwargs,
 ):
     """
@@ -28,25 +26,25 @@ def animate2D(
 
     Parameters
     ----------
-    
+
     data: WrightTools.data
         dataset to animate.  take the last two axes as the ones that are plotted;
         other axes compose the frames of the animation
-    
+
     norm: Normalize instance or callable
-        determines the normalization rules to follow.  
+        determines the normalization rules to follow.
         If channel is signed, defaults to CenteredNorm with null center.
         If channel is unsigned, defaults to Normalize from null to max.
 
     channel: string, index, or Channel
         Select which channel to plot
-        
+
     cmap: str or Colormap (optional)
         colormap used.  Defaults to WrightTools default
 
     **kwargs: dict items
         all extra kwargs are passed to matplotlib.FuncAnimation
-        
+
     Example
     -------
     General usage (create an animation procedure and then write to file):
@@ -67,7 +65,7 @@ def animate2D(
 
     Notes
     -----
-    
+
     snake, back_and_forth are not yet implemented
     """
 
@@ -75,7 +73,11 @@ def animate2D(
 
     # initialize canvas
     fig, ax = plt.subplots(subplot_kw=dict(projection="wright"), dpi=140, layout="constrained")
-    art = ax.pcolormesh(data[tuple([0 for i in data.shape[:-2]])], cmap=cmap, norm=norm() if callable(norm) else norm)
+    art = ax.pcolormesh(
+        data[tuple([0 for i in data.shape[:-2]])],
+        cmap=cmap,
+        norm=norm() if callable(norm) else norm,
+    )
     colorbar = fig.colorbar(art, ax=ax)
     colorbar.set_label(channel.label)
 
