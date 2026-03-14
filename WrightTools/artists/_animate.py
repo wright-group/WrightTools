@@ -10,6 +10,8 @@ from inspect import isclass
 
 from ._helpers import norm_from_channel
 from ._interact import interact2D_fig
+from ._quick import ChopHandler
+
 
 __all__ = ["animate2D", "animate_interact2D"]
 logger = logging.getLogger("animation")
@@ -20,7 +22,6 @@ def animate2D(
     norm=None,
     channel=0,
     cmap=None,
-    snake: bool = False,
     back_and_forth: bool = False,
     **ani_kwargs,
 ):
@@ -46,6 +47,10 @@ def animate2D(
     cmap: str or Colormap (optional)
         colormap used.  Defaults to WrightTools default
 
+    back_and_forth: bool = False
+        when True, the animation will go in reverse after going forward, 
+        creating a continuous loop when repeat is no
+        
     **kwargs: dict items
         all extra kwargs are passed to matplotlib.FuncAnimation
 
@@ -57,20 +62,21 @@ def animate2D(
     ani = wt.artists.animate2D(
         d, cmap="bwr", norm=norm, interval=100
     )
+    ```
+    The animation has write to file utilities like `to_html5_video`:
+    ```
     with open(f"{d.natural_name}_animation.html", "w") as f:
         f.write(ani.to_html5_video())
-    ani.pause()  # if you use interactive viewer after, animation will loop unless you pause
+    ```
+    Alternatively, you can show in the interactive viewer and watch the animation:
+    ```
+    plt.show()
     ```
     For colorbar normalized at each frame, you can use `functools.partial`:
     ```
     from functools import partial
     norm = partial(CenteredNorm, vcenter=0)  # halfrange evaluated for each frame
     ```
-
-    Notes
-    -----
-
-    snake, back_and_forth are not yet implemented
     """
 
     channel = data.get_channel(channel)
@@ -124,16 +130,17 @@ def animate2D(
     )
 
 
-def animate_quick2D(quick2D: plt.Figure, snake=False, back_and_forth=False, **kwargs):
+def animate_quick2D(quick2D: ChopHandler, snake=False, back_and_forth=False, **kwargs):
     """animate a quick2D series"""
+    # define a slightly different plotter that reuses the same figure axes
+
+
     raise NotImplementedError
 
 
-def animate_interact2D(interact2D: interact2D_fig, snake=False, back_and_forth=False, **kwargs):
+def animate_interact2D(interact2D: interact2D_fig, back_and_forth=False, **kwargs):
     """
     Take an interact2D figure and create an animation by moving the sliders.
-
-    Note: snake, back_and_forth are not yet implemented
 
     """
 
