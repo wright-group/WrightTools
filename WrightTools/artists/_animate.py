@@ -133,19 +133,23 @@ def animate_quick2D(data, *args, **kwargs):
     """
     animate a quick2D series
 
-    function accepts same arguments as Quick2D
+    function accepts same arguments as artists.Quick2D
 
     animation kwargs can be passed through a dictionary `fa_kwargs`
+
+    unlike other animation functions, this enforces repeat=False
     """
 
+    # trying for minimal code here, and just drawing from quick2D's constructs
+    # quick2D is constructed as a generator, so looping and reversing is 
+    # not simple to implement
     fa_kwargs = kwargs.pop("fa_kwargs", dict())
     q2d = _quick2D(data, *args, **kwargs)
     generator = q2d.__iter__()
     fig = generator.__next__()
-    print(q2d.nfigs)
 
     def updater(frame):
-        print(f"{frame=}")
+        logger.info(f"{frame=}")
         generator.__next__()
         fig.canvas.draw_idle()
         return
