@@ -1,7 +1,6 @@
 #! /usr/bin/env python3
 """Test remove_variable."""
 
-
 # --- import --------------------------------------------------------------------------------------
 
 
@@ -9,7 +8,6 @@ import warnings
 
 import WrightTools as wt
 from WrightTools import datasets
-
 
 # --- test ----------------------------------------------------------------------------------------
 

@@ -30,6 +30,6 @@ Documentation at `wright.tools <http://wright.tools>`_.
    :target: https://doi.org/10.21105/joss.01141
 
 .. image:: https://raw.githubusercontent.com/wright-group/WrightTools/master/logo/logo.png
-   :scale: 25 %
+   :width: 400
    :alt: WrightTools
    :align: center

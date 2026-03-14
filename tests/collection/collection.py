@@ -31,6 +31,13 @@ def test_create_data():
     assert child1.natural_name == "data"
 
 
+def test_looping_collection():
+    col = wt.Collection()
+    child1 = col.create_data()
+    assert isinstance(list(col.values())[0], type(child1))
+
+
 if __name__ == "__main__":
     test_create_collection()
     test_create_data()
+    test_looping_collection()

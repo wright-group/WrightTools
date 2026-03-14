@@ -33,7 +33,7 @@ class Channel(Dataset):
         signed=None,
         label=None,
         label_seed=None,
-        **kwargs
+        **kwargs,
     ):
         """Construct a channel object.
 
@@ -61,7 +61,8 @@ class Channel(Dataset):
         super().__init__(id)
         self.label = label
         self.label_seed = label_seed
-        self.units = units
+        if units is not None:
+            self.units = units
         self.dimensionality = len(self.shape)
         # attrs
         if self._parent.file.mode is not None and self._parent.file.mode != "r":

@@ -72,7 +72,7 @@ We will walk through by way of example, using :meth:`~WrightTools.data.from_JASC
         else:
             data = parent.create_data(**kwargs)
         # array
-        ds = np.DataSource(None)
+        ds = np.lib.npyio.DataSource(None)
         f = ds.open(filestr, "rt")
         arr = np.genfromtxt(f, skip_header=18).T
         f.close()
@@ -249,7 +249,7 @@ For one-dimensional data formats, this is particularly easy:
 .. code-block:: python
 
         # array
-        ds = np.DataSource(None)
+        ds = np.lib.npyio.DataSource(None)
         f = ds.open(filestr, "rt")
         arr = np.genfromtxt(f, skip_header=18).T
         f.close()
@@ -260,7 +260,7 @@ For one-dimensional data formats, this is particularly easy:
 :class:`numpy.DataSource` is a class which provides transparent decompression and remote file retrieval.
 :func:`numpy.genfromtxt` will handle this itself, however it will leave the downloaded files in the
 working directory, and opening explicitly allows you to use the file more directly as well.
-Using ``np.DataSource(None)`` causes it to use temporary files which are removed automatically.
+Using ``numpy.lib.npyio.DataSource(None)`` causes it to use temporary files which are removed automatically.
 Opening in ``"rt"`` mode ensures that you are reading as text.
 
 Parsing multidimensional datasets (and in particular formats which allow arbitrary dimensionality)

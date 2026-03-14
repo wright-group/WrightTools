@@ -14,7 +14,6 @@ import numpy as np
 import WrightTools as wt
 from WrightTools import datasets
 
-
 # obtain and process data
 p = datasets.wt5.v1p0p1_MoS2_TrEE_movie
 data = wt.open(p)

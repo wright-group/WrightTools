@@ -21,7 +21,6 @@ from ._helpers import (
 )
 from .. import kit as wt_kit
 
-
 # --- define --------------------------------------------------------------------------------------
 
 
@@ -302,7 +301,7 @@ def _quick2D(
     fname=None,
 ):
 
-    def determine_contour_levels(local_channel, global_channel, contours, local):
+    def determine_contour_levels(local_channel, global_channel, local):
         # force top and bottom contour to be data range then clip them out
         null = local_channel.null
         if local_channel.signed:

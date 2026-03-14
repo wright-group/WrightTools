@@ -7,7 +7,7 @@ import itertools
 # --- define --------------------------------------------------------------------------------------
 
 
-__all__ = ["flatten_list", "intersperse", "get_index", "pairwise"]
+__all__ = ["flatten_list", "intersperse", "get_index", "from_list_of_objects", "pairwise"]
 
 
 # --- functions -----------------------------------------------------------------------------------
@@ -96,6 +96,43 @@ def get_index(lis, argument):
             raise IndexError("index {0} incompatible with length {1}".format(argument, len(lis)))
     else:
         return lis.index(argument)
+
+
+def from_list_of_objects(values: list, attrs: list, hint):
+    """
+    convenience wrapper of `get_index`.
+    Retrieve an object from a list of objects using either:
+    * its index,
+    * matching to an attr, or
+    * passing the value itself
+    the method normalizes a variety of input types to get the object itself.
+
+    arguments
+    ---------
+    values: list
+        list of objects to be searched
+    attrs: list
+        list of attrs that correspond to objects in the list `values`
+    hint: str, list or object
+        if hint is a member of values, return the hint itself
+
+    returns
+    -------
+    match: desired_type
+        the member of `values` that matches the given hint.
+        Raises ValueError if a match is not found.
+
+    see also
+    --------
+    WrightTools.kit.get_index
+    """
+
+    if isinstance(hint, int) or isinstance(hint, str):
+        return values[get_index(attrs, hint)]
+    elif hint in values:
+        return hint
+    else:
+        raise ValueError(f"could not find a member in values based on hint {hint}")
 
 
 def pairwise(iterable):

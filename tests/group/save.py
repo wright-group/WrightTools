@@ -1,7 +1,6 @@
 #! /usr/bin/env python3
 """Test group copy and save."""
 
-
 # --- import --------------------------------------------------------------------------------------
 
 
@@ -13,7 +12,6 @@ import numpy as np
 
 import WrightTools as wt
 from WrightTools import datasets
-
 
 # --- define --------------------------------------------------------------------------------------
 

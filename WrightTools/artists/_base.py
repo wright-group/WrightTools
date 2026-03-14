@@ -16,7 +16,6 @@ from .. import kit as wt_kit
 from ..data import Data
 from ._colors import colormaps
 
-
 # --- define -------------------------------------------------------------------------------------
 
 
@@ -154,7 +153,7 @@ class Axes(matplotlib.axes.Axes):
                 data=data, channel_index=channel_index, dynamic_range=dynamic_range, **kwargs
             )
             if plot_type == "contourf":
-                if "levels" not in kwargs.keys():
+                if "levels" not in kwargs.keys() and "norm" not in kwargs.keys():
                     kwargs["levels"] = np.linspace(kwargs["vmin"], kwargs["vmax"], 256)
             elif plot_type == "contour":
                 if "levels" not in kwargs.keys():
@@ -321,7 +320,7 @@ class Axes(matplotlib.axes.Axes):
         kwargs["extend"] = "both"
         contours = super().contourf(*args, **kwargs)
         # fill lines
-        zorder = contours.collections[0].zorder - 0.1
+        zorder = contours.zorder - 0.1
         levels = (contours.levels[1:] + contours.levels[:-1]) / 2
         matplotlib.axes.Axes.contour(
             self, *args[:3], levels=levels, cmap=contours.cmap, zorder=zorder
@@ -329,10 +328,8 @@ class Axes(matplotlib.axes.Axes):
         # decoration
         self.set_facecolor([0.75] * 3)
         # PathCollection modifications
-        for c in contours.collections:
-            pass
-            # c.set_rasterized(True)
-            # c.set_edgecolor('face')
+        # contours.set_rasterized(True)
+        # contours.set_edgecolor('face')
         return contours
 
     def legend(self, *args, **kwargs):
@@ -504,10 +501,8 @@ class Axes(matplotlib.axes.Axes):
                 coords.append(axis)
 
             if "c" in kwargs.keys():
-                raise KeyError(
-                    "'c' kwarg not allowed when data object provided. \
-                    Use `cmap` instead to control colors."
-                )
+                raise KeyError("'c' kwarg not allowed when data object provided. \
+                    Use `cmap` instead to control colors.")
 
             channel = kwargs.pop("channel", 0)
             channel_index = wt_kit.get_index(data.channel_names, channel)
