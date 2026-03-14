@@ -150,13 +150,7 @@ def animate_quick2D(data, *args, **kwargs):
         fig.canvas.draw_idle()
         return
 
-    return FuncAnimation(
-        fig=fig,
-        func=updater,
-        frames=q2d.nfigs,
-        **fa_kwargs,
-        repeat=False
-    )
+    return FuncAnimation(fig=fig, func=updater, frames=q2d.nfigs, **fa_kwargs, repeat=False)
 
 
 def animate_interact2D(interact2D: interact2D_fig, back_and_forth=False, **kwargs):

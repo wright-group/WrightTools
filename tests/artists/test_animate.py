@@ -36,7 +36,7 @@ def test_animate_quick2D():
 
     ani = wt.artists.animate_quick2D(d, fa_kwargs=dict(interval=100))
     return ani
-    
+
 
 if __name__ == "__main__":
     ani1 = test_animate2D()
