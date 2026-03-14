@@ -21,6 +21,15 @@ def test_animate2D():
     return ani
 
 
+def test_animate_interact2D():
+    d = wt.open(datasets.wt5.v1p0p1_MoS2_TrEE_movie)
+    d.channels[0].signed = True
+
+    out = wt.artists.interact2D(d, local=True)
+    ani = wt.artists.animate_interact2D(out, back_and_forth=True, interval=500)
+    return ani
+
 if __name__ == "__main__":
     ani = test_animate2D()
+    ani = test_animate_interact2D()
     plt.show()

@@ -140,6 +140,17 @@ def animate_interact2D(interact2D: interact2D_fig, back_and_forth=False, **kwarg
     """
     Take an interact2D figure and create an animation by moving the sliders.
 
+    Parameters
+    ----------
+    interact2D: interact2D_fig
+        the output of an interact2D call
+
+    back_and_forth: bool = False
+        when True, the animation will go in reverse after going forward, 
+        creating a continuous loop when repeat is no
+
+    **kwargs: dict items
+        all extra kwargs are passed to matplotlib.FuncAnimation
     """
 
     def update(frame):
