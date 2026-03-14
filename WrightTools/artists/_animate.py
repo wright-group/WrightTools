@@ -2,18 +2,23 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
+import logging
 
 from functools import partial
 from matplotlib.animation import FuncAnimation
+from inspect import isclass
 
+from ._helpers import norm_from_channel
 from ._interact import interact2D_fig
 
+
 __all__ = ["animate2D", "animate_interact2D"]
+logger = logging.getLogger("animation")
 
 
 def animate2D(
     data,
-    norm,
+    norm=None,
     channel=0,
     cmap=None,
     snake: bool = False,
@@ -70,42 +75,47 @@ def animate2D(
     """
 
     channel = data.get_channel(channel)
+    if norm is None:
+        norm = norm_from_channel(channel)
+    if cmap is None:
+        cmap = "signed" if channel.signed else "default"
+    # detect whether to call norm each frame
+    # probably not an optimal implementation, but working for now
+    call_norm = isclass(norm) or isinstance(norm, partial)
 
-    # initialize canvas
-    fig, ax = plt.subplots(subplot_kw=dict(projection="wright"), dpi=140, layout="constrained")
-    art = ax.pcolormesh(
-        data[tuple([0 for i in data.shape[:-2]])],
-        cmap=cmap,
-        norm=norm() if callable(norm) else norm,
-    )
-    colorbar = fig.colorbar(art, ax=ax)
-    colorbar.set_label(channel.label)
-
-    # funcs for updating
-    def title(ind):
+    def gen_title(ind):
         parts = [
             f"{var.natural_name} = {var[:].squeeze()[ind]:.2f} {var.units}"
             for var in map(lambda a: a.variables[0], data.axes[:-2])
         ]
         return "\n".join(parts)
 
-    ax.set_title(title(0))
-    # with layout well set, turn off the engine (avoids jitter)
+    # initialize canvas
+    fig, ax = plt.subplots(subplot_kw=dict(projection="wright"), dpi=140, layout="constrained")
+    art = ax.pcolormesh(
+        data[tuple([0 for i in data.shape[:-2]])],
+        cmap=cmap,
+        norm=norm() if call_norm else norm,
+    )
+    colorbar = fig.colorbar(art, ax=ax)
+    colorbar.set_label(channel.label)
+
+    ax.set_title(gen_title(tuple([0 for _ in data.shape[:-2]])))
+    # with layout well set, turn off the engine (avoids jittering frames)
     fig.set_layout_engine("none")
 
-    def update2D(frame, data, fig, ax, mesh, norm):
-        print(f"{frame=}")
-        # for ind, axis in zip(frame, data.axes[:-2]):
-        mesh.set_array(data.channels[0][frame])
-        ax.set_title(title(frame))
-        mesh.set_norm(norm() if callable(norm) else norm)
+    def updater(frame):
+        logger.info(f"{frame=}")
+        art.set_array(data.channels[0][frame])
+        ax.set_title(gen_title(frame))
+        art.set_norm(norm() if call_norm else norm)
         fig.canvas.draw_idle()
-        return mesh
+        return art
 
     frames = list(np.ndindex(data.shape[:-2]))
     return FuncAnimation(
         fig=fig,
-        func=partial(update2D, data=data, mesh=art, fig=fig, ax=ax, norm=norm),
+        func=updater,
         frames=frames,
         **ani_kwargs,
     )
@@ -121,10 +131,11 @@ def animate_interact2D(interact2D: interact2D_fig, snake=False, back_and_forth=F
     Take an interact2D figure and create an animation by moving the sliders.
 
     Note: snake, back_and_forth are not yet implemented
+
     """
 
     def update(frame):
-        print(f"{frame=}")
+        logger.info(f"{frame=}")
         for ind, slider in zip(frame, interact2D.sliders.values()):
             slider.set_val(ind)
 
