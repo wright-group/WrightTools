@@ -12,7 +12,6 @@ from ._helpers import norm_from_channel
 from ._interact import interact2D_fig
 from ._quick import ChopHandler
 
-
 __all__ = ["animate2D", "animate_interact2D"]
 logger = logging.getLogger("animation")
 
@@ -48,9 +47,9 @@ def animate2D(
         colormap used.  Defaults to WrightTools default
 
     back_and_forth: bool = False
-        when True, the animation will go in reverse after going forward, 
+        when True, the animation will go in reverse after going forward,
         creating a continuous loop when repeat is no
-        
+
     **kwargs: dict items
         all extra kwargs are passed to matplotlib.FuncAnimation
 
@@ -133,7 +132,6 @@ def animate2D(
 def animate_quick2D(quick2D: ChopHandler, snake=False, back_and_forth=False, **kwargs):
     """animate a quick2D series"""
     # define a slightly different plotter that reuses the same figure axes
-
 
     raise NotImplementedError
 
