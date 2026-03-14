@@ -11,7 +11,6 @@ from matplotlib import colormaps as colormaps
 
 import numpy as np
 
-
 # --- colormaps -----------------------------------------------------------------------------------
 unsigned_cmap = [
     wt.artists.colormaps["default"].copy(),
