@@ -141,7 +141,7 @@ def animate_quick2D(data, *args, **kwargs):
     """
 
     # trying for minimal code here, and just drawing from quick2D's constructs
-    # quick2D is constructed as a generator, so looping and reversing is 
+    # quick2D is constructed as a generator, so looping and reversing is
     # not simple to implement
     fa_kwargs = kwargs.pop("fa_kwargs", dict())
     q2d = _quick2D(data, *args, **kwargs)
