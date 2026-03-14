@@ -5,7 +5,7 @@ from matplotlib import pyplot as plt
 
 def test_animate2D():
     """
-    smokescren test: just ensure the ani object initializes
+    smokescreen test: just ensure the ani object initializes
 
     if you are running this locally, you can view the animation
     by running this script
@@ -15,7 +15,7 @@ def test_animate2D():
     from matplotlib.colors import CenteredNorm
     from functools import partial
 
-    ani = wt.artists.animate2D(d, interval=1, norm=partial(CenteredNorm, vcenter=0))
+    ani = wt.artists.animate2D(d, interval=100, norm=partial(CenteredNorm, vcenter=0))
     return ani
 
 
