@@ -111,7 +111,11 @@ def animate2D(
         fig.canvas.draw_idle()
         return art
 
+    # generate frame sequence
     frames = list(np.ndindex(data.shape[:-2]))
+    if back_and_forth:
+        frames += reversed(frames)
+
     return FuncAnimation(
         fig=fig,
         func=updater,
@@ -139,6 +143,9 @@ def animate_interact2D(interact2D: interact2D_fig, snake=False, back_and_forth=F
             slider.set_val(ind)
 
     frames = list(np.ndindex(tuple([s.valmax + 1 for s in interact2D.sliders.values()])))
+    if back_and_forth:
+        frames += reversed(frames)
+
     return FuncAnimation(
         fig=interact2D.fig,
         func=update,
