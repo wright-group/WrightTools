@@ -10,9 +10,9 @@ from inspect import isclass
 
 from ._helpers import norm_from_channel
 from ._interact import interact2D_fig
-from ._quick import ChopHandler
+from ._quick import _quick2D
 
-__all__ = ["animate2D", "animate_interact2D"]
+__all__ = ["animate2D", "animate_interact2D", "animate_quick2D"]
 logger = logging.getLogger("animation")
 
 
@@ -129,11 +129,34 @@ def animate2D(
     )
 
 
-def animate_quick2D(quick2D: ChopHandler, snake=False, back_and_forth=False, **kwargs):
-    """animate a quick2D series"""
-    # define a slightly different plotter that reuses the same figure axes
+def animate_quick2D(data, *args, **kwargs):
+    """
+    animate a quick2D series
 
-    raise NotImplementedError
+    function accepts same arguments as Quick2D
+
+    animation kwargs can be passed through a dictionary `fa_kwargs`
+    """
+
+    fa_kwargs = kwargs.pop("fa_kwargs", dict())
+    q2d = _quick2D(data, *args, **kwargs)
+    generator = q2d.__iter__()
+    fig = generator.__next__()
+    print(q2d.nfigs)
+
+    def updater(frame):
+        print(f"{frame=}")
+        generator.__next__()
+        fig.canvas.draw_idle()
+        return
+
+    return FuncAnimation(
+        fig=fig,
+        func=updater,
+        frames=q2d.nfigs,
+        **fa_kwargs,
+        repeat=False
+    )
 
 
 def animate_interact2D(interact2D: interact2D_fig, back_and_forth=False, **kwargs):

@@ -30,7 +30,16 @@ def test_animate_interact2D():
     return ani
 
 
+def test_animate_quick2D():
+    d = wt.open(datasets.wt5.v1p0p1_MoS2_TrEE_movie)
+    d.channels[0].signed = True
+
+    ani = wt.artists.animate_quick2D(d, fa_kwargs=dict(interval=100))
+    return ani
+    
+
 if __name__ == "__main__":
-    ani = test_animate2D()
-    ani = test_animate_interact2D()
+    ani1 = test_animate2D()
+    ani2 = test_animate_interact2D()
+    ani3 = test_animate_quick2D()
     plt.show()
