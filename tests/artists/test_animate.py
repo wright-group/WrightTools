@@ -29,6 +29,7 @@ def test_animate_interact2D():
     ani = wt.artists.animate_interact2D(out, back_and_forth=True, interval=500)
     return ani
 
+
 if __name__ == "__main__":
     ani = test_animate2D()
     ani = test_animate_interact2D()

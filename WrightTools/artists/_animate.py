@@ -146,7 +146,7 @@ def animate_interact2D(interact2D: interact2D_fig, back_and_forth=False, **kwarg
         the output of an interact2D call
 
     back_and_forth: bool = False
-        when True, the animation will go in reverse after going forward, 
+        when True, the animation will go in reverse after going forward,
         creating a continuous loop when repeat is no
 
     **kwargs: dict items
