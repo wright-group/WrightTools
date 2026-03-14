@@ -11,7 +11,6 @@ from inspect import isclass
 from ._helpers import norm_from_channel
 from ._interact import interact2D_fig
 
-
 __all__ = ["animate2D", "animate_interact2D"]
 logger = logging.getLogger("animation")
 

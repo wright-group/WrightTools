@@ -14,6 +14,7 @@ def test_animate2D():
     d.channels[0].signed = True
     from matplotlib.colors import CenteredNorm
     from functools import partial
+
     ani = wt.artists.animate2D(d, interval=1, norm=partial(CenteredNorm, vcenter=0))
     return ani
 
