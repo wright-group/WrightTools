@@ -15,7 +15,9 @@ def test_animate2D():
     from matplotlib.colors import CenteredNorm
     from functools import partial
 
-    ani = wt.artists.animate2D(d, interval=50, back_and_forth=True, norm=partial(CenteredNorm, vcenter=0))
+    ani = wt.artists.animate2D(
+        d, interval=50, back_and_forth=True, norm=partial(CenteredNorm, vcenter=0)
+    )
     return ani
 
 
