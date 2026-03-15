@@ -16,8 +16,10 @@ def test_build_docs():
     docsdir = pathlib.Path(__file__).resolve().parent.parent.parent / "docs"
     (docsdir / "__testbuild").mkdir(exist_ok=True)
     result = subprocess.run(["sphinx-build", str(docsdir), str(docsdir / "__testbuild")])
-    assert result.returncode == 0
-    shutil.rmtree(docsdir / "__testbuild")
+    try:
+        assert result.returncode == 0
+    finally:
+        shutil.rmtree(docsdir / "__testbuild")
 
 
 if __name__ == "__main__":
