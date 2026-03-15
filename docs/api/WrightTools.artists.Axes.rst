@@ -1,21 +1,325 @@
-WrightTools.artists.Axes
+﻿WrightTools.artists.Axes
 ========================
 
 .. currentmodule:: WrightTools.artists
 
 .. autoclass:: Axes
-   :show-inheritance:
+
+
+   .. automethod:: __init__
 
 
    .. rubric:: Methods
 
    .. autosummary::
-      :toctree: WrightTools.artists.Axes
 
+      ~Axes.__init__
+      ~Axes.acorr
+      ~Axes.add_artist
+      ~Axes.add_callback
+      ~Axes.add_child_axes
+      ~Axes.add_collection
+      ~Axes.add_container
+      ~Axes.add_image
+      ~Axes.add_line
+      ~Axes.add_patch
       ~Axes.add_sideplot
+      ~Axes.add_table
+      ~Axes.angle_spectrum
+      ~Axes.annotate
+      ~Axes.apply_aspect
+      ~Axes.arrow
+      ~Axes.autoscale
+      ~Axes.autoscale_view
+      ~Axes.axhline
+      ~Axes.axhspan
+      ~Axes.axis
+      ~Axes.axline
+      ~Axes.axvline
+      ~Axes.axvspan
+      ~Axes.bar
+      ~Axes.bar_label
+      ~Axes.barbs
+      ~Axes.barh
+      ~Axes.boxplot
+      ~Axes.broken_barh
+      ~Axes.bxp
+      ~Axes.can_pan
+      ~Axes.can_zoom
+      ~Axes.cla
+      ~Axes.clabel
+      ~Axes.clear
+      ~Axes.cohere
+      ~Axes.contains
+      ~Axes.contains_point
       ~Axes.contour
       ~Axes.contourf
+      ~Axes.convert_xunits
+      ~Axes.convert_yunits
+      ~Axes.csd
+      ~Axes.drag_pan
+      ~Axes.draw
+      ~Axes.draw_artist
+      ~Axes.ecdf
+      ~Axes.end_pan
+      ~Axes.errorbar
+      ~Axes.eventplot
+      ~Axes.fill
+      ~Axes.fill_between
+      ~Axes.fill_betweenx
+      ~Axes.findobj
+      ~Axes.format_coord
+      ~Axes.format_cursor_data
+      ~Axes.format_xdata
+      ~Axes.format_ydata
+      ~Axes.get_adjustable
+      ~Axes.get_agg_filter
+      ~Axes.get_alpha
+      ~Axes.get_anchor
+      ~Axes.get_animated
+      ~Axes.get_aspect
+      ~Axes.get_autoscale_on
+      ~Axes.get_autoscalex_on
+      ~Axes.get_autoscaley_on
+      ~Axes.get_axes_locator
+      ~Axes.get_axisbelow
+      ~Axes.get_box_aspect
+      ~Axes.get_children
+      ~Axes.get_clip_box
+      ~Axes.get_clip_on
+      ~Axes.get_clip_path
+      ~Axes.get_cursor_data
+      ~Axes.get_data_ratio
+      ~Axes.get_default_bbox_extra_artists
+      ~Axes.get_facecolor
+      ~Axes.get_fc
+      ~Axes.get_figure
+      ~Axes.get_forward_navigation_events
+      ~Axes.get_frame_on
+      ~Axes.get_gid
+      ~Axes.get_gridspec
+      ~Axes.get_images
+      ~Axes.get_in_layout
+      ~Axes.get_label
+      ~Axes.get_legend
+      ~Axes.get_legend_handles_labels
+      ~Axes.get_lines
+      ~Axes.get_mouseover
+      ~Axes.get_navigate
+      ~Axes.get_navigate_mode
+      ~Axes.get_path_effects
+      ~Axes.get_picker
+      ~Axes.get_position
+      ~Axes.get_rasterization_zorder
+      ~Axes.get_rasterized
+      ~Axes.get_shared_x_axes
+      ~Axes.get_shared_y_axes
+      ~Axes.get_sketch_params
+      ~Axes.get_snap
+      ~Axes.get_subplotspec
+      ~Axes.get_tightbbox
+      ~Axes.get_title
+      ~Axes.get_transform
+      ~Axes.get_transformed_clip_path_and_affine
+      ~Axes.get_url
+      ~Axes.get_visible
+      ~Axes.get_window_extent
+      ~Axes.get_xaxis
+      ~Axes.get_xaxis_text1_transform
+      ~Axes.get_xaxis_text2_transform
+      ~Axes.get_xaxis_transform
+      ~Axes.get_xbound
+      ~Axes.get_xgridlines
+      ~Axes.get_xlabel
+      ~Axes.get_xlim
+      ~Axes.get_xmajorticklabels
+      ~Axes.get_xmargin
+      ~Axes.get_xminorticklabels
+      ~Axes.get_xscale
+      ~Axes.get_xticklabels
+      ~Axes.get_xticklines
+      ~Axes.get_xticks
+      ~Axes.get_yaxis
+      ~Axes.get_yaxis_text1_transform
+      ~Axes.get_yaxis_text2_transform
+      ~Axes.get_yaxis_transform
+      ~Axes.get_ybound
+      ~Axes.get_ygridlines
+      ~Axes.get_ylabel
+      ~Axes.get_ylim
+      ~Axes.get_ymajorticklabels
+      ~Axes.get_ymargin
+      ~Axes.get_yminorticklabels
+      ~Axes.get_yscale
+      ~Axes.get_yticklabels
+      ~Axes.get_yticklines
+      ~Axes.get_yticks
+      ~Axes.get_zorder
+      ~Axes.grid
+      ~Axes.has_data
+      ~Axes.have_units
+      ~Axes.hexbin
+      ~Axes.hist
+      ~Axes.hist2d
+      ~Axes.hlines
+      ~Axes.imshow
+      ~Axes.in_axes
+      ~Axes.indicate_inset
+      ~Axes.indicate_inset_zoom
+      ~Axes.inset_axes
+      ~Axes.invert_xaxis
+      ~Axes.invert_yaxis
+      ~Axes.is_transform_set
+      ~Axes.label_outer
       ~Axes.legend
+      ~Axes.locator_params
+      ~Axes.loglog
+      ~Axes.magnitude_spectrum
+      ~Axes.margins
+      ~Axes.matshow
+      ~Axes.minorticks_off
+      ~Axes.minorticks_on
+      ~Axes.pchanged
       ~Axes.pcolor
+      ~Axes.pcolorfast
       ~Axes.pcolormesh
+      ~Axes.phase_spectrum
+      ~Axes.pick
+      ~Axes.pickable
+      ~Axes.pie
       ~Axes.plot
+      ~Axes.plot_date
+      ~Axes.properties
+      ~Axes.psd
+      ~Axes.quiver
+      ~Axes.quiverkey
+      ~Axes.redraw_in_frame
+      ~Axes.relim
+      ~Axes.remove
+      ~Axes.remove_callback
+      ~Axes.reset_position
+      ~Axes.scatter
+      ~Axes.secondary_xaxis
+      ~Axes.secondary_yaxis
+      ~Axes.semilogx
+      ~Axes.semilogy
+      ~Axes.set
+      ~Axes.set_adjustable
+      ~Axes.set_agg_filter
+      ~Axes.set_alpha
+      ~Axes.set_anchor
+      ~Axes.set_animated
+      ~Axes.set_aspect
+      ~Axes.set_autoscale_on
+      ~Axes.set_autoscalex_on
+      ~Axes.set_autoscaley_on
+      ~Axes.set_axes_locator
+      ~Axes.set_axis_off
+      ~Axes.set_axis_on
+      ~Axes.set_axisbelow
+      ~Axes.set_box_aspect
+      ~Axes.set_clip_box
+      ~Axes.set_clip_on
+      ~Axes.set_clip_path
+      ~Axes.set_facecolor
+      ~Axes.set_fc
+      ~Axes.set_figure
+      ~Axes.set_forward_navigation_events
+      ~Axes.set_frame_on
+      ~Axes.set_gid
+      ~Axes.set_in_layout
+      ~Axes.set_label
+      ~Axes.set_mouseover
+      ~Axes.set_navigate
+      ~Axes.set_navigate_mode
+      ~Axes.set_path_effects
+      ~Axes.set_picker
+      ~Axes.set_position
+      ~Axes.set_prop_cycle
+      ~Axes.set_rasterization_zorder
+      ~Axes.set_rasterized
+      ~Axes.set_sketch_params
+      ~Axes.set_snap
+      ~Axes.set_subplotspec
+      ~Axes.set_title
+      ~Axes.set_transform
+      ~Axes.set_url
+      ~Axes.set_visible
+      ~Axes.set_xbound
+      ~Axes.set_xlabel
+      ~Axes.set_xlim
+      ~Axes.set_xmargin
+      ~Axes.set_xscale
+      ~Axes.set_xticklabels
+      ~Axes.set_xticks
+      ~Axes.set_ybound
+      ~Axes.set_ylabel
+      ~Axes.set_ylim
+      ~Axes.set_ymargin
+      ~Axes.set_yscale
+      ~Axes.set_yticklabels
+      ~Axes.set_yticks
+      ~Axes.set_zorder
+      ~Axes.sharex
+      ~Axes.sharey
+      ~Axes.specgram
+      ~Axes.spy
+      ~Axes.stackplot
+      ~Axes.stairs
+      ~Axes.start_pan
+      ~Axes.stem
+      ~Axes.step
+      ~Axes.streamplot
+      ~Axes.table
+      ~Axes.text
+      ~Axes.tick_params
+      ~Axes.ticklabel_format
+      ~Axes.tricontour
+      ~Axes.tricontourf
+      ~Axes.tripcolor
+      ~Axes.triplot
+      ~Axes.twinx
+      ~Axes.twiny
+      ~Axes.update
+      ~Axes.update_datalim
+      ~Axes.update_from
+      ~Axes.violin
+      ~Axes.violinplot
+      ~Axes.vlines
+      ~Axes.xaxis_date
+      ~Axes.xaxis_inverted
+      ~Axes.xcorr
+      ~Axes.yaxis_date
+      ~Axes.yaxis_inverted
+
+
+
+
+
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+      ~Axes.artists
+      ~Axes.axes
+      ~Axes.collections
+      ~Axes.figure
+      ~Axes.images
+      ~Axes.is_sideplot
+      ~Axes.lines
+      ~Axes.mouseover
+      ~Axes.name
+      ~Axes.patches
+      ~Axes.stale
+      ~Axes.sticky_edges
+      ~Axes.tables
+      ~Axes.texts
+      ~Axes.transposed
+      ~Axes.use_sticky_edges
+      ~Axes.viewLim
+      ~Axes.zorder
+      ~Axes.dataLim
+      ~Axes.spines
+      ~Axes.xaxis
+      ~Axes.yaxis
+

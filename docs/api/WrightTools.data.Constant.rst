@@ -1,10 +1,9 @@
-WrightTools.data.Constant
+﻿WrightTools.data.Constant
 =========================
 
 .. currentmodule:: WrightTools.data
 
 .. autoclass:: Constant
-   :show-inheritance:
 
 
    .. automethod:: __init__
@@ -13,8 +12,8 @@ WrightTools.data.Constant
    .. rubric:: Methods
 
    .. autosummary::
-      :toctree: WrightTools.data.Constant
 
+      ~Constant.__init__
       ~Constant.convert
       ~Constant.max
       ~Constant.min
@@ -26,7 +25,6 @@ WrightTools.data.Constant
    .. rubric:: Attributes
 
    .. autosummary::
-      :toctree: WrightTools.data.Constant
 
       ~Constant.full
       ~Constant.identity
@@ -38,8 +36,8 @@ WrightTools.data.Constant
       ~Constant.shape
       ~Constant.size
       ~Constant.std
+      ~Constant.units
       ~Constant.units_kind
       ~Constant.value
       ~Constant.variables
-
 
