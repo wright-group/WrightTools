@@ -7,10 +7,11 @@ import logging
 from functools import partial
 from matplotlib.animation import FuncAnimation
 from inspect import isclass
+from typing import Iterator
 
 from ._helpers import norm_from_channel
 from ._interact import interact2D_fig
-from ._quick import _quick2D
+from ._quick_v2 import quick2D
 
 __all__ = ["animate2D", "animate_interact2D", "animate_quick2D"]
 logger = logging.getLogger("animation")
@@ -129,7 +130,7 @@ def animate2D(
     )
 
 
-def animate_quick2D(data, *args, **kwargs):
+def animate_quick2D(q2d, *args, **kwargs):
     """
     animate a quick2D series
 
@@ -140,21 +141,9 @@ def animate_quick2D(data, *args, **kwargs):
     unlike other animation functions, this enforces repeat=False
     """
 
-    # trying for minimal code here, and just drawing from quick2D's constructs
-    # quick2D is constructed as a generator, so looping and reversing is
-    # not simple to implement
     fa_kwargs = kwargs.pop("fa_kwargs", dict())
-    q2d = _quick2D(data, *args, **kwargs)
-    generator = q2d.__iter__()
-    fig = generator.__next__()
 
-    def updater(frame):
-        logger.info(f"{frame=}")
-        generator.__next__()
-        fig.canvas.draw_idle()
-        return
-
-    return FuncAnimation(fig=fig, func=updater, frames=q2d.nfigs, **fa_kwargs, repeat=False)
+    return FuncAnimation(fig=q2d.fig, func=lambda x: None, frames=q2d, **fa_kwargs)
 
 
 def animate_interact2D(interact2D: interact2D_fig, back_and_forth=False, **kwargs):
@@ -168,7 +157,7 @@ def animate_interact2D(interact2D: interact2D_fig, back_and_forth=False, **kwarg
 
     back_and_forth: bool = False
         when True, the animation will go in reverse after going forward,
-        creating a continuous loop when repeat is no
+        creating a continuous steps of variables when repeat is on
 
     **kwargs: dict items
         all extra kwargs are passed to matplotlib.FuncAnimation
