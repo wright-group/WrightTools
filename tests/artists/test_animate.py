@@ -34,7 +34,9 @@ def test_animate_quick2D():
     d = wt.open(datasets.wt5.v1p0p1_MoS2_TrEE_movie)
     d.channels[0].signed = True
 
-    ani = wt.artists.animate_quick2D(d, fa_kwargs=dict(interval=100))
+    quick2D = wt.artists._quick_v2.quick2D(d)
+
+    ani = wt.artists.animate_quick2D(quick2D, fa_kwargs=dict(interval=100))
     return ani
 
 
