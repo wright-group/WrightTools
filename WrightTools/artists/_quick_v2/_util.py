@@ -12,8 +12,7 @@ from ...data import Data
 class ChopHandler:
     """class for keeping track of plotting through the chopped data"""
 
-
-    def __init__(self, data:Data, *axes, **kwargs):
+    def __init__(self, data: Data, *axes, **kwargs):
         """base class for looping and plotting
         v2:  generator-based, single figure, no figure limits
         subclasses need to supply artists objects that are manipulated
@@ -25,14 +24,14 @@ class ChopHandler:
         data: WrightTools.Data
 
         axes:  int | str | Axis
-            define the x and y axes        
+            define the x and y axes
 
         kwargs
         ------
 
         at: dict
             applies `at` before chopping, reducing dimensionality
-        
+
         autosave: bool (default False)
             when true, sets up an automatic file write of each frame
 

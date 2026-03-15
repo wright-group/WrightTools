@@ -90,7 +90,7 @@ def quick2D(
     for frame in quick2D(data, autosave=True):
         plt.show()  # save and show member interactively
     ```
-                
+
     """
 
     def determine_contour_levels(local_channel, global_channel, local):
@@ -142,9 +142,13 @@ def quick2D(
             norm_ticks = ticks_from_norm(norm)
             if self.img is None:
                 if pixelated:
-                    self.img = self.ax.pcolormesh(d, channel=self.channel_index, norm=norm, **self.kwargs)
+                    self.img = self.ax.pcolormesh(
+                        d, channel=self.channel_index, norm=norm, **self.kwargs
+                    )
                 else:
-                    self.img = self.ax.contourf(d, channel=self.channel_index, norm=norm, **self.kwargs)
+                    self.img = self.ax.contourf(
+                        d, channel=self.channel_index, norm=norm, **self.kwargs
+                    )
             else:
                 self.img.set_array(d.channels[self.channel_index])
             # contour lines -----------------------------------------------------------------------
@@ -173,5 +177,3 @@ def quick2D(
         save_directory=save_directory,
         fname=fname,
     )
-
-
