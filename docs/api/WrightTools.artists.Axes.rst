@@ -5,14 +5,14 @@
 
 .. autoclass:: Axes
 
-   
+
    .. automethod:: __init__
 
-   
+
    .. rubric:: Methods
 
    .. autosummary::
-   
+
       ~Axes.__init__
       ~Axes.acorr
       ~Axes.add_artist
@@ -291,15 +291,15 @@
       ~Axes.xcorr
       ~Axes.yaxis_date
       ~Axes.yaxis_inverted
-   
-   
 
-   
-   
+
+
+
+
    .. rubric:: Attributes
 
    .. autosummary::
-   
+
       ~Axes.artists
       ~Axes.axes
       ~Axes.collections
@@ -322,5 +322,4 @@
       ~Axes.spines
       ~Axes.xaxis
       ~Axes.yaxis
-   
-   
+

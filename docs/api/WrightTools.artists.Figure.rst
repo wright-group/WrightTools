@@ -5,14 +5,14 @@
 
 .. autoclass:: Figure
 
-   
+
    .. automethod:: __init__
 
-   
+
    .. rubric:: Methods
 
    .. autosummary::
-   
+
       ~Figure.__init__
       ~Figure.add_artist
       ~Figure.add_axes
@@ -141,15 +141,15 @@
       ~Figure.update
       ~Figure.update_from
       ~Figure.waitforbuttonpress
-   
-   
 
-   
-   
+
+
+
+
    .. rubric:: Attributes
 
    .. autosummary::
-   
+
       ~Figure.axes
       ~Figure.dpi
       ~Figure.figure
@@ -159,5 +159,4 @@
       ~Figure.stale
       ~Figure.sticky_edges
       ~Figure.zorder
-   
-   
+

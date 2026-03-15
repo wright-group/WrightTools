@@ -5,18 +5,17 @@
 
 .. autoclass:: Timer
 
-   
+
    .. automethod:: __init__
 
-   
+
    .. rubric:: Methods
 
    .. autosummary::
-   
-      ~Timer.__init__
-   
-   
 
-   
-   
-   
+      ~Timer.__init__
+
+
+
+
+

@@ -5,14 +5,14 @@
 
 .. autoclass:: Variable
 
-   
+
    .. automethod:: __init__
 
-   
+
    .. rubric:: Methods
 
    .. autosummary::
-   
+
       ~Variable.__init__
       ~Variable.argmax
       ~Variable.argmin
@@ -38,15 +38,15 @@
       ~Variable.symmetric_root
       ~Variable.virtual_sources
       ~Variable.write_direct
-   
-   
 
-   
-   
+
+
+
+
    .. rubric:: Attributes
 
    .. autosummary::
-   
+
       ~Variable.attrs
       ~Variable.chunks
       ~Variable.class_name
@@ -78,5 +78,4 @@
       ~Variable.shuffle
       ~Variable.size
       ~Variable.units
-   
-   
+

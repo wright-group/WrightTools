@@ -5,14 +5,14 @@
 
 .. autoclass:: Collection
 
-   
+
    .. automethod:: __init__
 
-   
+
    .. rubric:: Methods
 
    .. autosummary::
-   
+
       ~Collection.__init__
       ~Collection.build_virtual_dataset
       ~Collection.clear
@@ -44,15 +44,15 @@
       ~Collection.visit_links
       ~Collection.visititems
       ~Collection.visititems_links
-   
-   
 
-   
-   
+
+
+
+
    .. rubric:: Attributes
 
    .. autosummary::
-   
+
       ~Collection.attrs
       ~Collection.class_name
       ~Collection.created
@@ -65,5 +65,4 @@
       ~Collection.parent
       ~Collection.ref
       ~Collection.regionref
-   
-   
+

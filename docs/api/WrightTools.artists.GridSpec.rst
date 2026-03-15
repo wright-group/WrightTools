@@ -5,14 +5,14 @@
 
 .. autoclass:: GridSpec
 
-   
+
    .. automethod:: __init__
 
-   
+
    .. rubric:: Methods
 
    .. autosummary::
-   
+
       ~GridSpec.__init__
       ~GridSpec.get_geometry
       ~GridSpec.get_grid_positions
@@ -26,16 +26,15 @@
       ~GridSpec.subplots
       ~GridSpec.tight_layout
       ~GridSpec.update
-   
-   
 
-   
-   
+
+
+
+
    .. rubric:: Attributes
 
    .. autosummary::
-   
+
       ~GridSpec.ncols
       ~GridSpec.nrows
-   
-   
+

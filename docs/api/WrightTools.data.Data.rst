@@ -5,14 +5,14 @@
 
 .. autoclass:: Data
 
-   
+
    .. automethod:: __init__
 
-   
+
    .. rubric:: Methods
 
    .. autosummary::
-   
+
       ~Data.__init__
       ~Data.at
       ~Data.bring_to_front
@@ -75,15 +75,15 @@
       ~Data.visititems
       ~Data.visititems_links
       ~Data.zoom
-   
-   
 
-   
-   
+
+
+
+
    .. rubric:: Attributes
 
    .. autosummary::
-   
+
       ~Data.attrs
       ~Data.axes
       ~Data.axis_expressions
@@ -114,5 +114,4 @@
       ~Data.units
       ~Data.variable_names
       ~Data.variables
-   
-   
+

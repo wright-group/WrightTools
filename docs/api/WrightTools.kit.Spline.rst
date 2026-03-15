@@ -5,18 +5,17 @@
 
 .. autoclass:: Spline
 
-   
+
    .. automethod:: __init__
 
-   
+
    .. rubric:: Methods
 
    .. autosummary::
-   
-      ~Spline.__init__
-   
-   
 
-   
-   
-   
+      ~Spline.__init__
+
+
+
+
+

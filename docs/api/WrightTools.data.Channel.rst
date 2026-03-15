@@ -5,14 +5,14 @@
 
 .. autoclass:: Channel
 
-   
+
    .. automethod:: __init__
 
-   
+
    .. rubric:: Methods
 
    .. autosummary::
-   
+
       ~Channel.__init__
       ~Channel.argmax
       ~Channel.argmin
@@ -41,15 +41,15 @@
       ~Channel.trim
       ~Channel.virtual_sources
       ~Channel.write_direct
-   
-   
 
-   
-   
+
+
+
+
    .. rubric:: Attributes
 
    .. autosummary::
-   
+
       ~Channel.attrs
       ~Channel.chunks
       ~Channel.class_name
@@ -84,5 +84,4 @@
       ~Channel.signed
       ~Channel.size
       ~Channel.units
-   
-   
+

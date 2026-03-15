@@ -5,27 +5,27 @@
 
 .. autoclass:: Axis
 
-   
+
    .. automethod:: __init__
 
-   
+
    .. rubric:: Methods
 
    .. autosummary::
-   
+
       ~Axis.__init__
       ~Axis.convert
       ~Axis.max
       ~Axis.min
-   
-   
 
-   
-   
+
+
+
+
    .. rubric:: Attributes
 
    .. autosummary::
-   
+
       ~Axis.full
       ~Axis.identity
       ~Axis.label
@@ -38,5 +38,4 @@
       ~Axis.units
       ~Axis.units_kind
       ~Axis.variables
-   
-   
+
