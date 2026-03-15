@@ -1,5 +1,9 @@
 """
-use the right combination of colorbar and matplotlib norms
+Colormaps and Norms
+===================
+
+Colorbars and scaling of 2D data make all the difference. 
+Use the right combination of colorbar and matplotlib norms
 to communicate your data!
 """
 
@@ -7,9 +11,10 @@ import WrightTools as wt
 from WrightTools import datasets
 
 import matplotlib.colors as mpl_colors
-from matplotlib import colormaps as colormaps
+from matplotlib import colormaps
 
 import numpy as np
+
 
 # --- colormaps -----------------------------------------------------------------------------------
 unsigned_cmap = [
@@ -54,16 +59,6 @@ ax00.set_title("unsigned data")
 ax10 = fig.add_subplot(gs[1, 0], label="10 - unsigned sqrt")
 wt.artists.corner_text("sqrt", **label_kwargs)
 norm = mpl_colors.PowerNorm(gamma=0.5, vmin=0)
-"""
-NOTE: a bug with PowerNorm makes the colorbar extend arrow incorrect color
-as recently as mpl 3.8.3.
-a fix has been applied upstream; we just have to wait for it
-https://github.com/matplotlib/matplotlib/pull/27589
-in the meantime, we can define a custom norm to get past the issue
-"""
-# _forward = lambda x: np.sign(x) * np.sqrt(np.abs(x))
-# _inverse = lambda x: np.sign(x) * x**2
-# norm = mpl_colors.FuncNorm((_forward, _inverse), vmin=0, clip=False)
 art = ax10.pcolormesh(unsigned, norm=norm, cmap=unsigned_cmap, autolabel="y")
 fig.colorbar(art, ax=ax10, extend="min")
 
