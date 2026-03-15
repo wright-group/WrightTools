@@ -106,7 +106,6 @@ class ChopHandler:
                 if fig is None:
                     fig = self.plot(dati)
                 else:
-                    [t.remove() for t in fig.texts]
                     fig = self.plot(dati, fig=fig)
                 if self.autosave:
                     filepath = self.save_directory / self.filepath_seed.format(i)
