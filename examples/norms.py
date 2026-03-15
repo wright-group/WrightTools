@@ -2,7 +2,7 @@
 Colormaps and Norms
 ===================
 
-Colorbars and scaling of 2D data make all the difference. 
+Colorbars and scaling of 2D data make all the difference.
 Use the right combination of colorbar and matplotlib norms
 to communicate your data!
 """
@@ -14,7 +14,6 @@ import matplotlib.colors as mpl_colors
 from matplotlib import colormaps
 
 import numpy as np
-
 
 # --- colormaps -----------------------------------------------------------------------------------
 unsigned_cmap = [
