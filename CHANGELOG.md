@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Changed
+- docs use updated Sphinx packages
+- docs: new example showing norms interfacing with data objects
+
 ### Fixed
 - WrightTools works with new h5py 3.16
 
