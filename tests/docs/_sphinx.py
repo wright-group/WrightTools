@@ -2,7 +2,6 @@
 
 import pytest
 import sys
-from sphinx.cmd import build
 import pathlib
 import shutil
 import subprocess
