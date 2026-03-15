@@ -7,7 +7,6 @@ import logging
 from functools import partial
 from matplotlib.animation import FuncAnimation
 from inspect import isclass
-from typing import Iterator
 
 from ._helpers import norm_from_channel
 from ._interact import interact2D_fig
