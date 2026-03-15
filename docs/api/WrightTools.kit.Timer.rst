@@ -1,21 +1,22 @@
-WrightTools.kit.Timer
+﻿WrightTools.kit.Timer
 =====================
 
+.. currentmodule:: WrightTools.kit
 
-.. autoclass:: WrightTools.kit.Timer
-   :members:
-   :undoc-members:
-   :special-members: __init__, __enter__, __exit__
-   :show-inheritance:
+.. autoclass:: Timer
 
-   .. attribute:: start
+   
+   .. automethod:: __init__
 
-      Timestamp for start in seconds.
+   
+   .. rubric:: Methods
 
-   .. attribute:: end
+   .. autosummary::
+   
+      ~Timer.__init__
+   
+   
 
-      Timestamp for end in seconds.
-
-   .. attribute:: interval
-
-      Timedelta for end - start in seconds.
+   
+   
+   
