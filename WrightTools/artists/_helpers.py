@@ -74,7 +74,6 @@ def _title(fig, title, subtitle="", *, margin=1, fontsize=20, subfontsize=18):
     height = fig.get_figheight()  # inches
     distance = margin / 2.0  # distance from top of plot, in inches
     ratio = 1 - distance / height
-    fig.text(0.5, ratio, subtitle, fontsize=subfontsize, ha="center", va="top")
 
 
 def add_sideplot(
