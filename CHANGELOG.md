@@ -5,6 +5,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+<<<<<<< animations
 ### Added
 - new artists submodule `animate` as a convenient wrapper for matplotlib's `FuncAnimate`
 - `animate.animate2D`: allows versatile conversion of data to animation.
@@ -14,6 +15,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ### Changed
 - `interact2D`: replaced SimpleNamespace object with a dataclass for more explicit typing
 - `quick2D`: `__iter__` method added which modifies the same figure over and over instead of writing new figures for each chop object
+=======
+### Changed
+- docs use updated Sphinx packages
+- docs: new example showing norms interfacing with data objects
+>>>>>>> master
 
 ### Fixed
 - WrightTools works with new h5py 3.16

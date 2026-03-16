@@ -1,10 +1,9 @@
-WrightTools.data.Data
+﻿WrightTools.data.Data
 =====================
 
 .. currentmodule:: WrightTools.data
 
 .. autoclass:: Data
-   :show-inheritance:
 
 
    .. automethod:: __init__
@@ -13,9 +12,11 @@ WrightTools.data.Data
    .. rubric:: Methods
 
    .. autosummary::
-      :toctree: WrightTools.data.Data
 
+      ~Data.__init__
+      ~Data.at
       ~Data.bring_to_front
+      ~Data.build_virtual_dataset
       ~Data.chop
       ~Data.clear
       ~Data.close
@@ -25,18 +26,30 @@ WrightTools.data.Data
       ~Data.create_channel
       ~Data.create_constant
       ~Data.create_dataset
+      ~Data.create_dataset_like
       ~Data.create_group
       ~Data.create_variable
+      ~Data.create_virtual_dataset
       ~Data.flush
       ~Data.get
+      ~Data.get_axis
+      ~Data.get_channel
       ~Data.get_nadir
+      ~Data.get_var
       ~Data.get_zenith
       ~Data.gradient
       ~Data.heal
+      ~Data.ichop
+      ~Data.items
+      ~Data.keys
       ~Data.level
       ~Data.map_variable
       ~Data.moment
+      ~Data.move
+      ~Data.norm_for_each
       ~Data.offset
+      ~Data.pop
+      ~Data.popitem
       ~Data.print_tree
       ~Data.prune
       ~Data.remove_channel
@@ -44,13 +57,23 @@ WrightTools.data.Data
       ~Data.remove_variable
       ~Data.rename_channels
       ~Data.rename_variables
+      ~Data.require_dataset
+      ~Data.require_group
       ~Data.save
       ~Data.set_constants
+      ~Data.setdefault
       ~Data.share_nans
       ~Data.smooth
       ~Data.split
+      ~Data.squeeze
       ~Data.transform
+      ~Data.translate_to_txt
       ~Data.update
+      ~Data.values
+      ~Data.visit
+      ~Data.visit_links
+      ~Data.visititems
+      ~Data.visititems_links
       ~Data.zoom
 
 
@@ -60,7 +83,6 @@ WrightTools.data.Data
    .. rubric:: Attributes
 
    .. autosummary::
-      :toctree: WrightTools.data.Data
 
       ~Data.attrs
       ~Data.axes
@@ -92,5 +114,4 @@ WrightTools.data.Data
       ~Data.units
       ~Data.variable_names
       ~Data.variables
-
 
