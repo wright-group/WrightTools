@@ -1952,7 +1952,14 @@ class Data(Group):
             print("smoothed data")
 
     def split(
-        self, expression, positions, *, units=None, parent=None, verbose=True
+        self,
+        expression,
+        positions,
+        *,
+        units=None,
+        parent=None,
+        inherit_attrs=False,
+        verbose=True,
     ) -> wt_collection.Collection:
         """
         Split the data object along a given expression, in units.
@@ -1989,7 +1996,7 @@ class Data(Group):
         # axis ------------------------------------------------------------------------------------
         old_expr = self.axis_expressions
         old_units = self.units
-        out = wt_collection.Collection(name="split", parent=parent)
+        out = wt_collection.Collection(name=f"{self.natural_name}_split", parent=parent)
         if isinstance(expression, int):
             if units is None:
                 units = self._axes[expression].units
@@ -2023,7 +2030,7 @@ class Data(Group):
                 omasks.append(None)
                 cuts.append(None)
         for i in range(len(positions) - 1):
-            out.create_data("split%03i" % i)
+            out.create_data(f"{self.natural_name}_{i:0>3}")
 
         for var in self.variables:
             for i, (imask, omask, cut) in enumerate(zip(masks, omasks, cuts)):
@@ -2097,6 +2104,10 @@ class Data(Group):
         self.transform(*old_expr)
         for ax, u in zip(self.axes, old_units):
             ax.convert(u)
+
+        if inherit_attrs:
+            for d in out.values():
+                {d.attrs[k]: self.attrs[k] for k in self.attrs.keys() if k not in d.attrs.keys()}
 
         return out
 
