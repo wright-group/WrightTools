@@ -145,13 +145,15 @@ def animate_quick2Ds(q2d: quick2Ds, **kwargs) -> FuncAnimation:
 
     **kwargs: dict items
         all extra kwargs are passed to matplotlib.FuncAnimation
-    
+
     """
 
     return FuncAnimation(fig=q2d.fig, func=lambda x: None, frames=q2d, **kwargs)
 
 
-def animate_interact2D(interact2D: interact2D_fig, back_and_forth=False, **kwargs) -> FuncAnimation:
+def animate_interact2D(
+    interact2D: interact2D_fig, back_and_forth=False, **kwargs
+) -> FuncAnimation:
     """
     Take an interact2D figure and create an animation by moving the sliders.
 
