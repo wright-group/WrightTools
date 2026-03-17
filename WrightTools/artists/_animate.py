@@ -12,7 +12,7 @@ from ._helpers import norm_from_channel
 from ._interact import interact2D_fig
 from ._quick_v2 import quick2Ds
 
-__all__ = ["animate2D", "animate_interact2D", "animate_quick2D"]
+__all__ = ["animate2D", "animate_interact2D", "animate_quick2Ds"]
 logger = logging.getLogger("animation")
 
 
@@ -23,7 +23,7 @@ def animate2D(
     cmap=None,
     back_and_forth: bool = False,
     **ani_kwargs,
-):
+) -> FuncAnimation:
     """
     animate pcolormesh of a nd dataset (ndim >=2)
     mesh plots last two axes of the dataset (use `Data.transform` if needed)
@@ -52,6 +52,11 @@ def animate2D(
 
     **kwargs: dict items
         all extra kwargs are passed to matplotlib.FuncAnimation
+
+    Returns
+    -------
+
+    animation:  matplotlib.animation.animation
 
     Example
     -------
@@ -129,23 +134,24 @@ def animate2D(
     )
 
 
-def animate_quick2Ds(q2d: quick2Ds, *args, **kwargs):
+def animate_quick2Ds(q2d: quick2Ds, **kwargs) -> FuncAnimation:
     """
     animate a quick2Ds series
 
-    function accepts same arguments as artists.Quick2Ds
-
-    animation kwargs can be passed through a dictionary `fa_kwargs`
-
     unlike other animation functions, this enforces repeat=False
+
+    Parameters
+    ----------
+
+    **kwargs: dict items
+        all extra kwargs are passed to matplotlib.FuncAnimation
+    
     """
 
-    fa_kwargs = kwargs.pop("fa_kwargs", dict())
-
-    return FuncAnimation(fig=q2d.fig, func=lambda x: None, frames=q2d, **fa_kwargs)
+    return FuncAnimation(fig=q2d.fig, func=lambda x: None, frames=q2d, **kwargs)
 
 
-def animate_interact2D(interact2D: interact2D_fig, back_and_forth=False, **kwargs):
+def animate_interact2D(interact2D: interact2D_fig, back_and_forth=False, **kwargs) -> FuncAnimation:
     """
     Take an interact2D figure and create an animation by moving the sliders.
 

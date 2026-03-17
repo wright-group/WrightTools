@@ -9,8 +9,11 @@ from ... import kit as wt_kit
 from ...data import Data
 
 
+__all__ = ["QuickIteratorBase"]
+
+
 class QuickIteratorBase:
-    """base class for iterating through chopped data for figure generation"""
+    """base class for iterating through data for figure generation"""
 
     def __init__(self, data: Data, *axes, **kwargs):
         """base class for looping and plotting

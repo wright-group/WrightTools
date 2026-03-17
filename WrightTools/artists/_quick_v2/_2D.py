@@ -11,7 +11,7 @@ from .._helpers import (
     norm_from_channel,
     ticks_from_norm,
 )
-from ._util import ChopHandler
+from ._util import QuickIteratorBase
 
 # --- define --------------------------------------------------------------------------------------
 
@@ -104,7 +104,7 @@ def quick2Ds(
             levels = np.linspace(null, limit, contours + 2)[1:-1]
         return levels
 
-    class Quick2D(ChopHandler):
+    class Quick2D(QuickIteratorBase):
         kwargs = {"autolabel": "both"}
         if cmap is not None:
             kwargs["cmap"] = cmap
