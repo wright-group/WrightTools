@@ -16,13 +16,13 @@ from ._util import ChopHandler
 # --- define --------------------------------------------------------------------------------------
 
 
-__all__ = ["quick2D"]
+__all__ = ["quick2Ds"]
 
 
 # --- general purpose plotting functions ----------------------------------------------------------
 
 
-def quick2D(
+def quick2Ds(
     data,
     xaxis=0,
     yaxis=1,

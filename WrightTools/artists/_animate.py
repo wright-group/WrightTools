@@ -10,7 +10,7 @@ from inspect import isclass
 
 from ._helpers import norm_from_channel
 from ._interact import interact2D_fig
-from ._quick_v2 import quick2D
+from ._quick_v2 import quick2Ds
 
 __all__ = ["animate2D", "animate_interact2D", "animate_quick2D"]
 logger = logging.getLogger("animation")
@@ -129,11 +129,11 @@ def animate2D(
     )
 
 
-def animate_quick2D(q2d, *args, **kwargs):
+def animate_quick2Ds(q2d:quick2Ds, *args, **kwargs):
     """
-    animate a quick2D series
+    animate a quick2Ds series
 
-    function accepts same arguments as artists.Quick2D
+    function accepts same arguments as artists.Quick2Ds
 
     animation kwargs can be passed through a dictionary `fa_kwargs`
 
@@ -175,4 +175,5 @@ def animate_interact2D(interact2D: interact2D_fig, back_and_forth=False, **kwarg
         fig=interact2D.fig,
         func=update,
         frames=frames,
+        **kwargs
     )

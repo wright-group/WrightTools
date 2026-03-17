@@ -9,8 +9,8 @@ from ... import kit as wt_kit
 from ...data import Data
 
 
-class ChopHandler:
-    """class for keeping track of plotting through the chopped data"""
+class QuickIteratorBase:
+    """base class for iterating through chopped data for figure generation"""
 
     def __init__(self, data: Data, *axes, **kwargs):
         """base class for looping and plotting
