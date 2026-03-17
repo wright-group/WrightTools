@@ -129,7 +129,7 @@ def animate2D(
     )
 
 
-def animate_quick2Ds(q2d:quick2Ds, *args, **kwargs):
+def animate_quick2Ds(q2d: quick2Ds, *args, **kwargs):
     """
     animate a quick2Ds series
 
@@ -171,9 +171,4 @@ def animate_interact2D(interact2D: interact2D_fig, back_and_forth=False, **kwarg
     if back_and_forth:
         frames += reversed(frames)
 
-    return FuncAnimation(
-        fig=interact2D.fig,
-        func=update,
-        frames=frames,
-        **kwargs
-    )
+    return FuncAnimation(fig=interact2D.fig, func=update, frames=frames, **kwargs)
