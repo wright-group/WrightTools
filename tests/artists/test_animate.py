@@ -36,7 +36,7 @@ def test_animate_quick2D():
 
     quick2D = wt.artists._quick_v2.quick2Ds(d)
 
-    ani = wt.artists.animate_quick2Ds(quick2D, fa_kwargs=dict(interval=100))
+    ani = wt.artists.animate_quick2Ds(quick2D, interval=100)
     return ani
 
 
