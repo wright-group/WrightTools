@@ -12,7 +12,6 @@ from .. import exceptions as wt_exceptions
 from ..kit import _timestamp as timestamp
 from numpy.lib.npyio import DataSource
 
-
 # --- define --------------------------------------------------------------------------------------
 
 
@@ -75,10 +74,8 @@ def from_LabRAM(filepath, name=None, parent=None, verbose=True) -> Data:
         header[key] = val
 
     if not header:
-        raise NotImplementedError(
-            "At this time, we require metadata to parse LabRAM data. \
-            Consider manually importing this data."
-        )
+        raise NotImplementedError("At this time, we require metadata to parse LabRAM data. \
+            Consider manually importing this data.")
 
     # extract key metadata
     created = header["Acquired"]

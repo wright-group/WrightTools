@@ -9,7 +9,6 @@ from .. import exceptions as wt_exceptions
 
 from typing import Tuple
 
-
 # --- define --------------------------------------------------------------------------------------
 
 

@@ -29,7 +29,6 @@ from ._channel import Channel
 from ._constant import Constant
 from ._variable import Variable
 
-
 # --- define --------------------------------------------------------------------------------------
 
 

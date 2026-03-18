@@ -1,7 +1,6 @@
 #! /usr/bin/env python3
 """Test data unit conversion."""
 
-
 # --- import --------------------------------------------------------------------------------------
 
 
@@ -9,7 +8,6 @@ import numpy as np
 
 import WrightTools as wt
 from WrightTools import datasets
-
 
 # --- define --------------------------------------------------------------------------------------
 

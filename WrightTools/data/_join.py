@@ -13,7 +13,6 @@ from .. import exceptions as wt_exceptions
 from ._data import Data
 from ..collection import Collection
 
-
 # --- define --------------------------------------------------------------------------------------
 
 

@@ -40,8 +40,8 @@ license-files = ["LICEN[CS]E*"]
 
 [project.optional-dependencies]
 docs = [
-    "sphinx<8.0",
-    "sphinx-gallery==0.8.2",
+    "sphinx<9.0",
+    "sphinx-gallery",
     "sphinx-rtd-theme"
 ]
 dev = [
@@ -52,8 +52,8 @@ dev = [
     "pytest-cov",
     "databroker<2",
     "msgpack",
-    "sphinx<8.0",
-    "sphinx-gallery==0.8.2",
+    "sphinx<9.0",
+    "sphinx-gallery",
     "sphinx-rtd-theme"
 ]
 

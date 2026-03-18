@@ -6,10 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ## [Unreleased]
 
 ### Changed
+<<<<<<< norm_for_each_many_vars
 - `Data.norm_for_each`: allow for normlization for each combination of a set of variables
+=======
+- docs use updated Sphinx packages
+- docs: new example showing norms interfacing with data objects
+
+### Fixed
+- WrightTools works with new h5py 3.16
+
+## [3.6.2]
+>>>>>>> master
 
 ### Fixed
 - fixed bug where numpy>2.4 broke `data.join`
+- fixed bug which prevented channels from having units
 
 ### Changed
 - per [PEP 765](https://peps.python.org/pep-0765/), `return` is removed from `finally` blocks
@@ -446,7 +457,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ### Added
 - initial release
 
-[Unreleased]: https://github.com/wright-group/WrightTools/-/compare/3.6.1...master
+[Unreleased]: https://github.com/wright-group/WrightTools/-/compare/3.6.2...master
+[3.6.2]: https://github.com/wright-group/WrightTools/compare/3.6.1...3.6.2
 [3.6.1]: https://github.com/wright-group/WrightTools/compare/3.6.0...3.6.1
 [3.6.0]: https://github.com/wright-group/WrightTools/compare/3.5.5...3.6.0
 [3.5.5]: https://github.com/wright-group/WrightTools/compare/3.5.3...3.5.5

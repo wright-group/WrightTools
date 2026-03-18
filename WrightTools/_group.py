@@ -20,7 +20,6 @@ from . import kit as wt_kit
 from . import exceptions as wt_exceptions
 from . import __wt5_version__
 
-
 # --- define --------------------------------------------------------------------------------------
 
 
@@ -408,3 +407,11 @@ class Group(h5py.Group, metaclass=MetaClass):
         if verbose:
             print("file saved at", filepath)
         return str(filepath)
+
+    def items(self):
+        for k in self.keys():
+            yield k, self[k]
+
+    def values(self):
+        for k in self.keys():
+            yield self[k]
