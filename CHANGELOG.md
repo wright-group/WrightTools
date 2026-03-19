@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ## [Unreleased]
 
 ### Changed
+<<<<<<< norm_for_each_many_vars
+- `Data.norm_for_each`: allow for normlization for each combination of a set of variables
+=======
 - docs use updated Sphinx packages
 - docs: new example showing norms interfacing with data objects
 
@@ -13,6 +16,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 - WrightTools works with new h5py 3.16
 
 ## [3.6.2]
+>>>>>>> master
 
 ### Fixed
 - fixed bug where numpy>2.4 broke `data.join`
