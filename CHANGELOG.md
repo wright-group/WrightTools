@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ### Changed
 - `interact2D`: replaced SimpleNamespace object with a dataclass for more explicit typing
 - `quick2D`: `__iter__` method added which modifies the same figure over and over instead of writing new figures for each chop object
+- `Data.norm_for_each`: allow for normlization for each combination of a set of variables
 - docs use updated Sphinx packages
 - docs: new example showing norms interfacing with data objects
 
