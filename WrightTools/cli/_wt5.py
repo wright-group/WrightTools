@@ -3,6 +3,7 @@
 
 import click
 import WrightTools as wt
+import pathlib
 
 # --- define --------------------------------------------------------------------------------------
 
@@ -47,6 +48,33 @@ def load(path):
 def glob(directory=None, no_recursion=False):
     for path in wt.kit.glob_wt5s(directory, not no_recursion):
         print(str(path))
+
+
+@cli.command(name="animate", help="create an animation plotting through a chopped dataset")
+@click.argument("path")
+@click.option("--channel", default=0, type=int, help="The index of the channel to animate")
+@click.option("--save-path", help="Specify a path to save the animation.  Falls back on path.")
+@click.option(
+    "--interval", default=100, type=int, help="Frame duration (milliseconds).  Default 100"
+)
+@click.option(
+    "--back-and-forth",
+    is_flag=True,
+    default=False,
+    help="Animate frames in reverse after forward is finished.",
+)
+# @click.option("--interactive", "-i", is_flag=True, default=False, help="When specified, interactive plotting is used.")
+def animate(
+    path, interactive=False, channel=0, save_path=None, interval=100, back_and_forth=False
+):
+    path = pathlib.Path(path)
+    data = wt.open(path)
+    if save_path is None:
+        save_path = path.parent.with_name(f"{channel}_animation.html")
+    ani = wt.artists.animate2D(data, interval=interval, back_and_forth=back_and_forth)
+    with open(save_path, "w") as f:
+        f.write(ani.to_html5_video())
+    print(f"Animation saved to {save_path}")
 
 
 @cli.command(name="explore", help="Scan a directory and survey the wt5 objects found.")

@@ -70,6 +70,7 @@ class ChopHandler:
             )
 
     def __call__(self, verbose=False) -> List[Union[str, plt.Figure]]:
+        """run the whole list of chopped objects as a batch"""
         out = list()
         if self.autosave:
             self.save_directory.mkdir(exist_ok=True)
@@ -93,10 +94,31 @@ class ChopHandler:
                     out.append(fig)
         return out
 
-    def plot(self, d):
+    def __iter__(self, verbose=False):
+        """call each figure one at a time, RECYCLE the figure object"""
+        if self.autosave:
+            self.save_directory.mkdir(exist_ok=True)
+        fig = None
+        with closing(self.data._from_slice(self.channel_slice)) as sliced:
+            for constant in self.sliced_constants:
+                sliced.remove_constant(constant, verbose=False)
+            for i, dati in enumerate(sliced.ichop(*self.axes, at=self.at)):
+                if fig is None:
+                    fig = self.plot(dati)
+                else:
+                    fig = self.plot(dati, fig=fig)
+                if self.autosave:
+                    filepath = self.save_directory / self.filepath_seed.format(i)
+                    savefig(filepath, fig=fig, facecolor="white", close=True)
+                    if verbose:
+                        print("image saved at", str(filepath))
+                yield fig
+
+    def plot(self, d, fig=None):
         """To be defined in specific handlers.
         `d` is a WrightTools.Data object to be plotted
         This function should return a figure instance.
+        If fig is provided, it should decorate the provided figure
         """
         raise NotImplementedError
 
@@ -317,7 +339,7 @@ def _quick2D(
         if cmap is not None:
             kwargs["cmap"] = cmap
 
-        def plot(self, d):
+        def plot(self, d, fig=None):
             # unpack data -------------------------------------------------------------------------
             xaxis = d.axes[0]
             yaxis = d.axes[1]
@@ -330,11 +352,17 @@ def _quick2D(
                 aspect = np.clip(aspect, 1 / 3.0, 3.0)
             else:
                 aspect = 1
-            fig, gs = create_figure(
-                width="single", nrows=1, cols=[1, "cbar"], aspects=[[[0, 0], aspect]]
-            )
-            ax = plt.subplot(gs[0])
-            ax.patch.set_facecolor("w")
+            if fig is None:
+                fig, gs = create_figure(
+                    width="single", nrows=1, cols=[1, "cbar"], aspects=[[[0, 0], aspect]]
+                )
+                ax = plt.subplot(gs[0])
+                ax.patch.set_facecolor("w")
+                cax = plt.subplot(gs[1])
+            else:
+                ax = fig.axes[0]
+                cax = fig.axes[1]
+
             # colors ------------------------------------------------------------------------------
             norm = norm_from_channel(
                 channel if local else self.data.channels[self.channel_index],
@@ -355,7 +383,6 @@ def _quick2D(
             self.decorate(ax, *d.axes)
             _title(fig, self.data.natural_name, subtitle=self.annotate_constants(d))
             # colorbar
-            cax = plt.subplot(gs[1])
             plot_colorbar(
                 cax=cax, cmap=img.get_cmap(), ticks=norm_ticks, label=channel.natural_name
             )
