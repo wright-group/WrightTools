@@ -5,8 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
-## Changed
+### Changed
 - use `pillow` directly and remove `ImageIO` dependency
+- `Data.norm_for_each`: allow for normlization for each combination of a set of variables
 - docs use updated Sphinx packages
 - docs: new example showing norms interfacing with data objects
 
