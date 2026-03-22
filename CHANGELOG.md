@@ -6,9 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ## [Unreleased]
 
 ### Changed
-<<<<<<< norm_for_each_many_vars
+- use `pillow` directly and remove `ImageIO` dependency
 - `Data.norm_for_each`: allow for normlization for each combination of a set of variables
-=======
 - docs use updated Sphinx packages
 - docs: new example showing norms interfacing with data objects
 
@@ -16,7 +15,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 - WrightTools works with new h5py 3.16
 
 ## [3.6.2]
->>>>>>> master
 
 ### Fixed
 - fixed bug where numpy>2.4 broke `data.join`
@@ -72,6 +70,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 - new artist helper function: `norm_from_channel`
 - new artist helper function: `ticks_from_norm`
 - new artist iterator `ChopHandler`
+- `artists.stitch_to_animation`: new kwargs for more gif customization
 
 ### Fixed
 - fixed Quick2D/Quick1D issues where collapsing unused dims did not work
