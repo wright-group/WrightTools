@@ -9,7 +9,6 @@ from .._helpers import savefig
 from ... import kit as wt_kit
 from ...data import Data
 
-
 __all__ = ["ChopIteratorBase"]
 
 

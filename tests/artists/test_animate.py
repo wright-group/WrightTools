@@ -5,8 +5,6 @@ from WrightTools import datasets
 from matplotlib import pyplot as plt
 
 
-
-
 def test_animate2D():
     d = wt.open(datasets.wt5.v1p0p1_MoS2_TrEE_movie)
     d.channels[0].signed = True
