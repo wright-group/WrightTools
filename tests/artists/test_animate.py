@@ -1,15 +1,13 @@
+"""smokescreen tests for animation functions"""
+
 import WrightTools as wt
 from WrightTools import datasets
 from matplotlib import pyplot as plt
 
 
-def test_animate2D():
-    """
-    smokescreen test: just ensure the ani object initializes
 
-    if you are running this locally, you can view the animation
-    by running this script
-    """
+
+def test_animate2D():
     d = wt.open(datasets.wt5.v1p0p1_MoS2_TrEE_movie)
     d.channels[0].signed = True
     from matplotlib.colors import CenteredNorm

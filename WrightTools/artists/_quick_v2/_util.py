@@ -9,6 +9,7 @@ from .._helpers import savefig
 from ... import kit as wt_kit
 from ...data import Data
 
+
 __all__ = ["ChopIteratorBase"]
 
 
@@ -57,7 +58,7 @@ class ChopIteratorBase:
         self.axes = [data.get_axis(a) for a in axes]
         self.at = kwargs.pop("at", {})
         save_directory = kwargs.pop("save_directory", pathlib.Path.cwd())
-        fname = (kwargs.pop("fname", data.natural_name),)
+        fname = kwargs.pop("fname", data.natural_name)
 
         self.nD = len(axes)
         self.fig = None
@@ -75,7 +76,6 @@ class ChopIteratorBase:
             self.save_directory, self.filepath_seed = _filepath_seed(
                 save_directory,
                 fname,
-                self.nfigs,
                 f"quick{self.nD}D",
             )
         self.kwargs = kwargs
@@ -95,13 +95,14 @@ class ChopIteratorBase:
             ):
                 if self.autosave:
                     filepath = self.save_directory / self.filepath_seed.format(i)
-                    savefig(figi, filepath)
+                    self.savefig(figi, filepath)
                     self.logger.info(f"image {i} saved at {filepath}")
+                    self.filepath = filepath
                 yield figi
 
-    def savefig(fig, filepath):
+    def savefig(self, fig, filepath):
         """factored here so that it can be overloaded if needed"""
-        savefig(filepath, fig=fig, facecolor="white", close=True)
+        savefig(filepath, fig=fig, facecolor="white", close=False)
 
     @abstractmethod
     def update_figure(self, d) -> plt.Figure:
@@ -125,15 +126,14 @@ class ChopIteratorBase:
             ax.set_ylim(axes[1].min(), axes[1].max())
 
 
-def _filepath_seed(save_directory, fname, nchops, artist) -> tuple[pathlib.Path, str]:
+def _filepath_seed(save_directory, fname, artist) -> tuple[pathlib.Path, str]:
     """determine the autosave filepaths"""
     if isinstance(save_directory, str):
         save_directory = pathlib.Path(save_directory)
     elif save_directory is None:
         save_directory = pathlib.Path.cwd()
-    # create a folder if multiple images
-    if nchops > 1:
-        save_directory = save_directory / f"{artist} {wt_kit.TimeStamp().path}"
+    # create a folder
+    save_directory = save_directory / f"{artist} {wt_kit.TimeStamp().path}"
     return save_directory, ("" if fname is None else fname + " ") + "{0:0>3}.png"
 
 

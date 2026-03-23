@@ -35,7 +35,7 @@ def determine_contour_levels(local_channel, global_channel, local: bool, contour
 
 
 class Quick2DIterator(ChopIteratorBase):
-    """Quick2D that uses a single figure and refreshes the content on each iteration."""
+    """Quick2D that creates a single figure, refreshing the content on each iteration."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -198,3 +198,4 @@ def quick2Ds(
         save_directory=save_directory,
         fname=fname,
     )
+

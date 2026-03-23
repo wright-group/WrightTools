@@ -48,7 +48,7 @@ def animate2D(
 
     back_and_forth: bool = False
         when True, the animation will go in reverse after going forward,
-        creating a continuous loop when repeat is no
+        creating a continuous loop when repeat is on
 
     **kwargs: dict items
         all extra kwargs are passed to matplotlib.FuncAnimation
