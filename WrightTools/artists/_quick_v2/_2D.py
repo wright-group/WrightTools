@@ -22,7 +22,7 @@ __all__ = ["quick2Ds"]
 # --- general purpose plotting functions ----------------------------------------------------------
 
 
-def determine_contour_levels(local_channel, global_channel, local:bool, contours:int):
+def determine_contour_levels(local_channel, global_channel, local: bool, contours: int):
     # force top and bottom contour to be data lims then clip them out
     null = local_channel.null
     if local_channel.signed:
@@ -115,17 +115,17 @@ class Quick2DIterator(ChopIteratorBase):
 # a wrapper for instance generation with explicit kwargs, docstring, typing
 def quick2Ds(
     data,
-    xaxis:int|str=0,
-    yaxis:int|str=1,
-    at:dict={},
-    channel:int|str=0,
+    xaxis: int | str = 0,
+    yaxis: int | str = 1,
+    at: dict = {},
+    channel: int | str = 0,
     cmap=None,
-    contours:int=0,
-    pixelated:bool=True,
-    dynamic_range:bool=False,
-    local:bool=False,
-    contours_local:bool=True,
-    autosave:bool=False,
+    contours: int = 0,
+    pixelated: bool = True,
+    dynamic_range: bool = False,
+    local: bool = False,
+    contours_local: bool = True,
+    autosave: bool = False,
     save_directory=None,
     fname=None,
 ) -> Iterator[plt.Figure]:

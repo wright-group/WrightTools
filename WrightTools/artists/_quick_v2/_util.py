@@ -9,12 +9,12 @@ from .._helpers import savefig
 from ... import kit as wt_kit
 from ...data import Data
 
-
 __all__ = ["ChopIteratorBase"]
 
 
 class ChopIteratorBase:
     """base class for iterating through data for figure generation"""
+
     logger = logging.getLogger("ChopIteratorBase")
 
     def __init__(self, data: Data, *axes, **kwargs):
@@ -36,7 +36,7 @@ class ChopIteratorBase:
 
         at: dict
             applies `at` before chopping, reducing dimensionality
-        
+
         channel: str or int
             channel index or name
 
@@ -57,7 +57,7 @@ class ChopIteratorBase:
         self.axes = [data.get_axis(a) for a in axes]
         self.at = kwargs.pop("at", {})
         save_directory = kwargs.pop("save_directory", pathlib.Path.cwd())
-        fname = kwargs.pop("fname", data.natural_name),
+        fname = (kwargs.pop("fname", data.natural_name),)
 
         self.nD = len(axes)
         self.fig = None
@@ -89,8 +89,8 @@ class ChopIteratorBase:
                 sliced.remove_constant(constant, verbose=False)
             for i, figi in enumerate(
                 map(
-                    self.update_figure, 
-                    sliced.ichop(*[a.expression for a in self.axes], at=self.at)
+                    self.update_figure,
+                    sliced.ichop(*[a.expression for a in self.axes], at=self.at),
                 )
             ):
                 if self.autosave:
@@ -152,4 +152,3 @@ def annotate_constants(d, ax):
                 c.convert(d.axes[1].units)
                 ax.axhline(c.value, color="k", linewidth=4, alpha=0.25)
     return ", ".join(ls)
-
