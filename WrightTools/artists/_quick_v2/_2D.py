@@ -11,7 +11,7 @@ from .._helpers import (
     norm_from_channel,
     ticks_from_norm,
 )
-from ._util import ChopIteratorBase
+from ._util import ChopIteratorBase, annotate_constants
 
 # --- define --------------------------------------------------------------------------------------
 
@@ -22,8 +22,8 @@ __all__ = ["quick2Ds"]
 # --- general purpose plotting functions ----------------------------------------------------------
 
 
-def determine_contour_levels(local_channel, global_channel, local, contours):
-    # force top and bottom contour to be data range then clip them out
+def determine_contour_levels(local_channel, global_channel, local:bool, contours:int):
+    # force top and bottom contour to be data lims then clip them out
     null = local_channel.null
     if local_channel.signed:
         limit = local_channel.mag() if local else global_channel.mag()
@@ -34,12 +34,11 @@ def determine_contour_levels(local_channel, global_channel, local, contours):
     return levels
 
 
-class Quick2D(ChopIteratorBase):
+class Quick2DIterator(ChopIteratorBase):
+    """Quick2D that uses a single figure and refreshes the content on each iteration."""
 
     def __init__(self, *args, **kwargs):
-        # set some defaults
         super().__init__(*args, **kwargs)
-        # modify some default plotting args
         if "autolabel" not in self.kwargs:
             self.kwargs["autolabel"] = "both"
         if self.kwargs["cmap"] is None:
@@ -49,9 +48,11 @@ class Quick2D(ChopIteratorBase):
         self.pixelated = self.kwargs.pop("pixelated")
         self.contours = self.kwargs.pop("contours")
         self.contours_local = self.kwargs.pop("contours_local")
+        self.draw_figure()
+        assert isinstance(self.fig, plt.Figure)
 
     def draw_figure(self):
-        """initialize figure, create object attrs that will be used to update"""
+        """initialize figure and create object attrs that will be used to update"""
         xaxis = self.data.get_axis(self.axes[0])
         yaxis = self.data.get_axis(self.axes[1])
         if xaxis.units == yaxis.units:
@@ -100,22 +101,24 @@ class Quick2D(ChopIteratorBase):
             self.ax.contour(d, channel=self.channel_index, levels=contour_levels)
         # decoration --------------------------------------------------------------------------
         self.fig.suptitle(self.data.natural_name)
-        self.subtitle.set_text(self.annotate_constants(d))
+        self.subtitle.set_text(annotate_constants(d, self.ax))
         # colorbar
         if self.colorbar is None:
             self.colorbar = self.fig.colorbar(self.img, cax=self.cax)
             self.colorbar.set_label(label=channel.natural_name)
             self.colorbar.set_ticks(norm_ticks)
+        self.fig.canvas.draw_idle()
         plt.sca(self.ax)
+        return self.fig
 
 
+# a wrapper for instance generation with explicit kwargs, docstring, typing
 def quick2Ds(
     data,
     xaxis:int|str=0,
     yaxis:int|str=1,
     at:dict={},
     channel:int|str=0,
-    *,
     cmap=None,
     contours:int=0,
     pixelated:bool=True,
@@ -126,7 +129,7 @@ def quick2Ds(
     save_directory=None,
     fname=None,
 ) -> Iterator[plt.Figure]:
-    """Quickly generator of 2D image frames.
+    """Quickly generator of 2D image frames. Wraps class `Quick2D` class with explicit kwargs
 
     Parameters
     ----------
@@ -179,9 +182,7 @@ def quick2Ds(
     ```
 
     """
-
-
-    return Quick2D(
+    return Quick2DIterator(
         data,
         xaxis,
         yaxis,

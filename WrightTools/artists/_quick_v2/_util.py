@@ -19,7 +19,7 @@ class ChopIteratorBase:
 
     def __init__(self, data: Data, *axes, **kwargs):
         """base class for looping and plotting
-        v2:  generator-based, single figure, no figure limits
+        v2:  iterator-based, no figure limit checks
         subclasses need to supply artists objects that are manipulated
         and methods that define how those manipulations evolve
         and how they change with each iteration of chop
@@ -80,9 +80,6 @@ class ChopIteratorBase:
             )
         self.kwargs = kwargs
         self.logger.info(f"{self.kwargs=}")
-        # a subclass will define this method, which initializes self.fig
-        self.draw_figure()
-        assert isinstance(self.fig, plt.Figure)
 
     def __iter__(self):
         if self.autosave:
@@ -90,43 +87,30 @@ class ChopIteratorBase:
         with closing(self.data._from_slice(self.channel_slice)) as sliced:
             for constant in self.sliced_constants:
                 sliced.remove_constant(constant, verbose=False)
-            for i, dati in enumerate(sliced.ichop(*[a.expression for a in self.axes], at=self.at)):
-                self.update_figure(dati)
+            for i, figi in enumerate(
+                map(
+                    self.update_figure, 
+                    sliced.ichop(*[a.expression for a in self.axes], at=self.at)
+                )
+            ):
                 if self.autosave:
                     filepath = self.save_directory / self.filepath_seed.format(i)
-                    savefig(filepath, fig=self.fig, facecolor="white", close=True)
-                    self.logger.info("image {i} saved at", str(filepath))
-                self.fig.canvas.draw_idle()
-                yield self.fig
+                    savefig(figi, filepath)
+                    self.logger.info(f"image {i} saved at {filepath}")
+                yield figi
+
+    def savefig(fig, filepath):
+        """factored here so that it can be overloaded if needed"""
+        savefig(filepath, fig=fig, facecolor="white", close=True)
 
     @abstractmethod
-    def draw_figure(self) -> plt.Figure:
-        """initialize figure"""
-        ...
-
-    @abstractmethod
-    def update_figure(self, d):
+    def update_figure(self, d) -> plt.Figure:
         """To be defined in specific handlers.
         `d` is a WrightTools.Data object to be plotted
         This function should return a figure instance.
         If fig is provided, it should decorate the provided figure
         """
         ...
-
-    def annotate_constants(self, d):
-        ls = []
-        for c in d.constants:
-            if c.units:
-                ls.append(c.label)
-                # x axis
-                if d.axes[0].units_kind == c.units_kind:
-                    c.convert(d.axes[0].units)
-                    plt.axvline(c.value, color="k", linewidth=4, alpha=0.25)
-                # y axis
-                if self.nD == 2 and (d.axes[1].units_kind == c.units_kind):
-                    c.convert(d.axes[1].units)
-                    plt.axhline(c.value, color="k", linewidth=4, alpha=0.25)
-        return ", ".join(ls)
 
     def decorate(self, ax, *axes):
         ax.tick_params(axis="x", labelrotation=45, labelsize=14)
@@ -153,81 +137,19 @@ def _filepath_seed(save_directory, fname, nchops, artist) -> tuple[pathlib.Path,
     return save_directory, ("" if fname is None else fname + " ") + "{0:0>3}.png"
 
 
-    def determine_contour_levels(local_channel, global_channel, local):
-        # force top and bottom contour to be data range then clip them out
-        null = local_channel.null
-        if local_channel.signed:
-            limit = local_channel.mag() if local else global_channel.mag()
-            levels = np.linspace(-limit + null, limit + null, contours + 2)[1:-1]
-        else:
-            limit = local_channel.max() if local else global_channel.max()
-            levels = np.linspace(null, limit, contours + 2)[1:-1]
-        return levels
+def annotate_constants(d, ax):
+    """generate constant string and mark constants on axes"""
+    ls = []
+    for c in d.constants:
+        if c.units:
+            ls.append(c.label)
+            # x axis
+            if d.axes[0].units_kind == c.units_kind:
+                c.convert(d.axes[0].units)
+                ax.axvline(c.value, color="k", linewidth=4, alpha=0.25)
+            # y axis
+            if (len(d.axes) == 2) and (d.axes[1].units_kind == c.units_kind):
+                c.convert(d.axes[1].units)
+                ax.axhline(c.value, color="k", linewidth=4, alpha=0.25)
+    return ", ".join(ls)
 
-class Quick2D(ChopIteratorBase):
-
-    def __init__(self, *args, **kwargs):
-        # set some defaults
-        if "autolabel" not in kwargs:
-            kwargs["autolabel"] = "both"
-        if kwargs["cmap"] is None:
-            kwargs.pop("cmap")
-        super().__init__(*args, **kwargs)
-
-    def draw_figure(self):
-        """initialize figure, create object attrs that will be used to update"""
-        xaxis = self.data.get_axis(self.axes[0])
-        yaxis = self.data.get_axis(self.axes[1])
-        if xaxis.units == yaxis.units:
-            xr = xaxis.max() - xaxis.min()
-            yr = yaxis.max() - yaxis.min()
-            aspect = np.abs(yr / xr)
-            aspect = np.clip(aspect, 1 / 3.0, 3.0)
-        else:
-            aspect = 1
-        self.fig, gs = create_figure(
-            width="single", nrows=1, cols=[1, "cbar"], aspects=[[[0, 0], aspect]]
-        )
-        self.ax = plt.subplot(gs[0])
-        self.ax.patch.set_facecolor("w")
-        self.cax = plt.subplot(gs[1])
-        self.subtitle = _title(self.fig, "", subtitle="")
-        self.decorate(self.ax, xaxis, yaxis)
-        self.colorbar = None
-        self.img = None
-
-    def update_figure(self, d):
-        # unpack data -------------------------------------------------------------------------
-        channel = d.channels[self.channel_index]
-        # colors ------------------------------------------------------------------------------
-        norm = norm_from_channel(
-            channel if local else self.data.channels[self.channel_index],
-            dynamic_range=dynamic_range,
-        )
-        norm_ticks = ticks_from_norm(norm)
-        if self.img is None:
-            if pixelated:
-                self.img = self.ax.pcolormesh(
-                    d, channel=self.channel_index, norm=norm, **self.kwargs
-                )
-            else:
-                self.img = self.ax.contourf(
-                    d, channel=self.channel_index, norm=norm, **self.kwargs
-                )
-        else:
-            self.img.set_array(d.channels[self.channel_index])
-        # contour lines -----------------------------------------------------------------------
-        if contours:
-            contour_levels = determine_contour_levels(
-                channel, self.data.channels[self.channel_index], contours_local
-            )
-            self.ax.contour(d, channel=self.channel_index, levels=contour_levels)
-        # decoration --------------------------------------------------------------------------
-        self.fig.suptitle(self.data.natural_name)
-        self.subtitle.set_text(self.annotate_constants(d))
-        # colorbar
-        if self.colorbar is None:
-            self.colorbar = self.fig.colorbar(self.img, cax=self.cax)
-            self.colorbar.set_label(label=channel.natural_name)
-            self.colorbar.set_ticks(norm_ticks)
-        plt.sca(self.ax)
