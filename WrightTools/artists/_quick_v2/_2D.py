@@ -1,9 +1,11 @@
 """quick2D"""
 
-from typing import Iterator
-
 import numpy as np
 import matplotlib.pyplot as plt
+
+from functools import reduce
+from itertools import count, takewhile
+from typing import Iterator
 
 from .._helpers import (
     _title,
@@ -16,7 +18,7 @@ from ._util import ChopIteratorBase, annotate_constants
 # --- define --------------------------------------------------------------------------------------
 
 
-__all__ = ["quick2Ds"]
+__all__ = ["quick2Ds", "quick2D", "Quick2DIterator", "Quick2DLegacy"]
 
 
 # --- general purpose plotting functions ----------------------------------------------------------
@@ -41,7 +43,7 @@ class Quick2DIterator(ChopIteratorBase):
         super().__init__(*args, **kwargs)
         if "autolabel" not in self.kwargs:
             self.kwargs["autolabel"] = "both"
-        if self.kwargs["cmap"] is None:
+        if "cmap" in self.kwargs and kwargs["cmap"] is None:
             self.kwargs.pop("cmap")
         self.local = self.kwargs.pop("local")
         self.dynamic_range = self.kwargs.pop("dynamic_range")
@@ -110,6 +112,121 @@ class Quick2DIterator(ChopIteratorBase):
         plt.sca(self.ax)
         return self.fig
 
+
+class Quick2DLegacy(Quick2DIterator):
+    """subclass meant to maintain old quick2D functionality"""
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # pre-calculate the number of plots to decide whether to make a folder
+        shape = self.data.channels[self.channel_index].shape
+        uninvolved_shape = (
+            size if self.channel_slice[i] == 0 else 1 for i, size in enumerate(shape)
+        )
+        removed_shape = self.data._chop_prep(*[a.expression for a in self.axes], at=self.at)[0]
+        self.nfigs = reduce(int.__mul__, removed_shape) // reduce(int.__mul__, uninvolved_shape)
+        if self.nfigs > 10 and not self.autosave:
+            print(
+                f"number of expected figures ({self.nfigs}) is greater than the limit"
+                + f"({self.max_figures}).  Only the first {self.max_figures} figures will be processed."
+            )
+        if self.nfigs < 2 and self.autosave:  # undo the folder creation
+            self.save_directory = self.save_directory.parent
+
+    def __call__(self):
+        if self.autosave:
+            out = [self.filepath for _ in self]
+        else: # unique figures; stops at fig limit
+            from itertools import takewhile
+            out = []
+            for i, fig in enumerate(self.__iter__()):
+                print(i)
+                out.append(fig)
+                if i > 9:
+                    break
+                self.draw_figure()
+            if i == 10:
+                raise Warning(
+                    f"number of figures reached the limit (10). "
+                    + f"Only the first 10 figures will be processed."
+                )
+            # last figure is empty
+            plt.close(fig)
+
+def _quick2D(
+    data,
+    xaxis: int | str = 0,
+    yaxis: int | str = 1,
+    at: dict = {},
+    channel: int | str = 0,
+    cmap=None,
+    contours: int = 0,
+    pixelated: bool = True,
+    dynamic_range: bool = False,
+    local: bool = False,
+    contours_local: bool = True,
+    autosave: bool = False,
+    save_directory=None,
+    fname=None,
+):
+    """wrapper of Quick2DLegacy init to supply kwarg defaults"""
+    return Quick2DLegacy(
+        data,
+        xaxis,
+        yaxis,
+        at=at,
+        channel=channel,
+        cmap=cmap,
+        contours=contours,
+        pixelated=pixelated,
+        dynamic_range=dynamic_range,
+        local=local,
+        contours_local=contours_local,
+        autosave=autosave,
+        save_directory=save_directory,
+        fname=fname,
+    )
+
+def quick2D(
+    data,
+    xaxis: int | str = 0,
+    yaxis: int | str = 1,
+    at: dict = {},
+    channel: int | str = 0,
+    cmap=None,
+    contours: int = 0,
+    pixelated: bool = True,
+    dynamic_range: bool = False,
+    local: bool = False,
+    contours_local: bool = True,
+    autosave: bool = False,
+    save_directory=None,
+    fname=None,
+) -> list[str | plt.Figure]:
+    """rough replacement of original quick2D
+    
+    Returns
+    -------
+    list
+        if autosave, a list of saved image files (if any).
+        if not, a list of Figures
+
+    """
+    out = _quick2D(
+        data,
+        xaxis,
+        yaxis,
+        at=at,
+        channel=channel,
+        cmap=cmap,
+        contours=contours,
+        pixelated=pixelated,
+        dynamic_range=dynamic_range,
+        local=local,
+        contours_local=contours_local,
+        autosave=autosave,
+        save_directory=save_directory,
+        fname=fname,
+    )()
 
 # a wrapper for instance generation with explicit kwargs, docstring, typing
 def quick2Ds(
