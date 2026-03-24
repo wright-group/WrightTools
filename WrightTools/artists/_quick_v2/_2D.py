@@ -115,6 +115,7 @@ class Quick2DIterator(ChopIteratorBase):
 
 class Quick2DLegacy(Quick2DIterator):
     """subclass meant to maintain old quick2D functionality"""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # pre-calculate the number of plots to decide whether to make a folder
@@ -135,8 +136,9 @@ class Quick2DLegacy(Quick2DIterator):
     def __call__(self):
         if self.autosave:
             out = [self.filepath for _ in self]
-        else: # unique figures; stops at fig limit
+        else:  # unique figures; stops at fig limit
             from itertools import takewhile
+
             out = []
             for i, fig in enumerate(self.__iter__()):
                 print(i)
@@ -151,6 +153,7 @@ class Quick2DLegacy(Quick2DIterator):
                 )
             # last figure is empty
             plt.close(fig)
+
 
 def _quick2D(
     data,
@@ -186,6 +189,7 @@ def _quick2D(
         fname=fname,
     )
 
+
 def quick2D(
     data,
     xaxis: int | str = 0,
@@ -203,7 +207,7 @@ def quick2D(
     fname=None,
 ) -> list[str | plt.Figure]:
     """rough replacement of original quick2D
-    
+
     Returns
     -------
     list
@@ -227,6 +231,7 @@ def quick2D(
         save_directory=save_directory,
         fname=fname,
     )()
+
 
 # a wrapper for instance generation with explicit kwargs, docstring, typing
 def quick2Ds(

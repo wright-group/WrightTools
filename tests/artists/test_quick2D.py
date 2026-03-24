@@ -5,7 +5,6 @@ import pathlib
 import WrightTools as wt
 from WrightTools import datasets
 
-
 quick2D = wt.artists.quick_v2.quick2D
 _quick2D = wt.artists._quick_v2._2D._quick2D
 
@@ -31,9 +30,7 @@ def test_save_arguments():
     assert handler.nfigs == 52
     assert handler.save_directory.parent == pathlib.Path.cwd()
     assert handler.filepath_seed == "{0:0>3}.png"
-    handler = _quick2D(
-        data, 0, 2, autosave=True, save_directory="some_filepath", fname="test"
-    )
+    handler = _quick2D(data, 0, 2, autosave=True, save_directory="some_filepath", fname="test")
     assert handler.save_directory.parent == pathlib.Path("some_filepath")
     assert handler.filepath_seed == "test {0:0>3}.png"
 
