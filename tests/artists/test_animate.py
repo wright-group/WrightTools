@@ -1,6 +1,5 @@
 """smokescreen tests for animation functions"""
 
-
 import WrightTools as wt
 from WrightTools import datasets
 from matplotlib import pyplot as plt
