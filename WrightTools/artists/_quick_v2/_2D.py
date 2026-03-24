@@ -49,7 +49,6 @@ class Quick2DIterator(ChopIteratorBase):
         self.contours = self.kwargs.pop("contours")
         self.contours_local = self.kwargs.pop("contours_local")
         self.draw_figure()
-        assert isinstance(self.fig, plt.Figure)
 
     def draw_figure(self):
         """initialize figure and create object attrs that will be used to update"""
@@ -73,7 +72,7 @@ class Quick2DIterator(ChopIteratorBase):
         self.colorbar = None
         self.img = None
 
-    def update_figure(self, d):
+    def update_figure(self, d) -> plt.Figure:
         # unpack data -------------------------------------------------------------------------
         channel = d.channels[self.channel_index]
         # colors ------------------------------------------------------------------------------
