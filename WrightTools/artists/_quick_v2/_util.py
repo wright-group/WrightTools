@@ -71,6 +71,7 @@ class ChopIteratorBase:
         self.sliced_constants = [
             data.axis_expressions[i] for i in range(len(shape)) if not self.channel_slice[i]
         ]
+
         if self.autosave:
             self.save_directory, self.filepath_seed = _filepath_seed(
                 save_directory,
@@ -81,8 +82,6 @@ class ChopIteratorBase:
         self.logger.info(f"{self.kwargs=}")
 
     def __iter__(self):
-        if self.autosave:
-            self.save_directory.mkdir(exist_ok=True)
         with closing(self.data._from_slice(self.channel_slice)) as sliced:
             for constant in self.sliced_constants:
                 sliced.remove_constant(constant, verbose=False)
@@ -93,14 +92,14 @@ class ChopIteratorBase:
                 )
             ):
                 if self.autosave:
+                    self.save_directory.mkdir(exist_ok=True)
                     filepath = self.save_directory / self.filepath_seed.format(i)
-                    self.savefig(figi, filepath)
+                    self.filepath = self.savefig(figi, filepath)
                     self.logger.info(f"image {i} saved at {filepath}")
-                    self.filepath = filepath
                 yield figi
 
-    def savefig(self, fig, filepath):
-        """factored here so that it can be overloaded if needed"""
+    def savefig(self, fig, filepath) -> str:
+        """factored save method; can be overloaded as needed"""
         savefig(filepath, fig=fig, facecolor="white", close=False)
 
     @abstractmethod
