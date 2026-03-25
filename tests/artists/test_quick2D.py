@@ -5,6 +5,9 @@ import pathlib
 import WrightTools as wt
 from WrightTools import datasets
 
+quick2D = wt.artists.quick_v2.quick2D
+_quick2D = wt.artists._quick_v2._2D._quick2D
+
 
 def test_backend():
     import matplotlib
@@ -22,14 +25,12 @@ def test_save_arguments():
             break
         except:
             pass
-    handler = wt.artists._quick._quick2D(data, 0, 2, autosave=True)
+    handler = _quick2D(data, 0, 2, autosave=True)
     assert handler.nD == 2
     assert handler.nfigs == 52
     assert handler.save_directory.parent == pathlib.Path.cwd()
     assert handler.filepath_seed == "{0:0>3}.png"
-    handler = wt.artists._quick._quick2D(
-        data, 0, 2, autosave=True, save_directory="some_filepath", fname="test"
-    )
+    handler = _quick2D(data, 0, 2, autosave=True, save_directory="some_filepath", fname="test")
     assert handler.save_directory.parent == pathlib.Path("some_filepath")
     assert handler.filepath_seed == "test {0:0>3}.png"
 
@@ -44,10 +45,10 @@ def test_perovskite():
             break
         except:
             pass
-    handler = wt.artists._quick._quick2D(data, xaxis=0, yaxis=2, at={"w2": [1.7, "eV"]})
+    handler = _quick2D(data, xaxis=0, yaxis=2, at={"w2": [1.7, "eV"]})
     assert handler.nD == 2
     assert handler.autosave == False
-    handler(True)
+    handler()
 
 
 def test_contourf_option():
@@ -63,8 +64,8 @@ def test_contourf_option():
     data.transform("w1", "w2", "w3")
     data.moment(2, 0, 0)
     # moments bug(?): moment is not signed, even though the data is
-    handler = wt.artists._quick._quick2D(data, channel=-1, pixelated=False)
-    handler(True)
+    handler = _quick2D(data, channel=-1, pixelated=False)
+    handler()
 
 
 def test_4D():
@@ -85,7 +86,7 @@ def test_4D():
     data.create_variable("w3", values=w3[None, None, :, None], units="wn", label="3")
     data.create_variable("d1", values=tau[None, None, None, :], units="ps")
     data.transform("w1", "w2", "w3", "d1")
-    wt.artists.quick2D(data, xaxis=0, yaxis=1, contours=3)
+    quick2D(data, xaxis=0, yaxis=1, contours=3)
 
 
 def test_remove_uninvolved_dimensions():
@@ -101,8 +102,8 @@ def test_remove_uninvolved_dimensions():
     data.transform("w1", "w2", "w3")
     data.moment(2, 0, 0)
     # moments bug(?): moment is not signed, even though the data is
-    handler = wt.artists._quick._quick2D(data, channel=-1)
-    handler(True)
+    handler = _quick2D(data, channel=-1)
+    handler()
 
 
 if __name__ == "__main__":

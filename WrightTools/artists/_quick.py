@@ -70,6 +70,7 @@ class ChopHandler:
             )
 
     def __call__(self, verbose=False) -> List[Union[str, plt.Figure]]:
+        """run the whole list of chopped objects as a batch"""
         out = list()
         if self.autosave:
             self.save_directory.mkdir(exist_ok=True)
@@ -335,6 +336,8 @@ def _quick2D(
             )
             ax = plt.subplot(gs[0])
             ax.patch.set_facecolor("w")
+            cax = plt.subplot(gs[1])
+
             # colors ------------------------------------------------------------------------------
             norm = norm_from_channel(
                 channel if local else self.data.channels[self.channel_index],
@@ -355,7 +358,6 @@ def _quick2D(
             self.decorate(ax, *d.axes)
             _title(fig, self.data.natural_name, subtitle=self.annotate_constants(d))
             # colorbar
-            cax = plt.subplot(gs[1])
             plot_colorbar(
                 cax=cax, cmap=img.get_cmap(), ticks=norm_ticks, label=channel.natural_name
             )
