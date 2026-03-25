@@ -155,6 +155,7 @@ class Quick2DLegacy(Quick2DIterator):
             plt.close(fig)
         return out
 
+
 def _quick2D(
     data,
     xaxis: int | str = 0,
