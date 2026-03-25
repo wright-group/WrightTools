@@ -153,7 +153,7 @@ class Quick2DLegacy(Quick2DIterator):
                 )
             # last figure is empty
             plt.close(fig)
-
+        return out
 
 def _quick2D(
     data,
@@ -215,7 +215,7 @@ def quick2D(
         if not, a list of Figures
 
     """
-    out = _quick2D(
+    return _quick2D(
         data,
         xaxis,
         yaxis,
