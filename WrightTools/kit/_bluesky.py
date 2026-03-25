@@ -12,7 +12,6 @@ from typing import NamedTuple, Generator, Iterable
 
 from .._open import open as wt5_open
 
-
 __folder_parts__ = [
     r"(?P<date>\d\d\d\d-\d\d-\d\d)",
     r"(?P<time>" + r"\d{5}" + ")",
