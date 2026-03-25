@@ -1,14 +1,12 @@
 #! /usr/bin/env python3
 """Test chop."""
 
-
 # --- import -------------------------------------------------------------------------------------
 
 
 import numpy as np
 import WrightTools as wt
 from WrightTools import datasets
-
 
 # --- tests --------------------------------------------------------------------------------------
 

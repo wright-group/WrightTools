@@ -14,7 +14,6 @@ from ._data import Data
 from .. import exceptions as wt_exceptions
 from numpy.lib.npyio import DataSource
 
-
 # --- define --------------------------------------------------------------------------------------
 
 

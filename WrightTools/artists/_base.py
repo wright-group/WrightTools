@@ -16,7 +16,6 @@ from .. import kit as wt_kit
 from ..data import Data
 from ._colors import colormaps
 
-
 # --- define -------------------------------------------------------------------------------------
 
 
@@ -502,10 +501,8 @@ class Axes(matplotlib.axes.Axes):
                 coords.append(axis)
 
             if "c" in kwargs.keys():
-                raise KeyError(
-                    "'c' kwarg not allowed when data object provided. \
-                    Use `cmap` instead to control colors."
-                )
+                raise KeyError("'c' kwarg not allowed when data object provided. \
+                    Use `cmap` instead to control colors.")
 
             channel = kwargs.pop("channel", 0)
             channel_index = wt_kit.get_index(data.channel_names, channel)

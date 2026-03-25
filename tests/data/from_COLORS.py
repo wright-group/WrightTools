@@ -1,7 +1,6 @@
 #! /usr/bin/env python3
 """test from_COLORS"""
 
-
 # --- import --------------------------------------------------------------------------------------
 
 import pytest
@@ -11,7 +10,6 @@ import os
 
 import WrightTools as wt
 from WrightTools import datasets
-
 
 # --- helper functions ----------------------------------------------------------------------------
 

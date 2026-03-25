@@ -6,7 +6,6 @@
 import WrightTools as wt
 from WrightTools import datasets
 
-
 # --- test ----------------------------------------------------------------------------------------
 
 

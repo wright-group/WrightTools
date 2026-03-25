@@ -10,7 +10,6 @@ from scipy.interpolate import UnivariateSpline
 
 from ._array import remove_nans_1D
 
-
 # --- define --------------------------------------------------------------------------------------
 
 
