@@ -15,6 +15,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ### Changed
 - `interact2D`: replaced SimpleNamespace object with a dataclass for more explicit typing
 - `quick2D`: `__iter__` method added which modifies the same figure over and over instead of writing new figures for each chop object
+
+## [3.6.3]
+
+### Changed
 - `Data.norm_for_each`: allow for normlization for each combination of a set of variables
 - docs use updated Sphinx packages
 - docs: new example showing norms interfacing with data objects
@@ -463,7 +467,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ### Added
 - initial release
 
-[Unreleased]: https://github.com/wright-group/WrightTools/-/compare/3.6.2...master
+[Unreleased]: https://github.com/wright-group/WrightTools/-/compare/3.6.3...master
+[3.6.3]: https://github.com/wright-group/WrightTools/compare/3.6.2...3.6.3
 [3.6.2]: https://github.com/wright-group/WrightTools/compare/3.6.1...3.6.2
 [3.6.1]: https://github.com/wright-group/WrightTools/compare/3.6.0...3.6.1
 [3.6.0]: https://github.com/wright-group/WrightTools/compare/3.5.5...3.6.0
