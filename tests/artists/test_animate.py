@@ -3,6 +3,10 @@
 import WrightTools as wt
 from WrightTools import datasets
 from matplotlib import pyplot as plt
+import logging
+
+
+logging.basicConfig(level="INFO")
 
 
 def test_animate2D():
@@ -30,7 +34,7 @@ def test_animate_quick2D():
     d = wt.open(datasets.wt5.v1p0p1_MoS2_TrEE_movie)
     d.channels[0].signed = True
 
-    quick2D = wt.artists._quick_v2.quick2Ds(d)
+    quick2D = wt.artists._quick_v2.quick2Ds(d, autosave=True)
 
     ani = wt.artists.animate_quick2Ds(quick2D, interval=100)
     return ani
