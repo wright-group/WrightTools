@@ -16,6 +16,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 - `interact2D`: replaced SimpleNamespace object with a dataclass for more explicit typing
 - `quick2D`: `__iter__` method added which modifies the same figure over and over instead of writing new figures for each chop object
 
+### Fixed
+- `Data.squeeze`: axes of output object now inherit units from axes of the input object
+
 ## [3.6.3]
 
 ### Changed
