@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Fixed
+- `Data.squeeze`: axes of output object now inherit units from axes of the input object
+
 ## [3.6.3]
 
 ### Changed
