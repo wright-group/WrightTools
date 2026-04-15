@@ -5,7 +5,6 @@ from WrightTools import datasets
 from matplotlib import pyplot as plt
 import logging
 
-
 logging.basicConfig(level="INFO")
 
 
