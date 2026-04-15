@@ -36,7 +36,7 @@ def test_squeeze_units():
 
     ds = d.squeeze(name="squeezed")
     for axn in d.axis_names:
-        assert d[axn].units == d[axn].units
+        assert ds[axn].units == d[axn].units
 
 
 def test_constants():
@@ -51,6 +51,6 @@ def test_constants():
 
 
 if __name__ == "__main__":
-    # test_squeeze()
+    test_squeeze()
     test_squeeze_units()
-    # test_constants()
+    test_constants()
