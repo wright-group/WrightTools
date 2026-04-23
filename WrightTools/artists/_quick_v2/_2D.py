@@ -113,6 +113,7 @@ class Quick2DIterator(ChopIteratorBase):
 
 Quick2DLegacy = legacy_quick_class(Quick2DIterator)
 
+
 def _quick2D(
     data,
     xaxis: int | str = 0,
