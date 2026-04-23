@@ -9,7 +9,7 @@ from .._helpers import (
 )
 from ._util import ChopIteratorBase, legacy_quick_class, annotate_constants
 
-__all__ = ["Quick1Ds", "Quick1D", "Quick1DIterator", "Quick1DLegacy"]
+__all__ = ["quick1Ds", "quick1D", "Quick1DIterator", "Quick1DLegacy"]
 
 
 class Quick1DIterator(ChopIteratorBase):
