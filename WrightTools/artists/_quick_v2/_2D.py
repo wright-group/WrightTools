@@ -3,7 +3,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from functools import reduce
 from typing import Iterator
 
 from .._helpers import (
@@ -12,7 +11,7 @@ from .._helpers import (
     norm_from_channel,
     ticks_from_norm,
 )
-from ._util import ChopIteratorBase, annotate_constants
+from ._util import ChopIteratorBase, legacy_quick_class, annotate_constants
 
 # --- define --------------------------------------------------------------------------------------
 
@@ -112,51 +111,7 @@ class Quick2DIterator(ChopIteratorBase):
         return self.fig
 
 
-def legacy_quick_class(quick_cls):
-    """wrap new class into to provide the old quicknD functionality"""
-
-    class QuickLegacy(quick_cls):
-        """subclass meant to maintain old quick2D functionality"""
-
-        def __init__(self, *args, **kwargs):
-            super().__init__(*args, **kwargs)
-            # pre-calculate the number of plots to decide whether to make a folder
-            shape = self.data.channels[self.channel_index].shape
-            uninvolved_shape = (
-                size if self.channel_slice[i] == 0 else 1 for i, size in enumerate(shape)
-            )
-            removed_shape = self.data._chop_prep(*[a.expression for a in self.axes], at=self.at)[0]
-            self.nfigs = reduce(int.__mul__, removed_shape) // reduce(
-                int.__mul__, uninvolved_shape
-            )
-            if self.nfigs > 10 and not self.autosave:
-                print(
-                    f"number of expected figures ({self.nfigs}) is greater than the limit"
-                    + f"({self.max_figures}).  Only the first {self.max_figures} figures will be processed."
-                )
-            if self.nfigs < 2 and self.autosave:  # undo the folder creation
-                self.save_directory = self.save_directory.parent
-
-        def __call__(self):
-            if self.autosave:
-                out = [self.filepath for _ in self]
-            else:  # unique figures; stops at fig limit
-                out = []
-                for i, fig in enumerate(self.__iter__()):
-                    print(i)
-                    out.append(fig)
-                    if i > 9:
-                        break
-                    self.draw_figure()
-                if i == 10:
-                    raise Warning(
-                        f"number of figures reached the limit (10). "
-                        + f"Only the first 10 figures will be processed."
-                    )
-                # last figure is empty
-                plt.close(fig)
-            return out
-
+Quick2DLegacy = legacy_quick_class(Quick2DIterator)
 
 def _quick2D(
     data,
