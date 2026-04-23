@@ -4,6 +4,7 @@ import pathlib
 import logging
 
 import matplotlib.pyplot as plt
+from functools import reduce
 
 from .._helpers import savefig
 from ... import kit as wt_kit
@@ -109,7 +110,7 @@ class ChopIteratorBase:
         This function should return a figure instance.
         If fig is provided, it should decorate the provided figure
         """
-        ...
+        raise NotImplementedError("Each subclass must define this function")
 
     def decorate(self, ax, *axes):
         ax.tick_params(axis="x", labelrotation=45, labelsize=14)
@@ -150,3 +151,51 @@ def annotate_constants(d, ax):
                 c.convert(d.axes[1].units)
                 ax.axhline(c.value, color="k", linewidth=4, alpha=0.25)
     return ", ".join(ls)
+
+
+def legacy_quick_class(quick_cls):
+    """wrap new class into to provide the old quicknD functionality
+    """
+
+    class QuickLegacy(quick_cls):
+        """subclass meant to maintain old quick2D functionality"""
+
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            # pre-calculate the number of plots to decide whether to make a folder
+            shape = self.data.channels[self.channel_index].shape
+            uninvolved_shape = (
+                size if self.channel_slice[i] == 0 else 1 for i, size in enumerate(shape)
+            )
+            removed_shape = self.data._chop_prep(*[a.expression for a in self.axes], at=self.at)[0]
+            self.nfigs = reduce(int.__mul__, removed_shape) // reduce(int.__mul__, uninvolved_shape)
+            if self.nfigs > 10 and not self.autosave:
+                print(
+                    f"number of expected figures ({self.nfigs}) is greater than the limit"
+                    + f"({self.max_figures}).  Only the first {self.max_figures} figures will be processed."
+                )
+            if self.nfigs < 2 and self.autosave:  # undo the folder creation
+                self.save_directory = self.save_directory.parent
+
+        def __call__(self):
+            if self.autosave:
+                out = [self.filepath for _ in self]
+            else:  # unique figures; stops at fig limit
+                out = []
+                for i, fig in enumerate(self.__iter__()):
+                    print(i)
+                    out.append(fig)
+                    if i > 9:
+                        break
+                    self.draw_figure()
+                if i == 10:
+                    raise Warning(
+                        f"number of figures reached the limit (10). "
+                        + f"Only the first 10 figures will be processed."
+                    )
+                # last figure is empty
+                plt.close(fig)
+            return out
+
+    return QuickLegacy
+

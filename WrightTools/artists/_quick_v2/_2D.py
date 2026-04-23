@@ -4,7 +4,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from functools import reduce
-from itertools import count, takewhile
 from typing import Iterator
 
 from .._helpers import (
@@ -113,47 +112,49 @@ class Quick2DIterator(ChopIteratorBase):
         return self.fig
 
 
-class Quick2DLegacy(Quick2DIterator):
-    """subclass meant to maintain old quick2D functionality"""
+def legacy_quick_class(quick_cls):
+    """wrap new class into to provide the old quicknD functionality
+    """
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # pre-calculate the number of plots to decide whether to make a folder
-        shape = self.data.channels[self.channel_index].shape
-        uninvolved_shape = (
-            size if self.channel_slice[i] == 0 else 1 for i, size in enumerate(shape)
-        )
-        removed_shape = self.data._chop_prep(*[a.expression for a in self.axes], at=self.at)[0]
-        self.nfigs = reduce(int.__mul__, removed_shape) // reduce(int.__mul__, uninvolved_shape)
-        if self.nfigs > 10 and not self.autosave:
-            print(
-                f"number of expected figures ({self.nfigs}) is greater than the limit"
-                + f"({self.max_figures}).  Only the first {self.max_figures} figures will be processed."
+    class QuickLegacy(quick_cls):
+        """subclass meant to maintain old quick2D functionality"""
+
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            # pre-calculate the number of plots to decide whether to make a folder
+            shape = self.data.channels[self.channel_index].shape
+            uninvolved_shape = (
+                size if self.channel_slice[i] == 0 else 1 for i, size in enumerate(shape)
             )
-        if self.nfigs < 2 and self.autosave:  # undo the folder creation
-            self.save_directory = self.save_directory.parent
-
-    def __call__(self):
-        if self.autosave:
-            out = [self.filepath for _ in self]
-        else:  # unique figures; stops at fig limit
-            from itertools import takewhile
-
-            out = []
-            for i, fig in enumerate(self.__iter__()):
-                print(i)
-                out.append(fig)
-                if i > 9:
-                    break
-                self.draw_figure()
-            if i == 10:
-                raise Warning(
-                    f"number of figures reached the limit (10). "
-                    + f"Only the first 10 figures will be processed."
+            removed_shape = self.data._chop_prep(*[a.expression for a in self.axes], at=self.at)[0]
+            self.nfigs = reduce(int.__mul__, removed_shape) // reduce(int.__mul__, uninvolved_shape)
+            if self.nfigs > 10 and not self.autosave:
+                print(
+                    f"number of expected figures ({self.nfigs}) is greater than the limit"
+                    + f"({self.max_figures}).  Only the first {self.max_figures} figures will be processed."
                 )
-            # last figure is empty
-            plt.close(fig)
-        return out
+            if self.nfigs < 2 and self.autosave:  # undo the folder creation
+                self.save_directory = self.save_directory.parent
+
+        def __call__(self):
+            if self.autosave:
+                out = [self.filepath for _ in self]
+            else:  # unique figures; stops at fig limit
+                out = []
+                for i, fig in enumerate(self.__iter__()):
+                    print(i)
+                    out.append(fig)
+                    if i > 9:
+                        break
+                    self.draw_figure()
+                if i == 10:
+                    raise Warning(
+                        f"number of figures reached the limit (10). "
+                        + f"Only the first 10 figures will be processed."
+                    )
+                # last figure is empty
+                plt.close(fig)
+            return out
 
 
 def _quick2D(
@@ -251,7 +252,7 @@ def quick2Ds(
     save_directory=None,
     fname=None,
 ) -> Iterator[plt.Figure]:
-    """Quickly generator of 2D image frames. Wraps class `Quick2D` class with explicit kwargs
+    """Quick generator of 2D image frames. Wraps `Quick2D` class with explicit kwargs
 
     Parameters
     ----------
@@ -288,8 +289,6 @@ def quick2Ds(
          Location to save image(s). Default is None (auto-generated).
     fname : string (optional)
          File name. If None, data name is used. Default is None.
-    verbose : boolean (optional)
-        Toggle talkback. Default is True.
 
     Returns
     -------
