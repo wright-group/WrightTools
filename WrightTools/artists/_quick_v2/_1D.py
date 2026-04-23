@@ -9,7 +9,6 @@ from .._helpers import (
 )
 from ._util import ChopIteratorBase, legacy_quick_class, annotate_constants
 
-
 __all__ = ["Quick1Ds", "Quick1D", "Quick1DIterator", "Quick1DLegacy"]
 
 
@@ -27,9 +26,7 @@ class Quick1DIterator(ChopIteratorBase):
         """initialize figure and create object attrs that will be used to update"""
         xaxis = self.data.get_axis(self.axes[0])
         aspect = 1
-        self.fig, gs = create_figure(
-            width="single", nrows=1, cols=[1], aspects=[[[0, 0], aspect]]
-        )
+        self.fig, gs = create_figure(width="single", nrows=1, cols=[1], aspects=[[[0, 0], aspect]])
         self.ax = plt.subplot(gs[0])
         self.ax.patch.set_facecolor("w")
         self.cax = plt.subplot(gs[1])
@@ -98,7 +95,7 @@ def quick1Ds(
          Location to save image(s). Default is None (auto-generated).
     fname : string (optional)
          File name. If None, data name is used. Default is None.
-    
+
     Returns
     -------
     Iterable
@@ -114,13 +111,9 @@ def quick1Ds(
     ...
 
 
-
-
 def _quick1D():
     """wrapper of Quick1DLegacy to supply kwarg arguments"""
     ...
 
 
-def quick1D():
-    ...
-
+def quick1D(): ...

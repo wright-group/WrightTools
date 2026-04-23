@@ -154,8 +154,7 @@ def annotate_constants(d, ax):
 
 
 def legacy_quick_class(quick_cls):
-    """wrap new class into to provide the old quicknD functionality
-    """
+    """wrap new class into to provide the old quicknD functionality"""
 
     class QuickLegacy(quick_cls):
         """subclass meant to maintain old quick2D functionality"""
@@ -168,7 +167,9 @@ def legacy_quick_class(quick_cls):
                 size if self.channel_slice[i] == 0 else 1 for i, size in enumerate(shape)
             )
             removed_shape = self.data._chop_prep(*[a.expression for a in self.axes], at=self.at)[0]
-            self.nfigs = reduce(int.__mul__, removed_shape) // reduce(int.__mul__, uninvolved_shape)
+            self.nfigs = reduce(int.__mul__, removed_shape) // reduce(
+                int.__mul__, uninvolved_shape
+            )
             if self.nfigs > 10 and not self.autosave:
                 print(
                     f"number of expected figures ({self.nfigs}) is greater than the limit"
@@ -198,4 +199,3 @@ def legacy_quick_class(quick_cls):
             return out
 
     return QuickLegacy
-
