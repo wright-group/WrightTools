@@ -19,7 +19,7 @@ class Quick1DIterator(ChopIteratorBase):
         super().__init__(*args, **kwargs)
         self.local = self.kwargs.pop("local")
         self.draw_figure()
-        defaults = dict(lw=2, autolabel=True, marker="o", markeredgewidth=0, autolable="both")
+        defaults = dict(lw=2, autolabel=True, marker="o", markeredgewidth=0, autolabel="both")
         for k, v in defaults.items():
             if k not in self.kwargs:
                 self.kwargs[k] = v
