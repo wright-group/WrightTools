@@ -106,7 +106,7 @@ def quick1Ds(
         local=local,
         autosave=autosave,
         save_directory=save_directory,
-        fname=fname
+        fname=fname,
     )
 
 
