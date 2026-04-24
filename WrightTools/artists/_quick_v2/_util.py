@@ -154,7 +154,7 @@ def annotate_constants(d, ax):
 
 
 def legacy_quick_class(quick_cls):
-    """wrap new class to generate a class with the old quicknD functionality"""
+    """wraps a v2 class to generate a class with the old quicknD functionality"""
 
     class QuickLegacy(quick_cls):
         """subclass meant to maintain old quick2D functionality"""
