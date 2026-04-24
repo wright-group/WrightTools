@@ -14,6 +14,7 @@ __all__ = ["quick1Ds", "quick1D", "Quick1DIterator", "Quick1DLegacy"]
 
 class Quick1DIterator(ChopIteratorBase):
     """1D plot iterator that creates a single figure, refreshing the content on each iteration."""
+
     defaults = dict(lw=2, marker="o", markeredgewidth=0, autolabel="both")
 
     def __init__(self, *args, **kwargs):
