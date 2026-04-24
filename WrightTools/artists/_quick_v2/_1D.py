@@ -1,6 +1,5 @@
 """quick1D"""
 
-import numpy as np
 import matplotlib.pyplot as plt
 
 from .._helpers import (
@@ -29,7 +28,6 @@ class Quick1DIterator(ChopIteratorBase):
         self.fig, gs = create_figure(width="single", nrows=1, cols=[1], aspects=[[[0, 0], aspect]])
         self.ax = plt.subplot(gs[0])
         self.ax.patch.set_facecolor("w")
-        self.cax = plt.subplot(gs[1])
         self.subtitle = _title(self.fig, "", subtitle="")
         self.decorate(self.ax, xaxis)
         self.colorbar = None
@@ -41,6 +39,10 @@ class Quick1DIterator(ChopIteratorBase):
         # decoration --------------------------------------------------------------------------
         self.fig.suptitle(self.data.natural_name)
         self.subtitle.set_text(annotate_constants(d, self.ax))
+        if self.img is None:
+            self.img = self.ax.plot(d, channel=self.channel_index, **self.kwargs)
+        else:
+            self.img.set_data(d.axis[:].squeeze(), d.channels[self.channel_index].squeeze())
         self.fig.canvas.draw_idle()
         plt.sca(self.ax)
         return self.fig
@@ -51,7 +53,7 @@ Quick1DLegacy = legacy_quick_class(Quick1DIterator)
 
 def quick1Ds(
     data,
-    xaxis: int | str = 0,
+    axis: int | str = 0,
     at: dict = {},
     channel: int | str = 0,
     local: bool = False,
@@ -66,27 +68,15 @@ def quick1Ds(
     ----------
     data : WrightTools.Data object.
         Data to plot.
-    xaxis : string or integer (optional)
+    axis : string or integer (optional)
         Expression or index of horizontal axis. Default is 0.
     at : dictionary (optional)
         Dictionary of parameters in non-plotted dimension(s). If not
         provided, plots will be made at each coordinate.
-    cmap : Colormap
-        Colormap to use.  If None, will use "default" or "signed" depending on channel values.
     channel : string or integer (optional)
         Name or index of channel to plot. Default is 0.
-    contours : integer (optional)
-        The number of black contour lines to add to the plot. Default is 0.
-    pixelated : boolean (optional)
-        Toggle between pcolor and contourf (deulaney) plotting backends.
-        Default is True (pcolor).
-    dynamic_range : boolean (optional)
-        Force the colorbar to use all of its colors. Only changes behavior
-        for signed channels. Default is False.
     local : boolean (optional)
         Toggle plotting locally. Default is False.
-    contours_local : boolean (optional)
-        Toggle plotting black contour lines locally. Default is True.
     autosave : boolean (optional)
         Toggle saving plots (True) as files or diplaying interactive (False).
         Default is False. When autosave is False, the number of plots is truncated by
@@ -108,12 +98,58 @@ def quick1Ds(
         plt.show()  # save and show member interactively
 
     """
-    ...
+    return Quick1DIterator(
+        data,
+        axis,
+        at=at,
+        channel=channel,
+        local=local,
+        autosave=autosave,
+        save_directory=save_directory,
+        fname=fname
+    )
 
 
-def _quick1D():
+def _quick1D(
+    data,
+    axis: int | str = 0,
+    at: dict = {},
+    channel: int | str = 0,
+    local: bool = False,
+    autosave: bool = False,
+    save_directory=None,
+    fname=None,
+):
     """wrapper of Quick1DLegacy to supply kwarg arguments"""
-    ...
+    return Quick1DLegacy(
+        data,
+        axis,
+        at=at,
+        channel=channel,
+        local=local,
+        autosave=autosave,
+        save_directory=save_directory,
+        fname=fname,
+    )
 
 
-def quick1D(): ...
+def quick1D(
+    data,
+    axis: int | str = 0,
+    at: dict = {},
+    channel: int | str = 0,
+    local: bool = False,
+    autosave: bool = False,
+    save_directory=None,
+    fname=None,
+):
+    return _quick1D(
+        data,
+        axis,
+        at=at,
+        channel=channel,
+        local=local,
+        autosave=autosave,
+        save_directory=save_directory,
+        fname=fname,
+    )()

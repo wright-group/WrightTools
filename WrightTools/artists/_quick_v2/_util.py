@@ -77,7 +77,7 @@ class ChopIteratorBase:
             self.save_directory, self.filepath_seed = _filepath_seed(
                 save_directory,
                 fname,
-                f"quick{self.nD}D",
+                self.__class__.__name__,
             )
         self.kwargs = kwargs
         self.logger.info(f"{self.kwargs=}")
@@ -154,13 +154,14 @@ def annotate_constants(d, ax):
 
 
 def legacy_quick_class(quick_cls):
-    """wrap new class into to provide the old quicknD functionality"""
+    """wrap new class to generate a class with the old quicknD functionality"""
 
     class QuickLegacy(quick_cls):
         """subclass meant to maintain old quick2D functionality"""
 
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
+            self.max_figures = kwargs.get("max_figures", 10)
             # pre-calculate the number of plots to decide whether to make a folder
             shape = self.data.channels[self.channel_index].shape
             uninvolved_shape = (
@@ -170,7 +171,7 @@ def legacy_quick_class(quick_cls):
             self.nfigs = reduce(int.__mul__, removed_shape) // reduce(
                 int.__mul__, uninvolved_shape
             )
-            if self.nfigs > 10 and not self.autosave:
+            if self.nfigs > self.max_figures and not self.autosave:
                 print(
                     f"number of expected figures ({self.nfigs}) is greater than the limit"
                     + f"({self.max_figures}).  Only the first {self.max_figures} figures will be processed."
@@ -189,7 +190,7 @@ def legacy_quick_class(quick_cls):
                     if i > 9:
                         break
                     self.draw_figure()
-                if i == 10:
+                if i == self.max_figures:
                     raise Warning(
                         f"number of figures reached the limit (10). "
                         + f"Only the first 10 figures will be processed."
