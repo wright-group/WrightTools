@@ -1,6 +1,7 @@
 """quick1D"""
 
 import matplotlib.pyplot as plt
+import numpy as np
 
 from .._helpers import (
     _title,
@@ -13,14 +14,14 @@ __all__ = ["quick1Ds", "quick1D", "Quick1DIterator", "Quick1DLegacy"]
 
 class Quick1DIterator(ChopIteratorBase):
     """1D plot iterator that creates a single figure, refreshing the content on each iteration."""
+    defaults = dict(lw=2, marker="o", markeredgewidth=0, autolabel="both")
 
     def __init__(self, *args, **kwargs):
         self._global_limits = None
         super().__init__(*args, **kwargs)
         self.local = self.kwargs.pop("local")
         self.draw_figure()
-        defaults = dict(lw=2, autolabel=True, marker="o", markeredgewidth=0, autolabel="both")
-        for k, v in defaults.items():
+        for k, v in self.defaults.items():
             if k not in self.kwargs:
                 self.kwargs[k] = v
 
@@ -37,7 +38,6 @@ class Quick1DIterator(ChopIteratorBase):
         self.line = None
 
     def update_figure(self, d) -> plt.Figure:
-        # decoration --------------------------------------------------------------------------
         self.fig.suptitle(self.data.natural_name)
         self.subtitle.set_text(annotate_constants(d, self.ax))
         if self.line is None:
