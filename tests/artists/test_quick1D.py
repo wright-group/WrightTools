@@ -3,9 +3,10 @@
 import numpy as np
 import WrightTools as wt
 from WrightTools import datasets
+import logging
 
-# _quick1D = wt.artists.quick_v2._1D._quick1D
 quick1D = wt.artists.quick1D
+logging.basicConfig(level="INFO")
 
 
 def test_perovskite():
