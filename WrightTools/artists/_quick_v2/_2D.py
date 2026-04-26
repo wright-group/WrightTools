@@ -3,8 +3,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from typing import Iterator
-
 from .._helpers import (
     _title,
     create_figure,
@@ -35,7 +33,10 @@ def determine_contour_levels(local_channel, global_channel, local: bool, contour
 
 
 class Quick2DIterator(ChopIteratorBase):
-    """Quick2D that creates a single figure, refreshing the content on each iteration."""
+    """
+    Iterator of 2D plots for data of ndim>=2. 
+    Creates a single figure, refreshing the content on each iteration.
+    """
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -208,7 +209,7 @@ def quick2Ds(
     autosave: bool = False,
     save_directory=None,
     fname=None,
-) -> Iterator[plt.Figure]:
+) -> Quick2DIterator:
     """Quick generator of 2D image frames. Wraps `Quick2D` class with explicit kwargs
 
     Parameters
