@@ -4,8 +4,8 @@ import numpy as np
 import WrightTools as wt
 from WrightTools import datasets
 
-quick1D = wt.artists.quick_v2.quick1D
 # _quick1D = wt.artists.quick_v2._1D._quick1D
+quick1D = wt.artists.quick1D
 
 
 def test_perovskite():

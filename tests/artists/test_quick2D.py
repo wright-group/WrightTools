@@ -5,8 +5,8 @@ import pathlib
 import WrightTools as wt
 from WrightTools import datasets
 
-quick2D = wt.artists.quick_v2.quick2D
-_quick2D = wt.artists._quick_v2._2D._quick2D
+quick2D = wt.artists.quick2D
+_quick2D = wt.artists._quick2D
 
 
 def test_backend():

@@ -33,7 +33,7 @@ def test_animate_quick2D():
     d = wt.open(datasets.wt5.v1p0p1_MoS2_TrEE_movie)
     d.channels[0].signed = True
 
-    quick2D = wt.artists._quick_v2.quick2Ds(d, autosave=True)
+    quick2D = wt.artists.quick2Ds(d, autosave=True)
 
     ani = wt.artists.animate_quick(quick2D, interval=100)
     return ani
@@ -41,7 +41,7 @@ def test_animate_quick2D():
 
 def test_animate_quick1D():
     d = wt.open(datasets.wt5.v1p0p1_MoS2_TrEE_movie).at(d2=[0, "fs"])
-    quick1D = wt.artists._quick_v2.quick1Ds(d, autosave=False, local=False)
+    quick1D = wt.artists.quick1Ds(d, autosave=False, local=False)
 
     ani = wt.artists.animate_quick(quick1D, interval=100)
     return ani
