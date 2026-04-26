@@ -146,6 +146,14 @@ def animate_quick(q2d: Quick1DIterator | Quick2DIterator, **kwargs) -> FuncAnima
     **kwargs: dict items
         all extra kwargs are passed to matplotlib.FuncAnimation
 
+        
+    Example
+    -------
+    ```python
+    quick_iter = wt.artists.quick1Ds(data, autosave=False, local=False)
+    ani = wt.artists.animate_quick(quick_iter, interval=100)
+    ```
+
     """
 
     return FuncAnimation(fig=q2d.fig, func=lambda x: None, frames=q2d, **kwargs)
@@ -168,6 +176,13 @@ def animate_interact2D(
 
     **kwargs: dict items
         all extra kwargs are passed to matplotlib.FuncAnimation
+    
+    Example
+    -------
+    ```python
+    interactive = wt.artists.interact2D(data, local=True)
+    ani = wt.artists.animate_interact2D(interactive, back_and_forth=True, interval=500)
+    ```
     """
 
     def update(frame):

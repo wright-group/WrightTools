@@ -41,15 +41,15 @@ def test_animate_quick2D():
 
 def test_animate_quick1D():
     d = wt.open(datasets.wt5.v1p0p1_MoS2_TrEE_movie).at(d2=[0, "fs"])
-    quick1D = wt.artists.quick1Ds(d, autosave=False, local=False)
+    quick_iter = wt.artists.quick1Ds(d, autosave=False, local=False)
 
-    ani = wt.artists.animate_quick(quick1D, interval=100)
+    ani = wt.artists.animate_quick(quick_iter, interval=100)
     return ani
 
 
 if __name__ == "__main__":
-    ani1 = test_animate2D()
-    ani2 = test_animate_interact2D()
-    ani3 = test_animate_quick2D()
-    ani4 = test_animate_quick1D()
+    _unused_ani1 = test_animate2D()
+    _unused_ani2 = test_animate_interact2D()
+    _unused_ani3 = test_animate_quick2D()
+    _unused_ani4 = test_animate_quick1D()
     plt.show()
