@@ -10,7 +10,7 @@ from inspect import isclass
 
 from ._helpers import norm_from_channel
 from ._interact import interact2D_fig
-from ._quick_v2 import Quick1DIterator, Quick2DIterator
+from ._quick import Quick1DIterator, Quick2DIterator
 
 __all__ = ["animate2D", "animate_interact2D", "animate_quick"]
 logger = logging.getLogger("animation")
