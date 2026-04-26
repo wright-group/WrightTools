@@ -146,7 +146,7 @@ def animate_quick(q2d: Quick1DIterator | Quick2DIterator, **kwargs) -> FuncAnima
     **kwargs: dict items
         all extra kwargs are passed to matplotlib.FuncAnimation
 
-        
+
     Example
     -------
     ```python
@@ -176,7 +176,7 @@ def animate_interact2D(
 
     **kwargs: dict items
         all extra kwargs are passed to matplotlib.FuncAnimation
-    
+
     Example
     -------
     ```python
