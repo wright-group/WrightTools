@@ -10,9 +10,9 @@ from inspect import isclass
 
 from ._helpers import norm_from_channel
 from ._interact import interact2D_fig
-from ._quick_v2 import quick2Ds
+from ._quick_v2 import Quick1DIterator, Quick2DIterator
 
-__all__ = ["animate2D", "animate_interact2D", "animate_quick2Ds"]
+__all__ = ["animate2D", "animate_interact2D", "animate_quick"]
 logger = logging.getLogger("animation")
 
 
@@ -134,7 +134,7 @@ def animate2D(
     )
 
 
-def animate_quick2Ds(q2d: quick2Ds, **kwargs) -> FuncAnimation:
+def animate_quick(q2d: Quick1DIterator|Quick2DIterator, **kwargs) -> FuncAnimation:
     """
     animate a quick2Ds series
 
