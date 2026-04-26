@@ -42,9 +42,13 @@ class Quick1DIterator(ChopIteratorBase):
         self.fig.suptitle(self.data.natural_name)
         self.subtitle.set_text(annotate_constants(d, self.ax))
         if self.line is None:
-            self.line = self.ax.plot(d, channel=self.channel_index, **self.kwargs)
+            self.line, = self.ax.plot(d, channel=self.channel_index, **self.kwargs)
         else:
-            self.line.set_data(d.axis[:].squeeze(), d.channels[self.channel_index].squeeze())
+            self.line.set_data(d.axes[0][:].squeeze(), d.channels[self.channel_index][:].squeeze())
+        if self.local:
+            self.ax.autoscale(axis="y")
+        else:
+            self.ax.set_ylim(*self.global_limits)
         self.fig.canvas.draw_idle()
         plt.sca(self.ax)
         return self.fig

@@ -39,8 +39,17 @@ def test_animate_quick2D():
     return ani
 
 
+def test_animate_quick1D():
+    d = wt.open(datasets.wt5.v1p0p1_MoS2_TrEE_movie).at(d2=[0, "fs"])
+    quick1D = wt.artists._quick_v2.quick1Ds(d, autosave=False, local=False)
+
+    ani = wt.artists.animate_quick2Ds(quick1D, interval=100)
+    return ani
+
+
 if __name__ == "__main__":
     ani1 = test_animate2D()
     ani2 = test_animate_interact2D()
     ani3 = test_animate_quick2D()
+    ani4 = test_animate_quick1D()
     plt.show()
