@@ -14,7 +14,7 @@ __all__ = ["quick1Ds", "quick1D", "Quick1DIterator", "Quick1DLegacy"]
 
 class Quick1DIterator(ChopIteratorBase):
     """
-    Iterator of 1D plots for data of ndim>=1. 
+    Iterator of 1D plots for data of ndim>=1.
     Creates a single figure, refreshing the content on each iteration.
     """
 

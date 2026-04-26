@@ -134,7 +134,7 @@ def animate2D(
     )
 
 
-def animate_quick(q2d: Quick1DIterator|Quick2DIterator, **kwargs) -> FuncAnimation:
+def animate_quick(q2d: Quick1DIterator | Quick2DIterator, **kwargs) -> FuncAnimation:
     """
     animate a quick2Ds series
 
