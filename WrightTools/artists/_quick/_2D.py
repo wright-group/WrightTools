@@ -165,8 +165,47 @@ def quick2D(
     autosave: bool = False,
     save_directory=None,
     fname=None,
+    verbose=False,
 ) -> list[str | plt.Figure]:
-    """rough replacement of original quick2D
+    """Quickly plot 2D slice(s) of data.
+
+    Parameters
+    ----------
+    data : WrightTools.Data object.
+        Data to plot.
+    xaxis : string or integer (optional)
+        Expression or index of horizontal axis. Default is 0.
+    yaxis : string or integer (optional)
+        Expression or index of vertical axis. Default is 1.
+    at : dictionary (optional)
+        Dictionary of parameters in non-plotted dimension(s). If not
+        provided, plots will be made at each coordinate.
+    cmap : Colormap
+        Colormap to use.  If None, will use "default" or "signed" depending on channel values.
+    channel : string or integer (optional)
+        Name or index of channel to plot. Default is 0.
+    contours : integer (optional)
+        The number of black contour lines to add to the plot. Default is 0.
+    pixelated : boolean (optional)
+        Toggle between pcolor and contourf (deulaney) plotting backends.
+        Default is True (pcolor).
+    dynamic_range : boolean (optional)
+        Force the colorbar to use all of its colors. Only changes behavior
+        for signed channels. Default is False.
+    local : boolean (optional)
+        Toggle plotting locally. Default is False.
+    contours_local : boolean (optional)
+        Toggle plotting black contour lines locally. Default is True.
+    autosave : boolean (optional)
+        Toggle saving plots (True) as files or diplaying interactive (False).
+        Default is False. When autosave is False, the number of plots is truncated by
+        `ChopHandler.max_figures`.
+    save_directory : string (optional)
+         Location to save image(s). Default is None (auto-generated).
+    fname : string (optional)
+         File name. If None, data name is used. Default is None.
+    verbose : boolean (optional)
+        Deprecated option.  Use logging config to customize code feedback.
 
     Returns
     -------
@@ -174,6 +213,9 @@ def quick2D(
         if autosave, a list of saved image files (if any).
         if not, a list of Figures
 
+    See Also
+    --------
+    ``artists.Quick2DIterator`` : Iterator implementation of quick2D
     """
     return _quick2D(
         data,

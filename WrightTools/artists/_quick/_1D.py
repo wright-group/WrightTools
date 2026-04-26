@@ -143,6 +143,7 @@ def quick1D(
     autosave: bool = False,
     save_directory=None,
     fname=None,
+    verbose=False
 ):
     """Quickly plot 1D slice(s) of data.
 
@@ -167,12 +168,18 @@ def quick1D(
          Location to save image(s). Default is None (auto-generated).
     fname : string (optional)
          File name. If None, data name is used. Default is None.
+    verbose : boolean (optional)
+        Deprecated option.  Use logging config to customize code feedback.
 
     Returns
     -------
     list
         if autosave, a list of saved image files (if any).
         if not, a list of Figures
+
+    See Also
+    --------
+    ``artists.Quick2DIterator`` : Iterator implementation of quick2D
     """
     return Quick1DLegacy(
         data,
