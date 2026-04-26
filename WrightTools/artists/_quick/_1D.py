@@ -14,7 +14,7 @@ __all__ = ["quick1Ds", "quick1D", "Quick1DIterator", "Quick1DLegacy"]
 
 class Quick1DIterator(ChopIteratorBase):
     """
-    Iterator of 1D plots for data of ndim>=1.
+    Iterator of 1D plots for 1D chops of data.
     Creates a single figure, refreshing the content on each iteration.
     """
 
@@ -179,7 +179,7 @@ def quick1D(
 
     See Also
     --------
-    ``artists.Quick2DIterator`` : Iterator implementation of quick2D
+    ``artists.quick1Ds`` : Iterator implementation of quick1D
     """
     return Quick1DLegacy(
         data,

@@ -34,7 +34,7 @@ def determine_contour_levels(local_channel, global_channel, local: bool, contour
 
 class Quick2DIterator(ChopIteratorBase):
     """
-    Iterator of 2D plots for data of ndim>=2.
+    Iterator of 2D plots for 2D chops of data.
     Creates a single figure, refreshing the content on each iteration.
     """
 
