@@ -5,8 +5,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Fixed
+- `Data.squeeze`: axes of output object now inherit units from axes of the input object
+
 ### Changed
 - use `pillow` directly and remove `ImageIO` dependency
+
+## [3.6.3]
+
+### Changed
 - `Data.norm_for_each`: allow for normlization for each combination of a set of variables
 - docs use updated Sphinx packages
 - docs: new example showing norms interfacing with data objects
@@ -456,7 +463,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ### Added
 - initial release
 
-[Unreleased]: https://github.com/wright-group/WrightTools/-/compare/3.6.2...master
+[Unreleased]: https://github.com/wright-group/WrightTools/-/compare/3.6.3...master
+[3.6.3]: https://github.com/wright-group/WrightTools/compare/3.6.2...3.6.3
 [3.6.2]: https://github.com/wright-group/WrightTools/compare/3.6.1...3.6.2
 [3.6.1]: https://github.com/wright-group/WrightTools/compare/3.6.0...3.6.1
 [3.6.0]: https://github.com/wright-group/WrightTools/compare/3.5.5...3.6.0
