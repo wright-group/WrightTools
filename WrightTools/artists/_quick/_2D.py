@@ -115,41 +115,6 @@ class Quick2DIterator(ChopIteratorBase):
 Quick2DLegacy = legacy_quick_class(Quick2DIterator)
 
 
-def _quick2D(
-    data,
-    xaxis: int | str = 0,
-    yaxis: int | str = 1,
-    at: dict = {},
-    channel: int | str = 0,
-    cmap=None,
-    contours: int = 0,
-    pixelated: bool = True,
-    dynamic_range: bool = False,
-    local: bool = False,
-    contours_local: bool = True,
-    autosave: bool = False,
-    save_directory=None,
-    fname=None,
-):
-    """wrapper of Quick2DLegacy init to supply kwarg defaults"""
-    return Quick2DLegacy(
-        data,
-        xaxis,
-        yaxis,
-        at=at,
-        channel=channel,
-        cmap=cmap,
-        contours=contours,
-        pixelated=pixelated,
-        dynamic_range=dynamic_range,
-        local=local,
-        contours_local=contours_local,
-        autosave=autosave,
-        save_directory=save_directory,
-        fname=fname,
-    )
-
-
 def quick2D(
     data,
     xaxis: int | str = 0,
@@ -166,6 +131,7 @@ def quick2D(
     save_directory=None,
     fname=None,
     verbose=False,
+    _no_call=False,
 ) -> list[str | plt.Figure]:
     """Quickly plot 2D slice(s) of data.
 
@@ -206,6 +172,8 @@ def quick2D(
          File name. If None, data name is used. Default is None.
     verbose : boolean (optional)
         Deprecated option.  Use logging config to customize code feedback.
+    _no_call : boolean (default False)
+        For testing purposes.
 
     Returns
     -------
@@ -217,7 +185,7 @@ def quick2D(
     --------
     ``artists.Quick2DIterator`` : Iterator implementation of quick2D
     """
-    return _quick2D(
+    out = Quick2DLegacy(
         data,
         xaxis,
         yaxis,
@@ -232,7 +200,8 @@ def quick2D(
         autosave=autosave,
         save_directory=save_directory,
         fname=fname,
-    )()
+    )
+    return out if _no_call else out()
 
 
 # a wrapper for instance generation with explicit kwargs, docstring, typing

@@ -4,9 +4,10 @@ import numpy as np
 import pathlib
 import WrightTools as wt
 from WrightTools import datasets
+from functools import partial
 
 quick2D = wt.artists.quick2D
-_quick2D = wt.artists._quick._2D._quick2D
+_quick2D = partial(quick2D, _no_call=True)
 
 
 def test_backend():
