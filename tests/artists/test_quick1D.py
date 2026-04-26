@@ -3,6 +3,10 @@
 import numpy as np
 import WrightTools as wt
 from WrightTools import datasets
+import logging
+
+quick1D = wt.artists.quick1D
+logging.basicConfig(level="INFO")
 
 
 def test_perovskite():
@@ -15,7 +19,7 @@ def test_perovskite():
             break
         except:
             pass
-    wt.artists.quick1D(data, axis=0, at={"w2": [1.7, "eV"], "d2": [0, "fs"]})
+    quick1D(data, axis=0, at={"w2": [1.7, "eV"], "d2": [0, "fs"]})
 
 
 def test_2D():
@@ -27,7 +31,7 @@ def test_2D():
     data.create_variable("w1", values=w1[:, None], units="wn", label="1")
     data.create_variable("w2", values=w2[None, :], units="wn", label="2")
     data.transform("w1", "w2")
-    wt.artists.quick1D(data)
+    quick1D(data)
 
 
 def test_moment_channel():
@@ -42,7 +46,7 @@ def test_moment_channel():
     data.create_variable("w3", values=w3[None, None, :], units="wn", label="3")
     data.transform("w1", "w2", "w3")
     data.moment(2, 0, 0)
-    wt.artists.quick1D(data, channel=-1)
+    quick1D(data, channel=-1)
 
 
 if __name__ == "__main__":
