@@ -143,7 +143,7 @@ def quick1D(
     autosave: bool = False,
     save_directory=None,
     fname=None,
-    verbose=False
+    verbose=False,
 ):
     """Quickly plot 1D slice(s) of data.
 
