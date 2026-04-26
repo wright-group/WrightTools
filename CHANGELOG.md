@@ -8,6 +8,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ### Fixed
 - `Data.squeeze`: axes of output object now inherit units from axes of the input object
 
+### Changed
+- use `pillow` directly and remove `ImageIO` dependency
+
 ## [3.6.3]
 
 ### Changed
@@ -74,6 +77,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 - new artist helper function: `norm_from_channel`
 - new artist helper function: `ticks_from_norm`
 - new artist iterator `ChopHandler`
+- `artists.stitch_to_animation`: new kwargs for more gif customization
 
 ### Fixed
 - fixed Quick2D/Quick1D issues where collapsing unused dims did not work
