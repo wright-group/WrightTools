@@ -56,7 +56,8 @@ class Axes(matplotlib.axes.Axes):
             xlabel = data.axes[0].label
         if autolabel in ["xy", "both", "y"] and not ylabel:
             if data.ndim == 1:
-                ylabel = data.channels[channel_index].label
+                channel = data.channels[channel_index]
+                ylabel = channel.label if channel.label else channel.natural_name
             elif data.ndim == 2:
                 ylabel = data.axes[1].label
         # apply
