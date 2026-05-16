@@ -53,7 +53,7 @@ class Quick1DIterator(ChopIteratorBase):
         else:
             self.ax.set_ylim(*self.global_limits)
         self.fig.canvas.draw_idle()
-        plt.sca(self.ax)
+        # plt.sca(self.ax)  # problematic: causes ValueError the passed figure is not managed by pyplot
         return self.fig
 
     @property
