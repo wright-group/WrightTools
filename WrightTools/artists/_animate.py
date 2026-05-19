@@ -115,7 +115,7 @@ def animate2D(
 
     def updater(frame):
         logger.info(f"{frame=}")
-        art.set_array(data.channels[0][frame])
+        art.set_array(channel[frame])
         ax.set_title(gen_title(frame))
         art.set_norm(norm() if call_norm else norm)
         fig.canvas.draw_idle()
