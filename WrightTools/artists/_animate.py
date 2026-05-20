@@ -94,12 +94,19 @@ def animate2D(
 
     def gen_title(ind):
         parts = [
-            f"{var.natural_name} = {var[:].squeeze()[ind]:.2f} {var.units}"
+            f"{var.natural_name} = {var[:][ind].squeeze():.2f} {var.units}"
             for var in map(lambda a: a.variables[0], data.axes[:-2])
         ]
         return "\n".join(parts)
 
-    # initialize canvas
+
+    from ..kit import joint_shape
+    frame_shape = joint_shape(*[a[:] for a in data.axes[:-2]])
+    channel_shape = joint_shape(*[a[:] for a in data.axes[-2:]])
+    # mask indices that are spanned by the x and y axes
+    mask = [ci > fi for ci, fi in zip(channel_shape, frame_shape)]
+    logger.debug(f"{frame_shape=}, {channel_shape=}, {mask=}")
+
     fig, ax = plt.subplots(subplot_kw=dict(projection="wright"), dpi=140, layout="constrained")
     art = ax.pcolormesh(
         data[tuple([0 for i in data.shape[:-2]])],
@@ -113,7 +120,9 @@ def animate2D(
     # with layout well set, turn off the engine (avoids jittering frames)
     fig.set_layout_engine("none")
 
+
     def updater(frame):
+        frame = tuple(slice(None) if mi else fi for fi, mi in zip(frame, mask))
         logger.info(f"{frame=}")
         art.set_array(channel[frame])
         ax.set_title(gen_title(frame))
@@ -122,7 +131,8 @@ def animate2D(
         return art
 
     # generate frame sequence
-    frames = list(np.ndindex(data.shape[:-2]))
+
+    frames = list(np.ndindex(frame_shape))
     if back_and_forth:
         frames += reversed(frames)
 
