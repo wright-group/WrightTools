@@ -99,8 +99,8 @@ def animate2D(
         ]
         return "\n".join(parts)
 
-
     from ..kit import joint_shape
+
     frame_shape = joint_shape(*[a[:] for a in data.axes[:-2]])
     channel_shape = joint_shape(*[a[:] for a in data.axes[-2:]])
     # mask indices that are spanned by the x and y axes
@@ -119,7 +119,6 @@ def animate2D(
     ax.set_title(gen_title(tuple([0 for _ in data.shape[:-2]])))
     # with layout well set, turn off the engine (avoids jittering frames)
     fig.set_layout_engine("none")
-
 
     def updater(frame):
         frame = tuple(slice(None) if mi else fi for fi, mi in zip(frame, mask))
