@@ -13,7 +13,6 @@ from ._interact import interact2D_fig
 from ._quick import Quick1DIterator, Quick2DIterator
 from ..kit import joint_shape
 
-
 __all__ = ["animate2D", "animate_interact2D", "animate_quick"]
 logger = logging.getLogger("animation")
 
