@@ -11,6 +11,8 @@ from inspect import isclass
 from ._helpers import norm_from_channel
 from ._interact import interact2D_fig
 from ._quick import Quick1DIterator, Quick2DIterator
+from ..kit import joint_shape
+
 
 __all__ = ["animate2D", "animate_interact2D", "animate_quick"]
 logger = logging.getLogger("animation")
@@ -98,8 +100,6 @@ def animate2D(
             for var in map(lambda a: a.variables[0], data.axes[:-2])
         ]
         return "\n".join(parts)
-
-    from ..kit import joint_shape
 
     frame_shape = joint_shape(*[a[:] for a in data.axes[:-2]])
     channel_shape = joint_shape(*[a[:] for a in data.axes[-2:]])
