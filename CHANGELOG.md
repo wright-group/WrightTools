@@ -5,6 +5,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Added
+- new artists submodule `animate` as a convenient wrapper for matplotlib's `FuncAnimate`
+- `animate.animate2D`: allows versatile conversion of data to animation.
+- `animate.animate_interact2D`: create an animation from an interact2D object.
+- `Quick2DIterator`, `Quick1DIterator`: iterator classes for making figures for each object in a data chop.
+- `quick2Ds` and `quick1Ds`: like `quick2D` and `quick1D`, but wrap the iterator classes.
+- `animate.animate_quick`: create an animation whose frames are the figures that would be created in a quick1Ds/quick2Ds call.
+
+### Changed
+- `interact2D`: replaced SimpleNamespace object with a dataclass for more explicit typing
+- `quick1D`, `quick2D`:  refactored for integration with iterators, animations (these functions are wrappers for the class `Quick1DLegacy`, `Quick2DLegacy`).
+
 ### Fixed
 - `Data.squeeze`: axes of output object now inherit units from axes of the input object
 
