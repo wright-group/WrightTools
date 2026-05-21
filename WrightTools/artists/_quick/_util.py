@@ -80,7 +80,6 @@ class ChopIteratorBase:
                 self.__class__.__name__,
             )
         self.kwargs = kwargs
-        self.logger.info(f"{self.kwargs=}")
 
     def __iter__(self):
         with closing(self.data._from_slice(self.channel_slice)) as sliced:
@@ -164,10 +163,12 @@ def legacy_quick_class(quick_cls):
             self.max_figures = kwargs.get("max_figures", 10)
             # pre-calculate the number of plots to decide whether to make a folder
             shape = self.data.channels[self.channel_index].shape
-            uninvolved_shape = (
+            uninvolved_shape = tuple(
                 size if self.channel_slice[i] == 0 else 1 for i, size in enumerate(shape)
             )
             removed_shape = self.data._chop_prep(*[a.expression for a in self.axes], at=self.at)[0]
+            # further reduce if the channel is just lower dimensionality
+            removed_shape = [min(x,y) for x,y in zip(removed_shape, shape)]
             self.nfigs = reduce(int.__mul__, removed_shape) // reduce(
                 int.__mul__, uninvolved_shape
             )
@@ -181,22 +182,22 @@ def legacy_quick_class(quick_cls):
 
         def __call__(self):
             if self.autosave:
-                out = [self.filepath for _ in self]
+                out = [self.filepath for _ in self.__iter__()]
             else:  # unique figures; stops at fig limit
                 out = []
                 for i, fig in enumerate(self.__iter__()):
-                    print(i)
+                    self.logger.info(f"frame {i}")
                     out.append(fig)
-                    if i > 9:
-                        break
+                    self.fig = None  # unlink fig from self
                     self.draw_figure()
-                if i == self.max_figures:
-                    raise Warning(
-                        f"number of figures reached the limit (10). "
-                        + f"Only the first 10 figures will be processed."
-                    )
-                # last figure is empty
-                plt.close(fig)
+                    if i == self.max_figures:
+                        self.logger.warn(
+                            f"number of figures reached the limit (10). "
+                            + f"Only the first 10 figures will be processed."
+                        )
+                        break
+                # last figure is empty(?)
+                plt.close(self.fig)
             return out
 
     return QuickLegacy

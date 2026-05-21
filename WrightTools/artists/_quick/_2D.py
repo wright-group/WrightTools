@@ -108,7 +108,6 @@ class Quick2DIterator(ChopIteratorBase):
             self.colorbar.set_label(label=channel.natural_name)
             self.colorbar.set_ticks(norm_ticks)
         self.fig.canvas.draw_idle()
-        plt.sca(self.ax)
         return self.fig
 
 
