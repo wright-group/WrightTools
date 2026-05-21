@@ -168,7 +168,7 @@ def legacy_quick_class(quick_cls):
             )
             removed_shape = self.data._chop_prep(*[a.expression for a in self.axes], at=self.at)[0]
             # further reduce if the channel is just lower dimensionality
-            removed_shape = [min(x,y) for x,y in zip(removed_shape, shape)]
+            removed_shape = [min(x, y) for x, y in zip(removed_shape, shape)]
             self.nfigs = reduce(int.__mul__, removed_shape) // reduce(
                 int.__mul__, uninvolved_shape
             )
