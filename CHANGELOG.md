@@ -475,7 +475,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 - initial release
 
 [Unreleased]: https://github.com/wright-group/WrightTools/-/compare/3.6.4...master
-[3.6.3]: https://github.com/wright-group/WrightTools/compare/3.6.3...3.6.4
+[3.6.4]: https://github.com/wright-group/WrightTools/compare/3.6.3...3.6.4
 [3.6.3]: https://github.com/wright-group/WrightTools/compare/3.6.2...3.6.3
 [3.6.2]: https://github.com/wright-group/WrightTools/compare/3.6.1...3.6.2
 [3.6.1]: https://github.com/wright-group/WrightTools/compare/3.6.0...3.6.1
