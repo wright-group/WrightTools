@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ### Changed
 - `interact2D`: replaced SimpleNamespace object with a dataclass for more explicit typing
+- `quick1D`, `quick2D`:  will try to wrap titles if they get too long.
 - `quick1D`, `quick2D`:  refactored for integration with iterators, animations (these functions are wrappers for the class `Quick1DLegacy`, `Quick2DLegacy`).
 
 ### Fixed
