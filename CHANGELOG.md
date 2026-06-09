@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## [3.6.4]
+
 ### Added
 - new artists submodule `animate` as a convenient wrapper for matplotlib's `FuncAnimate`
 - `animate.animate2D`: allows versatile conversion of data to animation.
@@ -472,7 +474,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ### Added
 - initial release
 
-[Unreleased]: https://github.com/wright-group/WrightTools/-/compare/3.6.3...master
+[Unreleased]: https://github.com/wright-group/WrightTools/-/compare/3.6.4...master
+[3.6.3]: https://github.com/wright-group/WrightTools/compare/3.6.3...3.6.4
 [3.6.3]: https://github.com/wright-group/WrightTools/compare/3.6.2...3.6.3
 [3.6.2]: https://github.com/wright-group/WrightTools/compare/3.6.1...3.6.2
 [3.6.1]: https://github.com/wright-group/WrightTools/compare/3.6.0...3.6.1
