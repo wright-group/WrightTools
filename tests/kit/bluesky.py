@@ -2,7 +2,6 @@ import WrightTools as wt
 import logging
 from WrightTools import datasets
 
-
 logging.basicConfig(level=logging.INFO)
 
 
