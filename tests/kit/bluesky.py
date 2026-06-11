@@ -1,4 +1,16 @@
 import WrightTools as wt
+import logging
+from WrightTools import datasets
+
+
+logging.basicConfig(level=logging.INFO)
+
+
+def test_compress_sensor_mappings():
+    data = wt.open(datasets.wt5.v1p0p1_shg_andor)
+    wt.kit.bluesky.compress_sensor_mappings(data, "andor_camera")
+    assert data["andor_camera_x_index"].shape == (1, 1, 60)
+    assert data["andor_camera_y_index"].shape == (1, 60, 1)
 
 
 def test_folderinfo():
@@ -30,5 +42,6 @@ def test_filter():
 
 
 if __name__ == "__main__":
+    test_compress_sensor_mappings()
     test_folderinfo()
     test_filter()
