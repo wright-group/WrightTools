@@ -8,9 +8,13 @@ import json
 import datetime
 import pathlib
 import logging
+from numpy import prod
 from typing import NamedTuple, Generator, Iterable
 
+from ._array import joint_shape
 from .._open import open as wt5_open
+
+logger = logging.getLogger(__name__)
 
 __folder_parts__ = [
     r"(?P<date>\d\d\d\d-\d\d-\d\d)",
@@ -84,6 +88,54 @@ class BlueskyFolder:
     def baseline_descriptor(self) -> dict:
         path = self.path / "bluesky_docs" / "baseline descriptor.json"
         return json.load(path.open())
+
+
+def compress_sensor_mappings(data, sensor_name):
+    """
+    Compress sensor mappings that repetitively broadcast against e.g. all points in a grid_scan.
+    Note: do NOT use if the sensor axes are dynamic. This method performs no redundancy checks checks.
+
+    Parameters
+    ----------
+    data : WrightTools.Data
+        the data object
+    
+    sensor_name : str
+        the name of the sensor to inspect for compression
+    
+    Returns
+    -------
+    data : the input data object is returned
+    """
+    # determine which axes of ndim are entirely sensor mappings and not part of grid
+    is_sensor_var = lambda name: name.startswith(sensor_name)
+    sensor_vars = {vn for vn in filter(is_sensor_var, data.variable_names)}
+
+    sensor_shape = joint_shape(*[data[vi][:] for vi in sensor_vars])
+    non_sensor_shape = joint_shape(*[data[vi][:] for vi in set(data.variable_names)-sensor_vars])
+
+    exclusive = [prod(s) == max(s) for s in zip(sensor_shape, non_sensor_shape)]
+
+    if any(exclusive):
+        # replace the variables with a slice of the original
+        transform = list(data.axis_expressions)
+        slc = [slice(None) if exi else 0 for exi in exclusive]
+        for sn in sensor_vars:
+            new_shape = tuple(data[sn].shape[i] if exclusive[i] else 1 for i in range(data.ndim))
+            logger.info(f"reshaping {sn}: {data[sn].shape} -> {new_shape}")
+            # now rewrite the array
+            data.create_variable(
+                f"_{sn}",
+                values=data[sn][*slc].reshape(new_shape),
+                units=data[sn].units
+            )
+            # perhaps we should just create a new array and then overwrite
+            if sn in transform:
+                data.transform(*[ai for ai in transform if ai != sn])
+                data.remove_variable(sn)
+                data.rename_variables(**{f"_{sn}": sn}, implied=False, verbose=False)
+                data.transform(*transform)
+    return data
 
 
 def apply_points_axes(data):
