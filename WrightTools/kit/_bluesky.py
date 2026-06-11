@@ -99,10 +99,10 @@ def compress_sensor_mappings(data, sensor_name):
     ----------
     data : WrightTools.Data
         the data object
-    
+
     sensor_name : str
         the name of the sensor to inspect for compression
-    
+
     Returns
     -------
     data : the input data object is returned
@@ -112,7 +112,7 @@ def compress_sensor_mappings(data, sensor_name):
     sensor_vars = {vn for vn in filter(is_sensor_var, data.variable_names)}
 
     sensor_shape = joint_shape(*[data[vi][:] for vi in sensor_vars])
-    non_sensor_shape = joint_shape(*[data[vi][:] for vi in set(data.variable_names)-sensor_vars])
+    non_sensor_shape = joint_shape(*[data[vi][:] for vi in set(data.variable_names) - sensor_vars])
 
     exclusive = [prod(s) == max(s) for s in zip(sensor_shape, non_sensor_shape)]
 
@@ -125,9 +125,7 @@ def compress_sensor_mappings(data, sensor_name):
             logger.info(f"reshaping {sn}: {data[sn].shape} -> {new_shape}")
             # now rewrite the array
             data.create_variable(
-                f"_{sn}",
-                values=data[sn][*slc].reshape(new_shape),
-                units=data[sn].units
+                f"_{sn}", values=data[sn][*slc].reshape(new_shape), units=data[sn].units
             )
             # perhaps we should just create a new array and then overwrite
             if sn in transform:
