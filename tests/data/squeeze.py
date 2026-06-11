@@ -26,6 +26,19 @@ def test_squeeze():
     assert d.shape == (5, 4)
 
 
+def test_squeeze_units():
+    d = wt.Data(name="test")
+    d.create_variable("x", values=np.arange(5)[:, None, None], units="fs")
+    d.create_variable("y", values=np.arange(4)[None, :, None], units="fs")
+    d.create_variable("unused_var", values=d.x[:] - d.y[:], units="fs")
+    d.transform("x", "y")
+    d.convert("ps")
+
+    ds = d.squeeze(name="squeezed")
+    for axn in d.axis_names:
+        assert ds[axn].units == d[axn].units
+
+
 def test_constants():
     d = wt.Data(name="test")
     d.create_variable("x", values=np.array([1]).reshape(1, 1))
@@ -35,10 +48,9 @@ def test_constants():
     d.transform("y")
     ds = d.squeeze()
     assert "x" in ds.constant_expressions
-    d.print_tree()
-    ds.print_tree()
 
 
 if __name__ == "__main__":
     test_squeeze()
+    test_squeeze_units()
     test_constants()

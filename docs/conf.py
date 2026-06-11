@@ -87,7 +87,7 @@ master_doc = "index"
 
 # General information about the project.
 project = "WrightTools"
-copyright = "2016-2024, WrightTools Developers"
+copyright = f"2016-%Y, WrightTools Developers"
 author = "WrightTools Developers"
 
 # The version info for the project you're documenting, acts as replacement for

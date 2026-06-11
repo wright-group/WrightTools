@@ -5,10 +5,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## [3.6.4]
+
+### Added
+- new artists submodule `animate` as a convenient wrapper for matplotlib's `FuncAnimate`
+- `animate.animate2D`: allows versatile conversion of data to animation.
+- `animate.animate_interact2D`: create an animation from an interact2D object.
+- `Quick2DIterator`, `Quick1DIterator`: iterator classes for making figures for each object in a data chop.
+- `quick2Ds` and `quick1Ds`: like `quick2D` and `quick1D`, but wrap the iterator classes.
+- `animate.animate_quick`: create an animation whose frames are the figures that would be created in a quick1Ds/quick2Ds call.
+
 ### Changed
-<<<<<<< norm_for_each_many_vars
+- `interact2D`: replaced SimpleNamespace object with a dataclass for more explicit typing
+- `quick1D`, `quick2D`:  will try to wrap titles if they get too long.
+- `quick1D`, `quick2D`:  refactored for integration with iterators, animations (these functions are wrappers for the class `Quick1DLegacy`, `Quick2DLegacy`).
+
+### Fixed
+- `Data.squeeze`: axes of output object now inherit units from axes of the input object
+
+## [3.6.3]
+
+### Changed
 - `Data.norm_for_each`: allow for normlization for each combination of a set of variables
-=======
 - docs use updated Sphinx packages
 - docs: new example showing norms interfacing with data objects
 
@@ -16,7 +34,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 - WrightTools works with new h5py 3.16
 
 ## [3.6.2]
->>>>>>> master
 
 ### Fixed
 - fixed bug where numpy>2.4 broke `data.join`
@@ -458,7 +475,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ### Added
 - initial release
 
-[Unreleased]: https://github.com/wright-group/WrightTools/-/compare/3.6.2...master
+[Unreleased]: https://github.com/wright-group/WrightTools/-/compare/3.6.4...master
+[3.6.4]: https://github.com/wright-group/WrightTools/compare/3.6.3...3.6.4
+[3.6.3]: https://github.com/wright-group/WrightTools/compare/3.6.2...3.6.3
 [3.6.2]: https://github.com/wright-group/WrightTools/compare/3.6.1...3.6.2
 [3.6.1]: https://github.com/wright-group/WrightTools/compare/3.6.0...3.6.1
 [3.6.0]: https://github.com/wright-group/WrightTools/compare/3.5.5...3.6.0

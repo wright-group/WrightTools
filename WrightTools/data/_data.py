@@ -424,9 +424,12 @@ class Data(Group):
 
         # inherit constants
         for c in self.constants:
-            new.create_constant(c.expression)
+            new.create_constant(c.expression, verbose=False)
 
         new.transform(*self.axis_expressions)
+        for axn in self.axis_names:
+            new.get_axis(axn).convert(self.get_axis(axn).units)
+
         return new
 
     def ichop(self, *args, at=None, autoclose=True) -> Generator:

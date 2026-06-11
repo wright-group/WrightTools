@@ -70,11 +70,11 @@ def _title(fig, title, subtitle="", *, margin=1, fontsize=20, subfontsize=18):
     subfontsize : number (optional)
         Subtitle fontsize. Default is 18.
     """
-    fig.suptitle(title, fontsize=fontsize)
+    fig.suptitle(title, fontsize=fontsize, wrap=True)
     height = fig.get_figheight()  # inches
     distance = margin / 2.0  # distance from top of plot, in inches
     ratio = 1 - distance / height
-    fig.text(0.5, ratio, subtitle, fontsize=subfontsize, ha="center", va="top")
+    return fig.text(0.5, ratio, subtitle, fontsize=subfontsize, ha="center", va="top", wrap=True)
 
 
 def add_sideplot(
