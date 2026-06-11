@@ -20,12 +20,12 @@ __folder_parts__ = [
     r"(?P<date>\d\d\d\d-\d\d-\d\d)",
     r"(?P<time>" + r"\d{5}" + ")",
     r"(?P<plan>\w*)",
-    r"(?P<name>[\s\w\d.-=+-]*)",  # not great...
+    r"(?P<name>[\s\w\d.-=+-]*)",  # not great...just trying to include all valid characters
     r"(?P<uid>\w{8})",
 ]
 __folder_seed__ = " ".join(__folder_parts__)
 __datetime_seed__ = re.compile(" ".join(__folder_parts__[:3]))
-__fmtseed__ = "{date} {time} {plan} {name} {uid}"
+__fmtseed__ = "{date} {time:05d} {plan} {name} {uid}"
 
 
 class BlueskyFolder:
@@ -49,7 +49,7 @@ class BlueskyFolder:
         """open procedure based on plan"""
         if self._primary is None:
             # TODO: open procedure based on plan
-            if self.info.plan == "gridscan_wp":
+            if self.info.plan == "grid_scan_wp":
                 self._primary = wt5_open(self.path / "primary.wt5")
             else:
                 raise NotImplementedError(f"plan {self.info.plan}")
@@ -160,7 +160,7 @@ class FolderInfo(NamedTuple):
     uid: str
 
     @property
-    def folder(self):
+    def strf(self) -> str:
         return __fmtseed__.format(
             date=self.date.strftime("%Y-%m-%d"),
             time=int(
