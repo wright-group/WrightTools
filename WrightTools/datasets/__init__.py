@@ -91,6 +91,7 @@ Tensor27._from_files("Tensor27")
 wt5 = DatasetContainer()
 wt5._from_files(here / "wt5" / "v1.0.0", prefix="v1p0p0_")
 wt5._from_files(here / "wt5" / "v1.0.1", prefix="v1p0p1_")
+wt5._from_files(here / "wt5" / "v1.0.3", prefix="v1p0p3_")
 
 
 # --- pretty namespace ----------------------------------------------------------------------------
