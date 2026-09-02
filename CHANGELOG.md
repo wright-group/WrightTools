@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Fixed
+- `from_solis`:  accepts metadata listed before or after data
+
 ## [3.6.4]
 
 ### Added
