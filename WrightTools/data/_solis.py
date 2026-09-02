@@ -7,7 +7,7 @@ import os
 import pathlib
 import time
 import warnings
-
+import string
 import numpy as np
 
 from ._data import Data
@@ -59,7 +59,6 @@ def from_Solis(filepath, name=None, parent=None, verbose=True) -> Data:
 
     """
     # parse filepath
-    filestr = os.fspath(filepath)
     filepath = pathlib.Path(filepath)
 
     if not ".asc" in filepath.suffixes:
@@ -69,49 +68,19 @@ def from_Solis(filepath, name=None, parent=None, verbose=True) -> Data:
         name = filepath.name.split(".")[0]
     # create data
     ds = DataSource(None)
-    f = ds.open(filestr, "rt")
+    f = ds.open(str(filepath), "rt")
     axis0 = []
     arr = []
     attrs = {}
 
-    line0 = f.readline().strip()[:-1]
-    line0 = [float(x) for x in line0.split(",")]  # TODO: robust to space, tab, comma
-    axis0.append(line0.pop(0))
-    arr.append(line0)
+    attrs, pos = parse_metadata(f)
 
-    def get_frames(f, arr, axis0):
-        axis0_written = False
-        while True:
-            line = f.readline().strip()[:-1]
-            if len(line) == 0:
-                break
-            else:
-                line = [float(x) for x in line.split(",")]
-                # signature of new frames is restart of axis0
-                if not axis0_written and (line[0] == axis0[0]):
-                    axis0_written = True
-                if axis0_written:
-                    line.pop(0)
-                else:
-                    axis0.append(line.pop(0))
-                arr.append(line)
-        return arr, axis0
+    f.seek(pos)
 
     arr, axis0 = get_frames(f, arr, axis0)
     nframes = len(arr) // len(axis0)
 
-    i = 0
-    while i < 3:
-        line = f.readline().strip()
-        if len(line) == 0:
-            i += 1
-        else:
-            try:
-                key, val = line.split(":", 1)
-            except ValueError:
-                pass
-            else:
-                attrs[key.strip()] = val.strip()
+    attrs.update(parse_metadata(f)[0])
 
     f.close()
 
@@ -126,7 +95,7 @@ def from_Solis(filepath, name=None, parent=None, verbose=True) -> Data:
             f"{filepath.name} has no 'Date and Time' field: using file modified time instead: {created}"
         )
 
-    kwargs = {"name": name, "kind": "Solis", "source": filestr, "created": created}
+    kwargs = {"name": name, "kind": "Solis", "source": filepath.name, "created": created}
     if parent is None:
         data = Data(**kwargs)
     else:
@@ -184,3 +153,54 @@ def from_Solis(filepath, name=None, parent=None, verbose=True) -> Data:
         print("  axes: {0}".format(data.axis_names))
         print("  shape: {0}".format(data.shape))
     return data
+
+
+
+def get_frames(f, arr, axis0):
+    axis0_written = False
+    line0 = f.readline().strip()[:-1]
+    line0 = [float(x) for x in line0.split(",")]  # TODO: robust to space, tab, comma
+    axis0.append(line0.pop(0))
+    arr.append(line0)
+
+    while True:
+        line = f.readline().strip()[:-1]
+        # data ends at a blank line (potentially EOF)
+        if not line:
+            break
+        else:
+            line = [float(x) for x in line.split(",")]
+            # signature of new frames is restart of axis0
+            if not axis0_written and (line[0] == axis0[0]):
+                axis0_written = True
+            if axis0_written:
+                line.pop(0)
+            else:
+                axis0.append(line.pop(0))
+            arr.append(line)
+
+    return arr, axis0
+
+
+def parse_metadata(f):
+    attrs = {}
+
+    # terminate parsing either 
+    #   when EOF is reached
+    #   when numeric data is reached
+    pos = f.tell()
+    while True:
+        pos = f.tell()
+        line = f.readline()
+        if (not line) or line[0].isdigit():  # EOF or numeric data
+            break
+        line = line.strip()[:-1]
+        try:
+            key, val = line.split(":", 1)
+        except ValueError:
+            print(f"could not parse line {line}")
+        else:
+            attrs[key.strip()] = val.strip()
+        
+    return attrs, pos
+
