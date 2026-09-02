@@ -15,7 +15,7 @@ def test_wm_ypos_fluorescence_with_filter():
     assert data.shape == (2560, 2160)
     assert data.axis_expressions == ("wm", "yindex")
     assert data.units == ("nm", None)
-    assert data.created.human == '2018-06-30 01:52:35'
+    assert data.created.human == "2018-06-30 01:52:35"
 
     data.close()
 
