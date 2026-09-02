@@ -155,7 +155,6 @@ def from_Solis(filepath, name=None, parent=None, verbose=True) -> Data:
     return data
 
 
-
 def get_frames(f, arr, axis0):
     axis0_written = False
     line0 = f.readline().strip()[:-1]
@@ -185,7 +184,7 @@ def get_frames(f, arr, axis0):
 def parse_metadata(f):
     attrs = {}
 
-    # terminate parsing either 
+    # terminate parsing either
     #   when EOF is reached
     #   when numeric data is reached
     pos = f.tell()
@@ -201,6 +200,5 @@ def parse_metadata(f):
             print(f"could not parse line {line}")
         else:
             attrs[key.strip()] = val.strip()
-        
-    return attrs, pos
 
+    return attrs, pos
