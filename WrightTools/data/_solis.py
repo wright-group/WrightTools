@@ -73,14 +73,12 @@ def from_Solis(filepath, name=None, parent=None, verbose=True) -> Data:
     arr = []
     attrs = {}
 
-    attrs, pos = parse_metadata(f)
-
-    f.seek(pos)
+    attrs = parse_metadata(f)
 
     arr, axis0 = get_frames(f, arr, axis0)
     nframes = len(arr) // len(axis0)
 
-    attrs.update(parse_metadata(f)[0])
+    attrs.update(parse_metadata(f))
 
     f.close()
 
@@ -181,18 +179,20 @@ def get_frames(f, arr, axis0):
     return arr, axis0
 
 
-def parse_metadata(f):
+def parse_metadata(f) -> dict:
+    """
+    readlines for key value pairs until data or EOF is encountered
+    when readlines is finished, reverts to last valid line so no data is missed by subsequent readlines
+    """
     attrs = {}
 
-    # terminate parsing either
-    #   when EOF is reached
-    #   when numeric data is reached
-    pos = f.tell()
     while True:
         pos = f.tell()
         line = f.readline()
         if (not line) or line[0].isdigit():  # EOF or numeric data
             break
+        if line[0] not in string.ascii_letters:
+            continue
         line = line.strip()[:-1]
         try:
             key, val = line.split(":", 1)
@@ -201,4 +201,5 @@ def parse_metadata(f):
         else:
             attrs[key.strip()] = val.strip()
 
-    return attrs, pos
+    f.seek(pos)
+    return attrs
