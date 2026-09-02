@@ -68,20 +68,19 @@ def from_Solis(filepath, name=None, parent=None, verbose=True) -> Data:
         name = filepath.name.split(".")[0]
     # create data
     ds = DataSource(None)
-    f = ds.open(str(filepath), "rt")
     axis0 = []
     arr = []
     attrs = {}
 
+    # extract the contents of the file
+    f = ds.open(str(filepath), "rt")
     attrs = parse_metadata(f)
-
     arr, axis0 = get_frames(f, arr, axis0)
     nframes = len(arr) // len(axis0)
-
     attrs.update(parse_metadata(f))
-
     f.close()
 
+    # construct the data object
     try:
         created = attrs["Date and Time"]  # is this UTC?
         created = time.strptime(created, "%a %b %d %H:%M:%S %Y")
@@ -93,7 +92,7 @@ def from_Solis(filepath, name=None, parent=None, verbose=True) -> Data:
             f"{filepath.name} has no 'Date and Time' field: using file modified time instead: {created}"
         )
 
-    kwargs = {"name": name, "kind": "Solis", "source": filepath.name, "created": created}
+    kwargs = {"name": name, "kind": "Solis", "source": str(filepath), "created": created}
     if parent is None:
         data = Data(**kwargs)
     else:
@@ -193,7 +192,7 @@ def parse_metadata(f) -> dict:
             break
         if line[0] not in string.ascii_letters:
             continue
-        line = line.strip()[:-1]
+        line = line.strip()
         try:
             key, val = line.split(":", 1)
         except ValueError:
