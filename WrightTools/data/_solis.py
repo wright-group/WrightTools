@@ -119,6 +119,28 @@ def from_Solis(filepath, name=None, parent=None, verbose=True) -> Data:
         created = attrs["Date and Time"]  # is this UTC?
         created = time.strptime(created, "%a %b %d %H:%M:%S %Y")
         created = timestamp.TimeStamp(time.mktime(created)).RFC3339
+    except ValueError:  # round fractional seconds assuming it is the culprit
+        try:
+            HMS = created.split(" ")[3].split(":")
+            round_seconds = int(round(float(HMS[-1])))
+            HMS_rounded = HMS[0] + ":" + HMS[1] + ":" + str(round_seconds)
+            created_rounded = []
+            for i, p in enumerate(created.split(" ")):
+                if i > 0:
+                    created_rounded.append(" ")
+                if i != 3:
+                    created_rounded.append(p)
+                else:
+                    created_rounded.append(HMS_rounded)
+            created = "".join(created_rounded)
+            created = time.strptime(created, "%a %b %d %H:%M:%S %Y")
+            created = timestamp.TimeStamp(time.mktime(created)).RFC3339
+        except (ValueError, IndexError) as e:  # rounding failed, saving modified time instead:
+            created = os.stat(filepath).st_mtime
+            created = timestamp.TimeStamp(created).RFC3339
+            warnings.warn(
+                f"{filepath.name} has a 'Date and Time' format that does not match %a %b %d %H:%M:%S %Y: using file modified time instead: {created}"
+            )
     except KeyError:  # use file creation time
         created = os.stat(filepath).st_mtime
         created = timestamp.TimeStamp(created).RFC3339
