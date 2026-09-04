@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ## [Unreleased]
 - `from_solis`:  incorporates error handling for unexpected formats of Date and Time metadata, and now accepts (and rounds) fractional seconds if in expected format %a %b %d %H:%M:%S %Y
 
+### Fixed
+- `from_solis`:  accepts metadata listed before or after data
+
 ## [3.6.4]
 
 ### Added
