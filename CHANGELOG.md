@@ -7,7 +7,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 - `from_solis`:  incorporates error handling for unexpected formats of Date and Time metadata, and now accepts (and rounds) fractional seconds if in expected format %a %b %d %H:%M:%S %Y
 
 ### Fixed
-- `from_solis`:  accepts metadata listed before or after data
+- `from_solis`: accepts metadata listed before or after data
+- `from_solis`: fixed bug where x-axis was always guessed to be spectral
 
 ## [3.6.4]
 
