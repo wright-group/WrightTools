@@ -127,7 +127,7 @@ def from_Solis(filepath, name=None, parent=None, verbose=True) -> Data:
         warnings.warn(
             f"{filepath.name} has no 'Grating Groove Density (1/mm)' field: guessing x axis units."
         )
-        groove_density = isinstance(axis0[0], float)
+        groove_density = 1 - np.all(axis0.astype(int) == axis0)
 
     if groove_density == 0:
         xname = "xindex"
@@ -163,8 +163,7 @@ def from_Solis(filepath, name=None, parent=None, verbose=True) -> Data:
         # signal has units of Hz because time normalized
         data.create_channel(name="signal", values=arr, signed=False, units="Hz")
 
-    for key, val in attrs.items():
-        data.attrs[key] = val
+    data.attrs.update(attrs)
 
     # finish
     if verbose:
