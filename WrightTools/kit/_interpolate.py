@@ -5,10 +5,8 @@
 
 import numpy as np
 
-from scipy import ndimage
-from scipy.interpolate import UnivariateSpline
-
 from ._array import remove_nans_1D
+
 
 # --- define --------------------------------------------------------------------------------------
 
@@ -42,6 +40,7 @@ def zoom2D(xi, yi, zi, xi_zoom=3.0, yi_zoom=3.0, order=3, mode="nearest", cval=0
     cval : scalar (optional)
         Value used for constant mode. Default is 0.0.
     """
+    from scipy import ndimage
     xi = ndimage.zoom(xi, xi_zoom, order=order, mode="nearest")
     yi = ndimage.zoom(yi, yi_zoom, order=order, mode="nearest")
     zi = ndimage.zoom(zi, (xi_zoom, yi_zoom), order=order, mode=mode, cval=cval)
@@ -86,6 +85,7 @@ class Spline:
         .. note:: Use k=1 and s=0 for a linear interplation.
 
         """
+        from scipy.interpolate import UnivariateSpline
         # import
         xi_internal = np.array(xi).copy()
         yi_internal = np.array(yi).copy()

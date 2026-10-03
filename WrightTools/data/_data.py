@@ -15,8 +15,6 @@ import sys
 
 import h5py
 
-import scipy
-from scipy.interpolate import griddata, interp1d
 from typing import Generator
 
 from .._group import Group
@@ -1337,6 +1335,7 @@ class Data(Group):
         """
         warnings.warn("heal", category=wt_exceptions.EntireDatasetInMemoryWarning)
         timer = wt_kit.Timer(verbose=False)
+        from scipy.interpolate import griddata
         with timer:
             # channel
             if isinstance(channel, int):
@@ -1489,16 +1488,16 @@ class Data(Group):
         if self.ndim == 1:
 
             def interpolate(dataset, points):
-                function = scipy.interpolate.interp1d(variable[:], dataset[:], bounds_error=False)
-                return function(points)
+                return np.interp(points, variable[:], dataset[:])
 
         else:
             pts = np.array([a.full.flatten() for a in self.axes]).T
             out_pts = np.array([a.full.flatten() for a in out.axes]).T
 
             def interpolate(dataset, points):
+                from scipy.interpolate import LinearNDInterpolator
                 values = dataset.full.flatten()
-                function = scipy.interpolate.LinearNDInterpolator(pts, values, rescale=True)
+                function = LinearNDInterpolator(pts, values, rescale=True)
                 new = function(out_pts)
                 new.shape = out.shape
                 return new

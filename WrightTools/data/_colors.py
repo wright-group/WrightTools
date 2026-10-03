@@ -9,8 +9,6 @@ import collections
 
 import numpy as np
 
-from scipy.interpolate import griddata
-
 from ._data import Data
 from .. import kit as wt_kit
 from numpy.lib.npyio import DataSource
@@ -59,6 +57,7 @@ def from_COLORS(
     WrightTools.Data
         Data from COLORS.
     """
+    from scipy.interpolate import griddata
     # do we have a list of files or just one file? ------------------------------------------------
     if isinstance(filepaths, list):
         filestrs = [os.fspath(f) for f in filepaths]
