@@ -1336,6 +1336,7 @@ class Data(Group):
         warnings.warn("heal", category=wt_exceptions.EntireDatasetInMemoryWarning)
         timer = wt_kit.Timer(verbose=False)
         from scipy.interpolate import griddata
+
         with timer:
             # channel
             if isinstance(channel, int):
@@ -1496,6 +1497,7 @@ class Data(Group):
 
             def interpolate(dataset, points):
                 from scipy.interpolate import LinearNDInterpolator
+
                 values = dataset.full.flatten()
                 function = LinearNDInterpolator(pts, values, rescale=True)
                 new = function(out_pts)

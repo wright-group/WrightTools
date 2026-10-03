@@ -58,6 +58,7 @@ def from_COLORS(
         Data from COLORS.
     """
     from scipy.interpolate import griddata
+
     # do we have a list of files or just one file? ------------------------------------------------
     if isinstance(filepaths, list):
         filestrs = [os.fspath(f) for f in filepaths]

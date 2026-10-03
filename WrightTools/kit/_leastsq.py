@@ -7,7 +7,6 @@ from ._utilities import Timer
 
 import numpy as np
 
-
 # --- define --------------------------------------------------------------------------------------
 
 
@@ -45,6 +44,7 @@ def leastsqfitter(p0, datax, datay, function, verbose=False, cov_verbose=False):
         list of fit parameter errors (1 std)
     """
     from scipy import optimize as scipy_optimize
+
     timer = Timer(verbose=False)
     with timer:
         # define error function

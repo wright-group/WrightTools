@@ -62,6 +62,7 @@ def from_KENT(
         Data from KENT.
     """
     from scipy.interpolate import griddata
+
     # define columns ------------------------------------------------------------------------------
     # axes
     axes = collections.OrderedDict()
