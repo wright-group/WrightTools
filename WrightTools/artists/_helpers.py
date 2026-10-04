@@ -4,11 +4,7 @@
 
 
 import os
-
 import numpy as np
-
-from scipy.interpolate import interp2d
-
 import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.patheffects as PathEffects
@@ -35,7 +31,6 @@ __all__ = [
     "diagonal_line",
     "get_scaled_bounds",
     "norm_from_channel",
-    "pcolor_helper",
     "plot_colorbar",
     "plot_margins",
     "plot_gridlines",
@@ -503,86 +498,6 @@ def get_scaled_bounds(ax, position, *, distance=0.1, factor=200):
         va = "center"
         ha = "center"
     return [h_scaled, v_scaled], [va, ha]
-
-
-def pcolor_helper(xi, yi, zi=None):
-    """Prepare a set of arrays for plotting using `pcolor`.
-
-    This function is Deprecated as of WrightTools 3.3.0.
-    Matplotlib introduced the ``shading="nearest"`` in version 3.3.0 on pcolor and associated
-    methods, which accomplishes the same goal, in a much cleaner way.
-
-    The return values are suitable for feeding directly into ``matplotlib.pcolor``
-    such that the pixels are properly centered.
-
-    Parameters
-    ----------
-    xi : 1D or 2D array-like
-        Array of X-coordinates.
-    yi : 1D or 2D array-like
-        Array of Y-coordinates.
-    zi : 2D array (optional, deprecated)
-        If zi is not None, it is returned unchanged in the output.
-
-    Returns
-    -------
-    X : 2D ndarray
-        X dimension for pcolor
-    Y : 2D ndarray
-        Y dimension for pcolor
-    zi : 2D ndarray
-        if zi parameter is not None, returns zi parameter unchanged
-    """
-    warnings.warn(
-        "``pcolor_helper`` is deprecated and will be removed in a future version. "
-        + "Use ``shading='nearest'`` as an argument to ``pcolor*`` instead",
-        wt_exceptions.VisibleDeprecationWarning,
-    )
-
-    xi = xi.copy()
-    yi = yi.copy()
-    if xi.ndim == 1:
-        xi.shape = (xi.size, 1)
-    if yi.ndim == 1:
-        yi.shape = (1, yi.size)
-    shape = wt_kit.joint_shape(xi, yi)
-
-    # full
-    def full(arr):
-        for i in range(arr.ndim):
-            if arr.shape[i] == 1:
-                arr = np.repeat(arr, shape[i], axis=i)
-        return arr
-
-    xi = full(xi)
-    yi = full(yi)
-    # pad
-    x = np.arange(shape[1])
-    y = np.arange(shape[0])
-    f_xi = interp2d(x, y, xi)
-    f_yi = interp2d(x, y, yi)
-    x_new = np.arange(-1, shape[1] + 1)
-    y_new = np.arange(-1, shape[0] + 1)
-    xi = f_xi(x_new, y_new)
-    yi = f_yi(x_new, y_new)
-    # fill
-    X = np.empty([s - 1 for s in xi.shape])
-    Y = np.empty([s - 1 for s in yi.shape])
-    for orig, out in [[xi, X], [yi, Y]]:
-        for idx in np.ndindex(out.shape):
-            ul = orig[idx[0] + 1, idx[1] + 0]
-            ur = orig[idx[0] + 1, idx[1] + 1]
-            ll = orig[idx[0] + 0, idx[1] + 0]
-            lr = orig[idx[0] + 0, idx[1] + 1]
-            out[idx] = np.mean([ul, ur, ll, lr])
-    if zi is not None:
-        warnings.warn(
-            "zi argument is not used in pcolor_helper and is not required",
-            wt_exceptions.VisibleDeprecationWarning,
-        )
-        return X, Y, zi.copy()
-    else:
-        return X, Y
 
 
 def plot_colorbar(

@@ -5,8 +5,6 @@
 
 import numpy as np
 
-from scipy.special import wofz
-
 # --- define -------------------------------------------------------------
 
 
@@ -127,6 +125,8 @@ def voigt(x, x0, FWHM, G):
     array_like or number
         Voigt lineshape.
     """
+    from scipy.special import wofz
+
     c = FWHM / (2 * np.sqrt(2 * np.log(2)))
     arr = (x - x0 + 1j * G) / (c * np.sqrt(2))
     w = wofz(arr)
