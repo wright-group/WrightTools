@@ -6,11 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ## [Unreleased]
 
 ### Changed
-- scipy is not loaded at import time, resulting in speedups for scripts not employing these methods
+- scipy is imported on an as-needed basis, resulting in faster load times
 
 ### Fixed
-- `from_solis`:  incorporates error handling for unexpected formats of Date and Time metadata, and now accepts (and rounds) fractional seconds if in expected format %a %b %d %H:%M:%S %Y
-- `from_solis`:  accepts metadata listed before or after data
+- `from_solis`: incorporates error handling for unexpected formats of Date and Time metadata, and now accepts (and rounds) fractional seconds if in expected format %a %b %d %H:%M:%S %Y
+- `from_solis`: accepts metadata listed before or after data
+- `from_solis`: fixed bug where x-axis was always guessed to be spectral
 
 ## [3.6.4]
 
