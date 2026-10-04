@@ -922,24 +922,20 @@ class Data(Group):
             norm = 1
             if moment > 0:
                 norm = trapezoid(y, x, axis=axis_index)
-                norm = np.array(norm)
-                norm.shape = new_shape
+                norm = np.expand_dims(norm, axis=axis_index)
             if moment > 1:
                 about = trapezoid(x * y, x, axis=axis_index)
-                about = np.array(about)
-                about.shape = new_shape
+                about = np.expand_dims(about, axis=axis_index)
                 about /= norm
             if moment > 2:
                 sigma = trapezoid((x - about) ** 2 * y, x, axis=axis_index)
-                sigma = np.array(sigma)
-                sigma.shape = new_shape
+                sigma = np.expand_dims(sigma, axis=axis_index)
                 sigma /= norm
                 sigma **= 0.5
                 norm *= sigma**moment
 
             values = trapezoid((x - about) ** moment * y, x, axis=axis_index)
-            values = np.array(values)
-            values.shape = new_shape
+            values = np.expand_dims(values, axis=axis_index)
             values /= norm
             if moment == 0:
                 values *= multiplier
