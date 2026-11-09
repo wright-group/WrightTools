@@ -24,7 +24,6 @@ from ._shimadzu import *
 from ._spcm import *
 from ._tensor27 import *
 
-
 __all__ = [
     "Data",
     "join",

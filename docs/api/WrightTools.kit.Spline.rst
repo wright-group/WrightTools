@@ -1,7 +1,21 @@
-WrightTools.kit.Spline
+﻿WrightTools.kit.Spline
 ======================
 
-.. autoclass:: WrightTools.kit.Spline
-   :members:
-   :special-members: __init__, __call__
-   :show-inheritance:
+.. currentmodule:: WrightTools.kit
+
+.. autoclass:: Spline
+
+
+   .. automethod:: __init__
+
+
+   .. rubric:: Methods
+
+   .. autosummary::
+
+      ~Spline.__init__
+
+
+
+
+

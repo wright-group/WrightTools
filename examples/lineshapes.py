@@ -12,7 +12,6 @@ import WrightTools as wt
 
 import numpy as np
 
-
 # initiate figure
 fig, gs = wt.artists.create_figure(nrows=2, default_aspect=0.6)
 axs = [plt.subplot(gs[i]) for i in range(2)]

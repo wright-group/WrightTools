@@ -9,7 +9,6 @@ import WrightTools as wt
 from WrightTools import datasets
 from tempfile import NamedTemporaryFile
 
-
 # --- tests ---------------------------------------------------------------------------------------
 
 

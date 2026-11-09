@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 """Test INI file creation and parsing."""
+
 from WrightTools.kit import INI
 import numpy as np
 import os

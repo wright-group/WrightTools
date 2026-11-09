@@ -31,6 +31,7 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Scientific/Engineering",
 ]
 keywords = ["spectroscopy", "science", "multidimensional", "visualization"]
@@ -39,8 +40,8 @@ license-files = ["LICEN[CS]E*"]
 
 [project.optional-dependencies]
 docs = [
-    "sphinx<8.0",
-    "sphinx-gallery==0.8.2",
+    "sphinx<9.0",
+    "sphinx-gallery",
     "sphinx-rtd-theme"
 ]
 dev = [
@@ -49,10 +50,10 @@ dev = [
     "pydocstyle",
     "pytest",
     "pytest-cov",
-    "databroker>=1.2",
+    "databroker<2",
     "msgpack",
-    "sphinx<8.0",
-    "sphinx-gallery==0.8.2",
+    "sphinx<9.0",
+    "sphinx-gallery",
     "sphinx-rtd-theme"
 ]
 

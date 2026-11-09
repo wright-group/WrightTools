@@ -15,7 +15,6 @@ import matplotlib.patheffects as PathEffects
 
 import WrightTools as wt
 
-
 # --- define --------------------------------------------------------------------------------------
 
 

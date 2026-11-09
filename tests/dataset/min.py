@@ -11,7 +11,6 @@ import numpy as np
 import WrightTools as wt
 from WrightTools import datasets
 
-
 # --- test ----------------------------------------------------------------------------------------
 
 

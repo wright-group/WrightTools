@@ -6,14 +6,12 @@ Many tests of `chop` also validate ichop functionality, so tests are less
 encompasing here and focus on iterator behavior.
 """
 
-
 # --- import -------------------------------------------------------------------------------------
 
 
 import WrightTools as wt
 from WrightTools import datasets
 import pathlib
-
 
 # --- tests --------------------------------------------------------------------------------------
 

@@ -7,7 +7,6 @@ import warnings
 
 import pint
 
-
 # --- define --------------------------------------------------------------------------------------
 
 # These "blessed" units are here primarily for backwards compatibility, in particular

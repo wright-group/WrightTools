@@ -10,12 +10,10 @@ import collections
 
 import numpy as np
 
-from scipy.interpolate import griddata
 
 from ._data import Data
 from .. import kit as wt_kit
 from numpy.lib.npyio import DataSource
-
 
 # --- define --------------------------------------------------------------------------------------
 
@@ -63,6 +61,8 @@ def from_KENT(
     WrightTools.Data
         Data from KENT.
     """
+    from scipy.interpolate import griddata
+
     # define columns ------------------------------------------------------------------------------
     # axes
     axes = collections.OrderedDict()

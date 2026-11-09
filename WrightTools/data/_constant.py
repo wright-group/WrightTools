@@ -8,7 +8,6 @@ import numpy as np
 from ._axis import Axis
 from .. import units as wt_units
 
-
 # --- define --------------------------------------------------------------------------------------
 
 

@@ -1,7 +1,6 @@
 #! /usr/bin/env python3
 """Test join."""
 
-
 # --- import --------------------------------------------------------------------------------------
 
 
@@ -11,7 +10,6 @@ import numpy as np
 
 import WrightTools as wt
 from WrightTools import datasets
-
 
 # --- test ----------------------------------------------------------------------------------------
 

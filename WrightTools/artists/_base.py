@@ -17,7 +17,6 @@ from .. import kit as wt_kit
 from ..data import Data, Channel
 from ._colors import colormaps
 
-
 # --- define -------------------------------------------------------------------------------------
 
 
@@ -68,7 +67,7 @@ class Axes(matplotlib.axes.Axes):
             xlabel = data.axes[0].label
         if autolabel in ["xy", "both", "y"] and not ylabel:
             if data.ndim == 1:
-                ylabel = channel.label
+                ylabel = channel.label if channel.label else channel.natural_name
             elif data.ndim == 2:
                 ylabel = data.axes[1].label
         # apply
@@ -509,10 +508,8 @@ class Axes(matplotlib.axes.Axes):
                 coords.append(axis)
 
             if "c" in kwargs.keys():
-                raise KeyError(
-                    "'c' kwarg not allowed when data object provided. \
-                    Use `cmap` instead to control colors."
-                )
+                raise KeyError("'c' kwarg not allowed when data object provided. \
+                    Use `cmap` instead to control colors.")
 
             channel = data.get_channel(kwargs.pop("channel", 0))
 

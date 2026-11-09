@@ -22,7 +22,6 @@ from ._close import *
 from .collection._collection import *
 from .data._data import *
 
-
 # --- rcparams ------------------------------------------------------------------------------------
 
 artists.apply_rcparams("fast")

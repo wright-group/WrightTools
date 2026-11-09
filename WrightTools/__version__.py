@@ -5,7 +5,6 @@
 
 import pathlib
 
-
 # ---- define -------------------------------------------------------------------------------------
 
 
@@ -32,6 +31,9 @@ p = p / "HEAD"
 if p.exists():
     with open(str(p)) as f:
         __branch__ = f.readline().rstrip().split(r"/")[-1]
-    __version__ += "+" + __branch__
+    # clean local verson (PEP 440)
+    __version__ += (
+        f"+{''.join(char if (char.isalnum() or char=='.') else '.' for char in __branch__)}"
+    )
 else:
     __branch__ = None

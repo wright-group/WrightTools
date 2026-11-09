@@ -5,6 +5,58 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Changed
+- scipy is imported on an as-needed basis, resulting in faster load times
+
+### Fixed
+- `from_solis`: incorporates error handling for unexpected formats of Date and Time metadata, and now accepts (and rounds) fractional seconds if in expected format %a %b %d %H:%M:%S %Y
+- `from_solis`: accepts metadata listed before or after data
+- `from_solis`: fixed bug where x-axis was always guessed to be spectral
+
+## [3.6.4]
+
+### Added
+- new artists submodule `animate` as a convenient wrapper for matplotlib's `FuncAnimate`
+- `animate.animate2D`: allows versatile conversion of data to animation.
+- `animate.animate_interact2D`: create an animation from an interact2D object.
+- `Quick2DIterator`, `Quick1DIterator`: iterator classes for making figures for each object in a data chop.
+- `quick2Ds` and `quick1Ds`: like `quick2D` and `quick1D`, but wrap the iterator classes.
+- `animate.animate_quick`: create an animation whose frames are the figures that would be created in a quick1Ds/quick2Ds call.
+
+### Changed
+- `interact2D`: replaced SimpleNamespace object with a dataclass for more explicit typing
+- `quick1D`, `quick2D`:  will try to wrap titles if they get too long.
+- `quick1D`, `quick2D`:  refactored for integration with iterators, animations (these functions are wrappers for the class `Quick1DLegacy`, `Quick2DLegacy`).
+
+### Fixed
+- `Data.squeeze`: axes of output object now inherit units from axes of the input object
+
+## [3.6.3]
+
+### Changed
+- `Data.norm_for_each`: allow for normlization for each combination of a set of variables
+- docs use updated Sphinx packages
+- docs: new example showing norms interfacing with data objects
+
+### Fixed
+- WrightTools works with new h5py 3.16
+
+## [3.6.2]
+
+### Fixed
+- fixed bug where numpy>2.4 broke `data.join`
+- fixed bug which prevented channels from having units
+
+### Changed
+- per [PEP 765](https://peps.python.org/pep-0765/), `return` is removed from `finally` blocks
+
+## [3.6.1]
+
+### Changed
+- local version identifier uses only ASCII letters/numbers and periods (PEP 440)
+- actively supporting python 3.11-3.14
+- `Data.create_constant`: allow kwargs to be passed to the constant creation
+
 ## [3.6.0]
 
 ### Added
@@ -430,8 +482,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ### Added
 - initial release
 
-[Unreleased]: https://github.com/wright-group/WrightTools/-/compare/3.6.0...master
-[3.6.0]: https://github.com/wright-group/WrightTools/-/compare/3.5.5...3.6.0
+[Unreleased]: https://github.com/wright-group/WrightTools/-/compare/3.6.4...master
+[3.6.4]: https://github.com/wright-group/WrightTools/compare/3.6.3...3.6.4
+[3.6.3]: https://github.com/wright-group/WrightTools/compare/3.6.2...3.6.3
+[3.6.2]: https://github.com/wright-group/WrightTools/compare/3.6.1...3.6.2
+[3.6.1]: https://github.com/wright-group/WrightTools/compare/3.6.0...3.6.1
+[3.6.0]: https://github.com/wright-group/WrightTools/compare/3.5.5...3.6.0
 [3.5.5]: https://github.com/wright-group/WrightTools/compare/3.5.3...3.5.5
 [3.5.4]: https://github.com/wright-group/WrightTools/compare/3.5.3...3.5.4
 [3.5.3]: https://github.com/wright-group/WrightTools/compare/3.5.2...3.5.3
