@@ -147,19 +147,19 @@ def get_symbol(units) -> str:
         LaTeX formatted symbol.
     """
     quantity = ureg.Quantity(1, ureg(units))
-    if quantity.check("[length]"):
+    if quantity.dimensionality == {"[length]": 1}:
         return r"\lambda"
-    elif quantity.check("1 / [length]"):
+    elif quantity.dimensionality == {"[length]": -1}:
         return r"\bar\nu"
-    elif quantity.check("[energy]"):
+    elif quantity.dimensionality == {"[energy]": 1}:
         return r"\hslash\omega"
-    elif quantity.check("1 / [time]"):
+    elif quantity.dimensionality == {"[time]": -1}:
         return "f"
-    elif quantity.check("[time]"):
+    elif quantity.dimensionality == {"[time]": 1}:
         return r"\tau"
-    elif quantity.check("[fluence]"):
+    elif quantity.dimensionality == {"[fluence]": 1}:
         return r"\mathcal{F}"
-    elif quantity.check("[temperature]"):
+    elif quantity.dimensionality == {"[temperature]": 1}:
         return "T"
     elif ureg(units) in (ureg.deg, ureg.radian):
         return r"\omega"
