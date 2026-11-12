@@ -32,6 +32,15 @@ def test_split():
     split.close()
 
 
+def test_split_trivial_axis():
+    d = wt.Data()
+    d.create_variable("x", values=np.array([0, 1, 2, 3, 4]).reshape(-1, 1))
+    d.transform("x")
+    print(d.shape)
+    splits = d.split("x", [1, 3], verbose=False)
+    assert all([si.ndim == 2 for si in splits.values()])
+
+
 def test_split_complexarray():
     p = datasets.PyCMDS.wm_w2_w1_000
     a = wt.data.from_PyCMDS(p)
