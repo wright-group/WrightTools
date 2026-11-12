@@ -7,7 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ### Changed
 - scipy is imported on an as-needed basis, resulting in faster load times
-- adopted changes from `pint` 0.26.1
+- adopted changes from `pint` 0.26.2
 
 ### Fixed
 - `from_solis`: incorporates error handling for unexpected formats of Date and Time metadata, and now accepts (and rounds) fractional seconds if in expected format %a %b %d %H:%M:%S %Y
